@@ -1313,6 +1313,230 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["results"], expected)
 
+class GetChallengeByTitle(BaseAPITestClass):
+    def setUp(self):
+        super(GetChallengeByTitle, self).setUp()
+
+        self.user1 = User.objects.create(
+            username="user1",
+            email="user1@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge3 = Challenge.objects.create(
+            title="Test Challenge 3",
+            short_description="Short description for test challenge 3",
+            description="Description for test challenge 3",
+            terms_and_conditions="Terms and conditions for test challenge 3",
+            submission_guidelines="Submission guidelines for test challenge 3",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
+        self.challenge4 = Challenge.objects.create(
+            title="Test Challenge 4",
+            short_description="Short description for test challenge 4",
+            description="Description for test challenge 4",
+            terms_and_conditions="Terms and conditions for test challenge 4",
+            submission_guidelines="Submission guidelines for test challenge 4",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            leaderboard_description="Curabitur nec placerat libero.",
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=False,
+            approved_by_admin=True,
+        )
+
+        self.challenge5 = Challenge.objects.create(
+            title="Test Challenge 5",
+            short_description="Short description for test challenge 5",
+            description="Description for test challenge 5",
+            terms_and_conditions="Terms and conditions for test challenge 5",
+            submission_guidelines="Submission guidelines for test challenge 5",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            leaderboard_description=None,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=True,
+        )
+
+        self.challenge6 = Challenge.objects.create(
+            title="Test Challenge 6",
+            short_description="Short description for test challenge 6",
+            description="Description for test challenge 6",
+            terms_and_conditions="Terms and conditions for test challenge 6",
+            submission_guidelines="Submission guidelines for test challenge 6",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            leaderboard_description="Curabitur nec placerat libero.",
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=False,
+            approved_by_admin=True,
+        )
+
+    def test_get_challenge_by_title_when_challenge_does_not_exists(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_by_title",
+            kwargs={"title": 'fakechallenge'},
+        )
+        expected = {"error": "Challenge does not exist!"}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_by_title_when_single_challenge_matches_query(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_by_title", kwargs={"title": self.challenge4.title}
+        )
+        self.client.force_authenticate(user=self.user)
+        expected = {
+            "id": self.challenge4.pk,
+            "title": self.challenge4.title,
+            "short_description": self.challenge4.short_description,
+            "description": self.challenge4.description,
+            "terms_and_conditions": self.challenge4.terms_and_conditions,
+            "submission_guidelines": self.challenge4.submission_guidelines,
+            "evaluation_details": self.challenge4.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(
+                self.challenge4.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge4.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge4.creator.pk,
+                "team_name": self.challenge4.creator.team_name,
+                "created_by": self.challenge4.creator.created_by.username,
+                "team_url": self.challenge4.creator.team_url,
+            },
+            "published": self.challenge4.published,
+            "is_registration_open": self.challenge4.is_registration_open,
+            "enable_forum": self.challenge4.enable_forum,
+            "leaderboard_description": self.challenge4.leaderboard_description,
+            "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
+            "banned_email_ids": [],
+            "approved_by_admin": self.challenge4.approved_by_admin,
+            "forum_url": self.challenge4.forum_url,
+            "is_docker_based": self.challenge4.is_docker_based,
+            "slug": self.challenge4.slug,
+            "max_docker_image_size": self.challenge4.max_docker_image_size,
+            "cli_version": self.challenge4.cli_version,
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data[0], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_by_title_when_multiple_challenges_match_query(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_by_title", kwargs={"title": 'test challenge'}
+        )
+        self.client.force_authenticate(user=self.user)
+        expected = [{
+            "id": self.challenge4.pk,
+            "title": self.challenge4.title,
+            "short_description": self.challenge4.short_description,
+            "description": self.challenge4.description,
+            "terms_and_conditions": self.challenge4.terms_and_conditions,
+            "submission_guidelines": self.challenge4.submission_guidelines,
+            "evaluation_details": self.challenge4.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(
+                self.challenge4.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge4.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge4.creator.pk,
+                "team_name": self.challenge4.creator.team_name,
+                "created_by": self.challenge4.creator.created_by.username,
+                "team_url": self.challenge4.creator.team_url,
+            },
+            "published": self.challenge4.published,
+            "is_registration_open": self.challenge4.is_registration_open,
+            "enable_forum": self.challenge4.enable_forum,
+            "leaderboard_description": self.challenge4.leaderboard_description,
+            "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
+            "banned_email_ids": [],
+            "approved_by_admin": self.challenge4.approved_by_admin,
+            "forum_url": self.challenge4.forum_url,
+            "is_docker_based": self.challenge4.is_docker_based,
+            "slug": self.challenge4.slug,
+            "max_docker_image_size": self.challenge4.max_docker_image_size,
+            "cli_version": self.challenge4.cli_version,
+        }, {
+            "id": self.challenge6.pk,
+            "title": self.challenge6.title,
+            "short_description": self.challenge6.short_description,
+            "description": self.challenge6.description,
+            "terms_and_conditions": self.challenge6.terms_and_conditions,
+            "submission_guidelines": self.challenge6.submission_guidelines,
+            "evaluation_details": self.challenge6.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(
+                self.challenge6.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge6.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge6.creator.pk,
+                "team_name": self.challenge6.creator.team_name,
+                "created_by": self.challenge6.creator.created_by.username,
+                "team_url": self.challenge6.creator.team_url,
+            },
+            "published": self.challenge6.published,
+            "is_registration_open": self.challenge6.is_registration_open,
+            "enable_forum": self.challenge6.enable_forum,
+            "leaderboard_description": self.challenge6.leaderboard_description,
+            "anonymous_leaderboard": self.challenge6.anonymous_leaderboard,
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
+            "banned_email_ids": [],
+            "approved_by_admin": self.challenge6.approved_by_admin,
+            "forum_url": self.challenge6.forum_url,
+            "is_docker_based": self.challenge6.is_docker_based,
+            "slug": self.challenge6.slug,
+            "max_docker_image_size": self.challenge6.max_docker_image_size,
+            "cli_version": self.challenge6.cli_version,
+        }]
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class GetChallengeByPk(BaseAPITestClass):
     def setUp(self):
