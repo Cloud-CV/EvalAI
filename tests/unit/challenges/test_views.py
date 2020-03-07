@@ -1313,6 +1313,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["results"], expected)
 
+
 class GetChallengeByTitle(BaseAPITestClass):
     def setUp(self):
         super(GetChallengeByTitle, self).setUp()
