@@ -49,3 +49,16 @@ def get_auth_token(request):
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((ExpiringTokenAuthentication,))
+def image_endpoint(request):
+    try:
+        user = User.objects.get(email=request.user.email)
+    except User.DoesNotExist:
+        response_data = {"error": "This User account doesn't exist."}
+        Response(response_data, status.HTTP_404_NOT_FOUND)
+    user.user_avatar = request.user.user_avatar
+    return Response(status=status.HTTP_200_OK)

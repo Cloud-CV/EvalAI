@@ -65,6 +65,29 @@
                             <span>{{updateProfile.errorResponse.data.linkedin_url[0]}}</span>
                         </div>
                     </div>
+                    <!--<div class="input-field align-left"> 
+                        <input id="user_avatar" name="user_avatar" type="file" upload-file="updateProfile.user.user_avatar" class="text-dark-black dark-autofill w-400" focus-if="updateProfile.user.user_avatar">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="user_avatar">User Avatar</label>
+                        <div class="wrn-msg text-highlight" ng-if="updateProfile.errorResponse.data.user_avatar">
+                            <span>{{updateProfile.errorResponse.data.user_avatar[0]}}</span>
+                        </div>
+                    </div>-->
+                    <div>
+                        <div class="file-field input-field">
+                            <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent">
+                                <span> Avatar </span>
+                                <input id="user_avatar" name="user_avatar" type="file" upload-file="updateProfile.user.user_avatar" class="text-dark-black dark-autofill w-400" focus-if="updateProfile.user.user_avatar">
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path" type="text" class="input-field"
+                                    ng-model="updateProfile.user.user_avatar" ng-value="updateProfile.user.user_avatar.name">
+                            </div>
+                            <div class="wrn-msg text-highlight" ng-if="updateProfile.errorResponse.data.user_avatar">
+                                <span>{{updateProfile.errorResponse.data.user_avatar[0]}}</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>

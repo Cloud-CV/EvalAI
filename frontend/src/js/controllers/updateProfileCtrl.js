@@ -64,6 +64,12 @@
                 var parameters = {};
                 parameters.url = 'auth/user/';
                 parameters.method = 'PUT';
+                parameters.headers = {
+                    'Content-Type': undefined
+                }; 
+                var fd = new FormData(); 
+                parameters.transformRequest = angular.identity; 
+                //vm.updateAvatar(); 
                 parameters.data = {
                     "username": vm.user.username,
                     "first_name": vm.user.first_name,
@@ -71,8 +77,14 @@
                     "affiliation": vm.user.affiliation,
                     "github_url": vm.user.github_url,
                     "google_scholar_url": vm.user.google_scholar_url,
-                    "linkedin_url": vm.user.linkedin_url
+                    "linkedin_url": vm.user.linkedin_url,
+                    "user_avatar": vm.user.user_avatar
                 };
+                _.each(parameters.data, function (val, key) {
+                    fd.append(key, parameters.data[key]);
+                });
+                parameters.data = fd; 
+                
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -115,7 +127,9 @@
                     }
                 };
 
-                utilities.sendRequest(parameters);
+                //utilities.sendRequest(parameters);
+                // fix data here
+                utilities.sendRequest(parameters, 'header', 'upload');
 
             } else {
                 $rootScope.notify("error", "Form fields are not valid!");

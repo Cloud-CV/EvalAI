@@ -71,6 +71,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_expiring_authtoken",
     "drf_yasg",
     "django_filters",
+    "django_cleanup",
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
