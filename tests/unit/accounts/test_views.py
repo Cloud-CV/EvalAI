@@ -8,18 +8,14 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django import forms
-#from django.utils.encoding import smart_unicode
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-
-
-from PIL import Image
-import tempfile
 from django.conf import settings
 from django.db import models
+
 
 class BaseAPITestClass(APITestCase):
     def setUp(self):
@@ -46,6 +42,7 @@ class DisableUserTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+
 class MyImageField(models.ImageField):
 
     def __init__(self, *args, **kwargs):
@@ -54,10 +51,10 @@ class MyImageField(models.ImageField):
     def clean(self, *args, **kwargs):
         data = super(MyImageField, self).clean(*args, **kwargs)
         filename = os.path.splitext(data.name)
-        data.name = unicode(data.name)
         if len(filename[1]):
-            data.name += u'.'+slugify(filename[1])
+            data.name += u'.' + filename[1]
         return data
+
 
 class TestRequestForm(forms.Form):
     username = forms.CharField(label='test', max_length=100)
@@ -67,7 +64,7 @@ class TestRequestForm(forms.Form):
     linkedin_url = forms.CharField(label='Your name', max_length=100)
     password = forms.CharField(label='Your name', max_length=100)
     user_avatar = MyImageField()
-    
+
 
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
