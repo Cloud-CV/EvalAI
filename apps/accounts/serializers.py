@@ -30,6 +30,7 @@ class ProfileSerializer(UserDetailsSerializer):
     github_url = serializers.URLField(source="profile.github_url", allow_blank=True)
     google_scholar_url = serializers.URLField(source="profile.google_scholar_url", allow_blank=True)
     linkedin_url = serializers.URLField(source="profile.linkedin_url", allow_blank=True)
+    user_avatar = serializers.ImageField(source="profile.user_avatar")
 
     class Meta(UserDetailsSerializer.Meta):
         fields = (
@@ -41,7 +42,8 @@ class ProfileSerializer(UserDetailsSerializer):
             "affiliation",
             "github_url",
             "google_scholar_url",
-            "linkedin_url"
+            "linkedin_url",
+            "user_avatar"
         )
 
     def update(self, instance, validated_data):
@@ -50,6 +52,7 @@ class ProfileSerializer(UserDetailsSerializer):
         github_url = profile_data.get("github_url")
         google_scholar_url = profile_data.get("google_scholar_url")
         linkedin_url = profile_data.get("linkedin_url")
+        user_avatar = profile_data.get("user_avatar")
 
         instance = super(ProfileSerializer, self).update(
             instance, validated_data
@@ -61,5 +64,6 @@ class ProfileSerializer(UserDetailsSerializer):
             profile.github_url = github_url
             profile.google_scholar_url = google_scholar_url
             profile.linkedin_url = linkedin_url
+            profile.user_avatar = user_avatar
             profile.save()
         return instance
