@@ -236,7 +236,7 @@ class ChallengePhase(TimeStampedModel):
     slug = models.SlugField(max_length=200, null=True, unique=True)
     environment_image = models.CharField(
         max_length=2128, null=True, blank=True
-    )  # Max length of URL and tag is 2000 and 128 respectively
+    )  # Max length of repository name and tag is 2000 and 128 respectively
 
     class Meta:
         app_label = "challenges"
