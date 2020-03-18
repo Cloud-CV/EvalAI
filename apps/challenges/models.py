@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
-from django.core.validators import URLValidator
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -235,9 +234,9 @@ class ChallengePhase(TimeStampedModel):
         null=True,
     )
     slug = models.SlugField(max_length=200, null=True, unique=True)
-    environment_url = models.CharField(
-        validators=[URLValidator()], null=True, blank=True, max_length=2128
-    )  # Max length of URL and tag is 2000 and 128 respectively
+    environment_image = models.CharField(
+        max_length=2128, null=True, blank=True
+    )  # Max length of repository name and tag is 2000 and 128 respectively
 
     class Meta:
         app_label = "challenges"
