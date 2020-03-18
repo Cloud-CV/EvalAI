@@ -2285,7 +2285,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
 
         expected = {
             "error": "`result` key contains invalid data with error "
-            "the JSON object must be str, bytes or bytearray, not 'list'."
+            "the JSON object must be str, bytes or bytearray, not list."
             "Please try again with correct format."
         }
         self.client.force_authenticate(user=self.challenge_host.user)
