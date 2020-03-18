@@ -2094,7 +2094,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
     def test_max_submissions_per_month_if_field_exist(self):
         self.zip_file = open(
             join(
-                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip",
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
             ),
             "rb",
         )
@@ -2390,6 +2390,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "test_annotation": "http://testserver%s"
             % (self.challenge_phase.test_annotation.url),
             "slug": self.challenge_phase.slug,
+            "environment_image": self.challenge_phase.environment_image,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -4076,6 +4077,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "test_annotation": "http://testserver%s"
                 % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
+                "environment_image": self.private_challenge_phase.environment_image,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4099,6 +4101,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
                 "slug": self.challenge_phase.slug,
+                "environment_image": self.challenge_phase.environment_image,
             },
         ]
         response = self.client.get(self.url, {})
