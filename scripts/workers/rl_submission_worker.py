@@ -175,6 +175,7 @@ def main():
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
+                    or submission.get("status") == "cancelled"
                 ):
                     # Fetch the last job name from the list as it is the latest running job
                     job_name = submission.get("job_name")[-1]
