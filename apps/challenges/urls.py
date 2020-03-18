@@ -40,6 +40,11 @@ urlpatterns = [
         name="get_all_challenges",
     ),
     url(
+        r"^challenge/(?P<challenge_time>[A-Za-z]+)/count$",
+        views.get_total_challenges_count,
+        name="get_total_challenges_count",
+    ),
+    url(
         r"^featured/$",
         views.get_featured_challenges,
         name="get_featured_challenges",
