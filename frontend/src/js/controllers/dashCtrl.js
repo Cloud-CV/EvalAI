@@ -39,6 +39,7 @@
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
+                    utilities.storeData('emailError', error.detail);
 
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
