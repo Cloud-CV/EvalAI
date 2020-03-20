@@ -275,6 +275,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_submission_public",
                     "slug",
                     "max_concurrent_submissions_allowed",
+                    "environment_image",
                 ]
             ),
         )
