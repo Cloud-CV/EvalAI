@@ -2211,7 +2211,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             max_field = zipTestPhase._meta.get_field("max_submissions")
             max_total = max_field.value_from_object(zipTestPhase)
 
-            self.assertTrue(max_per_month == max_total or max_per_month == 345)
+            self.assertTrue(max_per_month == max_total)
 
     def test_create_challenge_phase_with_no_data(self):
         del self.data["name"]
