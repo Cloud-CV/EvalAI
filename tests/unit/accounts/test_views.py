@@ -56,16 +56,6 @@ class MyImageField(models.ImageField):
         return data
 
 
-class TestRequestForm(forms.Form):
-    username = forms.CharField(label='test', max_length=100)
-    affiliation = forms.CharField(label='Your name', max_length=100)
-    github_url = forms.CharField(label='Your name', max_length=100)
-    google_scholar_url = forms.CharField(label='Your name', max_length=100)
-    linkedin_url = forms.CharField(label='Your name', max_length=100)
-    password = forms.CharField(label='Your name', max_length=100)
-    user_avatar = MyImageField()
-
-
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
         self.url = reverse_lazy("rest_user_details")
@@ -77,9 +67,8 @@ class TestUpdateUser(BaseAPITestClass):
             "linkedin_url": "https://linkedin.url",
             "password": "secret_password",
         }
-        form = TestRequestForm(self.data)
         response = self.client.put(
-            os.path.join("api", "auth", str(self.url)), form
+            os.path.join("api", "auth", str(self.url)), self.data
         )
         self.assertNotContains(response, "anotheruser")
         self.assertContains(response, "someuser")
