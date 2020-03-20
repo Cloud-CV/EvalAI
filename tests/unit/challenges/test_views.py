@@ -2980,13 +2980,13 @@ class CreateChallengeUsingZipFile(APITestCase):
     def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(
         self,
     ):
-        for zipTestPhase in ChallengePhase.objects.all():
-            max_con_field = zipTestPhase._meta.get_field(
+        challenge_phases = ChallengePhase.objects.all()
+        for zipTestPhase in challenge_phases:
+            max_concurrent_submissions_allowed_field = zipTestPhase._meta.get_field(
                 "max_concurrent_submissions_allowed"
             )
-            max_con = max_con_field.value_from_object(zipTestPhase)
-            print("value of maxcon: " + str(max_con))
-            self.assertTrue(max_con == 5 or max_con == 3)
+            max_con = max_concurrent_submissions_allowed_field.value_from_object(zipTestPhase)
+            self.assertTrue(max_con == 3)
 
     @responses.activate
     def test_create_challenge_using_zip_file_success(self):
