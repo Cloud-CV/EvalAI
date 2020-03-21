@@ -117,6 +117,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "environment_image": self.challenge_phase.environment_image,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -142,6 +143,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "environment_image": self.challenge_phase.environment_image,
             }
             self.challenge_phase_create_serializer_without_max_submissions_per_month = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -197,6 +199,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_submission_public",
                     "slug",
                     "max_concurrent_submissions_allowed",
+                    "environment_image",
                 ]
             ),
         )
@@ -233,6 +236,10 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
         self.assertEqual(data["slug"], self.serializer_data["slug"])
+        self.assertEqual(
+            data["environment_image"],
+            self.serializer_data["environment_image"],
+        )
 
         self.assertEqual(
             data["max_concurrent_submissions_allowed"],
@@ -268,6 +275,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_submission_public",
                     "slug",
                     "max_concurrent_submissions_allowed",
+                    "environment_image",
                 ]
             ),
         )
@@ -339,6 +347,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_submission_public",
                     "slug",
                     "max_concurrent_submissions_allowed",
+                    "environment_image",
                 ]
             ),
         )
@@ -375,6 +384,10 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
         self.assertEqual(data["slug"], self.serializer_data["slug"])
+        self.assertEqual(
+            data["environment_image"],
+            self.serializer_data["environment_image"],
+        )
 
     def test_challenge_phase_create_serializer_with_invalid_data(self):
 

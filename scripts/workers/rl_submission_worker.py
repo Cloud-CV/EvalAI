@@ -30,10 +30,9 @@ EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
-ENVIRONMENT_IMAGE = os.environ.get("ENVIRONMENT_IMAGE", "image_name:tag")
 
 
-def create_job_object(message):
+def create_job_object(message, environment_image):
     """Function to create the AWS EKS Job object
 
     Arguments:
@@ -58,7 +57,7 @@ def create_job_object(message):
     # Configureate Pod environment container
     environment_container = client.V1Container(
         name="environment",
-        image=ENVIRONMENT_IMAGE,
+        image=environment_image,
         env=[
             PYTHONUNBUFFERED_ENV,
             AUTH_TOKEN_ENV,
@@ -123,7 +122,7 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted. status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(body, evalai):
+def process_submission_callback(body, challenge_phase, evalai):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -132,7 +131,8 @@ def process_submission_callback(body, evalai):
     """
     try:
         logger.info("[x] Received submission message %s" % body)
-        job = create_job_object(body)
+        environment_image = challenge_phase.get("environment_image")
+        job = create_job_object(body, environment_image)
         response = create_job(batch_v1, job)
         submission_data = {
             "submission_status": "running",
@@ -168,11 +168,14 @@ def main():
         message_body = message.get("body")
         if message_body:
             submission_pk = message_body.get("submission_pk")
+            challenge_pk = message_body.get("challenge_pk")
+            phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
+                    or submission.get("status") == "cancelled"
                 ):
                     # Fetch the last job name from the list as it is the latest running job
                     job_name = submission.get("job_name")[-1]
@@ -188,7 +191,12 @@ def main():
                     logger.info(
                         "Processing message body: {0}".format(message_body)
                     )
-                    process_submission_callback(message_body, evalai)
+                    challenge_phase = evalai.get_challenge_phase_by_pk(
+                        challenge_pk, phase_pk
+                    )
+                    process_submission_callback(
+                        message_body, challenge_phase, evalai
+                    )
         if killer.kill_now:
             break
 

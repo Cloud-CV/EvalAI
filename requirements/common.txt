@@ -6,7 +6,7 @@ commonmark==0.5.4
 django==1.11.23
 django-allauth==0.40.0
 django-filter==2.1.0
-django-import-export==0.5.1
+django-import-export==2.0.2
 djangorestframework==3.9.3
 djangorestframework-expiring-authtoken==0.1.4
 django-cors-headers==1.3.1
