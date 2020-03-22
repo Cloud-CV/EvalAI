@@ -1,98 +1,133 @@
-<div ng-if="isAuth">
-    <section ng-if="challenge.isActive" class="ev-sm-container ev-view challenge-container">
-        <div ng-if="challenge.isParticipated" class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-            <p><strong>You have already participated in the challenge with a team!</strong></p>
+<div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+<section ng-if="isAuth &&challenge.isActive" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div ng-if="challenge.isParticipated">
+            <p class="fs-16 w-300">You have already participated in this challenge.</p>
         </div>
         <div ng-if="!challenge.isParticipated">
-            <div class="row">
-                <div class="col s12 m6">
-                    <div class=" ev-card-panel ev-z-depth-5">
-                        <div class="ev-md-container ev-panel-title"><strong>My Existing Participating Teams</strong></div>
-                        <div class="ev-md-container ev-card-body exist-team-card">
-                            <form>
-                                <div ng-if="!showPagination" class="page-msg">{{challenge.paginationMsg}}</div>
-                                <ul>
-                                    <li ng-repeat="(key, value) in challenge.existTeam.results">
-                                        <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="challenge.teamId">
-                                        <label for="{{value.id}}"></label>
-                                        <div ng-if="value.team_url != ''" class="show-member-title pointer"><strong class="text-med-black">Team: </strong><a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a>
-                                            <br>
-                                            <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
-                                        <div ng-if="value.team_url == ''" class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
-                                            <br>
-                                            <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
-                                        <div class="clearfix"></div>
-                                    </li>
-                                    <section class="pagination" ng-if="challenge.showPagination">
-                                        <div class="row rm-gut">
-                                            <div class="col s12 m6 ">
-                                                <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.existTeam.previous)">
-                                                    <i class="fa fa-chevron-left"></i>
-                                                </a>
-                                                <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.existTeam.count/10 | ceil}} </strong></span>
-                                                <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.existTeam.next)">
-                                                    <i class="fa fa-chevron-right"></i>
-                                                </a>
-                                            </div>
-                                            <div class="col s12 m6 ">
-                                                <div class="align-right ">
-                                                    <button ng-disabled="!challenge.teamId" ng-if="challenge.existTeam.results.length" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.termsAndConditionDialog($event)" value="Submit">Continue</button>
+            <div class="row margin-bottom-cancel">
+                <div class="col s12 m6 l6">
+                    <div class="row">
+                        <h5 class="w-300">My Participant Teams</h5>
+                    </div>
+                    <div class="row">
+                        <form>
+                            <div ng-if="!showPagination" class="page-msg fs-16 w-300">{{challenge.paginationMsg}}
+                            </div>
+                            <ul>
+                                <li ng-repeat="(key, value) in challenge.existTeam.results">
+                                    <div class="row margin-0">
+                                        <div class="col s12 m12 l8">
+                                            <div class="card-panel margin-0">
+                                                <input type="radio" name="selectExistTeam" class="with-gap selectTeam"
+                                                    id="{{value.id}}" value="{{value.id}}" ng-model="challenge.teamId">
+                                                <label for="{{value.id}}"></label>
+                                                <div ng-if="value.team_url != ''" class="show-member-title pointer">
+                                                    <strong class="fs-16 w-300">Team: </strong><a class="orange-text"
+                                                        href="{{value.team_url}}"
+                                                        target="_blank">{{value.team_name}}</a>
                                                     <br>
-                                                    <br>
-                                                    <span class="text-dark-black"><strong >{{challenge.existTeamError}}</strong></span>
+                                                    <strong class="fs-16 w-300">Created By:
+                                                    </strong>{{value.created_by}}
                                                 </div>
+                                                <div ng-if="value.team_url == ''" class="show-member-title pointer">
+                                                    <strong class="fs-16 w-300">Team: </strong>{{value.team_name}}
+                                                    <br>
+                                                    <strong class="fs-16 w-300">Created By:
+                                                    </strong>{{value.created_by}}
+                                                </div>
+                                                <div class="clearfix"></div>
                                             </div>
                                         </div>
-                                    </section>
-                                </ul>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                    <!-- <div class="text-dark-gray center w-300 loader-title">{{challenge.loaderTitle}}</div> -->
-                    <div class="loader">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="row">
+                                <div class="col s12">
+                                    <button ng-disabled="!challenge.teamId" ng-if="challenge.existTeam.results.length"
+                                        class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit"
+                                        ng-click="challenge.termsAndConditionDialog($event)"
+                                        value="Submit">Continue</button>
+                                    <br>
+                                    <span class="text-dark-black"><strong>{{challenge.existTeamError}}</strong></span>
+                                </div>
+                            </div>
+
+                            <section class="pagination" ng-if="challenge.showPagination">
+                                <div class="row rm-gut">
+                                    <div class="col s12 m6 ">
+                                        <a ng-class="challenge.isPrev"
+                                            class="btn-floating btn-pagination waves-effect waves-light "
+                                            ng-click="challenge.load(challenge.existTeam.previous)">
+                                            <i class="fa fa-chevron-left"></i>
+                                        </a>
+                                        <span class="pagination-title"> <strong class="fs-16 w-300"> Page
+                                                {{challenge.currentPage | ceil}} of
+                                                {{challenge.existTeam.count/10 | ceil}} </strong></span>
+                                        <a ng-class="challenge.isNext"
+                                            class="btn-floating btn-pagination waves-effect waves-light "
+                                            ng-click="challenge.load(challenge.existTeam.next)">
+                                            <i class="fa fa-chevron-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </section>
+                        </form>
                     </div>
                 </div>
                 <div class="col s12 m6">
-                    <div class=" ev-card-panel ev-z-depth-5">
-                        <div class="ev-md-container ev-panel-title"><strong>Create a New Team</strong></div>
-                        <div class="ev-md-container ev-card-body new-team-card">
-                            <form ng-submit="challenge.createNewTeam()">
-                                <div class="input-field align-left">
-                                    <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge.team.name" ng-pattern="/^[\w -]*$/" focus-if>
-                                    <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                                    <label for="name" data-error="wrong" data-success="right">Team Name*</label>
-                                    <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{challenge.team.error}}</div>
-                                </div>
-                                <div class="input-field align-left">
-                                    <input id="url" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge.team.url" focus-if>
-                                    <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
-                                    <label for="url" data-error="wrong" data-success="right">Team URL (Optional)</label>
-                                </div>
-                                <div class="align-left reg-control">
-                                    <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Participant Team</button>
-                                </div>
-                            </form>
-                        </div>
+                    <div class="row">
+                        <h5 class="w-300">Create New Team</h5>
                     </div>
+                    <form ng-submit="challenge.createNewTeam()">
+                        <div class="row">
+                            <div class="input-field align-left col s12 m12 l8">
+                                <input id="name" type="text" class="validate fs-16 dark-autofill w-300"
+                                    ng-model="challenge.team.name" ng-pattern="/^[\w -]*$/" focus-if>
+                                <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                                <label for="name" data-error="wrong" data-success="right">Team Name*</label>
+                                <div class="wrn-msg text-highlight" ng-show="teams.team.error">
+                                    {{challenge.team.error}}</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field align-left  col s12 m12 l8">
+                                <input id="url" type="text" class="validate fs-16 dark-autofill w-300"
+                                    ng-model="challenge.team.url" focus-if>
+                                <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
+                                <label for="url" data-error="wrong" data-success="right">Team URL
+                                    (Optional)</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12 m6 l6 align-left reg-control">
+                                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" type="submit"
+                                    value="Submit">Submit</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </section>
-    <section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
-        <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-            <p><strong>Sorry, the challenge is not active.</strong></p>
-        </div>
-    </section>
-</div>
+    </div>
+</section>
+<section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <p class="fs-16 w-300">Sorry, the challenge is not active.</p>
+    </div>
+</section>
 <section ng-if="!isAuth" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <p ng-if="!isAuth">Please <a ui-sref="auth.login" class="blue-text" ui-sref-active="active-auth" ng-click="auth.resetForm()">log in</a> to participate in this challenge.</p>
+        <p ng-if="!isAuth" class="fs-16 w-300">Please <a ui-sref="auth.login" class="blue-text"
+                ui-sref-active="active-auth" ng-click="auth.resetForm()">log in</a> to participate in this challenge.
+        </p>
     </div>
 </section>

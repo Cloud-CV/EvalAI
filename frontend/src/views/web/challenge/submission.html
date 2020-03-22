@@ -1,71 +1,87 @@
-<section ng-if="challenge.isActive" class="ev-sm-container ev-view ">
-    <div class="row">
-        <div class="col s12 m12">
-            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card">
-                <div class="col s11 m11">
-                    <span class="fs-20 w-300">Submission Guidelines</span>
-                    <div ng-if="challenge.isChallengeHost">
-                        <strong>
-                            <p><strong>Note: </strong>Your submissions won't be visible on leaderboard for <strong
-                                    class="blue-text"> Public Challenge Phases </strong> since you are a challenge host
-                                for this challenge.<br> This feature is only for your testing purposes.</p>
-                        </strong>
-                    </div>
-                    <div class="submission-guidelines" ng-bind-html="challenge.page.submission_guidelines"></div>
-                </div>
-                <div ng-if="challenge.isChallengeHost" class="col s1 m1">
-                    <a class="pointer" ng-click="challenge.submissionGuidelinesDialog($event)">
-                        <i class="fa fa-pencil" aria-hidden="true">
-                        </i>
-                    </a>
-                </div>
+<section ng-if="challenge.isActive" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view margin-btm-0">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m11 l11">
+                <h5 class="w-300">Submission Guidelines</h5>
             </div>
-            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card"
-                ng-if="challenge.page.is_docker_based">
-                <div class="col s12 m12 l12">
-                    <span class="fs-20 w-300">
-                        Submission instructions for docker image using evalai-cli
-                    </span>
-                    <ol>
-                        <li>Install evalai-cli<br>
-                            <code>$ pip install evalai{{challenge.cliVersion}}</code>
-                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
-                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                            </button>
-                        </li>
-                        <li>Add your EvalAI account token to evalai-cli<br>
-                            <code>$ evalai set_token {{challenge.authToken}}</code>
-                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                data-clipboard-text="evalai set_token {{challenge.authToken}}">
-                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                            </button>
-                        </li>
-                        <li>Push docker image to EvalAI docker registry<br>
-                            <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase &lt;phase_name&gt;</code>
-                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                data-clipboard-text="evalai push <image>:<tag> --phase <phase_name>">
-                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                            </button>
-                        </li>
-                        <li>For more commands, please refer to <a class="highlight-link"
-                                href="https://evalai-cli.cloudcv.org/" target="_blank">evalai-cli documentation.</a>
-                        </li>
-                    </ol>
-                </div>
+            <div ng-if="challenge.isChallengeHost" class="col s1 m1">
+                <a class="pointer" ng-click="challenge.submissionGuidelinesDialog($event)">
+                    <i class="fa fa-pencil" aria-hidden="true">
+                    </i>&nbsp;edit
+                </a>
             </div>
-            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card"
-                ng-if="challenge.page.is_docker_based">
-                <span class="fs-20 w-300">
+            <div class="col s12 m12 l12">
+                <div class="what-a-separator"></div>
+            </div>
+
+            <div class="col s12" ng-if="challenge.isChallengeHost">
+                <p class="fs-16"><strong>Note: </strong>Your submissions won't be
+                    visible on leaderboard for <strong class="blue-text"> Public Challenge Phases </strong>
+                    since you are a challenge host
+                    for this challenge.<br>This feature is only for your testing purposes.</p>
+                </strong>
+            </div>
+            <div class="col s12">
+                <div ng-bind-html="challenge.page.submission_guidelines" class="fs-16 w-300"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- If challenge is docker based -->
+<section class="ev-sm-container ev-view challenge-container" ng-if="challenge.page.is_docker_based">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view margin-btm-0">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">
+                    Submission instructions for docker based challenges
+                </h5>
+                <ol class="fs-16 w-300">
+                    <li>Install evalai-cli<br>
+                        <code>$ pip install evalai{{challenge.cliVersion}}</code>
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                            data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
+                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                        </button>
+                    </li>
+                    <li>Add your EvalAI account token to evalai-cli<br>
+                        <code>$ evalai set_token {{challenge.authToken}}</code>
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                            data-clipboard-text="evalai set_token {{challenge.authToken}}">
+                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                        </button>
+                    </li>
+                    <li>Push docker image to EvalAI docker registry<br>
+                        <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase &lt;phase_name&gt;</code>
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                            data-clipboard-text="evalai push <image>:<tag> --phase <phase_name>">
+                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                        </button>
+                    </li>
+                    <li>For more commands, please refer to <a class="highlight-link"
+                            href="https://evalai-cli.cloudcv.org/" target="_blank">evalai-cli documentation.</a>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- If challenge is docker based -->
+<section class="ev-sm-container ev-view challenge-container" ng-if="challenge.page.is_docker_based">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">
                     Submission limits
-                </span><br><br>
-                <span class="fs-15">
+                </h5>
+                <p class="fs-16 w-300">
                     <strong>Team name:</strong> {{challenge.phaseRemainingSubmissions.participant_team}}
-                </span>
-                <table class="centered responsive-table">
+                </p>
+                <table class="responsive-table fs-16 w-300">
                     <thead>
                         <tr>
                             <th>Phase details</th>
@@ -77,7 +93,8 @@
                         <tr ng-repeat="key in challenge.phaseRemainingSubmissions.phases">
                             <td>{{key.name}}
                                 <br>
-                                <strong class="text-med-black">Start date: </strong>{{key.start_date | date:'medium'}}
+                                <strong class="text-med-black">Start date:
+                                </strong>{{key.start_date | date:'medium'}}
                                 <br>
                                 <strong class="text-med-black">End date: </strong>{{key.end_date | date:'medium'}}
                             </td>
@@ -101,7 +118,8 @@
                                     <span
                                         ng-if="challenge.days!=0">{{challenge.phaseRemainingSubmissionsCountdown[key.id].days}}
                                         Days, </span>{{challenge.phaseRemainingSubmissionsCountdown[key.id].hours}}
-                                    hours : {{challenge.phaseRemainingSubmissionsCountdown[key.id].minutes}} minutes :
+                                    hours : {{challenge.phaseRemainingSubmissionsCountdown[key.id].minutes}} minutes
+                                    :
                                     {{challenge.phaseRemainingSubmissionsCountdown[key.id].seconds}} seconds
                                 </div>
                             </td>
@@ -124,7 +142,8 @@
                     </tbody>
                 </table>
             </div>
-            <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+            <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader"
+                class="fade">
                 <div class="loader">
                     <div></div>
                     <div></div>
@@ -133,214 +152,217 @@
                     <div></div>
                 </div>
             </div>
-            <div class=" ev-card-panel ev-z-depth-5 ">
-                <div class="ev-md-container ev-panel-title" ng-if="!challenge.page.is_docker_based"><strong>Please fill
-                        the following fields to submit</strong></div>
-                <div class="row" ng-if="!challenge.page.is_docker_based">
-                    <div class="col s12 m7">
-                        <div class="ev-card-body exist-team-card">
-                            <form ng-submit="challenge.makeSubmission()">
-                                <ul>
-                                    <b>Select phase:</b>
-                                    <li ng-repeat="item in challenge.phases.results">
-                                        <input
-                                            ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date"
-                                            type="radio" name="selectPhase" class="with-gap selectPhase"
-                                            id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId"
-                                            ng-click="challenge.showRemainingSubmissions(item.id)">
-                                        <label for="{{item.id}}"></label>
-                                        <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong
-                                                class="text-med-black">Phase: </strong>{{item.name}}
-                                            <br>
-                                            <strong class="text-med-black">Start date:
-                                            </strong>{{item.start_date | date:'medium'}} {{item.start_zone}}
-                                            <br>
-                                            <strong class="text-med-black">End date:
-                                            </strong>{{item.end_date | date:'medium'}} {{item.end_zone}}
-                                        </div>
-                                        <div class="show-member-title pointer" ng-if="item.showPrivate"><strong
-                                                class="text-highlight">Phase: </strong> <span class="text-highlight">
-                                                {{item.name}}</span>
-                                            <br>
-                                            <strong class="text-highlight">Start date: </strong><span
-                                                class="text-highlight">{{item.start_date | date:'medium'}} {{item.start_zone}}</span>
-                                            <br>
-                                            <strong class="text-highlight">End date: </strong><span
-                                                class="text-highlight">{{item.end_date | date:'medium'}} {{item.end_zone}}</span>
-                                        </div>
-                                        <div class="clearfix"></div>
-                                    </li>
+        </div>
+    </div>
+</section>
 
-                                    <b>Submission options:</b>
-                                    <li>
-                                        <input
-                                            type="radio" name="submissionOptions" class="with-gap selectPhase"
-                                            id="fileUrl" value="fileUrl"
-                                            ng-click="challenge.isSubmissionUsingUrl = true">
-                                        <label for="fileUrl"></label>
-                                        <div class="show-member-title pointer">
-                                            <strong class="text-med-black">Enter file URL (for file size > 400MB) </strong>
-                                        </div>
-                                        <div class="clearfix"></div>
+<!-- If challenge is not docker based -->
+<section class="ev-sm-container ev-view challenge-container" ng-if="!challenge.page.is_docker_based">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">Make Submission</h5>
+            </div>
 
-                                        <input
-                                            type="radio" name="submissionOptions" class="with-gap selectPhase"
-                                            id="fileUpload" value="challenge.showFileUploadOption"
-                                            ng-click="challenge.isSubmissionUsingUrl = false">
-                                        <label for="fileUpload"></label>
-                                        <div class="show-member-title pointer">
-                                            <strong class="text-med-black">Upload file </strong>
-                                        </div>
-                                        <div class="clearfix"></div>
-                                    </li>
-
-                                    <div ng-show="challenge.isSubmissionUsingUrl == false" class="row">
-                                        <div class="file-field input-field col s10">
-                                            <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
-                                                <span>Upload file</span>
-                                                <input type="file" ngf-select ng-model="challenge.input_file"
-                                                    name="challenge.input_file" accept=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy">
-                                            </div>
-                                            <div class="file-path-wrapper">
-                                                <input class="file-path validate" type="text" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div ng-show="challenge.isSubmissionUsingUrl" class="row">
-                                        <div class="input-field align-left col s10">
-                                            <input type="text" id="fileUrl" name="fileUrl"
-                                                ng-model="challenge.fileUrl">
-                                            <span class="form-icon"><i class="fa fa-text"></i></span>
-                                            <label for="fileUrl">Submission file URL</label>
-                                        </div>
-                                    </div>
-                                    <span ng-show="challenge.isSubmissionUsingUrl == true || challenge.isSubmissionUsingUrl == false">
-                                        <div class="row">
-                                            <div class="input-field align-left col s10">
-                                                <input type="text" id="methodName" name="methodName"
-                                                    ng-model="challenge.methodName">
-                                                <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                <label for="methodName">Method name (Optional)</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field align-left col s10">
-                                                <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
-                                                    ng-model="challenge.methodDesc"></textarea>
-                                                <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                <label for="methodDesc">Method description (Optional)</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field align-left col s10">
-                                                <input type="text" id="projectUrl" name="projectUrl"
-                                                    ng-model="challenge.projectUrl">
-                                                <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                <label for="projectUrl">Project URL (Optional)</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field align-left col s10">
-                                                <input type="text" id="publicationUrl" name="publicationUrl"
-                                                    ng-model="challenge.publicationUrl">
-                                                <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                <label for="publicationUrl">Publication URL (Optional)</label>
-                                            </div>
-                                        </div>
-                                    </span>
-                                    <div class="text-highlight red-text"><strong>
-                                            {{challenge.subErrors.msg}}</strong></div>
-                                    <section class="pagination">
-                                        <div class="row rm-gut">
-                                            <div class="col s12 m12">
-                                                <div class="align-left ">
-                                                    <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14"
-                                                        ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
-                                                        type="submit" value="Submit">Submit</button>
-                                                    <br>
-                                                    <br>
-                                                    <span
-                                                        class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </section>
-                                </ul>
-                            </form>
-                        </div>
-                    </div>
-                    <div ng-if="challenge.maxExceeded" class="col s12 m5">
-                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
-                            <div class="row">
-                                <span class="color-black">
-                                    <strong>
-                                        {{challenge.maxExceededMessage}}
-                                    </strong>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
-                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
-                            <div class="row">
-                                <span class="color-black">
-                                    <strong>
-                                        Today's remaining Submissions:
-                                    </strong>
-                                    <span class="color-black">
-                                        <strong>
-                                            {{challenge.remainingSubmissions.remaining_submissions_today_count}}
-                                        </strong>
-                                    </span>
-                            </div>
-                            <div class="row">
-                                <div class="row">
-                                    <span class="color-black">
-                                        <strong>
-                                            Monthly remaining submissions:
-                                        </strong>
-                                        <span class="color-black">
-                                            <strong>
-                                                {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
-                                            </strong>
-                                        </span>
+            <div class="col s12 m7 fs-16 w-300">
+                <div class="ev-card-body exist-team-card">
+                    <form ng-submit="challenge.makeSubmission()">
+                        <p class="fs-18 w-400">Select phase:</p>
+                        <ul>
+                            <li ng-repeat="item in challenge.phases.results">
+                                <input
+                                    ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date"
+                                    type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}"
+                                    value="{{item.id}}" ng-model="challenge.phaseId"
+                                    ng-click="challenge.showRemainingSubmissions(item.id)">
+                                <label for="{{item.id}}"></label>
+                                <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong
+                                        class="text-med-black">Phase: </strong>{{item.name}}
+                                    <br>
+                                    <strong class="text-med-black">Start date:
+                                    </strong>{{item.start_date | date:'medium'}} {{item.start_zone}}
+                                    <br>
+                                    <strong class="text-med-black">End date:
+                                    </strong>{{item.end_date | date:'medium'}} {{item.end_zone}}
                                 </div>
-                                <span class="color-black">
-                                    <strong>
-                                        Total remaining submissions:
+                                <div class="show-member-title pointer" ng-if="item.showPrivate"><strong
+                                        class="text-highlight">Phase: </strong> <span class="text-highlight">
+                                        {{item.name}}</span>
+                                    <br>
+                                    <strong class="text-highlight">Start date: </strong><span
+                                        class="text-highlight">{{item.start_date | date:'medium'}}
+                                        {{item.start_zone}}</span>
+                                    <br>
+                                    <strong class="text-highlight">End date: </strong><span
+                                        class="text-highlight">{{item.end_date | date:'medium'}}
+                                        {{item.end_zone}}</span>
+                                </div>
+                                <div class="clearfix"></div>
+                            </li>
+
+                            <p class="fs-18 w-400">Select submission type:</p>
+                            <li>
+                                <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
+                                    value="fileUrl" ng-click="challenge.isSubmissionUsingUrl = true">
+                                <label for="fileUrl"></label>
+                                <div class="show-member-title pointer">
+                                    <strong class="fs-16 w-300">File URL (for file size > 400MB)
                                     </strong>
-                                </span>
-                                <span class="color-black">
-                                    <strong>
-                                        {{challenge.remainingSubmissions.remaining_submissions_count}}
-                                    </strong>
-                                </span>
+                                </div>
+                                <div class="clearfix"></div>
+
+                                <input type="radio" name="submissionOptions" class="with-gap selectPhase"
+                                    id="fileUpload" value="challenge.showFileUploadOption"
+                                    ng-click="challenge.isSubmissionUsingUrl = false">
+                                <label for="fileUpload"></label>
+                                <div class="show-member-title pointer">
+                                    <strong class="fs-16 w-300">Upload file </strong>
+                                </div>
+                                <div class="clearfix"></div>
+                            </li>
+
+                            <div ng-show="challenge.isSubmissionUsingUrl == false" class="row">
+                                <div class="file-field input-field col s10">
+                                    <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                        <span>Upload file</span>
+                                        <input type="file" ngf-select ng-model="challenge.input_file"
+                                            name="challenge.input_file"
+                                            accept=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy">
+                                    </div>
+                                    <div class="file-path-wrapper">
+                                        <input class="file-path validate" type="text" readonly>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <div ng-show="challenge.isSubmissionUsingUrl" class="row">
+                                <div class="input-field align-left col s10">
+                                    <input type="text" id="fileUrl" name="fileUrl" ng-model="challenge.fileUrl">
+                                    <span class="form-icon"><i class="fa fa-text"></i></span>
+                                    <label for="fileUrl">Submission file URL</label>
+                                </div>
+                            </div>
+                            <span
+                                ng-show="challenge.isSubmissionUsingUrl == true || challenge.isSubmissionUsingUrl == false">
+                                <div class="row">
+                                    <div class="input-field align-left col s10">
+                                        <input type="text" id="methodName" name="methodName"
+                                            ng-model="challenge.methodName">
+                                        <span class="form-icon"><i class="fa fa-text"></i></span>
+                                        <label for="methodName">Method name (Optional)</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field align-left col s10">
+                                        <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
+                                            ng-model="challenge.methodDesc"></textarea>
+                                        <span class="form-icon"><i class="fa fa-text"></i></span>
+                                        <label for="methodDesc">Method description (Optional)</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field align-left col s10">
+                                        <input type="text" id="projectUrl" name="projectUrl"
+                                            ng-model="challenge.projectUrl">
+                                        <span class="form-icon"><i class="fa fa-text"></i></span>
+                                        <label for="projectUrl">Project URL (Optional)</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="input-field align-left col s10">
+                                        <input type="text" id="publicationUrl" name="publicationUrl"
+                                            ng-model="challenge.publicationUrl">
+                                        <span class="form-icon"><i class="fa fa-text"></i></span>
+                                        <label for="publicationUrl">Publication URL (Optional)</label>
+                                    </div>
+                                </div>
+                            </span>
+                            <div class="text-highlight red-text"><strong>
+                                    {{challenge.subErrors.msg}}</strong></div>
+                            <section class="pagination">
+                                <div class="row rm-gut">
+                                    <div class="col s12 m12">
+                                        <div class="align-left">
+                                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16"
+                                                ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
+                                                type="submit" value="Submit">Submit</button>
+                                            <br>
+                                            <br>
+                                            <span
+                                                class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+            <div ng-if="challenge.maxExceeded" class="col s12 m5">
+                <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                    <div class="row">
+                        <span class="color-black">
+                            <strong>
+                                {{challenge.maxExceededMessage}}
+                            </strong>
+                        </span>
                     </div>
-                    <div ng-if="challenge.showClock" class="col s12 m5">
-                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
-                            <div class="row">
-                                <strong class="text-med-black">
-                                    Message:
-                                </strong> {{challenge.message.message}}
-                            </div>
-                            <div>
-                                Next set of submissions will be available after:
-                            </div>
-                            <div>
-                                <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}}
-                                hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
-                            </div>
+                </div>
+            </div>
+            <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
+                <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                    <div class="row">
+                        <span class="color-black">
+                            <strong>
+                                Today's remaining submissions:
+                            </strong>
+                            <span class="fs-16 w-300">
+                                {{challenge.remainingSubmissions.remaining_submissions_today_count}}
+                            </span>
+                    </div>
+                    <div class="row">
+                        <div class="row">
+                            <span class="color-black">
+                                <strong>
+                                    Monthly remaining submissions:
+                                </strong>
+                                <span class="fs-16 w-300">
+                                    {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
+                                </span>
                         </div>
+                        <span class="color-black">
+                            <strong>
+                                Total remaining submissions:
+                            </strong>
+                        </span>
+                        <span class="fs-16 w-300">
+                            {{challenge.remainingSubmissions.remaining_submissions_count}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div ng-if="challenge.showClock" class="col s12 m5 fs-16 w-300">
+                <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                    <div class="row">
+                        <strong class="text-med-black">
+                            Message:
+                        </strong> {{challenge.message.message}}
+                    </div>
+                    <div>
+                        Next set of submissions will be available after:
+                    </div>
+                    <div>
+                        <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}}
+                        hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Show error when the challenge is not active -->
 <section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <p><strong>Sorry, the challenge is not active.</strong></p>
+        <p class="fs-16 w-300">Sorry, the challenge is not active.</p>
     </div>
 </section>

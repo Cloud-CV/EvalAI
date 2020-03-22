@@ -1,26 +1,31 @@
-<section class="ev-md-container text-center">
-    <div class="row">
-        <div class="col s12 m12">
-            <div class="ev-md-container ev-card-body">
-                <div class="pass-title center"><strong>Terms and Conditions</strong></div>
-                <div ng-bind-html="challenge.page.terms_and_conditions"></div>
-                <form name="acceptTermsAndConditionsForm">
-                    <input type="checkbox" class="filled-in fs-14" ng-model="challenge.termsAndConditions" id="terms_and_conditions">
-                    <label for="terms_and_conditions">I accept the terms and conditions</label>
-                    <ul class="inline-list pointer">
-                        <li><a class="dark-link" type="button"
-                                ng-click="challenge.acceptTermsAndConditions(false)"><strong>Cancel</strong>
-                            </a>
-                        </li>
-                        <li><button ng-disabled="!challenge.termsAndConditions"
-                                class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
-                                type="submit" ng-click="challenge.acceptTermsAndConditions(true)"
-                                value="Submit">Participate
-                            </button>
-                        </li>
-                    </ul>
-                </form>
+<section>
+    <div class="ev-md-container ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m11 l11">
+                <h5 class="w-300">Terms and Conditions</h5>
             </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div ng-bind-html="challenge.page.terms_and_conditions" class="fs-16 w-300"></div>
+            </div>
+            <form name="acceptTermsAndConditionsForm">
+                <input type="checkbox" class="filled-in fs-14" ng-model="challenge.termsAndConditions"
+                    id="terms_and_conditions">
+                <label for="terms_and_conditions" class="fs-14 w-300">I accept the terms and conditions</label>
+                <ul class="inline-list pointer">
+                    <li><a class="dark-link" type="button"
+                            ng-click="challenge.acceptTermsAndConditions(false)"><strong>Cancel</strong>
+                        </a>
+                    </li>
+                    <li><button ng-disabled="!challenge.termsAndConditions"
+                            class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16" type="submit"
+                            ng-click="challenge.acceptTermsAndConditions(true)" value="Submit">Participate
+                        </button>
+                    </li>
+                </ul>
+            </form>
+
         </div>
     </div>
 </section>

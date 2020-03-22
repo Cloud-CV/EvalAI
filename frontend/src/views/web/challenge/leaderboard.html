@@ -1,161 +1,148 @@
-<section class="ev-sm-container ev-view ">
-    <div class="row">
-        <div class="col s12 m12">
-            <div class=" ev-card-panel ev-z-depth-5 w-300">
-                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader"
-                    class="fade">
-                    <div class="loader">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                </div>
-                <div class="ev-md-container ev-panel-title" ng-if="challenge.page.leaderboard_description">
-                    <div class="row">
-                        <div class="col xs12 s12">
-                            <span class="w-400">Description</span>
+<div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">Leaderboard</h5>
+            </div>
+        </div>
+        <div class="row" ng-if="challenge.page.leaderboard_description.length">
+            <div class="col s12 md-body-1 fs-16 w-300" ng-bind-html="challenge.page.leaderboard_description"></div>
+        </div>
+        <div class="row">
+            <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page"
+                ng-if="challenge.showLeaderboardUpdate">
+                <span class="text-white">Page is outdated, click to update&nbsp; <i
+                        class="fa fa-refresh text-highlight"></i></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col xs12 s6">
+                <span>
+                    <md-select ng-model="challenge.phaseName" placeholder="Select Phase" class="rm-margin">
+                        <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})"
+                            value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}">
+                            <span class="fs-16 w-300">Phase:
+                            </span>{{key.challenge_phase_name}}, <span class="fs-16 w-300">Split: </span>
+                            {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background"
+                                data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
+                    </md-select>
+                </span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="horizontal-scroll">
+                <div class="col s12">
+                    <div ng-if="challenge.isResult && challenge.leaderboard.length &&
+                                    !challenge.leaderboard.error" class="row">
+                        <div class="result-wrn col l9 m8 s7"><span id="baseline-badge-desc"
+                                class="new badge orange-background fs-16 w-300" data-badge-caption="B"></span>
+                            <span class="fs-16 w-300"> - Baseline submission</span>
                         </div>
-                        <div class="col s12 md-body-1" ng-bind-html="challenge.page.leaderboard_description"></div>
-                    </div>
-                </div>
-                <div class="ev-md-container ev-panel-title">
-                    <div class="row">
-                        <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page"
-                            ng-if="challenge.showLeaderboardUpdate">
-                            <span class="text-white">Page is Outdated, Click to update&nbsp; <i
-                                    class="fa fa-refresh text-highlight"></i></span>
-                        </div>
-                        <div class="col xs12 s6">
-                            <span class="w-400">Please select from following phases</span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col xs12 s6">
-                            <span>
-                                <md-select ng-model="challenge.phaseName" placeholder="Challenge Phase"
-                                    class="rm-margin">
-                                    <md-option
-                                        ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})"
-                                        value="{{key.id}}" ng-repeat="key in challenge.phaseSplits"
-                                        ng-show="{{key.visibility}}"><span class="w-400">Phase:
-                                        </span>{{key.challenge_phase_name}}, <span class="w-400">Split: </span>
-                                        {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background"
-                                            data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
-                                </md-select>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="ev-card-body exist-team-card">
-                    <div class="row">
-                        <div class="horizontal-scroll">
-                            <div class="col s12">
-                                <div ng-if="!challenge.isResult" class=" w-400 result-wrn">No phase selected.</div>
-                                <div ng-if="challenge.isResult && challenge.leaderboard.length &&
-                                    !challenge.leaderboard.error"
-                                    class="row">
-                                    <div class="result-wrn col l9 m8 s7"><span id="baseline-badge-desc"
-                                            class="new badge orange-background w-400" data-badge-caption="B"></span>
-                                        <span class="w-400"> - Baseline submission</span>
-                                    </div>
-                                    <div class="align-right result-wrn col l3 m4 s5" ng-if="challenge.isChallengeHost">
-                                        <div ng-click="challenge.toggleShowLeaderboardByLatest()"
-                                            class="btn-switch sort-leaderboard-switch" ng-class="{'btn-switch--on':challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
-                                            ng-model="challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission">
-                                            <div class="btn-switch-circle" ng-class="{'btn-switch-circle--on': challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
-                                            ng-model="challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission"></div>
-                                        </div>
-                                        <span class="w-400"> {{challenge.sortLeaderboardTextOption}}</span></div>
-                                    </div>
-                                </div>
-                                <table ng-if="challenge.isResult && challenge.leaderboard.length"
-                                    class="centered highlight">
-                                    <thead>
-                                        <tr>
-                                            <td data-field="rank" class="align-center">
-                                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'rank');">
-                                                    <span class="w-400 fs-18">Rank</span>
-                                                    <span class="fa-stack fa-1x">
-                                                        <i class="fa fa-sort-asc fa-stack-1x"
-                                                            ng-class="challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                        <i class="fa fa-sort-desc fa-stack-1x"
-                                                            ng-class="!challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                    </span>
-                                                </a>
-                                            </td>
-                                            <td data-field="team" class="align-center">
-                                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'string');">
-                                                    <span class="w-400 fs-18">Participant team</span>
-                                                    <span class="fa-stack fa-1x">
-                                                        <i class="fa fa-sort-asc fa-stack-1x"
-                                                            ng-class="challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                        <i class="fa fa-sort-desc fa-stack-1x"
-                                                            ng-class="!challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                    </span>
-                                                </a>
-                                            </td>
-                                            <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels"
-                                                class="align-center">
-                                                <a href="#"
-                                                    ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
-                                                    <span class="w-400 fs-18">{{key}}</span>
-                                                    <span class="fa-stack fa-1x">
-                                                        <i class="fa fa-sort-asc fa-stack-1x"
-                                                            ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                        <i class="fa fa-sort-desc fa-stack-1x"
-                                                            ng-class="!$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                    </span>
-                                                </a>
-                                            </td>
-                                            <td data-field="submission_time" class="align-center">
-                                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
-                                                    <span class="fs-18 w-400">Last submission at</span>
-                                                    <span class="fa-stack fa-1x">
-                                                        <i class="fa fa-sort-asc fa-stack-1x"
-                                                            ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                        <i class="fa fa-sort-desc fa-stack-1x"
-                                                            ng-class="!challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                    </span>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr ng-class="{highlightLeaderboard:isHighlight == challenge.initial_ranking[key.id]}"
-                                            ng-click="challenge.scrollToSpecificEntryLeaderboard('leaderboardrank-' + challenge.initial_ranking[key.id])"
-                                            ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
-                                            class="fs-16" id="leaderboardrank-{{challenge.initial_ranking[key.id]}}">
-                                            <td>{{challenge.initial_ranking[key.id]}}</td>
-                                            <td><a ng-if="key.submission__participant_team__team_url"
-                                                    class="orange-text" target="_blank"
-                                                    href="{{key.submission__participant_team__team_url}}">{{key.submission__participant_team__team_name}}</a><span
-                                                    ng-if="!key.submission__participant_team__team_url">{{key.submission__participant_team__team_name}}</span>
-                                                <span
-                                                    ng-if="key.submission__method_name">({{key.submission__method_name | limitTo:30}})</span><span
-                                                    id="baseline-badge" class="new badge orange-background"
-                                                    data-badge-caption="B" ng-if="key.submission__is_baseline"></span>
-                                            </td>
-                                            <td ng-repeat="(i, score) in key.result track by $index" >
-                                                {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
-                                                <span ng-if = "key.error != nil"> ± {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
-                                            </td>
-                                            <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <div ng-if="challenge.isResult && challenge.leaderboard.error">
-                                    <p>{{challenge.leaderboard.error.error}}</p>
-                                </div>
-                                <div
-                                    ng-if="challenge.isResult && !challenge.leaderboard.length && !challenge.leaderboard.error">
-                                    <p>No results to show!</p>
+                        <div class="align-right result-wrn col l3 m4 s5" ng-if="challenge.isChallengeHost">
+                            <div ng-click="challenge.toggleShowLeaderboardByLatest()"
+                                class="btn-switch sort-leaderboard-switch"
+                                ng-class="{'btn-switch--on':challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
+                                ng-model="challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission">
+                                <div class="btn-switch-circle"
+                                    ng-class="{'btn-switch-circle--on': challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
+                                    ng-model="challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission">
                                 </div>
                             </div>
+                            <span class="fs-16 w-300"> {{challenge.sortLeaderboardTextOption}}</span>
                         </div>
                     </div>
+                </div>
+                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="centered highlight">
+                    <thead>
+                        <tr>
+                            <td data-field="rank" class="align-center">
+                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'rank');">
+                                    <span class="w-300 fs-20">Rank</span>
+                                    <span class="fa-stack fa-1x">
+                                        <i class="fa fa-sort-asc fa-stack-1x"
+                                            ng-class="challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                        <i class="fa fa-sort-desc fa-stack-1x"
+                                            ng-class="!challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                    </span>
+                                </a>
+                            </td>
+                            <td data-field="team" class="align-center">
+                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'string');">
+                                    <span class="w-300 fs-20">Participant team</span>
+                                    <span class="fa-stack fa-1x">
+                                        <i class="fa fa-sort-asc fa-stack-1x"
+                                            ng-class="challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                        <i class="fa fa-sort-desc fa-stack-1x"
+                                            ng-class="!challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                    </span>
+                                </a>
+                            </td>
+                            <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels"
+                                class="align-center">
+                                <a href="#"
+                                    ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
+                                    <span class="w-300 fs-20">{{key}}</span>
+                                    <span class="fa-stack fa-1x">
+                                        <i class="fa fa-sort-asc fa-stack-1x"
+                                            ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                        <i class="fa fa-sort-desc fa-stack-1x"
+                                            ng-class="!$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                    </span>
+                                </a>
+                            </td>
+                            <td data-field="submission_time" class="align-center">
+                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
+                                    <span class="fs-20 w-300">Last submission at</span>
+                                    <span class="fa-stack fa-1x">
+                                        <i class="fa fa-sort-asc fa-stack-1x"
+                                            ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                        <i class="fa fa-sort-desc fa-stack-1x"
+                                            ng-class="!challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                    </span>
+                                </a>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody class="fs-16 w-300">
+                        <tr ng-class="{highlightLeaderboard:isHighlight == challenge.initial_ranking[key.id]}"
+                            ng-click="challenge.scrollToSpecificEntryLeaderboard('leaderboardrank-' + challenge.initial_ranking[key.id])"
+                            ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
+                            class="fs-16" id="leaderboardrank-{{challenge.initial_ranking[key.id]}}">
+                            <td>{{challenge.initial_ranking[key.id]}}</td>
+                            <td><a ng-if="key.submission__participant_team__team_url" class="orange-text"
+                                    target="_blank"
+                                    href="{{key.submission__participant_team__team_url}}">{{key.submission__participant_team__team_name}}</a><span
+                                    ng-if="!key.submission__participant_team__team_url">{{key.submission__participant_team__team_name}}</span>
+                                <span
+                                    ng-if="key.submission__method_name">({{key.submission__method_name | limitTo:30}})</span><span
+                                    id="baseline-badge" class="new badge orange-background" data-badge-caption="B"
+                                    ng-if="key.submission__is_baseline"></span>
+                            </td>
+                            <td ng-repeat="(i, score) in key.result track by $index">
+                                {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
+                                <span ng-if="key.error != nil"> ±
+                                    {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
+                            </td>
+                            <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div ng-if="challenge.isResult && challenge.leaderboard.error">
+                    <p class="fs-16 w-300">{{challenge.leaderboard.error.error}}</p>
+                </div>
+                <div ng-if="challenge.isResult && !challenge.leaderboard.length && !challenge.leaderboard.error">
+                    <p class="fs-16 w-300">No results to show.</p>
                 </div>
             </div>
         </div>

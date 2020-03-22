@@ -1,21 +1,21 @@
-<section class="ev-sm-container ev-view challenge-container ">
+<section class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <div class="row">
-            <div class="col s11 m11">
-                <span class="fs-18">
-                        <strong>{{challenge.page.title}}</strong>
-                </span>
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m11 l11">
+                <h5 class="w-300">Challenge Overview</h5>
             </div>
-            <div ng-if="challenge.isChallengeHost" class="col s1">
-                <a class="pointer" ng-click="challenge.overviewDialog($event)">
-                    <i class="fa fa-pencil" aria-hidden="true">
-                    </i>
-                </a>
+            <div class="col s12 m1 l1">
+                <h5><a ng-if="challenge.isChallengeHost" class="pointer theme-text fs-16"
+                        ng-click="challenge.overviewDialog($event)"><i class="fa fa-pencil"
+                            aria-hidden="true"></i>&nbsp;edit</a></h5>
+            </div>
+            <div class="col s12 m12 l12">
+                <div class="what-a-separator"></div>
             </div>
         </div>
         <div class="row">
             <div class="col s12">
-                <div class="challenge-description" ng-bind-html="challenge.page.description"></div>
+                <div ng-bind-html="challenge.page.description" class="fs-16 w-300"></div>
             </div>
         </div>
     </div>

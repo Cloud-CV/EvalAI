@@ -12,6 +12,7 @@
 .display-large {
     display: block;
 }
+
 .display-small {
     display: none;
 }
@@ -34,20 +35,20 @@ input.dark-autofill:-webkit-autofill:active {
     -webkit-text-fill-color: #4d4d4d !important;
 }
 
-input[type="radio"].selectTeam + label {
+input[type="radio"].selectTeam+label {
     font-size: 15px;
     color: $med-black;
     vertical-align: middle;
 }
 
-[type="radio"]:checked + label:after,
-[type="radio"].with-gap:checked + label:after {
+[type="radio"]:checked+label:after,
+[type="radio"].with-gap:checked+label:after {
     background-color: #252833;
 }
 
-[type="radio"]:checked + label:after,
-[type="radio"].with-gap:checked + label:before,
-[type="radio"].with-gap:checked + label:after {
+[type="radio"]:checked+label:after,
+[type="radio"].with-gap:checked+label:before,
+[type="radio"].with-gap:checked+label:after {
     border: 2px solid #252833;
 }
 
@@ -214,6 +215,7 @@ nav {
         li {
             a {
                 transition: all 0.2s ease-in-out;
+
                 &:hover {
                     background-color: rgba(0, 0, 0, 0);
                 }
@@ -286,24 +288,24 @@ nav {
 }
 
 .ev-btn-scroll {
- background: #252833;
- border-radius: 50%;
- position: fixed;
- font-size: 16px;
- color: white;
- height: 50px;
- width: 50px;
- text-align: center;
- padding: 10px;
- z-index: 20;
- left: 90%;
- cursor: pointer;
- box-shadow: 0px 4px 8px #9d9d9d;
+    background: #252833;
+    border-radius: 50%;
+    position: fixed;
+    font-size: 16px;
+    color: white;
+    height: 50px;
+    width: 50px;
+    text-align: center;
+    padding: 10px;
+    z-index: 20;
+    left: 90%;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px #9d9d9d;
 }
 
 .ev-btn-scroll:hover {
-  box-shadow: 0px 0px 8px #9d9d9d;
-  background: #3c3e49;
+    box-shadow: 0px 0px 8px #9d9d9d;
+    background: #3c3e49;
 }
 
 .ev-btn-dark {
@@ -370,6 +372,7 @@ nav {
     padding: 10px 20px;
     border-radius: 0px 2px 2px 0px;
     color: #fff;
+
     span>img {
         width: auto !important;
         height: 20px;
@@ -381,6 +384,7 @@ nav {
 
 .ev-card-hover:hover {
     box-shadow: 0px 0px 4px $shadow-black;
+
     .btn-card-detail {
         background: $highlight;
         color: #fff;
@@ -436,6 +440,7 @@ nav {
 .btn {
     text-transform: none;
     font-family: 'Roboto';
+
     i {
         font-size: 14px;
     }
@@ -480,6 +485,7 @@ a.highlight-link {
 
 a.light-link {
     color: $med-link;
+
     &:hover {
         color: $highlight;
     }
@@ -547,9 +553,11 @@ a.text-light-black:hover {
 
 .pagination-container {
     margin-top: 25px;
+
     .md-button.md-warn.md-raised {
         background-color: $highlight;
     }
+
     .md-button.md-primary,
     .md-button.md-primary.md-raised,
     .md-button.md-primary.md-raised:not([disabled]):hover,
@@ -560,6 +568,7 @@ a.text-light-black:hover {
 
 .btn-pagination {
     background-color: $highlight;
+
     i {
         font-size: 16px;
     }
@@ -567,6 +576,7 @@ a.text-light-black:hover {
 
 .btn-pagination:hover {
     background-color: $highlight;
+
     i {
         font-size: 16px;
     }
@@ -716,9 +726,11 @@ input {
     top: 0;
     z-index: 5;
     background-color: transparent;
+
     .loader-title {
         margin-top: 14vh;
     }
+
     .loader {
         margin-top: 20%;
         top: 0;
@@ -732,6 +744,7 @@ input {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+
     >div {
         content: " ";
         width: $loader-dot-size;
@@ -740,15 +753,19 @@ input {
         border-radius: 100%;
         position: absolute;
         animation: shift 2s linear infinite;
+
         &:nth-of-type(1) {
             animation-delay: -.4s;
         }
+
         &:nth-of-type(2) {
             animation-delay: -.8s;
         }
+
         &:nth-of-type(3) {
             animation-delay: -1.2s;
         }
+
         &:nth-of-type(4) {
             animation-delay: -1.6s;
         }
@@ -761,14 +778,17 @@ input {
         opacity: 0;
         background-color: $loader-dot-color;
     }
+
     10% {
         left: 0;
         opacity: 1;
     }
+
     90% {
         left: $loader-size;
         opacity: 1;
     }
+
     100% {
         left: ($loader-size + 3*$loader-dot-size);
         background-color: $light-gray;
@@ -780,9 +800,11 @@ input {
     position: absolute;
     bottom: 0;
     color: crimson;
+
     .info-text {
         display: none;
     }
+
     input:checked+.info-text {
         display: block;
     }
@@ -807,6 +829,7 @@ input {
 .rm-mt {
     margin-top: 0px;
 }
+
 /*flex prop*/
 
 .flex-body {
@@ -826,17 +849,21 @@ input {
     .display-large {
         display: none;
     }
+
     .display-small {
         display: block;
     }
+
     .padding-lr-header {
         padding: 0px 20px;
     }
+
     .ev-container {
         padding: 20px;
     }
-    h4{
-        font-size:1.8em;
+
+    h4 {
+        font-size: 1.8em;
     }
 }
 
@@ -882,4 +909,24 @@ tr {
     text-align: center;
     margin-bottom: 0.2%;
     border-radius: 5px;
+}
+
+.margin-btm-0 {
+    margin-bottom: 0 !important;
+}
+
+.margin-0 {
+    margin: 0 !important;
+}
+
+.padding-0 {
+    padding: 0 !important;
+}
+
+h4.challenge-step-title {
+    padding-top: 0;
+}
+
+.display-inline-block {
+    display: inline-block !important;
 }
