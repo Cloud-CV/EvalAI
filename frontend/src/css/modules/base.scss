@@ -930,3 +930,38 @@ h4.challenge-step-title {
 .display-inline-block {
     display: inline-block !important;
 }
+
+@media only screen and (min-width: $xlarge-screen) {
+
+    body,
+    html {
+        background: white;
+    }
+
+    #page-wrap {
+        width: 1440px !important;
+        margin: auto !important;
+        position: relative !important;
+        background: white;
+        zoom: 1 !important;
+    }
+
+    .web-container {
+        width: calc(1440px - 223px) !important;
+    }
+
+    .dashboard-flex,
+    .dashboard-content {
+        min-height: calc(90vh - 64px) !important;
+    }
+
+    .grad-vh {
+        height: 90vh !important;
+    }
+
+    .ev-footer {
+        clear: both;
+        z-index: 10;
+        position: relative;
+    }
+}
