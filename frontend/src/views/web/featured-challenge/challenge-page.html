@@ -15,8 +15,13 @@
                                 <div class="card-content">
                                     <p><span class="fs-18"><strong>{{featured_challenge.page.title}}</strong></span>
                                         <br>
-                                        <span ng-if="featured_challenge.page.creator.team_url != ''"><strong class="text-light-black">Organized by:</strong><a class="orange-text" href="{{featured_challenge.page.creator.team_url}}" target="_blank"> {{featured_challenge.page.creator.team_name}} </a></span>
-                                        <span ng-if="featured_challenge.page.creator.team_url == ''"><strong class="text-light-black">Organized by:</strong> {{featured_challenge.page.creator.team_name}} </span>
+                                        <span ng-if="featured_challenge.page.creator.team_url != ''"><strong
+                                                class="text-light-black">Organized by:</strong><a class="orange-text"
+                                                href="{{featured_challenge.page.creator.team_url}}" target="_blank">
+                                                {{featured_challenge.page.creator.team_name}} </a></span>
+                                        <span ng-if="featured_challenge.page.creator.team_url == ''"><strong
+                                                class="text-light-black">Organized by:</strong>
+                                            {{featured_challenge.page.creator.team_name}} </span>
                                     </p>
                                 </div>
                             </div>
@@ -24,11 +29,20 @@
                         <div class="row rm-row-bot">
                             <div class="col s12">
                                 <ul class="inline-list rm-gut">
-                                    <li><a ui-sref=".overview" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-info"></i> Overview</a></li>
-                                    <li><a ui-sref=".evaluation" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-bar-chart-o"></i> Evaluation</a></li>
-                                    <li><a ui-sref=".phases" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-level-up"></i> Phases</a></li>
-                                    <li ng-if="!featured_challenge.isParticipated"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
-                                    <li><a ui-sref=".leaderboard" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-th-list"></i> Leaderboard</a></li>
+                                    <li><a ui-sref=".overview" ui-sref-active="active-challenge"
+                                            class="text-light-black w-500"><i class="fa fa-info"></i> Overview</a></li>
+                                    <li><a ui-sref=".evaluation" ui-sref-active="active-challenge"
+                                            class="text-light-black w-500"><i class="fa fa-bar-chart-o"></i>
+                                            Evaluation</a></li>
+                                    <li><a ui-sref=".phases" ui-sref-active="active-challenge"
+                                            class="text-light-black w-500"><i class="fa fa-level-up"></i> Phases</a>
+                                    </li>
+                                    <li ng-if="!featured_challenge.isParticipated"><a ui-sref=".participate"
+                                            ui-sref-active="active-challenge" class="text-light-black w-500"><i
+                                                class="fa fa-free-code-camp"></i> Participate</a></li>
+                                    <li><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
+                                            class="text-light-black w-500"><i class="fa fa-th-list"></i> Leaderboard</a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
