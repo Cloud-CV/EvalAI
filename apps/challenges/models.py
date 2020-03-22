@@ -432,7 +432,7 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
     challenge = models.OneToOneField(Challenge)
     name = models.CharField(max_length=200, unique=True, db_index=True)
-    config = models.FileField(upload_to=RandomFileName("cluster_config"))
+    cluster_yaml = models.FileField(upload_to=RandomFileName("cluster_yaml"))
     kube_config = models.FileField(
         upload_to=RandomFileName("kube_config"), blank=True, null=True
     )

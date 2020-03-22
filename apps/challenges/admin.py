@@ -356,6 +356,6 @@ class UserInvitationAdmin(ImportExportTimeStampedAdmin):
 @admin.register(ChallengeEvaluationCluster)
 class ChallengeEvaluationClusterAdmin(ImportExportTimeStampedAdmin):
     readonly_fields = ("created_at",)
-    list_display = ("id", "name", "config", "kube_config")
+    list_display = ("id", "name", "cluster_yaml", "kube_config")
     list_filter = ("name",)
     search_fields = ("name",)
