@@ -18,6 +18,7 @@ from .admin_filters import ChallengeFilter
 from .models import (
     Challenge,
     ChallengeConfiguration,
+    ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
@@ -350,3 +351,11 @@ class UserInvitationAdmin(ImportExportTimeStampedAdmin):
 
     get_host_team_and_member_name.short_description = "Invited by"
     get_host_team_and_member_name.admin_order_field = "invited_by"
+
+
+@admin.register(ChallengeEvaluationCluster)
+class ChallengeEvaluationClusterAdmin(ImportExportTimeStampedAdmin):
+    readonly_fields = ("created_at",)
+    list_display = ("id", "name", "cluster_yaml", "kube_config")
+    list_filter = ("name",)
+    search_fields = ("name",)

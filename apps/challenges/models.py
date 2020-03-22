@@ -420,3 +420,23 @@ class UserInvitation(TimeStampedModel):
     def __str__(self):
         """Returns the email of the user"""
         return self.email
+
+
+class ChallengeEvaluationCluster(TimeStampedModel):
+    """Model to store the config for Kubernetes cluster for a challenge
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.OneToOneField(Challenge)
+    name = models.CharField(max_length=200, unique=True, db_index=True)
+    cluster_yaml = models.FileField(upload_to=RandomFileName("cluster_yaml"))
+    kube_config = models.FileField(
+        upload_to=RandomFileName("kube_config"), blank=True, null=True
+    )
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_evaluation_cluster"
