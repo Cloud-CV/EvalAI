@@ -13,7 +13,7 @@ build_and_push() {
         docker-compose -f docker-compose-$1.yml build \
             --build-arg COMMIT_ID=${COMMIT_ID} \
             --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH} \
-            --build-arg AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} --parallel --compress
+            --build-arg AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} --compress
         docker-compose -f docker-compose-$1.yml push
 
         # Get already built docker images
