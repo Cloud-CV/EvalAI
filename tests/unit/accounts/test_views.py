@@ -35,6 +35,7 @@ class DisableUserTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+
 # need to add form for image later
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
