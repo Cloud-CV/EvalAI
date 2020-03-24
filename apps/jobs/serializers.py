@@ -2,11 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from challenges.models import (
-    ChallengeEvaluationCluster,
-    ChallengePhase,
-    LeaderboardData,
-)
+from challenges.models import ChallengePhase, LeaderboardData
 from participants.models import Participant, ParticipantTeam
 
 from .models import Submission
@@ -239,9 +235,3 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
 
     def get_limits(self, obj):
         return self.context.get("limits")
-
-
-class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ChallengeEvaluationCluster
-        fields = ("id", "challenge", "name", "cluster_yaml", "kube_config")
