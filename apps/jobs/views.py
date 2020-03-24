@@ -1542,6 +1542,12 @@ def get_bearer_token(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence there isn't a need for bearer token."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge
