@@ -1,16 +1,16 @@
 language: python
 sudo: false
 python:
-- '3.6'
+  - "3.6"
 install:
-- pip install -r requirements.txt
-- pip install coveralls
+  - pip install -r requirements.txt
+  - pip install coveralls flake8 pytest
 script:
-- flake8 ./
-- py.test --cov . --cov-config .coveragerc
+  - flake8 ./
+  - python setup.py test
 after_success:
-- coveralls --rcfile=.coveragerc
-- ./deploy-staging.sh
+  - coveralls --rcfile=.coveragerc
+  - ./deploy-staging.sh
 notifications:
   email:
     on_success: change

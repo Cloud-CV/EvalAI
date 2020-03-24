@@ -94,7 +94,9 @@ class TestGetSubmissionDetails(BaseTestClass):
 
     @responses.activate
     def test_display_submission_result(self):
-        expected = "{}\n".format(submission_response.submission_result_file).strip()
+        expected = "{}\n".format(
+            submission_response.submission_result_file
+        ).strip()
         runner = CliRunner()
         result = runner.invoke(submission, ["9", "result"])
         response = result.output.strip()

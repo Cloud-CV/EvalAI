@@ -1,41 +1,46 @@
 #!/usr/bin/env python
 import io
+import sys
 
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
+
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = ["--cov", ".", "--cov-config", ".coveragerc"]
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+
+        sys.exit(pytest.main(self.test_args))
 
 
 PROJECT = "evalai"
 
-
 with io.open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-install_requires = [
-    "beautifulsoup4==4.7.1",
-    "beautifultable==0.7.0",
-    "boto==2.49.0",
-    "boto3==1.9.88",
-    "botocore==1.12.116",
-    "click==6.7",
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
+
+tests_require = [
     "coverage==4.5.1",
     "coveralls==1.3.0",
-    "docker==3.6.0",
     "flake8==3.0.4",
-    "lxml==4.2.1",
-    "pre-commit==1.14.4",
     "pytest==3.5.1",
     "pytest-cov==2.5.1",
-    "python-dateutil==2.7.3",
-    "requests==2.20.0",
-    "requests-toolbelt==0.8.0",
+    "pytest-env==0.6.2",
     "responses==0.9.0",
-    "validators==0.12.2",
-    "termcolor==1.1.0",
+    "pre-commit==1.14.4",
 ]
 
 setup(
     name=PROJECT,
-    version="1.3.0",
+    cmdclass={"test": PyTest},
+    version="1.3.1",
     description="Use EvalAI through command line interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -50,9 +55,10 @@ setup(
     platforms=["Any"],
     scripts=[],
     provides=[],
-    install_requires=install_requires,
+    install_requires=requirements,
+    tests_require=tests_require,
     namespace_packages=[],
-    packages=find_packages(),
+    packages=find_packages(exclude=("docs", "scripts", "tests")),
     include_package_data=True,
     entry_points={"console_scripts": ["evalai=evalai.main:main"]},
     zip_safe=False,
