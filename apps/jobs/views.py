@@ -1525,7 +1525,15 @@ def update_leaderboard_data(request, leaderboard_data_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_bearer_token(request, challenge_pk):
+    """API to generate and return bearer token AWS EKS requests
 
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
+    """
     challenge = get_challenge_model(challenge_pk)
 
     if not is_user_a_host_of_challenge(request.user, challenge.id):
