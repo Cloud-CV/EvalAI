@@ -36,6 +36,7 @@ from base.utils import (
 from challenges.models import (
     ChallengePhase,
     Challenge,
+    ChallengeEvaluationCluster,
     ChallengePhaseSplit,
     LeaderboardData,
 )
@@ -53,6 +54,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
+from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
@@ -1516,3 +1518,52 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_bearer_token(request, challenge_pk):
+    """API to generate and return bearer token AWS EKS requests
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.id):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence there isn't a need for bearer token."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+    except ChallengeEvaluationCluster.DoesNotExist:
+        response_data = {
+            "error": "Challenge evaluation cluster for the challenge with pk {} does not exist".format(
+                challenge.pk
+            )
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    cluster_name = challenge_evaluation_cluster.name
+    bearer_token = generate_aws_eks_bearer_token(cluster_name, challenge)
+    response_data = {
+        "aws_eks_bearer_token": bearer_token,
+        "cluster_name": cluster_name,
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
