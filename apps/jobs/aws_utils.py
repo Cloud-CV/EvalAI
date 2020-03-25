@@ -7,6 +7,15 @@ from challenges.utils import get_aws_credentials_for_challenge
 
 
 def generate_aws_eks_bearer_token(cluster_name, challenge):
+    """Function to generate the AWS EKS bearer Token
+
+    Arguments:
+        cluster_name {string} -- Cluster name for which the object is generated
+        challenge {Object} -- Challenge Object
+
+    Returns:
+        {string} -- Generated bearer token
+    """
     challenge_pk = challenge.id
     aws_keys = get_aws_credentials_for_challenge(challenge_pk)
     session = boto3.Session(
