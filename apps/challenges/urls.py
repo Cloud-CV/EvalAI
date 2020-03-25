@@ -156,4 +156,9 @@ urlpatterns = [
         views.get_challenge_phase_environment_url,
         name="get_challenge_phase_environment_url",
     ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/evaluation_cluster/$",
+        views.get_challenge_evaluation_cluster_details,
+        name="get_challenge_evaluation_cluster_details",
+    ),
 ]

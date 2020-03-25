@@ -6,6 +6,7 @@ from hosts.serializers import ChallengeHostTeamSerializer
 from .models import (
     Challenge,
     ChallengeConfiguration,
+    ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
@@ -318,3 +319,9 @@ class UserInvitationSerializer(serializers.ModelSerializer):
     def get_user_details(self, obj):
         serializer = UserDetailsSerializer(obj.user)
         return serializer.data
+
+
+class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChallengeEvaluationCluster
+        fields = ("id", "challenge", "name", "cluster_yaml", "kube_config")
