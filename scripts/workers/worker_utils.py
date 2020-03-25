@@ -12,6 +12,8 @@ URLS = {
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
     "get_challenge_phase_by_pk": "/api/challenges/challenge/{}/challenge_phase/{}",
     "update_submission_data": "/api/jobs/challenge/{}/update_submission/",
+    "get_aws_eks_bearer_token": "/api/jobs/challenge/{}/eks_bearer_token/",
+    "get_aws_eks_cluster_details": "/api/challenges/{}/evaluation_cluster/",
 }
 
 
@@ -92,7 +94,19 @@ class EvalAI_Interface:
         return response
 
     def update_submission_status(self, data, challenge_pk):
-        url = "/api/jobs/challenge/{}/update_submission/".format(challenge_pk)
+        url = URLS.get("update_submission_data").format(challenge_pk)
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "PATCH", data=data)
+        return response
+
+    def get_aws_eks_bearer_token(self, challenge_pk):
+        url = URLS.get("get_aws_eks_bearer_token").format(challenge_pk)
+        url = self.return_url_per_environment(url)
+        response = self.make_request(url, "GET")
+        return response
+
+    def get_aws_eks_cluster_details(self, challenge_pk):
+        url = URLS.get("get_aws_eks_cluster_details").format(challenge_pk)
+        url = self.return_url_per_environment(url)
+        response = self.make_request(url, "GET")
         return response
