@@ -6,11 +6,7 @@ import uuid
 from botocore.exceptions import ClientError
 from moto import mock_ecr, mock_sts
 
-from base.utils import (
-    get_model_object,
-    get_boto3_client,
-    mock_if_non_prod_aws,
-)
+from base.utils import get_model_object, get_boto3_client, mock_if_non_prod_aws
 
 from .models import (
     Challenge,
@@ -86,9 +82,15 @@ def get_aws_credentials_for_challenge(challenge_pk):
         }
     else:
         aws_keys = {
-            "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "aws_account_id"),
-            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "aws_access_key_id"),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"),
+            "AWS_ACCOUNT_ID": os.environ.get(
+                "AWS_ACCOUNT_ID", "aws_account_id"
+            ),
+            "AWS_ACCESS_KEY_ID": os.environ.get(
+                "AWS_ACCESS_KEY_ID", "aws_access_key_id"
+            ),
+            "AWS_SECRET_ACCESS_KEY": os.environ.get(
+                "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"
+            ),
             "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
     return aws_keys
@@ -124,8 +126,10 @@ def get_or_create_ecr_repository(name, aws_keys):
         )
         repository = response["repositories"][0]
     except ClientError as e:
-        if e.response["Error"]["Code"] == "RepositoryNotFoundException" or\
-           e.response["Error"]["Code"] == "400":
+        if (
+            e.response["Error"]["Code"] == "RepositoryNotFoundException"
+            or e.response["Error"]["Code"] == "400"
+        ):
             response = client.create_repository(repositoryName=name)
             repository = response["repository"]
             created = True
