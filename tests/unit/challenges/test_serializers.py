@@ -116,6 +116,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "codename": self.challenge_phase.codename,
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
+                "environment_image": self.challenge_phase.environment_image,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -140,6 +141,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "codename": self.challenge_phase.codename,
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
+                "environment_image": self.challenge_phase.environment_image,
             }
             self.challenge_phase_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -169,6 +171,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "test_annotation",
                     "is_submission_public",
                     "slug",
+                    "environment_image",
                 ]
             ),
         )
@@ -205,6 +208,10 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
         self.assertEqual(data["slug"], self.serializer_data["slug"])
+        self.assertEqual(
+            data["environment_image"],
+            self.serializer_data["environment_image"],
+        )
 
     def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
         self
@@ -234,6 +241,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "test_annotation",
                     "is_submission_public",
                     "slug",
+                    "environment_image",
                 ]
             ),
         )
@@ -270,6 +278,10 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
         self.assertEqual(data["slug"], self.serializer_data["slug"])
+        self.assertEqual(
+            data["environment_image"],
+            self.serializer_data["environment_image"],
+        )
 
     def test_challenge_phase_create_serializer_with_invalid_data(self):
 

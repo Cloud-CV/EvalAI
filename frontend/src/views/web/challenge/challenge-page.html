@@ -6,91 +6,110 @@
                     <img src="{{challenge.page.image}}" width="100%">
                 </div>
             </div>
-            <div class="col m6 l7">
+            <div class="col m7 l8">
                 <div class="card-content">
-                    <p>
-                        <span class="fs-18">
-                            <strong>
-                                {{challenge.page.title}}
-                            </strong>
-                        </span>
-                        &nbsp;
+                    <h4 class="challenge-step-title w-300">{{challenge.page.title}}
                         <span ng-if="challenge.isChallengeHost">
                             <a class="pointer" ng-click="challenge.challengeTitleDialog($event)">
-                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                                <i class="fa fa-pencil fs-16" aria-hidden="true"></i>
                             </a>
                             <a class="pointer" ng-click="challenge.deleteChallengeDialog($event)">
-                                <i class="fa fa-trash red-text" aria-hidden="true"></i>
+                                <i class="fa fa-trash red-text fs-16" aria-hidden="true"></i>
                             </a>
                         </span>
+                    </h4>
+                    <span ng-if="challenge.page.creator.team_url != ''" class="fs-16 w-300"><strong
+                            class="text-light-black">Organized
+                            by:</strong><a class="orange-text" href="{{challenge.page.creator.team_url}}"
+                            target="_blank"> {{challenge.page.creator.team_name}} </a></span>
+                    <span ng-if="challenge.page.creator.team_url == ''" class="fs-16 w-300"><strong
+                            class="text-light-black">Organized
+                            by:</strong> {{challenge.page.creator.team_name}} </span>
+                    <span ng-if="challenge.isChallengeHost" class="fs-16 w-300">
                         <br>
-                        <span ng-if="challenge.page.creator.team_url != ''"><strong class="text-light-black">Organized by:</strong><a class="orange-text" href="{{challenge.page.creator.team_url}}" target="_blank"> {{challenge.page.creator.team_name}} </a></span>
-                        <span ng-if="challenge.page.creator.team_url == ''"><strong class="text-light-black">Organized by:</strong> {{challenge.page.creator.team_name}} </span>
+                        <span ng-if="challenge.isPublished">
+                            <a class="pointer" ng-click="challenge.publishChallenge($event)">
+                                <strong class="text-light-black">Published </strong>
+                                <i class="fa fa-eye green-text" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                        <span ng-if="!challenge.isPublished">
+                            <a class="pointer" ng-click="challenge.publishChallenge($event)">
+                                <strong class="text-light-black">Not Published </strong>
+                                <i class="fa fa-eye red-text" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    </span>
+                    <br>
+                    <span class="fs-16 w-300">
+                        <strong class="text-light-black">Starts on:</strong>
+                        {{ challenge.page.start_date | date:'medium' }}
+                    </span>
+                    &nbsp;
+                    <span ng-if="challenge.isChallengeHost" class="fs-16 w-300">
+                        <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </a>
+                    </span>
+                    <br>
+                    <span class="fs-16 w-300">
+                        <strong class="text-light-black">Ends on:</strong>
+                        {{ challenge.page.end_date | date:'medium' }}
+                    </span>
+                    &nbsp;
+                    <span ng-if="challenge.isChallengeHost">
+                        <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </a>
+                    </span>
+                </div>
+            </div>
+            <div class="col m2 l2 fs-16 w-300 center">
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit"
+                    ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i>
+                    {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
+                <div class="pd-20" ng-if="challenge.isChallengeHost">
+                    <div ng-click="challenge.toggleParticipation($event, challenge.isRegistrationOpen)"
+                        class="btn-switch display-inline-block"
+                        ng-class="{'btn-switch--on':challenge.isRegistrationOpen}"
+                        ng-model="challenge.isRegistrationOpen">
+                        <div class="btn-switch-circle"
+                            ng-class="{'btn-switch-circle--on': challenge.isRegistrationOpen}"
+                            ng-model="challenge.isRegistrationOpen">
+                        </div>
+                    </div>
+                    <div class="toggle-participation-text fs-16 w-300">Toggle Participation</div>
 
-                        <br>
-                        <span ng-if="challenge.isChallengeHost">
-                            <span ng-if="challenge.isPublished">
-                                <a class="pointer" ng-click="challenge.publishChallenge($event)">
-                                    <strong class="text-light-black">Published </strong>
-                                    <i class="fa fa-eye green-text" aria-hidden="true"></i>
-                                </a>
-                            </span>
-                            <span ng-if="!challenge.isPublished">
-                                <a class="pointer" ng-click="challenge.publishChallenge($event)">
-                                    <strong class="text-light-black">Not Published </strong>
-                                    <i class="fa fa-eye red-text" aria-hidden="true"></i>
-                                </a>
-                            </span>
-                        </span>
-                        <br>
-                        <span>
-                            <strong class="text-light-black">Starts on:</strong>
-                            {{ challenge.page.start_date | date:'medium' }}
-                        </span>
-                        &nbsp;
-                        <span ng-if="challenge.isChallengeHost">
-                            <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
-                                <i class="fa fa-pencil" aria-hidden="true"></i>
-                            </a>
-                        </span>
-                        <br>
-                        <span>
-                            <strong class="text-light-black">Ends on:</strong>
-                            {{ challenge.page.end_date | date:'medium' }}
-                        </span>
-                        &nbsp;
-                        <span ng-if="challenge.isChallengeHost">
-                            <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
-                                <i class="fa fa-pencil" aria-hidden="true"></i>
-                            </a>
-                        </span>
-                    </p>
                 </div>
-            </div>
-            <div class="col m3 l3 align-right">
-                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
-            </div>
-            <div ng-if="challenge.isChallengeHost" style="padding-top: 30px;" class="col m3 l3 align-right">
-                <div style="display: inline-block;" ng-click="challenge.toggleParticipation($event, challenge.isRegistrationOpen)"
-                    class="btn-switch" ng-class="{'btn-switch--on':challenge.isRegistrationOpen}" ng-model="challenge.isRegistrationOpen">
-                    <div class="btn-switch-circle" ng-class="{'btn-switch-circle--on': challenge.isRegistrationOpen}"
-                    ng-model="challenge.isRegistrationOpen"></div>
-                </div>
-                <div class="toggle-participation-text"><strong style="font-size: 18px;">Toggle Participation</strong></div>
+
             </div>
         </div>
         <div class="row rm-row-bot">
             <div class="col s12">
                 <ul class="inline-list rm-gut">
-                    <li><a ui-sref=".overview" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-info"></i> Overview</a></li>
-                    <li><a ui-sref=".evaluation" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-bar-chart-o"></i> Evaluation</a></li>
-                    <li><a ui-sref=".phases" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-level-up"></i> Phases</a></li>
-                    <li ng-if="!challenge.isParticipated && challenge.isRegistrationOpen"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
-                    <li ng-if="challenge.isParticipated"><a ui-sref=".submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-upload"></i> Submit</a></li>
-                    <li ng-if="challenge.isParticipated"><a ui-sref=".my-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i> My Submissions</a></li>
-                    <li ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i>View All Submissions</a></li>
-                    <li><a ui-sref=".leaderboard" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-th-list"></i> Leaderboard</a></li>
-                    <li ng-if="challenge.isForumEnabled && challenge.forumURL"><a href="{{challenge.forumURL}}" target="_blank" class="text-light-black w-500"><i class="fa fa-comments"></i> Discussions</a></li>
+                    <li class="margin-btm-0"><a ui-sref=".overview" ui-sref-active="active-challenge"
+                            class="text-light-black w-300"><i class="fa fa-info"></i> Overview</a></li>
+                    <li class="margin-btm-0"><a ui-sref=".evaluation" ui-sref-active="active-challenge"
+                            class="text-light-black w-300"><i class="fa fa-bar-chart-o"></i> Evaluation</a></li>
+                    <li class="margin-btm-0"><a ui-sref=".phases" ui-sref-active="active-challenge"
+                            class="text-light-black w-300"><i class="fa fa-level-up"></i> Phases</a></li>
+                    <li class="margin-btm-0" ng-if="!challenge.isParticipated && challenge.isRegistrationOpen"><a
+                            ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-300"><i
+                                class="fa fa-free-code-camp"></i> Participate</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.isParticipated"><a ui-sref=".submission"
+                            ui-sref-active="active-challenge" class="text-light-black w-300"><i
+                                class="fa fa-upload"></i> Submit</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.isParticipated"><a ui-sref=".my-submission"
+                            ui-sref-active="active-challenge" class="text-light-black w-300"><i class="fa fa-eye"></i>
+                            My Submissions</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission"
+                            ui-sref-active="active-challenge" class="text-light-black w-300"><i class="fa fa-eye"></i>
+                            All Submissions</a></li>
+                    <li class="margin-btm-0"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
+                            class="text-light-black w-300"><i class="fa fa-th-list"></i> Leaderboard</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.isForumEnabled && challenge.forumURL"><a
+                            href="{{challenge.forumURL}}" target="_blank" class="text-light-black w-300"><i
+                                class="fa fa-comments"></i> Discussions</a></li>
                 </ul>
             </div>
         </div>
