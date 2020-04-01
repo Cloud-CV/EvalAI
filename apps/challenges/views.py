@@ -1831,6 +1831,7 @@ def star_challenge(request, challenge_pk):
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 def tag_challenge_by_challenge_pk(request, challenge_pk):
@@ -1840,17 +1841,13 @@ def tag_challenge_by_challenge_pk(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
     if request.method == "GET":
         try:
-            tagged_challenge = Challenge.objects.get(
-                pk=challenge_pk
-            )
-        except Challenge.DoesNotExist:
+            response_data = challenge.tags
+        except:
             response_data = {
                 "error": "Challenge {} does not exist".format(challenge_pk)
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        response_data = challenge.tags
         return Response(response_data, status=status.HTTP_200_OK)
-
 
 
 @api_view(["GET"])

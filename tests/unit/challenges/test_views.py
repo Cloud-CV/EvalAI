@@ -72,6 +72,7 @@ class BaseAPITestClass(APITestCase):
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
+            tags=["AI", "ML"],
             creator=self.challenge_host_team,
             published=False,
             is_registration_open=True,
@@ -139,6 +140,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "terms_and_conditions": self.challenge.terms_and_conditions,
                 "submission_guidelines": self.challenge.submission_guidelines,
                 "evaluation_details": self.challenge.evaluation_details,
+                "tags": self.challenge.tags,
                 "image": None,
                 "start_date": "{0}{1}".format(
                     self.challenge.start_date.isoformat(), "Z"
@@ -247,6 +249,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
+            "tags": self.challenge.tags,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
             "start_date": "{0}{1}".format(
@@ -317,6 +320,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "description": new_description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
+            "tags": self.challenge.tags,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
             "start_date": "{0}{1}".format(
@@ -412,6 +416,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
+            "tags": self.challenge.tags,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
             "start_date": None,
@@ -459,6 +464,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.update_submission_guidelines,
+            "tags": self.challenge.tags,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
             "start_date": None,
@@ -960,6 +966,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
+                "tags": self.challenge3.tags,
                 "evaluation_details": self.challenge3.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1009,6 +1016,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
+                "tags": self.challenge2.tags,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1058,6 +1066,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "description": self.challenge4.description,
                 "terms_and_conditions": self.challenge4.terms_and_conditions,
                 "submission_guidelines": self.challenge4.submission_guidelines,
+                "tags": self.challenge4.tags,
                 "evaluation_details": self.challenge4.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1106,6 +1115,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "description": self.challenge4.description,
                 "terms_and_conditions": self.challenge4.terms_and_conditions,
                 "submission_guidelines": self.challenge4.submission_guidelines,
+                "tags": self.challenge4.tags,
                 "evaluation_details": self.challenge4.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1143,6 +1153,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
+                "tags": self.challenge3.tags,
                 "evaluation_details": self.challenge3.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1180,6 +1191,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
+                "tags": self.challenge2.tags,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1278,6 +1290,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
+                "tags": self.challenge3.tags,
                 "evaluation_details": self.challenge3.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1337,6 +1350,7 @@ class GetChallengeByPk(BaseAPITestClass):
             description="Description for test challenge 3",
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
+            tags=["AI"],
             creator=self.challenge_host_team,
             published=False,
             is_registration_open=True,
@@ -1353,6 +1367,7 @@ class GetChallengeByPk(BaseAPITestClass):
             description="Description for test challenge 4",
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
+            tags=["AI"],
             creator=self.challenge_host_team,
             published=True,
             is_registration_open=True,
@@ -1371,6 +1386,7 @@ class GetChallengeByPk(BaseAPITestClass):
             description="Description for test challenge 5",
             terms_and_conditions="Terms and conditions for test challenge 5",
             submission_guidelines="Submission guidelines for test challenge 5",
+            tags=["AI"],
             creator=self.challenge_host_team,
             published=False,
             is_registration_open=True,
@@ -1403,6 +1419,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "description": self.challenge3.description,
             "terms_and_conditions": self.challenge3.terms_and_conditions,
             "submission_guidelines": self.challenge3.submission_guidelines,
+            "tags": self.challenge3.tags,
             "evaluation_details": self.challenge3.evaluation_details,
             "image": None,
             "start_date": "{0}{1}".format(
@@ -1464,6 +1481,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "description": self.challenge4.description,
             "terms_and_conditions": self.challenge4.terms_and_conditions,
             "submission_guidelines": self.challenge4.submission_guidelines,
+            "tags": self.challenge4.tags,
             "evaluation_details": self.challenge4.evaluation_details,
             "image": None,
             "start_date": "{0}{1}".format(
@@ -1531,6 +1549,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
+            tags=["AI"],
             creator=self.challenge_host_team,
             published=True,
             is_registration_open=True,
@@ -1548,6 +1567,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             description="Description for some test challenge",
             terms_and_conditions="Terms and conditions for some test challenge",
             submission_guidelines="Submission guidelines for some test challenge",
+            tags=["AI"],
             creator=self.challenge_host_team2,
             published=True,
             is_registration_open=True,
@@ -1581,6 +1601,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
+                "tags": self.challenge2.tags,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1630,6 +1651,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
+                "tags": self.challenge2.tags,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1679,6 +1701,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
+                "tags": self.challenge2.tags,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1726,6 +1749,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "description": self.challenge.description,
                 "terms_and_conditions": self.challenge.terms_and_conditions,
                 "submission_guidelines": self.challenge.submission_guidelines,
+                "tags": self.challenge.tags,
                 "evaluation_details": self.challenge.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -1763,6 +1787,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
+                "tags": self.challenge2.tags,
                 "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
@@ -3982,6 +4007,70 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class TagChallengesTest(BaseAPITestClass):
+    def setUp(self):
+        super(TagChallengesTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:tag_challenge_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.user2 = User.objects.create(
+            username="someuser2",
+            email="user2@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge1 = Challenge.objects.create(
+            title="Test Challenge1",
+            short_description="Short description for test challenge1",
+            description="Description for test challenge1",
+            terms_and_conditions="Terms and conditions for test challenge1",
+            submission_guidelines="Submission guidelines for test challenge1",
+            tags=["AI"],
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_tag_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:tag_challenge_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk + 10},
+        )
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(
+                self.challenge.pk + 10
+            )
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_tag_challenge_by_challenge_pk(self):
+        self.url = reverse_lazy(
+            "challenges:tag_challenge_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        expected = ["AI", "ML"]
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):

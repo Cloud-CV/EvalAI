@@ -45,11 +45,6 @@ urlpatterns = [
         name="get_featured_challenges",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/tags",
-        views.tag_challenge_by_challenge_pk,
-        name="tag_challenge_by_challenge_pk",
-    ),
-    url(
         r"^challenge/(?P<pk>[0-9]+)/$",
         views.get_challenge_by_pk,
         name="get_challenge_by_pk",
@@ -114,6 +109,11 @@ urlpatterns = [
         r"^(?P<challenge_pk>[0-9]+)/$",
         views.star_challenge,
         name="star_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/tags",
+        views.tag_challenge_by_challenge_pk,
+        name="tag_challenge_by_challenge_pk",
     ),
     url(
         r"^get_broker_url/(?P<challenge_pk>[0-9]+)/$",
