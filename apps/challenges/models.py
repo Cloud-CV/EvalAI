@@ -40,6 +40,9 @@ class Challenge(TimeStampedModel):
     terms_and_conditions = models.TextField(null=True, blank=True)
     submission_guidelines = models.TextField(null=True, blank=True)
     evaluation_details = models.TextField(null=True, blank=True)
+    tags = ArrayField(
+        models.TextField(null=True, blank=True), default=[], blank=True
+    )
     image = models.ImageField(
         upload_to=RandomFileName("logos"),
         null=True,
