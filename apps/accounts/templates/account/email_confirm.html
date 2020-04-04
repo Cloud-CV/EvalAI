@@ -1,9 +1,9 @@
 {% load static %}
 
 <head>
-  <link type="text/css" rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
+    <link type="text/css" rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
 </head>
 
 <!-- loader init -->
@@ -31,23 +31,31 @@
     <div class="auth-cont">
         <div class="row">
             <div class="col s12 m4 offset-m4 center">
-                <h5><strong><a ui-sref="home" class="dark-link"><img class="auth-logo" src="{% static 'accounts/images/evalai-logo.png' %}"></a></strong></h5>
+                <h5><strong><a ui-sref="home" class="dark-link"><img class="auth-logo"
+                                src="{% static 'accounts/images/evalai-logo.png' %}"></a></strong></h5>
                 <p class="text-med-gray auth-home">Evaluating state of the art in AI</p>
             </div>
         </div>
         <div class="row">
             <div class="col s12 m4 offset-m4 text-highlight center w-300">
-                <strong><p class="text-med-gray auth-home">Your email has been verified successfully.</p></strong>
+                <strong>
+                    <p class="text-med-gray auth-home">Your email has been verified successfully.</p>
+                </strong>
             </div>
         </div>
         <div class="row">
             <div class="col s12 m4 offset-m4 text-highlight center w-300">
-                <a href="https://evalai.cloudcv.org/auth/login" class="waves-effect waves-dark btn ev-btn-dark blue-grey darken-4">Log In</a>
+                <a href="https://evalai.cloudcv.org/auth/login"
+                    class="waves-effect waves-dark btn ev-btn-dark blue-grey darken-4">Log In</a>
             </div>
         </div>
         <div class="row">
             <div class="reg-alert col s12 m6 offset-m3 align-left text-highlight w-300 social-auth-group">
-              <a href="https://github.com/Cloud-CV/EvalAI" class="light-link" target="_blank"><i class="fa fa-github"></i></a> &nbsp;&nbsp;&nbsp;<a href="https://twitter.com/project_cloudcv" class="light-link" target="_blank"><i class="fa fa-twitter"></i></a> &nbsp;&nbsp;&nbsp; <a href="https://cloudcv.org/" class="light-link fg-pass" target="_blank">www.cloudcv.org</a> &nbsp;&nbsp;&nbsp; <a ui-sref="home" class="light-link fg-pass">Back to home</a>
+                <a href="https://github.com/Cloud-CV/EvalAI" class="light-link" target="_blank"><i
+                        class="fa fa-github"></i></a> &nbsp;&nbsp;&nbsp;<a href="https://twitter.com/eval_ai"
+                    class="light-link" target="_blank"><i class="fa fa-twitter"></i></a> &nbsp;&nbsp;&nbsp; <a
+                    href="https://cloudcv.org/" class="light-link fg-pass" target="_blank">www.cloudcv.org</a>
+                &nbsp;&nbsp;&nbsp; <a ui-sref="home" class="light-link fg-pass">Back to home</a>
             </div>
         </div>
     </div>
