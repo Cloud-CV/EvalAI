@@ -53,7 +53,7 @@ from challenges.utils import (
     get_dataset_split_model,
     get_leaderboard_model,
     is_user_in_allowed_email_domains,
-    is_user_in_blocked_email_domains
+    is_user_in_blocked_email_domains,
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -77,6 +77,7 @@ from participants.utils import (
 
 from .models import (
     Challenge,
+    ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
     ChallengeConfiguration,
@@ -86,6 +87,7 @@ from .models import (
 from .permissions import IsChallengeCreator
 from .serializers import (
     ChallengeConfigSerializer,
+    ChallengeEvaluationClusterSerializer,
     ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSplitSerializer,
@@ -97,10 +99,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
-from .utils import (
-    get_file_content,
-    get_aws_credentials_for_submission,
-)
+from .utils import get_file_content, get_aws_credentials_for_submission
 
 logger = logging.getLogger(__name__)
 
@@ -291,9 +290,7 @@ def add_participant_team_to_challenge(
             domains = "{}{}{}".format(domains, "/", domain)
         domains = domains[1:]
         response_data = {"error": message.format(domains)}
-        return Response(
-            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check to disallow the user if he is a Challenge Host for this challenge
     participant_team_user_ids = set(
@@ -1033,8 +1030,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             test_annotation_file.read(),
                             test_annotation_file_path,
                         )
-                if data.get('max_submissions_per_month', None) is None:
-                    data['max_submissions_per_month'] = data.get('max_submissions', None)
+                if data.get("max_submissions_per_month", None) is None:
+                    data["max_submissions_per_month"] = data.get(
+                        "max_submissions", None
+                    )
 
                 serializer = ChallengePhaseCreateSerializer(
                     data=data,
@@ -2192,7 +2191,51 @@ def get_challenge_phase_environment_url(request, slug):
             "error": "The challenge doesn't require uploading Docker images, hence no test environment URL."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    response_data = {
-        "environment_url": challenge_phase.environment_url
-    }
+    response_data = {"environment_url": challenge_phase.environment_url}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_evaluation_cluster_details(request, challenge_pk):
+    """API to get challenge evaluation cluster details for a challenge
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which the cluster details are required
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access evaluation cluster details."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence no evaluation cluster details."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+    except ChallengeEvaluationCluster.DoesNotExist:
+        response_data = {
+            "error": "Challenge evaluation cluster for the challenge with pk {} does not exist".format(
+                challenge.pk
+            )
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    serializer = ChallengeEvaluationClusterSerializer(
+        challenge_evaluation_cluster, context={"request": request}
+    )
+    response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)

@@ -65,4 +65,9 @@ urlpatterns = [
         views.update_leaderboard_data,
         name="update_leaderboard_data",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/eks_bearer_token/$",
+        views.get_bearer_token,
+        name="get_bearer_token",
+    ),
 ]
