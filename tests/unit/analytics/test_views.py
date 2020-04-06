@@ -281,6 +281,16 @@ class GetParticipantCountTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_total_participant_team_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_participant_count",
+            kwargs={},
+        )
+        expected = {"participant_count": 2}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class GetSubmissionCountForChallengeTest(BaseAPITestClass):
     def setUp(self):
