@@ -59,6 +59,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "cli_version",
         )
 
+
 class ChallengeCount(object):
     def __init__(self, challenge_count):
         self.challenge_count = challenge_count

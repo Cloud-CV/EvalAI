@@ -84,12 +84,13 @@ def get_participant_count(request, challenge_pk):
     serializer = ParticipantCountSerializer(participant_count)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_total_participant_count(request):
     """
-        Returns the number of total participants 
+    Returns the number of total participants
     """
     participant_count = Participant.objects.count()
     participant_count = ParticipantCount(participant_count)

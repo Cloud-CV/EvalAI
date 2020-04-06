@@ -380,6 +380,7 @@ def get_all_challenges(request, challenge_time):
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
+
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def get_total_challenges_count(request, challenge_time):
