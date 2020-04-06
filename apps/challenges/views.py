@@ -89,7 +89,7 @@ from .serializers import (
     ChallengeConfigSerializer,
     ChallengeCount,
     ChallengeCountSerializer,
-    ChallengeEvaluationClusterSerializer,  
+    ChallengeEvaluationClusterSerializer,
     ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSplitSerializer,
