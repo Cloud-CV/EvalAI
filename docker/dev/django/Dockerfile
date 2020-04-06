@@ -1,4 +1,4 @@
-FROM python:3.7.5
+FROM python:3.6.5
 
 ENV PYTHONUNBUFFERED 1
 
@@ -10,5 +10,3 @@ ADD requirements/* /code/
 RUN pip install -r dev.txt
 
 CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]
-
-EXPOSE 8000
