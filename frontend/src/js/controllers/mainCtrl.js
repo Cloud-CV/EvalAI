@@ -96,7 +96,7 @@
                 onError: function() {}
             };
             utilities.sendRequest(parameters);
-        }
+        };
 
         vm.updateParticipantCount = function() {
             var parameters = {};
@@ -110,7 +110,7 @@
                 onError: function() {}
             };
             utilities.sendRequest(parameters);
-        }
+        };
 
         vm.updateSubmissionCount = function() {
             var parameters = {};
@@ -124,7 +124,7 @@
                 onError: function() {}
             };
             utilities.sendRequest(parameters);
-        }
+        };
 
         vm.init();
         vm.getChallenge();
