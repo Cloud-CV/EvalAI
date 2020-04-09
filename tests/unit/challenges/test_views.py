@@ -1226,6 +1226,134 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
 
 
+class GetTotalChallengesCountTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetTotalChallengesCountTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:get_total_challenges_count", kwargs={"challenge_time": "PAST"}
+        )
+        # Present challenge
+        self.challenge2 = Challenge.objects.create(
+            title="Test Challenge 2",
+            short_description="Short description for test challenge 2",
+            description="Description for test challenge 2",
+            terms_and_conditions="Terms and conditions for test challenge 2",
+            submission_guidelines="Submission guidelines for test challenge 2",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        # Past Challenge challenge
+        self.challenge3 = Challenge.objects.create(
+            title="Test Challenge 3",
+            short_description="Short description for test challenge 3",
+            description="Description for test challenge 3",
+            terms_and_conditions="Terms and conditions for test challenge 3",
+            submission_guidelines="Submission guidelines for test challenge 3",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            leaderboard_description="Donec sollicitudin, nisi vel tempor semper, nulla odio dapibus felis",
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+
+        # Future challenge
+        self.challenge4 = Challenge.objects.create(
+            title="Test Challenge 4",
+            short_description="Short description for test challenge 4",
+            description="Description for test challenge 4",
+            terms_and_conditions="Terms and conditions for test challenge 4",
+            submission_guidelines="Submission guidelines for test challenge 4",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        # Disabled challenge
+        self.challenge5 = Challenge.objects.create(
+            title="Test Challenge 5",
+            short_description="Short description for test challenge 5",
+            description="Description for test challenge 5",
+            terms_and_conditions="Terms and conditions for test challenge 5",
+            submission_guidelines="Submission guidelines for test challenge 5",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            leaderboard_description=None,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=True,
+        )
+
+    def test_get_total_past_challenges_count(self):
+        self.url = reverse_lazy(
+            "challenges:get_total_challenges_count", kwargs={"challenge_time": "PAST"}
+        )
+        expected = {'challenge_count': 1}
+
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_total_present_challenges_count(self):
+        self.url = reverse_lazy(
+            "challenges:get_total_challenges_count", kwargs={"challenge_time": "PRESENT"}
+        )
+        expected = {'challenge_count': 1}
+
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_total_future_challenges_count(self):
+        self.url = reverse_lazy(
+            "challenges:get_total_challenges_count", kwargs={"challenge_time": "FUTURE"}
+        )
+        expected = {'challenge_count': 1}
+
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_total_all_challenges_count(self):
+        self.url = reverse_lazy(
+            "challenges:get_total_challenges_count", kwargs={"challenge_time": "ALL"}
+        )
+        expected = {'challenge_count': 3}
+
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_incorrent_url_pattern_challenges_count(self):
+        self.url = reverse_lazy(
+            "challenges:get_total_challenges_count",
+            kwargs={"challenge_time": "INCORRECT"},
+        )
+        expected = {"error": "Wrong url pattern!"}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
+
 class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy("challenges:get_featured_challenges")
 
