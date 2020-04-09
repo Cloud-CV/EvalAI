@@ -72,8 +72,11 @@ class TestRequestForm(forms.Form):
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
         self.url = reverse_lazy("rest_user_details")
+        #test_image = File(open(join(settings.BASE_DIR, "examples", "example1", "test_image.png")))
+        #test_image = SimpleUploadedFile("file.png", test_image.read().encode("utf-8", errors='strict'), content_type="multipart/form-data")
+        image_file = File(open(join(settings.BASE_DIR, "examples", "example1", "test_image.png"), 'rb'))
+        uploaded_file = SimpleUploadedFile('new_image.png', b'test_content', content_type='multipart/form-data')
         with open(join(settings.BASE_DIR, "examples", "example1", "test_image.png"), 'rb') as file_handle: 
-            image_file = SimpleUploadedFile('new_image.png', b'file_content', content_type='multipart/form-data')
             self.data = {
                 "username": "anotheruser",
                 "affiliation": "some_affiliation",
@@ -81,7 +84,7 @@ class TestUpdateUser(BaseAPITestClass):
                 "google_scholar_url": "https://google-scholar.url",
                 "linkedin_url": "https://linkedin.url",
                 "password": "secret_password",
-                "user_avatar": image_file,
+                "user_avatar": uploaded_file,
             }
             form = TestRequestForm(self.data)
             response = self.client.put(
