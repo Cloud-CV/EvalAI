@@ -77,20 +77,21 @@ def create_user(is_admin, username=""):
     """
     Creates superuser, participant user, host user and returns it.
     """
+    # comment out the following four lines if getting duplicate admin error
     if is_admin:
         username = "admin"
         email = "admin@example.com"
     else:
         email = "%s@example.com" % (username)
-    user = User.objects.create_user(
-        email=email,
-        username=username,
-        password="password",
-        is_staff=is_admin,
-        is_superuser=is_admin,
-    )
-    EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
-    print("{} was created with username: {} password: password".format("Super user" if is_admin else "User", username))
+        user = User.objects.create_user(
+            email=email,
+            username=username,
+            password="password",
+            is_staff=is_admin,
+            is_superuser=is_admin,
+        )
+        EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
+        print("{} was created with username: {} password: password".format("Super user" if is_admin else "User", username))
     return user
 
 
