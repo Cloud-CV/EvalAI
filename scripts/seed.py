@@ -1,4 +1,4 @@
-#Command to run : python manage.py shell  < scripts/seed.py
+# Command to run : python manage.py shell  < scripts/seed.py
 import datetime
 import json
 import os
