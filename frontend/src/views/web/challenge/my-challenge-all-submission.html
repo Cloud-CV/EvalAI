@@ -1,142 +1,166 @@
-<section class="ev-sm-container ev-view ">
-    <div class="row">
-        <div class="col s12 m12">
-            <div class=" ev-card-panel ev-z-depth-5 ">
-                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                    <div class="loader">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
+<div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">All Submissions</h5>
+            </div>
+        </div>
+        <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showUpdate">
+            <span class="text-white">Page is outdated, click to update &nbsp; <i
+                    class="fa fa-refresh text-highlight"></i></span>
+        </div>
+        <div class="row">
+            <div class="col s6">
+                <span>
+                    <md-select ng-model="challenge.phase.name" placeholder="Select Phase" class="rm-margin">
+                        <md-option ng-click="challenge.getAllSubmissionResults(key.id)" value="{{key.name}}"
+                            ng-repeat="key in challenge.phases.results">
+                            {{key.name}} &nbsp; <span class="new badge orange-background" data-badge-caption="Private"
+                                ng-if="key.showPrivate"></span>
+                        </md-option>
+                    </md-select>
+                </span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s2 align-left">
+                <span>
+                    <md-select ng-model="challenge.fileSelected" placeholder="File Type" class="rm-margin">
+                        <md-option ng-repeat="key in challenge.fileTypes" value={{key.name}}>
+                            {{key.name}}</md-option>
+                    </md-select>
+                </span>
+            </div>
+            <div class="col s4 align-left">
+                <span>
+                    <md-select multiple="multiple" ng-model="challenge.fieldsToGet"
+                        placeholder="Fields to export (optional)" class="rm-margin">
+                        <md-option ng-repeat="key in challenge.fields" id="option-text-color" value={{key.id}}>
+                            {{key.label}}</md-option>
+                    </md-select>
+                </span>
+            </div>
+            <div class="col s2 align-left">
+                <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14"
+                    ng-click="challenge.downloadChallengeSubmissions()">Download</a>
+            </div>
+        </div>
+        <div ng-if="challenge.isResult">
+            <div class="row rm-margin">
+                <div class="col s12 fs-16">
+                    <strong>Filter submissions by team</strong>
                 </div>
-                <div class="ev-md-container ev-panel-title">
-                    <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showUpdate">
-                        <span class="text-white">Page is Outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i></span>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <strong>Please select a phase to get list of submissions!</strong>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col xs12 s6">
-                            <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getAllSubmissionResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}} &nbsp; <span class="new badge orange-background" data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
-                        </md-select></span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s2 align-left">
-                            <span>
-                                <md-select ng-model="challenge.fileSelected" placeholder="File" class="rm-margin">
-                                    <md-option ng-repeat="key in challenge.fileTypes" value={{key.name}}>{{key.name}}</md-option>
-                                </md-select>
-                            </span>
-                        </div>
-                        <div class="col s4 align-left">
-                            <span>
-                                <md-select multiple="multiple" ng-model="challenge.fieldsToGet" placeholder="Custom Fields to Export (Optional)" class="rm-margin">
-                                    <md-option ng-repeat="key in challenge.fields" id="option-text-color" value={{key.id}}>{{key.label}}</md-option>
-                                </md-select>
-                            </span>
-                        </div>
-                        <div class="col s2 align-left">
-                            <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
-                        </div>
-                    </div>
-                    <br>
-                    <div ng-if="challenge.isResult">
-                        <div class="row rm-margin">
-                            <div class="col s12">
-                                <strong>Filter Submissions by Team name</strong>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="input-field align-left col s6">
-                                <form method="GET">
-                                    <input type="text" name="participant_team__team_name" ng-keyup="challenge.getAllSubmissionResults(key.id)" ng-model="challenge.filter_all_submission_by_team_name" id="participant_team__team_name" /></td></tr>
-                                    <label for="participant_team__team_name">Team name</label>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+            <div class="row">
+                <div class="input-field align-left col s6">
+                    <form method="GET">
+                        <input type="text" name="participant_team__team_name"
+                            ng-keyup="challenge.getAllSubmissionResults(key.id)"
+                            ng-model="challenge.filter_all_submission_by_team_name" id="participant_team__team_name" />
+                        <label for="participant_team__team_name">Team name</label>
+                    </form>
                 </div>
-                <div class=" ev-card-body exist-team-card">
-                    <div class="row">
-                        <div class="col s12 all-submission-table-scroll">
-                            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn">No results found.</div>
-                            <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="challenge.showPagination && challenge.isResult" class="highlight all-submission-table responsive-table">
-                                <thead>
-                                    <tr>
-                                        <th class="align-center" data-field="team">Team</th>
-                                        <th data-field="created-by">Created By</th>
-                                        <th data-field="status">Status</th>
-                                        <th class="align-center" data-field="status">Execution Time (sec)</th>
-                                        <th data-field="file">Submission No.</th>
-                                        <th data-field="file">Submitted at</th>
-                                        <th data-field="file">Submitted File</th>
-                                        <th data-field="file">Stdout File</th>
-                                        <th data-field="file">Stderr File</th>
-                                        <th data-field="file">Result File</th>
-                                        <th data-field="file">Metadata File</th>
-                                        <th data-field="button">Re-run Submissions</th>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
-                                        <td class="align-center">{{key.participant_team}}</td>
+            </div>
+        </div>
+        <div class="row">
+            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn fs-16 w-300">No
+                results found.</div>
+            <div class="col s12 all-submission-table-scroll" ng-if="challenge.showPagination && challenge.isResult">
+                <table class="highlight all-submission-table responsive-table fs-16 w-300">
+                    <thead>
+                        <th data-field="submission_id">#</th>
+                        <th class="fs-18 w-300" data-field="team">Team</th>
+                        <th class="fs-18 w-300" data-field="created-by">Created By</th>
+                        <th class="fs-18 w-300" data-field="status">Status</th>
+                        <th class="fs-18 w-300" data-field="status">Execution Time (sec)</th>
+                        <th class="fs-18 w-300" data-field="file">Submission No.</th>
+                        <th class="fs-18 w-300" data-field="file">Submitted at</th>
+                        <th class="fs-18 w-300" data-field="file">Submitted File</th>
+                        <th class="fs-18 w-300" data-field="file">Stdout File</th>
+                        <th class="fs-18 w-300" data-field="file">Stderr File</th>
+                        <th class="fs-18 w-300" data-field="file">Result File</th>
+                        <th class="fs-18 w-300" data-field="file">Metadata File</th>
+                        <th class="fs-18 w-300" data-field="button">Rerun Submission</th>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
+                            <td>{{$index + 1}}</td>
+                            <td>{{key.participant_team}}</td>
 
-                                        <td>{{key.created_by}}</td>
+                            <td>{{key.created_by}}</td>
 
-                                        <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
+                            <td class="val-style capitalize" ng-class="key.status">{{key.status}}
+                            </td>
 
-                                        <td class="align-center">{{key.execution_time}}</td>
+                            <td>{{key.execution_time}}</td>
 
-                                        <td class="align-center">{{key.submission_number}}</td>
+                            <td>{{key.submission_number}}</td>
 
-                                        <td>{{key.submitted_at | date:'medium'}}</td>
+                            <td>{{key.submitted_at | date:'medium'}}</td>
 
-                                        <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                            <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i
+                                        class="fa fa-external-link"></i> Link</a></td>
 
-                                        <td ng-if="key.stdout_file"><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                                        <td ng-if="!key.stdout_file">None</td>
+                            <td ng-if="key.stdout_file"><a href="{{key.stdout_file}}" target="_blank"
+                                    class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                            <td ng-if="!key.stdout_file">None</td>
 
-                                        <td ng-if="key.stderr_file"><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                                        <td ng-if="!key.stderr_file">None</td>
+                            <td ng-if="key.stderr_file"><a href="{{key.stderr_file}}" target="_blank"
+                                    class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                            <td ng-if="!key.stderr_file">None</td>
 
-                                        <td ng-if="key.submission_result_file"><a href="{{key.submission_result_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                                        <td ng-if="!key.submission_result_file">None</td>
-                                        
-                                        <td ng-if="key.submission_metadata_file"><a href="{{key.submission_metadata_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                                        <td ng-if="!key.submission_metadata_file">None</td>
+                            <td ng-if="key.submission_result_file"><a href="{{key.submission_result_file}}"
+                                    target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a>
+                            </td>
+                            <td ng-if="!key.submission_result_file">None</td>
 
-                                        <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
-                                            <input ng-checked="key.is_public" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeSubmissionVisibility(key.id)" />
-                                            <label for="isPublic{{ key.id }}"></label>
-                                            <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
-                                        </td>
-                                        <td><center><a ng-class="key.classList" class="fa fa-refresh pointer" ng-click="challenge.reRunSubmission(key)"></a></center></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <section class="pagination" ng-if="challenge.showPagination">
-                    <div class="row">
-                        <div class="col s12 left-align">
-                            <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
-                                <i class="fa fa-chevron-left"></i>
-                            </a>
-                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/100 | ceil}} </strong></span>
-                            <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.next)">
-                                <i class="fa fa-chevron-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </section>
+                            <td ng-if="key.submission_metadata_file"><a href="{{key.submission_metadata_file}}"
+                                    target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a>
+                            </td>
+                            <td ng-if="!key.submission_metadata_file">None</td>
+
+                            <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                                <input ng-checked="key.is_public" ng-if="key.status == 'finished'"
+                                    ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
+                                    id="isPublic{{ key.id }}"
+                                    ng-change="challenge.changeSubmissionVisibility(key.id)" />
+                                <label for="isPublic{{ key.id }}"></label>
+                                <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
+                            </td>
+                            <td>
+                                <center><a ng-class="key.classList" class="fa fa-refresh pointer"
+                                        ng-click="challenge.reRunSubmission(key)"></a></center>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="pagination" ng-if="challenge.showPagination">
+        <div class="row">
+            <div class="col s12 left-align">
+                <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light "
+                    ng-click="challenge.load(challenge.submissionResult.previous)">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                <span class="pagination-title"> <strong class="text-med-black"> Page
+                        {{challenge.currentPage | ceil}} of
+                        {{challenge.submissionResult.count/100 | ceil}} </strong></span>
+                <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light "
+                    ng-click="challenge.load(challenge.submissionResult.next)">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
         </div>
     </div>
