@@ -133,7 +133,7 @@ class BaseAPITestClass(APITestCase):
 
     def get_submission_input_file_path(self, submission_id, input_file):
         """Helper Method: Takes `submission_id` and `input_file` as input and
-        returns corresponding path to submmitted input file"""
+        returns corresponding path to submitted input file"""
 
         input_file_name = os.path.basename(input_file.name)
         return join(self.SUBMISSION_DATA_DIR, "{input_file}").format(

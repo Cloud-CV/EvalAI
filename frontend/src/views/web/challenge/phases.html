@@ -25,12 +25,35 @@
                             <br> <strong>{{item.max_concurrent_submissions_allowed}}</strong></p>
                     </div>
                 </div>
+            <div class="col s12 m11 l11">
+                <h5>Phase: <span class="w-300">{{item.name}}</span>
+                    <span class="new badge orange-background margin-tb-4 f-16" data-badge-caption="Private Phase"
+                        ng-if="item.showPrivate"></span></h5>
             </div>
-            <div ng-if="challenge.isChallengeHost" class="col s1">
-                <a class="pointer" ng-click="challenge.challengePhaseDialog($event, item)">
-                    <i class="fa fa-pencil" aria-hidden="true">
-                    </i>
-                </a>
+            <div class="col s12 m1 l1">
+                <h5><a ng-if="challenge.isChallengeHost" class="pointer theme-text fs-16"
+                        ng-click="challenge.challengePhaseDialog($event, item)"><i class="fa fa-pencil"
+                            aria-hidden="true"></i>&nbsp;edit</a></h5>
+            </div>
+            <div class="col s12 m12 l12">
+                <div class="what-a-separator"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12 m12 l9">
+                <p class="fs-16">Starts on: <span class="w-300">{{item.start_date | date:'medium'}}
+                        {{item.start_zone}}</span></p>
+                <p class="fs-16">Ends on: <span class="w-300">{{item.end_date | date:'medium'}} {{item.end_zone}}</span>
+                </p>
+            </div>
+            <div class="col s12 m12 l12">
+                <div ng-bind-html="item.description" class="fs-16 w-300 phase-description"></div>
+            </div>
+            <div class="col s12 m12 l3">
+                <p class="fs-16">Max submissions/day: <span class="w-300">{{item.max_submissions_per_day}}</span></p>
+                <p class="fs-16">Max submissions/month: <span class="w-300">{{item.max_submissions_per_month}}</span>
+                </p>
+                <p class="fs-16">Max total submissions: <span class="w-300">{{item.max_submissions}}</span></p>
             </div>
         </div>
     </div>

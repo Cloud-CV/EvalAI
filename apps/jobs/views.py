@@ -36,6 +36,7 @@ from base.utils import (
 from challenges.models import (
     ChallengePhase,
     Challenge,
+    ChallengeEvaluationCluster,
     ChallengePhaseSplit,
     LeaderboardData,
 )
@@ -53,6 +54,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
+from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
@@ -402,7 +404,7 @@ def change_submission_data_and_visibility(
             required=True,
         )
     ],
-    operation_id="Get_Leaderboard_Data",
+    operation_id="leaderboard",
     responses={
         status.HTTP_200_OK: openapi.Response(
             description="",
@@ -462,7 +464,15 @@ def change_submission_data_and_visibility(
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
-    """Returns leaderboard for a corresponding Challenge Phase Split"""
+    """
+    Returns leaderboard for a corresponding Challenge Phase Split
+
+    - Arguments:
+        ``challenge_phase_split_id``: Primary key for the challenge phase split for which leaderboard is to be fetched
+
+    - Returns:
+        Leaderboard entry objects in a list
+    """
 
     # check if the challenge exists or not
     try:
@@ -808,6 +818,41 @@ def get_submission_by_pk(request, submission_id):
         ),
     },
 )
+@swagger_auto_schema(
+    methods=["patch"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        )
+    ],
+    operation_id="update_submission",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "submission": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Submission ID"
+            ),
+            "job_name": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Job name for the running submission",
+            ),
+            "submission_status": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Updated status of submission from submitted i.e. RUNNING",
+            ),
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response("{<updated submission-data>}"),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1128,15 +1173,72 @@ def get_submissions_for_challenge(request, challenge_pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="queue_name",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Queue Name",
+            required=True,
+        )
+    ],
+    operation_id="get_submission_message_from_queue",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "body": openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        description="SQS message queue dict object",
+                        properties={
+                            "challenge_pk": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Primary key for the challenge in the database",
+                            ),
+                            "phase_pk": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Primary key for the challenge phase in the database",
+                            ),
+                            "submission_pk": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Primary key for the submission in the database",
+                            ),
+                            "submitted_image_uri": openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description="The AWS ECR URL for the pushed docker image in docker based challenges",
+                            ),
+                        },
+                    ),
+                    "receipt_handle": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="SQS message receipt handle",
+                    ),
+                },
+            ),
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_message_from_queue(request, queue_name):
     """
-    API to fetch submission message from AWS SQS queue
-    Arguments:
-        queue_name  -- The unique authentication token provided by challenge hosts
+    API to fetch submission message from AWS SQS queue.
+
+    - Arguments:
+        ``queue_name``: AWS SQS queue name
+
+    - Returns:
+        ``body``: The message body content as a key-value pair
+        ``receipt_handle``: The message receipt handle
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name)  # noqa
@@ -1176,11 +1278,41 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_200_OK)
     except botocore.exceptions.ClientError as ex:
-        response_data = ex
+        response_data = {"error": ex}
         logger.exception("Exception raised: {}".format(ex))
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["post"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="queue_name",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Queue Name",
+            required=True,
+        )
+    ],
+    operation_id="delete_submission_message_from_queue",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "receipt_handle": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Receipt handle for the message to be deleted",
+            )
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            "{'success': 'Message deleted successfully from the queue <queue-name>'}"
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1188,9 +1320,12 @@ def get_submission_message_from_queue(request, queue_name):
 def delete_submission_message_from_queue(request, queue_name):
     """
     API to delete submission message from AWS SQS queue
-    Arguments:
-        queue_name  -- The unique authentication token provided by challenge hosts
-        receipt_handle -- The receipt handle of the message to be deleted
+
+    - Arguments:
+        ``queue_name``  -- The unique authentication token provided by challenge hosts
+
+    - Request Body:
+        ``receipt_handle`` -- The receipt handle of the message to be deleted
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name)
@@ -1221,7 +1356,7 @@ def delete_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_200_OK)
     except botocore.exceptions.ClientError as ex:
-        response_data = ex
+        response_data = {"error": ex}
         logger.exception(
             "SQS message is not deleted due to {}".format(response_data)
         )
@@ -1383,3 +1518,52 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_bearer_token(request, challenge_pk):
+    """API to generate and return bearer token AWS EKS requests
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.id):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence there isn't a need for bearer token."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+    except ChallengeEvaluationCluster.DoesNotExist:
+        response_data = {
+            "error": "Challenge evaluation cluster for the challenge with pk {} does not exist".format(
+                challenge.pk
+            )
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    cluster_name = challenge_evaluation_cluster.name
+    bearer_token = generate_aws_eks_bearer_token(cluster_name, challenge)
+    response_data = {
+        "aws_eks_bearer_token": bearer_token,
+        "cluster_name": cluster_name,
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
