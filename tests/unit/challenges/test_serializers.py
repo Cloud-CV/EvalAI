@@ -246,7 +246,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             self.serializer_data["max_concurrent_submissions_allowed"],
         )
 
-    def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
+    def test_challenge_phase_create_serializer_without_max_submissions_per_month(
         self,
     ):
 
@@ -275,6 +275,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_submission_public",
                     "slug",
                     "max_concurrent_submissions_allowed",
+                    "environment_image",
                 ]
             ),
         )
