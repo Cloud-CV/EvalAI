@@ -102,7 +102,7 @@
                     onSuccess: function(response) {
                         if (response.status == 201) {
                             vm.isFormError = false;
-                            // Redirecting to Dashboard on Signup
+                            // Redirecting to Dashboard on Signup with limited privilege
                             $rootScope.notify("success", "Registered successfully. Please verify your email address!");
                             vm.startLoader("Taking you to EvalAI!");
                             // call utility service
