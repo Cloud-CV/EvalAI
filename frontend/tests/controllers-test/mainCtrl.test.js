@@ -39,11 +39,11 @@ describe('Unit tests for main controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: successResponse
+                        data["challenge_count"]: successResponse
                     });
                 } else {
                     parameters.callback.onError({
-                        data: errorResponse
+                        data["challenge_count"]: errorResponse
                     });
                 }
             };
