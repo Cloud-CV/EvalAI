@@ -83,6 +83,32 @@ describe('Unit tests for main controller', function () {
         });
     });
 
+    describe('Unit tests for updateSubmissionCount function `analytics/submission/all/count`', function() {
+        var success, successResponse;
+        var errorResponse = 'error';
+
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: successResponse
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse
+                    });
+                }
+            };
+        });
+
+        it('successfully get total submission count', function () {
+            success = true;
+            successResponse = {'submission_count': 5};
+            vm.updateSubmissionCount();
+            expect(vm.submissionCount).toEqual(5);
+        });
+    });
+
     describe('Unit tests for getChallenge function `challenges/featured/`', function () {
         var success, successResponse;
         var errorResponse = 'error';
