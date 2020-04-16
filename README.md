@@ -2,7 +2,7 @@
 
 ------------------------------------------------------------------------------------------
 
-[![Join the chat at https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Financial Contributors on Open Collective](https://opencollective.com/evalai/all/badge.svg?label=financial+contributors)](https://opencollective.com/evalai) [![Join the chat at https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/Cloud-CV/EvalAI.svg?branch=master)](https://travis-ci.org/Cloud-CV/EvalAI)
 [![codecov](https://codecov.io/gh/Cloud-CV/EvalAI/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-CV/EvalAI)
 [![Coverage Status](https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg)](https://coveralls.io/github/Cloud-CV/EvalAI)
@@ -94,3 +94,33 @@ EvalAI is currently maintained by [Deshraj Yadav](http://deshraj.xyz/) and [Rish
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/cloud-cv/evalai/graphs/contributors"><img src="https://opencollective.com/evalai/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/evalai/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/evalai"><img src="https://opencollective.com/evalai/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/evalai/contribute)]
+
+<a href="https://opencollective.com/evalai/organization/0/website"><img src="https://opencollective.com/evalai/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/1/website"><img src="https://opencollective.com/evalai/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/2/website"><img src="https://opencollective.com/evalai/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/3/website"><img src="https://opencollective.com/evalai/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/4/website"><img src="https://opencollective.com/evalai/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/5/website"><img src="https://opencollective.com/evalai/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/6/website"><img src="https://opencollective.com/evalai/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/7/website"><img src="https://opencollective.com/evalai/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/8/website"><img src="https://opencollective.com/evalai/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/evalai/organization/9/website"><img src="https://opencollective.com/evalai/organization/9/avatar.svg"></a>
