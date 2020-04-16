@@ -1677,6 +1677,19 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             is_public=False,
         )
 
+        self.submission_3 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=False,
+        )
+
         self.private_submission = Submission.objects.create(
             participant_team=self.host_participant_team,
             challenge_phase=self.private_challenge_phase,
@@ -1725,6 +1738,10 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.submission_2.status = Submission.FINISHED
         self.submission_2.save()
 
+        self.submission_3.is_public = False
+        self.submission_3.status = Submission.FINISHED
+        self.submission_3.save()
+
         self.private_submission.is_public = False
         self.private_submission.status = Submission.FINISHED
         self.private_submission.save()
@@ -1740,6 +1757,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.result_json = {"score": 50.0, "test-score": 75.0}
 
         self.result_json_2 = {"score": 10.0, "test-score": 20.0}
+
+        self.result_json_3 = {"score": 54.0, "test-score": 28.0}
 
         self.result_json_host_participant_team = {
             "score": 52.0,
@@ -1790,6 +1809,14 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             submission=self.submission,
             leaderboard=self.leaderboard,
             result=self.result_json_2,
+        )
+
+        self.leaderboard_data_3 = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json_3,
+            is_active=False,
         )
 
         self.private_leaderboard_data = LeaderboardData.objects.create(
