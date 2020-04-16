@@ -506,7 +506,7 @@ def run_submission(
                         )
                     except Exception as e:
                         logger.exception(
-                            "Exception while receiving message from submission queue with error {}".format(
+                            "Exception while fetching leaderboard data object {}".format(
                                 e
                             )
                         )
