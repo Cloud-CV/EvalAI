@@ -531,7 +531,6 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split=challenge_phase_split,
         submission__is_flagged=False,
         submission__status=Submission.FINISHED,
-        is_active=True,
     ).order_by("-created_at")
 
     leaderboard_data = leaderboard_data.annotate(

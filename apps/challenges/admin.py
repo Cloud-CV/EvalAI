@@ -291,7 +291,6 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
         "submission",
         "leaderboard",
         "result",
-        "is_active",
     )
     list_filter = ("challenge_phase_split", "created_at", "modified_at")
     search_fields = (
