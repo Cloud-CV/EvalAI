@@ -62,10 +62,10 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
 
     def submit_job_to_worker(self, request, queryset):
         for submission in queryset:
-            message = handle_submission_rerun(submission)
+            message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
 
-    submit_job_to_worker.short_description = "Run selected submissions"
+    submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
 
     def make_submission_public(self, request, queryset):
         for submission in queryset:

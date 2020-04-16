@@ -174,7 +174,7 @@ def get_file_from_url(url):
     return file_obj
 
 
-def handle_submission_rerun(submission):
+def handle_submission_rerun(submission, updated_status):
     """
     Function to handle the submission re-running. It is handled in the following way -
     1. Invalidate the old submission
@@ -182,10 +182,10 @@ def handle_submission_rerun(submission):
 
     Arguments:
         submission {Submission Model class object} -- submission object
+        updated_status {str} -- Updated status for current submission
     """
 
-    submission_status = Submission.INVALID
-    data = {"status": submission_status}
+    data = {"status": updated_status}
     serializer = SubmissionSerializer(submission, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -201,10 +201,8 @@ def handle_submission_rerun(submission):
     if submission.challenge_phase.challenge.is_docker_based:
         try:
             response = requests.get(submission.input_file)
-        except Exception as e:
-            logger.exception(
-                "Failed to get input_file with exception: {0}".format(e)
-            )
+        except Exception:
+            logger.exception("Failed to get input_file")
             return
 
         if response and response.status_code == 200:

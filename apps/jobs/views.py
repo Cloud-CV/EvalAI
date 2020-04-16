@@ -1071,7 +1071,7 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def re_run_submission(request, submission_pk):
+def re_run_submission_by_host(request, submission_pk):
     """
     API endpoint to re-run a submission.
     Only challenge host has access to this endpoint.
@@ -1100,7 +1100,7 @@ def re_run_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    message = handle_submission_rerun(submission)
+    message = handle_submission_rerun(submission, Submission.CANCELLED)
     publish_submission_message(message)
     response_data = {
         "success": "Submission is successfully submitted for re-running"
