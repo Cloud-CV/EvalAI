@@ -1101,32 +1101,6 @@ def re_run_submission(request, submission_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     message = handle_submission_rerun(submission)
-    # submission_status = Submission.INVALID
-    # data = {"status": submission_status}
-    # serializer = SubmissionSerializer(submission, data=data, partial=True)
-    # if serializer.is_valid():
-    #     serializer.save()
-
-    # submission.pk = None
-    # submission.save()
-    # message = {
-    #     "challenge_pk": challenge.pk,
-    #     "phase_pk": challenge_phase.pk,
-    #     "submission_pk": submission.pk,
-    # }
-
-    # if submission.challenge_phase.challenge.is_docker_based:
-    #     try:
-    #         response = requests.get(submission.input_file)
-    #     except Exception as e:
-    #         response_data = {
-    #             "error": "Failed to get submission input file with error: {0}".format(e)
-    #         }
-    #         return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    #     if response and response.status_code == 200:
-    #         message["submitted_image_uri"] = response.json()["submitted_image_uri"]
-
     publish_submission_message(message)
     response_data = {
         "success": "Submission is successfully submitted for re-running"
