@@ -494,8 +494,22 @@ def run_submission(
                     break
 
                 # Check if the leaderboard already exists for the submission
-                if LeaderboardData.objects.filter(submission=submission.id).exists():
-                    leaderboard_data = LeaderboardData.objects.get(submission=submission.id)
+                if LeaderboardData.objects.filter(
+                    submission=submission.id,
+                    challenge_phase_split=challenge_phase_split,
+                ).exists():
+                    try:
+                        leaderboard_data = LeaderboardData.objects.get(
+                            submission=submission.id,
+                            challenge_phase_split=challenge_phase_split,
+                            is_active=True,
+                        )
+                    except Exception as e:
+                        logger.exception(
+                            "Exception while receiving message from submission queue with error {}".format(
+                                e
+                            )
+                        )
                     leaderboard_data.result = split_result.get(
                         dataset_split.codename
                     )
@@ -507,7 +521,9 @@ def run_submission(
                     leaderboard_data.save()
                 else:
                     leaderboard_data = LeaderboardData()
-                    leaderboard_data.challenge_phase_split = challenge_phase_split
+                    leaderboard_data.challenge_phase_split = (
+                        challenge_phase_split
+                    )
                     leaderboard_data.submission = submission
                     leaderboard_data.leaderboard = (
                         challenge_phase_split.leaderboard
