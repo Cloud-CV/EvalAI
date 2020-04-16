@@ -57,6 +57,32 @@ describe('Unit tests for main controller', function () {
         });
     });
 
+    describe('Unit tests for updateParticipantCount function `analytics/participant/count`', function() {
+        var success, successResponse;
+        var errorResponse = 'error';
+
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: successResponse
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse
+                    });
+                }
+            };
+        });
+
+        it('successfully get total participant count', function () {
+            success = true;
+            successResponse = {'participant_count': 4};
+            vm.updateParticipantCount();
+            expect(vm.participantCount).toEqual(4);
+        });
+    });
+
     describe('Unit tests for getChallenge function `challenges/featured/`', function () {
         var success, successResponse;
         var errorResponse = 'error';
