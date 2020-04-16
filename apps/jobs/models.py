@@ -48,6 +48,7 @@ class Submission(TimeStampedModel):
     CANCELLED = "cancelled"
     FINISHED = "finished"
     SUBMITTING = "submitting"
+    INVALID = "invalid"
 
     STATUS_OPTIONS = (
         (SUBMITTED, SUBMITTED),
@@ -56,6 +57,7 @@ class Submission(TimeStampedModel):
         (CANCELLED, CANCELLED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
+        (INVALID, INVALID),
     )
 
     participant_team = models.ForeignKey(

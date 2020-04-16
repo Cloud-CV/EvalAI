@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 
-import requests
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -68,6 +67,7 @@ from .tasks import download_file_and_publish_submission_message
 from .utils import (
     get_submission_model,
     get_remaining_submission_for_a_phase,
+    handle_submission_rerun,
     is_url_valid,
 )
 
@@ -1100,29 +1100,32 @@ def re_run_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    message = {
-        "challenge_pk": challenge.pk,
-        "phase_pk": challenge_phase.pk,
-        "submission_pk": submission.pk,
-    }
+    message = handle_submission_rerun(submission)
+    # submission_status = Submission.INVALID
+    # data = {"status": submission_status}
+    # serializer = SubmissionSerializer(submission, data=data, partial=True)
+    # if serializer.is_valid():
+    #     serializer.save()
 
-    if submission.challenge_phase.challenge.is_docker_based:
-        try:
-            response = requests.get(submission.input_file)
-        except Exception as e:
-            response_data = {
-                "error": "Failed to get submission input file with error: {0}".format(
-                    e
-                )
-            }
-            return Response(
-                response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+    # submission.pk = None
+    # submission.save()
+    # message = {
+    #     "challenge_pk": challenge.pk,
+    #     "phase_pk": challenge_phase.pk,
+    #     "submission_pk": submission.pk,
+    # }
 
-        if response and response.status_code == 200:
-            message["submitted_image_uri"] = response.json()[
-                "submitted_image_uri"
-            ]
+    # if submission.challenge_phase.challenge.is_docker_based:
+    #     try:
+    #         response = requests.get(submission.input_file)
+    #     except Exception as e:
+    #         response_data = {
+    #             "error": "Failed to get submission input file with error: {0}".format(e)
+    #         }
+    #         return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    #     if response and response.status_code == 200:
+    #         message["submitted_image_uri"] = response.json()["submitted_image_uri"]
 
     publish_submission_message(message)
     response_data = {
@@ -1566,4 +1569,5 @@ def get_bearer_token(request, challenge_pk):
         "aws_eks_bearer_token": bearer_token,
         "cluster_name": cluster_name,
     }
+
     return Response(response_data, status=status.HTTP_200_OK)
