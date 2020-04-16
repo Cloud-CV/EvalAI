@@ -39,11 +39,11 @@ describe('Unit tests for main controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data["challenge_count"]: successResponse
+                        data: successResponse
                     });
                 } else {
                     parameters.callback.onError({
-                        data["challenge_count"]: errorResponse
+                        data: errorResponse
                     });
                 }
             };
@@ -51,9 +51,9 @@ describe('Unit tests for main controller', function () {
 
         it('successfully get total challenge count', function () {
             success = true;
-            successResponse = 'success';
+            successResponse = {'challenge_count': 3};
             vm.updateChallengeCount();
-            expect(vm.challengeCount).toEqual(successResponse);
+            expect(vm.challengeCount).toEqual(3);
         });
     });
 
