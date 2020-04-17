@@ -10,6 +10,9 @@ from challenges.utils import get_challenge_model, get_challenge_phase_model
 from django.utils import timezone
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from rest_framework import status
+
+from base.utils import suppress_autotime
+
 from .constants import submission_status_to_exclude
 from .models import Submission
 from .serializers import SubmissionSerializer
@@ -195,7 +198,10 @@ def handle_submission_rerun(submission, updated_status):
     submission.stderr_file = None
     submission.submission_result_file = None
     submission.submission_metadata_file = None
-    submission.save()
+    with suppress_autotime(submission, ["submitted_at"]):
+        submission.submitted_at = submission.submitted_at
+        submission.save()
+
     message = {
         "challenge_pk": submission.challenge_phase.challenge.pk,
         "phase_pk": submission.challenge_phase.pk,
