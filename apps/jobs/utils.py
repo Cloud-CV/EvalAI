@@ -191,6 +191,10 @@ def handle_submission_rerun(submission, updated_status):
         serializer.save()
 
     submission.pk = None
+    submission.stdout_file = None
+    submission.stderr_file = None
+    submission.submission_result_file = None
+    submission.submission_metadata_file = None
     submission.save()
     message = {
         "challenge_pk": submission.challenge_phase.challenge.pk,
