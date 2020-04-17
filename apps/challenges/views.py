@@ -87,6 +87,8 @@ from .models import (
 from .permissions import IsChallengeCreator
 from .serializers import (
     ChallengeConfigSerializer,
+    ChallengeCount,
+    ChallengeCountSerializer,
     ChallengeEvaluationClusterSerializer,
     ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
@@ -374,6 +376,38 @@ def get_all_challenges(request, challenge_time):
     )
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_total_challenges_count(request, challenge_time):
+    """
+    Returns the count of all challenges
+    """
+    # make sure that a valid url is requested.
+    if challenge_time.lower() not in ("all", "future", "past", "present"):
+        response_data = {"error": "Wrong url pattern!"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    q_params = {"published": True, "approved_by_admin": True}
+    if challenge_time.lower() == "past":
+        q_params["end_date__lt"] = timezone.now()
+
+    elif challenge_time.lower() == "present":
+        q_params["start_date__lt"] = timezone.now()
+        q_params["end_date__gt"] = timezone.now()
+
+    elif challenge_time.lower() == "future":
+        q_params["start_date__gt"] = timezone.now()
+    # for `all` we dont need any condition in `q_params`
+
+    # don't return disabled challenges
+    q_params["is_disabled"] = False
+
+    challenge_count = Challenge.objects.filter(**q_params).count()
+    challenge_count = ChallengeCount(challenge_count)
+    serializer = ChallengeCountSerializer(challenge_count)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

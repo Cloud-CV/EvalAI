@@ -25,6 +25,87 @@ describe('Unit tests for main controller', function () {
             expect(vm.challengeList).toEqual([]);
             expect(vm.isChallenge).toBeTruthy({});
             expect(vm.redirectUrl).toEqual({});
+            expect(vm.challengeCount).toEqual(0);
+            expect(vm.participantCount).toEqual(0);
+            expect(vm.submissionCount).toEqual(0);
+        });
+    });
+
+    describe('Unit tests for updateChallengeCount function `challenges/challenge/all/count`', function() {
+        var success, successResponse;
+        var errorResponse = 'error';
+
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: successResponse
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse
+                    });
+                }
+            };
+        });
+
+        it('successfully get total challenge count', function () {
+            success = true;
+            successResponse = {'challenge_count': 3};
+            vm.updateChallengeCount();
+            expect(vm.challengeCount).toEqual(3);
+        });
+    });
+
+    describe('Unit tests for updateParticipantCount function `analytics/participant/count`', function() {
+        var success, successResponse;
+        var errorResponse = 'error';
+
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: successResponse
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse
+                    });
+                }
+            };
+        });
+
+        it('successfully get total participant count', function () {
+            success = true;
+            successResponse = {'participant_count': 4};
+            vm.updateParticipantCount();
+            expect(vm.participantCount).toEqual(4);
+        });
+    });
+
+    describe('Unit tests for updateSubmissionCount function `analytics/submission/all/count`', function() {
+        var success, successResponse;
+        var errorResponse = 'error';
+
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: successResponse
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse
+                    });
+                }
+            };
+        });
+
+        it('successfully get total submission count', function () {
+            success = true;
+            successResponse = {'submission_count': 5};
+            vm.updateSubmissionCount();
+            expect(vm.submissionCount).toEqual(5);
         });
     });
 

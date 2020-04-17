@@ -183,6 +183,11 @@ class TestChallengeUrls(BaseAPITestClass):
         )
         self.assertEqual(url, "/api/challenges/challenge/PAST")
 
+        url = reverse_lazy(
+            "challenges:get_total_challenges_count", kwargs={"challenge_time": "PAST"}
+        )
+        self.assertEqual(url, "/api/challenges/challenge/PAST/count")
+
         self.url = reverse_lazy(
             "challenges:download_all_submissions",
             kwargs={

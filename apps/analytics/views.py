@@ -87,6 +87,19 @@ def get_participant_count(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_total_participant_count(request):
+    """
+    Returns the number of total participants
+    """
+    participant_count = Participant.objects.count()
+    participant_count = ParticipantCount(participant_count)
+    serializer = ParticipantCountSerializer(participant_count)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
@@ -108,6 +121,46 @@ def get_submission_count(request, challenge_pk, duration):
     )
 
     q_params = {"challenge_phase__id__in": challenge_phase_ids}
+    since_date = None
+    if duration.lower() == "daily":
+        # Get the midnight time of the day
+        since_date = timezone.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+    elif duration.lower() == "weekly":
+        since_date = (timezone.now() - timedelta(days=7)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+    elif duration.lower() == "monthly":
+        since_date = (timezone.now() - timedelta(days=30)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+    # for `all` we dont need any condition in `q_params`
+    if since_date:
+        q_params["submitted_at__gte"] = since_date
+
+    submission_count = Submission.objects.filter(**q_params).count()
+    submission_count = SubmissionCount(submission_count)
+    serializer = SubmissionCountSerializer(submission_count)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_total_submission_count(request, duration):
+    """
+        Returns submission count for a challenge according to the duration
+        Valid values for duration are all, daily, weekly and monthly.
+    """
+    # make sure that a valid url is requested.
+    if duration.lower() not in ("all", "daily", "weekly", "monthly"):
+        response_data = {"error": "Wrong URL pattern!"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    q_params = {}
     since_date = None
     if duration.lower() == "daily":
         # Get the midnight time of the day

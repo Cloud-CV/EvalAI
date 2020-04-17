@@ -281,6 +281,16 @@ class GetParticipantCountTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_total_participant_team_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_participant_count",
+            kwargs={},
+        )
+        expected = {"participant_count": 2}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class GetSubmissionCountForChallengeTest(BaseAPITestClass):
     def setUp(self):
@@ -293,6 +303,19 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase3,      # Challenge phase 3 belongs to challenge 2
             created_by=self.challenge_host_team.created_by,
             status="submitted",
             input_file=self.challenge_phase.test_annotation,
@@ -335,12 +358,34 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
 
+    def test_incorrect_url_pattern_total_submission_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_submission_count",
+            kwargs={
+                "duration": "INCORRECT",
+            },
+        )
+        expected = {"error": "Wrong URL pattern!"}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
     def test_get_daily_submission_count(self):
         self.url = reverse_lazy(
             "analytics:get_submission_count",
             kwargs={"challenge_pk": self.challenge.pk, "duration": "DAILY"},
         )
         expected = {"submission_count": 1}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_daily_total_submission_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_submission_count",
+            kwargs={"duration": "DAILY"},
+        )
+        expected = {"submission_count": 2}
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected)
@@ -355,6 +400,16 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected)
 
+    def test_get_weekly_total_submission_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_submission_count",
+            kwargs={"duration": "WEEKLY"},
+        )
+        expected = {"submission_count": 2}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
     def test_get_monthly_submission_count(self):
         self.url = reverse_lazy(
             "analytics:get_submission_count",
@@ -365,12 +420,32 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected)
 
+    def test_get_monthly_total_submission_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_submission_count",
+            kwargs={"duration": "MONTHLY"},
+        )
+        expected = {"submission_count": 2}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
     def test_get_all_submission_count(self):
         self.url = reverse_lazy(
             "analytics:get_submission_count",
             kwargs={"challenge_pk": self.challenge.pk, "duration": "ALL"},
         )
         expected = {"submission_count": 1}
+        response = self.client.get(self.url, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_all_total_submission_count(self):
+        self.url = reverse_lazy(
+            "analytics:get_total_submission_count",
+            kwargs={"duration": "ALL"},
+        )
+        expected = {"submission_count": 2}
         response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected)

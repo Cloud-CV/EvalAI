@@ -61,6 +61,15 @@ class ChallengeSerializer(serializers.ModelSerializer):
         )
 
 
+class ChallengeCount(object):
+    def __init__(self, challenge_count):
+        self.challenge_count = challenge_count
+
+
+class ChallengeCountSerializer(serializers.Serializer):
+    challenge_count = serializers.IntegerField()
+
+
 class ChallengePhaseSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()

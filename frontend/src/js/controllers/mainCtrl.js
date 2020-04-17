@@ -18,6 +18,9 @@
         vm.isMore = false;
         // store the next redirect value
         vm.redirectUrl = {};
+        vm.challengeCount = 0;
+        vm.participantCount = 0;
+        vm.submissionCount = 0;
 
 
         vm.getChallenge = function() {
@@ -81,9 +84,54 @@
             angular.element(".dropdown-button").dropdown();
         };
 
+        vm.updateChallengeCount = function() {
+            var parameters = {};
+            parameters.url = 'challenges/challenge/all/count';
+            parameters.method = 'GET';
+            parameters.token = null;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.challengeCount = response.data["challenge_count"];
+                },
+                onError: function() {}
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.updateParticipantCount = function() {
+            var parameters = {};
+            parameters.url = 'analytics/participant/count';
+            parameters.method = 'GET';
+            parameters.token = null;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.participantCount = response.data["participant_count"];
+                },
+                onError: function() {}
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.updateSubmissionCount = function() {
+            var parameters = {};
+            parameters.url = 'analytics/submission/all/count';
+            parameters.method = 'GET';
+            parameters.token = null;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.submissionCount = response.data["submission_count"];
+                },
+                onError: function() {}
+            };
+            utilities.sendRequest(parameters);
+        };
 
         vm.init();
         vm.getChallenge();
+        vm.updateChallengeCount();
+        vm.updateParticipantCount();
+        vm.updateSubmissionCount();
+
         angular.element('.carousel').carousel({
             duration: 200
             // dist: 0,
