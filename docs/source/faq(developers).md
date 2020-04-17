@@ -259,11 +259,12 @@ npm install
 bower install
 ```
 
-#### Q. While trying to build EvalAI and run the evalai_django docker image: 
+#### Q. While trying to build EvalAI from the master branch and run the command docker-compose up:
 
 ```
 ERROR: Service 'celery' failed to build: pull access denied for evalai_django, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
 ```
 
-Rename your clone directory to its default name, "EvalAI". This happens because the parent directory changes the name of certain docker images. 
+Please make sure to clone EvalAI in its default directory with name evalai. This happens because the parent directory changes the name of docker images.
 For instance, the image evalai_django gets renamed to evalai_dev_django if your directory is renamed to EvalAI_dev. 
+Refer to [Markdown Guide](https://github.com/Cloud-CV/EvalAI/pull/2746).
