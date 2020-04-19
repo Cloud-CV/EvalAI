@@ -17,6 +17,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "submit_job_to_worker",
         "make_submission_public",
         "make_submission_private",
+        "change_submission_status_to_cancel",
     ]
     list_display = (
         "id",
@@ -80,3 +81,10 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
             submission.save()
 
     make_submission_private.short_description = "Make submission private"
+
+    def change_submission_status_to_cancel(self, request, queryset):
+        for submission in queryset:
+            submission.status = Submission.CANCELLED
+            submission.save()
+
+    change_submission_status_to_cancel.short_description = "Cancel selected submissions (will set the status to canceled for the submissions) "

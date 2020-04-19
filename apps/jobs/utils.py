@@ -210,7 +210,7 @@ def handle_submission_rerun(submission, updated_status):
 
     if submission.challenge_phase.challenge.is_docker_based:
         try:
-            response = requests.get(submission.input_file)
+            response = requests.get(submission.input_file.url)
         except Exception:
             logger.exception("Failed to get input_file")
             return
