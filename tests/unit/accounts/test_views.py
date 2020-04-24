@@ -10,6 +10,10 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 
+from PIL import Image
+import tempfile
+
+
 class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
@@ -39,6 +43,11 @@ class DisableUserTest(BaseAPITestClass):
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
         self.url = reverse_lazy("rest_user_details")
+        image = Image.new('RGB', (100, 100))
+
+        tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+        image.save(tmp_file)
+        tmp_file.seek(0)
         self.data = {
             "username": "anotheruser",
             "affiliation": "some_affiliation",
@@ -46,12 +55,14 @@ class TestUpdateUser(BaseAPITestClass):
             "google_scholar_url": "https://google-scholar.url",
             "linkedin_url": "https://linkedin.url",
             "password": "secret_password",
+            "user_avatar": tmp_file,
         }
         response = self.client.put(
-            os.path.join("api", "auth", str(self.url)), self.data
+            os.path.join("api", "auth", str(self.url)), self.data, format='multipart'
         )
         self.assertNotContains(response, "anotheruser")
         self.assertContains(response, "someuser")
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

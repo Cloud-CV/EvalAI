@@ -154,3 +154,31 @@
     }
 
 })();
+
+/*
+// define services here
+
+// Basic utilities
+(function() {
+
+    'use strict';
+
+    angular
+        .module('evalai')
+        .service('fileUpload', ['$http', function ($http) {
+            this.uploadFileToUrl = function(file, uploadUrl) {
+                var fd = new FormData(); 
+                fd.append('user_avatar', file); 
+                $http.post(uploadUrl, fd, {
+                    transformRequest: angular.identity, 
+                    headers: {'Content-Type': undefined}
+                }).success(function(){
+
+                }).error(function(){
+
+                })
+            }
+        }]);
+
+})();
+*/
