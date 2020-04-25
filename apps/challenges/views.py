@@ -3,7 +3,6 @@ import logging
 import random
 import requests
 import shutil
-import string
 import tempfile
 import uuid
 import yaml
@@ -54,6 +53,14 @@ from challenges.utils import (
     get_leaderboard_model,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    get_unique_key,
+    write_file,
+    extract_zip_file,
+    get_yaml_files_from_challenge_config,
+    read_yaml_file,
+    get_yaml_read_error_description,
+    is_valid_challenge_config_yaml_field,
+    is_valid_challenge_phase_config_yaml_field
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -99,7 +106,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
-from .utils import get_file_content, get_aws_credentials_for_submission
+from .utils import get_file_content, get_aws_credentials_for_submission, read_yaml_file
 
 logger = logging.getLogger(__name__)
 
@@ -635,12 +642,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     BASE_LOCATION = tempfile.mkdtemp()
     try:
         response = requests.get(uploaded_zip_file_path, stream=True)
-        unique_folder_name = "".join(
-            [
-                random.choice(string.ascii_letters + string.digits)
-                for i in xrange(10)
-            ]
-        )
+        unique_folder_name = get_unique_key(10)
         CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
             BASE_LOCATION, "{}.zip".format(unique_folder_name)
         )
@@ -2250,3 +2252,333 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
     )
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def validate_challenge_config(request, challenge_host_team_pk):
+    challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+    errors = {}
+    serializer = ChallengeConfigSerializer(
+        data=request.data, context={"request": request}
+    )
+    if serializer.is_valid():
+        uploaded_zip_file_path = serializer.data["zip_configuration"]
+    else:
+        errors["error"] = serializer.errors
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # All files download and extract location.
+    base_location = tempfile.mkdtemp()
+    challenge_zip_download_location = join(
+        base_location, "challenge_config.zip"
+    )
+    try:
+        response = requests.get(uploaded_zip_file_path, stream=True)
+        try:
+            if response and response.status_code == 200:
+                write_file(challenge_zip_download_location, "wb", response.content)
+        except IOError:
+            message = (
+                "Unable to process the uploaded zip file. "
+                "Please try again!"
+            )
+            errors["error"] = [message]
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except requests.exceptions.RequestException:
+        message = (
+            "A server error occured while processing zip file. "
+            "Please try again!"
+        )
+        errors["error"] = [message]
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Extract zip file
+    try:
+        zip_ref = extract_zip_file(challenge_zip_download_location, "r", base_location)
+    except zipfile.BadZipfile:
+        message = "The zip file contents cannot be extracted. Please check the format!"
+        errors["error"] = [message]
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    yaml_file_count, yaml_file, extracted_folder_name = get_yaml_files_from_challenge_config(zip_ref)
+
+    if not yaml_file_count:
+        message = "There is no YAML file in zip file you uploaded!"
+        errors["error"] = message
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if yaml_file_count > 1:
+        message = "There are {0} YAML files instead of one in zip file!".format(yaml_file_count)
+        errors["error"] = [message]
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        yaml_file_path = join(base_location, yaml_file)
+        yaml_file_data = read_yaml_file(yaml_file_path, "r")
+    except (yaml.YAMLError, ScannerError) as exc:
+        error_description, line_number, column_number = get_yaml_read_error_description(exc)
+        message = "\n{} in line {}, column {}\n".format(
+            error_description, line_number, column_number
+        )
+        errors["error"] = [message]
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    error = False
+    # Check for challenge title.
+    yaml_file_keys = yaml_file_data.keys()
+
+    if "title" in yaml_file_keys:
+        challenge_title = yaml_file_data.get("title")
+        if len(challenge_title) == 0:
+            message = "Challenge title is empty. Please add."
+            errors["title"] = [message]
+            error = True
+    else:
+        message = "Challenge title is missing. Please include."
+        errors["title"] = [message]
+        error = True
+
+    # Check for challenge image in yaml file.
+    image = yaml_file_data.get("image")
+    if image and (
+        image.endswith(".jpg")
+        or image.endswith(".jpeg")
+        or image.endswith(".png")
+    ):
+        challenge_image_path = join(
+            base_location, extracted_folder_name, image
+        )
+        if isfile(challenge_image_path):
+            challenge_image_file = ContentFile(
+                get_file_content(challenge_image_path, "rb"), image
+            )
+        else:
+            challenge_image_file = None
+            message = "WARNING: There is no image file."
+            errors["image"] = [message]
+    else:
+        challenge_image_file = None
+        message = "ERROR: There is no key for image."
+        errors["image"] = [message]
+        error = True
+
+    # check for challenge description file
+    challenge_config_location = join(base_location, extracted_folder_name)
+    is_valid, message, is_error = is_valid_challenge_config_yaml_field(yaml_file_data,
+                                                                       "description",
+                                                                       challenge_config_location)
+    if not is_valid:
+        errors["description"] = [message]
+    if is_error:
+        error = True
+
+    # check for evaluation details file
+    is_valid, message, is_error = is_valid_challenge_config_yaml_field(yaml_file_data,
+                                                                       "evaluation_details",
+                                                                       challenge_config_location)
+    if not is_valid:
+        errors["evaluation_details"] = [message]
+    if is_error:
+        error = True
+
+    # check for terms and conditions file
+    is_valid, message, is_error = is_valid_challenge_config_yaml_field(yaml_file_data,
+                                                                       "terms_and_conditions",
+                                                                       challenge_config_location)
+    if not is_valid:
+        errors["terms_and_conditions"] = [message]
+    if is_error:
+        error = True
+
+    # check for submission guidelines file
+    is_valid, message, is_error = is_valid_challenge_config_yaml_field(yaml_file_data,
+                                                                       "submission_guidelines",
+                                                                       challenge_config_location)
+    if not is_valid:
+        errors["submission_guidelines"] = [message]
+    if is_error:
+        error = True
+
+    # Check for evaluation script path in yaml file.
+    evaluation_script = yaml_file_data.get("evaluation_script")
+    if "evaluation_script" in yaml_file_keys and evaluation_script:
+        evaluation_script_path = join(challenge_config_location, evaluation_script)
+        # Check for evaluation script file in extracted zip folder.
+        if isfile(evaluation_script_path):
+            with open(evaluation_script_path, "rb") as challenge_evaluation_script:
+                challenge_evaluation_script_file = ContentFile(
+                    challenge_evaluation_script.read(), evaluation_script_path
+                )
+        else:
+            message = "ERROR: No evaluation script is present in the zip file. Please add it and then try again!"
+            errors["evaluation_script"] = [message]
+            error = True
+    else:
+        message = "ERROR: There is no key for evaluation script in YAML file. Please add it and then try again!"
+        errors["evaluation_script"] = [message]
+        error = True
+
+    if not error:
+        with transaction.atomic():
+            serializer = ZipChallengeSerializer(
+                data=yaml_file_data,
+                context={
+                    "request": request,
+                    "challenge_host_team": challenge_host_team,
+                    "image": challenge_image_file,
+                    "evaluation_script": challenge_evaluation_script_file,
+                },
+            )
+            if serializer.is_valid():
+                challenge = serializer.instance
+            else:
+                serializer_errors = serializer.errors
+                for e in serializer_errors:
+                    errors[e] = serializer_errors[e]
+
+    # Check for Challenge phases
+    error = False
+    if "challenge_phases" in yaml_file_keys:
+        challenge_phases_data = yaml_file_data.get("challenge_phases")
+    else:
+        message = "ERROR: No challenge phase key found. Please add challenge phases in YAML file and try again!"
+        errors["challenge_phases"] = [message]
+        error = True
+
+    is_priv_annot = yaml_file_data.get("private_annotations")
+    if not is_priv_annot:
+        for data in challenge_phases_data:
+            test_annotation_file = data.get("test_annotation_file")
+            if test_annotation_file:
+                test_annotation_file_path = join(
+                    challenge_config_location,
+                    test_annotation_file,
+                )
+
+                if isfile(test_annotation_file_path):
+                    with open(
+                            test_annotation_file_path, "rb"
+                    ) as test_annotation_file:
+                        challenge_test_annotation_file = ContentFile(
+                            test_annotation_file.read(),
+                            test_annotation_file_path,
+                        )
+                else:
+                    message = (
+                        "ERROR: No test annotation file found in zip file"
+                        "for challenge phase {}".format(data["name"])
+                    )
+                    errors["test_annotation_file"] = [message]
+                    error = True
+            else:
+                message = (
+                    "ERROR: There is no key for test annotation file for"
+                    "challenge phase {}.".format(data["name"])
+                )
+                errors["test_annotation_file"] = [message]
+                error = True
+
+    else:
+        for data in challenge_phases_data:
+            test_annotation_file = data.get("test_annotation_file")
+            if test_annotation_file:
+                message = (
+                    " ERROR: Annotation file key is given for challenge phase {}! Please remove, or"
+                    " change 'private_annotations' key to False.".format(data["name"])
+                )
+                errors["test_annotation_file"] = [message]
+                error = True
+
+    for data in challenge_phases_data:
+        is_valid, message = is_valid_challenge_phase_config_yaml_field(data,
+                                                                       "description",
+                                                                       challenge_config_location)
+        if not is_valid:
+            errors["phase__description"] = [message]
+            error = True
+
+    if not error:
+        serializer = ChallengePhaseCreateSerializer(
+            data=data,
+            context={
+                "challenge": challenge,
+                "test_annotation": challenge_test_annotation_file,
+            },
+        )
+        if not serializer.is_valid():
+            if not serializer.is_valid():
+                serializer_errors = serializer.errors
+                for e in serializer_errors:
+                    errors[e] = serializer_errors[e]
+
+        # Check for leaderboard.
+    error = False
+    leaderboard = yaml_file_data.get("leaderboard")
+    if leaderboard:
+        if 'schema' not in leaderboard[0]:
+            message = " ERROR: There is no leaderboard schema in the YAML configuration file."
+            errors["leaderboard__schema"] = [message]
+            error = True
+        if 'default_order_by' not in leaderboard[0].get('schema'):
+            message = " ERROR: There is no 'default_order_by' key in leaderboard schema."
+            errors["leaderboard__default_order_by"] = [message]
+            error = True
+        if "labels" not in leaderboard[0].get("schema"):
+            message = " ERROR: There is no 'labels' key in leaderboard schema."
+            errors["leaderboard__labels"] = [message]
+            error = True
+
+        if not error:
+            for data in leaderboard:
+                serializer = LeaderboardSerializer(data=data)
+                if not serializer.is_valid():
+                    serializer_errors = serializer.errors
+                    for e in serializer_errors:
+                        errors[e] = serializer_errors[e]
+    else:
+        message = " ERROR: There is no key leaderboard in the YAML file."
+        errors["leaderboard"] = message
+
+    # Check for Challenge Phase Splits
+    challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
+    if challenge_phase_splits:
+        for data in challenge_phase_splits:
+            serializer = ZipChallengePhaseSplitSerializer(data=data)
+            if not serializer.is_valid():
+                serializer_errors = serializer.errors
+                for e in serializer_errors:
+                    errors[e] = serializer_errors[e]
+    else:
+        message = " ERROR: There is no key for challenge phase splits."
+        errors["challenge_phase_splits"] = message
+
+    # Check for Dataset Splits
+    dataset_splits = yaml_file_data.get("dataset_splits")
+    if "dataset_splits" in yaml_file_keys and dataset_splits:
+        for split in dataset_splits:
+            name = split.get("name")
+            if not name:
+                message = " ERROR: There is no name for dataset split {}.".format(split.get("id"))
+                errors["dataset_splits__name"] = message
+
+        for split in dataset_splits:
+            serializer = DatasetSplitSerializer(data=split)
+            serializer_errors = serializer.errors
+            for e in serializer_errors:
+                errors[e] = serializer_errors[e]
+    else:
+        message = " ERROR: There is no key for dataset splits."
+        errors["dataset_splits"] = message
+
+    shutil.rmtree(base_location)
+
+    if errors:
+        return Response(errors, status=status.HTTP_200_OK)
+    else:
+        message = " No errors in the configurations file."
+        response_data = {"Success": message}
+        return Response(response_data, status=status.HTTP_200_OK)

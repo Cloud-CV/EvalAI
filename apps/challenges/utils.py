@@ -1,10 +1,15 @@
 import os
 import json
 import logging
+import random
+import zipfile
+import string
 import uuid
 
+import yaml
 from botocore.exceptions import ClientError
 from moto import mock_ecr, mock_sts
+from os.path import basename, isfile, join
 
 from base.utils import get_model_object, get_boto3_client, mock_if_non_prod_aws
 
@@ -252,3 +257,87 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
         if domain.lower() in email.lower():
             return True
     return False
+
+
+def get_unique_key(length):
+    return "".join([random.choice(string.ascii_letters + string.digits) for i in range(length)])
+
+
+def write_file(output_path, mode, file_content):
+    with open(output_path, mode) as file:
+        file.write(file_content)
+
+
+def extract_zip_file(file_path, mode, output_path):
+    zip_ref = zipfile.ZipFile(file_path, mode)
+    zip_ref.extractall(output_path)
+    zip_ref.close()
+    return zip_ref
+
+
+def get_yaml_files_from_challenge_config(zip_ref):
+    yaml_file_count = 0
+    for name in zip_ref.namelist():
+        if (name.endswith(".yaml") or name.endswith(".yml")) and (
+                not name.startswith("__MACOSX")
+        ):
+            yaml_file_name = name
+            extracted_folder_name = yaml_file_name.split(basename(yaml_file_name))[0]
+            yaml_file_count += 1
+
+    if not yaml_file_count:
+        return yaml_file_count, None, None
+    return yaml_file_count, yaml_file_name, extracted_folder_name
+
+
+def read_yaml_file(file_path, mode):
+    with open(file_path, mode) as stream:
+        yaml_file_data = yaml.safe_load(stream)
+    return yaml_file_data
+
+
+def get_yaml_read_error_description(exc):
+    # To get the problem description
+    if hasattr(exc, "problem"):
+        error_description = exc.problem
+        # To capitalize the first alphabet of the problem description as default is in lowercase
+        error_description = error_description[0:].capitalize()
+    # To get the error line and column number
+    if hasattr(exc, "problem_mark"):
+        mark = exc.problem_mark
+        line_number = mark.line + 1
+        column_number = mark.column + 1
+    return error_description, line_number, column_number
+
+
+def is_valid_challenge_config_yaml_field(yaml_file_data, key, base_location):
+    value = yaml_file_data.get(key)
+    message = ""
+    is_valid = False
+    is_error = False
+    if value:
+        file_path = join(base_location, value)
+        if file_path.endswith(".html") and isfile(file_path):
+            is_valid = True
+        else:
+            message = "WARNING: No {}.html file is present in the zip file.".format(key)
+    else:
+        message = "ERROR: There is no key for {} in YAML file".format(key)
+        is_error = True
+    return is_valid, message, is_error
+
+
+def is_valid_challenge_phase_config_yaml_field(yaml_file_data, key, base_location):
+    value = yaml_file_data.get(key)
+    message = ""
+    is_valid = False
+    if value:
+        file_path = join(base_location, value)
+        if file_path.endswith(".html") and isfile(file_path):
+            is_valid = True
+        else:
+            message = (" WARNING: There is no file for phase "
+                       " {} in phase {}.".format(key, yaml_file_data["name"]))
+    else:
+        message = " ERROR: There is no key for phase {} in phase {}.".format(key, yaml_file_data["name"])
+    return is_valid, message
