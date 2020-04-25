@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='challengephase',
             name='allowed_submission_file_type',
-            field=models.CharField(default='.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy', max_length=200),
+            field=models.CharField(default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy", max_length=200),
         ),
     ]
