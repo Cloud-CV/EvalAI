@@ -267,4 +267,3 @@ ERROR: Service 'celery' failed to build: pull access denied for evalai_django, r
 
 Please make sure to clone EvalAI in its default directory with name evalai. This happens because the parent directory changes the name of docker images.
 For instance, the image evalai_django gets renamed to evalai_dev_django if your directory is renamed to EvalAI_dev. 
-Refer to [Markdown Guide](https://github.com/Cloud-CV/EvalAI/pull/2746).
