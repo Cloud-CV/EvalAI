@@ -67,7 +67,7 @@
 
         vm.subErrors = {};
 
-        vm.privateLeaderboardUnique = false;
+        vm.isChallengeLeaderboardPrivate = false;
 
         utilities.showLoader();
 
@@ -550,7 +550,7 @@
                 var details = response.data;
                 vm.phaseSplits = details;
                 if(details.length == 0) {
-                    vm.privateLeaderboardUnique = true; 
+                    vm.isChallengeLeaderboardPrivate = true; 
                 }
                 for(var i=0; i<details.length; i++) {
                     if (details[i].visibility !== challengePhaseVisibility.public) {
