@@ -519,7 +519,7 @@
                     offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
-                
+
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -707,8 +707,8 @@
                                 vm.leaderboard[i].timeSpan = 'hour';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'hours';
-                            }                        
-                        } 
+                            }
+                        }
                         else if (duration._data.minutes !=0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
@@ -877,8 +877,10 @@
                     }
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
                     vm.load = function(url) {
@@ -905,9 +907,11 @@
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
                                 if (vm.submissionResult.previous === null) {
@@ -943,6 +947,7 @@
                 vm.isNext = '';
                 vm.isPrev = '';
                 vm.currentPage = '';
+                vm.currentRefPage = '';
                 vm.showPagination = false;
             }
 
@@ -979,8 +984,10 @@
                     }
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
 
@@ -1004,7 +1011,7 @@
 
         vm.reRunSubmission = function(submissionObject) {
             submissionObject.classList = ['spin', 'progress-indicator'];
-            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run-by-host/';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
@@ -1193,8 +1200,10 @@
                     }
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
                     vm.load = function(url) {
@@ -1218,9 +1227,11 @@
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
                                 if (vm.submissionResult.previous === null) {
@@ -1358,49 +1369,49 @@
         vm.fileTypes = [{ 'name': 'csv' }];
         vm.fields = [{
             'label': 'Team Name',
-            'id': 'participant_team' 
+            'id': 'participant_team'
         },{
             'label': 'Team Members',
-            'id': 'participant_team_members' 
+            'id': 'participant_team_members'
         },{
             'label': 'Team Members Email Id',
-            'id': 'participant_team_members_email' 
+            'id': 'participant_team_members_email'
         },{
             'label': 'Team Members Affiliation',
-            'id': 'participant_team_members_affiliation' 
+            'id': 'participant_team_members_affiliation'
         },{
             'label': 'Challenge Phase',
-            'id': 'challenge_phase' 
+            'id': 'challenge_phase'
         },{
             'label': 'Status',
-            'id': 'status' 
+            'id': 'status'
         },{
             'label': 'Created By',
-            'id': 'created_by' 
+            'id': 'created_by'
         },{
             'label': 'Execution Time',
-            'id': 'execution_time' 
+            'id': 'execution_time'
         },{
             'label': 'Submission Number',
-            'id': 'submission_number' 
+            'id': 'submission_number'
         },{
             'label': 'Submitted File',
-            'id': 'input_file' 
+            'id': 'input_file'
         },{
             'label': 'Stdout File',
-            'id': 'stdout_file' 
+            'id': 'stdout_file'
         },{
             'label': 'Stderr File',
-            'id': 'stderr_file' 
+            'id': 'stderr_file'
         },{
             'label': 'Submitted At',
-            'id': 'created_at' 
+            'id': 'created_at'
         },{
             'label': 'Submission Result File',
-            'id': 'submission_result_file' 
+            'id': 'submission_result_file'
         },{
             'label': 'Submission Metadata File',
-            'id': 'submission_metadata_file' 
+            'id': 'submission_metadata_file'
         }];
 
         vm.downloadChallengeSubmissions = function() {
@@ -1449,7 +1460,7 @@
                     };
                     utilities.sendRequest(parameters);
                 }
-                
+
             } else {
                 $rootScope.notify("error", "Please select a challenge phase!");
             }
@@ -1919,6 +1930,7 @@
                 formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
                 formData.append("max_submissions_per_month", vm.page.challenge_phase.max_submissions_per_month);
                 formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
+                formData.append("max_concurrent_submissions_allowed", vm.page.challenge_phase.max_concurrent_submissions_allowed); 
                 if (vm.testAnnotationFile) {
                     formData.append("test_annotation", vm.testAnnotationFile);
                 }
@@ -2102,7 +2114,7 @@
             }
         };
 
-        
+
     }
 
 })();

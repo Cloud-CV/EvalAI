@@ -6,6 +6,7 @@ from hosts.serializers import ChallengeHostTeamSerializer
 from .models import (
     Challenge,
     ChallengeConfiguration,
+    ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
@@ -89,6 +90,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_active",
             "codename",
             "slug",
+            "max_concurrent_submissions_allowed",
         )
 
 
@@ -113,7 +115,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "challenge_phase_name",
             "dataset_split_name",
             "visibility",
-            "show_leaderboard_by_latest_submission"
+            "show_leaderboard_by_latest_submission",
         )
 
     def get_dataset_split_name(self, obj):
@@ -215,7 +217,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "leaderboard_decimal_precision",
             "is_leaderboard_order_descending",
-            "show_leaderboard_by_latest_submission"
+            "show_leaderboard_by_latest_submission",
         )
 
 
@@ -253,6 +255,8 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "codename",
             "test_annotation",
             "slug",
+            "max_concurrent_submissions_allowed",
+            "environment_image",
         )
 
 
@@ -317,3 +321,9 @@ class UserInvitationSerializer(serializers.ModelSerializer):
     def get_user_details(self, obj):
         serializer = UserDetailsSerializer(obj.user)
         return serializer.data
+
+
+class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChallengeEvaluationCluster
+        fields = ("id", "challenge", "name", "cluster_yaml", "kube_config")
