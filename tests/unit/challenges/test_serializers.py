@@ -116,6 +116,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "codename": self.challenge_phase.codename,
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
@@ -141,9 +142,35 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "codename": self.challenge_phase.codename,
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
             }
-            self.challenge_phase_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(
+            self.challenge_phase_create_serializer_without_max_submissions_per_month = ChallengePhaseCreateSerializer(
+                instance=self.challenge_phase
+            )
+
+            self.serializer_data_without_max_concurrent_submissions_allowed = {
+                "id": self.challenge_phase.pk,
+                "name": "Challenge Phase",
+                "description": "Description for Challenge Phase",
+                "leaderboard_public": False,
+                "is_public": False,
+                "start_date": "{0}{1}".format(
+                    self.challenge_phase.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.challenge_phase.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "challenge": self.challenge.pk,
+                "test_annotation": self.challenge_phase.test_annotation.url,
+                "max_submissions_per_day": 100000,
+                "max_submissions": 100000,
+                "max_submissions_per_month": 100000,
+                "codename": self.challenge_phase.codename,
+                "is_active": self.challenge_phase.is_active,
+                "slug": self.challenge_phase.slug,
+            }
+            self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
             )
 
@@ -171,6 +198,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "test_annotation",
                     "is_submission_public",
                     "slug",
+                    "max_concurrent_submissions_allowed",
                     "environment_image",
                 ]
             ),
@@ -213,12 +241,17 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             self.serializer_data["environment_image"],
         )
 
+        self.assertEqual(
+            data["max_concurrent_submissions_allowed"],
+            self.serializer_data["max_concurrent_submissions_allowed"],
+        )
+
     def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
-        self
+        self,
     ):
 
         data = (
-            self.challenge_phase_create_serializer_wihout_max_submissions_per_month.data
+            self.challenge_phase_create_serializer_without_max_submissions_per_month.data
         )
 
         self.assertEqual(
@@ -241,6 +274,79 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "test_annotation",
                     "is_submission_public",
                     "slug",
+                    "max_concurrent_submissions_allowed",
+                    "environment_image",
+                ]
+            ),
+        )
+
+        self.assertEqual(data["id"], self.serializer_data["id"])
+        self.assertEqual(data["name"], self.serializer_data["name"])
+        self.assertEqual(
+            data["description"], self.serializer_data["description"]
+        )
+        self.assertEqual(
+            data["leaderboard_public"],
+            self.serializer_data["leaderboard_public"],
+        )
+        self.assertEqual(
+            data["start_date"], self.serializer_data["start_date"]
+        )
+        self.assertEqual(data["end_date"], self.serializer_data["end_date"])
+        self.assertEqual(data["challenge"], self.serializer_data["challenge"])
+        self.assertEqual(
+            data["max_submissions_per_day"],
+            self.serializer_data["max_submissions_per_day"],
+        )
+        self.assertEqual(
+            data["max_submissions_per_month"],
+            self.serializer_data["max_submissions_per_month"],
+        )
+        self.assertEqual(
+            data["max_submissions"], self.serializer_data["max_submissions"]
+        )
+        self.assertEqual(data["is_public"], self.serializer_data["is_public"])
+        self.assertEqual(data["codename"], self.serializer_data["codename"])
+        self.assertEqual(
+            data["test_annotation"], self.serializer_data["test_annotation"]
+        )
+        self.assertEqual(data["is_active"], self.serializer_data["is_active"])
+        self.assertEqual(data["slug"], self.serializer_data["slug"])
+
+        self.assertEqual(
+            data["max_concurrent_submissions_allowed"],
+            self.serializer_data["max_concurrent_submissions_allowed"],
+        )
+
+    def test_challenge_phase_create_serializer_without_max_concurrent_submissions_allowed(
+        self,
+    ):
+
+        data = (
+            self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed.data
+        )
+
+        self.assertEqual(
+            sorted(list(data.keys())),
+            sorted(
+                [
+                    "id",
+                    "name",
+                    "description",
+                    "leaderboard_public",
+                    "start_date",
+                    "end_date",
+                    "challenge",
+                    "max_submissions_per_day",
+                    "max_submissions_per_month",
+                    "max_submissions",
+                    "is_public",
+                    "is_active",
+                    "codename",
+                    "test_annotation",
+                    "is_submission_public",
+                    "slug",
+                    "max_concurrent_submissions_allowed",
                     "environment_image",
                 ]
             ),
