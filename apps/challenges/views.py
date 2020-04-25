@@ -106,7 +106,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
-from .utils import get_file_content, get_aws_credentials_for_submission, read_yaml_file
+from .utils import get_file_content, get_aws_credentials_for_submission
 
 logger = logging.getLogger(__name__)
 
