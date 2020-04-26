@@ -1144,11 +1144,11 @@
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
                     if (vm.team.error == "This field is required.") {
-                        $rootScope.notify("error", "Illegal character in team name");
+                        $rootScope.notify("error", "Illegal character in team name.");
                     } else if (vm.team.error == "This field may not be blank.") {
-                        $rootScope.notify("error", "Team name can not be blank");
+                        $rootScope.notify("error", "Team name can not be blank.");
                     } else {
-                        $rootScope.notify("error", "New team couldn't be created");
+                        $rootScope.notify("error", "New team couldn't be created.");
                     }
                 }
             };
