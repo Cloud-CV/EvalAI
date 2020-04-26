@@ -68,8 +68,8 @@
 
         vm.subErrors = {};
 
-        vm.debugError = '';
 
+        vm.isChallengeLeaderboardPrivate = false;
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -551,6 +551,9 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phaseSplits = details;
+                if(details.length == 0) {
+                    vm.isChallengeLeaderboardPrivate = true; 
+                }
                 for(var i=0; i<details.length; i++) {
                     if (details[i].visibility !== challengePhaseVisibility.public) {
                         vm.phaseSplits[i].showPrivate = true;
@@ -881,8 +884,10 @@
                     }
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
                     vm.load = function(url) {
@@ -909,9 +914,11 @@
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
                                 if (vm.submissionResult.previous === null) {
@@ -947,6 +954,7 @@
                 vm.isNext = '';
                 vm.isPrev = '';
                 vm.currentPage = '';
+                vm.currentRefPage = '';
                 vm.showPagination = false;
             }
 
@@ -983,8 +991,10 @@
                     }
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
 
@@ -1203,8 +1213,10 @@
                     }
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
+                        vm.currentRefPage = Math.ceil(vm.currentPage);
                     }
 
                     vm.load = function(url) {
@@ -1228,9 +1240,11 @@
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                    vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
                                 if (vm.submissionResult.previous === null) {
@@ -1929,6 +1943,7 @@
                 formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
                 formData.append("max_submissions_per_month", vm.page.challenge_phase.max_submissions_per_month);
                 formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
+                formData.append("max_concurrent_submissions_allowed", vm.page.challenge_phase.max_concurrent_submissions_allowed); 
                 if (vm.testAnnotationFile) {
                     formData.append("test_annotation", vm.testAnnotationFile);
                 }
