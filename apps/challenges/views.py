@@ -2265,6 +2265,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         data=request.data, context={"request": request}
     )
     if serializer.is_valid():
+        serializer.save()
         uploaded_zip_file_path = serializer.data["zip_configuration"]
     else:
         errors["error"] = serializer.errors
@@ -2434,150 +2435,147 @@ def validate_challenge_config(request, challenge_host_team_pk):
                 },
             )
             if serializer.is_valid():
+                serializer.save()
                 challenge = serializer.instance
             else:
                 serializer_errors = serializer.errors
                 for e in serializer_errors:
                     errors[e] = serializer_errors[e]
 
-    # Check for Challenge phases
-    error = False
-    if "challenge_phases" in yaml_file_keys:
-        challenge_phases_data = yaml_file_data.get("challenge_phases")
-    else:
-        message = "ERROR: No challenge phase key found. Please add challenge phases in YAML file and try again!"
-        errors["challenge_phases"] = [message]
-        error = True
-
-    is_priv_annot = yaml_file_data.get("private_annotations")
-    if not is_priv_annot:
-        for data in challenge_phases_data:
-            test_annotation_file = data.get("test_annotation_file")
-            if test_annotation_file:
-                test_annotation_file_path = join(
-                    challenge_config_location,
-                    test_annotation_file,
-                )
-
-                if isfile(test_annotation_file_path):
-                    with open(
-                            test_annotation_file_path, "rb"
-                    ) as test_annotation_file:
-                        challenge_test_annotation_file = ContentFile(
-                            test_annotation_file.read(),
-                            test_annotation_file_path,
-                        )
-                else:
-                    message = (
-                        "ERROR: No test annotation file found in zip file"
-                        "for challenge phase {}".format(data["name"])
-                    )
-                    errors["test_annotation_file"] = [message]
-                    error = True
+            # Check for Challenge phases
+            error = False
+            if "challenge_phases" in yaml_file_keys:
+                challenge_phases_data = yaml_file_data.get("challenge_phases")
             else:
-                message = (
-                    "ERROR: There is no key for test annotation file for"
-                    "challenge phase {}.".format(data["name"])
-                )
-                errors["test_annotation_file"] = [message]
+                message = "ERROR: No challenge phase key found. Please add challenge phases in YAML file and try again!"
+                errors["challenge_phases"] = [message]
                 error = True
 
-    else:
-        for data in challenge_phases_data:
-            test_annotation_file = data.get("test_annotation_file")
-            if test_annotation_file:
-                message = (
-                    " ERROR: Annotation file key is given for challenge phase {}! Please remove, or"
-                    " change 'private_annotations' key to False.".format(data["name"])
+            is_priv_annot = yaml_file_data.get("private_annotations")
+            if not is_priv_annot:
+                for data in challenge_phases_data:
+                    test_annotation_file = data.get("test_annotation_file")
+                    if test_annotation_file:
+                        test_annotation_file_path = join(
+                            challenge_config_location,
+                            test_annotation_file,
+                        )
+
+                        if isfile(test_annotation_file_path):
+                            with open(
+                                    test_annotation_file_path, "rb"
+                            ) as test_annotation_file:
+                                challenge_test_annotation_file = ContentFile(
+                                    test_annotation_file.read(),
+                                    test_annotation_file_path,
+                                )
+                        else:
+                            message = (
+                                "ERROR: No test annotation file found in zip file"
+                                "for challenge phase {}".format(data["name"])
+                            )
+                            errors["test_annotation_file"] = [message]
+                            error = True
+                    else:
+                        message = (
+                            "ERROR: There is no key for test annotation file for"
+                            "challenge phase {}.".format(data["name"])
+                        )
+                        errors["test_annotation_file"] = [message]
+                        error = True
+
+            for data in challenge_phases_data:
+                is_valid, message = is_valid_challenge_phase_config_yaml_field(data,
+                                                                               "description",
+                                                                               challenge_config_location)
+                if not is_valid:
+                    errors["phase__description"] = [message]
+                    error = True
+
+            if not error:
+                serializer = ChallengePhaseCreateSerializer(
+                    data=data,
+                    context={
+                        "challenge": challenge,
+                        "test_annotation": challenge_test_annotation_file,
+                    },
                 )
-                errors["test_annotation_file"] = [message]
-                error = True
-
-    for data in challenge_phases_data:
-        is_valid, message = is_valid_challenge_phase_config_yaml_field(data,
-                                                                       "description",
-                                                                       challenge_config_location)
-        if not is_valid:
-            errors["phase__description"] = [message]
-            error = True
-
-    if not error:
-        serializer = ChallengePhaseCreateSerializer(
-            data=data,
-            context={
-                "challenge": challenge,
-                "test_annotation": challenge_test_annotation_file,
-            },
-        )
-        if not serializer.is_valid():
-            if not serializer.is_valid():
-                serializer_errors = serializer.errors
-                for e in serializer_errors:
-                    errors[e] = serializer_errors[e]
-
-        # Check for leaderboard.
-    error = False
-    leaderboard = yaml_file_data.get("leaderboard")
-    if leaderboard:
-        if 'schema' not in leaderboard[0]:
-            message = " ERROR: There is no leaderboard schema in the YAML configuration file."
-            errors["leaderboard__schema"] = [message]
-            error = True
-        if 'default_order_by' not in leaderboard[0].get('schema'):
-            message = " ERROR: There is no 'default_order_by' key in leaderboard schema."
-            errors["leaderboard__default_order_by"] = [message]
-            error = True
-        if "labels" not in leaderboard[0].get("schema"):
-            message = " ERROR: There is no 'labels' key in leaderboard schema."
-            errors["leaderboard__labels"] = [message]
-            error = True
-
-        if not error:
-            for data in leaderboard:
-                serializer = LeaderboardSerializer(data=data)
                 if not serializer.is_valid():
+                    serializer.save()
                     serializer_errors = serializer.errors
                     for e in serializer_errors:
                         errors[e] = serializer_errors[e]
-    else:
-        message = " ERROR: There is no key leaderboard in the YAML file."
-        errors["leaderboard"] = message
 
-    # Check for Challenge Phase Splits
-    challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
-    if challenge_phase_splits:
-        for data in challenge_phase_splits:
-            serializer = ZipChallengePhaseSplitSerializer(data=data)
-            if not serializer.is_valid():
-                serializer_errors = serializer.errors
-                for e in serializer_errors:
-                    errors[e] = serializer_errors[e]
-    else:
-        message = " ERROR: There is no key for challenge phase splits."
-        errors["challenge_phase_splits"] = message
+            # Check for leaderboard.
+            error = False
+            leaderboard = yaml_file_data.get("leaderboard")
+            if leaderboard:
+                if 'schema' not in leaderboard[0]:
+                    message = " ERROR: There is no leaderboard schema in the YAML configuration file."
+                    errors["leaderboard__schema"] = [message]
+                    error = True
+                if 'default_order_by' not in leaderboard[0].get('schema'):
+                    message = " ERROR: There is no 'default_order_by' key in leaderboard schema."
+                    errors["leaderboard__default_order_by"] = [message]
+                    error = True
+                if "labels" not in leaderboard[0].get("schema"):
+                    message = " ERROR: There is no 'labels' key in leaderboard schema."
+                    errors["leaderboard__labels"] = [message]
+                    error = True
 
-    # Check for Dataset Splits
-    dataset_splits = yaml_file_data.get("dataset_splits")
-    if "dataset_splits" in yaml_file_keys and dataset_splits:
-        for split in dataset_splits:
-            name = split.get("name")
-            if not name:
-                message = " ERROR: There is no name for dataset split {}.".format(split.get("id"))
-                errors["dataset_splits__name"] = message
+                if not error:
+                    for data in leaderboard:
+                        serializer = LeaderboardSerializer(data=data)
+                        if not serializer.is_valid():
+                            serializer_errors = serializer.errors
+                            for e in serializer_errors:
+                                errors[e] = serializer_errors[e]
+                        else:
+                            serializer.save()
+            else:
+                message = " ERROR: There is no key leaderboard in the YAML file."
+                errors["leaderboard"] = message
 
-        for split in dataset_splits:
-            serializer = DatasetSplitSerializer(data=split)
-            serializer_errors = serializer.errors
-            for e in serializer_errors:
-                errors[e] = serializer_errors[e]
-    else:
-        message = " ERROR: There is no key for dataset splits."
-        errors["dataset_splits"] = message
+            # Check for Challenge Phase Splits
+            challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
+            if challenge_phase_splits:
+                for data in challenge_phase_splits:
+                    serializer = ZipChallengePhaseSplitSerializer(data=data)
+                    if not serializer.is_valid():
+                        serializer_errors = serializer.errors
+                        for e in serializer_errors:
+                            errors[e] = serializer_errors[e]
+                    else:
+                        serializer.save()
+            else:
+                message = " ERROR: There is no key for challenge phase splits."
+                errors["challenge_phase_splits"] = message
+
+            # Check for Dataset Splits
+            dataset_splits = yaml_file_data.get("dataset_splits")
+            if "dataset_splits" in yaml_file_keys and dataset_splits:
+                for split in dataset_splits:
+                    name = split.get("name")
+                    if not name:
+                        message = " ERROR: There is no name for dataset split {}.".format(split.get("id"))
+                        errors["dataset_splits__name"] = message
+
+                for split in dataset_splits:
+                    serializer = DatasetSplitSerializer(data=split)
+                    if not serializer.is_valid():
+                        serializer_errors = serializer.errors
+                        for e in serializer_errors:
+                            errors[e] = serializer_errors[e]
+                    else:
+                        serializer.save()
+            else:
+                message = " ERROR: There is no key for dataset splits."
+                errors["dataset_splits"] = message
 
     shutil.rmtree(base_location)
 
     if errors:
-        return Response(errors, status=status.HTTP_200_OK)
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         message = " No errors in the configurations file."
         response_data = {"Success": message}
