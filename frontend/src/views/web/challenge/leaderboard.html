@@ -35,6 +35,7 @@
                             </span>{{key.challenge_phase_name}}, <span class="fs-16 w-300">Split: </span>
                             {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background"
                                 data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
+                        <md-option value="leaderboard is private" ng-if="challenge.isChallengeLeaderboardPrivate">Leaderboard is private</md-option>
                     </md-select>
                 </span>
             </div>
