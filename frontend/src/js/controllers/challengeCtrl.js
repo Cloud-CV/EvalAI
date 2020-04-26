@@ -53,6 +53,7 @@
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
         vm.team = {};
+        vm.team.name = "";
         vm.isSubmissionUsingUrl = null;
 
         vm.filter_all_submission_by_team_name = '';
@@ -66,6 +67,8 @@
         vm.authToken = userKey;
 
         vm.subErrors = {};
+
+        vm.debugError = '';
 
         utilities.showLoader();
 
@@ -207,6 +210,7 @@
                                 vm.currentPage = '';
                                 vm.isNext = '';
                                 vm.isPrev = '';
+                                vm.team.name = '';
                                 vm.team.error = false;
 
                                 parameters.url = 'participants/participant_team';
@@ -1130,7 +1134,13 @@
                     var error = response.data;
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
-                    $rootScope.notify("error", "New team couldn't be created.");
+                    if (vm.team.error == "This field is required.") {
+                        $rootScope.notify("error", "Illegal character in team name");
+                    } else if (vm.team.error == "This field may not be blank.") {
+                        $rootScope.notify("error", "Team name can not be blank");
+                    } else {
+                        $rootScope.notify("error", "New team couldn't be created");
+                    }
                 }
             };
 
