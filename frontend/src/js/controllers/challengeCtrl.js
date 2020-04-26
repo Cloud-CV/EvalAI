@@ -67,6 +67,8 @@
 
         vm.subErrors = {};
 
+        vm.isChallengeLeaderboardPrivate = false;
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -547,6 +549,9 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phaseSplits = details;
+                if(details.length == 0) {
+                    vm.isChallengeLeaderboardPrivate = true; 
+                }
                 for(var i=0; i<details.length; i++) {
                     if (details[i].visibility !== challengePhaseVisibility.public) {
                         vm.phaseSplits[i].showPrivate = true;
