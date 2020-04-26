@@ -127,7 +127,9 @@ class Challenge(TimeStampedModel):
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
-
+    slack_webhook_url = models.URLField(
+        max_length=100, blank=True, null=True
+    )
     class Meta:
         app_label = "challenges"
         db_table = "challenge"

@@ -9,6 +9,7 @@ import os
 from django.conf import settings
 
 from challenges.models import Challenge
+from utils import notify_on_slack
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,14 @@ def publish_submission_message(message):
         )
         return
     queue_name = challenge.queue
+    slack_url = challenge.slack_url
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
+    # sending slack notification to the host
+    if slack_url:
+        data = {
+            'text' : 'Submission Received'
+        }
+        notify_on_slack(slack_url,slack_data)
+
     return response

@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import os
 import requests
@@ -220,3 +221,21 @@ def handle_submission_rerun(submission, updated_status):
                 "submitted_image_uri"
             ]
     return message
+
+
+def notify_on_slack(slack_url, slack_data):
+    """
+        Method to send slack notifications
+        Args:
+            - slack_url: Slack Url
+            - slack_data: Notification message
+    """
+    response = requests.post(
+        slack_url, data=json.dumps(slack_data),
+        headers={'Content-Type': 'application/json'}
+    )
+    if response.status_code != 200:
+        raise ValueError(
+            'Request to slack returned an error %s, the response is:\n%s'
+            % (response.status_code, response.text)
+        )
