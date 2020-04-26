@@ -237,6 +237,10 @@ class ChallengePhase(TimeStampedModel):
     environment_image = models.CharField(
         max_length=2128, null=True, blank=True
     )  # Max length of repository name and tag is 2000 and 128 respectively
+    allowed_submission_file_types = models.CharField(
+        max_length=200,
+        default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+    )
 
     class Meta:
         app_label = "challenges"
