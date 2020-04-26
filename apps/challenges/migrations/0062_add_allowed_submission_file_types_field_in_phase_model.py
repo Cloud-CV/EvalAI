@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='challengephase',
-            name='allowed_submission_file_type',
+            name='allowed_submission_file_types',
             field=models.CharField(default='.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy', max_length=200),
         ),
     ]
