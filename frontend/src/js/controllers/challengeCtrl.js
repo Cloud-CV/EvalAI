@@ -53,7 +53,6 @@
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
         vm.team = {};
-        vm.team.name = "";
         vm.isSubmissionUsingUrl = null;
 
         vm.filter_all_submission_by_team_name = '';
