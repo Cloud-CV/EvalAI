@@ -18,7 +18,7 @@
         vm.isMore = false;
         // store the next redirect value
         vm.redirectUrl = {};
-        vm.gridActiveOrganizations = []
+        vm.gridActiveOrganizations = [];
 
 
         vm.getChallenge = function() {
@@ -37,7 +37,7 @@
         };
 
         vm.listToMatrix = function(list, colSize) {
-            var grid = [], i = 0, x = list.length, col, row = -1;
+            var grid = [], x = list.length, col, row = -1;
             for (var i = 0; i < x; i++) {
                 col = i % colSize;
                 if (col === 0) {
@@ -48,7 +48,7 @@
                 grid[row][col] = list[i];
             }
             return grid;
-        }
+        };
 
         vm.getActiveOrganizations = function() {
             // get featured challenge (unauthorized)
@@ -61,9 +61,7 @@
                     var activeOrganizationsList = response.data;
                     vm.gridActiveOrganizations = vm.listToMatrix(activeOrganizationsList, 6);
                 },
-                onError: function(response) {
-                    var status = response.status;
-                }
+                onError: function() {}
             };
             utilities.sendRequest(parameters);
         };

@@ -164,7 +164,8 @@ def subscribe(request):
         if serializer.is_valid():
             serializer.save()
             response_data = {
-                "message", "You will be notified about our latest updates at {}.".format(email)
+                "message", "You will be notified about our latest updates at {}.".format(
+                    email)
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -207,6 +208,7 @@ def get_active_organizations(request):
         )
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    except:
+    except Exception as e:
+        logger.exception(e)
         response_data = {"error": "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

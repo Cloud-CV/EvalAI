@@ -30,6 +30,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "team_type",
         )
 
+
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
