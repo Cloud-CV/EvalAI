@@ -18,6 +18,7 @@
         vm.isMore = false;
         // store the next redirect value
         vm.redirectUrl = {};
+        vm.gridActiveOrganizations = []
 
 
         vm.getChallenge = function() {
@@ -31,6 +32,38 @@
                     vm.challengeList = response.data;
                 },
                 onError: function() {}
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.listToMatrix = function(list, colSize) {
+            var grid = [], i = 0, x = list.length, col, row = -1;
+            for (var i = 0; i < x; i++) {
+                col = i % colSize;
+                if (col === 0) {
+                    grid[++row] = [];
+                }
+                var logoId = list[i]["name"].replace(/\s+/g, '-').toLowerCase() + "-logo";
+                list[i]["logoId"] = logoId;
+                grid[row][col] = list[i];
+            }
+            return grid;
+        }
+
+        vm.getActiveOrganizations = function() {
+            // get featured challenge (unauthorized)
+            var parameters = {};
+            parameters.url = 'web/get_active_organizations/';
+            parameters.method = 'GET';
+            parameters.token = null;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var activeOrganizationsList = response.data;
+                    vm.gridActiveOrganizations = vm.listToMatrix(activeOrganizationsList, 6);
+                },
+                onError: function(response) {
+                    var status = response.status;
+                }
             };
             utilities.sendRequest(parameters);
         };
@@ -84,6 +117,7 @@
 
         vm.init();
         vm.getChallenge();
+        vm.getActiveOrganizations();
         angular.element('.carousel').carousel({
             duration: 200
             // dist: 0,
