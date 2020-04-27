@@ -1316,6 +1316,12 @@ def delete_submission_message_from_queue(request, queue_name):
 
     challenge_pk = challenge.pk
     receipt_handle = request.data["receipt_handle"]
+    if not receipt_handle:
+        response_data = {
+            "error": "Please add message receipt handle in the body"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to access this resource"
