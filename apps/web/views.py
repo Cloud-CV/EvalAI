@@ -7,8 +7,8 @@ from django.core.mail import EmailMessage
 from django.shortcuts import render
 
 from smtplib import SMTPException
-from .models import Subscribers, Team
-from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
+from .models import Subscribers, Team, Organization
+from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer, OrganizationSerializer
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -192,3 +192,21 @@ def our_team(request):
             response_data = {"message", "Successfully added the contributor."}
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes((permissions.AllowAny,))
+def get_active_organizations(request):
+    active_organizations = Organization.objects.filter(
+        is_active=True
+    ).order_by("name")
+    try:
+        serializer = OrganizationSerializer(
+            active_organizations, many=True, context={"request": request}
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    except:
+        response_data = {"error": "Bad request. Please try again later!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

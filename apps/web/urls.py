@@ -11,4 +11,9 @@ urlpatterns = [
         views.notify_users_about_challenge,
         name="notify_users_about_challenge",
     ),
+    url(
+        r"^get_active_organizations/$",
+        views.get_active_organizations,
+        name="get_active_organizations",
+    ),
 ]
