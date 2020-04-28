@@ -8,7 +8,9 @@ import os
 
 from django.conf import settings
 
+from base.utils import send_slack_notification
 from challenges.models import Challenge
+from .utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
@@ -72,10 +74,37 @@ def publish_submission_message(message):
         challenge = Challenge.objects.get(pk=message["challenge_pk"])
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge does not exist for the given id {}".format(message["challenge_pk"])
+            "Challenge does not exist for the given id {}".format(
+                message["challenge_pk"]
+            )
         )
         return
     queue_name = challenge.queue
+    slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
+    # send slack notification
+    if slack_url:
+        challenge_name = challenge.title
+        submission = get_submission_model(message["submission_pk"])
+        participant_team_name = submission.participant_team.team_name
+        phase_name = submission.challenge_phase.name
+        message = {
+            "text": "A *new submission* is uploaded to {}".format(
+                challenge_name
+            ),
+            "fields": [
+                {
+                    "title": "Challenge Phase",
+                    "value": phase_name,
+                    "short": True,
+                },
+                {
+                    "title": "Participant Team Name",
+                    "value": participant_team_name,
+                    "short": True,
+                },
+            ],
+        }
+        send_slack_notification(slack_url, message)
     return response

@@ -127,6 +127,7 @@ class Challenge(TimeStampedModel):
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
+    slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
@@ -238,8 +239,7 @@ class ChallengePhase(TimeStampedModel):
         max_length=2128, null=True, blank=True
     )  # Max length of repository name and tag is 2000 and 128 respectively
     allowed_submission_file_types = models.CharField(
-        max_length=200,
-        default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+        max_length=200, default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
     )
 
     class Meta:
