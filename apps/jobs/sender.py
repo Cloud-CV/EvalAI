@@ -8,9 +8,9 @@ import os
 
 from django.conf import settings
 
-from challenges.models import Challenge
-from .models import Submission
 from base.utils import send_slack_notification
+from challenges.models import Challenge
+from .utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +84,10 @@ def publish_submission_message(message):
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
 
-    # sending slack notification
+    # send slack notification
     if slack_url:
-
         challenge_name = challenge.title
-        submission = Submission.objects.get(pk=message["phase_pk"])
+        submission = get_submission_model(message["submission_pk"])
         participant_team_name = submission.participant_team.team_name
         phase_name = submission.challenge_phase.name
         message = {
@@ -109,5 +108,4 @@ def publish_submission_message(message):
             ],
         }
         send_slack_notification(slack_url, message)
-
     return response
