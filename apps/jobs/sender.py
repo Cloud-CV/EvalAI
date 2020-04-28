@@ -83,7 +83,6 @@ def publish_submission_message(message):
     slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
-
     # send slack notification
     if slack_url:
         challenge_name = challenge.title
