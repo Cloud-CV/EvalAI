@@ -8,7 +8,7 @@ import os
 
 from django.conf import settings
 
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge
 from .models import Submission
 from base.utils import send_slack_notification
 
@@ -83,13 +83,14 @@ def publish_submission_message(message):
     slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
+
     # sending slack notification
     if slack_url:
+
         challenge_name = challenge.title
-        phase_name = ChallengePhase.objects.get(pk=message["phase_pk"]).name
-        participant_team_name = Submission.objects.get(
-            pk=message["phase_pk"]
-        ).participant_team.team_name
+        submission = Submission.objects.get(pk=message["phase_pk"])
+        participant_team_name = submission.participant_team.team_name
+        phase_name = submission.challenge_phase.name
         message = {
             "text": "A *new submission* is uploaded to {}".format(
                 challenge_name
