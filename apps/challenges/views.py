@@ -57,7 +57,6 @@ from challenges.utils import (
     read_as_content_file
 )
 from challenges.challenge_config_utils import (
-    write_file,
     extract_zip_file,
     get_yaml_files_from_challenge_config,
     read_yaml_file,
