@@ -155,7 +155,7 @@ REST_FRAMEWORK = {
         "rest_framework.pagination.LimitOffsetPagination"
     ),
     "PAGE_SIZE": 100,
-    "TEAM_PAGE_SIZE":2,
+    "TEAM_PAGE_SIZE": 2,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],
