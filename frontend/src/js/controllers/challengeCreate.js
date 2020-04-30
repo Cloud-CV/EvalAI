@@ -46,7 +46,7 @@
                     vm.startLoader('create challenge');
 
                     var parameters = {};
-                    parameters.url = 'challenges/challenge/challenge_host_team/' + vm.hostTeamId + '/zip_upload/';
+                    parameters.url = 'challenges/challenge/challenge_host_team/' + vm.hostTeamId + '/validate_challenge_config/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     formData.append("zip_configuration", vm.input_file);
