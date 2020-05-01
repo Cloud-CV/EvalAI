@@ -37,22 +37,6 @@
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
 
-        vm.newContainer = angular.element('.new-team-card');
-
-        // show loader
-        vm.startLoader = function(msg) {
-            vm.isLoader = true;
-            vm.loaderTitle = msg;
-            vm.newContainer.addClass('low-screen');
-        };
-
-        // stop loader
-        vm.stopLoader = function() {
-            vm.isLoader = false;
-            vm.loaderTitle = '';
-            vm.newContainer.removeClass('low-screen');
-        };
-
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
         };
@@ -233,7 +217,7 @@
 
         // function to create new team
         vm.createNewTeam = function() {
-            vm.isLoader = true;
+            vm.isExistLoader = true;
             vm.loaderTitle = '';
 
             vm.startLoader("Loading Teams");
