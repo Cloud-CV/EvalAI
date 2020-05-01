@@ -332,7 +332,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(GetParticularChallengeHost, self).setUp()
         self.url = reverse_lazy(
-            "hosts:challenge_host_detail",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host.pk,
@@ -354,7 +354,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
     def test_particular_challenge_host_does_not_exist(self):
         self.inavlid_challenge_pk = self.challenge_host.pk + 1
         self.url = reverse_lazy(
-            "hosts:challenge_host_detail",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.inavlid_challenge_pk,
@@ -369,7 +369,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
         self
     ):
         self.url = reverse_lazy(
-            "hosts:challenge_host_detail",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk + 1,
                 "pk": self.challenge_host.pk,
@@ -385,7 +385,7 @@ class UpdateParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(UpdateParticularChallengeHost, self).setUp()
         self.url = reverse_lazy(
-            "hosts:challenge_host_detail",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host.pk,
@@ -431,7 +431,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticularChallengeHost, self).setUp()
         self.url = reverse_lazy(
-            "hosts:challenge_host_detail",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host.pk,
