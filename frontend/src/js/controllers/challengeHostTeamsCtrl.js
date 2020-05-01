@@ -27,7 +27,7 @@
         vm.hostTeamId = null;
         vm.challengeHostTeamId = null;
 
-        // loader for existng teams// loader for exisiting teams
+        // loader for exisiting teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');

@@ -26,7 +26,7 @@
         vm.team.error = false;
         vm.showPagination = false;
 
-        // loader for existng teams// loader for exisiting teams
+        // loader for exisiting teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
