@@ -1,37 +1,10 @@
 <section ng-repeat="item in challenge.phases.results" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
         <div class="row">
-
-            <div class="col s11 m11">
-                <div class="row">
-                    <div class="col s12 width-auto">
-                        <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
-                        <span class="new badge orange-background margin-tb-4 f-16" data-badge-caption="Private Phase" ng-if="item.showPrivate"></span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s12">
-                        <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{item.start_date | date:'medium'}} {{item.start_zone}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{item.end_date | date:'medium'}} {{item.end_zone}}</strong></p>
-                        <div class="phase-description" ng-bind-html="item.description"></div>
-                        <p><strong class="text-light-black fs-12">Max number of submissions/day</strong>
-                            <br> <strong>{{item.max_submissions_per_day}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Max number of submissions/month</strong>
-                            <br> <strong>{{item.max_submissions_per_month}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Max total submissions</strong>
-                            <br> <strong>{{item.max_submissions}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Max concurrent submissions</strong>
-                            <br> <strong>{{item.max_concurrent_submissions_allowed}}</strong></p>
-                    </div>
-                </div>
-
             <div class="col s12 m11 l11">
                 <h5>Phase: <span class="w-300">{{item.name}}</span>
                     <span class="new badge orange-background margin-tb-4 f-16" data-badge-caption="Private Phase"
                         ng-if="item.showPrivate"></span></h5>
-
             </div>
             <div class="col s12 m1 l1">
                 <h5><a ng-if="challenge.isChallengeHost" class="pointer theme-text fs-16"
@@ -57,6 +30,7 @@
                 <p class="fs-16">Max submissions/month: <span class="w-300">{{item.max_submissions_per_month}}</span>
                 </p>
                 <p class="fs-16">Max total submissions: <span class="w-300">{{item.max_submissions}}</span></p>
+                <p class="fs-16">Max concurrent submissions: <span class="w-300">{{item.max_concurrent_submissions_allowed}}</span></p>
             </div>
         </div>
     </div>
