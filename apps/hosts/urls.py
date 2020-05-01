@@ -25,8 +25,8 @@ urlpatterns = [
     ),
     url(
         r"^challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge_host/(?P<pk>[0-9]+)$",
-        views.challenge_host_get_update_delete,
-        name="challenge_host_get_update_delete",
+        views.challenge_host_detail,
+        name="challenge_host_detail",
     ),
     url(
         r"^remove_self_from_challenge_host/(?P<challenge_host_team_pk>[0-9]+)$",
