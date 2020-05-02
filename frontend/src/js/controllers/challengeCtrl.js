@@ -1141,14 +1141,17 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    vm.team.error = error.team_name[0];
-                    vm.stopLoader();
-                    if (vm.team.error == "This field is required.") {
-                        $rootScope.notify("error", "Illegal character in team name.");
-                    } else if (vm.team.error == "This field may not be blank.") {
-                        $rootScope.notify("error", "Team name can not be blank.");
+                    if (error.team_name == null) {
+                        vm.stopLoader();
+                        $rootScope.notify("error", "Illegal character in team name: " + String(response.data));
                     } else {
-                        $rootScope.notify("error", "New team couldn't be created.");
+                        vm.team.error = error.team_name[0];
+                        vm.stopLoader();
+                        if (vm.team.error == "This field may not be blank.") {
+                            $rootScope.notify("error", "Team name can not be blank.");
+                        } else {
+                            $rootScope.notify("error", "New team couldn't be created.");
+                        }
                     }
                 }
             };

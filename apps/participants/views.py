@@ -38,6 +38,7 @@ from .utils import (
     get_list_of_challenges_participated_by_a_user,
     is_user_part_of_participant_team,
 )
+import re
 
 
 @api_view(["GET", "POST"])
@@ -62,6 +63,20 @@ def participant_team_list(request):
         serializer = ParticipantTeamSerializer(
             data=request.data, context={"request": request}
         )
+
+        def find_illegal(string):
+            string = str(string)
+            regex = re.compile('[\\@!.#$%^&*()|<>?/}{~:'']')  # the reverse of /^[\w -]*$/
+            if regex.search(string) is None:
+                return None
+            else:
+                return regex.search(string).group(0)
+        illegal_chars = find_illegal(str(request.data['team_name']))
+        if illegal_chars is not None:
+            serializer.is_valid()
+            serializer.data.team_name = 'error' + str(illegal_chars)
+            serializer.data.illegal_characters = illegal_chars
+            return Response(illegal_chars, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -73,6 +88,7 @@ def participant_team_list(request):
             )
             participant.save()
             return Response(response_data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
