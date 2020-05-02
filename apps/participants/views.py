@@ -71,7 +71,7 @@ def participant_team_list(request):
                 return None
             else:
                 return regex.search(string).group(0)
-        illegal_chars = find_illegal(str(request.data['team_name']))
+        illegal_chars = find_illegal(str(request.data.get('team_name')))
         if illegal_chars is not None:
             serializer.is_valid()
             serializer.data.team_name = 'error' + str(illegal_chars)
