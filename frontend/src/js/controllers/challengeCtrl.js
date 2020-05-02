@@ -68,7 +68,6 @@
         vm.subErrors = {};
 
 
-        vm.isChallengeLeaderboardPrivate = false;
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
