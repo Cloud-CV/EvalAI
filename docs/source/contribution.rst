@@ -37,16 +37,19 @@ branches based off of development and merged into it once stable and
 reviewed. To submit code, follow these steps:
 
 1. Create a new branch off of development. Select a descriptive branch
-   name. We highly encourage you to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
-
+   name. 
    ::
-
-       autopep8 --in-place --exclude venv,docs --recursive .
-
        git fetch upstream
        git checkout master
        git merge upstream/master
        git checkout -b your-branch-name
+
+   We highly encourage using `black <http://www.github.com/psf/black>`_
+   to format your code. It sticks to PEP8 and is in line with the rest
+   of the repo. To use black, install it via `pip` and run the following
+   command:
+   ::
+      black --exclude venv,docs ./
 
 2. Commit and push code to your branch:
 
