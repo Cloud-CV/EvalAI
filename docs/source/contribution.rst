@@ -45,11 +45,13 @@ reviewed. To submit code, follow these steps:
        git checkout -b your-branch-name
 
    We highly encourage using `black <http://www.github.com/psf/black>`_
-   to format your code. It sticks to PEP8 and is in line with the rest
-   of the repo. To use black, install it via `pip` and run the following
-   command:
+   to format your code. It sticks to PEP8 for the most part and is in 
+   line with the rest of the repo. We have already set up `pre-commit 
+   hooks <https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>`_
+   to run black and flake8. To activate the hooks, you just need to run
+   the following comamnd once:
    ::
-      black --exclude venv,docs ./
+      pre-commit install
 
 2. Commit and push code to your branch:
 
