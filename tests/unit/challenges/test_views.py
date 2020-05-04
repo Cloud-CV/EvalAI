@@ -4253,3 +4253,17 @@ class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
         self.assertTrue("AccessKeyId" in federated_user["Credentials"])
         self.assertTrue("SecretAccessKey" in federated_user["Credentials"])
         self.assertTrue("SessionToken" in federated_user["Credentials"])
+
+
+class GetAllowedSubmissionFiletypesTest(BaseChallengePhaseClass):
+    def test_get_allowed_submission_file_types(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_allowed_submission_file_types",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+        response = self.client.get(self.url, {})
+        data = response.data
+        self.assertEqual(".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy", data["file_types"])

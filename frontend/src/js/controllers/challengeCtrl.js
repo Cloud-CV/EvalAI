@@ -69,6 +69,8 @@
 
         vm.isChallengeLeaderboardPrivate = false;
 
+        vm.allowed_filetypes = "";
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -1361,6 +1363,7 @@
                             vm.countDownTimer();
                         }
                     }
+                    vm.getSubmissionFileTypes();
                 },
                 onError: function(response) {
                     var details = response.data;
@@ -2080,6 +2083,22 @@
             } else {
                 $mdDialog.hide();
             }
+        };
+        
+        vm.getSubmissionFileTypes = function() {
+            parameters.method = "GET";
+            parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/allowed_filetypes';
+            parameters.callback = {
+                onSuccess: function () {
+                    var allowed_filetypes = response.data;
+                    vm.allowed_filetypes = allowed_filetypes;
+                },
+                onError: function () {
+                    $rootScope.notify("error", "Allowed filetype not retrieved")
+                    var error = response.data;
+                },
+            }
+            utilities.sendRequest(parameters);
         };
 
         $scope.$on('$destroy', function() {

@@ -398,6 +398,31 @@ def get_featured_challenges(request):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
+def get_challenge_phase_allowed_submission_file_types(request, challenge_pk, challenge_phase_pk):
+    """
+    Returns the supported file types
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        challenge_phase = ChallengePhase.objects.get(challenge=challenge, pk=challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        # TODO: write better error messages
+        response_data = {"error": "ChallengePhase does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    file_field_object = ChallengePhase._meta.get_field('allowed_submission_file_types')
+    allowed_submission_file_types = file_field_object.value_from_object(challenge_phase)
+    response_data = {"file_types": allowed_submission_file_types}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
 def get_challenge_by_pk(request, pk):
     """
     Returns a particular challenge by id
