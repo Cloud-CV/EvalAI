@@ -411,7 +411,6 @@ def get_challenge_phase_allowed_submission_file_types(request, challenge_pk, cha
     try:
         challenge_phase = ChallengePhase.objects.get(challenge=challenge, pk=challenge_phase_pk)
     except ChallengePhase.DoesNotExist:
-        # TODO: write better error messages
         response_data = {"error": "ChallengePhase does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
