@@ -2986,7 +2986,9 @@ class CreateChallengeUsingZipFile(APITestCase):
             max_concurrent_submissions_allowed_field = zipTestPhase._meta.get_field(
                 "max_concurrent_submissions_allowed"
             )
-            max_con = max_concurrent_submissions_allowed_field.value_from_object(zipTestPhase)
+            max_con = max_concurrent_submissions_allowed_field.value_from_object(
+                zipTestPhase
+            )
             self.assertTrue(max_con == 3)
 
     @responses.activate
@@ -3337,6 +3339,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "stdout_file": None,
                 "stderr_file": None,
                 "submission_result_file": None,
+                "started_at": self.submission1.started_at,
+                "completed_at": self.submission1.completed_at,
                 "submitted_at": "{0}{1}".format(
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),

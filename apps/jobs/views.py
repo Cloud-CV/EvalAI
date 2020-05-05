@@ -1055,7 +1055,7 @@ def update_submission(request, challenge_pk):
 
         data = {
             "status": submission_status,
-            "started_at": timezone.now(),
+            "started_at": str(timezone.now()),
             "job_name": jobs,
         }
         serializer = SubmissionSerializer(
