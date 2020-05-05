@@ -38,7 +38,7 @@ def get_file_content(file_path, mode):
             return file_content.read()
 
 
-def read_as_content_file(file_path, mode, name):
+def read_file_data_as_content_file(file_path, mode, name):
     content_file = ContentFile(get_file_content(file_path, mode), name)
     return content_file
 
@@ -262,5 +262,12 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
     return False
 
 
-def get_unique_key(length):
+def get_unique_alpha_numeric_key(length):
+    """
+        Returns unique alpha numeric key of length
+        Arguments:
+            length {int} -- length of unique key to generate
+        Returns:
+            key {string} -- unique alpha numeric key of length
+    """
     return "".join([random.choice(string.ascii_letters + string.digits) for i in range(length)])

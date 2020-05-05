@@ -19,6 +19,14 @@ def extract_zip_file(file_path, mode, output_path):
 
 
 def get_yaml_files_from_challenge_config(zip_ref):
+    """
+        Arguments:
+            zip_ref {zipfile} -- reference to challenge config zip
+        Returns:
+            yaml_file_count {int} -- number of yaml files in zip file
+            yaml_file_name {string} -- name of yaml file in the zip file
+            extracted_folder_name {string} -- zip file extraction folder name
+    """
     yaml_file_count = 0
     yaml_file_name = None
     extracted_folder_name = None
@@ -41,7 +49,15 @@ def read_yaml_file(file_path, mode):
     return yaml_file_data
 
 
-def get_yaml_read_error_description(exc):
+def get_yaml_read_error(exc):
+    """
+        Arguments:
+            exc {Exception} -- Exception object
+        Returns:
+            error_description {string} -- description of yaml read error
+            line_number {int} -- line number of error field in yaml file
+            column_number {int} -- column number of error field in yaml file
+    """
     error_description = None
     line_number = None
     column_number = None
@@ -58,24 +74,40 @@ def get_yaml_read_error_description(exc):
     return error_description, line_number, column_number
 
 
-def is_valid_challenge_config_yaml_field(yaml_file_data, key, base_location):
+def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+    """
+        Arguments:
+            yaml_file_data {dict} -- challenge config yaml dict
+            key {string} -- key of the validation field
+            base_location {string} -- path of extracted config zip
+        Returns:
+            is_valid {boolean} -- flag for field validation is success
+            message {string} -- error message if any
+    """
     value = yaml_file_data.get(key)
     message = ""
     is_valid = False
-    is_error = False
     if value:
         file_path = join(base_location, value)
         if file_path.endswith(".html") and isfile(file_path):
             is_valid = True
         else:
-            message = "WARNING: No {}.html file is present in the zip file.".format(key)
+            message = "ERROR: No {}.html file is present in the zip file.".format(key)
     else:
         message = "ERROR: There is no key for {} in YAML file".format(key)
-        is_error = True
-    return is_valid, message, is_error
+    return is_valid, message
 
 
-def is_valid_challenge_phase_config_yaml_field(yaml_file_data, key, base_location):
+def is_challenge_phase_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+    """
+        Arguments:
+            yaml_file_data {dict} -- challenge config yaml dict
+            key {string} -- key of the validation field
+            base_location {string} -- path of extracted config zip
+        Returns:
+            is_valid {boolean} -- flag for field validation is success
+            message {string} -- error message if any
+    """
     value = yaml_file_data.get(key)
     message = ""
     is_valid = False
@@ -84,14 +116,24 @@ def is_valid_challenge_phase_config_yaml_field(yaml_file_data, key, base_locatio
         if file_path.endswith(".html") and isfile(file_path):
             is_valid = True
         else:
-            message = (" WARNING: There is no file for phase "
+            message = (" ERROR: There is no html file present for key"
                        " {} in phase {}.".format(key, yaml_file_data["name"]))
     else:
-        message = " ERROR: There is no key for phase {} in phase {}.".format(key, yaml_file_data["name"])
+        message = " ERROR: There is no key for {} in phase {}.".format(key, yaml_file_data["name"])
     return is_valid, message
 
 
 def download_and_write_file(url, stream, output_path, mode):
+    """
+        Arguments:
+            url {string} -- source file url
+            stream {boolean} -- flag for download in stream mode
+            output_path {string} -- path to write file
+            model {string} -- access mode to write file
+        Returns:
+            is_success {boolean} -- flag for download and write is success
+            message {string} -- error message if any
+    """
     is_success = False
     message = None
     try:
@@ -113,7 +155,16 @@ def download_and_write_file(url, stream, output_path, mode):
     return is_success, message
 
 
-def validate_challenge_phase_split(phase_ids, leaderboard_ids, dataset_split_ids, phase_split):
+def is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids, dataset_split_ids, phase_split):
+    """
+        Arguments:
+            phase_ids {array} -- list of phase ids
+            leaderboard_ids {array} -- list of leaderboard ids
+            dataset_split_ids {array} -- list of dataset split ids
+            phase_split {dict} -- challenge phase split config
+        Returns:
+            is_success {boolean} -- flag for validation success
+    """
     phase_id = phase_split["challenge_phase_id"]
     leaderboard_id = phase_split["leaderboard_id"]
     dataset_split_id = phase_split["dataset_split_id"]
