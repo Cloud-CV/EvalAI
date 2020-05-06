@@ -21,9 +21,9 @@ urlpatterns = [
         name="get_remaining_submissions",
     ),
     url(
-        r"^submissions/(?P<submission_pk>[0-9]+)/re-run/$",
-        views.re_run_submission,
-        name="re_run_submission",
+        r"^submissions/(?P<submission_pk>[0-9]+)/re-run-by-host/$",
+        views.re_run_submission_by_host,
+        name="re_run_submission_by_host",
     ),
     url(
         r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
@@ -64,5 +64,10 @@ urlpatterns = [
         r"^leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
         views.update_leaderboard_data,
         name="update_leaderboard_data",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/eks_bearer_token/$",
+        views.get_bearer_token,
+        name="get_bearer_token",
     ),
 ]

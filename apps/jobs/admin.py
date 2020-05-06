@@ -1,12 +1,12 @@
 import logging
-import requests
 
-from django.contrib import admin, messages
+from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
 
 from .models import Submission
 from .sender import publish_submission_message
+from .utils import handle_submission_rerun
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "submit_job_to_worker",
         "make_submission_public",
         "make_submission_private",
+        "change_submission_status_to_cancel",
     ]
     list_display = (
         "id",
@@ -62,41 +63,10 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
 
     def submit_job_to_worker(self, request, queryset):
         for submission in queryset:
-            challenge_id = submission.challenge_phase.challenge.id
-            challenge_phase_id = submission.challenge_phase.id
-            submission_id = submission.id
-            logger.info(
-                "[x] Received submission message with challenge id {}, challenge phase id {}, submission id {}".format(
-                    challenge_id, challenge_phase_id, submission_id
-                )
-            )
-            message = {
-                "challenge_pk": challenge_id,
-                "phase_pk": challenge_phase_id,
-                "submission_pk": submission.id,
-            }
-
-            if submission.challenge_phase.challenge.is_docker_based:
-                try:
-                    response = requests.get(submission.input_file.url)
-                except Exception as e:
-                    messages.error(
-                        request,
-                        "Failed to get input_file with exception: {0}".format(
-                            e
-                        ),
-                    )
-                    return
-
-                if response and response.status_code == 200:
-                    message["submitted_image_uri"] = response.json()[
-                        "submitted_image_uri"
-                    ]
-
+            message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
-            queryset.update(status=Submission.SUBMITTED)
 
-    submit_job_to_worker.short_description = "Run selected submissions"
+    submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
 
     def make_submission_public(self, request, queryset):
         for submission in queryset:
@@ -110,4 +80,11 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
             submission.is_public = False
             submission.save()
 
-    make_submission_public.short_description = "Make submission private"
+    make_submission_private.short_description = "Make submission private"
+
+    def change_submission_status_to_cancel(self, request, queryset):
+        for submission in queryset:
+            submission.status = Submission.CANCELLED
+            submission.save()
+
+    change_submission_status_to_cancel.short_description = "Cancel selected submissions (will set the status to canceled for the submissions) "
