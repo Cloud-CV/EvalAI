@@ -1920,6 +1920,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1941,6 +1942,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
         ]
 
@@ -1970,6 +1972,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2009,6 +2012,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2030,6 +2034,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
         ]
 
@@ -2369,6 +2374,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2455,6 +2461,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2549,6 +2556,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -4040,6 +4048,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "is_active": True,
             "codename": self.challenge_phase.codename,
             "slug": self.challenge_phase.slug,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)

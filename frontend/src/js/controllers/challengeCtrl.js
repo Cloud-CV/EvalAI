@@ -69,6 +69,10 @@
 
         vm.isChallengeLeaderboardPrivate = false;
 
+        vm.currentChallengePhaseData = {};
+        vm.currentPhaseId = null;
+        vm.allowed_submission_file_types = "";
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -1920,6 +1924,23 @@
                 templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-phase.html',
                 escapeToClose: false
             });
+        };
+
+        vm.getChallengePhaseData = function() {
+            parameters.url = "challenges/challenge/phase/" + vm.currentPhaseId + "/";
+            parameters.method = 'GET';
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.currentChallengePhaseData = response.data;
+                    vm.allowed_submission_file_types = vm.currentChallengePhaseData.allowed_submission_file_types;
+                },
+
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                },
+            };
+            utilities.sendRequest(parameters);
         };
 
         vm.editChallengePhase = function(editChallengePhaseForm) {
