@@ -631,6 +631,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "stdout_file": None,
                 "stderr_file": None,
                 "submission_result_file": None,
+                "started_at": self.submission.started_at,
+                "completed_at": self.submission.completed_at,
                 "submitted_at": "{0}{1}".format(
                     self.submission.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -1301,6 +1303,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stdout_file": None,
             "stderr_file": None,
             "submission_result_file": None,
+            "started_at": self.submission.started_at,
+            "completed_at": self.submission.completed_at,
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1347,6 +1351,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stdout_file": None,
             "stderr_file": None,
             "submission_result_file": None,
+            "started_at": self.submission.started_at,
+            "completed_at": self.submission.completed_at,
             "submitted_at": "{0}{1}".format(
                 self.private_submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1411,6 +1417,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stdout_file": None,
             "stderr_file": None,
             "submission_result_file": None,
+            "started_at": self.submission.started_at,
+            "completed_at": self.submission.completed_at,
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1475,6 +1483,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stdout_file": None,
             "stderr_file": None,
             "submission_result_file": None,
+            "started_at": self.host_participant_team_submission.started_at,
+            "completed_at": self.host_participant_team_submission.completed_at,
             "submitted_at": "{0}{1}".format(
                 self.host_participant_team_submission.submitted_at.isoformat(),
                 "Z",
@@ -1551,6 +1561,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stdout_file": None,
             "stderr_file": None,
             "submission_result_file": None,
+            "started_at": self.submission.started_at,
+            "completed_at": self.submission.completed_at,
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1592,6 +1604,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stdout_file": None,
             "stderr_file": None,
             "submission_result_file": None,
+            "started_at": self.submission.started_at,
+            "completed_at": self.submission.completed_at,
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
