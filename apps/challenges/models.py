@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
-from django.core.validators import URLValidator
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -128,6 +127,7 @@ class Challenge(TimeStampedModel):
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
+    slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
@@ -235,9 +235,12 @@ class ChallengePhase(TimeStampedModel):
         null=True,
     )
     slug = models.SlugField(max_length=200, null=True, unique=True)
-    environment_url = models.CharField(
-        validators=[URLValidator()], null=True, blank=True, max_length=2128
-    )  # Max length of URL and tag is 2000 and 128 respectively
+    environment_image = models.CharField(
+        max_length=2128, null=True, blank=True
+    )  # Max length of repository name and tag is 2000 and 128 respectively
+    allowed_submission_file_types = models.CharField(
+        max_length=200, default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+    )
 
     class Meta:
         app_label = "challenges"
@@ -421,3 +424,23 @@ class UserInvitation(TimeStampedModel):
     def __str__(self):
         """Returns the email of the user"""
         return self.email
+
+
+class ChallengeEvaluationCluster(TimeStampedModel):
+    """Model to store the config for Kubernetes cluster for a challenge
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.OneToOneField(Challenge)
+    name = models.CharField(max_length=200, unique=True, db_index=True)
+    cluster_yaml = models.FileField(upload_to=RandomFileName("cluster_yaml"))
+    kube_config = models.FileField(
+        upload_to=RandomFileName("kube_config"), blank=True, null=True
+    )
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_evaluation_cluster"

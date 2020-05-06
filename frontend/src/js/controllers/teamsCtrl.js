@@ -452,8 +452,8 @@ vm.confirmMemberDelete = function(ev, participantTeamId, participantId) {
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.name = response.data.team_name;
-                    vm.team.url = response.data.team_url;
+                    vm.team.teamName = response.data.team_name;
+                    vm.team.teamUrl = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
@@ -477,8 +477,8 @@ vm.confirmMemberDelete = function(ev, participantTeamId, participantId) {
             parameters.url = 'participants/participant_team/' + vm.participantTeamId;
             parameters.method = 'PATCH';
             parameters.data = {
-                "team_name": vm.team.name,
-                "team_url": vm.team.url
+                "team_name": vm.team.teamName,
+                "team_url": vm.team.teamUrl
             };
             parameters.token = userKey;
             parameters.callback = {
