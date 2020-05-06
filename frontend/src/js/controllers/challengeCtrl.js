@@ -1363,7 +1363,6 @@
                             vm.countDownTimer();
                         }
                     }
-                    vm.getSubmissionFileTypes();
                 },
                 onError: function(response) {
                     var details = response.data;
@@ -2085,7 +2084,7 @@
             }
         };
         
-        vm.getSubmissionFileTypes = function() {
+        vm.getSubmissionFileTypes = function(response) {
             parameters.method = "GET";
             parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/allowed_filetypes';
             parameters.callback = {
@@ -2094,8 +2093,8 @@
                     vm.allowed_filetypes = allowed_filetypes;
                 },
                 onError: function () {
-                    $rootScope.notify("error", "Allowed filetype not retrieved")
                     var error = response.data;
+                    $rootScope.notify("error", error);
                 },
             }
             utilities.sendRequest(parameters);
