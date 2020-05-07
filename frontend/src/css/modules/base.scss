@@ -126,6 +126,22 @@ ul.inline-list {
     }
 }
 
+.trix-container ul:not(.browser-default) li {
+	list-style-type: disc;
+}
+
+.editor ul:not(.browser-default) li {
+	list-style-type: disc;
+}
+
+trix-editor ul li {
+    margin-left: 6%;
+}
+
+.trix-container ul li {
+	margin-left: 4%;
+}
+
 span.inline {
     p {
         display: inline;
