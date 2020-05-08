@@ -22,14 +22,14 @@
                 </strong>
             </div>
             <div class="col s12">
-                <div ng-bind-html="challenge.page.submission_guidelines" class="fs-16 w-300 submission-guidelines"></div>
+                <div ng-bind-html="challenge.page.submission_guidelines" class="fs-16 w-300 submission-guidelines trix-container"></div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- If challenge is docker based -->
-<section class="ev-sm-container ev-view challenge-container" ng-if="challenge.page.is_docker_based">
+<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view margin-btm-0">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
@@ -71,7 +71,7 @@
 </section>
 
 <!-- If challenge is docker based -->
-<section class="ev-sm-container ev-view challenge-container" ng-if="challenge.page.is_docker_based">
+<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
@@ -157,7 +157,7 @@
 </section>
 
 <!-- If challenge is not docker based -->
-<section class="ev-sm-container ev-view challenge-container" ng-if="!challenge.page.is_docker_based">
+<section class="ev-sm-container ev-view challenge-container phase-container" ng-if="!challenge.page.is_docker_based">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">

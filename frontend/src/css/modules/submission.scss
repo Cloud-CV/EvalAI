@@ -30,6 +30,10 @@
 	line-height: 36px;
 }
 
+.phase-container ul:not(.browser-default) li {
+	list-style-type: none;
+}
+
 li {
 	margin-bottom: 1.5%;
   }
