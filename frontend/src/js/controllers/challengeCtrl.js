@@ -1926,22 +1926,6 @@
             });
         };
 
-        vm.getChallengePhaseData = function() {
-            parameters.url = "challenges/challenge/phase/" + vm.currentPhaseId + "/";
-            parameters.method = 'GET';
-            parameters.callback = {
-                onSuccess: function (response) {
-                    vm.currentChallengePhaseData = response.data;
-                    vm.allowed_submission_file_types = vm.currentChallengePhaseData.allowed_submission_file_types;
-                },
-
-                onError: function (response) {
-                    var error = response.data;
-                    $rootScope.notify("error", error);
-                },
-            };
-            utilities.sendRequest(parameters);
-        };
 
         vm.editChallengePhase = function(editChallengePhaseForm) {
             if (editChallengePhaseForm) {
@@ -1987,6 +1971,12 @@
                     onSuccess: function(response) {
                         var details = response.data;
                         vm.phases = details;
+                        for (var i = 0; i < details.count; i++) {
+                            if (vm.phases.results[i].id == vm.currentPhaseId) {
+                                vm.allowed_submission_file_types = vm.phases.results[i].allowed_submission_file_types;
+                                break;
+                            }
+                        }
                         utilities.hideLoader();
                     },
                     onError: function(response) {
