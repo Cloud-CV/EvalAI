@@ -2159,14 +2159,12 @@ def get_all_submissions_of_challenge_by_slug(
     """
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
-    print(challenge)
 
     # To check for the corresponding challenge phase from the slug and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
             slug=slug, challenge=challenge
         )
-        print(challenge_phase)
     except ChallengePhase.DoesNotExist:
         response_data = {
             "error": "Challenge Phase {} does not exist".format(
@@ -2194,7 +2192,6 @@ def get_all_submissions_of_challenge_by_slug(
         serializer = ChallengeSubmissionManagementSerializer(
             result_page, many=True, context={"request": request}
         )
-        print(serializer.data)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
