@@ -70,6 +70,11 @@ urlpatterns = [
         name="get_all_submissions_of_challenge",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<slug>[\w-]+)/submissions$",
+        views.get_all_submissions_of_challenge_by_slug,
+        name="get_all_submissions_of_challenge_by_slug",
+    ),
+    url(
         r"^(?P<challenge_pk>[0-9]+)/phase/(?P<challenge_phase_pk>[0-9]+)"
         r"/download_all_submissions/(?P<file_type>[A-Za-z]+)/$",
         views.download_all_submissions,

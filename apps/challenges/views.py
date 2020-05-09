@@ -2148,6 +2148,87 @@ def get_challenge_phase_by_pk(request, pk):
 
 
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_submissions_of_challenge_by_slug(
+    request, challenge_pk, slug
+):
+    """
+    Returns all the submissions for a particular challenge
+    """
+    # To check for the corresponding challenge from challenge_pk.
+    challenge = get_challenge_model(challenge_pk)
+    print(challenge)
+
+    # To check for the corresponding challenge phase from the slug and challenge.
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            slug=slug, challenge=challenge
+        )
+        print(challenge_phase)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge Phase {} does not exist".format(
+                slug
+            )
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # To check for the user as a host of the challenge from the request and challenge_pk.
+    if is_user_a_host_of_challenge(
+        user=request.user, challenge_pk=challenge_pk
+    ):
+
+        # Filter submissions on the basis of challenge for host for now. Later on, the support for query
+        # parameters like challenge phase, date is to be added.
+        submissions = Submission.objects.filter(
+            challenge_phase=challenge_phase
+        ).order_by("-submitted_at")
+        filtered_submissions = SubmissionFilter(
+            request.GET, queryset=submissions
+        )
+        paginator, result_page = paginated_queryset(
+            filtered_submissions.qs, request
+        )
+        serializer = ChallengeSubmissionManagementSerializer(
+            result_page, many=True, context={"request": request}
+        )
+        print(serializer.data)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    # To check for the user as a participant of the challenge from the request and challenge_pk.
+    elif has_user_participated_in_challenge(
+        user=request.user, challenge_id=challenge_pk
+    ):
+
+        # get participant team object for the user for a particular challenge.
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+
+        # Filter submissions on the basis of challenge phase for a participant.
+        submissions = Submission.objects.filter(
+            participant_team=participant_team_pk,
+            challenge_phase=challenge_phase,
+        ).order_by("-submitted_at")
+        paginator, result_page = paginated_queryset(submissions, request)
+        serializer = SubmissionSerializer(
+            result_page, many=True, context={"request": request}
+        )
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    # when user is neither host not participant of the challenge.
+    else:
+        response_data = {
+            "error": "You are neither host nor participant of the challenge!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def get_challenge_phase_by_slug(request, slug):
     """
