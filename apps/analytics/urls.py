@@ -29,6 +29,11 @@ urlpatterns = [
         name="get_challenge_phase_submission_count_by_team",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<slug>[\w-]+)/count$",
+        views.get_challenge_phase_submission_count_by_team_by_slug,
+        name="get_challenge_phase_submission_count_by_team_by_slug",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/"
         r"(?P<challenge_phase_pk>[0-9]+)/last_submission/(?P<submission_by>[A-Za-z_]+)$",
         views.get_last_submission_time,

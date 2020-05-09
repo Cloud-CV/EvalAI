@@ -23,6 +23,7 @@ from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
+from challenges.models import ChallengePhase
 from jobs.serializers import (
     LastSubmissionDateTime,
     LastSubmissionDateTimeSerializer,
@@ -149,6 +150,53 @@ def get_challenge_phase_submission_count_by_team(
     challenge = get_challenge_model(challenge_pk)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    participant_team = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase,
+        challenge_phase__challenge=challenge,
+        participant_team=participant_team,
+    )
+    participant_team_submissions = submissions.count()
+
+    challenge_phase_submission_count = ChallengePhaseSubmissionCount(
+        participant_team_submissions, challenge_phase.pk
+    )
+    try:
+        serializer = ChallengePhaseSubmissionCountSerializer(
+            challenge_phase_submission_count
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    except:  # noqa: E722
+        response_data = {"error": "Bad request. Please try again later!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phase_submission_count_by_team_by_slug(
+    request, challenge_pk, slug
+):
+    """
+    Returns number of submissions done by a participant team in a challenge phase
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            slug=slug, challenge=challenge
+        )
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
 
     participant_team = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
