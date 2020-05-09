@@ -175,6 +175,7 @@ def get_challenge_phase_submission_count_by_team(
         response_data = {"error": "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes(
@@ -196,7 +197,6 @@ def get_challenge_phase_submission_count_by_team_by_slug(
     except ChallengePhase.DoesNotExist:
         response_data = {"error": "Challenge Phase does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
 
     participant_team = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk
