@@ -445,6 +445,7 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         app_label = "challenges"
         db_table = "challenge_evaluation_cluster"
 
+
 def pre_save_post_receiver(sender, instance, *args, **kwargs):
     if not instance.slug:
         # instance.slug = get_slug(instance)
