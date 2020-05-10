@@ -10,6 +10,10 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
+        vm.selectedPhaseforAllsubmission;
+        vm.selectedPhaseforMysubmission;
+        vm.allSubmissionResult;
+        vm.mySubmissionResult;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -521,7 +525,6 @@
                     offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
-
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -806,6 +809,7 @@
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    vm.selectedPhaseforMysubmission = all_phases[i];
                     break;
                 }
             }
@@ -857,6 +861,7 @@
                     }
 
                     vm.submissionResult = details;
+                    vm.mySubmissionResult = details;
 
                     vm.start();
 
@@ -907,6 +912,7 @@
                                 // reinitialized data
                                 var details = response.data;
                                 vm.submissionResult = details;
+                                vm.mySubmissionResult = details;
 
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
@@ -1150,6 +1156,13 @@
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
+            var all_phases = vm.phases.results;
+            for (var i = 0; i < vm.phases.results.length; i++) {
+                if (all_phases[i].slug == phaseId) {
+                    vm.selectedPhaseforAllsubmission = all_phases[i];
+                    break;
+                }
+            }
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
@@ -1182,6 +1195,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
+                    vm.allSubmissionResult = details;
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
@@ -1227,6 +1241,7 @@
                                 // reinitialized data
                                 var details = response.data;
                                 vm.submissionResult = details;
+                                vm.allSubmissionResult = details;
 
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {

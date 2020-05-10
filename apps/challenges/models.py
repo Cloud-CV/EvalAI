@@ -448,11 +448,6 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
 def pre_save_post_receiver(sender, instance, *args, **kwargs):
     if not instance.slug:
-        # instance.slug = get_slug(instance)
         instance.slug = unique_slug_generator(instance)
 
 pre_save.connect(pre_save_post_receiver, sender=ChallengePhase)
-# @receiver(pre_save, sender="challenges.ChallengePhase")
-# def submission_challenge_slug(sender, instance, **kwargs):
-#     title = get_slug(instance.name)
-#     instance.slug = "{}-{}".format(title, instance.pk)
