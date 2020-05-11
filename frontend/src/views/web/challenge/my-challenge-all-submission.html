@@ -55,7 +55,7 @@
                     ng-click="challenge.downloadChallengeSubmissions()">Download</a>
             </div>
         </div>
-        <div ng-if="challenge.isResult">
+        <div ng-if="challenge.allSubmissionResult.results.length > 0">
             <div class="row rm-margin">
                 <div class="col s12 fs-16">
                     <strong>Filter submissions by team</strong>
@@ -73,9 +73,9 @@
             </div>
         </div>
         <div class="row">
-            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn fs-16 w-300">No
+            <div ng-if="challenge.allSubmissionResult.results.length == 0" class="result-wrn fs-16 w-300">No
                 results found.</div>
-            <div class="col s12 all-submission-table-scroll" ng-if="challenge.showPagination">
+            <div class="col s12 all-submission-table-scroll" ng-if="challenge.allSubmissionResult.results.length > 0">
                 <table class="highlight all-submission-table responsive-table fs-16 w-300">
                     <thead>
                         <th data-field="submission_id">#</th>
@@ -147,18 +147,18 @@
             </div>
         </div>
     </div>
-    <div class="pagination" ng-if="challenge.showPagination">
+    <div class="pagination" ng-if="challenge.showPagination && challenge.allSubmissionResult.results.length > 0">
         <div class="row">
             <div class="col s12 left-align">
                 <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light "
-                    ng-click="challenge.load(challenge.submissionResult.previous)">
+                    ng-click="challenge.load(challenge.allSubmissionResult.previous)">
                     <i class="fa fa-chevron-left"></i>
                 </a>
                 <span class="pagination-title"> <strong class="text-med-black"> Page
                         {{challenge.currentPage | ceil}} of
-                        {{challenge.submissionResult.count/100 | ceil}} </strong></span>
+                        {{challenge.allSubmissionResult.count/100 | ceil}} </strong></span>
                 <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light "
-                    ng-click="challenge.load(challenge.submissionResult.next)">
+                    ng-click="challenge.load(challenge.allSubmissionResult.next)">
                     <i class="fa fa-chevron-right"></i>
                 </a>
             </div>

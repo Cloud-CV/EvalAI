@@ -773,11 +773,11 @@
                                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                             }
 
-                            if (vm.submissionResult.results.length !== details.results.length) {
+                            if (vm.mySubmissionResult.results.length !== details.results.length || vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
                                 for (i = 0; i < details.results.length; i++) {
-                                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
+                                    if (details.results[i].status !== vm.mySubmissionResult.results[i].status || vm.submissionResult.results.length !== details.results.length) {
                                         vm.showUpdate = true;
                                         break;
                                     }
@@ -860,12 +860,11 @@
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
-                    vm.submissionResult = details;
                     vm.mySubmissionResult = details;
 
                     vm.start();
 
-                    if (vm.submissionResult.count === 0) {
+                    if (vm.mySubmissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
@@ -874,19 +873,19 @@
                         vm.paginationMsg = "";
                     }
 
-                    if (vm.submissionResult.next === null) {
+                    if (vm.mySubmissionResult.next === null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
 
                     }
-                    if (vm.submissionResult.previous === null) {
+                    if (vm.mySubmissionResult.previous === null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.submissionResult.next !== null) {
-                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                    if (vm.mySubmissionResult.next !== null) {
+                        vm.currentPage = vm.mySubmissionResult.next.split('page=')[1] - 1;
                         vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
@@ -911,21 +910,20 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var details = response.data;
-                                vm.submissionResult = details;
                                 vm.mySubmissionResult = details;
 
                                 // condition for pagination
-                                if (vm.submissionResult.next === null) {
+                                if (vm.mySubmissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentPage = vm.mySubmissionResult.count / 100;
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
-                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                    vm.currentPage = parseInt(vm.mySubmissionResult.next.split('page=')[1] - 1);
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
-                                if (vm.submissionResult.previous === null) {
+                                if (vm.mySubmissionResult.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
@@ -964,6 +962,8 @@
 
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
+            vm.allSubmissionResult = {};
+            vm.mySubmissionResult = {};
 
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
@@ -972,6 +972,8 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
+                    vm.allSubmissionResult = details;
+                    vm.mySubmissionResult = details;
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
@@ -1009,6 +1011,8 @@
                     }
 
                     vm.submissionResult = details;
+                    vm.allSubmissionResult = details;
+                    vm.mySubmissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
@@ -1194,10 +1198,9 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.submissionResult = details;
                     vm.allSubmissionResult = details;
 
-                    if (vm.submissionResult.count === 0) {
+                    if (vm.allSubmissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
@@ -1206,19 +1209,19 @@
                         vm.paginationMsg = "";
                     }
 
-                    if (vm.submissionResult.next === null) {
+                    if (vm.allSubmissionResult.next === null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
 
                     }
-                    if (vm.submissionResult.previous === null) {
+                    if (vm.allSubmissionResult.previous === null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.submissionResult.next !== null) {
-                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                    if (vm.allSubmissionResult.next !== null) {
+                        vm.currentPage = vm.allSubmissionResult.next.split('page=')[1] - 1;
                         vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
@@ -1240,21 +1243,20 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var details = response.data;
-                                vm.submissionResult = details;
                                 vm.allSubmissionResult = details;
 
                                 // condition for pagination
-                                if (vm.submissionResult.next === null) {
+                                if (vm.allSubmissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentPage = vm.allSubmissionResult.count / 100;
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
-                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                    vm.currentPage = parseInt(vm.allSubmissionResult.next.split('page=')[1] - 1);
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
-                                if (vm.submissionResult.previous === null) {
+                                if (vm.allSubmissionResult.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
@@ -1487,9 +1489,9 @@
         };
 
         vm.showMdDialog = function(ev, submissionId) {
-            for (var i = 0; i < vm.submissionResult.count; i++) {
-                if (vm.submissionResult.results[i].id === submissionId) {
-                    vm.submissionMetaData = vm.submissionResult.results[i];
+            for (var i = 0; i < vm.mySubmissionResult.count; i++) {
+                if (vm.mySubmissionResult.results[i].id === submissionId) {
+                    vm.submissionMetaData = vm.mySubmissionResult.results[i];
                     break;
                 }
             }
