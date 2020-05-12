@@ -36,12 +36,16 @@ class DisableUserTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+# need to add form for image later
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
         self.url = reverse_lazy("rest_user_details")
         self.data = {
             "username": "anotheruser",
             "affiliation": "some_affiliation",
+            "github_url": "https://github.url",
+            "google_scholar_url": "https://google-scholar.url",
+            "linkedin_url": "https://linkedin.url",
             "password": "secret_password",
         }
         response = self.client.put(

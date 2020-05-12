@@ -1,18 +1,10 @@
-FROM python:3.6.5
-
-ENV PYTHONUNBUFFERED 1
+FROM evalai_django
 
 RUN apt-get update && \
   apt-get upgrade -y && \
-  apt-get install -q -y openjdk-8-jdk
-
-RUN mkdir /code
-WORKDIR /code
-
-ADD requirements/* /code/
+  apt-get install -q -y default-jdk
 
 RUN pip install -U cffi service_identity cython==0.29 numpy==1.14.5
-RUN pip install -r dev.txt
 RUN pip install -r worker.txt
 
 ADD . /code

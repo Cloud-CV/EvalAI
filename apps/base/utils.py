@@ -1,11 +1,15 @@
 import base64
 import boto3
 import botocore
+import json
 import logging
 import os
 import re
+import requests
 import sendgrid
 import uuid
+
+from contextlib import contextmanager
 
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
@@ -107,7 +111,7 @@ def custom_exception_handler(exc, context):  # For sending a user-friendly Throt
 
 def send_email(
     sender=settings.CLOUDCV_TEAM_EMAIL,
-    recepient=None,
+    recipient=None,
     template_id=None,
     template_data={},
 ):
@@ -115,7 +119,7 @@ def send_email(
 
     Keyword Arguments:
         sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
-        recepient {string} -- Recepient email address
+        recipient {string} -- Recipient email address
         template_id {string} -- Sendgrid template id
         template_data {dict} -- Dictionary to substitute values in subject and email body
     """
@@ -129,7 +133,7 @@ def send_email(
         mail.template_id = template_id
         to_list = Personalization()
         to_list.dynamic_template_data = template_data
-        to_email = Email(recepient)
+        to_email = Email(recipient)
         to_list.add_to(to_email)
         mail.add_personalization(to_list)
         sg.client.mail.send.post(request_body=mail.get())
@@ -170,7 +174,7 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_sqs_queue_object():
+def get_or_create_sqs_queue_object(queue_name):
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"
         sqs = boto3.resource(
@@ -216,3 +220,61 @@ def get_queue_name(param):
         :80
     ]  # The max-length for queue-name is 80 in SQS
     return queue_name
+
+
+def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
+    """
+    Send slack notification to any workspace
+    Keyword Arguments:
+        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
+        message {str} -- JSON/Text message to be sent to slack (default: {""})
+    """
+    try:
+        data = {
+            "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
+            "icon_url": "https://evalai.cloudcv.org/dist/images/evalai-logo-single.png",
+            "text": message["text"],
+            "username": "EvalAI",
+        }
+        return requests.post(
+            webhook,
+            data=json.dumps(data),
+            headers={"Content-Type": "application/json"},
+        )
+    except Exception as e:
+        logger.exception(
+            "Exception raised while sending slack notification. \n Exception message: {}".format(
+                e
+            )
+        )
+
+
+def mock_if_non_prod_aws(aws_mocker):
+    def decorator(func):
+        if not (settings.DEBUG or settings.TEST):
+            return func
+        return aws_mocker(func)
+
+    return decorator
+
+
+@contextmanager
+def suppress_autotime(model, fields):
+    _original_values = {}
+    for field in model._meta.local_fields:
+        if field.name in fields:
+            _original_values[field.name] = {
+                "auto_now": field.auto_now,
+                "auto_now_add": field.auto_now_add,
+            }
+            field.auto_now = False
+            field.auto_now_add = False
+    try:
+        yield
+    finally:
+        for field in model._meta.local_fields:
+            if field.name in fields:
+                field.auto_now = _original_values[field.name]["auto_now"]
+                field.auto_now_add = _original_values[field.name][
+                    "auto_now_add"
+                ]

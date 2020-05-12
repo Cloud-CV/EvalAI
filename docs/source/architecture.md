@@ -2,11 +2,11 @@
 
 EvalAI helps researchers, students, and data scientists to create, collaborate, and participate in various AI challenges organized around the globe. To achieve this, we leverage some of the best open source tools and technologies.
 
-### Technologies that the project uses:
+<img src="_static/img/architecture.png">
 
 #### Django
 
-Django is the heart of the application, which powers our backend. We use Django version 1.11.18.
+Django is the heart of the application, which powers our backend. We use Django version 1.11.23.
 
 #### Django Rest Framework
 

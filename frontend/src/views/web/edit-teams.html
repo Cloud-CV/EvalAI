@@ -5,11 +5,11 @@
                 <form name="updateParticipantTeamDataForm" ng-submit="teams.updateParticipantTeamData(updateParticipantTeamDataForm.$valid)">
                     <div class="pass-title">Update Participant Team</div>
                     <div class="input-field align-left">
-                        <input id="teamName" name="teamName" type="text" class="text-dark-black dark-autofill w-400" ng-model="teams.team.name" value="{{teams.team.name}}" focus-if="teams.team.name" required>
+                        <input id="teamName" name="teamName" type="text" class="text-dark-black dark-autofill w-400" ng-model="teams.team.teamName" value="{{teams.team.teamName}}" focus-if="teams.team.teamName" required>
                         <label class="active" for="teamName">Team Name</label>
                     </div>
                     <div class="input-field align-left">
-                        <input id="teamUrl" name="teamUrl" type="text" class="text-dark-black dark-autofill w-400" ng-model="teams.team.url" value="{{teams.team.url}}" focus-if="teams.team.url">
+                        <input id="teamUrl" name="teamUrl" type="text" class="text-dark-black dark-autofill w-400" ng-model="teams.team.teamUrl" value="{{teams.team.teamUrl}}" focus-if="teams.team.teamUrl">
                         <label for="teamUrl">Team URL (Optional)</label>
                     </div>
                     <ul class="inline-list pointer">

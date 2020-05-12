@@ -1,6 +1,5 @@
 version: "3"
 services:
-
   db:
     image: postgres:10.4
     ports:
@@ -24,6 +23,18 @@ services:
     depends_on:
       - db
       - sqs
+    volumes:
+      - .:/code
+
+  celery:
+    hostname: celery
+    env_file:
+      - docker/dev/docker.env
+    build:
+      context: ./
+      dockerfile: docker/dev/celery/Dockerfile
+    depends_on:
+      - django
     volumes:
       - .:/code
 

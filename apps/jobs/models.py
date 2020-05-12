@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Max
 from rest_framework.exceptions import PermissionDenied
@@ -47,6 +48,7 @@ class Submission(TimeStampedModel):
     CANCELLED = "cancelled"
     FINISHED = "finished"
     SUBMITTING = "submitting"
+    ARCHIVED = "archived"
 
     STATUS_OPTIONS = (
         (SUBMITTED, SUBMITTED),
@@ -55,6 +57,7 @@ class Submission(TimeStampedModel):
         (CANCELLED, CANCELLED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
+        (ARCHIVED, ARCHIVED),
     )
 
     participant_team = models.ForeignKey(
@@ -107,6 +110,12 @@ class Submission(TimeStampedModel):
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
     is_baseline = models.BooleanField(default=False)
+    job_name = ArrayField(
+        models.TextField(null=True, blank=True),
+        default=[],
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return "{}".format(self.id)

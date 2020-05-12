@@ -17,6 +17,11 @@
         vm.user = {};
         vm.isFormError = false;
 
+        // default parameters
+        $rootScope.canShowOldPassword = false;
+        $rootScope.canShowNewPassword = false;
+        $rootScope.canShowNewConfirmPassword = false;
+
         vm.changepassContainer = angular.element('.change-passowrd-card');
 
         vm.startLoader = function(msg) {
@@ -31,6 +36,22 @@
             $rootScope.loaderTitle = '';
             vm.changepassContainer.removeClass('low-screen');
         };
+
+        // toggle old password visibility
+        vm.toggleOldPasswordVisibility = function() {
+            $rootScope.canShowOldPassword = !$rootScope.canShowOldPassword;
+        };
+
+        // toggle new password visibility
+        vm.toggleNewPasswordVisibility = function() {
+            $rootScope.canShowNewPassword = !$rootScope.canShowNewPassword;
+        };
+
+        // toggle new password again visibility
+        vm.toggleNewConfirmVisibility = function() {
+            $rootScope.canShowNewConfirmPassword = !$rootScope.canShowNewConfirmPassword;
+        };
+
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){
