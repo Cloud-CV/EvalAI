@@ -766,18 +766,18 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-
+                            console.log(details, vm.submissionResult.results.length);
                             // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                             }
 
-                            if (vm.mySubmissionResult.results.length !== details.results.length || vm.submissionResult.results.length !== details.results.length) {
+                            if (vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
                                 for (i = 0; i < details.results.length; i++) {
-                                    if (details.results[i].status !== vm.mySubmissionResult.results[i].status || vm.submissionResult.results.length !== details.results.length) {
+                                    if (vm.submissionResult.results.length !== details.results.length) {
                                         vm.showUpdate = true;
                                         break;
                                     }
@@ -854,13 +854,13 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
                     vm.mySubmissionResult = details;
+                    vm.submissionResult = details;
 
                     vm.start();
 
@@ -911,6 +911,7 @@
                                 // reinitialized data
                                 var details = response.data;
                                 vm.mySubmissionResult = details;
+                                vm.submissionResult = details;
 
                                 // condition for pagination
                                 if (vm.mySubmissionResult.next === null) {
@@ -1199,6 +1200,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.allSubmissionResult = details;
+                    vm.submissionResult = details;
 
                     if (vm.allSubmissionResult.count === 0) {
                         vm.showPagination = false;
@@ -1244,6 +1246,7 @@
                                 // reinitialized data
                                 var details = response.data;
                                 vm.allSubmissionResult = details;
+                                vm.submissionResult = details;
 
                                 // condition for pagination
                                 if (vm.allSubmissionResult.next === null) {
