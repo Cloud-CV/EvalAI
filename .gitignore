@@ -8,16 +8,19 @@ __pycache__/
 htmlcov/
 .tox/
 .coverage
+coverage
 .coverage.*
 .cache
 coverage.xml
 *,cover
+mocked/
 
 # Django stuff:
 *.log
 
 # Sphinx documentation
 docs/_build/
+docs/build/
 
 # pyenv
 .python-version

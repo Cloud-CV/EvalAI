@@ -1,16 +1,25 @@
 import datetime
-from rest_framework import status
-from django.utils import timezone
+import logging
+import os
+import requests
+import tempfile
+import urllib.request
 
+from base.utils import get_model_object
 from challenges.utils import get_challenge_model, get_challenge_phase_model
-
+from django.utils import timezone
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
+from rest_framework import status
+
+from base.utils import suppress_autotime
 
 from .constants import submission_status_to_exclude
 from .models import Submission
-from base.utils import get_model_object
+from .serializers import SubmissionSerializer
 
 get_submission_model = get_model_object(Submission)
+
+logger = logging.getLogger(__name__)
 
 
 def get_remaining_submission_for_a_phase(
@@ -133,3 +142,81 @@ def get_remaining_submission_for_a_phase(
             "remaining_submissions_count": remaining_submission_count,
         }
         return response_data, status.HTTP_200_OK
+
+
+def is_url_valid(url):
+    """
+    Checks that a given URL is reachable.
+    :param url: A URL
+    :return type: bool
+    """
+    request = urllib.request.Request(url)
+    request.get_method = lambda: "HEAD"
+    try:
+        urllib.request.urlopen(request)
+        return True
+    except urllib.request.HTTPError:
+        return False
+
+
+def get_file_from_url(url):
+    """ Get file object from a url """
+
+    BASE_TEMP_DIR = tempfile.mkdtemp()
+    file_name = url.split("/")[-1]
+    file_path = os.path.join(BASE_TEMP_DIR, file_name)
+    file_obj = {}
+    headers = {"user-agent": "Wget/1.16 (linux-gnu)"}
+    response = requests.get(url, stream=True, headers=headers)
+    with open(file_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+    file_obj["name"] = file_name
+    file_obj["temp_dir_path"] = BASE_TEMP_DIR
+    return file_obj
+
+
+def handle_submission_rerun(submission, updated_status):
+    """
+    Function to handle the submission re-running. It is handled in the following way -
+    1. Invalidate the old submission
+    2. Create a new submission object for the re-running submission
+
+    Arguments:
+        submission {Submission Model class object} -- submission object
+        updated_status {str} -- Updated status for current submission
+    """
+
+    data = {"status": updated_status}
+    serializer = SubmissionSerializer(submission, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+
+    submission.pk = None
+    submission.stdout_file = None
+    submission.stderr_file = None
+    submission.submission_result_file = None
+    submission.submission_metadata_file = None
+    with suppress_autotime(submission, ["submitted_at"]):
+        submission.submitted_at = submission.submitted_at
+        submission.save()
+
+    message = {
+        "challenge_pk": submission.challenge_phase.challenge.pk,
+        "phase_pk": submission.challenge_phase.pk,
+        "submission_pk": submission.pk,
+    }
+
+    if submission.challenge_phase.challenge.is_docker_based:
+        try:
+            response = requests.get(submission.input_file.url)
+        except Exception:
+            logger.exception("Failed to get input_file")
+            return
+
+        if response and response.status_code == 200:
+            message["submitted_image_uri"] = response.json()[
+                "submitted_image_uri"
+            ]
+    return message

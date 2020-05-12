@@ -37,16 +37,21 @@ branches based off of development and merged into it once stable and
 reviewed. To submit code, follow these steps:
 
 1. Create a new branch off of development. Select a descriptive branch
-   name. We highly encourage you to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
-
+   name. 
    ::
-
-       autopep8 --in-place --exclude venv,docs --recursive .
-
        git fetch upstream
        git checkout master
        git merge upstream/master
        git checkout -b your-branch-name
+
+   We highly encourage using `black <http://www.github.com/psf/black>`_
+   to format your code. It sticks to PEP8 for the most part and is in 
+   line with the rest of the repo. We have already set up `pre-commit 
+   hooks <https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>`_
+   to run black and flake8. To activate the hooks, you just need to run
+   the following comamnd once:
+   ::
+      pre-commit install
 
 2. Commit and push code to your branch:
 
@@ -65,7 +70,7 @@ reviewed. To submit code, follow these steps:
 
 3. Once the code is pushed, create a pull request:
 
-   -  On your Github fork, select your branch and click “New pull
+   -  On your GitHub fork, select your branch and click “New pull
       request”. Select “master” as the base branch and your branch in
       the “compare” dropdown. If the code is mergeable (you get a
       message saying “Able to merge”), go ahead and create the pull

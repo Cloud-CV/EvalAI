@@ -9,13 +9,15 @@ django-extensions==1.7.8
 django-silk==1.0.0
 django-spaghetti-and-meatballs==0.2.2
 flake8==3.0.4
+mock==2.0.0
 pre-commit==1.14.4
 pytest==3.5.0
 pytest-cov==2.5.1
 recommonmark==0.4.0
+responses>=0.9.0
 sphinx==1.7.2
 sphinx-autobuild==0.7.1
+sphinx-markdown-tables==0.0.9
 sphinx-rtd-theme==0.3.0
 pytest-django==3.1.2
 Faker==0.7.7
-mock==2.0.0

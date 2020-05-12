@@ -8,6 +8,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
+from .aws_utils import restart_workers_signal_callback
+
 from base.models import (
     TimeStampedModel,
     model_field_name,
@@ -56,6 +58,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
+    is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
     leaderboard_description = models.TextField(null=True, blank=True)
@@ -76,6 +79,12 @@ class Challenge(TimeStampedModel):
     )
     blocked_email_domains = ArrayField(
         models.CharField(max_length=50, blank=True), default=[], blank=True
+    )
+    banned_email_ids = ArrayField(
+        models.TextField(null=True, blank=True),
+        default=[],
+        blank=True,
+        null=True,
     )
     remote_evaluation = models.BooleanField(
         default=False, verbose_name="Remote Evaluation", db_index=True
@@ -112,6 +121,13 @@ class Challenge(TimeStampedModel):
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
+    # The number of active workers on Fargate of the challenge.
+    workers = models.IntegerField(null=True, blank=True, default=None)
+    # The task definition ARN for the challenge, used for updating and creating service.
+    task_def_arn = models.CharField(
+        null=True, blank=True, max_length=2048, default=""
+    )
+    slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
@@ -151,6 +167,13 @@ class Challenge(TimeStampedModel):
 
 signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(create_post_model_field),
+    sender=Challenge,
+    weak=False,
+)
+signals.post_save.connect(
+    model_field_name(field_name="evaluation_script")(
+        restart_workers_signal_callback
+    ),
     sender=Challenge,
     weak=False,
 )
@@ -212,6 +235,12 @@ class ChallengePhase(TimeStampedModel):
         null=True,
     )
     slug = models.SlugField(max_length=200, null=True, unique=True)
+    environment_image = models.CharField(
+        max_length=2128, null=True, blank=True
+    )  # Max length of repository name and tag is 2000 and 128 respectively
+    allowed_submission_file_types = models.CharField(
+        max_length=200, default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+    )
 
     class Meta:
         app_label = "challenges"
@@ -259,6 +288,13 @@ signals.post_save.connect(
     sender=ChallengePhase,
     weak=False,
 )
+signals.post_save.connect(
+    model_field_name(field_name="test_annotation")(
+        restart_workers_signal_callback
+    ),
+    sender=ChallengePhase,
+    weak=False,
+)
 
 
 class Leaderboard(TimeStampedModel):
@@ -292,6 +328,9 @@ class ChallengePhaseSplit(TimeStampedModel):
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
+    leaderboard_decimal_precision = models.PositiveIntegerField(default=2)
+    is_leaderboard_order_descending = models.BooleanField(default=True)
+    show_leaderboard_by_latest_submission = models.BooleanField(default=False)
 
     def __str__(self):
         return "{0} : {1}".format(
@@ -309,6 +348,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission")
     leaderboard = models.ForeignKey("Leaderboard")
     result = JSONField()
+    error = JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{0} : {1}".format(self.challenge_phase_split, self.submission)
@@ -384,3 +424,23 @@ class UserInvitation(TimeStampedModel):
     def __str__(self):
         """Returns the email of the user"""
         return self.email
+
+
+class ChallengeEvaluationCluster(TimeStampedModel):
+    """Model to store the config for Kubernetes cluster for a challenge
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.OneToOneField(Challenge)
+    name = models.CharField(max_length=200, unique=True, db_index=True)
+    cluster_yaml = models.FileField(upload_to=RandomFileName("cluster_yaml"))
+    kube_config = models.FileField(
+        upload_to=RandomFileName("kube_config"), blank=True, null=True
+    )
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_evaluation_cluster"

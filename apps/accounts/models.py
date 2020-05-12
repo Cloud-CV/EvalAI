@@ -44,6 +44,9 @@ class Profile(TimeStampedModel):
     affiliation = models.CharField(max_length=512)
     receive_participated_challenge_updates = models.BooleanField(default=False)
     recieve_newsletter = models.BooleanField(default=False)
+    github_url = models.URLField(max_length=200, null=True, blank=True)
+    google_scholar_url = models.URLField(max_length=200, null=True, blank=True)
+    linkedin_url = models.URLField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return "{}".format(self.user)

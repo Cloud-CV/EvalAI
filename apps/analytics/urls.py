@@ -40,4 +40,9 @@ urlpatterns = [
         views.get_last_submission_datetime_analysis,
         name="get_last_submission_datetime_analysis",
     ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/download_all_participants/$",
+        views.download_all_participants,
+        name="download_all_participants",
+    ),
 ]

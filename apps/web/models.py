@@ -27,6 +27,20 @@ class Contact(TimeStampedModel):
         db_table = "contact"
 
 
+class Subscribers(TimeStampedModel):
+    """Model representing subbscribed user's email"""
+
+    email = models.EmailField(max_length=70)
+
+    def __str__(self):
+        return "{}".format(self.email)
+
+    class Meta:
+        app_label = "web"
+        db_table = "subscribers"
+        verbose_name_plural = "Subscribers"
+
+
 class Team(models.Model):
     """Model representing details of Team"""
 
@@ -38,7 +52,7 @@ class Team(models.Model):
 
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=70, null=True, blank=True)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
     headshot = models.ImageField(upload_to="headshots", null=True, blank=True)
     visible = models.BooleanField(default=False)
     github_url = models.CharField(max_length=200, null=True, blank=True)
@@ -48,6 +62,7 @@ class Team(models.Model):
         upload_to="bg-images", null=True, blank=True
     )
     team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
+    position = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
