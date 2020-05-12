@@ -1036,7 +1036,7 @@ section.bg-section .bg-image {
 .bird-anim img {
   width: 100%;
 }
-
+/
 @keyframes bird {
   0% {
     top: -300px;
@@ -2081,11 +2081,9 @@ a.active-challenge {
 }
 
 .bg-img {
-  /* height: 120%; */
-  width: 100%;
-  margin: auto;
-  /* width: 109%; */
-  margin-top: -5%;
+  position: absolute;
+  object-fit: cover;
+  height: 100%;
 }
 
 .blue-bg {
