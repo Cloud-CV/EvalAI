@@ -2523,7 +2523,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
     # Check for challenge phase splits
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
     if challenge_phase_splits:
-        i = 1
+        phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
             serializer = ZipChallengePhaseSplitSerializer(data=data,
@@ -2532,7 +2532,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
                                                           })
             if not serializer.is_valid():
                 serializer_error = str(serializer.errors)
-                message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(i,
+                message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(phase_split,
                                                                                                       serializer_error)
                 error_messages.append(message)
             if not is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids,
@@ -2540,7 +2540,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
                 message = ("ERROR: Challenge phase split {} has invalid keys "
                            "for challenge_phase_id, leaderboard_id, dataset_split_id").format(i)
                 error_messages.append(message)
-            i += 1
+            phase_split += 1
     else:
         message = "ERROR: There is no key for challenge phase splits."
         error_messages.append(message)
