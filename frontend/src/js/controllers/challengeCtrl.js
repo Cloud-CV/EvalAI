@@ -1161,13 +1161,6 @@
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
-            var all_phases = vm.phases.results;
-            for (var i = 0; i < vm.phases.results.length; i++) {
-                if (all_phases[i].slug == phaseId) {
-                    vm.selectedPhaseforAllsubmission = all_phases[i];
-                    break;
-                }
-            }
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
@@ -1280,6 +1273,13 @@
                 }
             };
             utilities.sendRequest(parameters);
+            var all_phases = vm.phases.results;
+                    for (var i = 0; i < vm.phases.results.length; i++) {
+                        if (all_phases[i].slug == phaseId) {
+                            vm.selectedPhaseforAllsubmission = all_phases[i];
+                            break;
+                        }
+            }
         };
 
         vm.changeSubmissionVisibility = function(submission_id) {
