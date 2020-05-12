@@ -564,7 +564,7 @@ a.view-more {
     height: 120px;
     text-align: center;
     img {
-        height: 80%;
+        height: 55%;
         max-width: 100%;
         width: auto;
         transition: all 0.2s ease-in-out;
@@ -581,4 +581,8 @@ a.view-more {
             filter: grayscale(100%);
         }
     }
+}
+
+#gsoc {
+    height: 45%;
 }
