@@ -27,7 +27,7 @@ class BaseAPITestClass(APITestCase):
 
 class ResendEmailThrottleTest(BaseAPITestClass):
 
-    url = reverse_lazy('accounts:resend_email')
+    url = reverse_lazy("accounts:resend_email_confirmation")
 
     def test_resend_throttles(self):
         for _ in range(3):

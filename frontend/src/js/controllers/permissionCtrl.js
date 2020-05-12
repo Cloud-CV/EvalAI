@@ -20,7 +20,7 @@
         vm.requestLink = function () {
             var userKey = utilities.getData('userKey');
             var parameters = {};
-            parameters.url = 'accounts/user/resend-email';
+            parameters.url = 'accounts/user/resend_email_verification';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
@@ -30,8 +30,8 @@
                 },
                 onError: function(response) {
                     var details = response.data
-                    if(response.status==429){$rootScope.notify("error", details.message);}
-                    else{$rootScope.notify("error", "Something went wrong. Please try again.");}
+                    if (response.status==429){$rootScope.notify("error", details.message);}
+                    else {$rootScope.notify("error", "Something went wrong. Please try again.");}
                     }
             };
             utilities.sendRequest(parameters);

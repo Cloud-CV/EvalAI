@@ -61,7 +61,7 @@ def get_auth_token(request):
 @authentication_classes((ExpiringTokenAuthentication,))
 def resend_email_confirmation(request):
     """
-    Resends the confirmation Email by the users request.
+    Resends the confirmation email on user request.
     """
     user = request.user
     send_email_confirmation(request._request, user)
