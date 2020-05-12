@@ -9,8 +9,11 @@
     }
 }
 
-.challenge-description a, .evaluation-details a, .terms-and-conditions a,
-.phase-description a, .submission-guidelines a {
+.challenge-description a,
+.evaluation-details a,
+.terms-and-conditions a,
+.phase-description a,
+.submission-guidelines a {
     color: #2196F3;
     cursor: pointer;
 }
@@ -58,11 +61,9 @@ a.active-challenge {
 }
 
 .bg-img {
-    /* height: 120%; */
-    width: 100%;
-    margin: auto;
-    /* width: 109%; */
-    margin-top: -5%;
+    position: absolute;
+    object-fit: cover;
+    height: 100%;
 }
 
 .blue-bg {
@@ -177,11 +178,13 @@ i.star {
     color: red;
 }
 
-md-select.md-default-theme .md-select-value span:first-child:after, md-select .md-select-value span:first-child:after {
+md-select.md-default-theme .md-select-value span:first-child:after,
+md-select .md-select-value span:first-child:after {
     color: white;
 }
 
-.md-checkbox-enabled.md-default-theme[selected] .md-icon, .md-checkbox-enabled[selected] .md-icon {
+.md-checkbox-enabled.md-default-theme[selected] .md-icon,
+.md-checkbox-enabled[selected] .md-icon {
     background-color: #ffaf4b;
 }
 
@@ -194,15 +197,22 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 }
 
 @-webkit-keyframes spin {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(360deg); }
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
 }
 
 @keyframes spin {
-    from {transform:rotate(0deg);}
-    to {transform:rotate(360deg);}
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
-
 
 .spin {
     -webkit-animation: spin 1s linear infinite;
@@ -224,7 +234,6 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     background-color: rgb(167, 163, 163);
     border: 2px solid rgb(167, 163, 163);
     border-radius: 40px;
-    
     .btn-switch-circle {
         position: absolute;
         top: 0;
@@ -239,8 +248,8 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 
 .btn-switch--on {
     background-color: #ffaf4b;
-    border: 2px solid #ffaf4b;;
-    
+    border: 2px solid #ffaf4b;
+    ;
     .btn-switch-circle--on {
         left: auto;
         right: 0;
