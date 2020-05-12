@@ -1036,7 +1036,7 @@ section.bg-section .bg-image {
 .bird-anim img {
   width: 100%;
 }
-/
+
 @keyframes bird {
   0% {
     top: -300px;
