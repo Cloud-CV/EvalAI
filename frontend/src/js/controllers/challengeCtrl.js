@@ -807,7 +807,7 @@
 
             var all_phases = vm.phases.results;
             for (var i = 0; i < vm.phases.results.length; i++) {
-                if (all_phases[i].id == phaseId) {
+                if (all_phases[i].slug == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     vm.selectedPhaseforMysubmission = all_phases[i];
                     break;
@@ -1171,6 +1171,14 @@
                 vm.phaseId = phaseId;
             }
 
+            // var all_phases = vm.phases.results;
+            // for (var i = 0; i < vm.phases.results.length; i++) {
+            //     if (all_phases[i].slug == phaseId) {
+            //         vm.selectedPhaseforAllsubmission = all_phases[i];
+            //         break;
+            //     }
+            // }
+
             // loader for loading submissions.
             vm.startLoader = loaderService.startLoader;
             vm.startLoader("Loading Submissions");
@@ -1273,13 +1281,6 @@
                 }
             };
             utilities.sendRequest(parameters);
-            var all_phases = vm.phases.results;
-                    for (var i = 0; i < vm.phases.results.length; i++) {
-                        if (all_phases[i].slug == phaseId) {
-                            vm.selectedPhaseforAllsubmission = all_phases[i];
-                            break;
-                        }
-            }
         };
 
         vm.changeSubmissionVisibility = function(submission_id) {
