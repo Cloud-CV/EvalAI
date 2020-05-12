@@ -766,7 +766,7 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-                            console.log(details, vm.submissionResult.results.length);
+
                             // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
@@ -864,7 +864,7 @@
 
                     vm.start();
 
-                    if (vm.mySubmissionResult.count === 0) {
+                    if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
@@ -873,19 +873,19 @@
                         vm.paginationMsg = "";
                     }
 
-                    if (vm.mySubmissionResult.next === null) {
+                    if (vm.submissionResult.next === null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
 
                     }
-                    if (vm.mySubmissionResult.previous === null) {
+                    if (vm.submissionResult.previous === null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.mySubmissionResult.next !== null) {
-                        vm.currentPage = vm.mySubmissionResult.next.split('page=')[1] - 1;
+                    if (vm.submissionResult.next !== null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                         vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
@@ -914,17 +914,17 @@
                                 vm.submissionResult = details;
 
                                 // condition for pagination
-                                if (vm.mySubmissionResult.next === null) {
+                                if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.mySubmissionResult.count / 100;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
-                                    vm.currentPage = parseInt(vm.mySubmissionResult.next.split('page=')[1] - 1);
+                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
-                                if (vm.mySubmissionResult.previous === null) {
+                                if (vm.submissionResult.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
@@ -1202,7 +1202,7 @@
                     vm.allSubmissionResult = details;
                     vm.submissionResult = details;
 
-                    if (vm.allSubmissionResult.count === 0) {
+                    if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
@@ -1211,19 +1211,19 @@
                         vm.paginationMsg = "";
                     }
 
-                    if (vm.allSubmissionResult.next === null) {
+                    if (vm.submissionResult.next === null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
 
                     }
-                    if (vm.allSubmissionResult.previous === null) {
+                    if (vm.submissionResult.previous === null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.allSubmissionResult.next !== null) {
-                        vm.currentPage = vm.allSubmissionResult.next.split('page=')[1] - 1;
+                    if (vm.submissionResult.next !== null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                         vm.currentRefPage = Math.ceil(vm.currentPage);
                     } else {
                         vm.currentPage = 1;
@@ -1249,17 +1249,17 @@
                                 vm.submissionResult = details;
 
                                 // condition for pagination
-                                if (vm.allSubmissionResult.next === null) {
+                                if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.allSubmissionResult.count / 100;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
-                                    vm.currentPage = parseInt(vm.allSubmissionResult.next.split('page=')[1] - 1);
+                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 }
 
-                                if (vm.allSubmissionResult.previous === null) {
+                                if (vm.submissionResult.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
@@ -1492,9 +1492,9 @@
         };
 
         vm.showMdDialog = function(ev, submissionId) {
-            for (var i = 0; i < vm.mySubmissionResult.count; i++) {
-                if (vm.mySubmissionResult.results[i].id === submissionId) {
-                    vm.submissionMetaData = vm.mySubmissionResult.results[i];
+            for (var i = 0; i < vm.submissionResult.count; i++) {
+                if (vm.submissionResult.results[i].id === submissionId) {
+                    vm.submissionMetaData = vm.submissionResult.results[i];
                     break;
                 }
             }

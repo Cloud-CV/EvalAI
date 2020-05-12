@@ -944,7 +944,7 @@ describe('Unit tests for challenge controller', function () {
         it('get the leaderboard of the current phase', function () {
             submissionCountSuccess = null;
             submissionListSuccess = null;
-            var phaseId = 'random-challenge-1';
+            var phaseId = 1;
             vm.getResults(phaseId);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
@@ -958,7 +958,7 @@ describe('Unit tests for challenge controller', function () {
             `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
             submissionCountSuccess = true;
             submissionListSuccess = null;
-            var phaseId = 'random-challenge-1';
+            var phaseId = 1;
             successResponse = {
                 challenge_phase: 1,
                 participant_team_submission_count: 200
@@ -971,7 +971,7 @@ describe('Unit tests for challenge controller', function () {
             `analytics/challenge/<challenge_id>/challenge_phase/<phase_id>/count`', function () {
             submissionCountSuccess = false;
             submissionListSuccess = null;
-            var phaseId = 'random-challenge-1'
+            var phaseId = 1;
             errorResponse = 'error';
             vm.getResults(phaseId);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
@@ -981,7 +981,7 @@ describe('Unit tests for challenge controller', function () {
             it('get submissions of a particular challenge phase when pagination next is ' + response.next + ' \
                 and previous is ' + response.previous + '`jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
                 submissionListSuccess = true;
-                var phaseId = 'random-challenge-1'
+                var phaseId = 1;
                 successResponse = response;
                 successResponse.results = [
                     {
@@ -1028,7 +1028,7 @@ describe('Unit tests for challenge controller', function () {
             `jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
             submissionListSuccess = false;
             submissionCountSuccess = null;
-            var phaseId = 'random-challenge-1';
+            var phaseId = 1;
             errorResponse = {
                 detail: 'error'
             };
@@ -1041,7 +1041,7 @@ describe('Unit tests for challenge controller', function () {
         it('to load data with pagination `load` function', function () {
             submissionListSuccess = true;
             submissionCountSuccess = null;
-            var phaseId = 'random-challenge-1';
+            var phaseId = 1;
             successResponse = {
                 results: [
                     {
@@ -1391,7 +1391,7 @@ describe('Unit tests for challenge controller', function () {
             it('submission list have count' + response.count + ', next ' + response.next + 'and previous ' + response.previous, function() {
                 success = true;
                 successResponse = response;
-                var phaseId = 'random-challenge-1';
+                var phaseId = 1
                 vm.getAllSubmissionResults(phaseId);
                 vm.stopFetchingSubmissions();
                 expect($interval.cancel).toHaveBeenCalled();
@@ -1430,7 +1430,7 @@ describe('Unit tests for challenge controller', function () {
 
         it('backend error', function () {
             success = false;
-            var phaseId = 'random-challenge-1';
+            var phaseId = 1
             vm.getAllSubmissionResults(phaseId);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
