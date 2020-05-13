@@ -315,7 +315,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_submission_by_slug(request, challenge_id, slug):
+def challenge_submission_by_slug(request, challenge_id, slug, version):
     """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not

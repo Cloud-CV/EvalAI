@@ -22,7 +22,7 @@
         <div class="row">
             <div class="col s6">
                 <span>
-                    <md-select ng-model="challenge.selectedPhaseforAllsubmission.name" placeholder="Select Phase" class="rm-margin">
+                    <md-select ng-model="challenge.phase.name" placeholder="Select Phase" class="rm-margin">
                         <md-option ng-click="challenge.getAllSubmissionResults(key.slug)" value="{{key.name}}"
                             ng-repeat="key in challenge.phases.results">
                             {{key.name}} &nbsp; <span class="new badge orange-background" data-badge-caption="Private"
@@ -55,7 +55,7 @@
                     ng-click="challenge.downloadChallengeSubmissions()">Download</a>
             </div>
         </div>
-        <div ng-if="challenge.allSubmissionResult.results.length > 0">
+        <div ng-if="challenge.isResult">
             <div class="row rm-margin">
                 <div class="col s12 fs-16">
                     <strong>Filter submissions by team</strong>
@@ -73,9 +73,9 @@
             </div>
         </div>
         <div class="row">
-            <div ng-if="challenge.allSubmissionResult.results.length == 0" class="result-wrn fs-16 w-300">No
+            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn fs-16 w-300">No
                 results found.</div>
-            <div class="col s12 all-submission-table-scroll" ng-if="challenge.allSubmissionResult.results.length > 0">
+            <div class="col s12 all-submission-table-scroll" ng-if="challenge.showPagination && challenge.isResult">
                 <table class="highlight all-submission-table responsive-table fs-16 w-300">
                     <thead>
                         <th data-field="submission_id">#</th>
@@ -93,7 +93,7 @@
                         <th class="fs-18 w-300" data-field="button">Rerun Submission</th>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="key in challenge.allSubmissionResult.results" class="result-val" [(ngModel)]="challenge.allSubmissionResult.results[i]">
+                        <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
                             <td>{{$index + 1 + (challenge.currentRefPage - 1) * 100}}</td>
                             <td>{{key.participant_team}}</td>
 
@@ -147,18 +147,18 @@
             </div>
         </div>
     </div>
-    <div class="pagination" ng-if="challenge.allSubmissionResult.results.length > 0">
+    <div class="pagination" ng-if="challenge.showPagination">
         <div class="row">
             <div class="col s12 left-align">
                 <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light "
-                    ng-click="challenge.load(challenge.allSubmissionResult.previous)">
+                    ng-click="challenge.load(challenge.submissionResult.previous)">
                     <i class="fa fa-chevron-left"></i>
                 </a>
                 <span class="pagination-title"> <strong class="text-med-black"> Page
                         {{challenge.currentPage | ceil}} of
-                        {{challenge.allSubmissionResult.count/100 | ceil}} </strong></span>
+                        {{challenge.submissionResult.count/100 | ceil}} </strong></span>
                 <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light "
-                    ng-click="challenge.load(challenge.allSubmissionResult.next)">
+                    ng-click="challenge.load(challenge.submissionResult.next)">
                     <i class="fa fa-chevron-right"></i>
                 </a>
             </div>

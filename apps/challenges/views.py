@@ -2152,7 +2152,7 @@ def get_challenge_phase_by_pk(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_all_submissions_of_challenge_by_slug(
-    request, challenge_pk, slug
+    request, challenge_pk, slug, version
 ):
     """
     Returns all the submissions for a particular challenge

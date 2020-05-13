@@ -16,7 +16,7 @@ urlpatterns = [
         name="challenge_submission",
     ),
     url(
-        r"^challenge/(?P<challenge_id>[0-9]+)/challenge_phase/(?P<slug>[\w-]+)/submission/$",
+        r"^challenge/(?P<challenge_id>[0-9]+)/challenge_phase/(?P<version>[v1|v2]+)/(?P<slug>[\w-]+)/submission/$",
         views.challenge_submission_by_slug,
         name="challenge_submission_by_slug",
     ),

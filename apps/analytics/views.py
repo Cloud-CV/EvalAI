@@ -183,7 +183,7 @@ def get_challenge_phase_submission_count_by_team(
 )
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_count_by_team_by_slug(
-    request, challenge_pk, slug
+    request, challenge_pk, slug, version
 ):
     """
     Returns number of submissions done by a participant team in a challenge phase

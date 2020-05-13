@@ -10,10 +10,6 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
-        vm.selectedPhaseforAllsubmission;
-        vm.selectedPhaseforMysubmission;
-        vm.allSubmissionResult;
-        vm.mySubmissionResult;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -525,6 +521,7 @@
                     offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
+
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -760,7 +757,7 @@
             vm.start = function() {
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
@@ -777,7 +774,7 @@
                                 vm.showUpdate = true;
                             } else {
                                 for (i = 0; i < details.results.length; i++) {
-                                    if (vm.submissionResult.results.length !== details.results.length) {
+                                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
                                         vm.showUpdate = true;
                                         break;
                                     }
@@ -809,12 +806,11 @@
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
-                    vm.selectedPhaseforMysubmission = all_phases[i];
                     break;
                 }
             }
 
-            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count";
+            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/count";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -843,10 +839,10 @@
             vm.showPagination = false;
 
             if (vm.filter_my_submission_by_team_name === '') {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.phaseId + "/submission/";
             } else {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.phaseId + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
             }
             parameters.method = 'GET';
@@ -854,12 +850,12 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
+
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
-                    vm.mySubmissionResult = details;
                     vm.submissionResult = details;
 
                     vm.start();
@@ -910,7 +906,6 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var details = response.data;
-                                vm.mySubmissionResult = details;
                                 vm.submissionResult = details;
 
                                 // condition for pagination
@@ -963,8 +958,6 @@
 
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
-            vm.allSubmissionResult = {};
-            vm.mySubmissionResult = {};
 
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
@@ -973,8 +966,6 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
-                    vm.allSubmissionResult = details;
-                    vm.mySubmissionResult = details;
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
@@ -1012,8 +1003,6 @@
                     }
 
                     vm.submissionResult = details;
-                    vm.allSubmissionResult = details;
-                    vm.mySubmissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
@@ -1181,10 +1170,10 @@
             vm.currentPage = '';
             vm.showPagination = false;
             if (vm.filter_all_submission_by_team_name === '') {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.phaseId + "/submissions";
             } else {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.phaseId + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
             }
             parameters.method = 'GET';
@@ -1192,7 +1181,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.allSubmissionResult = details;
                     vm.submissionResult = details;
 
                     if (vm.submissionResult.count === 0) {
@@ -1238,7 +1226,6 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var details = response.data;
-                                vm.allSubmissionResult = details;
                                 vm.submissionResult = details;
 
                                 // condition for pagination
