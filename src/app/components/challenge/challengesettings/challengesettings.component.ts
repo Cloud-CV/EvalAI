@@ -105,11 +105,14 @@ export class ChallengesettingsComponent implements OnInit {
    */
   remove(email): void {
     const SELF = this;
-    const index = this.bannedEmailIds.indexOf(email);
+    const index = SELF.bannedEmailIds.indexOf(email);
 
     if (index >= 0) {
-      this.bannedEmailIds.splice(index, 1);
+      SELF.bannedEmailIds.splice(index, 1);
     }
+
+    // updating the banned Email Ids list
+    SELF.updateBannedEmailList();
   }
 
   validateEmail(email) {
