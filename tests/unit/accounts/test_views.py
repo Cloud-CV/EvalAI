@@ -67,6 +67,7 @@ class GetAuthTokenTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
+
 class ResendEmailVerificationTestClass(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
@@ -88,7 +89,6 @@ class ResendEmailVerificationTestClass(APITestCase):
 
     def test_resend_throttles(self):
         for _ in range(3):
-            import pdb; pdb.set_trace()
             response = self.client.post(self.url, {})
             self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(self.url, {})
