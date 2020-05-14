@@ -248,10 +248,30 @@
             authenticate: true
         };
 
+        var my_phase_submission = {
+            name: "web.challenge-main.challenge-page.my-phase-submission",
+            url: "/my-submission/:mySubmissionPhaseSlug",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
+            templateUrl: baseUrl + "/web/challenge/my-submission.html",
+            title: 'My Submissions',
+            authenticate: true
+        };
+
         var my_challenge_all_submission = {
             name: "web.challenge-main.challenge-page.my-challenge-all-submission",
             parent: "web.challenge-main.challenge-page",
             url: "/my-challenge-all-submission",
+            templateUrl: baseUrl + "/web/challenge/my-challenge-all-submission.html",
+            title: 'My Challenge All Submissions',
+            authenticate: true
+        };
+
+        var my_challenge_phase_all_submission = {
+            name: "web.challenge-main.challenge-page.my-challenge-phase-all-submission",
+            url: "/my-challenge-all-submission/:allSubmissionPhaseSlug",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
             templateUrl: baseUrl + "/web/challenge/my-challenge-all-submission.html",
             title: 'My Challenge All Submissions',
             authenticate: true
@@ -488,7 +508,9 @@
         $stateProvider.state(participate);
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
+        $stateProvider.state(my_phase_submission);
         $stateProvider.state(my_challenge_all_submission);
+        $stateProvider.state(my_challenge_phase_all_submission);
         $stateProvider.state(leaderboard);
         $stateProvider.state(challenge_phase_leaderboard);
 

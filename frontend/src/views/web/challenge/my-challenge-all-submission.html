@@ -15,16 +15,16 @@
                 <h5 class="w-300">All Submissions</h5>
             </div>
         </div>
-        <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showUpdate">
+        <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showallSubmissionUpdate">
             <span class="text-white">Page is outdated, click to update &nbsp; <i
                     class="fa fa-refresh text-highlight"></i></span>
         </div>
         <div class="row">
             <div class="col s6">
                 <span>
-                    <md-select ng-model="challenge.phase.name" placeholder="Select Phase" class="rm-margin">
-                        <md-option ng-click="challenge.getAllSubmissionResults(key.slug)" value="{{key.name}}"
-                            ng-repeat="key in challenge.phases.results">
+                    <md-select ng-model="challenge.allSubmissionPhaseName" placeholder="Select Phase" class="rm-margin">
+                        <md-option ui-sref="web.challenge-main.challenge-page.my-challenge-phase-all-submission({allSubmissionPhaseSlug:key.slug})"
+                            value="{{key.slug}}" ng-repeat="key in challenge.allSubmissionPhases">  
                             {{key.name}} &nbsp; <span class="new badge orange-background" data-badge-caption="Private"
                                 ng-if="key.showPrivate"></span>
                         </md-option>

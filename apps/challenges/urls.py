@@ -70,7 +70,7 @@ urlpatterns = [
         name="get_all_submissions_of_challenge",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<version>[v1|v2]+)/(?P<slug>[\w-]+)/submissions$",
+        r"^(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<slug>[\w-]+)/submissions$",
         views.get_all_submissions_of_challenge_by_slug,
         name="get_all_submissions_of_challenge_by_slug",
     ),
