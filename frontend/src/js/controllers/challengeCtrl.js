@@ -25,7 +25,6 @@
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
-        vm.phases = {};
         vm.phaseSplits = {};
         vm.allSubmissionPhases = {};
         vm.mySubmissionPhases = {};
@@ -513,25 +512,25 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
-                vm.phases = details;
                 vm.allSubmissionPhases = details.results;
                 vm.mySubmissionPhases = details.results;
                 var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
-                        vm.phases.results[i].showPrivate = true;
                         vm.allSubmissionPhases[i].showPrivate = true;
                         vm.mySubmissionPhases[i].showPrivate = true;
                     }
                 }
-                for (var j=0; j<vm.phases.results.length; j++){
-                    var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
-                    vm.phases.results[j].start_zone = moment.tz.zone(timezone).abbr(offset);
+                for (var j=0; j<vm.allSubmissionPhases.length; j++){
+                    var offset = new Date(vm.allSubmissionPhases[j].start_date).getTimezoneOffset();
                     vm.allSubmissionPhases[j].start_zone = moment.tz.zone(timezone).abbr(offset);
-                    vm.mySubmissionPhases[j].start_zone = moment.tz.zone(timezone).abbr(offset);
-                    offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
-                    vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
+                    offset = new Date(vm.allSubmissionPhases[j].end_date).getTimezoneOffset();
                     vm.allSubmissionPhases[j].end_zone = moment.tz.zone(timezone).abbr(offset);
+                }
+                for (var j=0; j<vm.mySubmissionPhases.length; j++){
+                    var offset = new Date(vm.mySubmissionPhases[j].start_date).getTimezoneOffset();
+                    vm.mySubmissionPhases[j].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    offset = new Date(vm.mySubmissionPhases[j].end_date).getTimezoneOffset();
                     vm.mySubmissionPhases[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
@@ -811,6 +810,7 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             if (phaseId !== undefined) {
+                vm.phaseId = phaseId;
                 vm.mySubmissionPhaseSlug = phaseId;
             }
 
@@ -1175,7 +1175,7 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             if (phaseId !== undefined) {
-                // vm.phaseId = phaseId;
+                vm.phaseId = phaseId;
                 vm.allSubmissionPhaseSlug = phaseId;
             }
 
@@ -1994,7 +1994,8 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
-                        vm.phases = details;
+                        vm.allSubmissionPhases = details.results;
+                        vm.mySubmissionPhases = details.results;
                         utilities.hideLoader();
                     },
                     onError: function(response) {
