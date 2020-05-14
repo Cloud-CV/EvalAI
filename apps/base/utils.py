@@ -92,23 +92,6 @@ def decode_data(data):
     return decoded
 
 
-def custom_exception_handler(exc, context):  # For sending a user-friendly Throttling message.
-    """
-    Returns a response with the waiting time in minutes if
-    exception type is Throttled.
-    """
-    response = exception_handler(exc, context)
-
-    if isinstance(exc, Throttled):
-        time = exc.wait / 60
-        custom_response_data = {
-            'message': 'Request limit exceeded. Please wait for %d minutes.' % time
-        }
-        response.data = custom_response_data
-
-    return response
-
-
 def send_email(
     sender=settings.CLOUDCV_TEAM_EMAIL,
     recipient=None,
