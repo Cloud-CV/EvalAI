@@ -14,9 +14,8 @@ from contextlib import contextmanager
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
-from rest_framework.exceptions import NotFound, Throttled
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.views import exception_handler
 
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
