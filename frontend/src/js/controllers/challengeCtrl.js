@@ -26,8 +26,7 @@
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phaseSplits = {};
-        vm.allSubmissionPhases = {};
-        vm.mySubmissionPhases = {};
+        vm.phases = {};
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -512,26 +511,18 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
-                vm.allSubmissionPhases = details.results;
-                vm.mySubmissionPhases = details.results;
+                vm.phases = details;
                 var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
-                        vm.allSubmissionPhases[i].showPrivate = true;
-                        vm.mySubmissionPhases[i].showPrivate = true;
+                        vm.phases.results[i].showPrivate = true;
                     }
                 }
-                for (var j=0; j<vm.allSubmissionPhases.length; j++){
-                    var offset = new Date(vm.allSubmissionPhases[j].start_date).getTimezoneOffset();
-                    vm.allSubmissionPhases[j].start_zone = moment.tz.zone(timezone).abbr(offset);
-                    offset = new Date(vm.allSubmissionPhases[j].end_date).getTimezoneOffset();
-                    vm.allSubmissionPhases[j].end_zone = moment.tz.zone(timezone).abbr(offset);
-                }
-                for (var j=0; j<vm.mySubmissionPhases.length; j++){
-                    var offset = new Date(vm.mySubmissionPhases[j].start_date).getTimezoneOffset();
-                    vm.mySubmissionPhases[j].start_zone = moment.tz.zone(timezone).abbr(offset);
-                    offset = new Date(vm.mySubmissionPhases[j].end_date).getTimezoneOffset();
-                    vm.mySubmissionPhases[j].end_zone = moment.tz.zone(timezone).abbr(offset);
+                for (var j=0; j<vm.phases.results.length; j++){
+                    var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
+                    vm.phases.results[j].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
+                    vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
                 // navigate to challenge page
@@ -812,19 +803,14 @@
                 vm.phaseId = phaseId;
                 vm.mySubmissionPhaseSlug = phaseId;
             }
-
-            var all_phases = vm.mySubmissionPhases;
-            
-            for (var i = 0; i < all_phases.length; i++) {
-                if (all_phases[i].slug == phaseId) {
-                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
-                    break;
-                }
-                if (all_phases[i].id == phaseId) {
-                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
-                    break;
-                }
-            }
+            console.log(vm.phases);
+            // var all_phases = vm.mySelectedPhases.results;
+            // for (var i = 0; i < vm.phases.results.length; i++) {
+            //     if (all_phases[i].slug == phaseId || all_phase[i].id == phaseId) {
+            //         vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+            //         break;
+            //     }
+            // }
 
             parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.mySubmissionPhaseSlug + "/count";
             parameters.method = 'GET';
@@ -1993,8 +1979,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
-                        vm.allSubmissionPhases = details.results;
-                        vm.mySubmissionPhases = details.results;
+                        vm.phases = details;
                         utilities.hideLoader();
                     },
                     onError: function(response) {

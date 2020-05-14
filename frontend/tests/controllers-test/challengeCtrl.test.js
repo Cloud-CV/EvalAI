@@ -504,31 +504,18 @@ describe('Unit tests for challenge controller', function () {
             };
             spyOn(utilities, 'hideLoader');
             vm = createController();
-            expect(vm.allSubmissionPhases).toEqual(successResponse.results);
-            expect(vm.mySubmissionPhases).toEqual(successResponse.results);
+            expect(vm.phases).toEqual(successResponse);
             var timezone = moment.tz.guess();
             for (var i = 0; i < successResponse.count; i++) {
                 expect(successResponse.results[i].is_public).toBeFalsy();
-                expect(vm.allSubmissionPhases[i].showPrivate).toBeTruthy();
-            }
-
-            for (var i = 0; i < successResponse.count; i++) {
-                expect(successResponse.results[i].is_public).toBeFalsy();
-                expect(vm.mySubmissionPhases[i].showPrivate).toBeTruthy();
+                expect(vm.phases.results[i].showPrivate).toBeTruthy();
             }
 
             for(var i = 0; i < successResponse.results.length; i++){
                 var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
-                expect(vm.mySubmissionPhases[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.phases.results[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
                 offset = new Date(successResponse.results[i].end_date).getTimezoneOffset();
-                expect(vm.mySubmissionPhases[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
-            }
-
-            for(var i = 0; i < successResponse.results.length; i++){
-                var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
-                expect(vm.allSubmissionPhases[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
-                offset = new Date(successResponse.results[i].end_date).getTimezoneOffset();
-                expect(vm.allSubmissionPhases[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.phases.results[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
@@ -928,17 +915,7 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'storeData');
 
             vm.challengeId = 1;
-            vm.allSubmissionPhases = {
-                results: [
-                    {
-                        id: 1,
-                        name: "Challenge phase name",
-                        description: "Challenge phase description",
-                        leaderboard_public: true
-                    },
-                ]
-            };
-            vm.mySubmissionPhases = {
+            vm.phases = {
                 results: [
                     {
                         id: 1,
@@ -971,7 +948,7 @@ describe('Unit tests for challenge controller', function () {
             vm.getResults(phaseId);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
-            // expect(vm.isResult).toEqual(true);
+            expect(vm.isResult).toEqual(true);
             expect(vm.phaseId).toEqual(phaseId);
 
             expect(vm.currentPhaseLeaderboardPublic).toEqual(true);
@@ -2390,6 +2367,7 @@ describe('Unit tests for challenge controller', function () {
             var editChallengePhaseForm = false;
             success = true;
             vm.editChallengePhase(editChallengePhaseForm);
+            expect(vm.phases).toEqual('success');
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
