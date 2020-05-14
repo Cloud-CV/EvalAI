@@ -29,8 +29,9 @@
                     $rootScope.notify("success", "The verification link was sent again.");
                 },
                 onError: function(response) {
-                    var details = response.data
-                    if (response.status==429){$rootScope.notify("error", details.detail);}
+                    var message = response.data.detail
+                    var time = Math.floor(message.match(/\d+/g)[0] / 60)
+                    if (response.status==429){$rootScope.notify("error", "Request limit exceeded. Please wait for " + time + " minutes and try again.");}
                     else {$rootScope.notify("error", "Something went wrong. Please try again.");}
                     }
             };
