@@ -25,8 +25,8 @@
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
-        vm.phaseSplits = {};
         vm.phases = {};
+        vm.phaseSplits = {};
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -803,14 +803,6 @@
                 vm.phaseId = phaseId;
                 vm.mySubmissionPhaseSlug = phaseId;
             }
-            console.log(vm.phases);
-            // var all_phases = vm.mySelectedPhases.results;
-            // for (var i = 0; i < vm.phases.results.length; i++) {
-            //     if (all_phases[i].slug == phaseId || all_phase[i].id == phaseId) {
-            //         vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
-            //         break;
-            //     }
-            // }
 
             parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.mySubmissionPhaseSlug + "/count";
             parameters.method = 'GET';
@@ -862,6 +854,14 @@
 
                     vm.start();
 
+                    var all_phases = vm.phases.results;
+                    for (var i = 0; i < vm.phases.results.length; i++) {
+                        if (all_phases[i].slug == phaseId || all_phase[i].id == phaseId) {
+                            vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                            break;
+                        }
+                    }
+                    
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
