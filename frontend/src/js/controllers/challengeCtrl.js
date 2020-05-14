@@ -793,7 +793,7 @@
                     utilities.sendRequest(parameters);
                 }, 5000);
             };
-
+            
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
@@ -802,6 +802,14 @@
             if (phaseId !== undefined) {
                 vm.phaseId = phaseId;
                 vm.mySubmissionPhaseSlug = phaseId;
+            }
+
+            var all_phases = vm.phases.results;
+            for (var i = 0; i < vm.phases.results.length; i++) {
+                if (all_phases[i].slug == phaseId || all_phases[i].id == phaseId) {
+                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    break;
+                }
             }
 
             parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.mySubmissionPhaseSlug + "/count";
@@ -853,15 +861,6 @@
                     vm.submissionResult = details;
 
                     vm.start();
-
-                    var all_phases = vm.phases.results;
-                    for (var i = 0; i < vm.phases.results.length; i++) {
-                        if (all_phases[i].slug == phaseId || all_phase[i].id == phaseId) {
-                            vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
-                            break;
-                        }
-                    }
-                    
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
