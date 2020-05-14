@@ -971,7 +971,7 @@ describe('Unit tests for challenge controller', function () {
             vm.getResults(phaseId);
             vm.stopFetchingSubmissions();
             expect($interval.cancel).toHaveBeenCalled();
-            expect(vm.isResult).toEqual(true);
+            // expect(vm.isResult).toEqual(true);
             expect(vm.phaseId).toEqual(phaseId);
 
             expect(vm.currentPhaseLeaderboardPublic).toEqual(true);
@@ -2390,7 +2390,6 @@ describe('Unit tests for challenge controller', function () {
             var editChallengePhaseForm = false;
             success = true;
             vm.editChallengePhase(editChallengePhaseForm);
-            expect(vm.allSubmissionPhases).toEqual('success');
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });
