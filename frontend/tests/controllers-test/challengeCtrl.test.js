@@ -928,7 +928,17 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'storeData');
 
             vm.challengeId = 1;
-            vm.phases = {
+            vm.allSubmissionPhases = {
+                results: [
+                    {
+                        id: 1,
+                        name: "Challenge phase name",
+                        description: "Challenge phase description",
+                        leaderboard_public: true
+                    },
+                ]
+            };
+            vm.mySubmissionPhases = {
                 results: [
                     {
                         id: 1,
@@ -2380,7 +2390,8 @@ describe('Unit tests for challenge controller', function () {
             var editChallengePhaseForm = false;
             success = true;
             vm.editChallengePhase(editChallengePhaseForm);
-            expect(vm.phases).toEqual('success');
+            expect(vm.mySubmissionPhases).toEqual('success');
+            expect(vm.mySubmissionPhases).toEqual('success');
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });

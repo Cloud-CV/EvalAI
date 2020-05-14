@@ -821,6 +821,10 @@
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     break;
                 }
+                if (all_phases[i].id == phaseId) {
+                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    break;
+                }
             }
 
             parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.mySubmissionPhaseSlug + "/count";
@@ -1201,10 +1205,6 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
-                   
-                    if (vm.submissionResult.results.length !== details.results.length) {
-                        vm.showallSubmissionUpdate = true;
-                    }
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
