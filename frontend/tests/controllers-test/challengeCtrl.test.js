@@ -2390,8 +2390,7 @@ describe('Unit tests for challenge controller', function () {
             var editChallengePhaseForm = false;
             success = true;
             vm.editChallengePhase(editChallengePhaseForm);
-            expect(vm.mySubmissionPhases).toEqual('success');
-            expect(vm.mySubmissionPhases).toEqual('success');
+            expect(vm.allSubmissionPhases).toEqual('success');
             expect(utilities.hideLoader).toHaveBeenCalled();
             expect($mdDialog.hide).toHaveBeenCalled();
         });

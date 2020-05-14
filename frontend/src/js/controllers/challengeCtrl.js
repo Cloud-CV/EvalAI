@@ -673,7 +673,6 @@
                 }
             };
             utilities.sendRequest(parameters);
-
             // Show leaderboard
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
@@ -947,6 +946,7 @@
                             vm.stopLoader();
                         }
                     };
+
                     vm.mySubmissionPhaseName = phaseId;
                     vm.stopLoader();
                 },
@@ -957,7 +957,6 @@
                     vm.stopLoader();
                 }
             };
-
             utilities.sendRequest(parameters);
         };
 
