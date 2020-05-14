@@ -504,18 +504,31 @@ describe('Unit tests for challenge controller', function () {
             };
             spyOn(utilities, 'hideLoader');
             vm = createController();
-            expect(vm.phases).toEqual(successResponse);
+            expect(vm.allSubmissionPhases).toEqual(successResponse.results);
+            expect(vm.mySubmissionPhases).toEqual(successResponse.results);
             var timezone = moment.tz.guess();
             for (var i = 0; i < successResponse.count; i++) {
                 expect(successResponse.results[i].is_public).toBeFalsy();
-                expect(vm.phases.results[i].showPrivate).toBeTruthy();
+                expect(vm.allSubmissionPhases[i].showPrivate).toBeTruthy();
+            }
+
+            for (var i = 0; i < successResponse.count; i++) {
+                expect(successResponse.results[i].is_public).toBeFalsy();
+                expect(vm.mySubmissionPhases[i].showPrivate).toBeTruthy();
             }
 
             for(var i = 0; i < successResponse.results.length; i++){
                 var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
-                expect(vm.phases.results[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.mySubmissionPhases[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
                 offset = new Date(successResponse.results[i].end_date).getTimezoneOffset();
-                expect(vm.phases.results[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.mySubmissionPhases[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+            }
+
+            for(var i = 0; i < successResponse.results.length; i++){
+                var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
+                expect(vm.allSubmissionPhases[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                offset = new Date(successResponse.results[i].end_date).getTimezoneOffset();
+                expect(vm.allSubmissionPhases[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
