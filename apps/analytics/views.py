@@ -142,7 +142,7 @@ def get_submission_count(request, challenge_pk, duration):
 )
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_count_by_team(
-    request, challenge_pk, challenge_phase_pk, version
+    request, challenge_pk, challenge_phase_pk_or_slug, version
 ):
     """
     Returns number of submissions done by a participant team in a challenge phase
@@ -152,13 +152,13 @@ def get_challenge_phase_submission_count_by_team(
     if version == 'v1':
         try:
             challenge_phase = ChallengePhase.objects.get(
-                slug=challenge_phase_pk, challenge=challenge
+                slug=challenge_phase_pk_or_slug, challenge=challenge
             )
         except ChallengePhase.DoesNotExist:
             response_data = {"error": "Challenge Phase does not exist"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     participant_team = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge.pk

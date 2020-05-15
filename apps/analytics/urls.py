@@ -24,7 +24,7 @@ urlpatterns = [
         name="get_challenge_phase_submission_analysis",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<version>(v1|v2|v3))/(?P<challenge_phase_pk>[-a-zA-Z0-9_]+)/count$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<version>(v1|v2))/(?P<challenge_phase_pk_or_slug>[-a-zA-Z0-9_]+)/count$",
         views.get_challenge_phase_submission_count_by_team,
         name="get_challenge_phase_submission_count_by_team",
     ),

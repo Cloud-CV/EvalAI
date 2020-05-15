@@ -118,7 +118,7 @@ logger = logging.getLogger(__name__)
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_submission(request, challenge_id, challenge_phase_id, version):
+def challenge_submission(request, challenge_id, challenge_phase_pk_or_slug, version):
     """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not
@@ -132,7 +132,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id, version):
     if version == 'v1':
         try:
             challenge_phase = ChallengePhase.objects.get(
-                slug=challenge_phase_id, challenge=challenge
+                slug=challenge_phase_pk_or_slug, challenge=challenge
             )
         except ChallengePhase.DoesNotExist:
             response_data = {"error": "Challenge Phase does not exist"}
@@ -140,7 +140,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id, version):
     else:
         try:
             challenge_phase = ChallengePhase.objects.get(
-                pk=challenge_phase_id, challenge=challenge
+                pk=challenge_phase_pk_or_slug, challenge=challenge
             )
         except ChallengePhase.DoesNotExist:
             response_data = {"error": "Challenge Phase does not exist"}
@@ -274,7 +274,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id, version):
                 request.data,
                 request.user.id,
                 request.method,
-                challenge_phase_id,
+                challenge_phase_pk_or_slug,
             )
             response_data = {
                 "message": "Please wait while your submission being evaluated!"
@@ -290,7 +290,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id, version):
         )
         message = {
             "challenge_pk": challenge_id,
-            "phase_pk": challenge_phase_id,
+            "phase_pk": challenge_phase_pk_or_slug,
         }
         if challenge.is_docker_based:
             try:

@@ -1308,7 +1308,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_all_submissions_of_challenge(
-    request, challenge_pk, challenge_phase_pk, version
+    request, challenge_pk, challenge_phase_pk_or_slug, version
 ):
     """
     Returns all the submissions for a particular challenge
@@ -1320,24 +1320,24 @@ def get_all_submissions_of_challenge(
     if version == 'v1':
         try:
             challenge_phase = ChallengePhase.objects.get(
-                slug=challenge_phase_pk, challenge=challenge
+                slug=challenge_phase_pk_or_slug, challenge=challenge
             )
         except ChallengePhase.DoesNotExist:
             response_data = {
                 "error": "Challenge Phase {} does not exist".format(
-                    challenge_phase_pk
+                    challenge_phase_pk_or_slug
                 )
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     else:
         try:
             challenge_phase = ChallengePhase.objects.get(
-                pk=challenge_phase_pk, challenge=challenge
+                pk=challenge_phase_pk_or_slug, challenge=challenge
             )
         except ChallengePhase.DoesNotExist:
             response_data = {
                 "error": "Challenge Phase {} does not exist".format(
-                    challenge_phase_pk
+                    challenge_phase_pk_or_slug
                 )
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
