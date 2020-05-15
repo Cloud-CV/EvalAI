@@ -7,7 +7,7 @@ from django.conf import settings
 
 class ResendEmailThrottle(SimpleRateThrottle):
     """
-    Used to limit the requests to /accounts/user/resend-email
+    Used to limit the requests to /accounts/user/resend_email_verification
     to 3/hour.
     """
     if (settings.DEBUG is True) or (settings.TEST is True):
