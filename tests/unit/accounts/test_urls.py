@@ -30,3 +30,7 @@ class TestStringMethods(BaseAPITestClass):
 
         url = reverse_lazy("accounts:get_auth_token")
         self.assertEqual(str(url), "/api/accounts/user/get_auth_token")
+
+    def test_resend_email_verification(self):
+        url = reverse_lazy("accounts:resend_email_confirmation")
+        self.assertEqual(str(url), "/api/accounts/user/resend_email_verification/")
