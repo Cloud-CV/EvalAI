@@ -530,6 +530,11 @@
                     vm.getResults(vm.mySubmissionPhaseSlug);
                 }
 
+                // calling getAllSubmissionResults function
+                if(vm.allSubmissionPhaseSlug) {
+                    vm.getAllSubmissionResults(vm.allSubmissionPhaseSlug);
+                }
+
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -1271,11 +1276,6 @@
             };
             utilities.sendRequest(parameters);
         };
-
-         // calling getAllSubmissionResults function
-         if(vm.allSubmissionPhaseSlug) {
-            vm.getAllSubmissionResults(vm.allSubmissionPhaseSlug);
-        }
 
         vm.changeSubmissionVisibility = function(submission_id) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
