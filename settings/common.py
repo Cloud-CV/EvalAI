@@ -165,7 +165,6 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": (
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
-        "accounts.throttles.ResendEmailThrottle",
     ),
     "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "resend_email": "3/hour"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
