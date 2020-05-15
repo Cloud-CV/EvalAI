@@ -15,7 +15,7 @@ from base.models import (
     model_field_name,
     create_post_model_field,
 )
-from base.utils import RandomFileName, get_slug, unique_slug_generator
+from base.utils import RandomFileName, get_slug
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
@@ -444,10 +444,3 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "challenge_evaluation_cluster"
-
-
-def pre_save_ChallengePhase_slug(sender, instance, *args, **kwargs):
-    if not instance.slug:
-        instance.slug = unique_slug_generator(instance)
-
-pre_save.connect(pre_save_ChallengePhase_slug, sender=ChallengePhase)

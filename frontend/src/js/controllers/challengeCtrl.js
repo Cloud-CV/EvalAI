@@ -422,7 +422,7 @@
                     if (vm.input_file) {
                         // vm.upload(vm.input_file);
                     }
-                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + "v2/" + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
@@ -955,7 +955,7 @@
         };
 
         vm.refreshSubmissionData = function() {
-
+            vm.phaseId = (vm.allSubmissionPhaseSlug == undefined)?vm.mySubmissionPhaseSlug:vm.allSubmissionPhaseSlug;
             // get submissions of a particular challenge phase
 
             if (!vm.isResult) {
@@ -970,7 +970,7 @@
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -1433,12 +1433,7 @@
         }];
 
         vm.downloadChallengeSubmissions = function() {
-            if(vm.mySubmissionPhaseSlug) {
-                vm.phaseId = vm.mySubmissionPhaseSlug;
-            }
-            if(vm.allSubmissionPhaseSlug) {
-                vm.phaseId = vm.allSubmissionPhaseSlug;
-            }
+            vm.phaseId = (vm.allSubmissionPhaseSlug == undefined)?vm.mySubmissionPhaseSlug:vm.allSubmissionPhaseSlug;
             if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v1/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
