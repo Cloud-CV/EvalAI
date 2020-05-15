@@ -1399,25 +1399,37 @@ def get_all_submissions_of_challenge(
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def download_all_submissions(
-    request, challenge_pk, challenge_phase_pk, file_type
+    request, challenge_pk, challenge_phase_pk_or_slug, file_type, version
 ):
 
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
-
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {
-            "error": "Challenge Phase {} does not exist".format(
-                challenge_phase_pk
+    # To check for the corresponding challenge phase from the challenge_phase_pk_or_slug and challenge.
+    if version == 'v1':
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_pk_or_slug, challenge=challenge
             )
-        }
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
+        except ChallengePhase.DoesNotExist:
+            response_data = {
+                "error": "Challenge Phase {} does not exist".format(
+                    challenge_phase_pk_or_slug
+                )
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    else:
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                pk=challenge_phase_pk_or_slug, challenge=challenge
+            )
+        except ChallengePhase.DoesNotExist:
+            response_data = {
+                "error": "Challenge Phase {} does not exist".format(
+                    challenge_phase_pk_or_slug
+                )
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    print(challenge_phase, challenge)
     if request.method == "GET":
         if file_type == "csv":
             if is_user_a_host_of_challenge(

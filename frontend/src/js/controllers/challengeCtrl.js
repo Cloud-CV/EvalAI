@@ -810,7 +810,6 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             if (phaseId !== undefined) {
-                vm.phaseId = phaseId;
                 vm.mySubmissionPhaseSlug = phaseId;
             }
 
@@ -1169,7 +1168,6 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             if (phaseId !== undefined) {
-                vm.phaseId = phaseId;
                 vm.allSubmissionPhaseSlug = phaseId;
             }
 
@@ -1435,8 +1433,14 @@
         }];
 
         vm.downloadChallengeSubmissions = function() {
+            if(vm.mySubmissionPhaseSlug) {
+                vm.phaseId = vm.mySubmissionPhaseSlug;
+            }
+            if(vm.allSubmissionPhaseSlug) {
+                vm.phaseId = vm.allSubmissionPhaseSlug;
+            }
             if (vm.phaseId) {
-                parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
+                parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v1/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
                     parameters.callback = {

@@ -446,8 +446,8 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         db_table = "challenge_evaluation_cluster"
 
 
-def pre_save_post_receiver(sender, instance, *args, **kwargs):
+def pre_save_ChallengePhase_slug(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = unique_slug_generator(instance)
 
-pre_save.connect(pre_save_post_receiver, sender=ChallengePhase)
+pre_save.connect(pre_save_ChallengePhase_slug, sender=ChallengePhase)

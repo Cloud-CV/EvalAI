@@ -71,7 +71,7 @@ urlpatterns = [
         name="get_all_submissions_of_challenge",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/phase/(?P<challenge_phase_pk>[0-9]+)"
+        r"^(?P<challenge_pk>[0-9]+)/phase/(?P<version>(v1|v2))/(?P<challenge_phase_pk_or_slug>[-a-zA-Z0-9_]+)"
         r"/download_all_submissions/(?P<file_type>[A-Za-z]+)/$",
         views.download_all_submissions,
         name="download_all_submissions",
