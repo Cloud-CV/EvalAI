@@ -20,7 +20,7 @@
         vm.requestLink = function () {
             var userKey = utilities.getData('userKey');
             var parameters = {};
-            parameters.url = 'accounts/user/resend_email_verification';
+            parameters.url = 'accounts/user/resend_email_verification/';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
