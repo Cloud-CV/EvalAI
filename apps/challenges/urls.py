@@ -65,14 +65,9 @@ urlpatterns = [
         name="create_challenge_using_zip_file",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/submissions$",
+        r"^(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<version>(v1|v2|v3))/(?P<challenge_phase_pk>[-a-zA-Z0-9_]+)/submissions$",
         views.get_all_submissions_of_challenge,
         name="get_all_submissions_of_challenge",
-    ),
-    url(
-        r"^(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<slug>[\w-]+)/submissions$",
-        views.get_all_submissions_of_challenge_by_slug,
-        name="get_all_submissions_of_challenge_by_slug",
     ),
     url(
         r"^(?P<challenge_pk>[0-9]+)/phase/(?P<challenge_phase_pk>[0-9]+)"

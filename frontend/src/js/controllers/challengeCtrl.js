@@ -525,8 +525,14 @@
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
+                // calling getResults function
                 if(vm.mySubmissionPhaseSlug) {
                     vm.getResults(vm.mySubmissionPhaseSlug);
+                }
+
+                // calling getAllSubmissionResults function
+                if(vm.allSubmissionPhaseSlug) {
+                    vm.getAllSubmissionResults(vm.allSubmissionPhaseSlug);
                 }
 
                 // navigate to challenge page
@@ -762,7 +768,7 @@
             vm.start = function() {
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.mySubmissionPhaseSlug + "/submission/?page=" + Math.ceil(vm.currentPage);
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.mySubmissionPhaseSlug + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
@@ -816,7 +822,7 @@
                 }
             }
 
-            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.mySubmissionPhaseSlug + "/count";
+            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.mySubmissionPhaseSlug + "/count";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -845,10 +851,10 @@
             vm.showPagination = false;
 
             if (vm.filter_my_submission_by_team_name === '') {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.mySubmissionPhaseSlug + "/submission/";
             } else {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.mySubmissionPhaseSlug + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
             }
             parameters.method = 'GET';
@@ -1177,10 +1183,10 @@
             vm.currentPage = '';
             vm.showPagination = false;
             if (vm.filter_all_submission_by_team_name === '') {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.allSubmissionPhaseSlug + "/submissions";
             } else {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v1/" +
                 vm.allSubmissionPhaseSlug + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
             }
             parameters.method = 'GET';
@@ -1270,10 +1276,6 @@
             };
             utilities.sendRequest(parameters);
         };
-
-        if(vm.allSubmissionPhaseSlug) {
-            vm.getAllSubmissionResults(vm.allSubmissionPhaseSlug);
-        }
 
         vm.changeSubmissionVisibility = function(submission_id) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;

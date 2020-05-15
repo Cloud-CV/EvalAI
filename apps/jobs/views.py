@@ -118,7 +118,7 @@ logger = logging.getLogger(__name__)
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_submission(request, challenge_id, challenge_phase_id):
+def challenge_submission(request, challenge_id, challenge_phase_id, version):
     """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not
@@ -129,13 +129,22 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge
+    if version == 'v1':
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_id, challenge=challenge
         )
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except ChallengePhase.DoesNotExist:
+            response_data = {"error": "Challenge Phase does not exist"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                pk=challenge_phase_id, challenge=challenge
+            )
+        except ChallengePhase.DoesNotExist:
+            response_data = {"error": "Challenge Phase does not exist"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
         # getting participant team object for the user for a particular challenge.
@@ -282,202 +291,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         message = {
             "challenge_pk": challenge_id,
             "phase_pk": challenge_phase_id,
-        }
-        if challenge.is_docker_based:
-            try:
-                file_content = json.loads(request.FILES["input_file"].read())
-                message["submitted_image_uri"] = file_content[
-                    "submitted_image_uri"
-                ]
-            except Exception as ex:
-                response_data = {
-                    "error": "Error {} in submitted_image_uri from submission file".format(
-                        ex
-                    )
-                }
-                return Response(
-                    response_data, status=status.HTTP_400_BAD_REQUEST
-                )
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            submission = serializer.instance
-            message["submission_pk"] = submission.id
-            # publish message in the queue
-            publish_submission_message(message)
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(
-            serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
-        )
-
-
-@api_view(["GET", "POST"])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def challenge_submission_by_slug(request, challenge_id, slug):
-    """API Endpoint for making a submission to a challenge"""
-
-    # check if the challenge exists or not
-    try:
-        challenge = Challenge.objects.get(pk=challenge_id)
-    except Challenge.DoesNotExist:
-        response_data = {"error": "Challenge does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            slug=slug, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    if request.method == "GET":
-        # getting participant team object for the user for a particular challenge.
-        participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-            request.user, challenge_id
-        )
-        # check if participant team exists or not.
-        try:
-            ParticipantTeam.objects.get(pk=participant_team_id)
-        except ParticipantTeam.DoesNotExist:
-            response_data = {
-                "error": "You haven't participated in the challenge"
-            }
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-        submission = Submission.objects.filter(
-            participant_team=participant_team_id,
-            challenge_phase=challenge_phase,
-        ).order_by("-submitted_at")
-        filtered_submissions = SubmissionFilter(
-            request.GET, queryset=submission
-        )
-        paginator, result_page = paginated_queryset(
-            filtered_submissions.qs, request
-        )
-        serializer = SubmissionSerializer(
-            result_page, many=True, context={"request": request}
-        )
-        response_data = serializer.data
-        return paginator.get_paginated_response(response_data)
-
-    elif request.method == "POST":
-
-        # check if the challenge is active or not
-        if not challenge.is_active:
-            response_data = {"error": "Challenge is not active"}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
-
-        # check if challenge phase is active
-        if not challenge_phase.is_active:
-            response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not active"
-            }
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
-
-        # check if user is a challenge host or a participant
-        if not is_user_a_host_of_challenge(request.user, challenge_id):
-            # check if challenge phase is public and accepting solutions
-            if not challenge_phase.is_public:
-                response_data = {
-                    "error": "Sorry, cannot accept submissions since challenge phase is not public"
-                }
-                return Response(
-                    response_data, status=status.HTTP_403_FORBIDDEN
-                )
-
-            # if allowed email ids list exist, check if the user exist in that list or not
-            if challenge_phase.allowed_email_ids:
-                if request.user.email not in challenge_phase.allowed_email_ids:
-                    response_data = {
-                        "error": "Sorry, you are not allowed to participate in this challenge phase"
-                    }
-                    return Response(
-                        response_data, status=status.HTTP_403_FORBIDDEN
-                    )
-
-        participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-            request.user, challenge_id
-        )
-        try:
-            participant_team = ParticipantTeam.objects.get(
-                pk=participant_team_id
-            )
-        except ParticipantTeam.DoesNotExist:
-            response_data = {
-                "error": "You haven't participated in the challenge"
-            }
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-        all_participants_email = participant_team.get_all_participants_email()
-        for participant_email in all_participants_email:
-            if participant_email in challenge.banned_email_ids:
-                message = "You're a part of {} team and it has been banned from this challenge. \
-                Please contact the challenge host.".format(
-                    participant_team.team_name
-                )
-                response_data = {"error": message}
-                return Response(
-                    response_data, status=status.HTTP_403_FORBIDDEN
-                )
-
-        # Fetch the number of submissions under progress.
-        submissions_in_progress_status = [
-            Submission.SUBMITTED,
-            Submission.SUBMITTING,
-            Submission.RUNNING,
-        ]
-        submissions_in_progress = Submission.objects.filter(
-            participant_team=participant_team_id,
-            challenge_phase=challenge_phase,
-            status__in=submissions_in_progress_status,
-        ).count()
-
-        if (
-            submissions_in_progress
-            >= challenge_phase.max_concurrent_submissions_allowed
-        ):
-            message = "You have {} submissions that are being processed. \
-                       Please wait for them to finish and then try again."
-            response_data = {"error": message.format(submissions_in_progress)}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
-
-        if not request.FILES:
-            if not is_url_valid(request.data["file_url"]):
-                response_data = {"error": "The file URL does not exists!"}
-                return Response(
-                    response_data, status=status.HTTP_400_BAD_REQUEST
-                )
-            download_file_and_publish_submission_message.delay(
-                request.data,
-                request.user.id,
-                request.method,
-                slug,
-            )
-            response_data = {
-                "message": "Please wait while your submission being evaluated!"
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        serializer = SubmissionSerializer(
-            data=request.data,
-            context={
-                "participant_team": participant_team,
-                "challenge_phase": challenge_phase,
-                "request": request,
-            },
-        )
-        message = {
-            "challenge_pk": challenge_id,
-            "slug": slug,
         }
         if challenge.is_docker_based:
             try:
