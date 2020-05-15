@@ -160,7 +160,7 @@ class TestJobsUrls(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "version": 'v2',
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
             },
         )
         self.assertEqual(

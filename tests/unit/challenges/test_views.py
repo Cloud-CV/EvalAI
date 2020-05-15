@@ -3228,7 +3228,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk + 10,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
                 "version": 'v2',
             },
         )
@@ -3246,7 +3246,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk + 10,
                 "version": 'v2',
             },
         )
@@ -3264,7 +3264,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase1.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase1.pk,
                 "version": 'v2',
             },
         )
@@ -3272,7 +3272,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase2.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase2.pk,
                 "version": 'v2',
             },
         )
@@ -3321,7 +3321,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
                 "version": 'v2',
             },
         )
@@ -3370,7 +3370,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
                 "version": 'v2',
             },
         )

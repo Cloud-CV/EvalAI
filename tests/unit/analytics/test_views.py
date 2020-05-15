@@ -383,7 +383,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -447,7 +447,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk + 10,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -468,7 +468,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
                 "version": 'v2',
             },
         )
@@ -492,7 +492,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -516,7 +516,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             "analytics:get_challenge_phase_submission_count_by_team",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )

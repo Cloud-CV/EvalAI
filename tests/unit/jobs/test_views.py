@@ -161,7 +161,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -184,7 +184,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -206,7 +206,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -229,7 +229,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -251,7 +251,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -277,7 +277,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -300,7 +300,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -326,7 +326,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -348,7 +348,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -371,7 +371,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -397,7 +397,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -421,7 +421,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -442,7 +442,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -465,7 +465,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -485,7 +485,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -509,7 +509,7 @@ class BaseAPITestClass(APITestCase):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -534,7 +534,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -558,7 +558,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -576,7 +576,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -594,7 +594,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -614,7 +614,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
@@ -631,7 +631,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "version": 'v2',
             },
         )
