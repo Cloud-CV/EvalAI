@@ -929,12 +929,12 @@ describe('Unit tests for challenge controller', function () {
 
             utilities.sendRequest = function (parameters) {
                 if ((submissionCountSuccess == true && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "v1/" + "/submission/")) {
+                (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/")) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
                 } else if ((submissionCountSuccess == false && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "v1/" + "/submission/")){
+                (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/")){
                     parameters.callback.onError({
                         data: errorResponse
                     });
@@ -982,11 +982,12 @@ describe('Unit tests for challenge controller', function () {
             it('get submissions of a particular challenge phase when pagination next is ' + response.next + ' \
                 and previous is ' + response.previous + '`jobs/challenge/<challenge_id>/challenge_phase/<phase_id>/submission/`', function () {
                 submissionListSuccess = true;
-                var phaseId = 1;
+                var phaseId = "random-slug";
                 successResponse = response;
                 successResponse.results = [
                     {
                         id: 1,
+                        slug: "random-slug",
                         participant_team: "Participant team",
                         challenge_phase: "Challenge phase",
                         is_public: true,
