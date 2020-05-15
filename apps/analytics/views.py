@@ -153,7 +153,7 @@ def get_challenge_phase_submission_count_by_team(
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk, challenge=challenge
-        )
+            )
         except ChallengePhase.DoesNotExist:
             response_data = {"error": "Challenge Phase does not exist"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

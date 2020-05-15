@@ -133,7 +133,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id, version):
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_id, challenge=challenge
-        )
+            )
         except ChallengePhase.DoesNotExist:
             response_data = {"error": "Challenge Phase does not exist"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

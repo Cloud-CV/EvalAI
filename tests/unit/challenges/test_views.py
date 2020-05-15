@@ -3229,6 +3229,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk + 10,
                 "challenge_phase_pk": self.challenge5_phase3.pk,
+                "version": 'v2',
             },
         )
         expected = {
@@ -3246,6 +3247,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk": self.challenge5_phase3.pk + 10,
+                "version": 'v2',
             },
         )
         expected = {
@@ -3263,6 +3265,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk": self.challenge5_phase1.pk,
+                "version": 'v2',
             },
         )
         self.url_phase2 = reverse_lazy(
@@ -3270,6 +3273,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk": self.challenge5_phase2.pk,
+                "version": 'v2',
             },
         )
         self.client.force_authenticate(user=self.user5)
@@ -3318,6 +3322,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk": self.challenge5_phase3.pk,
+                "version": 'v2',
             },
         )
         self.client.force_authenticate(user=self.user6)
@@ -3366,6 +3371,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk": self.challenge5_phase3.pk,
+                "version": 'v2',
             },
         )
         expected = {
