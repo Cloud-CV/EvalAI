@@ -525,6 +525,10 @@
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
+                if(vm.mySubmissionPhaseSlug) {
+                    vm.getResults(vm.mySubmissionPhaseSlug);
+                }
+
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -944,10 +948,6 @@
             };
             utilities.sendRequest(parameters);
         };
-
-        if(vm.mySubmissionPhaseSlug) {
-            vm.getResults(vm.mySubmissionPhaseSlug);
-        }
 
         vm.refreshSubmissionData = function() {
 
