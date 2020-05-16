@@ -3471,7 +3471,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk + 10,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
                 "version": 'v1',
             },
@@ -3492,7 +3492,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
                 "file_type": self.file_type_csv,
                 "version": 'v1',
             },
@@ -3511,7 +3511,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_pdf,
                 "version": 'v1',
             },
@@ -3526,7 +3526,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
                 "version": 'v1',
             },
@@ -3539,7 +3539,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
                 "version": 'v1',
             },
@@ -3595,7 +3595,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
                 "version": 'v1',
             },
@@ -3613,7 +3613,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
                 "version": 'v1',
             },

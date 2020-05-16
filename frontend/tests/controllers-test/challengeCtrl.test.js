@@ -930,13 +930,13 @@ describe('Unit tests for challenge controller', function () {
             };
 
             utilities.sendRequest = function (parameters) {
-                if ((submissionCountSuccess == true && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/")) {
+                if ((submissionCountSuccess == true && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.phaseId + "/count") ||
+                (submissionListSuccess == true && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.phaseId + "/submission/")) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
-                } else if ((submissionCountSuccess == false && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/count") ||
-                (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/")){
+                } else if ((submissionCountSuccess == false && parameters.url == "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.phaseId + "/count") ||
+                (submissionListSuccess == false && parameters.url == "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.phaseId + "/submission/")){
                     parameters.callback.onError({
                         data: errorResponse
                     });
