@@ -35,7 +35,6 @@
         vm.submissionVisibility = {};
         vm.baselineStatus = {};
         vm.showUpdate = false;
-        vm.showallSubmissionUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
         vm.isChallengeHost = false;
@@ -422,7 +421,7 @@
                     if (vm.input_file) {
                         // vm.upload(vm.input_file);
                     }
-                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + "v2/" + vm.phaseId + '/submission/';
+                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + "v1/" + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
@@ -768,7 +767,7 @@
             vm.start = function() {
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.mySubmissionPhaseSlug + "/submission/?page=" + Math.ceil(vm.currentPage);
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.mySubmissionPhaseSlug + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
@@ -821,7 +820,7 @@
                 }
             }
 
-            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.mySubmissionPhaseSlug + "/count";
+            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.mySubmissionPhaseSlug + "/count";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -850,10 +849,10 @@
             vm.showPagination = false;
 
             if (vm.filter_my_submission_by_team_name === '') {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" +
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" +
                 vm.mySubmissionPhaseSlug + "/submission/";
             } else {
-                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" +
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" +
                 vm.mySubmissionPhaseSlug + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
             }
             parameters.method = 'GET';
@@ -970,7 +969,7 @@
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v1/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + "v2/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -1181,10 +1180,10 @@
             vm.currentPage = '';
             vm.showPagination = false;
             if (vm.filter_all_submission_by_team_name === '') {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v1/" +
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v2/" +
                 vm.allSubmissionPhaseSlug + "/submissions";
             } else {
-                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v1/" +
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + "v2/" +
                 vm.allSubmissionPhaseSlug + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
             }
             parameters.method = 'GET';
@@ -1435,7 +1434,7 @@
         vm.downloadChallengeSubmissions = function() {
             vm.phaseId = (vm.allSubmissionPhaseSlug == undefined)?vm.mySubmissionPhaseSlug:vm.allSubmissionPhaseSlug;
             if (vm.phaseId) {
-                parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v1/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
+                parameters.url = "challenges/" + vm.challengeId + "/phase/" + "v2/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
                     parameters.method = "GET";
                     parameters.callback = {

@@ -1317,7 +1317,7 @@ def get_all_submissions_of_challenge(
     challenge = get_challenge_model(challenge_pk)
 
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
-    if version == 'v1':
+    if version == 'v2':
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge
@@ -1405,7 +1405,7 @@ def download_all_submissions(
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
     # To check for the corresponding challenge phase from the challenge_phase_pk_or_slug and challenge.
-    if version == 'v1':
+    if version == 'v2':
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge

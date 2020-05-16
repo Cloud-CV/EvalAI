@@ -3229,7 +3229,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk + 10,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = {
@@ -3247,7 +3247,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk + 10,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = {
@@ -3265,7 +3265,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase1.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         self.url_phase2 = reverse_lazy(
@@ -3273,7 +3273,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase2.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         self.client.force_authenticate(user=self.user5)
@@ -3322,7 +3322,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         self.client.force_authenticate(user=self.user6)
@@ -3371,7 +3371,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge5.pk,
                 "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = {
@@ -3473,7 +3473,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk + 10,
                 "challenge_phase_pk": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = {
@@ -3494,7 +3494,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk": self.challenge_phase.pk + 10,
                 "file_type": self.file_type_csv,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = {
@@ -3513,7 +3513,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk": self.challenge_phase.pk,
                 "file_type": self.file_type_pdf,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = {"error": "The file type requested is not valid!"}
@@ -3528,7 +3528,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         response = self.client.get(self.url, {})
@@ -3541,7 +3541,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         submissions = Submission.objects.filter(
@@ -3597,7 +3597,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -3615,7 +3615,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 

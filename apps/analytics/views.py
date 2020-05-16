@@ -149,7 +149,7 @@ def get_challenge_phase_submission_count_by_team(
     """
     challenge = get_challenge_model(challenge_pk)
 
-    if version == 'v1':
+    if version == 'v2':
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge

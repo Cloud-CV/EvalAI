@@ -162,7 +162,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -185,7 +185,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -207,7 +207,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -230,7 +230,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -252,7 +252,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -278,7 +278,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -301,7 +301,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -327,7 +327,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -349,7 +349,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -372,7 +372,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -398,7 +398,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -422,7 +422,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -443,7 +443,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -466,7 +466,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -486,7 +486,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         actual_maxinmum_submissions = self.challenge_phase.max_submissions
@@ -510,7 +510,7 @@ class BaseAPITestClass(APITestCase):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -535,7 +535,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -559,7 +559,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -577,7 +577,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -595,7 +595,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -615,7 +615,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -632,7 +632,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             kwargs={
                 "challenge_id": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
         expected = [

@@ -129,7 +129,7 @@ def challenge_submission(request, challenge_id, challenge_phase_pk_or_slug, vers
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge phase exists or not
-    if version == 'v1':
+    if version == 'v2':
         try:
             challenge_phase = ChallengePhase.objects.get(
                 slug=challenge_phase_pk_or_slug, challenge=challenge

@@ -384,7 +384,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -448,7 +448,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk + 10,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -469,7 +469,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -493,7 +493,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 
@@ -517,7 +517,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
             },
         )
 

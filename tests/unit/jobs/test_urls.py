@@ -159,14 +159,14 @@ class TestJobsUrls(BaseAPITestClass):
             "jobs:challenge_submission",
             kwargs={
                 "challenge_id": self.challenge.pk,
-                "version": 'v2',
+                "version": 'v1',
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
             },
         )
         self.assertEqual(
             self.url,
             "/api/jobs/challenge/{}/challenge_phase/{}/{}/submission/".format(
-                self.challenge.pk, 'v2', self.challenge_phase.pk
+                self.challenge.pk, 'v1', self.challenge_phase.pk
             ),
         )
         resolver = resolve(self.url)

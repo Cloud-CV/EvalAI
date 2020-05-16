@@ -188,7 +188,7 @@ class TestChallengeUrls(BaseAPITestClass):
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "challenge_phase_pk_or_slug": self.challenge_phase.pk,
-                "version": 'v2',
+                "version": 'v1',
                 "file_type": self.file_type,
             },
         )
