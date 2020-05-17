@@ -1851,6 +1851,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_month=100000,
                 max_submissions=100000,
                 codename="Phase Code Name",
+                is_restricted_to_select_one_submission=True,
             )
             self.challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -1876,6 +1877,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_month=100000,
                 max_submissions=100000,
                 codename="Private Phase Code Name",
+                is_restricted_to_select_one_submission=True,
             )
             self.private_challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -1920,6 +1922,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1941,6 +1944,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             },
         ]
 
@@ -1970,6 +1974,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2009,6 +2014,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2030,6 +2036,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             },
         ]
 
@@ -2274,6 +2281,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "max_submissions": 100000,
             "max_concurrent_submissions_allowed": 3,
             "codename": "Phase Code Name 2",
+            "is_restricted_to_select_one_submission": True,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2323,6 +2331,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "max_submissions": 100000,
             "max_concurrent_submissions_allowed": 3,
             "codename": "Phase Code Name 2",
+            "is_restricted_to_select_one_submission": True,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2369,6 +2378,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2400,6 +2410,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             % (self.challenge_phase.test_annotation.url),
             "slug": self.challenge_phase.slug,
             "environment_image": self.challenge_phase.environment_image,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -2455,6 +2466,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2549,6 +2561,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -4040,6 +4053,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "is_active": True,
             "codename": self.challenge_phase.codename,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4107,6 +4121,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
                 "environment_image": self.private_challenge_phase.environment_image,
+                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4132,6 +4147,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 % (self.challenge_phase.test_annotation.url),
                 "slug": self.challenge_phase.slug,
                 "environment_image": self.challenge_phase.environment_image,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
         ]
         response = self.client.get(self.url, {})

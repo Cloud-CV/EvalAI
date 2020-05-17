@@ -69,6 +69,7 @@ class BaseTestCase(TestCase):
                 ),
                 max_submissions_per_day=100000,
                 max_submissions=100000,
+                is_restricted_to_select_one_submission=True,
             )
 
         self.dataset_split = DatasetSplit.objects.create(
@@ -196,6 +197,9 @@ class ChallengePhaseTestCase(BaseTestCase):
         self.assertEqual(
             self.challenge_phase.end_date, self.challenge_phase.get_end_date()
         )
+
+    def test_is_restricted_to_select_one_submission(self):
+        self.assertEqual(True, self.challenge_phase.is_restricted_to_select_one_submission)
 
 
 class LeaderboardTestCase(BaseTestCase):
