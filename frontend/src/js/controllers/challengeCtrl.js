@@ -22,6 +22,7 @@
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
+        vm.show_complete_leaderboard = false;
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
@@ -653,6 +654,8 @@
                     vm.selectedPhaseSplit = response.data;
                     vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
                         "Sort by best":"Sort by latest";
+                    vm.getCompleteLeaderboardTextOption = (vm.show_complete_leaderboard) ?
+                    "complete leaderboard":"get private submissions";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -1068,6 +1071,28 @@
                     vm.getLeaderboard(vm.selectedPhaseSplit.id);
                     vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
                         "Sort by best":"Sort by latest";
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.toggleShowCompleteLeaderboard = function() {
+            vm.show_complete_leaderboard = !vm.show_complete_leaderboard;
+            parameters.url = "jobs/challenge_phase_split/" + vm.phaseSplitId + "/complete_leaderboard/";
+            parameters.method = "GET";
+            parameters.callback = {
+                onSuccess: function (response) {
+                    console.log(response.data.results[0]);
+                    vm.completeLeaderboard = response.data.results;
+                    // vm.leaderboard = response.data.results;
+                    vm.selectedPhaseSplit = response.data.results[0];
+                    vm.getCompleteLeaderboardTextOption = (vm.show_complete_leaderboard) ? "complete leaderboard":"get private submissions";
                 },
                 onError: function (response) {
                     var error = response.data;
