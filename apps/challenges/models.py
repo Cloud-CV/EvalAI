@@ -241,6 +241,7 @@ class ChallengePhase(TimeStampedModel):
     allowed_submission_file_types = models.CharField(
         max_length=200, default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
     )
+    is_restrcited_to_one_leaderboard_submission = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"

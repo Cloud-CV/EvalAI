@@ -91,6 +91,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "codename",
             "slug",
             "max_concurrent_submissions_allowed",
+            "is_restrcited_to_one_leaderboard_submission"
         )
 
 
