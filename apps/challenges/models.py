@@ -241,7 +241,8 @@ class ChallengePhase(TimeStampedModel):
     allowed_submission_file_types = models.CharField(
         max_length=200, default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
     )
-    is_restrcited_to_one_leaderboard_submission = models.BooleanField(default=False)
+    # Flag to restrict user to select only one submission for leaderboard
+    is_restricted_to_select_one_submission = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
