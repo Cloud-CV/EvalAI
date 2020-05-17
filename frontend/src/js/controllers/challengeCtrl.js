@@ -1088,9 +1088,69 @@
             parameters.method = "GET";
             parameters.callback = {
                 onSuccess: function (response) {
-                    console.log(response.data.results[0]);
                     vm.completeLeaderboard = response.data.results;
-                    // vm.leaderboard = response.data.results;
+                    for (var i=0; i<vm.completeLeaderboard.length; i++) {
+                        vm.completeLeaderboard[i]['submission__submitted_at_formatted'] = vm.completeLeaderboard[i]['submission__submitted_at'];
+                        vm.initial_ranking[vm.completeLeaderboard[i].id] = i+1;
+                        var dateTimeNow = moment(new Date());
+                        var submissionTime = moment(vm.completeLeaderboard[i].submission__submitted_at);
+                        var duration = moment.duration(dateTimeNow.diff(submissionTime));
+                        if (duration._data.years != 0) {
+                            var years = duration.asYears();
+                            vm.completeLeaderboard[i].submission__submitted_at = years;
+                            if (years.toFixed(0)==1) {
+                                vm.completeLeaderboard[i].timeSpan = 'year';
+                            } else {
+                                vm.completeLeaderboard[i].timeSpan= 'years';
+                            }
+                        }
+                        else if (duration._data.months !=0) {
+                            var months = duration.months();
+                            vm.completeLeaderboard[i].submission__submitted_at = months;
+                            if (months.toFixed(0)==1) {
+                                vm.completeLeaderboard[i].timeSpan = 'month';
+                            } else {
+                                vm.completeLeaderboard[i].timeSpan = 'months';
+                            }
+                        }
+                        else if (duration._data.days !=0) {
+                            var days = duration.asDays();
+                            vm.completeLeaderboard[i].submission__submitted_at = days;
+                            if (days.toFixed(0)==1) {
+                                vm.completeLeaderboard[i].timeSpan = 'day';
+                            } else {
+                                vm.completeLeaderboard[i].timeSpan = 'days';
+                            }
+                        }
+                        else if (duration._data.hours !=0) {
+                            var hours = duration.asHours();
+                            vm.completeLeaderboard[i].submission__submitted_at = hours;
+                            if (hours.toFixed(0)==1) {
+                                vm.completeLeaderboard[i].timeSpan = 'hour';
+                            } else {
+                                vm.completeLeaderboard[i].timeSpan = 'hours';
+                            }
+                        }
+                        else if (duration._data.minutes !=0) {
+                            var minutes = duration.asMinutes();
+                            vm.completeLeaderboard[i].submission__submitted_at = minutes;
+                            if (minutes.toFixed(0)==1) {
+                                vm.completeLeaderboard[i].timeSpan = 'minute';
+                            } else {
+                                vm.completeLeaderboard[i].timeSpan = 'minutes';
+                            }
+                        }
+                        else if (duration._data.seconds != 0) {
+                            var second = duration.asSeconds();
+                            vm.completeLeaderboard[i].submission__submitted_at = second;
+                            if (second.toFixed(0)==1) {
+                                vm.completeLeaderboard[i].timeSpan = 'second';
+                            } else {
+                                vm.completeLeaderboard[i].timeSpan = 'seconds';
+                            }
+                        }
+                    }
+                    console.log(vm.completeLeaderboard);
                     vm.selectedPhaseSplit = response.data.results[0];
                     vm.getCompleteLeaderboardTextOption = (vm.show_complete_leaderboard) ? "complete leaderboard":"get private submissions";
                 },
