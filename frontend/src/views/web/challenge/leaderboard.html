@@ -120,7 +120,7 @@
                             ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
                             class="fs-16" id="leaderboardrank-{{challenge.initial_ranking[key.id]}}">
                             <td>{{challenge.initial_ranking[key.id]}}</td>
-                            <td><a ng-if="key.submission__participant_team__team_url" class="orange-text"
+                            <td class ="participant-list-leaderboard"><a ng-if="key.submission__participant_team__team_url" class="orange-text"
                                     target="_blank"
                                     href="{{key.submission__participant_team__team_url}}">{{key.submission__participant_team__team_name}}</a><span
                                     ng-if="!key.submission__participant_team__team_url">{{key.submission__participant_team__team_name}}</span>
