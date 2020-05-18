@@ -213,8 +213,10 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     try:
         data = {
-            "text": message["text"],
             "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
+            "icon_url": "https://evalai.cloudcv.org/dist/images/evalai-logo-single.png",
+            "text": message["text"],
+            "username": "EvalAI",
         }
         return requests.post(
             webhook,
