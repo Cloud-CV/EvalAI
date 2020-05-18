@@ -40,9 +40,9 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import (
+    get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
-    get_aws_credentials_for_challenge,
     get_challenge_phase_split_model
 )
 from hosts.models import ChallengeHost
@@ -642,6 +642,13 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     # check if the challenge exists or not
     challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
 
+    challenge_obj = challenge_phase_split.challenge_phase.challenge
+
+    # Allow access only to challenge host
+    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+        response_data = {"error": "Sorry, you are not authorized to make this request!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     # Get the leaderboard associated with the Challenge Phase Split
     leaderboard = challenge_phase_split.leaderboard
 
@@ -656,13 +663,6 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
 
     # Exclude the submissions done by members of the host team
     # while populating leaderboard
-    challenge_obj = challenge_phase_split.challenge_phase.challenge
-
-    # Allow access only to challenge host
-    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
-        response_data = {"error": "Sorry, you are not authorized to make this request!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     challenge_hosts_emails = (
         challenge_obj.creator.get_all_challenge_host_email()
     )
