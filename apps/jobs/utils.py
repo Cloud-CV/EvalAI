@@ -15,9 +15,11 @@ from base.utils import suppress_autotime
 
 from .constants import submission_status_to_exclude
 from .models import Submission
+from challenges.models import ChallengePhaseSplit
 from .serializers import SubmissionSerializer
 
 get_submission_model = get_model_object(Submission)
+get_challenge_phase_split_model = get_model_object(ChallengePhaseSplit)
 
 logger = logging.getLogger(__name__)
 

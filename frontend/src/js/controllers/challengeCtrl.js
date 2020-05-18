@@ -22,7 +22,6 @@
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
-        vm.show_complete_leaderboard = false;
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
@@ -654,8 +653,6 @@
                     vm.selectedPhaseSplit = response.data;
                     vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
                         "Sort by best":"Sort by latest";
-                    vm.getCompleteLeaderboardTextOption = (vm.show_complete_leaderboard) ?
-                    "complete leaderboard":"get private submissions";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -1082,86 +1079,120 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.toggleShowCompleteLeaderboard = function() {
-            vm.show_complete_leaderboard = !vm.show_complete_leaderboard;
-            parameters.url = "jobs/challenge_phase_split/" + vm.phaseSplitId + "/complete_leaderboard/";
-            parameters.method = "GET";
+        // function for getting all submissions on leaderboard public/private
+        vm.getAllEntriesOnPublicLeaderboard = function(phaseSplitId) {
+            vm.stopLeaderboard = function() {
+                $interval.cancel(vm.poller);
+            };
+            vm.stopLeaderboard();
+
+            vm.isResult = true;
+            vm.phaseSplitId = phaseSplitId;
+            // loader for exisiting teams
+            vm.isExistLoader = true;
+            vm.loaderTitle = '';
+            vm.loaderContainer = angular.element('.exist-team-card');
+
+            vm.startLoader("Loading Leaderboard Items");
+
+            // Show leaderboard
+            vm.leaderboard = {};
+            parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000";
+            parameters.method = 'GET';
+            parameters.data = {};
             parameters.callback = {
-                onSuccess: function (response) {
-                    vm.completeLeaderboard = response.data.results;
-                    for (var i=0; i<vm.completeLeaderboard.length; i++) {
-                        vm.completeLeaderboard[i]['submission__submitted_at_formatted'] = vm.completeLeaderboard[i]['submission__submitted_at'];
-                        vm.initial_ranking[vm.completeLeaderboard[i].id] = i+1;
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.leaderboard = details.results;
+
+                    // setting last_submission time
+                    for (var i = 0; i < vm.leaderboard.length; i++) {
+                        vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
+                        vm.initial_ranking[vm.leaderboard[i].id] = i + 1;
                         var dateTimeNow = moment(new Date());
-                        var submissionTime = moment(vm.completeLeaderboard[i].submission__submitted_at);
+                        var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
                         if (duration._data.years != 0) {
                             var years = duration.asYears();
-                            vm.completeLeaderboard[i].submission__submitted_at = years;
-                            if (years.toFixed(0)==1) {
-                                vm.completeLeaderboard[i].timeSpan = 'year';
+                            vm.leaderboard[i].submission__submitted_at = years;
+                            if (years.toFixed(0) == 1) {
+                                vm.leaderboard[i].timeSpan = 'year';
                             } else {
-                                vm.completeLeaderboard[i].timeSpan= 'years';
+                                vm.leaderboard[i].timeSpan = 'years';
                             }
-                        }
-                        else if (duration._data.months !=0) {
+                        } else if (duration._data.months != 0) {
                             var months = duration.months();
-                            vm.completeLeaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0)==1) {
-                                vm.completeLeaderboard[i].timeSpan = 'month';
+                            vm.leaderboard[i].submission__submitted_at = months;
+                            if (months.toFixed(0) == 1) {
+                                vm.leaderboard[i].timeSpan = 'month';
                             } else {
-                                vm.completeLeaderboard[i].timeSpan = 'months';
+                                vm.leaderboard[i].timeSpan = 'months';
                             }
-                        }
-                        else if (duration._data.days !=0) {
+                        } else if (duration._data.days != 0) {
                             var days = duration.asDays();
-                            vm.completeLeaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
-                                vm.completeLeaderboard[i].timeSpan = 'day';
+                            vm.leaderboard[i].submission__submitted_at = days;
+                            if (days.toFixed(0) == 1) {
+                                vm.leaderboard[i].timeSpan = 'day';
                             } else {
-                                vm.completeLeaderboard[i].timeSpan = 'days';
+                                vm.leaderboard[i].timeSpan = 'days';
                             }
-                        }
-                        else if (duration._data.hours !=0) {
+                        } else if (duration._data.hours != 0) {
                             var hours = duration.asHours();
-                            vm.completeLeaderboard[i].submission__submitted_at = hours;
-                            if (hours.toFixed(0)==1) {
-                                vm.completeLeaderboard[i].timeSpan = 'hour';
+                            vm.leaderboard[i].submission__submitted_at = hours;
+                            if (hours.toFixed(0) == 1) {
+                                vm.leaderboard[i].timeSpan = 'hour';
                             } else {
-                                vm.completeLeaderboard[i].timeSpan = 'hours';
+                                vm.leaderboard[i].timeSpan = 'hours';
                             }
-                        }
-                        else if (duration._data.minutes !=0) {
+                        } else if (duration._data.minutes != 0) {
                             var minutes = duration.asMinutes();
-                            vm.completeLeaderboard[i].submission__submitted_at = minutes;
-                            if (minutes.toFixed(0)==1) {
-                                vm.completeLeaderboard[i].timeSpan = 'minute';
+                            vm.leaderboard[i].submission__submitted_at = minutes;
+                            if (minutes.toFixed(0) == 1) {
+                                vm.leaderboard[i].timeSpan = 'minute';
                             } else {
-                                vm.completeLeaderboard[i].timeSpan = 'minutes';
+                                vm.leaderboard[i].timeSpan = 'minutes';
                             }
-                        }
-                        else if (duration._data.seconds != 0) {
+                        } else if (duration._data.seconds != 0) {
                             var second = duration.asSeconds();
-                            vm.completeLeaderboard[i].submission__submitted_at = second;
-                            if (second.toFixed(0)==1) {
-                                vm.completeLeaderboard[i].timeSpan = 'second';
+                            vm.leaderboard[i].submission__submitted_at = second;
+                            if (second.toFixed(0) == 1) {
+                                vm.leaderboard[i].timeSpan = 'second';
                             } else {
-                                vm.completeLeaderboard[i].timeSpan = 'seconds';
+                                vm.leaderboard[i].timeSpan = 'seconds';
                             }
                         }
                     }
-                    console.log(vm.completeLeaderboard);
-                    vm.selectedPhaseSplit = response.data.results[0];
-                    vm.getCompleteLeaderboardTextOption = (vm.show_complete_leaderboard) ? "complete leaderboard":"get private submissions";
-                },
-                onError: function (response) {
-                    var error = response.data;
+                    vm.phaseName = vm.phaseSplitId;
+                    vm.startLeaderboard();
                     vm.stopLoader();
-                    $rootScope.notify("error", error);
-                    return false;
+                    vm.scrollToEntryAfterLeaderboardLoads();
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    vm.leaderboard.error = error;
+                    vm.stopLoader();
                 }
             };
+
             utilities.sendRequest(parameters);
+        };
+
+        if (vm.phaseSplitId) {
+            vm.getLeaderboard(vm.phaseSplitId);
+        }
+        vm.getAllEntries = false;
+
+        // function for toggeling between public leaderboard and complete leaderboard [public/private]
+        vm.toggleLeaderboard = function(getAllEntries){
+            vm.getAllEntries = getAllEntries;
+            if (vm.phaseSplitId) {
+                if (vm.getAllEntries){
+                    vm.getAllEntriesOnPublicLeaderboard(vm.phaseSplitId);
+                }
+                else{
+                    vm.getLeaderboard(vm.phaseSplitId);
+                }
+            }
         };
 
         // function to create new team for participating in challenge

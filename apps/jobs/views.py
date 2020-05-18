@@ -43,6 +43,7 @@ from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
     get_aws_credentials_for_challenge,
+    get_challenge_phase_split_model
 )
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
@@ -626,27 +627,24 @@ def leaderboard(request, challenge_phase_split_id):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def complete_leaderboard(request, challenge_phase_split_id):
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     """
-    Returns complete leaderboard for a corresponding Challenge Phase Split
+    Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
 
     - Arguments:
-        ``challenge_phase_split_id``: Primary key for the challenge phase split for which leaderboard is to be fetched
+        ``challenge_phase_split_pk``: Primary key for the challenge phase split for which leaderboard is to be fetched
 
     - Returns:
         All Leaderboard entry objects in a list
     """
     # check if the challenge exists or not
-    try:
-        challenge_phase_split = ChallengePhaseSplit.objects.get(
-            pk=challenge_phase_split_id
-        )
-    except ChallengePhaseSplit.DoesNotExist:
-        response_data = {"error": "Challenge Phase Split does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
 
     # Get the leaderboard associated with the Challenge Phase Split
     leaderboard = challenge_phase_split.leaderboard
+
     # Get the default order by key to rank the entries on the leaderboard
     try:
         default_order_by = leaderboard.schema["default_order_by"]
@@ -659,6 +657,12 @@ def complete_leaderboard(request, challenge_phase_split_id):
     # Exclude the submissions done by members of the host team
     # while populating leaderboard
     challenge_obj = challenge_phase_split.challenge_phase.challenge
+
+    # Allow access only to challengeHost
+    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+        response_data = {"error": "Sorry, you are not authorized to make this request!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     challenge_hosts_emails = (
         challenge_obj.creator.get_all_challenge_host_email()
     )
