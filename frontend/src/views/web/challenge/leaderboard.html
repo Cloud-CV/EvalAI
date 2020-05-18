@@ -45,11 +45,11 @@
                 <div class="col s12">
                     <div ng-if="challenge.isResult && challenge.leaderboard.length &&
                                     !challenge.leaderboard.error" class="row">
-                        <div class="result-wrn col l9 m8 s7"><span id="baseline-badge-desc"
+                        <div class="result-wrn col l5 m4 s5"><span id="baseline-badge-desc"
                                 class="new badge orange-background fs-16 w-300" data-badge-caption="B"></span>
                             <span class="fs-16 w-300"> - Baseline submission</span>
                         </div>
-                        <div class="align-right result-wrn col l3 m4 s5" ng-if="challenge.isChallengeHost">
+                        <div class="align-right result-wrn col l3 m3 s4" ng-if="challenge.isChallengeHost">
                             <div ng-click="challenge.toggleShowLeaderboardByLatest()"
                                 class="btn-switch sort-leaderboard-switch"
                                 ng-class="{'btn-switch--on':challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
@@ -60,6 +60,12 @@
                                 </div>
                             </div>
                             <span class="fs-16 w-300"> {{challenge.sortLeaderboardTextOption}}</span>
+                        </div>
+                        <div class="align-right result-wrn col l4 m4 s5" ng-if="challenge.isChallengeHost">
+                            <input ng-checked="challenge.getAllEntries" type="checkbox" id="getAllEntries" ng-model="challenge.getAllEntries"
+                                ng-change="challenge.toggleLeaderboard(challenge.getAllEntries)" />
+                            <label for="getAllEntries"></label>
+                            <span  class="fs-16 w-300 complete-leaderboard"> {{ challenge.getAllEntriesTestOption }}</span>
                         </div>
                     </div>
                 </div>

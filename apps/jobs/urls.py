@@ -31,6 +31,11 @@ urlpatterns = [
         name="leaderboard",
     ),
     url(
+        r"^phase_split/(?P<challenge_phase_split_pk>[0-9]+)/public_leaderboard_all_entries/$",
+        views.get_all_entries_on_public_leaderboard,
+        name="get_all_entries_on_public_leaderboard",
+    ),
+    url(
         r"^submission/(?P<submission_id>[0-9]+)$",
         views.get_submission_by_pk,
         name="get_submission_by_pk",
