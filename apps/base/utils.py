@@ -40,6 +40,18 @@ def paginated_queryset(
     return (paginator, result_page)
 
 
+def team_paginated_queryset(
+    queryset, request, pagination_class=PageNumberPagination()
+):
+    """
+        Return a paginated result for a queryset
+    """
+    paginator = pagination_class
+    paginator.page_size = settings.REST_FRAMEWORK["TEAM_PAGE_SIZE"]
+    result_page = paginator.paginate_queryset(queryset, request)
+    return (paginator, result_page)
+
+
 @deconstructible
 class RandomFileName(object):
     def __init__(self, path):
