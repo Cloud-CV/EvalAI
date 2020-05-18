@@ -40,9 +40,10 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import (
+    get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
-    get_aws_credentials_for_challenge,
+    get_challenge_phase_split_model
 )
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
@@ -561,6 +562,152 @@ def leaderboard(request, challenge_phase_split_id):
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
+    all_banned_participant_team = []
+    for leaderboard_item in leaderboard_data:
+        participant_team_id = leaderboard_item["submission__participant_team"]
+        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
+        all_participants_email_ids = (
+            participant_team.get_all_participants_email()
+        )
+        for participant_email in all_participants_email_ids:
+            if participant_email in all_banned_email_ids:
+                all_banned_participant_team.append(participant_team_id)
+                break
+        if leaderboard_item["error"] is None:
+            leaderboard_item.update(filtering_error=0)
+
+    if challenge_phase_split.show_leaderboard_by_latest_submission:
+        sorted_leaderboard_data = leaderboard_data
+    else:
+        sorted_leaderboard_data = sorted(
+            leaderboard_data,
+            key=lambda k: (
+                float(k["filtering_score"]),
+                float(-k["filtering_error"]),
+            ),
+            reverse=True
+            if challenge_phase_split.is_leaderboard_order_descending
+            else False,
+        )
+
+    distinct_sorted_leaderboard_data = []
+    team_list = []
+    for data in sorted_leaderboard_data:
+        if (
+            data["submission__participant_team__team_name"] in team_list
+            or data["submission__participant_team"]
+            in all_banned_participant_team
+        ):
+            continue
+        elif data["submission__is_baseline"] is True:
+            distinct_sorted_leaderboard_data.append(data)
+        else:
+            distinct_sorted_leaderboard_data.append(data)
+            team_list.append(data["submission__participant_team__team_name"])
+
+    leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
+    for item in distinct_sorted_leaderboard_data:
+        item["result"] = [
+            item["result"][index] for index in leaderboard_labels
+        ]
+        if item["error"] is not None:
+            item["error"] = [
+                item["error"]["error_{0}".format(index)]
+                for index in leaderboard_labels
+            ]
+
+    paginator, result_page = paginated_queryset(
+        distinct_sorted_leaderboard_data,
+        request,
+        pagination_class=StandardResultSetPagination(),
+    )
+    response_data = result_page
+    return paginator.get_paginated_response(response_data)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
+    """
+    Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
+
+    - Arguments:
+        ``challenge_phase_split_pk``: Primary key for the challenge phase split for which leaderboard is to be fetched
+
+    - Returns:
+        All Leaderboard entry objects in a list
+    """
+    # check if the challenge exists or not
+    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+
+    challenge_obj = challenge_phase_split.challenge_phase.challenge
+
+    # Allow access only to challenge host
+    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+        response_data = {"error": "Sorry, you are not authorized to make this request!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # Get the leaderboard associated with the Challenge Phase Split
+    leaderboard = challenge_phase_split.leaderboard
+
+    # Get the default order by key to rank the entries on the leaderboard
+    try:
+        default_order_by = leaderboard.schema["default_order_by"]
+    except KeyError:
+        response_data = {
+            "error": "Sorry, Default filtering key not found in leaderboard schema!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # Exclude the submissions done by members of the host team
+    # while populating leaderboard
+    challenge_hosts_emails = (
+        challenge_obj.creator.get_all_challenge_host_email()
+    )
+    is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
+    # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
+    challenge_hosts_emails = (
+        [] if not is_challenge_phase_public else challenge_hosts_emails
+    )
+
+    all_banned_email_ids = challenge_obj.banned_email_ids
+
+    leaderboard_data = LeaderboardData.objects.exclude(
+        Q(submission__created_by__email__in=challenge_hosts_emails)
+        & Q(submission__is_baseline=False)
+    )
+    # Get all the successful submissions related to the challenge phase split
+    leaderboard_data = leaderboard_data.filter(
+        challenge_phase_split=challenge_phase_split,
+        submission__status=Submission.FINISHED,
+    ).order_by("-created_at")
+
+    leaderboard_data = leaderboard_data.annotate(
+        filtering_score=RawSQL(
+            "result->>%s", (default_order_by,), output_field=FloatField()
+        ),
+        filtering_error=RawSQL(
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
+    ).values(
+        "id",
+        "submission__participant_team",
+        "submission__participant_team__team_name",
+        "submission__participant_team__team_url",
+        "submission__is_baseline",
+        "challenge_phase_split",
+        "result",
+        "error",
+        "filtering_score",
+        "filtering_error",
+        "leaderboard__schema",
+        "submission__submitted_at",
+        "submission__method_name",
+    )
     all_banned_participant_team = []
     for leaderboard_item in leaderboard_data:
         participant_team_id = leaderboard_item["submission__participant_team"]
