@@ -10,6 +10,7 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
+        vm.getAllEntriesTestOption = "Include private submissions";
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -1187,9 +1188,11 @@
             vm.getAllEntries = getAllEntries;
             if (vm.phaseSplitId) {
                 if (vm.getAllEntries){
+                    vm.getAllEntriesTestOption = "Exclude private submissions";
                     vm.getAllEntriesOnPublicLeaderboard(vm.phaseSplitId);
                 }
                 else{
+                    vm.getAllEntriesTestOption = "Include private submissions";
                     vm.getLeaderboard(vm.phaseSplitId);
                 }
             }

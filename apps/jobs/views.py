@@ -658,7 +658,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     # while populating leaderboard
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
-    # Allow access only to challengeHost
+    # Allow access only to challenge host
     if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
         response_data = {"error": "Sorry, you are not authorized to make this request!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

@@ -12,10 +12,10 @@ from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from rest_framework import status
 
 from base.utils import suppress_autotime
+from challenges.models import ChallengePhaseSplit
 
 from .constants import submission_status_to_exclude
 from .models import Submission
-from challenges.models import ChallengePhaseSplit
 from .serializers import SubmissionSerializer
 
 get_submission_model = get_model_object(Submission)
