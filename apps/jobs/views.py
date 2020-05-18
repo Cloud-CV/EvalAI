@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 
-import requests
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -36,6 +35,7 @@ from base.utils import (
 from challenges.models import (
     ChallengePhase,
     Challenge,
+    ChallengeEvaluationCluster,
     ChallengePhaseSplit,
     LeaderboardData,
 )
@@ -53,6 +53,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
+from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
@@ -66,6 +67,7 @@ from .tasks import download_file_and_publish_submission_message
 from .utils import (
     get_submission_model,
     get_remaining_submission_for_a_phase,
+    handle_submission_rerun,
     is_url_valid,
 )
 
@@ -1053,7 +1055,7 @@ def update_submission(request, challenge_pk):
 
         data = {
             "status": submission_status,
-            "started_at": timezone.now(),
+            "started_at": str(timezone.now()),
             "job_name": jobs,
         }
         serializer = SubmissionSerializer(
@@ -1069,7 +1071,7 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def re_run_submission(request, submission_pk):
+def re_run_submission_by_host(request, submission_pk):
     """
     API endpoint to re-run a submission.
     Only challenge host has access to this endpoint.
@@ -1098,30 +1100,7 @@ def re_run_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    message = {
-        "challenge_pk": challenge.pk,
-        "phase_pk": challenge_phase.pk,
-        "submission_pk": submission.pk,
-    }
-
-    if submission.challenge_phase.challenge.is_docker_based:
-        try:
-            response = requests.get(submission.input_file)
-        except Exception as e:
-            response_data = {
-                "error": "Failed to get submission input file with error: {0}".format(
-                    e
-                )
-            }
-            return Response(
-                response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        if response and response.status_code == 200:
-            message["submitted_image_uri"] = response.json()[
-                "submitted_image_uri"
-            ]
-
+    message = handle_submission_rerun(submission, Submission.CANCELLED)
     publish_submission_message(message)
     response_data = {
         "success": "Submission is successfully submitted for re-running"
@@ -1337,6 +1316,12 @@ def delete_submission_message_from_queue(request, queue_name):
 
     challenge_pk = challenge.pk
     receipt_handle = request.data["receipt_handle"]
+    if not receipt_handle:
+        response_data = {
+            "error": "Please add message receipt handle in the body"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to access this resource"
@@ -1516,3 +1501,53 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_bearer_token(request, challenge_pk):
+    """API to generate and return bearer token AWS EKS requests
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.id):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence there isn't a need for bearer token."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+    except ChallengeEvaluationCluster.DoesNotExist:
+        response_data = {
+            "error": "Challenge evaluation cluster for the challenge with pk {} does not exist".format(
+                challenge.pk
+            )
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    cluster_name = challenge_evaluation_cluster.name
+    bearer_token = generate_aws_eks_bearer_token(cluster_name, challenge)
+    response_data = {
+        "aws_eks_bearer_token": bearer_token,
+        "cluster_name": cluster_name,
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)

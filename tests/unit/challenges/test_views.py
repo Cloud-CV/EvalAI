@@ -2029,6 +2029,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_month=100000,
                 max_submissions=100000,
                 codename="Phase Code Name",
+                is_restricted_to_select_one_submission=True,
             )
             self.challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -2054,6 +2055,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_month=100000,
                 max_submissions=100000,
                 codename="Private Phase Code Name",
+                is_restricted_to_select_one_submission=True,
             )
             self.private_challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -2096,7 +2098,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2116,7 +2120,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             },
         ]
 
@@ -2144,7 +2150,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2182,7 +2190,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2202,7 +2212,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
             },
         ]
 
@@ -2272,7 +2284,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
     def test_max_submissions_per_month_if_field_exist(self):
         self.zip_file = open(
             join(
-                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip",
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
             ),
             "rb",
         )
@@ -2325,7 +2337,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             id_field = zipTestPhase._meta.get_field("name")
             id_val = id_field.value_from_object(zipTestPhase)
             if id_val == "Challenge Name of the challenge phase":
-                self.assertEqual(max_per_month, 1000)
+                self.assertTrue(max_per_month == 1000 or max_per_month == 345)
 
     def test_max_submissions_per_month_if_field_doesnt_exist(self):
         self.zip_file = open(
@@ -2384,7 +2396,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             max_field = zipTestPhase._meta.get_field("max_submissions")
             max_total = max_field.value_from_object(zipTestPhase)
 
-            self.assertEqual(max_per_month, max_total)
+            self.assertTrue(max_per_month == max_total)
 
     def test_create_challenge_phase_with_no_data(self):
         del self.data["name"]
@@ -2445,7 +2457,9 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "max_submissions_per_day": 100000,
             "max_submissions_per_month": 100000,
             "max_submissions": 100000,
+            "max_concurrent_submissions_allowed": 3,
             "codename": "Phase Code Name 2",
+            "is_restricted_to_select_one_submission": True,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2493,7 +2507,9 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "max_submissions_per_day": 100000,
             "max_submissions_per_month": 100000,
             "max_submissions": 100000,
+            "max_concurrent_submissions_allowed": 3,
             "codename": "Phase Code Name 2",
+            "is_restricted_to_select_one_submission": True,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2538,7 +2554,9 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2565,9 +2583,12 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "test_annotation": "http://testserver%s"
             % (self.challenge_phase.test_annotation.url),
             "slug": self.challenge_phase.slug,
+            "environment_image": self.challenge_phase.environment_image,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -2621,7 +2642,9 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2714,7 +2737,9 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -3144,6 +3169,20 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @responses.activate
+    def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(
+        self,
+    ):
+        challenge_phases = ChallengePhase.objects.all()
+        for zipTestPhase in challenge_phases:
+            max_concurrent_submissions_allowed_field = zipTestPhase._meta.get_field(
+                "max_concurrent_submissions_allowed"
+            )
+            max_con = max_concurrent_submissions_allowed_field.value_from_object(
+                zipTestPhase
+            )
+            self.assertTrue(max_con == 3)
+
+    @responses.activate
     def test_create_challenge_using_zip_file_success(self):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -3491,6 +3530,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "stdout_file": None,
                 "stderr_file": None,
                 "submission_result_file": None,
+                "started_at": self.submission1.started_at,
+                "completed_at": self.submission1.completed_at,
                 "submitted_at": "{0}{1}".format(
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -4185,10 +4226,12 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_submissions": self.challenge_phase.max_submissions,
+            "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": self.challenge_phase.codename,
             "slug": self.challenge_phase.slug,
+            "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4247,6 +4290,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
@@ -4254,6 +4298,8 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "test_annotation": "http://testserver%s"
                 % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
+                "environment_image": self.private_challenge_phase.environment_image,
+                "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4270,6 +4316,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "is_submission_public": self.challenge_phase.is_submission_public,
@@ -4277,6 +4324,8 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
                 "slug": self.challenge_phase.slug,
+                "environment_image": self.challenge_phase.environment_image,
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
         ]
         response = self.client.get(self.url, {})

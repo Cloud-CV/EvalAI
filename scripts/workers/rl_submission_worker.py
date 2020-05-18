@@ -23,17 +23,15 @@ class GracefulKiller:
 
 logger = logging.getLogger(__name__)
 config.load_kube_config()
-batch_v1 = client.BatchV1Api()
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
-ENVIRONMENT_IMAGE = os.environ.get("ENVIRONMENT_IMAGE", "image_name:tag")
 
 
-def create_job_object(message):
+def create_job_object(message, environment_image):
     """Function to create the AWS EKS Job object
 
     Arguments:
@@ -58,7 +56,7 @@ def create_job_object(message):
     # Configureate Pod environment container
     environment_container = client.V1Container(
         name="environment",
-        image=ENVIRONMENT_IMAGE,
+        image=environment_image,
         env=[
             PYTHONUNBUFFERED_ENV,
             AUTH_TOKEN_ENV,
@@ -102,7 +100,7 @@ def create_job(api_instance, job):
     api_response = api_instance.create_namespaced_job(
         body=job, namespace="default", pretty=True
     )
-    logger.info("Deployment created. status='%s'" % str(api_response.status))
+    logger.info("Job created with status='%s'" % str(api_response.status))
     return api_response
 
 
@@ -120,10 +118,10 @@ def delete_job(api_instance, job_name):
             propagation_policy="Foreground", grace_period_seconds=5
         ),
     )
-    logger.info("Job deleted. status='%s'" % str(api_response.status))
+    logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(body, evalai):
+def process_submission_callback(api_instance, body, challenge_phase, evalai):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -132,8 +130,9 @@ def process_submission_callback(body, evalai):
     """
     try:
         logger.info("[x] Received submission message %s" % body)
-        job = create_job_object(body)
-        response = create_job(batch_v1, job)
+        environment_image = challenge_phase.get("environment_image")
+        job = create_job_object(body, environment_image)
+        response = create_job(api_instance, job)
         submission_data = {
             "submission_status": "running",
             "submission": body["submission_pk"],
@@ -148,6 +147,17 @@ def process_submission_callback(body, evalai):
         )
 
 
+def get_api_object(cluster_name, challenge, evalai):
+    configuration = client.Configuration()
+    aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.api_key["authorization"] = aws_eks_api[
+        "aws_eks_bearer_token"
+    ]
+    configuration.api_key_prefix["authorization"] = "Bearer"
+    api_instance = client.BatchV1Api(client.ApiClient(configuration))
+    return api_instance
+
+
 def main():
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
@@ -160,23 +170,27 @@ def main():
             evalai.get_challenge_by_queue_name()["title"]
         )
     )
+    challenge = evalai.get_challenge_by_queue_name()
+    cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
+    cluster_name = cluster_details.get("name")
     while True:
-        logger.info(
-            "Fetching new messages from the queue {}".format(QUEUE_NAME)
-        )
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
             submission_pk = message_body.get("submission_pk")
+            challenge_pk = message_body.get("challenge_pk")
+            phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
+                api_instance = get_api_object(cluster_name, challenge, evalai)
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
+                    or submission.get("status") == "cancelled"
                 ):
                     # Fetch the last job name from the list as it is the latest running job
                     job_name = submission.get("job_name")[-1]
-                    delete_job(batch_v1, job_name)
+                    delete_job(api_instance, job_name)
                     message_receipt_handle = message.get("receipt_handle")
                     evalai.delete_message_from_sqs_queue(
                         message_receipt_handle
@@ -184,11 +198,15 @@ def main():
                 elif submission.get("status") == "running":
                     continue
                 else:
-                    message_receipt_handle = message.get("receipt_handle")
                     logger.info(
                         "Processing message body: {0}".format(message_body)
                     )
-                    process_submission_callback(message_body, evalai)
+                    challenge_phase = evalai.get_challenge_phase_by_pk(
+                        challenge_pk, phase_pk
+                    )
+                    process_submission_callback(
+                        api_instance, message_body, challenge_phase, evalai
+                    )
         if killer.kill_now:
             break
 

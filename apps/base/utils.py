@@ -9,6 +9,8 @@ import requests
 import sendgrid
 import uuid
 
+from contextlib import contextmanager
+
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
@@ -211,8 +213,10 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     try:
         data = {
-            "text": message["text"],
             "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
+            "icon_url": "https://evalai.cloudcv.org/dist/images/evalai-logo-single.png",
+            "text": message["text"],
+            "username": "EvalAI",
         }
         return requests.post(
             webhook,
@@ -234,3 +238,25 @@ def mock_if_non_prod_aws(aws_mocker):
         return aws_mocker(func)
 
     return decorator
+
+
+@contextmanager
+def suppress_autotime(model, fields):
+    _original_values = {}
+    for field in model._meta.local_fields:
+        if field.name in fields:
+            _original_values[field.name] = {
+                "auto_now": field.auto_now,
+                "auto_now_add": field.auto_now_add,
+            }
+            field.auto_now = False
+            field.auto_now_add = False
+    try:
+        yield
+    finally:
+        for field in model._meta.local_fields:
+            if field.name in fields:
+                field.auto_now = _original_values[field.name]["auto_now"]
+                field.auto_now_add = _original_values[field.name][
+                    "auto_now_add"
+                ]
