@@ -807,6 +807,7 @@
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
                     break;
                 }
             }
@@ -1400,13 +1401,19 @@
                         message = "The submission is made private.";
                       }
                       $rootScope.notify("success", message);
+                      if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
+                        $mdDialog.hide()
+                      }
                     }
                 },
                 onError: function(response) {
                     var error = response.data;
                     var status = response.status;
-                    if(status === 400 || status === 403 ) {
+                    if(status === 400 || status === 403) {
                        $rootScope.notify("error", error.error);
+                    }
+                    if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
+                       $mdDialog.hide()
                     }
                 }
             };
@@ -1608,6 +1615,25 @@
                 preserveScope: true,
                 targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/update-submission-metadata.html'
+            });
+        };
+
+        vm.showVisibilityDialog = function(ev, submissionId) {
+            for (var i = 0; i < vm.submissionResult.count; i++) {
+                if (vm.submissionResult.results[i].id === submissionId) {
+                    vm.submissionMetaData = vm.submissionResult.results[i];
+                    break;
+                }
+            }
+            vm.submissionVisibility[submissionId] = vm.submissionMetaData.is_public;
+            vm.submissionId = submissionId;
+            console.log(vm.submissionId, vm.submissionVisibility[submissionId])
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/update-submission-visibility.html'
             });
         };
 
