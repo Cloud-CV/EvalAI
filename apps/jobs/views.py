@@ -383,7 +383,6 @@ def change_submission_data_and_visibility(
                 and is_public
                 and submissions_already_public.count() >= 1):
             for submission_in_db in submissions_already_public:
-                print('Existing sub', submission_in_db)
                 submission_in_db.is_public = False
                 submission_in_db.save()
     except KeyError:
