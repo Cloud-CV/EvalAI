@@ -159,7 +159,7 @@ class BaseAPITestClass(APITestCase):
 
             self.challenge_phase_restricted_to_one_submission = ChallengePhase.objects.create(
                 name="Restrict One Public Submission Challenge Phase",
-                description="Description for Challenge Phase",
+                description="Description for Restrict One Public Submission Challenge Phase",
                 leaderboard_public=False,
                 max_submissions_per_day=10,
                 max_submissions_per_month=20,
