@@ -367,9 +367,9 @@
             // ev.stopPropagation();
             var participationState;
             if (isRegistrationOpen) {
-                participationState = 'Close';
+                participationState = 'closed';
             } else {
-                participationState = 'Open';
+                participationState = 'opened';
             }
             var confirm = $mdDialog.confirm()
                           .title(participationState + ' participation in the challenge?')
@@ -394,7 +394,7 @@
                 parameters.callback = {
                     onSuccess: function() {
                         vm.isRegistrationOpen = !vm.isRegistrationOpen;
-                        $rootScope.notify('success', 'Participation is ' + participationState + 'ed successfully');
+                        $rootScope.notify('success', 'Participation is ' + participationState + ' successfully');
                     },
                     onError: function(response) {
                         var details = response.data;
