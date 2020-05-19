@@ -378,9 +378,7 @@ def change_submission_data_and_visibility(
             participant_team=participant_team,
             challenge_phase=challenge_phase
         )
-        print(submissions_already_public.count())
-        print('Is already public', is_public)
-        print(challenge_phase.is_restricted_to_select_one_submission)
+
         if (challenge_phase.is_restricted_to_select_one_submission
                 and is_public
                 and submissions_already_public.count() >= 1):

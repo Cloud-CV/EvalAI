@@ -1627,7 +1627,6 @@
             }
             vm.submissionVisibility[submissionId] = vm.submissionMetaData.is_public;
             vm.submissionId = submissionId;
-            console.log(vm.submissionId, vm.submissionVisibility[submissionId])
 
             $mdDialog.show({
                 scope: $scope,
