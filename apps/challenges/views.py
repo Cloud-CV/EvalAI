@@ -796,18 +796,18 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
-
-        if data["is_submission_public"] and data["is_restricted_to_select_one_submission"]:
-            message = (
-                "is_submission_public can't be 'True' for for challenge phase '{}'"
-                " with is_restricted_to_select_one_submission 'True'. "
-                " Please change is_submission_public to 'False'"
-                " then try again!".format(data["name"])
-            )
-            response_data = {"error": message}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+        if "is_submission_public" in data.keys() and "is_restricted_to_select_one_submission" in data.keys():
+            if data["is_submission_public"] and data["is_restricted_to_select_one_submission"]:
+                message = (
+                    "is_submission_public can't be 'True' for for challenge phase '{}'"
+                    " with is_restricted_to_select_one_submission 'True'. "
+                    " Please change is_submission_public to 'False'"
+                    " then try again!".format(data["name"])
+                )
+                response_data = {"error": message}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
     # Check for challenge image in yaml file.
     image = yaml_file_data.get("image")

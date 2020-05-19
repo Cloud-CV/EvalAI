@@ -1100,6 +1100,22 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                         "remaining_submissions_this_month_count": 12,
                         "remaining_submissions_count": 99,
                     },
+                },
+                {
+                    "id": self.challenge_phase_restricted_to_one_submission.id,
+                    "name": self.challenge_phase_restricted_to_one_submission.name,
+                    "slug": self.challenge_phase_restricted_to_one_submission.slug,
+                    "start_date": "{0}{1}".format(
+                        self.challenge_phase_restricted_to_one_submission.start_date.isoformat(), "Z"
+                    ).replace("+00:00", ""),
+                    "end_date": "{0}{1}".format(
+                        self.challenge_phase_restricted_to_one_submission.end_date.isoformat(), "Z"
+                    ).replace("+00:00", ""),
+                    "limits": {
+                        "remaining_submissions_today_count": 10,
+                        "remaining_submissions_this_month_count": 20,
+                        "remaining_submissions_count": 100,
+                    },
                 }
             ],
         }
@@ -1575,12 +1591,12 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_get_submission_by_pk_when_submission_doesnt_exist(self):
         self.url = reverse_lazy(
             "jobs:get_submission_by_pk",
-            kwargs={"submission_id": self.submission.id + 3},
+            kwargs={"submission_id": self.submission.id + 5},
         )
 
         expected = {
             "error": "Submission {} does not exist".format(
-                self.submission.id + 3
+                self.submission.id + 5
             )
         }
 
