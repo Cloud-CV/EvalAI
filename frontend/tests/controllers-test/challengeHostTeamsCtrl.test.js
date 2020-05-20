@@ -273,7 +273,7 @@ describe('Unit tests for challenge host team controller', function () {
             vm.team.TeamURL = "https://team.url";
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
             expect($mdDialog.hide).toHaveBeenCalled();
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Host Team updated!");
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Host team updated!");
         });
 
         it('successfully retrive the updated list `hosts/challenge_host_team`', function () {

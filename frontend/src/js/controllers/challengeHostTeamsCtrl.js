@@ -178,7 +178,7 @@
                 onSuccess: function() {
                     $mdDialog.hide();
                     vm.team = {};
-                    $rootScope.notify("success", "Host Team updated!");
+                    $rootScope.notify("success", "Host team updated!");
                     var parameters = {};
                     // Retrives the updated lists and displays it.
                     parameters.url = 'hosts/challenge_host_team';
