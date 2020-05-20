@@ -1620,9 +1620,6 @@
 
         vm.showVisibilityDialog = function(submissionId) {
             vm.submissionId = submissionId;
-            console.log(vm.submissionVisibility[submissionId]);
-            console.log(submissionId);
-
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
