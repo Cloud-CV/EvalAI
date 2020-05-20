@@ -707,6 +707,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
+        "submission__is_public"
     )
     all_banned_participant_team = []
     for leaderboard_item in leaderboard_data:
