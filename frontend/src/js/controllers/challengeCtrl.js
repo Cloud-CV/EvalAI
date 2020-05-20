@@ -366,13 +366,16 @@
         vm.toggleParticipation = function (ev, isRegistrationOpen) {
             // ev.stopPropagation();
             var participationState;
+            var participationModalText;
             if (isRegistrationOpen) {
                 participationState = 'closed';
+                participationModalText = 'Close participation in the challenge?'
             } else {
                 participationState = 'opened';
+                participationModalText = 'Open participation in the challenge?'
             }
             var confirm = $mdDialog.confirm()
-                          .title(participationState + ' participation in the challenge?')
+                          .title(participationModalText)
                           .ariaLabel('')
                           .targetEvent(ev)
                           .ok('Yes, I\'m sure')
