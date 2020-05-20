@@ -51,7 +51,7 @@ describe('Unit tests for challenge host team controller', function () {
             var message = 'Start Loader';
             vm = createController();
             vm.startLoader(message);
-            expect(vm.isLoader).toEqual(true);
+            expect(vm.isExistLoader).toEqual(true);
             expect(vm.loaderTitle).toEqual(message);
         });
 
@@ -59,7 +59,7 @@ describe('Unit tests for challenge host team controller', function () {
             var message = '';
             vm = createController();
             vm.stopLoader();
-            expect(vm.isLoader).toEqual(false);
+            expect(vm.isExistLoader).toEqual(false);
             expect(vm.loaderTitle).toEqual(message);
         });
     });
@@ -363,7 +363,7 @@ describe('Unit tests for challenge host team controller', function () {
                 successResponse = response;
                 
                 vm.createNewTeam();
-                expect(vm.isLoader).toEqual(true);
+                expect(vm.isExistLoader).toEqual(true);
                 expect(vm.loaderTitle).toEqual('');
 
                 expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
@@ -397,7 +397,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('backend error on creating new host team', function () {
             success = false;
             vm.createNewTeam();
-            expect(vm.isLoader).toEqual(true);
+            expect(vm.isExistLoader).toEqual(true);
             expect(vm.loaderTitle).toEqual('');
             expect(vm.startLoader("Loading Teams"));
             expect(vm.team.error).toEqual('error')
