@@ -11,6 +11,8 @@
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
         vm.getAllEntriesTestOption = "Include private submissions";
+        vm.showPrivateIds = [];
+        vm.showLeaderboardToggle = true;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -556,6 +558,7 @@
                 for(var i=0; i<details.length; i++) {
                     if (details[i].visibility !== challengePhaseVisibility.public) {
                         vm.phaseSplits[i].showPrivate = true;
+                        vm.showPrivateIds.push(vm.phaseSplits[i].id);
                     }
                 }
                 utilities.hideLoader();
@@ -673,6 +676,11 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    vm.showPrivateIds.forEach(id => {
+                        if(id == vm.phaseSplitId) {
+                            vm.showLeaderboardToggle = false;
+                        }
+                    })
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
