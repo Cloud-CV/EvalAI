@@ -368,13 +368,16 @@
         vm.toggleParticipation = function (ev, isRegistrationOpen) {
             // ev.stopPropagation();
             var participationState;
+            var participationModalText;
             if (isRegistrationOpen) {
-                participationState = 'Close';
+                participationState = 'closed';
+                participationModalText = 'Close participation in the challenge?'
             } else {
-                participationState = 'Open';
+                participationState = 'opened';
+                participationModalText = 'Open participation in the challenge?'
             }
             var confirm = $mdDialog.confirm()
-                          .title(participationState + ' participation in the challenge?')
+                          .title(participationModalText)
                           .ariaLabel('')
                           .targetEvent(ev)
                           .ok('Yes, I\'m sure')
@@ -396,7 +399,7 @@
                 parameters.callback = {
                     onSuccess: function() {
                         vm.isRegistrationOpen = !vm.isRegistrationOpen;
-                        $rootScope.notify('success', 'Participation is ' + participationState + 'ed successfully');
+                        $rootScope.notify('success', 'Participation is ' + participationState + ' successfully');
                     },
                     onError: function(response) {
                         var details = response.data;
