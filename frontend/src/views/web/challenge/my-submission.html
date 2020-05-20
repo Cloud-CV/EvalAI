@@ -120,7 +120,7 @@
                                      && challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                         ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                         id="isPublicSubmission{{ key.id }}"
-                                        ng-change="challenge.showVisibilityDialog($event, key.id)" />
+                                        ng-change="challenge.showVisibilityDialog(key.id)" />
                                     <label ng-if="!challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                            for="isPublic{{ key.id }}"></label>
                                     <label ng-if="challenge.isCurrentPhaseRestrictedToSelectOneSubmission"

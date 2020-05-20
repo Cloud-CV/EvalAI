@@ -1618,20 +1618,14 @@
             });
         };
 
-        vm.showVisibilityDialog = function(ev, submissionId) {
-            for (var i = 0; i < vm.submissionResult.count; i++) {
-                if (vm.submissionResult.results[i].id === submissionId) {
-                    vm.submissionMetaData = vm.submissionResult.results[i];
-                    break;
-                }
-            }
-            vm.submissionVisibility[submissionId] = vm.submissionMetaData.is_public;
+        vm.showVisibilityDialog = function(submissionId) {
             vm.submissionId = submissionId;
+            console.log(vm.submissionVisibility[submissionId]);
+            console.log(submissionId);
 
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
-                targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/update-submission-visibility.html'
             });
         };
