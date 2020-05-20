@@ -1636,6 +1636,10 @@
             });
         };
 
+        vm.hideVisibilityDialog = function() {
+            $mdDialog.hide();
+        };
+
         vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {
             if (updateSubmissionMetaDataForm) {
                 parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + vm.submissionId;

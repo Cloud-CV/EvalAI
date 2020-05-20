@@ -373,18 +373,20 @@ def change_submission_data_and_visibility(
             when_made_public = datetime.datetime.now()
             request.data["when_made_public"] = when_made_public
 
-        submissions_already_public = Submission.objects.filter(
-            is_public=True,
-            participant_team=participant_team,
-            challenge_phase=challenge_phase
-        )
-
-        if (challenge_phase.is_restricted_to_select_one_submission
-                and is_public
-                and submissions_already_public.count() >= 1):
-            for submission_in_db in submissions_already_public:
-                submission_in_db.is_public = False
-                submission_in_db.save()
+        try:
+            submissions_already_public = Submission.objects.get(
+                is_public=True,
+                participant_team=participant_team,
+                challenge_phase=challenge_phase
+            )
+            # Make the existing public submission private before making the new submission public
+            if (challenge_phase.is_restricted_to_select_one_submission
+                    and is_public
+                    and submissions_already_public):
+                submissions_already_public.is_public = False
+                submissions_already_public.save()
+        except Submission.DoesNotExist:
+            pass
     except KeyError:
         pass
 
