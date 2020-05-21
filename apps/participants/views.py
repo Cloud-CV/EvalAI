@@ -14,7 +14,7 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import team_paginated_queryset
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
@@ -53,7 +53,7 @@ def participant_team_list(request):
         participant_teams = ParticipantTeam.objects.filter(
             id__in=participant_teams_id
         ).order_by("-id")
-        paginator, result_page = paginated_queryset(participant_teams, request)
+        paginator, result_page = team_paginated_queryset(participant_teams, request)
         serializer = ParticipantTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -94,7 +94,7 @@ def get_participant_team_challenge_list(request, participant_team_pk):
         challenge = Challenge.objects.filter(
             participant_teams=participant_team
         ).order_by("-id")
-        paginator, result_page = paginated_queryset(challenge, request)
+        paginator, result_page = team_paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={"request": request}
         )
