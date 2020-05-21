@@ -69,7 +69,6 @@
 
         vm.isChallengeLeaderboardPrivate = false;
 
-        vm.currentChallengePhaseData = {};
         vm.currentPhaseId = null;
         vm.allowed_submission_file_types = "";
 
