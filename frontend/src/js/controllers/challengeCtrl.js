@@ -2082,6 +2082,10 @@
             }
         };
 
+        vm.boldenLeaderboardFieldColumn = function(fieldName) {
+            return {'font-weight' : (vm.sortColumn==fieldName)?'bold':'300'};
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
