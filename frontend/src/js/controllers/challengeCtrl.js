@@ -70,7 +70,6 @@
 
         vm.subErrors = {};
 
-        vm.isChallengeLeaderboardPrivate = false;
 
         utilities.showLoader();
 
@@ -212,6 +211,7 @@
                                 vm.currentPage = '';
                                 vm.isNext = '';
                                 vm.isPrev = '';
+                                vm.team.name = '';
                                 vm.team.error = false;
 
                                 parameters.url = 'participants/participant_team';
@@ -1270,9 +1270,18 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    vm.team.error = error.team_name[0];
-                    vm.stopLoader();
-                    $rootScope.notify("error", "New team couldn't be created.");
+                    if (error.team_name == null) {
+                        vm.stopLoader();
+                        $rootScope.notify("error", "Illegal character in team name: " + String(response.data));
+                    } else {
+                        vm.team.error = error.team_name[0];
+                        vm.stopLoader();
+                        if (vm.team.error == "This field may not be blank.") {
+                            $rootScope.notify("error", "Team name can not be blank.");
+                        } else {
+                            $rootScope.notify("error", "New team couldn't be created.");
+                        }
+                    }
                 }
             };
 
