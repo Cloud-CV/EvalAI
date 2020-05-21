@@ -26,18 +26,6 @@ services:
     volumes:
       - .:/code
 
-  celery:
-    hostname: celery
-    env_file:
-      - docker/dev/docker.env
-    build:
-      context: ./
-      dockerfile: docker/dev/celery/Dockerfile
-    depends_on:
-      - django
-    volumes:
-      - .:/code
-
   worker:
     env_file:
       - docker/dev/docker.env
@@ -63,3 +51,17 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+
+  # TODO: Add alternative for AWS SQS Celery (https://docs.celeryproject.org/en/stable/getting-started/brokers/sqs.html) in dev setup.
+  # celery:
+  #   hostname: celery
+  #   env_file:
+  #     - docker/dev/docker.env
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/dev/celery/Dockerfile
+  #   depends_on:
+  #     - django
+  #   volumes:
+  #     - .:/code
+  
