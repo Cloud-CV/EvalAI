@@ -13,4 +13,4 @@ CRONJOBS = [
     ('0 0 */1 * *', 'apps.challenges.restart_workers_cron.restart_workers_cron_checker')  # This cron job will run every day at 0 hours and 0 minutes.
 ]
 
-INSTALLED_APPS += ("django-crontab",)
+INSTALLED_APPS += ("django-crontab",)  # noqa

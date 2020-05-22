@@ -7,7 +7,7 @@ from .models import Challenge
 logger = logging.getLogger(__name__)
 
 
-def restart_workers_cron_checker:
+def restart_workers_cron_checker():
     challenges = [c for c in Challenge.objects if c.three_days_since_last_start]
     response = restart_workers(challenges)
     count, failures = response["count"], response["failures"]
