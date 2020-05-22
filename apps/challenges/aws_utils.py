@@ -1,3 +1,4 @@
+from datetime import date
 import logging
 import os
 import random
@@ -514,6 +515,7 @@ def start_workers(queryset):
                 )
                 continue
             count += 1
+            challenge.last_started_at = date.today()
         else:
             response = "Please select challenge with inactive workers only."
             failures.append(
@@ -671,6 +673,7 @@ def restart_workers(queryset):
                 )
                 continue
             count += 1
+            challenge.last_started_at = date.today()
         else:
             response = "Please select challenges with active workers only."
             failures.append(

@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -128,6 +130,7 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, max_length=2048, default=""
     )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
+    last_started_at = models.DateField(null=True, blank=True)
 
     class Meta:
         app_label = "challenges"
@@ -163,6 +166,11 @@ class Challenge(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+    @property
+    def three_days_since_last_start(self):
+        delta = self.last_started_at - date.today()
+        return (delta.days >= 3)
 
 
 signals.post_save.connect(

@@ -8,3 +8,9 @@ CORS_ORIGIN_WHITELIST = (
     "staging-evalai.s3.amazonaws.com",
     "evalai-staging.cloudcv.org",
 )
+
+CRONJOBS = [
+    ('0 0 */3 * *', 'apps.challenges.restart_workers_cron.restart_workers_cron_checker')
+]
+
+INSTALLED_APPS += ("django-crontab",)

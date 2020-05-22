@@ -22,6 +22,10 @@ CORS_ORIGIN_WHITELIST = (
     "staging.evalai.cloudcv.org",
 )
 
+CRONJOBS = [
+    ('0 0 */1 * *', 'apps.challenges.restart_workers_cron.py')
+]
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -39,7 +43,7 @@ DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
 
 MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
 
-INSTALLED_APPS += ("storages", "raven.contrib.django.raven_compat")  # noqa
+INSTALLED_APPS += ("storages", "raven.contrib.django.raven_compat", "django-crontab",)  # noqa
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
