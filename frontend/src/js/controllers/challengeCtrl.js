@@ -1635,13 +1635,18 @@
             vm.submissionId = submissionId;
             // Show modal only when submission is being made public
             if (submissionVisibility) {
-                $mdDialog.show({
-                    scope: $scope,
-                    preserveScope: true,
-                    templateUrl: 'dist/views/web/challenge/update-submission-visibility.html'
-                });
+                // Show pop up only when there's a submission already selected
+                if (vm.previousPublicSubmissionId) {
+                    $mdDialog.show({
+                        scope: $scope,
+                        preserveScope: true,
+                        templateUrl: 'dist/views/web/challenge/update-submission-visibility.html'
+                    });
+                } else {
+                    vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+                }
             } else {
-                // case for all submission made private
+                // Case when a submission is made private
                 vm.changeSubmissionVisibility(submissionId, submissionVisibility);
             }
         };
