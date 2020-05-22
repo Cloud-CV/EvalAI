@@ -16,6 +16,7 @@ from base.models import (
     create_post_model_field,
 )
 from base.utils import RandomFileName, get_slug
+from challenges.challenge_notification_util import challenge_start_notifier
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
@@ -33,6 +34,7 @@ class Challenge(TimeStampedModel):
     def __init__(self, *args, **kwargs):
         super(Challenge, self).__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
+        self._original_approved_by_admin = self.approved_by_admin
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -174,6 +176,11 @@ signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(
         restart_workers_signal_callback
     ),
+    sender=Challenge,
+    weak=False,
+)
+signals.post_save.connect(
+    model_field_name(field_name="approved_by_admin")(challenge_start_notifier),
     sender=Challenge,
     weak=False,
 )
