@@ -23,7 +23,7 @@ CORS_ORIGIN_WHITELIST = (
 )
 
 CRONJOBS = [
-    ('0 0 */1 * *', 'apps.challenges.restart_workers_cron.py')
+    ('0 0 */1 * *', 'apps.challenges.restart_workers_cron.py')  # This cron job will run every day at 0 hours and 0 minutes.
 ]
 
 DATABASES = {
