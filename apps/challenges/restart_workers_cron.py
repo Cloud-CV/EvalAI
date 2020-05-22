@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from .aws_utils import restart_workers
