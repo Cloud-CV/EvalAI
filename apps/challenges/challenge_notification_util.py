@@ -1,11 +1,9 @@
 import logging
-import sendgrid
-
-from challenges.aws_utils import start_workers
 
 from django.conf import settings
 
-from sendgrid.helpers.mail import Email, Mail, Personalization
+from base.utils import send_email
+from challenges.aws_utils import start_workers
 
 logger = logging.getLogger(__name__)
 
