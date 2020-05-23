@@ -109,11 +109,20 @@
                                 <td>{{key.submitted_at | date:'medium'}}</td>
 
                                 <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
-                                    <input ng-checked="key.is_public" ng-if="key.status == 'finished'"
+                                    <input ng-checked="key.is_public" ng-if="key.status == 'finished'
+                                     && !challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                         ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                         id="isPublic{{ key.id }}"
-                                        ng-change="challenge.changeSubmissionVisibility(key.id)" />
-                                    <label for="isPublic{{ key.id }}"></label>
+                                        ng-change="challenge.changeSubmissionVisibility(key.id, challenge.submissionVisibility[key.id])" />
+                                    <input ng-checked="key.is_public" ng-if="key.status == 'finished'
+                                     && challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
+                                        ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
+                                        id="isPublicSubmission{{ key.id }}"
+                                        ng-change="challenge.showVisibilityDialog(key.id, challenge.submissionVisibility[key.id])" />
+                                    <label ng-if="!challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
+                                           for="isPublic{{ key.id }}"></label>
+                                    <label ng-if="challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
+                                           for="isPublicSubmission{{ key.id }}"></label>
                                     <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                 </td>
                                 <td ng-if="challenge.isChallengeHost" class="center">
