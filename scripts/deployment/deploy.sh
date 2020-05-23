@@ -141,7 +141,9 @@ case $opt in
         echo "EvalAI deployment utility script"
         echo " Usage: $0 {pull|deploy|scale|clean}"
         echo
-        echo "    pull  : Pull docker images from ECR."
+        echo "    auto_deploy : Deploy staging or production branch to staging or production server respectively."
+        echo "        Eg. ./scripts/deployment/deploy.sh auto_deploy"
+        echo "    pull : Pull docker images from ECR."
         echo "        Eg. ./scripts/deployment/deploy.sh pull production"
         echo "    deploy-django : Deploy django containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-django production"
