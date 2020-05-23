@@ -1,76 +1,72 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { PubliclistsComponent } from './components/publiclists/publiclists.component';
-import { TeamlistComponent } from './components/publiclists/teamlist/teamlist.component';
-import { ContactComponent } from './components/contact/contact.component';
-import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
-import { GetInvolvedComponent } from './components/get-involved/get-involved.component';
-import { AboutComponent } from './components/about/about.component';
-import { ChallengeCreateComponent } from './components/challenge-create/challenge-create.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { ProfileComponent } from './components/profile/profile.component';
-import { OurTeamComponent } from './components/our-team/our-team.component';
+import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
+
+// import component
 import { NotFoundComponent } from './components/not-found/not-found.component';
-import {AnalyticsComponent} from './components/analytics/analytics.component';
-import {HostAnalyticsComponent} from './components/analytics/host-analytics/host-analytics.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: HomeComponent,
+    loadChildren: './components/home/home.module#HomeModule',
     data: {
       'title': 'EvalAI - Welcome'
     }
   },
   {
     path: 'about',
-    component: AboutComponent
+    loadChildren: './components/about/about.module#AboutModule',
+  },
+  {
+    path: 'auth',
+    loadChildren: './components/auth/auth.module#AuthModule',
+  },
+  {
+    path: 'challenge',
+    redirectTo: 'challenges'
+  },
+  {
+    path: 'challenge/:id',
+    loadChildren: './components/challenge/challenge.module#ChallengeModule',
+  },
+  {
+    path: 'challenges',
+    loadChildren: './components/publiclists/publiclist.module#PubliclistModule',
   },
   {
     path: 'challenge-create',
-    component: ChallengeCreateComponent
+    loadChildren: './components/challenge-create/challenge-create.module#ChallengeCreateModule',
   },
   {
     path: 'contact',
-    component: ContactComponent
+    loadChildren: './components/contact/contact.module#ContactModule',
   },
   {
     path: 'dashboard',
-    component: DashboardComponent,
+    loadChildren: './components/dashboard/dashboard.module#DashboardModule',
   },
   {
     path: 'analytics',
-    component: AnalyticsComponent,
-    children: [
-      {path: '', redirectTo: 'host-analytics', pathMatch: 'full'},
-      {path: 'host-analytics', component: HostAnalyticsComponent}
-    ]
+    loadChildren: './components/analytics/analytics.module#AnalyticsModule',
   },
   {
     path: 'get-involved',
-    component: GetInvolvedComponent
+    loadChildren: './components/get-involved/get-involved.module#GetInvolvedModule',
   },
   {
     path: 'our-team',
-    component: OurTeamComponent
+    loadChildren: './components/our-team/our-team.module#OurTeamModule',
   },
   {
     path: 'privacy-policy',
-    component: PrivacyPolicyComponent
+    loadChildren: './components/privacy-policy/privacy-policy.module#PrivacyPolicyModule',
   },
   {
     path: 'profile',
-    component: ProfileComponent
+    loadChildren: './components/profile/profile.module#ProfileModule',
   },
   {
     path: 'teams',
-    component: PubliclistsComponent,
-    children: [
-      {path: '', redirectTo: 'participants', pathMatch: 'full'},
-      {path: 'participants', component: TeamlistComponent},
-      {path: 'hosts', component: TeamlistComponent}
-    ]
+   loadChildren: './components/publiclists/publiclist.module#TeamlistsModule',
   },
   {
     path: '404',

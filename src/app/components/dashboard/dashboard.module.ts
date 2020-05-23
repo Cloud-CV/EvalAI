@@ -1,13 +1,13 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 
 // import components
 import { DashboardComponent } from './dashboard.component';
 import { DashboardContentComponent } from './dashboard-content/dashboard-content.component';
 
 // import modules
-import { NavModule } from '../nav/nav.module';
+import { DashboardRoutingModule } from './dashboard-routing.module';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
 declarations: [
@@ -16,13 +16,12 @@ declarations: [
 ],
 imports: [
   CommonModule,
-  RouterModule,
-  NavModule
+  DashboardRoutingModule,
+  SharedModule
 ],
 exports: [
   DashboardContentComponent,
-  DashboardComponent,
-  NavModule
+  DashboardComponent
 ],
 schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })

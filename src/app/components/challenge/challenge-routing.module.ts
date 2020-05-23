@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+
+// import component
 import { ChallengeComponent } from './challenge.component';
 import { ChallengeoverviewComponent } from './challengeoverview/challengeoverview.component';
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -13,11 +15,7 @@ import { ChallengesettingsComponent } from './challengesettings/challengesetting
 
 const routes: Routes = [
   {
-    path: 'challenge',
-    redirectTo: 'challenges'
-  },
-  {
-    path: 'challenge/:id',
+    path: '',
     component: ChallengeComponent,
     children: [
       {path: '', redirectTo: 'overview', pathMatch: 'full'},
@@ -35,10 +33,11 @@ const routes: Routes = [
       {path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent},
       {path: 'settings', component: ChallengesettingsComponent}
     ]
-  },
+  }
 ];
+
 @NgModule({
-imports: [RouterModule.forChild(routes)],
-exports: [RouterModule]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
 })
-export class ChallengeRoutingModule {}
+export class ChallengeRoutingModule { }
