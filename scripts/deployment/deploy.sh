@@ -38,7 +38,35 @@ if [ -z ${COMMIT_ID} ]; then
     export COMMIT_ID="latest"
 fi
 
+if [ -z ${env} ]; then
+    env=${TRAVIS_BRANCH}
+fi
+
+if [[ ${env} == "production" ]]; then
+    HOSTNAME="evalai.cloudcv.org"
+else if [[ ${env} == "staging" ]]; then
+    HOSTNAME="evalai-staging.cloudcv.org"
+else
+    echo "Skipping deployment since commit not on staging or production branch."
+    exit 0;
+fi
+
 case $opt in
+        auto_deploy)
+            aws_login;
+            echo "SSHing to the EC2 instance..."
+            ssh ubuntu@${HOSTNAME} -i evalai.pem -o StrictHostKeyChecking=no \
+            echo "SSH successful." && \
+            echo "Pulling environment variables file..." && \
+            aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env && \
+            echo "Environment varibles file successfully downloaded." && \
+            echo "Pulling docker images from ECR..." && \
+            docker-compose -f docker-compose-${env}.yml pull && \
+            echo "Completed Pull operation." && \
+            echo "Deploying new images..." && \
+            docker-compose -f docker-compose-${env}.yml up -d --force-recreate && \
+            echo "Deployment successful."
+            ;;
         pull)
             aws_login;
             echo "Pulling environment variables file..."

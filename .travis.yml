@@ -51,6 +51,7 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 - coveralls --rcfile=.coveragerc
 - "./scripts/deployment/push.sh"
+- "./scripts/deployment/deploy.sh auto_deploy"
 notifications:
   email:
     on_success: change
