@@ -1,7 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 
 // import components
 import { LoginComponent } from './login/login.component';
@@ -11,12 +9,12 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { AuthComponent } from './auth.component';
 
-// import modules
-import { AuthRoutingModule } from './auth-routing.module';
-import { NavModule } from '../nav/nav.module';
-
-// import services
+// import service
 import { AuthService } from '../../services/auth.service';
+
+// import module
+import { SharedModule } from '../../shared/shared.module';
+import { AuthRoutingModule } from './auth-routing.module';
 
 
 @NgModule({
@@ -30,19 +28,16 @@ import { AuthService } from '../../services/auth.service';
   ],
   imports: [
     CommonModule,
-    RouterModule,
     AuthRoutingModule,
-    FormsModule,
-    NavModule
+    SharedModule
   ],
   exports: [
+    AuthComponent,
     LoginComponent,
     SignupComponent,
-    ResetPasswordConfirmComponent,
     ResetPasswordComponent,
-    VerifyEmailComponent,
-    AuthComponent,
-    NavModule
+    ResetPasswordConfirmComponent,
+    VerifyEmailComponent
   ],
   providers: [
     AuthService

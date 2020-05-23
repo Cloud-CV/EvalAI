@@ -1,7 +1,6 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxTwitterTimelineModule } from 'ngx-twitter-timeline';
-import { RouterModule } from '@angular/router';
 
 // import components
 import { FeaturedChallengesComponent } from './featured-challenges/featured-challenges.component';
@@ -13,33 +12,33 @@ import { TwitterFeedComponent } from './twitter-feed/twitter-feed.component';
 import { HomeComponent } from './home.component';
 
 // import module
-import { NavModule } from '../nav/nav.module';
+import { SharedModule } from '../../shared/shared.module';
+import { HomeRoutingModule } from './home-routing.module';
 
 @NgModule({
   declarations: [
-    FeaturedChallengesComponent,
-    HomemainComponent,
+    HomeComponent,
+    TwitterFeedComponent,
     PartnersComponent,
     RulesComponent,
     TestimonialsComponent,
-    TwitterFeedComponent,
-    HomeComponent
+    HomemainComponent,
+    FeaturedChallengesComponent
   ],
   imports: [
     CommonModule,
-    RouterModule,
+    HomeRoutingModule,
     NgxTwitterTimelineModule,
-    NavModule
+    SharedModule
   ],
   exports: [
-    FeaturedChallengesComponent,
-    HomemainComponent,
+    HomeComponent,
+    TwitterFeedComponent,
     PartnersComponent,
     RulesComponent,
     TestimonialsComponent,
-    TwitterFeedComponent,
-    HomeComponent,
-    NavModule
+    HomemainComponent,
+    FeaturedChallengesComponent
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })

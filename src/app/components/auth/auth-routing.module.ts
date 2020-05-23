@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+
+// import component
 import { AuthComponent } from './auth.component';
 import { LoginComponent } from './login/login.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
@@ -9,7 +11,7 @@ import { VerifyEmailComponent } from './verify-email/verify-email.component';
 
 const routes: Routes = [
   {
-    path: 'auth',
+    path: '',
     component: AuthComponent,
     children: [
       {path: '', redirectTo: 'login', pathMatch: 'full'},
