@@ -2,32 +2,11 @@
 set -e
 
 opt=${1}
-env=${2}
 
 aws_login() {
     aws configure set default.region us-east-1
     eval $(aws ecr get-login --no-include-email)
 }
-
-setup() {
-    export LC_ALL="en_US.UTF-8"
-    export LC_CTYPE="en_US.UTF-8"
-    sudo add-apt-repository ppa:deadsnakes/ppa
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt-get update
-    apt-cache policy docker-ce
-    sudo apt-get install -y docker-ce
-    sudo apt-get install python3.6
-    sudo apt-get install python3-pip
-    pip3 install awscli
-    pip3 install docker-compose
-}
-
-if ! python3 -c "import awscli" &> /dev/null; then
-    echo "Installing packages and dependencies..."
-    setup;
-fi
 
 if [ -z ${AWS_ACCOUNT_ID} ]; then
     echo "AWS_ACCOUNT_ID not set."
@@ -38,34 +17,31 @@ if [ -z ${COMMIT_ID} ]; then
     export COMMIT_ID="latest"
 fi
 
-if [ -z ${env} ]; then
-    env=${TRAVIS_BRANCH}
+if [ -z ${TRAVIS_BRANCH} ]; then
+    echo "Please set the TRAVIS_BRANCH first."
 fi
+
+env=${TRAVIS_BRANCH}
 
 if [[ ${env} == "production" ]]; then
     HOSTNAME="evalai.cloudcv.org"
-else if [[ ${env} == "staging" ]]; then
+elif [[ ${env} == "staging" ]]; then
     HOSTNAME="evalai-staging.cloudcv.org"
 else
     echo "Skipping deployment since commit not on staging or production branch."
-    exit 0;
+    exit 0
 fi
 
 case $opt in
         auto_deploy)
-            aws_login;
-            echo "SSHing to the EC2 instance..."
-            ssh ubuntu@${HOSTNAME} -i evalai.pem -o StrictHostKeyChecking=no \
-            echo "SSH successful." && \
-            echo "Pulling environment variables file..." && \
+            ssh ubuntu@${HOSTNAME} -i scripts/deployment/evalai.pem -o StrictHostKeyChecking=no \
+            "cd ~/Projects/evalai && \
+            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} && \
+            export COMMIT_ID=${COMMIT_ID} && \
+            eval $(aws ecr get-login --no-include-email) && \
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env && \
-            echo "Environment varibles file successfully downloaded." && \
-            echo "Pulling docker images from ECR..." && \
             docker-compose -f docker-compose-${env}.yml pull && \
-            echo "Completed Pull operation." && \
-            echo "Deploying new images..." && \
-            docker-compose -f docker-compose-${env}.yml up -d --force-recreate && \
-            echo "Deployment successful."
+            docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery "
             ;;
         pull)
             aws_login;
