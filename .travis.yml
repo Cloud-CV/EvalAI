@@ -17,6 +17,7 @@ install:
 script:
 - flake8 ./
 - docker-compose build
+- docker-compose run nodejs karma start --single-run
 - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
 before_cache:
 - rm -f $HOME/.cache/pip/log/debug.log
