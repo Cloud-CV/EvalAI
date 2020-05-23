@@ -12,7 +12,7 @@
             </div>
             <div class="row fs-16 w-300">
                 <div class="col s12 m6 l6">
-                    <md-select ng-model="challenge.phase.name" placeholder="Select Phase" class="rm-margin">
+                    <md-select ng-model="challenge.phase.name" placeholder="Select phase" class="rm-margin">
                         <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}"
                             ng-repeat="key in challenge.phases.results">{{key.name}} <span
                                 class="new badge orange-background" data-badge-caption="Private"
@@ -22,7 +22,7 @@
             </div>
             <div class="row">
                 <div class="col s12 m6 l6">
-                    <md-select ng-model="challenge.fileSelected" placeholder="File Type" class="rm-margin">
+                    <md-select ng-model="challenge.fileSelected" placeholder="File type" class="rm-margin">
                         <md-option ng-repeat="key in challenge.fileTypes" value={{key.name}}>{{key.name}}
                         </md-option>
                     </md-select>
@@ -52,21 +52,20 @@
                     <table class="highlight all-submission-table" class="fs-16 w-300">
                         <thead>
                             <th class="fs-18 w-300" data-field="submission_id">#</th>
-                            <th class="fs-18 w-300" data-field="team">Team</th>
                             <th class="fs-18 w-300" data-field="method-name">Method</th>
-                            <th class="fs-18 w-300" data-field="method-description">Method Description</th>
+                            <th class="fs-18 w-300" data-field="method-description">Method description</th>
                             <th class="fs-18 w-300" data-field="project-url">Project URL</th>
                             <th class="fs-18 w-300" data-field="publication-url">Publication URL </th>
                             <th class="align-center fs-18 w-300" data-field="status">Status</th>
-                            <th class="fs-18 w-300" data-field="status">Execution Time (sec.)</th>
-                            <th class="fs-18 w-300" data-field="file">Submitted File</th>
-                            <th class="fs-18 w-300" data-field="file">Result File</th>
-                            <th class="fs-18 w-300" data-field="file">Stdout File</th>
-                            <th class="fs-18 w-300" data-field="file">Stderr File</th>
-                            <th class="align-center fs-18 w-300" data-field="file">Submitted At</th>
+                            <th class="fs-18 w-300" data-field="status">Execution time (sec.)</th>
+                            <th class="fs-18 w-300" data-field="file">Submitted file</th>
+                            <th class="fs-18 w-300" data-field="file">Result file</th>
+                            <th class="fs-18 w-300" data-field="file">Stdout file</th>
+                            <th class="fs-18 w-300" data-field="file">Stderr file</th>
+                            <th class="align-center fs-18 w-300" data-field="file">Submitted at</th>
                             <th class="align-center fs-18 w-300" ng-if="challenge.currentPhaseLeaderboardPublic"
                                 data-field="file">
-                                Show on Leaderboard</th>
+                                Show on leaderboard</th>
                             <th class="fs-18 w-300" data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline
                             </th>
                             <th class="fs-18 w-300">Edit</th>
@@ -74,7 +73,6 @@
                         <tbody>
                             <tr ng-repeat="key in challenge.submissionResult.results" class="result-val fs-16 w-300">
                                 <td>{{$index+1}}</td>
-                                <td>{{key.participant_team_name}}</td>
                                 <td ng-if="key.method_name != ''">{{key.method_name}}</td>
                                 <td ng-if="key.method_name == ''"> None </td>
 

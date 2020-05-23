@@ -371,10 +371,10 @@
             var participationModalText;
             if (isRegistrationOpen) {
                 participationState = 'closed';
-                participationModalText = 'Close participation in the challenge?'
+                participationModalText = 'Close participation in the challenge?';
             } else {
                 participationState = 'opened';
-                participationModalText = 'Open participation in the challenge?'
+                participationModalText = 'Open participation in the challenge?';
             }
             var confirm = $mdDialog.confirm()
                           .title(participationModalText)
@@ -683,7 +683,7 @@
                         if(id == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
                         }
-                    })
+                    });
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
