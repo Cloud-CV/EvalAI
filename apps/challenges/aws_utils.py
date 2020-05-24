@@ -723,8 +723,8 @@ def create_eks_nodegroup(instance, cluster_name):
             nodegroupName=nodegroup_name,
             scalingConfig={"minSize": 1, "maxSize": 100, "desiredSize": 1},
             diskSize=20,
-            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"],],
-            instanceTypes=["g4dn.xlarge",],
+            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+            instanceTypes=["g4dn.xlarge", ],
             amiType="AL2_x86_64_GPU",
             nodeRole=EKS_NODEGROUP_ROLE_ARN,
         )
@@ -734,24 +734,33 @@ def create_eks_nodegroup(instance, cluster_name):
 
 def create_eks_cluster(sender, instance, field_name, **kwargs):
     """
-    Called when Challenge is approved b the EvalAI admin
+    Called when Challenge is approved by the EvalAI admin
     """
+    cluster = ""
     cluster_name = "{}-cluster".format(instance.title.replace(" ", "-"))
     if instance.approved_by_admin:
         client = get_boto3_client("eks", aws_keys)
         try:
-            response = client.create_cluster(
-                name=cluster_name,
-                version="1.15",
-                roleArn=EKS_CLUSTER_ROLE_ARN,
-                resourcesVpcConfig={
-                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"],],
-                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"],],
-                },
+            cluster = client.describe_cluster(
+                name='cluster_name'
             )
-            waiter = client.get_waiter("cluster_active")
-            waiter.wait(name=cluster_name)
-            # Creating nodegroup
-            create_eks_nodegroup(instance, cluster_name)
         except ClientError as e:
             logger.exception(e)
+            print("Already present")
+        if not cluster:
+            try:
+                response = client.create_cluster(
+                    name=cluster_name,
+                    version="1.15",
+                    roleArn=EKS_CLUSTER_ROLE_ARN,
+                    resourcesVpcConfig={
+                        "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+                        "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"], ],
+                    },
+                )
+                waiter = client.get_waiter("cluster_active")
+                waiter.wait(name=cluster_name)
+                # Creating nodegroup
+                create_eks_nodegroup(instance, cluster_name)
+            except ClientError as e:
+                logger.exception(e)
