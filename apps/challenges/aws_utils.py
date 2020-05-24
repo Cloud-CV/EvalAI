@@ -71,6 +71,18 @@ VPC_DICT = {
     ),
 }
 
+EKS_CLUSTER_ROLE_ARN = os.environ.get(
+    "EKS_CLUSTER_ROLE_ARN",
+    "arn:aws:iam::{}:role/evalaieksclusterRole".format(
+        aws_keys["AWS_ACCOUNT_ID"]
+    ),
+)
+EKS_NODEGROUP_ROLE_ARN = os.environ.get(
+    "EKS_NODEGROUP_ROLE_ARN",
+    "arn:aws:iam::{}:role/evalaieksnodegroupRole".format(
+        aws_keys["AWS_ACCOUNT_ID"]
+    ),
+)
 
 task_definition = """
 {{
@@ -697,3 +709,49 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 instance.pk, field_name
             )
         )
+
+
+def create_eks_nodegroup(instance, cluster_name):
+    """
+    Creates a nodegroup when a EKS cluster is created by the EvalAI admin
+    """
+    nodegroup_name = "{}-nodegroup".format(instance.title.replace(" ", "-"))
+    client = get_boto3_client("eks", aws_keys)
+    try:
+        response = client.create_nodegroup(
+            clusterName=cluster_name,
+            nodegroupName=nodegroup_name,
+            scalingConfig={"minSize": 1, "maxSize": 100, "desiredSize": 1},
+            diskSize=20,
+            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"],],
+            instanceTypes=["g4dn.xlarge",],
+            amiType="AL2_x86_64_GPU",
+            nodeRole=EKS_NODEGROUP_ROLE_ARN,
+        )
+    except ClientError as e:
+        logger.exception(e)
+
+
+def create_eks_cluster(sender, instance, field_name, **kwargs):
+    """
+    Called when Challenge is approved b the EvalAI admin
+    """
+    cluster_name = "{}-cluster".format(instance.title.replace(" ", "-"))
+    if instance.approved_by_admin:
+        client = get_boto3_client("eks", aws_keys)
+        try:
+            response = client.create_cluster(
+                name=cluster_name,
+                version="1.15",
+                roleArn=EKS_CLUSTER_ROLE_ARN,
+                resourcesVpcConfig={
+                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"],],
+                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"],],
+                },
+            )
+            waiter = client.get_waiter("cluster_active")
+            waiter.wait(name=cluster_name)
+            # Creating nodegroup
+            create_eks_nodegroup(instance, cluster_name)
+        except ClientError as e:
+            logger.exception(e)
