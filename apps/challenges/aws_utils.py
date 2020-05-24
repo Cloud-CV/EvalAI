@@ -746,7 +746,6 @@ def create_eks_cluster(sender, instance, field_name, **kwargs):
             )
         except ClientError as e:
             logger.exception(e)
-            print("Already present")
         if not cluster:
             try:
                 response = client.create_cluster(
