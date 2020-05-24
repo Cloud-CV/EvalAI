@@ -1,5 +1,4 @@
 import csv
-import json
 import logging
 import random
 import requests
@@ -2538,7 +2537,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
             if not is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids,
                                                           dataset_splits_ids, data):
                 message = ("ERROR: Challenge phase split {} has invalid keys "
-                           "for challenge_phase_id, leaderboard_id, dataset_split_id").format(i)
+                           "for challenge_phase_id, leaderboard_id, dataset_split_id").format(phase_split)
                 error_messages.append(message)
             phase_split += 1
     else:
