@@ -680,11 +680,12 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    vm.showPrivateIds.forEach(id => {
-                        if(id == vm.phaseSplitId) {
+                    for (var j=0; j<vm.showPrivateIds.length; j++) {
+                        if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
+                            break;
                         }
-                    });
+                    }
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
