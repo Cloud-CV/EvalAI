@@ -7,8 +7,13 @@
                 </div>
                 <div class="card-stacked">
                     <div class="card-content">
-                        <p><strong>Unable to create or select a team.</strong>
-                            <br> {{perm.emailError}}</p>
+                        <p><strong>Please verify your email to continue.</strong></p>
+                        <div ng-if="!perm.sendMail">
+                            <p> <span class="text-light-black">Didn't get the email?</span> <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="perm.requestLink()">Resend Email</a></p>
+                        </div>
+                        <div ng-if="perm.sendMail">
+                            <p> <span class="text-light-gray">The verification mail has been sent to you. Please confirm!</span></p>
+                        </div>
                     </div>
                 </div>
             </div>

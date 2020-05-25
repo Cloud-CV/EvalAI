@@ -23,13 +23,14 @@
                 </p>
             </div>
             <div class="col s12 m12 l12">
-                <div ng-bind-html="item.description" class="fs-16 w-300 phase-description"></div>
+                <div ng-bind-html="item.description" class="fs-16 w-300 phase-description trix-container"></div>
             </div>
             <div class="col s12 m12 l3">
                 <p class="fs-16">Max submissions/day: <span class="w-300">{{item.max_submissions_per_day}}</span></p>
                 <p class="fs-16">Max submissions/month: <span class="w-300">{{item.max_submissions_per_month}}</span>
                 </p>
                 <p class="fs-16">Max total submissions: <span class="w-300">{{item.max_submissions}}</span></p>
+                <p class="fs-16">Max concurrent submissions: <span class="w-300">{{item.max_concurrent_submissions_allowed}}</span></p>
             </div>
         </div>
     </div>

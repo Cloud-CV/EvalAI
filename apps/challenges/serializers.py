@@ -90,6 +90,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_active",
             "codename",
             "slug",
+            "max_concurrent_submissions_allowed",
+            "is_restricted_to_select_one_submission"
         )
 
 
@@ -254,7 +256,9 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "codename",
             "test_annotation",
             "slug",
+            "max_concurrent_submissions_allowed",
             "environment_image",
+            "is_restricted_to_select_one_submission"
         )
 
 

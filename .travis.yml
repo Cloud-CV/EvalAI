@@ -1,7 +1,7 @@
 language: python
 sudo: false
 services:
-- docker
+- xvfb
 python:
 - '3.6'
 addons:
@@ -11,7 +11,7 @@ addons:
     packages:
     - postgresql-10
     - postgresql-client-10
-    - default-jre # Java11 is used for elasticmq
+    - default-jre
     - libgnutls28-dev
 env:
   global:
@@ -35,11 +35,11 @@ before_script:
 - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
 - java -jar elasticmq-server-0.14.2.jar &
 before_install:
+- openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv
+  -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d
 - sudo rm -f /etc/boto.cfg
 - export CHROME_BIN=chromium-browser
 - export DISPLAY=:99.0
-services:
-- xvfb
 install:
 - pip install -r requirements/dev.txt
 - pip install awscli==1.16.57 coveralls
@@ -50,7 +50,8 @@ script:
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 - coveralls --rcfile=.coveragerc
-- ./scripts/deployment/push.sh
+- "./scripts/deployment/push.sh"
+- "./scripts/deployment/deploy.sh auto_deploy"
 notifications:
   email:
     on_success: change
