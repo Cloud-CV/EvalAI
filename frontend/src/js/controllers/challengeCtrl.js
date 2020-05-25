@@ -680,8 +680,8 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    for(var j=0; j<vm.showPrivateIds.length; j++) {
-                        if(vm.showPrivateIds[j] == vm.phaseSplitId) {
+                    for (var j=0; j<vm.showPrivateIds.length; j++) {
+                        if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
                             break;
                         }
