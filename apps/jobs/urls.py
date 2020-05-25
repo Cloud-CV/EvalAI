@@ -21,14 +21,19 @@ urlpatterns = [
         name="get_remaining_submissions",
     ),
     url(
-        r"^submissions/(?P<submission_pk>[0-9]+)/re-run/$",
-        views.re_run_submission,
-        name="re_run_submission",
+        r"^submissions/(?P<submission_pk>[0-9]+)/re-run-by-host/$",
+        views.re_run_submission_by_host,
+        name="re_run_submission_by_host",
     ),
     url(
         r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
         views.leaderboard,
         name="leaderboard",
+    ),
+    url(
+        r"^phase_split/(?P<challenge_phase_split_pk>[0-9]+)/public_leaderboard_all_entries/$",
+        views.get_all_entries_on_public_leaderboard,
+        name="get_all_entries_on_public_leaderboard",
     ),
     url(
         r"^submission/(?P<submission_id>[0-9]+)$",

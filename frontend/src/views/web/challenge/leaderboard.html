@@ -35,6 +35,7 @@
                             </span>{{key.challenge_phase_name}}, <span class="fs-16 w-300">Split: </span>
                             {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background"
                                 data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
+                        <md-option value="leaderboard is private" ng-if="challenge.isChallengeLeaderboardPrivate">Leaderboard is private</md-option>
                     </md-select>
                 </span>
             </div>
@@ -44,11 +45,16 @@
                 <div class="col s12">
                     <div ng-if="challenge.isResult && challenge.leaderboard.length &&
                                     !challenge.leaderboard.error" class="row">
-                        <div class="result-wrn col l9 m8 s7"><span id="baseline-badge-desc"
+                        <div class="result-wrn col l3 m4 s5"><span id="baseline-badge-desc"
                                 class="new badge orange-background fs-16 w-300" data-badge-caption="B"></span>
                             <span class="fs-16 w-300"> - Baseline submission</span>
                         </div>
-                        <div class="align-right result-wrn col l3 m4 s5" ng-if="challenge.isChallengeHost">
+                        <div class="result-wrn col l3 m4 s5">
+                            <b><span class="orange-text">*</span></b>
+                            <span class="fs-16 w-300"> - Private submission</span>
+                        </div>
+                        <div class="result-wrn col l3 m4 s5" ng-if="challenge.isChallengeHost && !challenge.showLeaderboardToggle"></div>
+                        <div class="align-right result-wrn col l2 m3 s4" ng-if="challenge.isChallengeHost">
                             <div ng-click="challenge.toggleShowLeaderboardByLatest()"
                                 class="btn-switch sort-leaderboard-switch"
                                 ng-class="{'btn-switch--on':challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
@@ -60,12 +66,18 @@
                             </div>
                             <span class="fs-16 w-300"> {{challenge.sortLeaderboardTextOption}}</span>
                         </div>
+                        <div class="align-right result-wrn col l4 m4 s5" ng-if="challenge.isChallengeHost && challenge.showLeaderboardToggle">
+                            <input ng-checked="challenge.getAllEntries" type="checkbox" id="getAllEntries" ng-model="challenge.getAllEntries"
+                                ng-change="challenge.toggleLeaderboard(challenge.getAllEntries)" />
+                            <label for="getAllEntries"></label>
+                            <span  class="fs-16 w-300 complete-leaderboard"> {{ challenge.getAllEntriesTestOption }}</span>
+                        </div>
                     </div>
                 </div>
-                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="centered highlight">
+                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
                     <thead>
                         <tr>
-                            <td data-field="rank" class="align-center">
+                            <td data-field="rank">
                                 <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'rank');">
                                     <span class="w-300 fs-20">Rank</span>
                                     <span class="fa-stack fa-1x">
@@ -76,7 +88,7 @@
                                     </span>
                                 </a>
                             </td>
-                            <td data-field="team" class="align-center">
+                            <td data-field="team">
                                 <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'string');">
                                     <span class="w-300 fs-20">Participant team</span>
                                     <span class="fa-stack fa-1x">
@@ -87,8 +99,7 @@
                                     </span>
                                 </a>
                             </td>
-                            <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels"
-                                class="align-center">
+                            <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
                                 <a href="#"
                                     ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
                                     <span class="w-300 fs-20">{{key}}</span>
@@ -100,7 +111,7 @@
                                     </span>
                                 </a>
                             </td>
-                            <td data-field="submission_time" class="align-center">
+                            <td data-field="submission_time">
                                 <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
                                     <span class="fs-20 w-300">Last submission at</span>
                                     <span class="fa-stack fa-1x">
@@ -123,9 +134,10 @@
                                     target="_blank"
                                     href="{{key.submission__participant_team__team_url}}">{{key.submission__participant_team__team_name}}</a><span
                                     ng-if="!key.submission__participant_team__team_url">{{key.submission__participant_team__team_name}}</span>
+                                    <b><span ng-if="key.submission__is_public === false" class="orange-text">*</span></b>
                                 <span
                                     ng-if="key.submission__method_name">({{key.submission__method_name | limitTo:30}})</span><span
-                                    id="baseline-badge" class="new badge orange-background" data-badge-caption="B"
+                                    id="baseline-badge" class="new badge orange-background baseline-tag" data-badge-caption="B"
                                     ng-if="key.submission__is_baseline"></span>
                             </td>
                             <td ng-repeat="(i, score) in key.result track by $index">

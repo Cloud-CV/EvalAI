@@ -36,6 +36,7 @@ class DisableUserTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+# need to add form for image later
 class TestUpdateUser(BaseAPITestClass):
     def test_cannot_update_username(self):
         self.url = reverse_lazy("rest_user_details")
@@ -65,3 +66,30 @@ class GetAuthTokenTest(BaseAPITestClass):
         expected_data = {"token": "{}".format(token)}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
+
+
+class ResendEmailVerificationTestClass(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username='someuser',
+            email="user@test.com",
+            password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email='user@test.com',
+            primary=True,
+            verified=False)
+
+        self.client.force_authenticate(user=self.user)
+
+        self.url = reverse_lazy("accounts:resend_email_confirmation")
+
+    def test_resend_throttles(self):
+        for _ in range(3):  # Running 3 iterations because the throttle rate is 3/hour. The very next request will be throttled.
+            response = self.client.post(self.url, {})
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)

@@ -30,6 +30,10 @@
 	line-height: 36px;
 }
 
+.phase-container ul:not(.browser-default) li {
+	list-style-type: none;
+}
+
 li {
 	margin-bottom: 1.5%;
   }
@@ -54,4 +58,8 @@ code {
 
 .dashed-link {
 	border-bottom: 1px orange dashed;
+}
+
+.update-submission-visibility-card {
+    padding: 20px 20px 0px 20px;
 }
