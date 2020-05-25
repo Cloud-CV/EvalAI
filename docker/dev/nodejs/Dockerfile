@@ -7,9 +7,6 @@ RUN apt-get update && apt-get install -yq google-chrome-stable
 
 WORKDIR /code
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /code/node_modules/.bin:$PATH
-
 # Add dependencies
 ADD ./package.json /code
 ADD ./bower.json /code

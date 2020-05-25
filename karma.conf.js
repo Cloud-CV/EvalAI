@@ -8,7 +8,7 @@ module.exports = function(config) {
   var configuration = {
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
+    basePath: '/code/',
 
 
     // frameworks to use
@@ -27,7 +27,6 @@ module.exports = function(config) {
     files: [
         'frontend/dist/vendors/*.js',
         'frontend/dist/js/config.js',
-        'bower_components/**/*.js',
         'node_modules/angular-mocks/angular-mocks.js',
         'frontend/src/js/app.js',
         'frontend/src/**/*.js',
