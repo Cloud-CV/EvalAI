@@ -1106,17 +1106,19 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                     "name": self.challenge_phase_restricted_to_one_submission.name,
                     "slug": self.challenge_phase_restricted_to_one_submission.slug,
                     "start_date": "{0}{1}".format(
-                        self.challenge_phase_restricted_to_one_submission.start_date.isoformat(), "Z"
+                        self.challenge_phase_restricted_to_one_submission.start_date.isoformat(),
+                        "Z",
                     ).replace("+00:00", ""),
                     "end_date": "{0}{1}".format(
-                        self.challenge_phase_restricted_to_one_submission.end_date.isoformat(), "Z"
+                        self.challenge_phase_restricted_to_one_submission.end_date.isoformat(),
+                        "Z",
                     ).replace("+00:00", ""),
                     "limits": {
                         "remaining_submissions_today_count": 10,
                         "remaining_submissions_this_month_count": 20,
                         "remaining_submissions_count": 100,
                     },
-                }
+                },
             ],
         }
         self.challenge.participant_teams.add(self.participant_team)
@@ -1487,7 +1489,9 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_change_submission_data_and_visibility_when_is_restricted_to_select_one_submission_true(self):
+    def test_change_submission_data_and_visibility_when_is_restricted_to_select_one_submission_true(
+        self
+    ):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
             kwargs={
@@ -2093,11 +2097,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             },
         )
 
-        expected = {"error": "Challenge Phase Split does not exist"}
+        expected = {
+            "detail": f"ChallengePhaseSplit {self.challenge_phase_split.id + 2} does not exist"
+        }
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_leaderboard_with_default_order_by_key_missing(self):
         self.url = reverse_lazy(
