@@ -34,6 +34,7 @@ fi
 
 case $opt in
         auto_deploy)
+            chmod 400 scripts/deployment/evalai.pem
             ssh ubuntu@${HOSTNAME} -i scripts/deployment/evalai.pem -o StrictHostKeyChecking=no \
             "cd ~/Projects/evalai && \
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} && \
