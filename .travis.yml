@@ -18,9 +18,6 @@ script:
 - flake8 ./
 - docker-compose build
 - docker-compose run nodejs gulp dev
-- docker-compose run nodejs ls frontend/
-- docker-compose run nodejs ls frontend/src/
-- docker-compose run nodejs ls /
 - docker-compose run nodejs karma start --single-run
 - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
 before_cache:
