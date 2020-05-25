@@ -1,10 +1,10 @@
-from datetime import date
 import logging
 import os
 import random
 import string
 
 from botocore.exceptions import ClientError
+from datetime import date
 from django.conf import settings
 from http import HTTPStatus
 
@@ -515,7 +515,7 @@ def start_workers(queryset):
                 )
                 continue
             count += 1
-            challenge.last_started_at = date.today()
+            challenge.worker_last_started_at = date.today()
         else:
             response = "Please select challenge with inactive workers only."
             failures.append(
@@ -673,7 +673,7 @@ def restart_workers(queryset):
                 )
                 continue
             count += 1
-            challenge.last_started_at = date.today()
+            challenge.worker_last_started_at = date.today()
         else:
             response = "Please select challenges with active workers only."
             failures.append(

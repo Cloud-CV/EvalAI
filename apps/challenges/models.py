@@ -130,7 +130,7 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, max_length=2048, default=""
     )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
-    last_started_at = models.DateField(null=True, blank=True)
+    worker_last_started_at = models.DateField(null=True, blank=True)
 
     class Meta:
         app_label = "challenges"
@@ -168,9 +168,9 @@ class Challenge(TimeStampedModel):
         return False
 
     @property
-    def three_days_since_last_start(self):
+    def n_days_since_last_worker_start(self, n):
         delta = self.last_started_at - date.today()
-        return (delta.days >= 3)
+        return (delta.days >= n)
 
 
 signals.post_save.connect(
