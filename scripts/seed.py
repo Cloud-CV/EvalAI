@@ -36,7 +36,7 @@ NUMBER_OF_DATASET_SPLITS = 2
 DATASET_SPLIT_ITERATOR = 0
 
 try:
-    xrange  # Python 2
+    xrange   # Python 2
 except NameError:
     xrange = range  # Python 3
 
