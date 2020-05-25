@@ -1,23 +1,20 @@
-import mock
 import boto3
+import mock
 import os
 
+from datetime import timedelta
+from http import HTTPStatus
+from moto import mock_ecs
 from unittest import TestCase
 
-from moto import mock_ecs
-from datetime import timedelta
+from allauth.account.models import EmailAddress
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from django.contrib.auth.models import User
-from http import HTTPStatus
-
 from rest_framework.test import APITestCase, APIClient
 
 from hosts.models import ChallengeHost, ChallengeHostTeam
-
 import challenges.aws_utils as aws_utils
 from challenges.models import Challenge, ChallengePhase
 
@@ -104,7 +101,7 @@ class TestChallengeStartNotifier(BaseTestClass):
     @mock.patch(challenges.challenge_notification_util.send_email)
     @mock.patch(challenges.aws_utils.start_workers)
     def test_feature(self, mock_start_workers, mock_send_email):
-        challenge_url = "https://evalai.cloudcv.org/web/challenges/challenge-page/{}".format(self.challenge.id)
+        challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, self.challenge.id)
         host_emails = [self.user.email]
         template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_NOTIFICATION")
         template_data = {"title": challenge.title,"url":url} # Gotta modify the template_data dict according to what's in the template.
@@ -125,3 +122,4 @@ class TestChallengeStartNotifier(BaseTestClass):
 
         mock_start_workers.assert_called_with([self.challenge])
         mock_send_email.assert_equal(mock_send_email.call_args_list, calls)
+

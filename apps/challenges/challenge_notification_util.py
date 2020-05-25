@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def challenge_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
-    if prev != curr:
+    if prev != curr:  # Checking if the challenge has been approved by admin since last time.
         challenge = instance
 
         # Start the challenge worker.
@@ -21,7 +21,7 @@ def challenge_start_notifier(sender, instance, field_name, **kwargs):
         if(count != 1):
             logger.warning("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
         else:
-            url = "https://evalai.cloudcv.org/web/challenges/challenge-page/{}".format(challenge.id)
+            url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
             template_data = {"title": challenge.title,"url":url} # Gotta modify the template_data dict according to what's in the template.
             if challenge.image:
                 template_data["image"] = challenge.image.url
