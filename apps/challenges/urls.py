@@ -50,7 +50,7 @@ urlpatterns = [
         name="get_challenge_by_pk",
     ),
     url(
-        r"^challenge/(?P<title>[\w\s]+)/$",
+        r"^challenge/(?P<challenge_title>[\w\s]+)/$",
         views.get_challenges_by_title,
         name="get_challenges_by_title",
     ),

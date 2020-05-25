@@ -1354,19 +1354,19 @@ class GetChallengeByTitle(BaseAPITestClass):
             approved_by_admin=True,
         )
 
-    def test_get_challenge_by_title_when_challenge_does_not_exists(self):
+    def test_get_challenges_by_title_when_challenge_does_not_exists(self):
         self.url = reverse_lazy(
-            "challenges:get_challenge_by_title",
-            kwargs={"title": 'fakechallenge'},
+            "challenges:get_challenges_by_title",
+            kwargs={"challenge_title": 'fakechallenge'},
         )
-        expected = {"error": "Challenge does not exist!"}
+        expected = {"error": "Challenge with the title fakechallenge does not exist!"}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_get_challenge_by_title_when_single_challenge_matches_query(self):
+    def test_get_challenges_by_title_when_single_challenge_matches_query(self):
         self.url = reverse_lazy(
-            "challenges:get_challenge_by_title", kwargs={"title": self.challenge3.title}
+            "challenges:get_challenges_by_title", kwargs={"challenge_title": self.challenge3.title}
         )
         self.client.force_authenticate(user=self.user)
         expected = {
@@ -1410,9 +1410,9 @@ class GetChallengeByTitle(BaseAPITestClass):
         self.assertEqual(response.data[0], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_by_title_when_multiple_challenges_match_query(self):
+    def test_get_challenges_by_title_when_multiple_challenges_match_query(self):
         self.url = reverse_lazy(
-            "challenges:get_challenge_by_title", kwargs={"title": 'test challenge'}
+            "challenges:get_challenges_by_title", kwargs={"title": 'test challenge'}
         )
         expected = [{
             "id": self.challenge3.pk,
