@@ -1412,7 +1412,7 @@ class GetChallengeByTitle(BaseAPITestClass):
 
     def test_get_challenges_by_title_when_multiple_challenges_match_query(self):
         self.url = reverse_lazy(
-            "challenges:get_challenges_by_title", kwargs={"title": 'test challenge'}
+            "challenges:get_challenges_by_title", kwargs={"challenge_title": 'test challenge'}
         )
         expected = [{
             "id": self.challenge3.pk,
