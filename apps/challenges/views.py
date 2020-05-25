@@ -426,12 +426,12 @@ def get_challenge_by_pk(request, pk):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def get_challenge_by_title(request, title):
+def get_challenges_by_title(request, challenge_title):
     """
     Returns a particular challenge by title. The string in request should exactly match the title of challenge.
     """
     challenges = Challenge.objects.filter(
-        title__icontains=title, approved_by_admin=True, published=True
+        title__icontains=challenge_title, approved_by_admin=True, published=True
     )
     response_data = []
     for challenge in challenges:
@@ -440,7 +440,8 @@ def get_challenge_by_title(request, title):
         )
         response_data.append(serializer.data)
     if len(response_data) == 0:
-        exception_data = {"error": "Challenge does not exist!"}
+        exception_data = {"error": "Challenge with the title {} does not exist!".format(challenge_title)}
+
         return Response(exception_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     return Response(response_data, status=status.HTTP_200_OK)
 
