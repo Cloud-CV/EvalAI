@@ -71,6 +71,7 @@
         vm.subErrors = {};
 
         vm.isChallengeLeaderboardPrivate = false;
+        vm.previousPublicSubmissionId = null;
 
         utilities.showLoader();
 
@@ -679,11 +680,12 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    vm.showPrivateIds.forEach(id => {
-                        if(id == vm.phaseSplitId) {
+                    for (var j=0; j<vm.showPrivateIds.length; j++) {
+                        if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
+                            break;
                         }
-                    });
+                    }
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
@@ -818,6 +820,7 @@
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
                     break;
                 }
             }
@@ -866,6 +869,10 @@
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                        // Set previous public submission id for phases with one public submission restriction
+                        if (details.results[i].is_public) {
+                            vm.previousPublicSubmissionId = details.results[i].id;
+                        }
                     }
 
                     vm.submissionResult = details;
@@ -1392,11 +1399,11 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.changeSubmissionVisibility = function(submission_id) {
+        vm.changeSubmissionVisibility = function(submission_id, submissionVisibility) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
-                "is_public": vm.submissionVisibility[submission_id]
+                "is_public": submissionVisibility
             };
             parameters.callback = {
                 onSuccess: function(response) {
@@ -1411,13 +1418,27 @@
                         message = "The submission is made private.";
                       }
                       $rootScope.notify("success", message);
+                      if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
+                        $mdDialog.hide();
+                        if (vm.previousPublicSubmissionId != submission_id) {
+                            vm.submissionVisibility[vm.previousPublicSubmissionId] = false;
+                            vm.previousPublicSubmissionId = submission_id;
+                        } else {
+                            vm.previousPublicSubmissionId = null;
+                        }
+                        vm.submissionVisibility[submission_id] = submissionVisibility;
+                      }
                     }
                 },
                 onError: function(response) {
                     var error = response.data;
                     var status = response.status;
-                    if(status === 400 || status === 403 ) {
+                    if(status === 400 || status === 403) {
                        $rootScope.notify("error", error.error);
+                    }
+                    if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
+                       $mdDialog.hide();
+                       vm.submissionVisibility[submission_id] = !vm.submissionVisibility[submission_id];
                     }
                 }
             };
@@ -1620,6 +1641,30 @@
                 targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/update-submission-metadata.html'
             });
+        };
+
+        vm.showVisibilityDialog = function(submissionId, submissionVisibility) {
+            vm.submissionId = submissionId;
+            // Show modal only when submission is being made public
+            if (submissionVisibility) {
+                // Show pop up only when there's a submission already selected
+                if (vm.previousPublicSubmissionId) {
+                    $mdDialog.show({
+                        scope: $scope,
+                        preserveScope: true,
+                        templateUrl: 'dist/views/web/challenge/update-submission-visibility.html'
+                    });
+                } else {
+                    vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+                }
+            } else {
+                // Case when a submission is made private
+                vm.changeSubmissionVisibility(submissionId, submissionVisibility);
+            }
+        };
+
+        vm.hideVisibilityDialog = function() {
+            $mdDialog.hide();
         };
 
         vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {

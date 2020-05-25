@@ -157,6 +157,27 @@ class BaseAPITestClass(APITestCase):
                 codename="Private Phase Code name",
             )
 
+            self.challenge_phase_restricted_to_one_submission = ChallengePhase.objects.create(
+                name="Restrict One Public Submission Challenge Phase",
+                description="Description for Restrict One Public Submission Challenge Phase",
+                leaderboard_public=False,
+                max_submissions_per_day=10,
+                max_submissions_per_month=20,
+                max_submissions=100,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                codename="Restrict One Public Submission Phase Code name",
+                max_concurrent_submissions_allowed=5,
+                is_restricted_to_select_one_submission=True,
+            )
+
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -1079,6 +1100,22 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                         "remaining_submissions_this_month_count": 12,
                         "remaining_submissions_count": 99,
                     },
+                },
+                {
+                    "id": self.challenge_phase_restricted_to_one_submission.id,
+                    "name": self.challenge_phase_restricted_to_one_submission.name,
+                    "slug": self.challenge_phase_restricted_to_one_submission.slug,
+                    "start_date": "{0}{1}".format(
+                        self.challenge_phase_restricted_to_one_submission.start_date.isoformat(), "Z"
+                    ).replace("+00:00", ""),
+                    "end_date": "{0}{1}".format(
+                        self.challenge_phase_restricted_to_one_submission.end_date.isoformat(), "Z"
+                    ).replace("+00:00", ""),
+                    "limits": {
+                        "remaining_submissions_today_count": 10,
+                        "remaining_submissions_this_month_count": 20,
+                        "remaining_submissions_count": 100,
+                    },
                 }
             ],
         }
@@ -1126,6 +1163,21 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.host_participant_team_submission = Submission.objects.create(
             participant_team=self.host_participant_team,
             challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+            is_flagged=True,
+            when_made_public=timezone.now(),
+        )
+
+        self.submission_restricted_to_one_for_leaderboard = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase_restricted_to_one_submission,
             created_by=self.challenge_host_team.created_by,
             status="submitted",
             input_file=self.challenge_phase.test_annotation,
@@ -1435,6 +1487,20 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_change_submission_data_and_visibility_when_is_restricted_to_select_one_submission_true(self):
+        self.url = reverse_lazy(
+            "jobs:change_submission_data_and_visibility",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase_restricted_to_one_submission.pk,
+                "submission_pk": self.submission_restricted_to_one_for_leaderboard.pk,
+            },
+        )
+        self.data = {"is_public": True}
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_toggle_baseline_when_user_is_not_a_host(self):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
@@ -1525,12 +1591,12 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_get_submission_by_pk_when_submission_doesnt_exist(self):
         self.url = reverse_lazy(
             "jobs:get_submission_by_pk",
-            kwargs={"submission_id": self.submission.id + 3},
+            kwargs={"submission_id": self.submission.id + 5},
         )
 
         expected = {
             "error": "Submission {} does not exist".format(
-                self.submission.id + 3
+                self.submission.id + 5
             )
         }
 
