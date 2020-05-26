@@ -294,6 +294,7 @@ def calculate_distinct_sorted_leaderboard_data(
         "submission__participant_team__team_name",
         "submission__participant_team__team_url",
         "submission__is_baseline",
+        "submission__is_public",
         "challenge_phase_split",
         "result",
         "error",

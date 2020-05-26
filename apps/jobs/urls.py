@@ -77,7 +77,7 @@ urlpatterns = [
     ),
     url(
         r"^phase_split/(?P<challenge_phase_split_pk>[0-9]+)/team/(?P<participant_team_pk>[0-9]+)/github_badge/$",
-        views.get_github_badge_data,
-        name="get_github_badge_data",
+        views.github_badge_data,
+        name="github_badge_data",
     ),
 ]

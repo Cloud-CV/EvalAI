@@ -1497,9 +1497,7 @@ def get_bearer_token(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_github_badge_data(
-    request, challenge_phase_split_pk, participant_team_pk
-):
+def github_badge_data(request, challenge_phase_split_pk, participant_team_pk):
     """
     Add API to get data for dynamically generating github badges
     Ref: https://shields.io/endpoint
@@ -1532,4 +1530,6 @@ def get_github_badge_data(
         ):
             data["message"] = f"{challenge_obj.title} Rank #{idx+1}"
             break
+        else:
+            data["message"] = f"{challenge_obj.title}"
     return Response(data, status=http_status_code)
