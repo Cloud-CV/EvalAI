@@ -410,7 +410,7 @@ def participant_team_detail_in_challenge(request, challenge_pk):
         challenge_pk {[int]} -- Challenge primary key
 
     Returns:
-        Participant team detail that has participated in the challenge
+        {dict} -- Participant team detail that has participated in the challenge
     """
 
     challenge = get_challenge_model(challenge_pk)
