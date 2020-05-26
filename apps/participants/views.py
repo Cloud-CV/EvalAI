@@ -402,6 +402,16 @@ def remove_self_from_participant_team(request, participant_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail_in_challenge(request, challenge_pk):
+    """
+    API to get the participant team detail
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+
+    Returns:
+        Participant team detail that has participated in the challenge
+    """
 
     challenge = get_challenge_model(challenge_pk)
     if has_user_participated_in_challenge(request.user, challenge_pk):
