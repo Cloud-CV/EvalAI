@@ -98,13 +98,13 @@ class TestChallengeStartNotifier(BaseTestClass):
     def setUp(self):
         super(TestChallengeStartNotifier, self).setUp()
 
-    @mock.patch(challenges.challenge_notification_util.send_email)
-    @mock.patch(challenges.aws_utils.start_workers)
+    @mock.patch("challenges.challenge_notification_util.send_email")
+    @mock.patch("challenges.aws_utils.start_workers")
     def test_feature(self, mock_start_workers, mock_send_email):
         challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, self.challenge.id)
         host_emails = [self.user.email]
         template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_EMAIL")
-        template_data = {"CHALLENGE_NAME": challenge.title, "CHALLENGE_URL":challenge_url}
+        template_data = {"CHALLENGE_NAME": self.challenge.title, "CHALLENGE_URL":challenge_url}
 
         calls = []
         for email in host_emails:
