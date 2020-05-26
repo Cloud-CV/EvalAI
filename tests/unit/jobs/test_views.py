@@ -2118,7 +2118,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         )
 
         expected = {
-            "error": "Sorry, Default filtering key not found in leaderboard schema!"
+            "error": "Sorry, default_order_by key is missing in leaderboard schema!"
         }
 
         leaderboard_schema = {"labels": ["score", "test-score"]}
