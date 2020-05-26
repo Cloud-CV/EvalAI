@@ -242,6 +242,7 @@ def calculate_distinct_sorted_leaderboard_data(
 
     Returns:
         [list] -- Ranked list of participant teams to be shown on leaderboard
+        [status] -- HTTP status code (200/400)
     """
     # Get the leaderboard associated with the Challenge Phase Split
     leaderboard = challenge_phase_split.leaderboard
