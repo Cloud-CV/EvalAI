@@ -231,7 +231,18 @@ def handle_submission_rerun(submission, updated_status):
 def calculate_distinct_sorted_leaderboard_data(
     user, challenge_obj, challenge_phase_split, only_public_entries
 ):
+    """
+    Function to calculate and return the sorted leaderboard data
 
+    Arguments:
+        user {[Class object]} -- User model object
+        challenge_obj {[Class object]} -- Challenge model object
+        challenge_phase_split {[Class object]} -- Challenge phase split model object
+        only_public_entries {[Boolean]} -- Boolean value to determine if the user wants to include private entries or not
+
+    Returns:
+        [list] -- Ranked list of participant teams to be shown on leaderboard
+    """
     # Get the leaderboard associated with the Challenge Phase Split
     leaderboard = challenge_phase_split.leaderboard
 
@@ -240,7 +251,7 @@ def calculate_distinct_sorted_leaderboard_data(
         default_order_by = leaderboard.schema["default_order_by"]
     except KeyError:
         response_data = {
-            "error": "Sorry, Default filtering key not found in leaderboard schema!"
+            "error": "Sorry, default_order_by key is missing in leaderboard schema!"
         }
         return response_data, status.HTTP_400_BAD_REQUEST
 

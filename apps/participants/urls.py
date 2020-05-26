@@ -39,8 +39,8 @@ urlpatterns = [
         name="get_participant_team_details",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/team_detail/$",
-        views.participant_team_detail_in_challenge,
-        name="participant_team_detail_in_challenge",
+        r"^challenges/(?P<challenge_pk>[0-9]+)/team_details/$",
+        views.get_participant_team_details_for_challenge,
+        name="get_participant_team_details_for_challenge",
     ),
 ]

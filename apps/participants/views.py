@@ -401,7 +401,7 @@ def remove_self_from_participant_team(request, participant_team_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def participant_team_detail_in_challenge(request, challenge_pk):
+def get_participant_team_details_for_challenge(request, challenge_pk):
     """
     API to get the participant team detail
 

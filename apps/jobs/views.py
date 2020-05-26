@@ -496,21 +496,18 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split_id
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
-    distinct_sorted_leaderboard_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
         request.user,
         challenge_obj,
         challenge_phase_split,
         only_public_entries=True,
     )
+    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
-        return Response(
-            distinct_sorted_leaderboard_data, status=http_status_code
-        )
+        return Response(response_data, status=http_status_code)
 
     paginator, result_page = paginated_queryset(
-        distinct_sorted_leaderboard_data,
-        request,
-        pagination_class=StandardResultSetPagination(),
+        response_data, request, pagination_class=StandardResultSetPagination()
     )
     response_data = result_page
     return paginator.get_paginated_response(response_data)
@@ -544,21 +541,18 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    distinct_sorted_leaderboard_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
         request.user,
         challenge_obj,
         challenge_phase_split,
         only_public_entries=False,
     )
+    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
-        return Response(
-            distinct_sorted_leaderboard_data, status=http_status_code
-        )
+        return Response(response_data, status=http_status_code)
 
     paginator, result_page = paginated_queryset(
-        distinct_sorted_leaderboard_data,
-        request,
-        pagination_class=StandardResultSetPagination(),
+        response_data, request, pagination_class=StandardResultSetPagination()
     )
     response_data = result_page
     return paginator.get_paginated_response(response_data)
@@ -1497,7 +1491,9 @@ def get_bearer_token(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def github_badge_data(request, challenge_phase_split_pk, participant_team_pk):
+def get_github_badge_data(
+    request, challenge_phase_split_pk, participant_team_pk
+):
     """
     Add API to get data for dynamically generating github badges
     Ref: https://shields.io/endpoint
