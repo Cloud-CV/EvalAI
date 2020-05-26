@@ -35,8 +35,6 @@ before_script:
 - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
 - java -jar elasticmq-server-0.14.2.jar &
 before_install:
-- openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv
-  -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d
 - sudo rm -f /etc/boto.cfg
 - export CHROME_BIN=chromium-browser
 - export DISPLAY=:99.0
@@ -50,6 +48,8 @@ script:
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 - coveralls --rcfile=.coveragerc
+- openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv
+  -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
 - "./scripts/deployment/push.sh"
 - "./scripts/deployment/deploy.sh auto_deploy"
 notifications:
