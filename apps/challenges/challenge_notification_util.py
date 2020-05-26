@@ -21,11 +21,11 @@ def challenge_start_notifier(sender, instance, field_name, **kwargs):
         if(count != 1):
             logger.warning("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
         else:
-            url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
-            template_data = {"title": challenge.title,"url":url} # Gotta modify the template_data dict according to what's in the template.
+            challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
+            template_data = {"CHALLENGE_NAME": challenge.title, "CHALLENGE_URL":challenge_url}
             if challenge.image:
-                template_data["image"] = challenge.image.url
-            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_NOTIFICATION") # Add value in settings->common.py
+                template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
+            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_EMAIL")
             emails = challenge_obj.creator.get_all_challenge_host_email()
             for email in emails:
                 send_email(
@@ -34,3 +34,4 @@ def challenge_start_notifier(sender, instance, field_name, **kwargs):
                     template_id=template_id,
                     template_data=template_data,
                 )
+

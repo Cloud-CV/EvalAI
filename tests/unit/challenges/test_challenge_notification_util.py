@@ -103,9 +103,9 @@ class TestChallengeStartNotifier(BaseTestClass):
     def test_feature(self, mock_start_workers, mock_send_email):
         challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, self.challenge.id)
         host_emails = [self.user.email]
-        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_NOTIFICATION")
-        template_data = {"title": challenge.title,"url":url} # Gotta modify the template_data dict according to what's in the template.
-        
+        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_EMAIL")
+        template_data = {"CHALLENGE_NAME": challenge.title, "CHALLENGE_URL":challenge_url}
+
         calls = []
         for email in host_emails:
             calls.append(
