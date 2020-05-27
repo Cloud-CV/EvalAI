@@ -13,8 +13,6 @@ from rest_framework.decorators import (
 
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
-from django.db.models.expressions import RawSQL
-from django.db.models import FloatField, Q
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -43,7 +41,7 @@ from challenges.utils import (
     get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
-    get_challenge_phase_split_model
+    get_challenge_phase_split_model,
 )
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
@@ -66,6 +64,7 @@ from .serializers import (
 )
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
+    calculate_distinct_sorted_leaderboard_data,
     get_submission_model,
     get_remaining_submission_for_a_phase,
     handle_submission_rerun,
@@ -377,12 +376,14 @@ def change_submission_data_and_visibility(
             submissions_already_public = Submission.objects.get(
                 is_public=True,
                 participant_team=participant_team,
-                challenge_phase=challenge_phase
+                challenge_phase=challenge_phase,
             )
             # Make the existing public submission private before making the new submission public
-            if (challenge_phase.is_restricted_to_select_one_submission
-                    and is_public
-                    and submissions_already_public):
+            if (
+                challenge_phase.is_restricted_to_select_one_submission
+                and is_public
+                and submissions_already_public
+            ):
                 submissions_already_public.is_public = False
                 submissions_already_public.save()
         except Submission.DoesNotExist:
@@ -491,150 +492,22 @@ def leaderboard(request, challenge_phase_split_id):
     """
 
     # check if the challenge exists or not
-    try:
-        challenge_phase_split = ChallengePhaseSplit.objects.get(
-            pk=challenge_phase_split_id
-        )
-    except ChallengePhaseSplit.DoesNotExist:
-        response_data = {"error": "Challenge Phase Split does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # Get the leaderboard associated with the Challenge Phase Split
-    leaderboard = challenge_phase_split.leaderboard
-
-    # Get the default order by key to rank the entries on the leaderboard
-    try:
-        default_order_by = leaderboard.schema["default_order_by"]
-    except KeyError:
-        response_data = {
-            "error": "Sorry, Default filtering key not found in leaderboard schema!"
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # Exclude the submissions done by members of the host team
-    # while populating leaderboard
+    challenge_phase_split = get_challenge_phase_split_model(
+        challenge_phase_split_id
+    )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
-    challenge_hosts_emails = (
-        challenge_obj.creator.get_all_challenge_host_email()
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
+        request.user,
+        challenge_obj,
+        challenge_phase_split,
+        only_public_entries=True,
     )
-    is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
-    # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
-    challenge_hosts_emails = (
-        [] if not is_challenge_phase_public else challenge_hosts_emails
-    )
-
-    challenge_host_user = is_user_a_host_of_challenge(
-        request.user, challenge_obj.pk
-    )
-
-    all_banned_email_ids = challenge_obj.banned_email_ids
-
-    # Check if challenge phase leaderboard is public for participant user or not
-    if (
-        challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC
-        and not challenge_host_user
-    ):
-        response_data = {"error": "Sorry, the leaderboard is not public!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails)
-        & Q(submission__is_baseline=False)
-    )
-
-    # Get all the successful submissions related to the challenge phase split
-    leaderboard_data = leaderboard_data.filter(
-        challenge_phase_split=challenge_phase_split,
-        submission__is_flagged=False,
-        submission__status=Submission.FINISHED,
-    ).order_by("-created_at")
-
-    leaderboard_data = leaderboard_data.annotate(
-        filtering_score=RawSQL(
-            "result->>%s", (default_order_by,), output_field=FloatField()
-        ),
-        filtering_error=RawSQL(
-            "error->>%s",
-            ("error_{0}".format(default_order_by),),
-            output_field=FloatField(),
-        ),
-    ).values(
-        "id",
-        "submission__participant_team",
-        "submission__participant_team__team_name",
-        "submission__participant_team__team_url",
-        "submission__is_baseline",
-        "challenge_phase_split",
-        "result",
-        "error",
-        "filtering_score",
-        "filtering_error",
-        "leaderboard__schema",
-        "submission__submitted_at",
-        "submission__method_name",
-    )
-
-    if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
-        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
-
-    all_banned_participant_team = []
-    for leaderboard_item in leaderboard_data:
-        participant_team_id = leaderboard_item["submission__participant_team"]
-        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
-        all_participants_email_ids = (
-            participant_team.get_all_participants_email()
-        )
-        for participant_email in all_participants_email_ids:
-            if participant_email in all_banned_email_ids:
-                all_banned_participant_team.append(participant_team_id)
-                break
-        if leaderboard_item["error"] is None:
-            leaderboard_item.update(filtering_error=0)
-
-    if challenge_phase_split.show_leaderboard_by_latest_submission:
-        sorted_leaderboard_data = leaderboard_data
-    else:
-        sorted_leaderboard_data = sorted(
-            leaderboard_data,
-            key=lambda k: (
-                float(k["filtering_score"]),
-                float(-k["filtering_error"]),
-            ),
-            reverse=True
-            if challenge_phase_split.is_leaderboard_order_descending
-            else False,
-        )
-
-    distinct_sorted_leaderboard_data = []
-    team_list = []
-    for data in sorted_leaderboard_data:
-        if (
-            data["submission__participant_team__team_name"] in team_list
-            or data["submission__participant_team"]
-            in all_banned_participant_team
-        ):
-            continue
-        elif data["submission__is_baseline"] is True:
-            distinct_sorted_leaderboard_data.append(data)
-        else:
-            distinct_sorted_leaderboard_data.append(data)
-            team_list.append(data["submission__participant_team__team_name"])
-
-    leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
-    for item in distinct_sorted_leaderboard_data:
-        item["result"] = [
-            item["result"][index] for index in leaderboard_labels
-        ]
-        if item["error"] is not None:
-            item["error"] = [
-                item["error"]["error_{0}".format(index)]
-                for index in leaderboard_labels
-            ]
+    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
+    if http_status_code == status.HTTP_400_BAD_REQUEST:
+        return Response(response_data, status=http_status_code)
 
     paginator, result_page = paginated_queryset(
-        distinct_sorted_leaderboard_data,
-        request,
-        pagination_class=StandardResultSetPagination(),
+        response_data, request, pagination_class=StandardResultSetPagination()
     )
     response_data = result_page
     return paginator.get_paginated_response(response_data)
@@ -655,133 +528,31 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         All Leaderboard entry objects in a list
     """
     # check if the challenge exists or not
-    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+    challenge_phase_split = get_challenge_phase_split_model(
+        challenge_phase_split_pk
+    )
 
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
     # Allow access only to challenge host
     if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
-        response_data = {"error": "Sorry, you are not authorized to make this request!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # Get the leaderboard associated with the Challenge Phase Split
-    leaderboard = challenge_phase_split.leaderboard
-
-    # Get the default order by key to rank the entries on the leaderboard
-    try:
-        default_order_by = leaderboard.schema["default_order_by"]
-    except KeyError:
         response_data = {
-            "error": "Sorry, Default filtering key not found in leaderboard schema!"
+            "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # Exclude the submissions done by members of the host team
-    # while populating leaderboard
-    challenge_hosts_emails = (
-        challenge_obj.creator.get_all_challenge_host_email()
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
+        request.user,
+        challenge_obj,
+        challenge_phase_split,
+        only_public_entries=False,
     )
-    is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
-    # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
-    challenge_hosts_emails = (
-        [] if not is_challenge_phase_public else challenge_hosts_emails
-    )
-
-    all_banned_email_ids = challenge_obj.banned_email_ids
-
-    leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails)
-        & Q(submission__is_baseline=False)
-    )
-    # Get all the successful submissions related to the challenge phase split
-    leaderboard_data = leaderboard_data.filter(
-        challenge_phase_split=challenge_phase_split,
-        submission__status=Submission.FINISHED,
-    ).order_by("-created_at")
-
-    leaderboard_data = leaderboard_data.annotate(
-        filtering_score=RawSQL(
-            "result->>%s", (default_order_by,), output_field=FloatField()
-        ),
-        filtering_error=RawSQL(
-            "error->>%s",
-            ("error_{0}".format(default_order_by),),
-            output_field=FloatField(),
-        ),
-    ).values(
-        "id",
-        "submission__participant_team",
-        "submission__participant_team__team_name",
-        "submission__participant_team__team_url",
-        "submission__is_baseline",
-        "challenge_phase_split",
-        "result",
-        "error",
-        "filtering_score",
-        "filtering_error",
-        "leaderboard__schema",
-        "submission__submitted_at",
-        "submission__method_name",
-        "submission__is_public"
-    )
-    all_banned_participant_team = []
-    for leaderboard_item in leaderboard_data:
-        participant_team_id = leaderboard_item["submission__participant_team"]
-        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
-        all_participants_email_ids = (
-            participant_team.get_all_participants_email()
-        )
-        for participant_email in all_participants_email_ids:
-            if participant_email in all_banned_email_ids:
-                all_banned_participant_team.append(participant_team_id)
-                break
-        if leaderboard_item["error"] is None:
-            leaderboard_item.update(filtering_error=0)
-
-    if challenge_phase_split.show_leaderboard_by_latest_submission:
-        sorted_leaderboard_data = leaderboard_data
-    else:
-        sorted_leaderboard_data = sorted(
-            leaderboard_data,
-            key=lambda k: (
-                float(k["filtering_score"]),
-                float(-k["filtering_error"]),
-            ),
-            reverse=True
-            if challenge_phase_split.is_leaderboard_order_descending
-            else False,
-        )
-
-    distinct_sorted_leaderboard_data = []
-    team_list = []
-    for data in sorted_leaderboard_data:
-        if (
-            data["submission__participant_team__team_name"] in team_list
-            or data["submission__participant_team"]
-            in all_banned_participant_team
-        ):
-            continue
-        elif data["submission__is_baseline"] is True:
-            distinct_sorted_leaderboard_data.append(data)
-        else:
-            distinct_sorted_leaderboard_data.append(data)
-            team_list.append(data["submission__participant_team__team_name"])
-
-    leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
-    for item in distinct_sorted_leaderboard_data:
-        item["result"] = [
-            item["result"][index] for index in leaderboard_labels
-        ]
-        if item["error"] is not None:
-            item["error"] = [
-                item["error"]["error_{0}".format(index)]
-                for index in leaderboard_labels
-            ]
+    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
+    if http_status_code == status.HTTP_400_BAD_REQUEST:
+        return Response(response_data, status=http_status_code)
 
     paginator, result_page = paginated_queryset(
-        distinct_sorted_leaderboard_data,
-        request,
-        pagination_class=StandardResultSetPagination(),
+        response_data, request, pagination_class=StandardResultSetPagination()
     )
     response_data = result_page
     return paginator.get_paginated_response(response_data)
@@ -1714,3 +1485,47 @@ def get_bearer_token(request, challenge_pk):
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_github_badge_data(
+    request, challenge_phase_split_pk, participant_team_pk
+):
+    """
+    Add API to get data for dynamically generating github badges
+    Ref: https://shields.io/endpoint
+    Arguments:
+        request {HttpRequest} -- The request object
+        phase_pk {[int]} -- Challenge phase primary key
+        participant_team_pk {[int]} -- Participant team primary key
+
+    Returns:
+        {dict} -- A dict which contains keys schemaVersion, label, message and color of badge
+    """
+    challenge_phase_split = get_challenge_phase_split_model(
+        challenge_phase_split_pk
+    )
+    challenge_obj = challenge_phase_split.challenge_phase.challenge
+    data = {"schemaVersion": 1, "label": "EvalAI", "color": "blue"}
+
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
+        request.user,
+        challenge_obj,
+        challenge_phase_split,
+        only_public_entries=True,
+    )
+    if http_status_code == status.HTTP_400_BAD_REQUEST:
+        return Response(response_data, status=http_status_code)
+
+    for idx, team_data in enumerate(response_data):
+        if team_data["submission__participant_team"] == int(
+            participant_team_pk
+        ):
+            data["message"] = f"{challenge_obj.title} Rank #{idx+1}"
+            break
+        else:
+            data["message"] = f"{challenge_obj.title}"
+    return Response(data, status=http_status_code)
