@@ -2,9 +2,11 @@ import logging
 import os
 import random
 import string
+import yaml
 
 from botocore.exceptions import ClientError
 from django.conf import settings
+from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
 from base.utils import get_boto3_client
@@ -71,18 +73,6 @@ VPC_DICT = {
     ),
 }
 
-EKS_CLUSTER_ROLE_ARN = os.environ.get(
-    "EKS_CLUSTER_ROLE_ARN",
-    "arn:aws:iam::{}:role/evalaieksclusterRole".format(
-        aws_keys["AWS_ACCOUNT_ID"]
-    ),
-)
-EKS_NODEGROUP_ROLE_ARN = os.environ.get(
-    "EKS_NODEGROUP_ROLE_ARN",
-    "arn:aws:iam::{}:role/evalaieksnodegroupRole".format(
-        aws_keys["AWS_ACCOUNT_ID"]
-    ),
-)
 
 task_definition = """
 {{
@@ -717,6 +707,7 @@ def create_eks_nodegroup(instance, cluster_name):
     """
     nodegroup_name = "{}-nodegroup".format(instance.title.replace(" ", "-"))
     client = get_boto3_client("eks", aws_keys)
+    # TODO: Move the hardcoded cluster configuration such as the instance_type, subnets, AMI to challenge configuration later.
     try:
         response = client.create_nodegroup(
             clusterName=cluster_name,
@@ -726,40 +717,103 @@ def create_eks_nodegroup(instance, cluster_name):
             subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
             instanceTypes=["g4dn.xlarge", ],
             amiType="AL2_x86_64_GPU",
-            nodeRole=EKS_NODEGROUP_ROLE_ARN,
+            nodeRole=settings.EKS_NODEGROUP_ROLE_ARN,
         )
     except ClientError as e:
         logger.exception(e)
+        return response
+    waiter = client.get_waiter("nodegroup_active")
+    waiter.wait(name=nodegroup_name)
+    # create_eks_deployment()
 
 
 def create_eks_cluster(sender, instance, field_name, **kwargs):
     """
     Called when Challenge is approved by the EvalAI admin
     """
-    cluster = ""
+    from .models import ChallengeEvaluationCluster
+
     cluster_name = "{}-cluster".format(instance.title.replace(" ", "-"))
     if instance.approved_by_admin:
         client = get_boto3_client("eks", aws_keys)
         try:
             cluster = client.describe_cluster(
-                name='cluster_name'
+                name=cluster_name
             )
         except ClientError as e:
             logger.exception(e)
-        if not cluster:
-            try:
-                response = client.create_cluster(
-                    name=cluster_name,
-                    version="1.15",
-                    roleArn=EKS_CLUSTER_ROLE_ARN,
-                    resourcesVpcConfig={
-                        "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
-                        "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"], ],
-                    },
-                )
-                waiter = client.get_waiter("cluster_active")
-                waiter.wait(name=cluster_name)
-                # Creating nodegroup
-                create_eks_nodegroup(instance, cluster_name)
-            except ClientError as e:
-                logger.exception(e)
+            return cluster
+
+        try:
+            response = client.create_cluster(
+                name=cluster_name,
+                version="1.15",
+                roleArn=settings.EKS_CLUSTER_ROLE_ARN,
+                resourcesVpcConfig={
+                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"], ],
+                },
+            )
+            waiter = client.get_waiter("cluster_active")
+            waiter.wait(name=cluster_name)
+            # creating kubeconfig
+            cluster = client.describe_cluster(
+                name=cluster_name
+            )
+            cluster_cert = cluster["cluster"]["certificateAuthority"]["data"]
+            cluster_ep = cluster["cluster"]["endpoint"]
+            cluster_config = {
+                "apiVersion": "v1",
+                "kind": "Config",
+                "clusters": [
+                    {
+                        "cluster": {
+                            "server": str(cluster_ep),
+                            "certificate-authority-data": str(cluster_cert)
+                        },
+                        "name": "kubernetes"
+                    }
+                ],
+                "contexts": [
+                    {
+                        "context": {
+                            "cluster": "kubernetes",
+                            "user": "aws"
+                        },
+                        "name": "aws"
+                    }
+                ],
+                "current-context": "aws",
+                "preferences": {},
+                "users": [
+                    {
+                        "name": "aws",
+                        "user": {
+                            "exec": {
+                                "apiVersion": "client.authentication.k8s.io/v1alpha1",
+                                "command": "heptio-authenticator-aws",
+                                "args": [
+                                    "token", "-i", cluster_name
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+
+            # Write in YAML.
+            config_text = yaml.dump(cluster_config, default_flow_style=False)
+            config_file = NamedTemporaryFile(delete=True)
+            config_file.write(config_text)
+            # Add challenge cluster details
+            ChallengeEvaluationCluster.objects.create(
+                challenge=instance.id,
+                name=cluster_name,
+                cluster_yaml=config_file,
+                kube_config=config_file
+            )
+            # Creating nodegroup
+            create_eks_nodegroup(instance, cluster_name)
+        except ClientError as e:
+            logger.exception(e)
+            return response
