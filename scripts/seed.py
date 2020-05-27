@@ -144,6 +144,11 @@ def create_challenge(title, start_date, end_date, host_team):
     year = datetime.date.today().year
     slug = '{t}-{y}'.format(t=title, y=year)
     slug = slug.lower().replace(" ", "-")
+    participant_host_team = ParticipantTeam.objects.create(
+        team_name=host_team.team_name,
+        created_by=host_team.created_by,
+    )
+    Participant.objects.create(user=host_team.created_by, team=participant_host_team, status="Accepted")
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
@@ -162,7 +167,7 @@ def create_challenge(title, start_date, end_date, host_team):
         start_date=start_date,
         end_date=end_date,
         queue=queue,
-    )
+    ).participant_teams.add(participant_host_team)
     print("Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
                                                                                             host_team.team_name,
                                                                                             start_date, end_date))
