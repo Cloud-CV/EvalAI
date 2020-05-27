@@ -372,8 +372,7 @@ def change_submission_data_and_visibility(
             when_made_public = datetime.datetime.now()
             request.data["when_made_public"] = when_made_public
 
-        try:
-            submissions_already_public = Submission.objects.get(
+            submissions_already_public = Submission.objects.filter(
                 is_public=True,
                 participant_team=participant_team,
                 challenge_phase=challenge_phase,
@@ -382,12 +381,12 @@ def change_submission_data_and_visibility(
             if (
                 challenge_phase.is_restricted_to_select_one_submission
                 and is_public
-                and submissions_already_public
+                and submissions_already_public.count() == 1
             ):
-                submissions_already_public.is_public = False
-                submissions_already_public.save()
-        except Submission.DoesNotExist:
-            pass
+                # Assuming only 1 submission would be public
+                for submission_already_public in submissions_already_public:
+                    submission_already_public.is_public = False
+                    submission_already_public.save()
     except KeyError:
         pass
 
