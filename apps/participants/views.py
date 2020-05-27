@@ -20,7 +20,7 @@ from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
     get_challenge_model,
     is_user_in_allowed_email_domains,
-    is_user_in_blocked_email_domains
+    is_user_in_blocked_email_domains,
 )
 from hosts.utils import is_user_a_host_of_challenge
 
@@ -36,6 +36,8 @@ from .serializers import (
 from .utils import (
     get_list_of_challenges_for_participant_team,
     get_list_of_challenges_participated_by_a_user,
+    get_participant_team_of_user_for_a_challenge,
+    has_user_participated_in_challenge,
     is_user_part_of_participant_team,
 )
 
@@ -53,7 +55,9 @@ def participant_team_list(request):
         participant_teams = ParticipantTeam.objects.filter(
             id__in=participant_teams_id
         ).order_by("-id")
-        paginator, result_page = team_paginated_queryset(participant_teams, request)
+        paginator, result_page = team_paginated_queryset(
+            participant_teams, request
+        )
         serializer = ParticipantTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -208,13 +212,18 @@ def invite_participant_to_team(request, pk):
 
             if len(challenge.banned_email_ids) > 0:
                 # Check if team participants emails are banned
-                for participant_email in participant_team.get_all_participants_email():
+                for (
+                    participant_email
+                ) in participant_team.get_all_participants_email():
                     if participant_email in challenge.banned_email_ids:
                         message = "You cannot invite as you're a part of {} team and it has been banned "
                         "from this challenge. Please contact the challenge host."
-                        response_data = {"error": message.format(participant_team.team_name)}
+                        response_data = {
+                            "error": message.format(participant_team.team_name)
+                        }
                         return Response(
-                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                            response_data,
+                            status=status.HTTP_406_NOT_ACCEPTABLE,
                         )
 
                 # Check if invited user is banned
@@ -386,3 +395,33 @@ def remove_self_from_participant_team(request, participant_team_pk):
         if participants.count() == 0:
             participant_team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_participant_team_details_for_challenge(request, challenge_pk):
+    """
+    API to get the participant team detail
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+
+    Returns:
+        {dict} -- Participant team detail that has participated in the challenge
+    """
+
+    challenge = get_challenge_model(challenge_pk)
+    if has_user_participated_in_challenge(request.user, challenge_pk):
+        participant_team = get_participant_team_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+        serializer = ParticipantTeamSerializer(participant_team)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": f"The user {request.user.username} has not participanted in {challenge.title}"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)

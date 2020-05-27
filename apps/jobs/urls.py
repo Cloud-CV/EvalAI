@@ -75,4 +75,9 @@ urlpatterns = [
         views.get_bearer_token,
         name="get_bearer_token",
     ),
+    url(
+        r"^phase_splits/(?P<challenge_phase_split_pk>[0-9]+)/teams/(?P<participant_team_pk>[0-9]+)/github_badge/$",
+        views.get_github_badge_data,
+        name="get_github_badge_data",
+    ),
 ]
