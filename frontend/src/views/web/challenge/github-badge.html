@@ -1,0 +1,71 @@
+<section class="ev-md-container text-center rm-overflow-y github-badge-card">
+    <div class="row">
+        <div class="col s12 m12">
+            <div class="ev-card-body pd-20 font-size-14">
+            <div class="row">
+                <div class="col s12 m12 l12">
+                    <div class="col s12 m2 l2">
+                        <div class="badge-label">
+                            Badge Preview
+                        </div>
+                    </div>
+                    <div class="col s12 m10 l10">
+                        <div class="badge-preview">
+                            <!-- svg for github badge -->
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="210" height="20">
+                            <link xmlns="" type="text/css" id="dark-mode" rel="stylesheet" href=""/><style xmlns="" type="text/css" id="dark-mode-custom-style"/>
+                            <linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>
+                            <clipPath id="r"><rect width="210" height="20" rx="3" fill="#fff"/></clipPath>
+                            <g clip-path="url(#r)"><rect width="45" height="20" fill="#555"/><rect x="45" width="165" height="20" fill="#007ec6"/>
+                            <rect width="210" height="20" fill="url(#s)"/></g>
+                            <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
+                            <text x="235" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="350">EvalAI</text>
+                            <text x="235" y="140" transform="scale(.1)" textLength="350">EvalAI</text>
+                            <text x="1265" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="1550">{{challenge.githubData.message}}</text>
+                            <text x="1265" y="140" transform="scale(.1)" textLength="1550">{{challenge.githubData.message}}</text></g></svg> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m12 l12">
+                    <div class="col s12 m2 l2">
+                        <div class="markdown-label">
+                            Markdown
+                        </div>
+                    </div>
+                    <div class="col s12 m10 l10">
+                        <div class="markdown-url">
+                            [![EvalAI](https://img.shields.io/endpoint?url={{challenge.githubBadgeURL}})]({{challenge.leaderboardEntryURL}})
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m12 l12">
+                    <div class="col s12 m2 l2">
+                        <div class="url-label">
+                            URL
+                        </div>
+                    </div>
+                    <div class="col s12 m10 l10">
+                        <div class="url">
+                            <a class="blue-text" target="_blank" href="https://img.shields.io/endpoint?url={{challenge.githubBadgeURL}}">
+                                https://img.shields.io/endpoint?url={{challenge.githubBadgeURL}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="align-right text-med-black w-400">
+                <ul class="inline-list pointer">
+                    <li>
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+                            ng-click="challenge.hideDialog()">Close
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

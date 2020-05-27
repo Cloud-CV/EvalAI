@@ -1488,11 +1488,9 @@ def get_bearer_token(request, challenge_pk):
 
 
 @api_view(["GET"])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@throttle_classes([AnonRateThrottle])
 def get_github_badge_data(
-    request, challenge_phase_split_pk, participant_team_pk
+    request, challenge_phase_split_pk, participant_team_name
 ):
     """
     Add API to get data for dynamically generating github badges
@@ -1508,9 +1506,18 @@ def get_github_badge_data(
     challenge_phase_split = get_challenge_phase_split_model(
         challenge_phase_split_pk
     )
+    try:
+        participant_team = ParticipantTeam.objects.get(
+            team_name=participant_team_name
+        )
+    except ParticipantTeam.DoesNotExist:
+        response_data = {
+            "error": f"Participant Team {participant_team_name} does not exist"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     data = {"schemaVersion": 1, "label": "EvalAI", "color": "blue"}
-
     response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
         request.user,
         challenge_obj,
@@ -1521,10 +1528,11 @@ def get_github_badge_data(
         return Response(response_data, status=http_status_code)
 
     for idx, team_data in enumerate(response_data):
-        if team_data["submission__participant_team"] == int(
-            participant_team_pk
+        if (
+            team_data["submission__participant_team__team_name"]
+            == participant_team.team_name
         ):
-            data["message"] = f"{challenge_obj.title} Rank #{idx+1}"
+            data["message"] = f"{challenge_obj.title} Rank #{idx + 1}"
             break
         else:
             data["message"] = f"{challenge_obj.title}"
