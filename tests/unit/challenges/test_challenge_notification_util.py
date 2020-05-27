@@ -1,6 +1,4 @@
-import boto3
 import mock
-import os
 
 from datetime import timedelta
 from moto import mock_ecs
@@ -8,7 +6,6 @@ from moto import mock_ecs
 from allauth.account.models import EmailAddress
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from rest_framework.test import APITestCase, APIClient
 
