@@ -122,8 +122,6 @@ class TestSeeding(BaseAPITestClass):
     def test_if_seeding_works(self):
         seed.run(1)
         self.assertEqual(Challenge.objects.all().count(), 1)
-        seed.run(2)
-        self.assertEqual(Challenge.objects.all().count(), 2)
 
 
 class TestSlackNotification(BaseAPITestClass):
