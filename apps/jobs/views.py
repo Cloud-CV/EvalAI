@@ -383,10 +383,21 @@ def change_submission_data_and_visibility(
                 and is_public
                 and submissions_already_public.count() == 1
             ):
-                # Assuming only 1 submission would be public
-                for submission_already_public in submissions_already_public:
-                    submission_already_public.is_public = False
-                    submission_already_public.save()
+                # Case when the phase is restricted to make only one submission as public
+                submission_serializer = SubmissionSerializer(
+                    submissions_already_public[0],
+                    data={
+                        "is_public": False
+                    },
+                    context={
+                        "participant_team": participant_team,
+                        "challenge_phase": challenge_phase,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+                if submission_serializer.is_valid():
+                    submission_serializer.save()
     except KeyError:
         pass
 
