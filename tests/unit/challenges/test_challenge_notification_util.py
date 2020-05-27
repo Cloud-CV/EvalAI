@@ -3,9 +3,7 @@ import mock
 import os
 
 from datetime import timedelta
-from http import HTTPStatus
 from moto import mock_ecs
-from unittest import TestCase
 
 from allauth.account.models import EmailAddress
 from django.conf import settings
@@ -15,14 +13,11 @@ from django.utils import timezone
 from rest_framework.test import APITestCase, APIClient
 
 from hosts.models import ChallengeHost, ChallengeHostTeam
-import challenges.aws_utils as aws_utils
 from challenges.models import Challenge, ChallengePhase
 
 
 class BaseTestClass(APITestCase):
     def setUp(self):
-        aws_utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
-
         self.client = APIClient(enforce_csrf_checks=True)
 
         self.user = User.objects.create(
@@ -90,7 +85,6 @@ class BaseTestClass(APITestCase):
             )
 
         self.client.force_authenticate(user=self.user)
-        self.ecs_client = boto3.client("ecs", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
 
 
 @mock_ecs
@@ -99,12 +93,12 @@ class TestChallengeStartNotifier(BaseTestClass):
         super(TestChallengeStartNotifier, self).setUp()
 
     @mock.patch("challenges.challenge_notification_util.send_email")
-    @mock.patch("challenges.aws_utils.start_workers")
+    @mock.patch("challenges.challenge_notification_util.start_workers")
     def test_feature(self, mock_start_workers, mock_send_email):
         challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, self.challenge.id)
         host_emails = [self.user.email]
         template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("CHALLENGE_APPROVAL_EMAIL")
-        template_data = {"CHALLENGE_NAME": self.challenge.title, "CHALLENGE_URL":challenge_url}
+        template_data = {"CHALLENGE_NAME": self.challenge.title, "CHALLENGE_URL": challenge_url}
 
         calls = []
         for email in host_emails:
@@ -117,9 +111,10 @@ class TestChallengeStartNotifier(BaseTestClass):
                 )
             )
 
+        mock_start_workers.return_value = {"count": 1, "failures": []}
+
         self.challenge.approved_by_admin = True
         self.challenge.save()
 
         mock_start_workers.assert_called_with([self.challenge])
-        mock_send_email.assert_equal(mock_send_email.call_args_list, calls)
-
+        self.assertEqual(mock_send_email.call_args_list, calls)
