@@ -439,10 +439,6 @@ def get_challenges_by_title(request, challenge_title):
             challenge, context={"request": request}
         )
         response_data.append(serializer.data)
-    if len(response_data) == 0:
-        exception_data = {"error": "Challenge with the title {} does not exist!".format(challenge_title)}
-
-        return Response(exception_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     return Response(response_data, status=status.HTTP_200_OK)
 
 

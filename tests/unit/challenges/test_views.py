@@ -1359,7 +1359,7 @@ class GetChallengeByTitle(BaseAPITestClass):
             "challenges:get_challenges_by_title",
             kwargs={"challenge_title": 'fakechallenge'},
         )
-        expected = {"error": "Challenge with the title fakechallenge does not exist!"}
+        expected = []
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
