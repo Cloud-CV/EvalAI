@@ -1362,7 +1362,7 @@ class GetChallengeByTitle(BaseAPITestClass):
         expected = []
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenges_by_title_when_single_challenge_matches_query(self):
         self.url = reverse_lazy(
