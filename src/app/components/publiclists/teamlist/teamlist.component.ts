@@ -125,6 +125,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   selectedTeam: any = null;
 
   /**
+   * Currently clicked team
+   */
+  currentlyClickedTeam: any = null;
+
+  /**
    * challenge object
    */
   challenge: any;
@@ -304,6 +309,17 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     const SELF = this;
     const selectTeam = (team) => {
       SELF.selectedTeam = team;
+    };
+    return selectTeam;
+  }
+
+  /**
+   * Unselect a team.
+   */
+  deselectTeamWrapper() {
+    const SELF = this;
+    const selectTeam = (team) => {
+      SELF.currentlyClickedTeam = team;
       SELF.unselectOtherTeams(SELF);
     };
     return selectTeam;
@@ -316,7 +332,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     const temp = self.allTeams.slice();
     for (let i = 0; i < temp.length; i++) {
       temp[i]['isSelected'] = false;
-      if (self.selectedTeam['id'] === temp[i]['id']) {
+      if (self.currentlyClickedTeam['id'] === temp[i]['id']) {
         temp[i]['isSelected'] = true;
       }
     }
@@ -399,10 +415,12 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   editTeamWrapper() {
     const SELF = this;
+    let TeamUrl;
     const editTeam = (team) => {
+    TeamUrl = (this.isHost) ? SELF.endpointsService.hostTeamURL(team) : SELF.endpointsService.participantTeamURL(team);
       SELF.apiCall = (params) => {
         const BODY = JSON.stringify(params);
-        SELF.apiService.patchUrl(SELF.endpointsService.participantTeamURL(team), BODY).subscribe(
+        SELF.apiService.patchUrl(TeamUrl, BODY).subscribe(
         data => {
           // Success Message in data.message
           SELF.globalService.showToast('success', 'Team Updated', 5);

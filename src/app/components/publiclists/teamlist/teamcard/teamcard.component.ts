@@ -55,6 +55,11 @@ export class TeamcardComponent implements OnInit, OnChanges {
   @Output() selectTeamCard = new EventEmitter<any>();
 
   /**
+   * Deselect team event
+   */
+  @Output() deselectTeamCard = new EventEmitter<any>();
+
+  /**
    * Edit team event
    */
   @Output() editTeamCard = new EventEmitter<any>();
@@ -126,15 +131,21 @@ export class TeamcardComponent implements OnInit, OnChanges {
   }
 
   /**
+   * Select a team content toggle.
+   */
+  selectTeamContentToggle() {
+    this.isSelected = !this.isSelected;
+    this.team['isSelected'] = this.isSelected;
+    this.deselectTeamCard.emit(this.team);
+  }
+
+  /**
    * Select a team toggle.
    */
-  selectToggle() {
-    if ((this.isHost && !this.isSelected) || !this.isHost) {
+  selectTeamToggle() {
+    if (this.isHost || this.isOnChallengePage) {
       this.isSelected = !this.isSelected;
-      this.team['isSelected'] = this.isSelected;
-      if (this.isSelected && (this.isHost || this.isOnChallengePage)) {
-        this.selectTeam();
-      }
+      this.selectTeam();
     }
   }
 

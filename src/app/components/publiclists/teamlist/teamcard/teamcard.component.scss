@@ -2,24 +2,17 @@
 @import './mixins.scss';
 
 .team-card-container {
-  font-size: $fs-16;
-  color: $gray-darker;
-  font-weight: $fw-light;
-  overflow: auto;
+  font-size: $fs-14;
   position: relative;
-  text-align: center;
-  padding-bottom: 20px;
   .team-content {
     cursor: pointer;
     @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-    width: 90%;
+    width: 100%;
     display: inline-block;
     position: relative;
     background: white;
-    padding: 15px;
-    border-radius: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    padding: 6px 5px;
+    margin-bottom: 36px;
     z-index: 5;
     overflow: auto;
     text-align: left;
@@ -30,22 +23,27 @@
         color:$gray-dark;
         margin-top:15px;
       }
-      font-size: $fs-24;
+      font-size: $fs-16;
       vertical-align:top;
-      margin-top:10px;
+      margin-top:15px;
     }
     .title {
       &.toptitle {
         margin-bottom: 10px;
       }
+      color: $dark-black;
       display:inline-block;
       font-weight: $fw-bolder;
     }
     .team-details {
       display: inline-block;
-      margin: 0px 10px 0px 10px;
-      max-width: 185px;
+      margin: 2px 10px 0px 10px;
+      max-width: 300px;
       overflow:hidden;
+    }
+    .team-detail {
+      color: rgb(22, 21, 21);
+      font-weight: 400;
     }
     .team-icons {
       display: inline-block;
@@ -70,18 +68,22 @@
     text-align: left;
     margin: 0 auto;
     margin-top: -25px;
-    margin-bottom: 10px;
-    width: 90%;
+    width: 100%;
     position: relative;
     overflow: hidden;
     border-radius: 0px 0px 5px 5px;
     max-height: 0;
     transition: all 0.5s ease;
     .title {
+      color: black;
       margin-bottom: 10px;
       font-weight: $fw-bolder;
     }
     background:$gray-lighter;
+  }
+  .team-members .team-detail {
+    color: rgb(22, 21, 21);
+    font-weight: 400;
   }
   &.selected {
     &.expand, &.noexpand {
@@ -89,7 +91,7 @@
         @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
         max-height: 300px;
         transition: all 0.5s ease;
-        padding: 20px 15px 15px 20px;
+        padding: 20px 15px 15px 40px;
       }
     }
     &.noexpand {
@@ -111,24 +113,42 @@
         text-align: center;
         display: block;
         float: unset;
+        font-size: 100px;
       }
     }
     .team-members {
-      width: 95%;
+      width: 100%;
     }
   }
 }
-
 
 .selected {
   height: unset !important;
   border-bottom-style: none !important;
 }
 
+.title.toptitle {
+  margin-bottom: 0px !important;
+}
+
+.fa-users {
+  padding: 0px 3px 0px 8px;
+}
+
+#TeamToggleButton {
+  margin-bottom: 13.4px;
+}
+
+.fa-user-plus, .fa-pencil, .fa-trash {
+  margin: 0px;
+  padding-left: 10px;
+}
+
 .member-class{
   display: flex;
   margin: 2% 0%;
 }
+
 .trash-icon {
   margin-left: 80%;
   position: absolute;

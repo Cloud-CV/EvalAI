@@ -91,10 +91,16 @@ export class EndpointsService {
   }
 
   /**
-   * Edit Team Name
+   * Edit Participant Team Name
    */
   participantTeamURL(teamId) {
     return `${this.participants}participant_team/${teamId}`;
+  }
+/**
+   * Edit Host Team Name
+   */
+  hostTeamURL(teamId) {
+    return `${this.hosts}challenge_host_team/${teamId}`;
   }
 
   /**
