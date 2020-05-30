@@ -3,7 +3,7 @@ sudo: false
 services:
 - xvfb
 python:
-- '3.6'
+- '3.7.5'
 addons:
   postgresql: '10'
   apt:
