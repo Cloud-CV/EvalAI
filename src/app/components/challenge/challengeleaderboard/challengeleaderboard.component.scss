@@ -92,7 +92,7 @@
   background-color: rgb(167, 163, 163);
   border: 2px solid rgb(167, 163, 163);
   border-radius: 40px;
-  
+
   .btn-switch-circle {
       position: absolute;
       top: 0;
@@ -108,7 +108,7 @@
 .btn-switch--on {
   background-color: #ffaf4b;
   border: 2px solid #ffaf4b;;
-  
+
   .btn-switch-circle--on {
       left: auto;
       right: 0;
@@ -118,4 +118,23 @@
 .sort-leaderboard-switch {
 	vertical-align: middle;
 	display: inline-block;
+}
+
+.complete-leaderboard {
+  margin-right: 2%;
+}
+
+.leaderboard-description {
+  color:  $yellow !important;
+  border-radius: 2px !important;
+  min-height: 25px !important;
+}
+
+.leaderboard-description-span {
+  margin-left: 2%;
+}
+
+.complete-leaderboard-text {
+  font-size: $fs-16;
+  color: $gray-darker;
 }

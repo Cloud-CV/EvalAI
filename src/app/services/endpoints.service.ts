@@ -209,6 +209,14 @@ export class EndpointsService {
   }
 
   /**
+   * Challenge Complete Leaderboard fetch for challenge host
+   * @param phaseSplitId  phase split id
+   */
+  challengeCompleteLeaderboardURL(phaseSplitId) {
+    return `${this.jobs}phase_split/${phaseSplitId}/public_leaderboard_all_entries/?page_size=1000`;
+  }
+
+  /**
    * Returns or Updates challenge phase split
    * @param phaseSplitId  phase split id
    */
