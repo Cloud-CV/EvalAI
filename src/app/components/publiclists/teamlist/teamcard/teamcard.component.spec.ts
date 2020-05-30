@@ -7,6 +7,8 @@ import { ApiService } from '../../../../services/api.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientModule } from '@angular/common/http';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { AuthService } from '../../../../services/auth.service';
+import { EndpointsService } from '../../../../services/endpoints.service';
 
 describe('TeamcardComponent', () => {
   let component: TeamcardComponent;
@@ -15,7 +17,7 @@ describe('TeamcardComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ TeamcardComponent ],
-      providers: [ GlobalService, ApiService ],
+      providers: [ GlobalService, ApiService, AuthService, EndpointsService ],
       imports: [ RouterTestingModule, HttpClientModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
@@ -29,6 +31,7 @@ describe('TeamcardComponent', () => {
     component.selected = false;
     component.isOnChallengePage = false;
     component.deleteTeamCard = new EventEmitter<any>();
+    component.deleteMemberCard = new EventEmitter<any>();
     component.selectTeamCard = new EventEmitter<any>();
     fixture.detectChanges();
   });
