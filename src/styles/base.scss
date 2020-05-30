@@ -107,16 +107,6 @@ body {
   height: 3px;
 }
 
-::-webkit-scrollbar-track-piece {
-  background-color: #252833;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:horizontal {
-  background-color: #adb4d0;
-  border-radius: 10px;
-}
-
 ::-webkit-scrollbar-thumb:vertical {
   background-color: #adb4d0;
   border-radius: 10px;
@@ -1074,8 +1064,8 @@ ul {
 /* media queries for rocket container */
 @media only screen and (max-width: $screen-sm-md) {
 
-  .rocket-container {	
-    display:none;	
+  .rocket-container {
+    display:none;
   }
 }
 
