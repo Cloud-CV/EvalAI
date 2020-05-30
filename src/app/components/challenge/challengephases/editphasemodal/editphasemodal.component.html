@@ -59,6 +59,8 @@
             [name]="'max_submissions_per_day'" [isRequired]="true"
             [label]="'max_submissions_per_day'" [placeholder]="''"
             [type]="'number'" [value]="maxSubmissionsPerDay" #formmodal></app-input>
+            <div class="editor-validation-message fs-12"
+              *ngIf="isPerDaySubmissionFieldMessage">{{perDaySubmisionValidationMessage}}</div>
         </div>
       </div>
 
@@ -70,6 +72,8 @@
             [name]="'max_submissions'" [isRequired]="true"
             [label]="'max_submissions_per_month'" [placeholder]="''"
             [type]="'number'" [value]="maxSubmissionsPerMonth" #formmodal></app-input>
+            <div class="editor-validation-message fs-12"
+              *ngIf="isPerMonthSubmissionFieldMessage">{{PerMonthSubmissionValidationMessage}}</div>
         </div>
       </div>
 
