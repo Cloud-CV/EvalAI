@@ -8,7 +8,7 @@
           <ul class="collapsible" data-collapsible="accordion">
             <app-teamcard *ngFor="let team of filteredTeams"
                           [team]="team" [selected]="team['isSelected']" [isOnChallengePage]="isOnChallengePage"
-                          (deleteTeamCard)="deleteTeamWrapper()($event)" (editTeamCard)="editTeamWrapper()($event)" (addMembersTeamCard)="addMembersToTeamWrapper()($event)"
+                          (deleteTeamCard)="deleteTeamWrapper()($event)" (deleteMemberCard)="deleteTeamMemberWrapper()($event)" (editTeamCard)="editTeamWrapper()($event)" (addMembersTeamCard)="addMembersToTeamWrapper()($event)"
             (selectTeamCard)="selectTeamWrapper()($event)">
             </app-teamcard>
           </ul>

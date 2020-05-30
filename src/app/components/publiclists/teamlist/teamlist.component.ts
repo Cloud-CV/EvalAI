@@ -115,6 +115,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   deleteTeamsPath: any;
 
   /**
+   * Delete member URL
+   */
+  deleteMembersPath: any;
+
+  /**
    * Currently selected team
    */
   selectedTeam: any = null;
@@ -227,6 +232,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.fetchTeamsPath = 'hosts/challenge_host_team';
       this.createTeamsPath = 'hosts/create_challenge_host_team';
       this.deleteTeamsPath = 'hosts/remove_self_from_challenge_host';
+      this.deleteMembersPath = 'hosts/challenge_host_team/<team_id>/challenge_host/';
       this.fetchMyTeams(this.fetchTeamsPath);
       this.teamCreateTitle = 'Create a New Team';
       this.teamSelectTitle = 'Select a Challenge Host Team';
@@ -239,6 +245,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.fetchTeamsPath = 'participants/participant_team';
       this.createTeamsPath = this.fetchTeamsPath;
       this.deleteTeamsPath = 'participants/remove_self_from_participant_team';
+      this.deleteMembersPath = 'participants/participant_team/<team_id>/participant/';
       this.fetchMyTeams(this.fetchTeamsPath);
       this.teamCreateTitle = 'Create a New Participant Team';
       this.teamSelectTitle = 'My Existing Participant Teams';
@@ -565,4 +572,39 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     };
     this.globalService.showTermsAndConditionsModal(PARAMS);
   }
+
+  /**
+   * Display confirm dialog before deleting a team member.
+   */
+  deleteTeamMemberWrapper() {
+    const SELF = this;
+    const deleteTeamMember = (team) => {
+      const deleteUrl = SELF.deleteMembersPath.replace('<team_id>', team.teamId);
+      SELF.apiCall = (params) => {
+        SELF.apiService.deleteUrl(deleteUrl + team.participantId).subscribe(
+        data => {
+          // Success Message in data.message
+          SELF.globalService.showToast('success', 'Member was removed from the team!', 5);
+          SELF.fetchMyTeams(SELF.fetchTeamsPath);
+          SELF.selectedTeam = null;
+        },
+        err => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+        );
+      };
+      const PARAMS = {
+        title: 'Would you like to remove this member ?',
+        content: 'Note: This action will remove this member from the team.',
+        confirm: 'Yes',
+        deny: 'Cancel',
+        confirmCallback: SELF.apiCall
+      };
+      SELF.globalService.showConfirm(PARAMS);
+      return false;
+    };
+    return deleteTeamMember;
+  }
+
 }
