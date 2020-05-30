@@ -135,6 +135,7 @@ export class ChallengeService {
     });
     SELF.fetchPhases(id);
     SELF.fetchPhaseSplits(id);
+    SELF.changeChallengeHostStatus(false);
     this.apiService.getUrl(API_PATH).subscribe(
       data => {
         if (data['id'] === parseInt(id, 10)) {
