@@ -65,9 +65,29 @@ export class EditphasemodalComponent implements OnInit {
   isEditorFieldMessage = false;
 
   /**
+   * If per day maximum submission error message
+   */
+  isPerDaySubmissionFieldMessage = false;
+
+  /**
+   * If per month maximum submission error message
+   */
+  isPerMonthSubmissionFieldMessage = false;
+
+  /**
    * Editor validation message
    */
   editorValidationMessage = '';
+
+  /**
+   * per day submission validation message
+   */
+  perDaySubmisionValidationMessage = '';
+
+  /**
+   * Editor validation message
+   */
+  PerMonthSubmissionValidationMessage = '';
 
   /**
    * Modal accept button
@@ -165,6 +185,17 @@ export class EditphasemodalComponent implements OnInit {
    * Form Validate function.
    */
   formValidate() {
+    this.formComponents.map(val => {
+      if (val.label === 'max_submissions_per_day') {
+        this.maxSubmissionsPerDay = parseInt(val.value, 10);
+      }
+      if (val.label === 'max_submissions_per_month') {
+        this.maxSubmissionsPerMonth = parseInt(val.value, 10);
+      }
+      if (val.label === 'max_submissions') {
+        this.maxSubmissions = parseInt(val.value, 10);
+      }
+    });
     if (this.formComponents.length > 0) {
       this.globalService.formValidate(this.formComponents, this.confirmed, this);
     } else {
@@ -180,6 +211,18 @@ export class EditphasemodalComponent implements OnInit {
       self.denyCallback();
       self.isEditorFieldMessage = true;
       self.editorValidationMessage = 'This field cannot be empty!';
+      return;
+    }
+    if (self.maxSubmissionsPerDay > self.maxSubmissionsPerMonth) {
+      self.denyCallback();
+      self.isPerDaySubmissionFieldMessage = true;
+      self.perDaySubmisionValidationMessage = 'Max number of per day submission cannot be greater than max number of per month submissions';
+      return;
+    }
+    if (self.maxSubmissionsPerMonth > self.maxSubmissions) {
+      self.denyCallback();
+      self.  isPerMonthSubmissionFieldMessage = true;
+      self.PerMonthSubmissionValidationMessage = 'Max number of per month submissions cannot be greater than max total submissions';
       return;
     }
     const PARAMS = self.globalService.formFields(self.formComponents);
