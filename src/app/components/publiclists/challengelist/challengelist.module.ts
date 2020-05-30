@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MatTabsModule } from '@angular/material';
 
 // import component
 import { ChallengecardComponent } from './challengecard/challengecard.component';
@@ -23,6 +24,7 @@ import { SharedModule } from '../../../shared/shared.module';
   imports: [
     CommonModule,
     RouterModule,
+    MatTabsModule,
     SharedModule
   ],
   exports: [
