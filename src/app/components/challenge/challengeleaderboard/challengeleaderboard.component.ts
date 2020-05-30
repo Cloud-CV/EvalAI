@@ -54,6 +54,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   phases = [];
 
   /**
+   * Private phases list
+   */
+  showPrivateIds = [];
+
+  /**
    * Phase split list
    */
   phaseSplits = [];
@@ -99,6 +104,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   showLeaderboardByLatest = false;
 
   /**
+   * Current state of whether complete leaderboard
+   */
+  getAllEntries = false;
+
+  /**
+   * Current state of whether private leaderboard
+   */
+  showLeaderboardToggle = true;
+
+  /**
    * Sort leaderboard based on this column
    */
   sortColumn = 'rank';
@@ -107,6 +122,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    * Text option for leadeboard sort
    */
   sortLeaderboardTextOption: string;
+
+  /**
+   * Text option for complete leadeboard
+   */
+  getAllEntriesTextOption = 'Include private submissions';
 
   /**
    * Reverse sort flag
@@ -196,6 +216,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       for (let i = 0; i < this.phaseSplits.length; i++) {
         if (this.phaseSplits[i].visibility !== this.challengePhaseVisibility.public) {
           this.phaseSplits[i].showPrivate = true;
+          this.showPrivateIds.push(this.phaseSplits[i].id);
         }
       }
       this.filteredPhaseSplits = this.phaseSplits;
@@ -374,6 +395,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   fetchLeaderboard(phaseSplitId) {
     const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
     const SELF = this;
+    SELF.showPrivateIds.forEach(id => {
+      (id === phaseSplitId) ? ( SELF.showLeaderboardToggle = false) : (SELF.showLeaderboardToggle = true);
+    });
     clearInterval(SELF.pollingInterval);
     SELF.leaderboard = [];
     SELF.showLeaderboardUpdate = false;
@@ -387,6 +411,41 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       },
       () => {}
     );
+  }
+
+  /**
+   * Fetch complete leaderboard for a phase split public/private
+   * @param phaseSplitId id of the phase split
+   */
+  fetchAllEnteriesOnPublicLeaderboard(phaseSplitId) {
+    const API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
+    const SELF = this;
+    clearInterval(SELF.pollingInterval);
+    SELF.leaderboard = [];
+    SELF.showLeaderboardUpdate = false;
+    this.apiService.getUrl(API_PATH).subscribe(
+      data => {
+        SELF.updateLeaderboardResults(data['results'], SELF);
+        SELF.startLeaderboard(phaseSplitId);
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  // function for toggeling between public leaderboard and complete leaderboard [public/private]
+  toggleLeaderboard(getAllEntries) {
+    console.log(getAllEntries);
+    this.getAllEntries = getAllEntries;
+    if (getAllEntries) {
+      this.getAllEntriesTextOption = 'Exclude private submissions';
+      this.fetchAllEnteriesOnPublicLeaderboard(this.selectedPhaseSplitId);
+    } else {
+      this.getAllEntriesTextOption = 'Include private submissions';
+      this.fetchLeaderboard(this.selectedPhaseSplitId);
+    }
   }
 
   /**

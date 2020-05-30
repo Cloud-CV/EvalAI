@@ -41,6 +41,9 @@
                 <mat-chip-list>
                   <mat-chip>B</mat-chip> - Baseline submission
                 </mat-chip-list>
+                <mat-chip-list class="leaderboard-description-span">
+                  <b><span class="leaderboard-description">*</span></b> - Private submission
+                </mat-chip-list>
                 <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
                   <div (click)="showLeaderboardByLatestOrBest()" class="btn-switch sort-leaderboard-switch" [ngClass]="{'btn-switch--on':showLeaderboardByLatest}"
                   [(ngModel)]="showLeaderboardByLatest" ngDefaultControl>
@@ -49,6 +52,11 @@
                   </div>
                   <span class="w-400"> {{sortLeaderboardTextOption}}</span>
                 </mat-chip-list>
+                <mat-checkbox class="pull-right complete-leaderboard" *ngIf="isChallengeHost && showLeaderboardToggle"
+                  (change)="toggleLeaderboard(getAllEntries)"
+                  [(ngModel)]="getAllEntries">
+                  <label class="w-400 complete-leaderboard-text"> {{getAllEntriesTextOption}}</label>
+                </mat-checkbox>
               </div>
 
               <table *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="centered highlight">
@@ -58,9 +66,9 @@
                       <a (click)="sortNonMetricsColumn('rank')">
                         <span class="fw-regular fs-18">Rank </span>
                         <span class="fa-stack fa-1x">
-                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort &&
                             sortColumn == 'rank' ? 'text-med-black' : 'text-light-black fw-semibold'"></i>
-                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort && 
+                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort &&
                             sortColumn == 'rank' ? 'text-med-black' : 'text-light-black fw-semibold'"></i>
                         </span>
                       </a>
@@ -69,9 +77,9 @@
                       <a (click)="sortNonMetricsColumn('string')">
                         <span class="fw-regular fs-18">Participant Team</span>
                         <span class="fa-stack fa-1x">
-                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort &&
                             sortColumn == 'string'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
-                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="reverseSort && 
+                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="reverseSort &&
                             sortColumn == 'string'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
                         </span>
                       </a>
@@ -81,9 +89,9 @@
                         <a (click)="sortMetricsColumn(i)">
                           <span class="fw-regular fs-18">{{key}}</span>
                           <span class="fa-stack fa-1x">
-                            <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                            <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort &&
                               sortColumn == 'number'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
-                            <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort && 
+                            <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort &&
                               sortColumn == 'number'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
                           </span>
                         </a>
@@ -92,9 +100,9 @@
                       <a (click)="sortNonMetricsColumn('date')">
                         <span class="fs-18 fw-regular">Last submission at</span>
                         <span class="fa-stack fa-1x">
-                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort &&
                             sortColumn == 'date'? 'text-med-black' : 'text-light-black w-500'"></i>
-                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort && 
+                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort &&
                             sortColumn == 'date'? 'text-med-black' : 'text-light-black w-500'"></i>
                         </span>
                       </a>
@@ -105,6 +113,7 @@
                   <tr *ngFor="let key of leaderboard" class="content">
                     <td>{{initial_ranking[key.submission__participant_team__team_name]}}</td>
                     <td class="fw-regular">{{key.submission__participant_team__team_name}}
+                      <b><span *ngIf="key.submission__is_public === false" class="orange-text">*</span></b>
                       <span *ngIf="key.submission__is_baseline">
                         <mat-chip-list>
                           <mat-chip>B</mat-chip>
