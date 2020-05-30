@@ -10,7 +10,7 @@
       }
     }
     li {
-      margin: 20px 0px;
+      margin: 10px 0px;
       min-height: 40px;
       .collapsible-header {
         border-bottom: 0;
@@ -47,7 +47,7 @@
 }
 
 .pagination {
-  margin-top: 20px;
+  margin: 0px;
 }
 
 .pagination-title {
@@ -154,6 +154,22 @@ span.link-team-user {
 .team-heading {
   margin-bottom: 30px;
   color: #9d9d9d;
+}
+
+.ev-panel-title {
+  margin: 10px 0px;
+}
+
+section {
+  margin: 0px 15px;
+}
+
+.input-field label {
+  font-size: 12px;
+}
+
+.fa-chevron-left, .fa-chevron-right {
+  font-size: 12px;
 }
 
 @media only screen and (max-width: 992px) and (min-width: 601px) {

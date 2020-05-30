@@ -9,12 +9,12 @@
             <app-teamcard *ngFor="let team of filteredTeams"
                           [team]="team" [selected]="team['isSelected']" [isOnChallengePage]="isOnChallengePage"
                           (deleteTeamCard)="deleteTeamWrapper()($event)" (deleteMemberCard)="deleteTeamMemberWrapper()($event)" (editTeamCard)="editTeamWrapper()($event)" (addMembersTeamCard)="addMembersToTeamWrapper()($event)"
-            (selectTeamCard)="selectTeamWrapper()($event)">
+            (selectTeamCard)="selectTeamWrapper()($event)" (deselectTeamCard)="deselectTeamWrapper()($event)">
             </app-teamcard>
           </ul>
           <section class="pagination" *ngIf="allTeams.length !== 0">
             <div class="row rm-gut">
-              <div class="col s12 m6 ">
+              <div class="col s12 m6 pagination">
                 <a [class.disabled]="seeMore <= 1" class="btn-floating btn-pagination waves-effect waves-light " (click)="seeLessClicked()">
                   <i class="fa fa-chevron-left"></i>
                 </a>
@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="col s12 m6">
-      <div class=" ev-card-panel ev-z-depth-5">
+      <div class=" list-card ev-card-panel ev-z-depth-5">
         <div class="ev-md-container ev-panel-title"><strong>{{teamCreateTitle}}</strong></div>
         <div class="ev-md-container ev-card-body new-team-card">
           <form name="createTeamForm" #createTeamForm="ngForm" (ngSubmit)="createTeamSubmit(createTeamForm.valid)">
