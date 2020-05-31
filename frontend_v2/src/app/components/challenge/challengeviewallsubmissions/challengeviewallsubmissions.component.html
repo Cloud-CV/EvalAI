@@ -1,0 +1,230 @@
+<div class="challenge-card">
+  <div class="ev-card-panel card-bt-margin">
+    <div class="ev-md-container bottom-hr-line">
+      <div class="row row-lr-margin phase-title">
+        <div *ngIf="!selectedPhase" class="col-sm-12">
+          <strong class="fw-semibold content fs-15">
+            Please select a phase to get list of submissions!
+          </strong>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+          <app-selectphase [phases]="filteredPhases"
+            [phaseSelectionListType]="phaseSelectionListType"
+            [phaseSelectionType]="phaseSelectionType"
+            [phaseSelected]="phaseSelected()" #phaseselect></app-selectphase>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-md-2 col-sm-2 col-xs-6 align-left col-lr-pad
+          all-submissions-file">
+          <mat-form-field>
+            <mat-label>File</mat-label>
+            <mat-select [(ngModel)]="fileSelected" class="rm-margin">
+              <mat-option *ngFor="let key of fileTypes" value={{key.name}}>
+                {{key.name}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
+          <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark
+            ev-btn-dark grad-btn-dark fw-light fs-14" (click)='downloadSubmission()'>Download
+          </a>
+        </div>
+        <div *ngIf="selectedPhase">
+          <div class="row">
+            <div class="col-sm-12 col-xs-12 filter-team">
+              <strong class="fw-semibold content fs-15">Filter Submissions by Team name</strong>
+            </div>
+          </div>
+          <div class="row row-lr-margin">
+            <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+              <app-input [name]="'filterByTeamName'" (input)="filterSubmissions($event.target.value)"
+                [label]="'Team name'" [placeholder]="'Team name'" [type]="'text'" #formFilter>
+              </app-input>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ev-card-body exist-team-card" *ngIf="!isPhaseSelected || (paginationDetails.showPagination == false && isPhaseSelected)">
+      <div class="row row-lr-margin">
+        <div class="col-md-12 col-lr-pad">
+          <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
+          <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected"
+            class="result-wrn">No results found.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ev-card-body collapsible-table">
+      <table mat-table *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
+             [dataSource]="submissions" multiTemplateDataRows
+             class="mat-elevation-z0">
+        <ng-container matColumnDef="{{column}}" *ngFor="let column of columnsToDisplay; let i = index">
+          <th class="cell-outside table-header fs-16" mat-header-cell *matHeaderCellDef> {{columnsHeadings[i]}} </th>
+          <td class="cell-outside fw-regular align-center" mat-cell *matCellDef="let element" >
+            <span *ngIf="column === 'status' && element[column] !== null" class="{{element[column]}}">
+              {{element[column]}}</span>
+            <span *ngIf="column !== 'status' && element[column] !== null && column!=='submitted_file' && column!=='submission_result_file'">
+              {{element[column]}}</span>
+            <a target="_blank" class="blue-text" [href]="element[column]"
+              *ngIf="element[column] !== null && (column==='submitted_file' ||
+              column==='submission_result_file')">
+              <i class="fa fa-external-link"></i>
+              Link
+            </a>
+            <span *ngIf="element[column] === null">None</span>
+          </td>
+        </ng-container>
+
+
+        <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell class="collapsed-td" *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+            <div class="elements" [class.detail-row]="element != expandedElement" [class.expanded-row]="element == expandedElement"
+                 [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+              <div class="elements-detail">
+                <div class="element">
+                  <p><strong class="text-light-black fw-semibold fs-12">Team Members</strong>
+                    <br> <strong *ngFor="let team of element.participant_team_members; let i=index"
+                    class="fw-semibold fs-14">
+                      <span *ngIf="element.participant_team_members.length !== i+1">
+                            {{team.username + ' ,'}}</span>
+                      <span *ngIf="element.participant_team_members.length === i+1">
+                            {{team.username}}</span>
+                    </strong></p>
+                  <span class=""></span>
+                </div>
+                <div class="element">
+                  <p><strong class="text-light-black fw-semibold fs-12">Team Members Email Id</strong>
+                    <br> <strong *ngFor="let team of element.participant_team_members; let i=index"
+                    class="fw-semibold fs-14">
+                      <span *ngIf="element.participant_team_members.length !== i+1">
+                            {{team.email + ' ,'}}</span>
+                      <span *ngIf="element.participant_team_members.length === i+1">
+                            {{team.email}}</span>
+                    </strong></p>
+                </div>
+                <div class="row rm-margin">
+                  <div class="col-sm-3 col-md-3 col-lg-3 no-pad-lr element">
+                    <p><strong class="text-light-black fw-semibold fs-12">Stdout File</strong>
+                      <br> <a target="_blank" class="blue-text " [href]="element.stdout_file"
+                              *ngIf="element.stdout_file">
+                        <i class="fa fa-external-link"></i>
+                      </a>
+                      <strong *ngIf="!element.stdout_file" class="fw-semibold fs-14">
+                        None
+                      </strong></p>
+                  </div>
+                  <div class="col-sm-4 col-md-4 col-lg-4">
+                    <p><strong class="text-light-black fw-semibold fs-12">Stderr File</strong>
+                      <br> <a target="_blank" class="blue-text " [href]="element.stderr_file"
+                              *ngIf="element.stderr_file">
+                        <i class="fa fa-external-link"></i>
+                      </a>
+                      <strong *ngIf="!element.stderr_file" class="fw-semibold fs-14">
+                        None
+                      </strong></p>
+                  </div>
+                  <div class="col-sm-4 col-md-4 col-lg-4">
+                    <p><strong class="text-light-black fw-semibold fs-12">Metadata File</strong>
+                      <br> <a target="_blank" class="blue-text " [href]="element.submission_metadata_file"
+                              *ngIf="element.submission_metadata_file">
+                        <i class="fa fa-external-link"></i>
+                      </a>
+                      <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-14">
+                        None
+                      </strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="elements-action">
+                <div class="row rm-margin">
+                  <div class="col-sm-6 sol-md-6 col-lg-6 no-pad-lr">
+                    <p><strong class="text-light-black fw-semibold fs-12">Status</strong>
+                      <br> <strong class="fw-semibold fs-14" [ngClass]="element.status">
+                        {{element.status}}
+                      </strong></p>
+                  </div>
+                  <div class="col-sm-6 sol-md-6 col-lg-6 no-pad-lr">
+                    <p><strong class="text-light-black fw-semibold fs-12">Submission Number</strong>
+                      <br> <strong class="fw-semibold fs-14">
+                        {{element.submission_number}}
+                      </strong></p>
+                  </div>
+                </div>
+                <div class="element">
+                  <p><strong class="text-light-black fw-semibold fs-12">Submitted At</strong>
+                    <br> <strong class="fw-semibold fs-14">
+                      {{element.created_at | date:'medium'}}
+                    </strong></p>
+                </div>
+                <div class="element">
+                  <mat-checkbox class="element-icon" [checked]="element.is_public" [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']" (change)="changeSubmissionVisibility(element.id, element.is_public)">
+                    Show On Leaderboard
+                  </mat-checkbox>
+                </div>
+                <div class="element">
+                  <a [matMenuTriggerFor]="settingsmenu" >
+                    <p><strong class="text-light-black fw-semibold fs-12">
+                      <i class="fa fa-gear element-icon"></i>Options
+                      </strong></p>
+                  </a>
+                  <mat-menu #settingsmenu="matMenu" yPosition="below">
+                    <button (click)="confirmSubmissionFlagChange(element, element.is_flagged)" mat-menu-item>
+                      <mat-icon>{{element.submissionFlagIcon}}</mat-icon>
+                      <span>{{element.submissionFlagText}}</span>
+                    </button>
+                    <button *ngIf="element.status == 'finished'" (click)="confirmSubmissionVisibility(element, element.is_public)" mat-menu-item>
+                      <mat-icon>{{element.submissionVisibilityIcon}}</mat-icon>
+                      <span>{{element.submissionVisibilityText}}</span>
+                    </button>
+                    <button (click)="reRunSubmission(element.id)" mat-menu-item>
+                      <mat-icon>refresh</mat-icon>
+                      <span>Re-run submission</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let element; columns: columnsToDisplay;"
+            class="element-row"
+            [class.expanded-row]="expandedElement === element"
+            (click)="expandedElement = expandedElement === element ? null : element">
+        </tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="ev-card-body detail-row"></tr>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="paginationDetails.showPagination && submissions.length > 0">
+      <div class="row row-lr-margin">
+        <div class="col-sm-12 left-align col-lr-pad">
+          <button [ngClass]="paginationDetails.isPrev" class="btn-floating
+            btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.previous)">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <span class="pagination-title">
+            <strong class="text-med-black fw-semibold content">
+              Page {{paginationDetails.currentPage}} of
+              {{paginationDetails.totalPage}}
+            </strong></span>
+          <button [ngClass]="paginationDetails.isNext" class="btn-floating
+            btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.next)">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
