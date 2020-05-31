@@ -1,0 +1,179 @@
+@import "../../../../styles/variables";
+
+.exist-team-card {
+  ul {
+    &.collapsible {
+      border: 0;
+      box-shadow: none;
+      li {
+        box-shadow: 0 0 5px #e0e0e0;
+      }
+    }
+    li {
+      margin: 10px 0px;
+      min-height: 40px;
+      .collapsible-header {
+        border-bottom: 0;
+        line-height: initial;
+        min-height: initial;
+        padding: 10px 5px;
+        i {
+          display: inline-block;
+          float: none;
+          font-size: initial;
+          line-height: 40px;
+          margin-right: 0;
+          text-align: center;
+          width: 2rem;
+        }
+      }
+      .collapsible-body {
+        background-color: #fafafa;
+        border-top: 1px solid #e0e0e0;
+        padding: 10px 40px;
+        p {
+          padding: 3px 0;
+        }
+      }
+    }
+  }
+  i.list-icon {
+    line-height: 25px;
+  }
+}
+
+.new-team-card {
+  padding-bottom: 40px;
+}
+
+.pagination {
+  margin: 0px;
+}
+
+.pagination-title {
+  padding: 0px 10px;
+}
+
+div.show-member-title {
+  width: calc(100% - 35px);
+  float: right;
+}
+
+.page-msg {
+  margin-top: 16px;
+}
+
+.team-card {
+  position: relative;
+  background: $dark-gray;
+  max-width: 235px;
+  height: 270px;
+  border-radius: 6px;
+  box-shadow: 0px 4px 24px #797979;
+  overflow: hidden;
+  margin-bottom: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: all 0.2s ease-in-out;
+  &:hover {
+    box-shadow: 0px 0px 10px #797979;
+  }
+}
+
+.team-bg {
+  position: absolute;
+  top: -40px;
+  left: -50px;
+  img {
+    width: 130%;
+    opacity: 0.15;
+  }
+}
+
+.team-bg-over {
+  position: absolute;
+  bottom: -7px;
+  width: 100%;
+  img {
+    width: 100%;
+  }
+}
+
+.team-profile {
+  display: block;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: absolute;
+  bottom: 25px;
+  left: 15px;
+  box-shadow: 0px 4px 8px #989898;
+  img {
+    width: 100%;
+  }
+}
+
+.team-player {
+  position: absolute;
+  bottom: 14px;
+  text-align: right;
+  padding-left: 50px;
+  right: 15px;
+  h4 {
+    font-size: 16px;
+  }
+}
+
+.team-link-head {
+  padding: 10px 15px;
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  span {
+    padding-right: 10px;
+    a {
+      color: $light-gray;
+      &:hover {
+        color: #fff;
+      }
+    }
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+  }
+}
+
+span.link-team-user {
+  padding-right: 0px;
+  font-size: 12px;
+  line-height: 25px;
+}
+
+.team-heading {
+  margin-bottom: 30px;
+  color: #9d9d9d;
+}
+
+.ev-panel-title {
+  margin: 10px 0px;
+}
+
+section {
+  margin: 0px 15px;
+}
+
+.input-field label {
+  font-size: 12px;
+}
+
+.fa-chevron-left, .fa-chevron-right {
+  font-size: 12px;
+}
+
+@media only screen and (max-width: 992px) and (min-width: 601px) {
+  .team-heading {
+    margin-top: 30px;
+  }
+}

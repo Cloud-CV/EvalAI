@@ -1,0 +1,148 @@
+<app-header-static></app-header-static>
+<div class="main_content">
+	<app-side-bar style="background-color: rgb(250,250,250)"></app-side-bar>
+	<div class="container-fluid main_content">
+		<div class="row">
+			<div class="dashboard">
+				<div class="md-container main_content" id="card_container">
+					<div class="ev-md-container ev-card-panel ev-z-depth-5 challenge-title-container">
+						<div class="col s12 m3 l3 center"> 
+							<img class="profile-photo" src="assets/images/profile.png" />
+							<div class="item">
+								<div class="content fw-regular">
+									{{user.username}}
+								</div>
+								<div class="fs-15">
+									{{user.email}}
+								</div>
+							</div>
+							<div class="item" id="profile_layout">
+								<div class="highlight">
+									<span class="fw-regular fs-14">Profile Completed</span>
+									<br> <span class="text-med-black">{{pcomp}}</span>
+								</div>
+							</div>
+							<br>
+							<br>
+							<div class="item" id="auth_tok">
+								<button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" id="auth_tok_button" (click)="isTokenModalVisible= true;"> Get your Auth Token</button>
+							</div>
+						</div>
+						<div class="col s12 m4 l4 center user-info" id="user_info">
+							<div class="user-details">
+								<ul>
+									<li>
+								<div class="item">
+									<span class="text-light-black fw-semibold fs-12">
+										First Name<br>
+									</span>
+									<div class="content fw-regular">
+										{{user.first_name}}
+									</div>
+								</div>
+									</li>
+									<li>
+								<div class="item">
+									<span class="text-light-black fw-semibold fs-12">
+										Last Name<br>
+									</span>
+									<div class="content fw-regular">
+										{{user.last_name}}
+									</div>
+								</div>
+								</li>
+								<li>
+								<div class="item">
+									<span class="text-light-black fw-semibold fs-12">
+										Affiliated to<br>
+									</span>
+									<div class="content fw-regular">
+										{{user.affiliation}}
+									</div>
+								</div>
+								</li>
+								</ul>
+								</div>
+							</div>		
+							<div class="col s12 m5 l5 user-urls center" >
+								<ul>
+								<li>
+							    <div class="item">
+								<span class="text-light-black fw-semibold fs-12">
+								Google Scholar Url<br>
+								</span>
+								<div class="content fw-regular">
+								{{user.google_scholar_url}}
+								</div>
+							    </div>
+                </li>
+                <li>
+									<div class="item">
+										<span class="text-light-black fw-semibold fs-12">
+										GitHub Url<br>
+										</span>
+									<div class="content fw-regular">
+										{{user.github_url}}
+									</div>
+									</div>
+								</li>
+								<li>
+								<div class="item">
+									<span class="text-light-black fw-semibold fs-12">
+										LinkedIn Url<br>
+									</span>
+									<div class="content fw-regular">
+										{{user.linkedin_url}}
+									</div>
+								</div>
+							</li>
+						</ul>
+						<ul class="inline-list profile-edit-group center" id="sty_button">
+							<li >
+								<a (click)="updatePassword()" class="dark-link pointer">
+									<strong class="fw-semibold fs-15 change-password-text">Change Password</strong>
+								</a>
+							</li>
+							<li>
+								<button (click)="updateUserDetails()" class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14">Update Profile</button>
+							</li>
+						</ul>
+					</div>
+					<div class="modal-container" [class.hidden]="!isTokenModalVisible">
+						<div class="modal-card">
+							<div class="title">
+								API Authentication Token
+							</div>
+							<div class="form row">
+								<div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+									<app-input [label]="'token'" [placeholder]="'Auth Token'"
+									[type]="'password'" [theme]="'dark'" [value]="token" [readonly]="true"
+									#formtoken></app-input></div>
+								<button class="col-lg-1 col-md-1 col-sm-1 col-xs-1 btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn" id="auth_button_style"
+								(click)="copyToken()">
+								<i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+							</button>
+						</div>
+						<ul class="inline-list">
+							<li>
+								<a (click)="isTokenModalVisible= false;" class="dark-link pointer">
+									<strong class="fw-semibold fs-15">Cancel</strong>
+								</a>
+							</li>
+							<li>
+								<a (click)="downloadToken()" class="dark-link pointer">
+									<strong class="fw-semibold fs-15">Download JSON</strong>
+								</a>
+							</li>
+							<li>
+								<span class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14 rm-pad-top" (click)="tokenModalButtonToggle()">{{tokenModalButton}}</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<app-footer class="container-fluid" ></app-footer>
+</div>
+</div>

@@ -1,0 +1,244 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.input-group {
+  width: 100%;
+  margin-top: 0px;
+  position: relative;
+  height: auto;
+  padding-bottom: 20px;
+  .input-icon {
+    height: $fs-14;
+    position: absolute;
+    right: 0;
+    top: 10px;
+    color: $wild-blue;
+    font-size: .9em;
+  }
+
+  input[type=text]
+  input[text=password] {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #9e9e9e;
+    border-radius: 0;
+    outline: none;
+    height: 3rem;
+    width: 100%;
+    font-size: 1rem;
+    margin: 0 0 20px 0;
+    padding: 0;
+    box-shadow: none;
+    box-sizing: content-box;
+    transition: all 0.3s;
+  }
+
+  .file-upload {
+    margin-top: 16px;
+    position:relative;
+    overflow:auto;
+    .transparent {
+      position:relative;
+      opacity: 0;
+    }
+    .btn {
+      float: left;
+      height: 3rem;
+      line-height: 3rem;
+      position:relative;
+      cursor:pointer;
+      margin-left:0;
+      &.theme-dark {
+        color: $gray-dark;
+        &.selected {
+          color:white;
+        }
+      }
+    }
+    .input-message {
+      position:relative;
+    }
+  }
+  
+  .file-field input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0);
+  }
+  
+  .file-field .file-path-wrapper {
+    overflow: hidden;
+    padding-left: 10px;
+  }
+  
+  .file-path-wrapper input[type=text] {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #9e9e9e;
+    border-radius: 0;
+    outline: none;
+    height: 3rem;
+    width: 100%;
+    font-size: 1rem;
+    padding: 0;
+    box-shadow: none;
+    box-sizing: content-box;
+    transition: all 0.3s;
+  }
+  label {
+    color: $wild-blue !important;
+    font-size: 12px;
+    position: absolute;
+    pointer-events: none;
+    left: 0px;
+    top: 10px;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+    &.theme-dark {
+      color: $gray-dark;
+    }
+    &.is-not-empty {
+      top: -10px;
+      font-size: $fs-12;
+      color: white;
+      &.theme-dark {
+        color: $gray-dark !important;
+      }
+    }
+  }
+  .input-field {
+    font-size: $fs-16;
+    padding: 10px 10px 10px 5px;
+    margin-top: 16px;
+    display: block;
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid $gray-dark;
+    background: transparent;
+    padding-bottom: 10px;
+    font-weight: $fw-light;
+    &:focus {
+      outline: none;
+      border-bottom: 1px solid $yellow;
+      box-shadow: none;
+    }
+    &.theme-dark {
+      color: $gray-darker;
+      border-bottom: 1px solid $gray-dark;
+    }
+  }
+  input:focus~label {
+    top: -10px;
+    color: $wild-blue !important;
+    font-weight: $fw-regular;
+    font-size: 0.8rem;
+    -webkit-transform: translateY(-10%);
+    transform: translateY(-10%);
+  }
+  textarea {
+    overflow: hidden;
+    resize: none;
+    min-height: 5rem;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    width: 100%;
+    margin: 0 0 25px 0;
+    transition: all 0.3s;
+  }
+  textarea:focus~label {
+    top: -20px;
+    color: $wild-blue !important;
+    font-weight: $fw-regular;
+    font-size: 0.8rem;
+    -webkit-transform: translateY(-10%);
+    transform: translateY(-10%);
+  }
+  input:focus~label.theme-dark {
+    color: $gray-dark !important;
+  }
+  .input-message {
+    position: relative;
+    top: 2px;
+    left: 0;
+    text-align: left;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: $fw-light;
+    color: $yellow;
+    &.hidden {
+      opacity: 0;
+    }
+  }
+  .input-bar {
+    position: relative;
+    display: block;
+    width: 300px;
+  }
+  &:before,
+  &:after {
+    content: '';
+    height: 2px;
+    width: 0;
+    bottom: 1px;
+    position: absolute;
+    background: white;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+  }
+  &:before {
+    left: 50%;
+  }
+  &:after {
+    right: 50%;
+  }
+}
+
+
+/* media queries for rocket container */
+@media only screen and (max-width: $screen-sm-md) {
+
+  .input-group {	
+    width: 100% !important;
+  }
+
+  .input-group input {
+    width: 100% !important;
+  }
+
+  .input-group textarea {
+    width: 100% !important;
+  }
+}
+
+
+/* active state */
+
+.input-field:focus~.input-bar:before,
+.input-field:focus~.input-bar:after {
+  width: 50%;
+}
+
+@include screen-small {
+  .input-group {
+    width: 250px;
+    .input-field {
+      width: 250px;
+    }
+  }
+  .input-bar {
+    width: 250px;
+  }
+}

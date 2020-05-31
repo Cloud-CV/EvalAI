@@ -1,0 +1,30 @@
+@import './styles/variables.scss';
+@import './styles/mixins.scss';
+
+
+/* contact container */
+
+.contact-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 60px 100px 40px 113px;
+  min-height: 100vh;
+}
+
+.contact-title {
+  color: #4d4d4d;
+  line-height: 110%;
+  box-sizing: border-box;
+}
+
+
+/* media queries */
+
+@media only screen and (max-width: $screen-sm-md){
+  .contact-title {	
+    margin-top: 10px;
+  }
+  .contact-container {
+    text-align: center;
+  }
+}

@@ -1,0 +1,22 @@
+<div class="challenge-card">
+    <div class="bottom-card-container ev-card-panel">
+        <div class="row">
+            <div class="col-md-11 col-sm-11">
+                <span class="fs-18">
+                    <strong class="fw-semibold">{{challenge['title']}}</strong>
+                </span>
+            </div>
+            <div *ngIf="isChallengeHost" class="col-sm-1">
+                <a class="pointer" (click)="editChallengeOverview()">
+                    <i class="fa fa-pencil" aria-hidden="true">
+                    </i>
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div *ngIf="challenge && challenge['description']" [innerHTML]="challenge['description']" class="challenge-description content">
+            </div>
+        </div>
+    </div>
+</div>
