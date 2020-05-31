@@ -86,7 +86,7 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
 
 def pretty_print_my_submissions_data(submissions, start_date, end_date):
     """
-    Funcion to print the submissions for a particular Challenge.
+    Function to print the submissions for a particular challenge.
     """
     table = BeautifulTable(max_width=100)
     attributes = ["id", "participant_team_name", "execution_time", "status"]
@@ -285,7 +285,7 @@ def convert_bytes_to(byte, to, bsize=1024):
     """
     Convert bytes to KB, MB, GB etc.
     Arguments:
-        bytes {int} -- The bytes which is to be converted
+        bytes {int} -- The bytes which are to be converted
         to {str} -- To which unit it is to be converted
     """
     units_mapping = {"kb": 1, "mb": 2, "gb": 3, "tb": 4, "pb": 5, "eb": 6}
