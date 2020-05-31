@@ -1,0 +1,47 @@
+<section class="auth-container" #authContainer [class.low-screen]="authService.isLoader">
+  <!-- graphic animated view -->
+  <div class="graphic-cont">
+    <img class="star-img star1" src="assets/images/star1.png">
+    <img class="star-img star2" src="assets/images/star2.png">
+    <div class="moon">
+      <img src="assets/images/moon.png">
+    </div>
+    <div class="sun">
+      <img src="assets/images/sun.png">
+    </div>
+    <div class="auth-cloud-cont">
+      <img src="assets/images/auth-cloud.png">
+    </div>
+    <div class="ufo">
+      <img src="assets/images/spaceman.png">
+    </div>
+  </div>
+  <!-- rendering auth children here -->
+  <div class="auth-cont">
+    <div class="row">
+      <div class="col s12 m6 offset-m3">
+        <div class="left">
+          <h5><strong><a routerLink="" class="dark-link"><img class="auth-logo"
+                                                              src="assets/images/evalai-logo.png"></a></strong>
+          </h5>
+          <p class="text-med-gray auth-home">Evaluating state of the art in AI!</p>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="reg-alert col s12 m6 offset-m3 align-left text-highlight w-300">{{authService.regMsg}}</div>
+      <router-outlet></router-outlet>
+    </div>
+    <div class="row">
+      <div class="reg-alert col s12 m6 offset-m3 align-left text-highlight w-300 social-auth-group">
+        <a href="https://github.com/Cloud-CV/EvalAI" class="light-link" target="_blank"><i class="fa fa-github"></i></a>
+        &nbsp;&nbsp;&nbsp;<a href="https://twitter.com/project_cloudcv" class="light-link" target="_blank"><i
+        class="fa fa-twitter"></i></a> &nbsp;&nbsp;&nbsp; <a href="http://www.cloudcv.org/" class="light-link fg-pass"
+                                                             target="_blank">www.cloudcv.org</a> &nbsp;&nbsp;&nbsp; <a
+        routerLink="/" class="light-link fg-pass">Back to home</a>
+      </div>
+    </div>
+  </div>
+  <div class="clearfix"></div>
+</section>
+

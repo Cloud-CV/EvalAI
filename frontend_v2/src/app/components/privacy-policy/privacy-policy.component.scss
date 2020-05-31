@@ -1,0 +1,107 @@
+@import './styles/variables.scss';
+@import './styles/mixins.scss';
+
+.privacy-container {
+  * {
+    transition: all 0.2s ease;
+  }
+  .privacy-nav-container {
+    margin-top: 30px;
+    top: 10%;
+    bottom: 0;
+    max-height: 600px !important;
+    overflow-y: scroll;
+
+    .privacy-nav {
+      font-weight: $fw-regular;
+    }
+    
+  position: relative;
+  position: -webkit-sticky;
+  position: sticky;
+    max-height: 65vh;
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      li {
+        padding-left: 20px;
+        border-left: 5px solid rgba(0, 0, 0, 0);
+        padding: 5px;
+        margin: 5px;
+        cursor: pointer;
+        color: $gray-darker;
+        font-size: $fs-16;
+        font-weight: $fw-regular;
+
+        &:hover {
+          border-left: 5px solid $gray-darker;
+        }
+      }
+
+      li.scroll-selected {
+        color: $yellow;
+        border-left: 5px solid $yellow;
+      }
+    }
+  }
+  .privacy-content {
+    margin-top: 30px;
+    padding-right: 50px;
+    a {
+      color: $blue-lighter !important;
+      font-weight: $fw-regular;
+    }
+    .scroll-to-top {
+      position: fixed;
+      top: 80%;
+      right: 4%;
+      height: 50px;
+      cursor: pointer;
+      z-index: 4 !important;
+      &:hover {
+        height: 55px;
+      }
+    }
+    .privacy-title {
+      margin-top: 10px;
+      font-size: $fs-34;
+      color: $med-black;
+      font-weight: $fw-semibold;
+    }
+    .privacy-section-content {
+      font-weight: $fw-light;
+      color: $med-black;
+      font-size: $fs-16;
+      margin-top: 20px;
+      line-height: 20px;
+      letter-spacing: 0.5px;
+      ul {
+        list-style-type: circle;
+      }
+    }
+    .privacy-section-title {
+      font-size: $fs-20;
+      color: $med-black;
+      font-weight: $fw-bold;
+      margin-top: 20px;
+      &.scroll-selected {
+        color: $yellow;
+      }
+    }
+  }
+}
+
+
+
+@include screen-small-medium {
+  .privacy-nav-container,
+  .privacy-empty-container {
+    display: none;
+  }
+}
+
+@include screen-medium {
+  .privacy-nav-container {
+    top: 20%;
+  }
+}

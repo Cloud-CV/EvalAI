@@ -1,0 +1,101 @@
+<div class="col s12 m6 offset-m3 left">
+  <ul class="left">
+    <li class="ev-horiz-list"><a [routerLink]="loginRoute" class="light-link" routerLinkActive="active-auth"
+                                 (click)="authService.resetForm()">Log In</a></li>
+    <li class="ev-horiz-list"><a [routerLink]="signupRoute" class="dark-link" routerLinkActive="active-auth"
+                                 (click)="authService.resetForm()">Sign Up</a></li>
+  </ul>
+</div>
+<div class="col s12 m6 offset-m3">
+  <!-- login form -->
+  <form name="signupForm" #signupForm="ngForm" appComparePassword (ngSubmit)="userSignUp(signupForm.valid)" id="sign-up"
+        novalidate>
+    <!-- username -->
+    <div class="input-field align-left">
+      <input type="text" id="name" class="dark-autofill" name="name" #name="ngModel"
+             (focusin)="isnameFocused = true" (focusout)="isnameFocused = authService.regUser['name'] !== ''"
+             (change)="isnameFocused = authService.regUser['name'] !== ''"
+             [(ngModel)]="authService.regUser['name']" minlength="3" required>
+      <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+      <label for="name" [class.active]="isnameFocused">Username*</label>
+      <div class="wrn-msg text-highlight" *ngIf="name.invalid && (name.dirty || name.touched || signupForm.submitted)">
+        <p *ngIf="name.errors.minlength">Username is too short.</p>
+        <p *ngIf="name.errors.required">Username is required.</p>
+      </div>
+    </div>
+    <!-- email -->
+    <div class="input-field align-left">
+      <input type="email" id="email" class="dark-autofill" name="email" #email="ngModel"
+             (focusin)="isemailFocused = true" (focusout)="isemailFocused = authService.regUser['email'] !== ''"
+             (change)="isemailFocused = authService.regUser['email'] !== ''"
+             [(ngModel)]="authService.regUser['email']" required>
+      <span class="form-icon form-icon-dark"><i class="fa fa-envelope"></i></span>
+      <label for="email" [class.active]="isemailFocused">Email</label>
+      <div class="wrn-msg text-highlight"
+           *ngIf="email.invalid && (email.dirty || email.touched || signupForm.submitted)">
+        <p *ngIf="email.errors.minlength">Please enter a valid email address.</p>
+        <p *ngIf="email.errors.required">Email address is required.</p>
+      </div>
+    </div>
+    <!-- password -->
+    <div class="input-field align-left">
+      <input type="{{authService.canShowPassword ? 'text' : 'password'}}" id="password"
+             (paste)="authService.regUser['password'] = ''" class="dark-autofill" name="password" #password="ngModel"
+             (focusin)="ispasswordFocused = true"
+             (focusout)="ispasswordFocused = authService.regUser['password'] !== ''"
+             (input)="ispasswordFocused = authService.regUser['password'] !== ''"
+             [(ngModel)]="authService.regUser['password']" minlength="8"
+             (change)="checkStrength(authService.regUser['password'])" required>
+      <span class="form-icon form-icon-dark" (click)="authService.togglePasswordVisibility()">
+                <i *ngIf="!authService.canShowPassword" class="fa fa-eye pointer"></i>
+                <i *ngIf="authService.canShowPassword" class="fa fa-eye-slash pointer"></i>
+            </span>
+      <label for="password" [class.active]="ispasswordFocused">
+        <strong>Password (Minimum 8 Characters) *</strong>
+        <span [style.color]="color">{{' ' + message}}</span>
+      </label>
+      <div class="wrn-msg text-highlight"
+           *ngIf="password.invalid && (password.dirty || password.touched || signupForm.submitted)">
+        <p *ngIf="password.errors.minlength">Password is less than 8 characters.</p>
+        <p *ngIf="password.errors.required">Password is required.</p>
+      </div>
+    </div>
+    <!-- confirm password -->
+    <div class="input-field align-left">
+      <input type="{{authService.canShowConfirmPassword ? 'text' : 'password'}}" id="confirm_password"
+             (paste)="authService.regUser['confirm_password'] = ''" class="dark-autofill" name="confirm_password"
+             #confirm_password="ngModel"
+             (focusin)="iscnfrmpasswordFocused = true"
+             (focusout)="iscnfrmpasswordFocused = authService.regUser['confirm_password'] !== ''"
+             (change)="iscnfrmpasswordFocused = authService.regUser['confirm_password'] !== ''"
+             [(ngModel)]="authService.regUser['confirm_password']" minlength="8" required>
+      <span class="form-icon form-icon-dark" (click)="authService.toggleConfirmPasswordVisibility()">
+                <i *ngIf="!authService.canShowConfirmPassword" class="fa fa-eye pointer"></i>
+                <i *ngIf="authService.canShowConfirmPassword" class="fa fa-eye-slash pointer"></i>
+            </span>
+      <label for="confirm_password" [class.active]="iscnfrmpasswordFocused">Confirm Password *</label>
+      <div class="wrn-msg text-highlight"
+           *ngIf="(confirm_password.invalid ) && (confirm_password.dirty || confirm_password.touched || signupForm.submitted)">
+        <p *ngIf="confirm_password.errors.minlength">Password is less than 8 characters.</p>
+        <p *ngIf="confirm_password.errors.required">Password confirmation is required.</p>
+      </div>
+      <div class="wrn-msg text-highlight"
+           *ngIf="signupForm.errors !== null && confirm_password.valid && (confirm_password.dirty || confirm_password.touched || signupForm.submitted)">
+        <p *ngIf="signupForm.errors['passwordMismatch']">Passwords do not match</p>
+      </div>
+    </div>
+    <!-- submit button -->
+    <div class="align-left reg-control">
+      <button class="waves-effect waves-dark btn ev-btn-dark grad-btn grad-btn-dark w-300" type="submit" value="Submit">
+        Sign Up
+      </button>
+    </div>
+    <div *ngIf="authService.isFormError" class="text-highlight align-left"> {{authService.FormError}}</div>
+    <div>
+      <p class="text-light-gray">
+        <span class="text-med-black">Already have an account? </span> <a class="highlight-link" [routerLink]="loginRoute">Log
+        In</a>
+      </p>
+    </div>
+  </form>
+</div>

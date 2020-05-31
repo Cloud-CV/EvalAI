@@ -1,0 +1,92 @@
+@import "styles/variables";
+
+.org-link {
+  margin-right: 30px;
+}
+
+.main-header {
+  position: relative;
+  z-index: 999;
+  width: 100%;
+  nav {
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 0 #000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 0 100px;
+    transition: all 0.1s ease-in-out;
+    a.main-header-link {
+      color: $med-black;
+      font-weight: $rob-reg;
+      transition: all 0.2s ease-in-out;
+    }
+    a.main-header-link:hover {
+      color: $link-hover-dark;
+      background-color: rgba(0, 0, 0, 0);
+    }
+    a.light-link {
+      color: $med-link;
+      transition: all 0.2s ease-in-out;
+    }
+    a.light-link:hover {
+      color: $light-link;
+    }
+    a.active {
+      color: $highlight;
+      background-color: rgba(0, 0, 0, 0);
+    }
+  }
+  nav.grad-shadow-1 {
+    box-shadow: 0 0 10px $light-black;
+  }
+}
+
+.expand-menu {
+  width:200px;
+  transform:translateX(0px);
+}
+
+a.evalai-logo {
+  width: 60px;
+  img {
+    width: 100%;
+    vertical-align: middle;
+  }
+}
+
+.background {
+  background-color: $dark-gray;
+}
+
+@media only screen and (max-width: $med-screen) {
+  .main-header {
+    nav {
+      padding: 0px 30px;
+    }
+  }
+  .side-nav .userView{
+    padding: 28px;
+  }
+
+  .side-nav li {
+    float: none !important;
+  }
+
+  .side-nav li a i{
+    float: none !important;
+  }
+}
+
+#ev-dropdown li a:hover {
+  background-color: white;
+  color: $dark-gray;
+}
+
+a.evalai-logo {
+  width: 60px;
+  img {
+    width: 100%;
+    vertical-align: middle;
+  }
+}

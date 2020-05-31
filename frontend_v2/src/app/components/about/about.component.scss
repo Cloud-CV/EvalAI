@@ -1,0 +1,77 @@
+@import './styles/variables.scss';
+@import './styles/mixins.scss';
+
+.about-container {
+  padding: 40px;
+}
+
+.about-content-column {
+  margin-top: 68px;
+  box-sizing: border-box;
+  padding: 0 0.75rem;
+  min-height: 1px;
+  margin-left: auto;
+  left: 75px;
+  right: auto;
+}
+
+.about-title {
+  color: #4d4d4d;
+  margin: 1.14rem 0 0.912rem 0;
+  font-size: 34px;
+  font-weight: $fw-regular;
+}
+
+.about-content {
+  color: #4d4d4d;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: $fw-light;
+}
+
+@include screen-small {
+  .about-title {
+    text-align: center;
+  }
+  .about-content-column {
+    left: 0px;
+  }
+}
+
+@include screen-medium {
+  .about-content-column {
+    left: 0px;
+  }
+}
+
+/*space man*/
+.spaceman {
+  width: 200px;
+  position: absolute;
+  right: 15%;
+  top: 100px;
+
+  animation: spaceman-anim 4s alternate linear infinite;
+}
+.spaceman img {
+  width: 100%;
+}
+
+@keyframes spaceman-anim {
+  0% {
+    transform: rotate(0deg);
+    top: 100px;
+  }
+  30% {
+    transform: rotate(20deg);
+    top: 150px;
+  }
+  70% {
+    transform: rotate(0deg);
+    top: 190px;
+  }
+  100% {
+    transform: rotate(-10deg);
+    top: 240px;
+  }
+}

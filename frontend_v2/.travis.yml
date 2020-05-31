@@ -1,0 +1,41 @@
+sudo: required
+dist: trusty
+language: node_js
+addons:
+  apt:
+    packages:
+      - dpkg
+  chrome: stable
+
+node_js:
+  - "9.5"
+
+services:
+  - docker
+
+before_install:
+  - export CHROME_BIN=chromium-browser
+  - export DISPLAY=:99.0
+  - export DEPLOY_DOMAIN=https://pr-${TRAVIS_PULL_REQUEST}-evalai.surge.sh
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
+
+before_script:
+  - npm install -g --silent @angular/cli
+
+script:
+  - ng lint
+  - ng test --watch=false --progress=false --code-coverage > test-log
+  - grep Executed test-log
+  - grep ERROR test-log
+  - grep LOGE test-log
+  - ng e2e
+  - ng build --prod
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+  - bash ./pr_deploy.sh
+
+notifications:
+  email:
+    on_failure: always
+    on_success: change

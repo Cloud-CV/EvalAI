@@ -1,0 +1,24 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.ev-pad {
+	padding-left: 15px;
+	padding-right: 10px;
+	margin-bottom: 20px;
+}
+
+.tnc-pad {
+	padding-left: 10px;
+	padding-right: 15px;
+	margin-bottom: 20px;
+}
+
+@include screen-small {
+	.ev-pad {
+		padding-right: 15px;
+	}
+
+	.tnc-pad {
+		padding-left: 15px;
+	}
+}

@@ -1,0 +1,125 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.featured-challenges-container {
+	margin-top:200px;
+    margin-bottom:100px;
+    padding-top:50px;
+    padding-bottom:50px;
+    color: $gray-darker;
+    * {
+    	transition:all ease 0.5s;
+    }
+	.row{
+		margin-top:20px;
+		margin-bottom:20px;
+	}
+	.section-title {
+		display:inline-block;
+		margin-top:20px;
+		margin-bottom:30px;
+	}
+	.challenge-area {
+		padding:20px;
+		text-align:center;
+		.view-all-btn-div {
+			margin-top:30px;
+			.btn {
+				margin-right:0px;
+			}
+		}
+	}
+	.challenge-split {
+		text-align:center;
+		position: relative;
+		display: inline-block;
+		margin-bottom:20px;
+		height:350px;
+		width:350px;
+		padding:10px;
+		border-radius:5px 5px 5px 5px;
+		border-top:1px solid $overlay-light;
+		z-index:10;
+		margin:30px;
+		@include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+		.challenge-image {
+			display:inline-table;
+			position:absolute;
+			left:0;
+			top:0;
+			height:175px;
+			width:350px;
+			text-align:center;
+			background:white;
+			border-radius:5px;
+			.challenge-img-parent {
+				position:relative;
+				display:table-cell;
+				vertical-align:middle;
+				.challenge-img {
+					max-height:175px;
+					max-width:350px;
+					position:relative;
+					display:inline-block;
+				}
+			}
+		}
+		.challenge-content {
+			display:inline-block;
+			position:absolute;
+			left:0;
+			bottom:0;
+			height:175px;
+			width:350px;
+			background:white;
+			border-radius:5px;
+			border-top:1px solid $overlay-lighter;
+		}
+		&:hover{
+			@include box-shadow(0px, 0px, 10px, 5px, $overlay-light);
+		}
+	}
+	.challenge-title{
+		font-size:$fs-16;
+		text-align:center;
+		font-weight:$fw-bolder;
+		position: absolute;
+		margin-top:20px;
+		top:50%;
+		left:50%;
+		transform: translate(-50%, -80%);
+		z-index:100;
+		width:200px;
+	}
+	.challenge-link{
+		font-weight:$fw-regular;
+		font-size:$fs-16;
+		font-style: italic;
+		cursor:pointer;
+	}
+}
+
+@include screen-large {
+	.featured-challenges-container {
+		.challenge-split {
+			&:hover {
+				height:400px;
+				width:400px;
+				.challenge-image {
+					height:200px;
+					width:400px;
+					.challenge-img-parent {
+						.challenge-img {
+							max-height:200px;
+							max-width:400px;
+						}
+					}
+				}
+				.challenge-content {
+				height:200px;
+				width:400px;
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,29 @@
+<div class="card ev-card-panel ev-challenge-card ev-card-hover">
+  <div class="card-image ev-card-image">
+    <img class="bg-img" [src]="challenge['image']">
+    <span class=" ev-card-title fs-14"><span><img [src]="challenge['image']"></span>{{challenge['title']}}</span>
+  </div>
+  <div class="card-content">
+    <p><strong class="text-light-black fs-12">Organized by</strong>
+      <br> <strong>{{challenge['creator']['team_name']}}</strong></p>
+    <p><strong class="text-light-black fs-12">Starts on</strong>
+      <br> <strong>{{challenge['start_date'] | date:'medium'}} {{challenge['start_zone']}}</strong></p>
+    <p><strong class="text-light-black fs-12">Ends on</strong>
+      <br> <strong>{{challenge['end_date'] | date:'medium'}} {{challenge['end_zone']}}</strong></p>
+    <div class="margin-top-btm" *ngIf="this.routerPublic.url === myChallengesRoute">
+                            <span *ngIf="challenge['approved_by_admin']">
+                                <div class="chip green white-text">Approved</div>
+                            </span>
+      <span *ngIf="!challenge['approved_by_admin']">
+                                <div class="chip red white-text">Not Approved</div>
+                            </span>
+      <span *ngIf="challenge['published']">
+                                <div class="chip green white-text">Published</div>
+                            </span>
+      <span *ngIf="!challenge['published']">
+                                <div class="chip red white-text">Not Published</div>
+                            </span>
+    </div>
+  </div>
+  <div class=" btn-card-detail waves-effect waves-dark fw-light fs-14"><strong>View Details </strong> &nbsp;</div>
+</div>

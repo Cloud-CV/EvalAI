@@ -1,0 +1,76 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.challenge-flex {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: calc(100% - 223px);
+  float: right;
+  &.center {
+    float: none;
+    margin: 0 auto;
+    text-align: left;
+    overflow: hidden;
+  }
+}
+
+.challenge-content {
+  flex: 1;
+  min-height: 100vh;
+}
+
+.web-container {
+  padding-top: 70px;
+  overflow-x: hidden;
+}
+
+.challenge-container {
+  margin: 0 auto;
+  margin-bottom:50px;
+}
+
+.card-content p {
+  padding-bottom: 10px;
+}
+
+.top-card-container {
+  padding: 40px 40px 0 40px;
+}
+
+.toggle-participation-text {
+  display: inline-block;
+  padding-left: 10px;
+}
+
+.top-card-container {
+  .stars {
+    cursor: default;
+    &.is-clickable {
+      cursor:pointer;
+    }
+  }
+
+  .card-img-row {
+    margin-bottom: 20px;
+    padding: 0 15px 0 15px;
+  }
+
+  .card-tab-row {
+    padding: 0 12px 0 12px;
+  }
+}
+
+.top-card-container ul.inline-list {
+  margin: 0px;
+}
+.top-card-container ul.inline-list li {
+  margin: 0 40px 1.5% 0;
+  min-height: 40px;
+}
+
+@media only screen and (max-width: $med-screen) {
+  .challenge-flex {
+    width: 100%;
+  }
+}
