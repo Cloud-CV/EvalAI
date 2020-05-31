@@ -11,6 +11,7 @@ from moto import mock_sqs
 from io import BytesIO
 from os.path import join
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -49,7 +50,7 @@ class BaseAPITestClass(APITestCase):
 
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
 
-        self.testserver = "http://testserver"
+        self.testserver = f"http://{settings.DJANGO_SERVER}:{settings.DJANGO_SERVER_PORT}"
         self.url = "/test/url"
 
         self.input_file = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w+")
