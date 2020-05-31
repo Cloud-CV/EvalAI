@@ -6,7 +6,6 @@ source = evalai/
 [report]
 exclude_lines =
     import
-    @click.*
     main.add_command([a-z]*?)
 
 omit =
