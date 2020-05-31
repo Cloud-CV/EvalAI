@@ -7,6 +7,7 @@ from requests.exceptions import RequestException
 from evalai.challenges import challenge, challenges
 from evalai.teams import teams
 from evalai.submissions import submission
+from evalai.utils.auth import get_request_header
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
 
@@ -895,3 +896,79 @@ class TestRequestForExceptions(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ["1"])
         assert result.exit_code == 1
+
+
+class TestTeamsSuccess(BaseTestClass):
+    def setup(self):
+        url = "{}{}"
+
+        self.challenge_id = "2"
+        self.team_id = "3"
+        self.team_name = "TeamTest"
+        self.expected_partic_team = "\nYour participant team {} was successfully created.\n".format(self.team_name)
+        self.expected_host_team = "\nYour host team {} was successfully created.\n".format(self.team_name)
+        self.expected_participate = "Your team id {} is now participating in this challenge.\n".format(self.team_id)
+
+        headers = get_request_header()
+        headers["Content-Type"] = "application/json"
+
+        data = {}
+        data["team_name"] = self.team_name
+        data = json.loads(json.dumps(data))
+
+        responses.add(
+            responses.POST,
+            url.format(API_HOST_URL, URLS.participant_team_list.value),
+            headers=headers,
+            json=data,
+            status=201)
+
+        responses.add(
+            responses.POST,
+            url.format(API_HOST_URL, URLS.create_host_team.value),
+            headers=headers,
+            json=data,
+            status=201)
+
+        responses.add(
+            responses.POST,
+            url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format(self.challenge_id, self.team_id),
+            status=201)
+
+    @responses.activate
+    def test_create_participant_team_success(self):
+        user_prompt_text = (
+            "Enter team name: {tn}\n"
+            "Please confirm the team name - {tn} [y/N]: y\n"
+            "Do you want to enter the Team URL [y/N]: N\n"
+        ).format(tn=self.team_name)
+
+        runner = CliRunner()
+        result = runner.invoke(teams, ["create", "participant"], input="TeamTest\ny\nN")
+        response = result.output
+        expected = self.expected_partic_team
+        expected = "{}{}\n".format(user_prompt_text, expected)
+        assert response == expected
+
+    @responses.activate
+    def test_create_host_team_success(self):
+        user_prompt_text = (
+            "Enter team name: TeamTest\n"
+            "Please confirm the team name - TeamTest [y/N]: y\n"
+            "Do you want to enter the Team URL [y/N]: N\n"
+        )
+
+        runner = CliRunner()
+        result = runner.invoke(teams, ["create", "host"], input="TeamTest\ny\nN")
+        response = result.output
+        expected = self.expected_host_team
+        expected = "{}{}\n".format(user_prompt_text, expected)
+        assert response == expected
+
+    @responses.activate
+    def test_participate_in_a_challenge_success(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, [self.challenge_id, "participate", self.team_id])
+        response = result.output
+        expected = self.expected_participate
+        assert response == expected
