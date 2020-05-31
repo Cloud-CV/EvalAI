@@ -292,3 +292,46 @@ class TestMakeSubmission(BaseTestClass):
                 ],
             )
             assert result.exit_code == 0
+
+
+class TestPush(BaseTestClass):
+    def setup(self):
+        url = "{}{}"
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.phase_details_using_slug.value).format("20"),
+            json=json.loads(challenge_response.challenge_phase_details_slug),
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_details.value).format("10"),
+            json=json.loads(challenge_response.challenge_details),
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.get_aws_credentials.value).format("2"),
+            json=json.loads(submission_response.aws_credentials),
+            status=200,
+        )
+
+    def test_push_when_image_is_not_valid(self):
+        expected = (
+            "Error: Please enter the tag name with image.\n\n"
+            "For eg: `evalai push ubuntu:latest --phase 123`"
+        )
+        runner = CliRunner()
+        result = runner.invoke(push, ["invalid-image", "--phase", "20"])
+        response = result.output.strip()
+        assert response == expected
+        assert result.exit_code == 1
+
+    def test_push_when_image_not_found(self):
+        expected = "Error: Image not found. Please enter the correct image name and tag."
+        runner = CliRunner()
+        result = runner.invoke(push, ["foo:bar", "--phase", "20"])
+        response = result.output.strip()
+        assert response == expected
