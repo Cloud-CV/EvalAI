@@ -36,7 +36,7 @@ If you are interested in contributing to EvalAI-CLI, follow our [contribution gu
 3. Create a virtual environment
 
     ```bash
-    cd EvalAI-CLI
+    cd evalai-cli
     virtualenv -p python3 venv
     source venv/bin/activate
     ```
