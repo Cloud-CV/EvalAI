@@ -60,6 +60,17 @@ class TestTeams:
         self.participant_teams = team_list_data["results"]
         self.host_teams = host_team["results"]
 
+    def test_teams_list_with_both_flags_passed(self):
+        expected = (
+            "Sorry, wrong flag. Please pass either one of the flags "
+            "--participant or --host.\n"
+        )
+        runner = CliRunner()
+        result = runner.invoke(teams, ["--participant", "--host"])
+        response = result.output
+        assert response == expected
+        assert result.exit_code == 1
+
     @responses.activate
     def test_display_participant_teams_list(self):
         table = BeautifulTable(max_width=200)
