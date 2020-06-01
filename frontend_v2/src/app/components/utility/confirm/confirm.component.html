@@ -1,0 +1,24 @@
+<div class="modal-container confirm-container">
+	<div class="modal-card confirm-card">
+		<div class="title">
+			{{title}}
+		</div>
+		<div class="content">
+			{{content}}
+		</div>
+		<div class="row">
+			<div class="col-md-12 col-sm-12">
+				<div class="align-center text-med-black fw-regular">
+					<ul class="confirm-buttons hide-on-med-and-down">
+						<li>
+							<a appClickstop (click)="denied()" class="dark-link pointer"><strong class="fw-semibold">{{deny}}</strong></a>
+						</li>
+						<li>
+							<button appClickstop (click)="confirmed()" class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16">{{confirm}}</button>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

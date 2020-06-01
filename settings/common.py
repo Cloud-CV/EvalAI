@@ -299,6 +299,9 @@ SWAGGER_SETTINGS = {
 
 REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}
 
+DJANGO_SERVER = os.environ.get("DJANGO_SERVER")
+DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
+
 HOSTNAME = os.environ.get("HOSTNAME")
 
 SENDGRID_SETTINGS = {

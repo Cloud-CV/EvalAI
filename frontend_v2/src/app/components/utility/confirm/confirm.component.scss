@@ -1,0 +1,21 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.confirm-container {
+  z-index: 110;
+  .confirm-card {
+    z-index: 111;
+    .title {
+      margin: 0px;
+    }
+  }
+
+  .btn-inline {
+    display: -webkit-inline-box;
+  }
+}
+
+.row ul.confirm-buttons li {
+  display: inline-block;
+  margin: 9px 9px;
+}
