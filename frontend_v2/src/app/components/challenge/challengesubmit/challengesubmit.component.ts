@@ -260,7 +260,6 @@ isSubmissionUsingUrl: any;
         sub.unsubscribe();
       }
     });
-
   }
 
   /**
