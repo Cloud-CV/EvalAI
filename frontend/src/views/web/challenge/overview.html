@@ -1,4 +1,14 @@
 <section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-approval-view"
+         ng-if="!challenge.approved_by_admin && challenge.isChallengeHost">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m11 l11">Thank you for successfully creating a challenge on EvalAI.
+                Please note that the challenge requires approval from the EvalAI Team so that the challenge is visible to public.
+                We have received a notification for challenge creation and will review the challenge soon (in 24 hours).
+                If you have any questions, please feel free to reach out to us at
+                <a href="mailto:team@cloudcv.org" class="blue-text">team@cloudcv.org</a></div>
+        </div>
+    </div>
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12 m11 l11">

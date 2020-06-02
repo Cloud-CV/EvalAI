@@ -1,0 +1,188 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.our-team-container {
+  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  width:90%;
+  margin: 0 auto;
+  background:$gray-lighter;
+  color:$gray-darker;
+  border-radius:10px;
+  margin-top:20px;
+  margin-bottom:50px;
+  padding:20px;
+  text-align:center;
+  .our-team-title {
+    color: $gray-dark;
+  	font-size:$fs-36;
+  	margin-top:20px;
+  	margin-bottom: 20px;
+  }
+
+  .exist-team-card {
+      ul {
+          &.collapsible {
+              border: 0;
+              box-shadow: none;
+              li {
+                  box-shadow: 0 0 5px #e0e0e0;
+              }
+          }
+          li {
+              margin: 20px 0px;
+              min-height: 40px;
+              .collapsible-header {
+                  border-bottom: 0;
+                  line-height: initial;
+                  min-height: initial;
+                  padding: 10px 5px;
+                  i {
+                      display: inline-block;
+                      float: none;
+                      font-size: initial;
+                      line-height: 40px;
+                      margin-right: 0;
+                      text-align: center;
+                      width: 2rem;
+                  }
+              }
+              .collapsible-body {
+                  background-color: #fafafa;
+                  border-top: 1px solid #e0e0e0;
+                  padding: 10px 40px;
+                  p {
+                      padding: 3px 0;
+                  }
+              }
+          }
+      }
+      i.list-icon {
+          line-height: 25px;
+      }
+  }
+
+  .new-team-card {
+      padding-bottom: 40px;
+  }
+
+  .pagination {
+      margin-top: 20px;
+  }
+
+  .pagination-title {
+      padding: 0px 10px;
+  }
+
+  div.show-member-title {
+      width: calc(100% - 35px);
+      float: right;
+  }
+
+  .page-msg {
+      margin-top: 16px;
+  }
+
+  .team-card {
+      position: relative;
+      background: $gray-dark;
+      max-width: 235px;
+      height: 270px;
+      border-radius: 6px;
+      @include box-shadow(0px, 0px, 10px, 5px, $overlay-light);  
+      overflow: hidden;
+      margin-bottom: 30px;
+      margin-left: auto;
+      margin-right: auto;
+      transition: all 0.2s ease-in-out;
+      &:hover {
+        @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+      }
+  }
+
+  .team-bg {
+      position: absolute;
+      top: -40px;
+      left: -50px;
+      background: $blue-overlay-dark;
+      height:100%;
+      img {
+          width: 130%;
+          opacity: 0.15;
+      }
+  }
+
+  .team-bg-over {
+      position: absolute;
+      bottom: -7px;
+      width: 100%;
+      img {
+          width: 100%;
+      }
+  }
+
+  .team-profile {
+      display: block;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: absolute;
+      bottom: 25px;
+      left: 15px;
+      box-shadow: 0px 4px 8px #989898;
+      img {
+          width: 100%;
+      }
+  }
+
+  .team-player {
+      position: absolute;
+      bottom: 14px;
+      text-align: right;
+      padding-left: 50px;
+      right: 15px;
+      .text-dark-black {
+          color: $dark-black;
+          font-size: $fs-15;
+          font-weight: $fw-semibold;
+      }
+      .text-med-black {
+          color: $dark-black;
+          font-size: $fs-13;
+      }
+      h4 {
+          font-size: $fs-16;
+      }
+  }
+
+  .team-link-head {
+      padding: 10px 5px 10px 5px;
+      position: absolute;
+      width: 100%;
+      top: 0;
+      z-index: 10;
+      margin-left: 0px;
+      .link-team-user {
+          color: $blue-light;
+          padding-right: 0px;
+          font-size: 12px;
+          line-height: 25px;
+      }
+      span {
+          padding-right: 10px;
+          a {
+              color: $gray-light;
+              &:hover {
+                  color: #fff;
+              }
+          }
+          font-size: 14px;
+          transition: all 0.2s ease-in-out;
+      }
+  }
+
+  .team-heading {
+      margin-bottom: 30px;
+      color: #9d9d9d;
+  }
+}

@@ -61,4 +61,4 @@ class DatadogMiddleware(MiddlewareMixin):
         api.Event.create(title=title, text=text, tags=event_tags)
 
     def _get_metric_tags(self, request):
-            return ['path:{0}'.format(request.path)]
+        return ['path:{0}'.format(request.path)]
