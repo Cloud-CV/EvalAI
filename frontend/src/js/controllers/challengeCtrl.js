@@ -44,13 +44,14 @@
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
         vm.isPublished = false;
+        vm.approved_by_admin = false;
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
         vm.disableSubmit = true;
         // save initial ranking
         vm.initial_ranking = {};
-      // loader for existing teams
+        // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
@@ -178,6 +179,7 @@
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
+                vm.approved_by_admin = details.approved_by_admin;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -680,11 +682,12 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    vm.showPrivateIds.forEach(id => {
-                        if(id == vm.phaseSplitId) {
+                    for (var j=0; j<vm.showPrivateIds.length; j++) {
+                        if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
+                            break;
                         }
-                    });
+                    }
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;

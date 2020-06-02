@@ -1,0 +1,36 @@
+<div class="challenge-card">
+  <div class="bottom-card-container ev-card-panel">
+    <div class="row">
+      <div class="col-md-8 col-sm-8">
+        <span class="fs-18">
+          <span class="fw-semibold">Challenge Settings</span>
+        </span>
+      </div>
+    </div>
+    <br>
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-regular">Banned emails Ids:</span>
+      </div>
+      <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9">
+        <mat-form-field class="example-chip-list">
+          <mat-chip-list #chipList>
+            <mat-chip *ngFor="let email of bannedEmailIds" [selectable]="selectable"
+              [removable]="removable" (removed)="remove(email)">
+              {{email}}
+              <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+            </mat-chip>
+            <input [matChipInputFor]="chipList"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              [matChipInputAddOnBlur]="addOnBlur"
+              (matChipInputTokenEnd)="add($event)">
+          </mat-chip-list>
+        </mat-form-field>
+        <div class="error-message" *ngIf="isValidationError">{{message}}</div>
+        <div class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14" [class.disabled]="isValidationError" (click)="reflectChange()">
+          <span>Update</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

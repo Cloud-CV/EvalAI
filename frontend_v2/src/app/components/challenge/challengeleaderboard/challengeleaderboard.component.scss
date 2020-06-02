@@ -1,0 +1,140 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.challenge-leaderboard-container {
+  padding: 20px;
+  overflow: auto;
+  .phase-select-div {
+    overflow: auto;
+    position: relative;
+    display: block;
+  }
+  .leaderboard-empty {
+    padding: 30px;
+    display: block;
+    position: relative;
+    text-align: center;
+  }
+  .leaderboard-table-div {
+    text-align:center;
+    font-size: $fs-16;
+    color: $gray-darker;
+    font-weight: $fw-light;
+    top: 20px;
+    width: 100%;
+    position: relative;
+    display: block;
+    padding: 30px;
+    padding-top: 0px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    max-height: 500px;
+    .leaderboard-table {
+      width:100%;
+      tr {
+      	&:hover {
+      		background:white;
+      	}
+        &.highlight {
+          background: $red-lighter;
+        }
+        th {
+          color: $gray-dark;
+          .fa-stack-1x {
+            left: unset;
+            width: auto;
+          }
+          div {
+          	font-weight:$fw-light;
+          	&:hover {
+          		font-weight: $fw-regular;
+          	}
+            &.fat {
+              min-width: 180px;
+            }
+            &.fa-stack {
+              height: auto;
+              line-height: unset;
+            }
+            span,
+            i {
+              cursor: pointer;
+              &.dark {
+                color: $gray-darker;
+              }
+            }
+          }
+        }
+
+        td {}
+      }
+    }
+  }
+}
+
+.ev-card-body {
+  .row-lr-margin {
+    margin-bottom: 20px;
+  }
+
+  .mat-standard-chip {
+    padding: 3px 5px;
+    font-size: 16px;
+  }
+}
+
+.btn-switch {
+  position: relative;
+  display: block;
+  width: 30px;
+  height: 15px;
+  cursor: pointer;
+  background-color: rgb(167, 163, 163);
+  border: 2px solid rgb(167, 163, 163);
+  border-radius: 40px;
+
+  .btn-switch-circle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      height: 10px;
+      width: 10px;
+      background-color: #fff;
+      border-radius: 40px;
+  }
+}
+
+.btn-switch--on {
+  background-color: #ffaf4b;
+  border: 2px solid #ffaf4b;;
+
+  .btn-switch-circle--on {
+      left: auto;
+      right: 0;
+  }
+}
+
+.sort-leaderboard-switch {
+	vertical-align: middle;
+	display: inline-block;
+}
+
+.complete-leaderboard {
+  margin-right: 2%;
+}
+
+.leaderboard-description {
+  color:  $yellow !important;
+  border-radius: 2px !important;
+  min-height: 25px !important;
+}
+
+.leaderboard-description-span {
+  margin-left: 2%;
+}
+
+.complete-leaderboard-text {
+  font-size: $fs-16;
+  color: $gray-darker;
+}
