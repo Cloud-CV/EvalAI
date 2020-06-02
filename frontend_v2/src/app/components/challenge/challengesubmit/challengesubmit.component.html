@@ -185,13 +185,13 @@
                         <app-input (change)="validateInput($event.target.value)"
                         [label]="'input_file'" [accept]="'.json, .zip, .txt, .tsv, .gz'"
                         [placeholder]="''" [type]="'file'" [value]="''"
-                        #formsubmit (change)="progress()"></app-input>
+                        #formsubmit (change)="progress($event.target.files)"></app-input>
                         <div class="progress" *ngIf="isFileSelected">
                           <mat-progress-bar mode="determinate" [value]="progressValue"></mat-progress-bar>
                         </div>
                       </div>
                       <div [hidden]="!isSubmissionUsingUrl">
-                        <app-input (input)="validateInput($event.target.value)" 
+                        <app-input (input)="validateInput($event.target.value)"
                         [label]="'file_url'" [placeholder]="'Submission file URL'"
                         [type]="'URL'" [icon]="''" [value]="''" [message]="inputErrorMessage"
                         #formsubmit></app-input>

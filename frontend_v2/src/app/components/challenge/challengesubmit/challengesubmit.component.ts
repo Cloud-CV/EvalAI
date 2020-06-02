@@ -246,15 +246,17 @@ isSubmissionUsingUrl: any;
     this.authToken = this.globalService.getAuthToken();
   }
 
-  progress() {
+  progress(files: FileList) {
     this.isFileSelected = true;
-    const timer$ = interval(100);
+    const fileToUpload = files.item(0);
+    const seconds = fileToUpload.size;
+    const timer$ = interval(10);
 
     const sub = timer$.subscribe((sec) => {
-      this.progressValue = 0 + sec * 100 / 5;
+      this.progressValue = 0 + sec * 100 / seconds;
       this.curSec = sec;
 
-      if (this.curSec === 5) {
+      if (this.curSec === seconds) {
         sub.unsubscribe();
       }
     });
