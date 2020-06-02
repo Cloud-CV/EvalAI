@@ -7,7 +7,8 @@ import {
   MatSelectModule,
   MatIconModule,
   MatDividerModule,
-  MatCheckboxModule } from '@angular/material';
+  MatCheckboxModule,
+  MatProgressBarModule } from '@angular/material';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -52,7 +53,8 @@ import { ChallengelistModule } from '../publiclists/challengelist/challengelist.
     MatTableModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatMenuModule
+    MatMenuModule,
+    MatProgressBarModule
   ],
   exports: [
     ChallengeComponent,

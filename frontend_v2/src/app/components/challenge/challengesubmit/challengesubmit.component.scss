@@ -61,6 +61,10 @@ td, th {
   padding-top: 55px;
 }
 
+::ng-deep .mat-progress-bar-fill::after {
+  background-color: green;
+}
+
 @include screen-small {
   .remaining-submission-clock {
     padding-top: 0px;

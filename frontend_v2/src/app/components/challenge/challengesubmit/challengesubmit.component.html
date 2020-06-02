@@ -62,7 +62,7 @@
               </i>
             </button>
           </li>
-          <li class="content">For more commands, please refer to 
+          <li class="content">For more commands, please refer to
             <a class="text-highlight"
               href="https://evalai-cli.cloudcv.org/" target="_blank">evalai-cli
               documentation.</a>
@@ -185,7 +185,10 @@
                         <app-input (change)="validateInput($event.target.value)"
                         [label]="'input_file'" [accept]="'.json, .zip, .txt, .tsv, .gz'"
                         [placeholder]="''" [type]="'file'" [value]="''"
-                        #formsubmit></app-input>
+                        #formsubmit (change)="progress()"></app-input>
+                        <div class="progress" *ngIf="isFileSelected">
+                          <mat-progress-bar mode="determinate" [value]="progressValue"></mat-progress-bar>
+                        </div>
                       </div>
                       <div [hidden]="!isSubmissionUsingUrl">
                         <app-input (input)="validateInput($event.target.value)" 
@@ -246,7 +249,7 @@
             </ul>
           </div>
         </div>
-      <div *ngIf="selectedPhaseSubmissions.maxExceeded" 
+      <div *ngIf="selectedPhaseSubmissions.maxExceeded"
       class="col-md-5 col-sm-4 col-xs-12">
         <div class="ev-submission-card-body exist-team-card
           ev-remaining-submission remaining-submission-clock">
@@ -260,7 +263,7 @@
         </div>
       </div>
       <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails" class="col-md-5 col-sm-5 col-xs-12">
-        <div class="ev-card-body exist-team-card ev-remaining-submission 
+        <div class="ev-card-body exist-team-card ev-remaining-submission
         remaining-submission-clock">
           <div class="row row-lr-margin">
             <span class="color-black">
@@ -301,7 +304,7 @@
         </div>
       </div>
       <div *ngIf="selectedPhaseSubmissions.showClock" class="col-md-5 col-sm-12 col-xs-12">
-        <div class="ev-card-body exist-team-card ev-remaining-submission 
+        <div class="ev-card-body exist-team-card ev-remaining-submission
         remaining-submission-clock">
           <div class="row row-lr-margin">
             <strong class="fw-regular text-med-black">
