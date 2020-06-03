@@ -701,11 +701,14 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         )
 
 
-def create_eks_nodegroup(instance, cluster_name):
+def create_eks_nodegroup(challenge, cluster_name):
     """
     Creates a nodegroup when a EKS cluster is created by the EvalAI admin
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+        cluster_name {str} -- name of eks cluster
     """
-    nodegroup_name = "{}-nodegroup".format(instance.title.replace(" ", "-"))
+    nodegroup_name = "{0}-nodegroup".format(challenge.title.replace(" ", "-"))
     client = get_boto3_client("eks", aws_keys)
     # TODO: Move the hardcoded cluster configuration such as the instance_type, subnets, AMI to challenge configuration later.
     try:
@@ -727,15 +730,21 @@ def create_eks_nodegroup(instance, cluster_name):
         clusterName=cluster_name,
         nodegroupName=nodegroup_name,
     )
-    # TODO:Deploy nvidia deamonset
 
 
-def create_eks_cluster(sender, instance, field_name, **kwargs):
+def create_eks_cluster(sender, challenge, field_name, **kwargs):
     """
     Called when Challenge is approved by the EvalAI admin
+    calls the create_eks_nodegroup function
+
+    Arguments:
+        sender {type} -- model field called the post hook
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
-    cluster_name = "{}-cluster".format(instance.title.replace(" ", "-"))
-    if instance.approved_by_admin and instance.is_docker_based:
+    from .models import ChallengeEvaluationCluster
+
+    cluster_name = "{0}-cluster".format(challenge.title.replace(" ", "-"))
+    if challenge.approved_by_admin and challenge.is_docker_based:
         client = get_boto3_client("eks", aws_keys)
         try:
             response = client.create_cluster(
@@ -798,9 +807,13 @@ def create_eks_cluster(sender, instance, field_name, **kwargs):
             config_text = yaml.dump(cluster_config, default_flow_style=False)
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
-            # TODO: Update challenge cluster details
+            ChallengeEvaluationCluster.objects.create(
+                challenge=challenge,
+                name=cluster_name,
+                kube_config=config_file
+            )
             # Creating nodegroup
-            create_eks_nodegroup(instance, cluster_name)
+            create_eks_nodegroup(challenge, cluster_name)
             return response
         except ClientError as e:
             logger.exception(e)
