@@ -1,0 +1,28 @@
+<div class = "featured-challenges-container" *ngIf="show_featured_challenges">
+<div class="row centerall">
+	<span class="fw-regular section-title dark-text fs-36">Featured Challenges</span>
+</div>
+<div class="row centerall challenge-area">
+		<div class="challenge-split" *ngFor="let challenge of featured_callenges">
+			<div class="challenge-image">
+				<div class="challenge-img-parent">
+					<img class="challenge-img" [src]="challenge['image']" (error)="challenge['image']='assets/images/404.png';"/>
+				</div>
+			</div>
+			<div class="challenge-content">
+		    	<div class="challenge-title">
+					<span>{{challenge['title']}}</span><br><br>
+					<span class="challenge-link" (click)="navigateToChallenge(challenge['id'])">View more ></span>
+				</div>
+		    </div>
+			
+		</div>
+
+		<div class="view-all-btn-div">
+			<span class="btn btn-fire fs-16">
+				View All
+			</span>
+			
+		</div>
+</div>
+</div>
