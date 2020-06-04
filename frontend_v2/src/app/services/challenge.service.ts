@@ -13,6 +13,7 @@ export class ChallengeService {
     'state': 'Not Published',
     'icon': 'fa fa-eye-slash red-text'
   };
+  public fileContent;
   private isLoggedIn = false;
   private challengeSource = new BehaviorSubject(this.defaultChallenge);
   currentChallenge = this.challengeSource.asObservable();
@@ -329,7 +330,7 @@ export class ChallengeService {
    * @param callback callback function
    */
   challengeSubmission(challenge, phase, formData, callback = () => {}) {
-    const API_PATH = this.endpointsService.challengeSubmissionURL(challenge, phase);
+    const API_PATH = this.endpointsService.newChallengeSubmissionURL(challenge, phase);
     const SELF = this;
     this.apiService.postFileUrl(API_PATH, formData).subscribe(
       data => {
@@ -342,6 +343,29 @@ export class ChallengeService {
       },
       () => {
         console.log('Submission Uploaded');
+    });
+  }
+
+    /**
+   * Submit File for challenge submission
+   * @param challenge  id of challenge.
+   * @param phase  challenge phase id.
+   * @param formData  file for submission
+   * @param callback callback function
+   */
+  challengeSubmissionFile(challenge, phase, formData) {
+    const SELF = this;
+    const API_PATH = SELF.endpointsService.challengeSubmissionFileURL(challenge, phase);
+    SELF.apiService.postFileUrl(API_PATH, formData).subscribe(
+      data => {
+        SELF.globalService.showToast('success', 'File Submission successful!');
+        return(data);
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {
+        console.log('Submission File Uploaded');
     });
   }
 
