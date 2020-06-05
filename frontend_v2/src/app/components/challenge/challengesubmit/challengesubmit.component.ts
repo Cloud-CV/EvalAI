@@ -403,10 +403,23 @@ isSubmissionUsingUrl: any;
     }
     const FORM_DATA: FormData = new FormData();
     FORM_DATA.append('input_file',  self.globalService.formItemForLabel(self.components, 'input_file').fileSelected);
-    self.fileContent = self.challengeService.challengeSubmissionFile(
-      self.challenge['id'],
-      self.selectedPhase['id'],
-      FORM_DATA);
+    self.uploadSubmissionFile(self.challenge['id'],
+    self.selectedPhase['id'], FORM_DATA)
+  }
+
+  uploadSubmissionFile(challenge, phase, formData) {
+    const API_PATH = this.endpointsService.challengeSubmissionFileURL(challenge, phase );
+    this.apiService.postFileUrl(API_PATH, formData).subscribe(
+      data => {
+        this.fileContent = (data);
+        console.log('test', this.fileContent);
+      },
+      err => {
+        return('Error');
+      },
+      () => {
+        console.log('Submission File Uploaded');
+    });
   }
   /**
    * Form submit function
@@ -435,7 +448,7 @@ isSubmissionUsingUrl: any;
     const FORM_DATA: FormData = new FormData();
     FORM_DATA.append('status', 'submitting');
     if (!self.isSubmissionUsingUrl) {
-      FORM_DATA.append('input_file', self.challengeService.fileContent);
+      FORM_DATA.append('input_file', self.fileContent);
     } else if (self.validFileUrl && self.isSubmissionUsingUrl) {
       FORM_DATA.append('file_url', self.globalService.formValueForLabel(self.components, 'file_url'));
     }

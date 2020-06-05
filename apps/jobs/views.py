@@ -12,7 +12,7 @@ from rest_framework.decorators import (
 )
 
 from django.core.files.base import ContentFile
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, models
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -53,6 +53,7 @@ from participants.utils import (
     is_user_part_of_participant_team,
 )
 from .aws_utils import generate_aws_eks_bearer_token
+from base.utils import RandomFileName
 from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
@@ -311,19 +312,14 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
 
 
-
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_file_submission(request, challenge_id, challenge_phase_id):
-
+    """API for uploading the submission file"""
     try:
-        file_content = json.loads(request.FILES["input_file"].read())
-        response_data = file_content["submitted_image_uri"]
-        return Response(
-            response_data, status=status.HTTP_200_OK
-        )
+        file_content = request.FILES["input_file"]
     except Exception as ex:
         response_data = {
             "error": "Error {} in submitted_image_uri from submission file".format(
@@ -331,16 +327,18 @@ def challenge_file_submission(request, challenge_id, challenge_phase_id):
             )
         }
         return Response(
-            response_data, status=status.HTTP_400_BAD_REQUEST
+          response_data, status=status.HTTP_400_BAD_REQUEST
         )
+    return Response(
+        file_content, status=status.HTTP_200_OK
+    )
 
 
-@api_view(["GET", "POST"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_submission_v2(request, challenge_id, challenge_phase_id):
-    """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not
     try:
@@ -358,38 +356,7 @@ def challenge_submission_v2(request, challenge_id, challenge_phase_id):
         response_data = {"error": "Challenge Phase does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.method == "GET":
-        # getting participant team object for the user for a particular challenge.
-        participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-            request.user, challenge_id
-        )
-
-        # check if participant team exists or not.
-        try:
-            ParticipantTeam.objects.get(pk=participant_team_id)
-        except ParticipantTeam.DoesNotExist:
-            response_data = {
-                "error": "You haven't participated in the challenge"
-            }
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-        submission = Submission.objects.filter(
-            participant_team=participant_team_id,
-            challenge_phase=challenge_phase,
-        ).order_by("-submitted_at")
-        filtered_submissions = SubmissionFilter(
-            request.GET, queryset=submission
-        )
-        paginator, result_page = paginated_queryset(
-            filtered_submissions.qs, request
-        )
-        serializer = SubmissionSerializer(
-            result_page, many=True, context={"request": request}
-        )
-        response_data = serializer.data
-        return paginator.get_paginated_response(response_data)
-
-    elif request.method == "POST":
+    if request.method == "POST":
 
         # check if the challenge is active or not
         if not challenge.is_active:
@@ -506,7 +473,8 @@ def challenge_submission_v2(request, challenge_id, challenge_phase_id):
             "phase_pk": challenge_phase_id,
         }
         if challenge.is_docker_based:
-            message["submitted_image_uri"] = request.data[
+            file_Content = json.loads(request.data['input_file'].read())
+            message["submitted_image_uri"] = file_Content[
                 "input_file"
             ]
         if serializer.is_valid():
