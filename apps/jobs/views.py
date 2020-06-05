@@ -12,7 +12,7 @@ from rest_framework.decorators import (
 )
 
 from django.core.files.base import ContentFile
-from django.db import transaction, IntegrityError, models
+from django.db import transaction, IntegrityError
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -53,7 +53,6 @@ from participants.utils import (
     is_user_part_of_participant_team,
 )
 from .aws_utils import generate_aws_eks_bearer_token
-from base.utils import RandomFileName
 from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
@@ -327,7 +326,7 @@ def challenge_file_submission(request, challenge_id, challenge_phase_id):
             )
         }
         return Response(
-          response_data, status=status.HTTP_400_BAD_REQUEST
+            response_data, status=status.HTTP_400_BAD_REQUEST
         )
     return Response(
         file_content, status=status.HTTP_200_OK
