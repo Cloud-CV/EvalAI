@@ -328,4 +328,12 @@ class UserInvitationSerializer(serializers.ModelSerializer):
 class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengeEvaluationCluster
-        fields = ("id", "challenge", "name", "cluster_yaml", "kube_config")
+        fields = (
+            "id",
+            "challenge",
+            "name",
+            "cluster_endpoint",
+            "cluster_ssl",
+            "cluster_yaml",
+            "kube_config"
+        )
