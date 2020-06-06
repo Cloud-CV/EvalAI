@@ -1,0 +1,15 @@
+# .readthedocs.yml
+version: 2
+
+sphinx:
+  builder: html
+
+formats:
+  - epub
+  - pdf
+
+python:
+   version: 3.5
+   install:
+      - requirements: requirements/readthedocs.txt
+   system_packages: true
