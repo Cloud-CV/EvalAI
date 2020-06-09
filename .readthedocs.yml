@@ -1,4 +1,3 @@
-# .readthedocs.yml
 version: 2
 
 sphinx:
@@ -11,4 +10,6 @@ formats:
 
 python:
    version: 3.6
+   install:
+   - requirements: requirements/readthedocs.txt
    system_packages: true
