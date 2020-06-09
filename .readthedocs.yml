@@ -9,7 +9,5 @@ formats:
   - pdf
 
 python:
-   version: 3.5
-   install:
-      - requirements: requirements/readthedocs.txt
+   version: 3.6
    system_packages: true
