@@ -13,6 +13,7 @@
         var userKey = utilities.getData('userKey');
 
         utilities.showLoader();
+        utilities.hideButton();
 
         vm.currentList = {};
         vm.upcomingList = {};
@@ -166,9 +167,8 @@
         utilities.sendRequest(parameters);
 
         vm.scrollUp = function() {
-            utilities.hideButton();
             angular.element($window).bind('scroll', function() {
-                if (this.pageYoffset >= 100) {
+                if (this.pageYOffset >= 100) {
                     utilities.showButton();
                 } else {
                     utilities.hideButton();
