@@ -21,7 +21,7 @@ pika==0.10.0
 pickleshare==0.7.4
 Pillow==6.2.0
 psycopg2==2.7.3.2
-pycurl==7.43.0.1
+pycurl==7.43.0.5
 PyYaml==4.2b1
 proc==0.10.1
 rstr==2.2.5
