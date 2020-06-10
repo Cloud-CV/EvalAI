@@ -22,6 +22,8 @@
         // get token
         var userKey = utilities.getData('userKey');
 
+        utilities.showLoader();
+
         // store the next redirect value
         vm.redirectUrl = {};
 
@@ -38,6 +40,7 @@
                 }
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {
@@ -73,6 +76,7 @@
                 }
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {
@@ -103,6 +107,7 @@
                 }
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {
@@ -131,8 +136,10 @@
                 if (status == 200) {
                     vm.participatedTeamCount = details.results.length;
                 }
+                utilities.hideLoader();
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {

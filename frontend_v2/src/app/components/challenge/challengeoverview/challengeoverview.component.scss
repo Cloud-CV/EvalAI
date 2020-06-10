@@ -1,0 +1,10 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.bottom-card-container {
+	padding: 40px;
+
+	.row {
+		margin-bottom: 20px;
+	}
+}
