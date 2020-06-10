@@ -9,23 +9,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0064_add_is_restricted_to_select_one_submission_field_in_phase_model'),
+        (
+            "challenges",
+            "0064_add_is_restricted_to_select_one_submission_field_in_phase_model",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengeevaluationcluster',
-            name='cluster_endpoint',
+            model_name="challengeevaluationcluster",
+            name="cluster_endpoint",
             field=models.URLField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='challengeevaluationcluster',
-            name='cluster_ssl',
+            model_name="challengeevaluationcluster",
+            name="cluster_ssl",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='challengeevaluationcluster',
-            name='cluster_yaml',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('cluster_yaml')),
+            model_name="challengeevaluationcluster",
+            name="cluster_yaml",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName("cluster_yaml"),
+            ),
         ),
     ]
