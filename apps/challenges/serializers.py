@@ -91,6 +91,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "codename",
             "slug",
             "max_concurrent_submissions_allowed",
+            "allowed_submission_file_types",
             "is_restricted_to_select_one_submission"
         )
 

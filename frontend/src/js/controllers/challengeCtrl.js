@@ -74,6 +74,9 @@
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
 
+        vm.currentPhaseId = null;
+        vm.allowed_submission_file_types = "";
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -2099,6 +2102,7 @@
             });
         };
 
+
         vm.editChallengePhase = function(editChallengePhaseForm) {
             if (editChallengePhaseForm) {
                 vm.challengePhaseId = vm.page.challenge_phase.id;
@@ -2143,6 +2147,12 @@
                     onSuccess: function(response) {
                         var details = response.data;
                         vm.phases = details;
+                        for (var i = 0; i < details.count; i++) {
+                            if (vm.phases.results[i].id == vm.currentPhaseId) {
+                                vm.allowed_submission_file_types = vm.phases.results[i].allowed_submission_file_types;
+                                break;
+                            }
+                        }
                         utilities.hideLoader();
                     },
                     onError: function(response) {
