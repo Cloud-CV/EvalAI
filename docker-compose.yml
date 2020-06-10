@@ -52,6 +52,19 @@ services:
       - /code/node_modules
       - /code/bower_components
 
+  nodejs_v2:
+    build:
+      context: ./
+      dockerfile: docker/dev/nodejs_v2/Dockerfile
+    environment:
+      ANGULAR_ENV: development
+    ports:
+      - "9999:4200"
+      - "4200:4200"
+    volumes:
+    - ./frontend_v2:/code
+    - /code/node_modules
+    
   # TODO: Add alternative for AWS SQS Celery (https://docs.celeryproject.org/en/stable/getting-started/brokers/sqs.html) in dev setup.
   # celery:
   #   hostname: celery

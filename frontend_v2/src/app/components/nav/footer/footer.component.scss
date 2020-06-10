@@ -1,0 +1,40 @@
+@import "styles/variables";
+
+.ev-footer {
+  position: relative;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+}
+
+.dashboard-footer {
+  width: 100%;
+  bottom: 0;
+  left: 0;
+}
+
+
+/* media queries */
+
+@media only screen and(min-width:768px) and(max-width:$med-screen) {
+  .dashboard-footer {
+    width: 100%;
+    padding-left: 220px;
+  }
+}
+
+@media only screen and(min-width:300px) and(max-width:$small-screen) {
+  .github-buttons {
+    margin-left: 20px;
+  }
+}
+
+@media only screen and(min-height: 650px) and(max-height:700px) {
+  .github-buttons {
+    li {
+      iframe {
+       height: 20px ;
+      }
+    }
+  }
+}
