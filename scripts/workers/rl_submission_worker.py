@@ -4,7 +4,7 @@ import signal
 
 from worker_utils import EvalAI_Interface
 
-from kubernetes import client, config
+from kubernetes import client
 
 # TODO: Add exception in all the commands
 # from kubernetes.client.rest import ApiException
@@ -22,7 +22,6 @@ class GracefulKiller:
 
 
 logger = logging.getLogger(__name__)
-config.load_kube_config()
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
@@ -147,9 +146,12 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
         )
 
 
-def get_api_object(cluster_name, challenge, evalai):
+def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
+    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.host = cluster_endpoint
+    configuration.verify_ssl = False
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -173,6 +175,7 @@ def main():
     challenge = evalai.get_challenge_by_queue_name()
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
+    cluster_endpoint = cluster_details.get("cluster_endpoint")
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
@@ -182,7 +185,7 @@ def main():
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(cluster_name, challenge, evalai)
+                api_instance = get_api_object(cluster_name, cluster_endpoint, challenge, evalai)
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
