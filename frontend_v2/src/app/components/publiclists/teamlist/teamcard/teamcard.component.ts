@@ -154,7 +154,7 @@ export class TeamcardComponent implements OnInit, OnChanges {
    */
   editTeam(e) {
     e.stopPropagation();
-    this.editTeamCard.emit(this.team['id']);
+    this.editTeamCard.emit(this.team);
   }
 
   /**
