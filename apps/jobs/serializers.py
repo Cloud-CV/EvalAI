@@ -5,7 +5,7 @@ from rest_framework import serializers
 from challenges.models import ChallengePhase, LeaderboardData
 from participants.models import Participant, ParticipantTeam
 
-from .models import Submission
+from .models import Submission, ChallengeSubmissionFile
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -237,3 +237,12 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
 
     def get_limits(self, obj):
         return self.context.get("limits")
+
+
+class SubmissionFileSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengeSubmissionFile Model.
+    """
+    class Meta:
+        model = ChallengeSubmissionFile
+        fields = ("id", "input_file")

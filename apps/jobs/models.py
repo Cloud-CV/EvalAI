@@ -248,3 +248,17 @@ class Submission(TimeStampedModel):
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
+
+class ChallengeSubmissionFile(TimeStampedModel):
+    input_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}")
+    )
+    class Meta:
+        app_label = "jobs"
+        db_table = "submissionfile"
+    def save(self, *args, **kwargs):
+
+        input_file = super(ChallengeSubmissionFile, self).save(
+            *args, **kwargs
+        )
+        return input_file

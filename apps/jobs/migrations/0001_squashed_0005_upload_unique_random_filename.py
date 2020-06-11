@@ -115,5 +115,30 @@ class Migration(migrations.Migration):
                 ("output", models.TextField(blank=True, null=True)),
             ],
             options={"db_table": "submission"},
-        )
+        ),
+        migrations.CreateModel(
+            name="ChallengeSubmissionFile",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                (
+                    "input_file",
+                    models.FileField(
+                        upload_to=base.utils.RandomFileName(
+                            "submission_files/submission"
+                        )
+                    ),
+                ),
+            ],
+            options={"db_table": "submissionfile"},
+        ),
     ]

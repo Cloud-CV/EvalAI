@@ -61,6 +61,7 @@ from .serializers import (
     LeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
     SubmissionSerializer,
+    SubmissionFileSerializer
 )
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
@@ -317,20 +318,18 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_file_submission(request, challenge_id, challenge_phase_id):
     """API for uploading the submission file"""
-    try:
-        file_content = request.FILES["input_file"]
-    except Exception as ex:
-        response_data = {
-            "error": "Error {} in submitted_image_uri from submission file".format(
-                ex
-            )
-        }
-        return Response(
-            response_data, status=status.HTTP_400_BAD_REQUEST
-        )
-    return Response(
-        file_content, status=status.HTTP_200_OK
+    serializer = SubmissionFileSerializer(
+        data=request.data,
     )
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        print(response_data)
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(
+            serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
 
 
 @api_view(["POST"])
