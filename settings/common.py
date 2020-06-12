@@ -155,6 +155,7 @@ REST_FRAMEWORK = {
         "rest_framework.pagination.LimitOffsetPagination"
     ),
     "PAGE_SIZE": 100,
+    "TEAM_PAGE_SIZE": 10,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],
@@ -166,7 +167,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute"},
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "resend_email": "3/hour"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
@@ -297,6 +298,9 @@ SWAGGER_SETTINGS = {
 }
 
 REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}
+
+DJANGO_SERVER = os.environ.get("DJANGO_SERVER")
+DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
 
 HOSTNAME = os.environ.get("HOSTNAME")
 

@@ -8,6 +8,7 @@ from allauth.account.models import EmailAddress
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse_lazy
@@ -228,7 +229,7 @@ class ExtractSubmissionDataTestClass(BaseTestClass):
         submission_worker.extract_submission_data(self.submission.pk)
 
         name = os.path.basename(self.submission.input_file.name)
-        submission_input_file_url = "http://testserver{}".format(self.submission.input_file.url)
+        submission_input_file_url = f"http://{settings.DJANGO_SERVER}:{settings.DJANGO_SERVER_PORT}{self.submission.input_file.url}"
         submission_input_file_path = "mocked/dir/submission_{}/{}".format(self.submission.pk, name)
         mock_down_ext.assert_called_with(submission_input_file_url, submission_input_file_path)
 

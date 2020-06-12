@@ -1,0 +1,205 @@
+@import "styles/variables";
+
+.auth-light-link {
+  &:hover {
+    color: $highlight;
+  }
+}
+
+.fg-pass {
+  font-size: 0.8em;
+}
+
+.auth-container {
+  transition: all 0.2s ease-in-out;
+}
+
+.auth-home {
+  padding-top: 0px;
+  margin-top: 5px;
+}
+
+img.auth-logo {
+  width:90px;
+}
+
+.graphic-cont,
+.auth-cont {
+  display: inline-block;
+  padding: 10vh 40px 40px;
+  width: 70%;
+  background: #fff;
+  float: left;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.graphic-cont {
+  background: $dark-gray;
+  /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient($dark-gray, $grad-sec-gray);
+  /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient($dark-gray, $grad-sec-gray);
+  /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient($dark-gray, $grad-sec-gray);
+  /* For Firefox 3.6 to 15 */
+  background: linear-gradient($dark-gray, $grad-sec-gray);
+  /* Standard syntax */
+  width: 30%;
+}
+
+.auth-cloud-cont {
+  position: absolute;
+  bottom: 0;
+  height: 30%;
+  width: 100%;
+  left: 0;
+
+  img {
+    width: 120%;
+    position: absolute;
+    bottom: 0;
+  }
+}
+
+.social-auth-group {
+  margin-top:20px;
+}
+
+.moon {
+  width: 80px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+
+  img {
+    width: 100%;
+  }
+
+  animation: plane 50s linear infinite;
+}
+
+@keyframes plane {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.sun {
+  width: 200px;
+  position: absolute;
+  bottom: 15%;
+  right: -45px;
+
+  img {
+    width: 100%;
+  }
+
+  animation: sun 70s linear infinite;
+}
+
+@keyframes sun {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.star-img {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.star1 {
+  animation: starone 2s alternate linear infinite;
+}
+
+.star2 {
+  animation: startwo 3s alternate linear infinite;
+}
+
+@keyframes starone {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes startwo {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.ufo {
+  width: 120px;
+  position: absolute;
+
+  img {
+    width: 100%;
+  }
+
+  animation: spaceman 14s alternate linear infinite;
+}
+
+@keyframes spaceman {
+  0% {
+    transform: rotate(0deg);
+    top: 10%;
+    left: 10%;
+  }
+  50% {
+    transform: rotate(15deg);
+    top: 60%;
+    left: 20%;
+  }
+  75% {
+    transform: rotate(-10deg);
+    top: 40%;
+    left: 60%;
+  }
+  100% {
+    transform: rotate(0deg);
+    top: 20%;
+    left: 20%;
+  }
+}
+
+/*media queries*/
+
+@media only screen and (max-width: $med-screen) {
+  .graphic-cont {
+    position: absolute;
+    width: 100%;
+    opacity: 0.4;
+  }
+  .auth-cont {
+    width: 100%;
+    background-color: rgba(255,255,255,0.9);
+  }
+}

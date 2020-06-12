@@ -1,0 +1,67 @@
+/*Mixins for global styles*/
+
+@import './variables.scss';
+
+
+
+/*Box Shadow-------*/
+
+@mixin box-shadow($x: 0px, $y:0px, $blur:4px, $rad:0px, $color:$gray-medium) {
+  box-shadow: $x $y $blur $rad $color;
+}
+
+
+/*Gradient -------*/
+
+@mixin linear-gradient-bg($dir, $from, $to) {
+  background-image: linear-gradient($dir, $from, $to);
+}
+
+
+/*Screen size mixins*/
+
+@mixin screen-small() {
+  @media (max-width: $screen-sm) {
+    @content;
+  }
+}
+
+@mixin screen-small-medium() {
+  @media screen and (max-width: $screen-sm) {
+    @content;
+  }
+}
+
+@mixin screen-small-medium() {
+  @media screen and (max-width: $screen-sm-md) {
+    @content;
+  }
+}
+
+@mixin screen-medium() {
+  @media screen and (min-width: $screen-sm-md) and (max-width: $screen-md) {
+    @content;
+  }
+}
+
+@mixin screen-large() {
+  @media screen and (min-width: $screen-md) {
+    @content;
+  }
+}
+
+/*Keyframe for animation -------*/
+@mixin keyframes($name) {
+  @-webkit-keyframes #{$name} {
+    @content; 
+  }
+  @-moz-keyframes #{$name} {
+    @content;
+  }
+  @-ms-keyframes #{$name} {
+    @content;
+  }
+  @keyframes #{$name} {
+    @content;
+  } 
+}

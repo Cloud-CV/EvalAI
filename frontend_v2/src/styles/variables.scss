@@ -1,0 +1,178 @@
+/* Color variables */
+
+/* Blue Shades */
+
+$light-gray: #adb4d0;
+$med-gray: #3c3e49;
+$dark-gray: #252833;
+$blue-dark: #33526e;
+$blue-darker: #273e54;
+$blue-light: #adb4d0;
+$blue-medium: #32485d;
+$blue-lighter: #2196F3;
+$blue-medium-dark: #056cf0;
+$wild-blue: #adb4d0;
+$dust-gray: #1a1b1f;
+$blue: #3B9EB9;
+$wait-blue:#5843A3;
+
+$teal: #008081;
+
+/* Black Shades */
+$med-black: #4d4d4d;
+
+/* Purple Shades */
+$purple-medium: #a178b7;
+
+/* Red Shades */
+
+$red-dark: #252833;
+$red-light: #eb8474;
+$med-red: #DB3232;
+
+
+/*black shades*/
+
+$shadow-black: #dedede;
+$light-black: #9d9d9d;
+$med-black: #4d4d4d;
+$dark-black: #4d4d4d;
+
+ /*orange shades*/
+
+$yellow: #ffaf4b;
+$yellow-light: #ffecc8;
+$orange: #ff9800;
+$orange-light: #ffd99a;
+$highlight: #ffaf4b;
+$highlight-dark: #ff7b2e;
+$med-orange: #DF9C3E;
+$hover-orange: #DA8F27;
+
+
+/* Pink Shades */
+$pink-dark: #d7387f;
+
+
+/* Red Shades */
+
+$red-medium: #d9534f;
+$red-light: #eb8474;
+$red-dark: #bc2727;
+$red-lighter: #ffefec;
+
+
+/* Green Shades */
+
+$green-medium: #28a745;
+$med-green: #74DB70;
+
+
+
+/* Gray Shades */
+
+$gray: #e3e3e3;
+$gray-light: #ebebeb;
+$gray-medium: #d4d4d4;
+$gray-dark: #9d9d9d;
+$gray-darker: #273e54;
+$gray-lighter: #fafafa;
+$dark-black: #4d4d4d;
+
+/* fire shades */
+
+$fire-left: #e0a642;
+$fire-right: #de795c;
+
+
+/* Overlay Shades */
+
+$overlay-darker: rgba(0, 0, 0, 0.87);
+$overlay-dark: rgba(0, 0, 0, 0.7);
+$overlay-light: rgba(0, 0, 0, 0.2);
+$overlay-lighter: rgba(0, 0, 0, 0.05);
+$overlay-medium: rgba(0, 0, 0, 0.5);
+$white-overlay-light: rgba(255, 255, 255, 0.2);
+$white-overlay-medium: rgba(255, 255, 255, 0.5);
+$white-overlay-dark: rgba(255, 255, 255, 0.7);
+$blue-overlay-dark: #252833;
+
+
+/* Font sizes */
+
+$fs-12: 12px;
+$fs-13: 13px;
+$fs-14: 14px;
+$fs-15: 15px;
+$fs-16: 16px;
+$fs-18: 18px;
+$fs-20: 20px;
+$fs-22: 22px;
+$fs-24: 24px;
+$fs-30: 30px;
+$fs-34: 34px;
+$fs-36: 36px;
+
+
+/* Font weights */
+
+$fw-light: 300;
+$fw-regular: 400;
+$fw-semibold: 500;
+$fw-bold: 600;
+$fw-bolder: 700;
+
+
+/* Screen Sizes */
+
+$screen-sm: 768px;
+$screen-sm-md: 992px;
+$screen-md: 1130px;
+
+/*font variable*/
+
+$rob-light: 200;
+$rob-med: 300;
+$rob-reg: 400;
+$rob-bold: 600;
+
+/*transparent*/
+
+$transparent: rgba(0, 0, 0, 0);
+
+/*link colors*/
+
+$light-link: #fff;
+$med-link: #9ca3be;
+$dark-link: #252833;
+
+/*link hover colors*/
+
+$link-hover-dark: #ffaf4b;
+$link-hover-light: #fff;
+
+/*loader variable*/
+
+$loader-size: 70px;
+$loader-dot-size: ($loader-size / 5);
+$loader-height: $loader-dot-size;
+$loader-dot-color: #ffaf4b;
+
+/*border color*/
+
+$border-color-light: #e3e3e3;
+
+/*Screen Size Variables*/
+
+$med-screen: 992px;
+$small-screen: 600px;
+
+/*grad new variables*/
+
+$grad-super-light: #fafafa;
+$grad-light-black: #dcdcdc;
+$grad-sec-gray: #45334e;
+
+/*shadow colors*/
+$super-light-shadow: #ececec;
+
