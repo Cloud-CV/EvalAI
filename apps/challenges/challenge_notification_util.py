@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 def challenge_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
-    if prev != curr:  # Checking if the challenge has been approved by admin since last time.
+    if curr == True and prev != curr:  # Checking if the challenge has been approved by admin since last time.
         challenge = instance
 
         # Start the challenge worker.
         response = start_workers([challenge])
         count, failures = response["count"], response["failures"]
 
-        if(count != 1):
+        if (count != 1):
             logger.warning("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
         else:
             challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
