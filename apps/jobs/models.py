@@ -40,6 +40,21 @@ def save_file(sender, instance, created, **kwargs):
         instance.save()
 
 
+class ChallengeSubmissionFile(TimeStampedModel):
+    input_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}")
+    )
+    class Meta:
+        app_label = "jobs"
+        db_table = "submissionfile"
+    def save(self, *args, **kwargs):
+
+        input_file = super(ChallengeSubmissionFile, self).save(
+            *args, **kwargs
+        )
+        return input_file
+
+
 class Submission(TimeStampedModel):
 
     SUBMITTED = "submitted"
@@ -79,9 +94,7 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
-    input_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}")
-    )
+    input_file = models.FileField(),
     stdout_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
         null=True,
@@ -249,16 +262,3 @@ class Submission(TimeStampedModel):
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
 
-class ChallengeSubmissionFile(TimeStampedModel):
-    input_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}")
-    )
-    class Meta:
-        app_label = "jobs"
-        db_table = "submissionfile"
-    def save(self, *args, **kwargs):
-
-        input_file = super(ChallengeSubmissionFile, self).save(
-            *args, **kwargs
-        )
-        return input_file

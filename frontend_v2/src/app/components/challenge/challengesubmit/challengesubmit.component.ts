@@ -27,7 +27,7 @@ isSubmissionUsingUrl: any;
    */
   isLoggedIn = false;
 
-  fileContent;
+  fileContent = '';
 
   /**
    * Challenge object
@@ -411,8 +411,7 @@ isSubmissionUsingUrl: any;
     const API_PATH = this.endpointsService.challengeSubmissionFileURL(challenge, phase );
     this.apiService.postFileUrl(API_PATH, formData).subscribe(
       data => {
-        this.fileContent = (data);
-        console.log('test', this.fileContent);
+        this.fileContent = data['id'];
       },
       err => {
         return('Error');

@@ -15,6 +15,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get("context")
+        context.get("request").POST._mutable = True
         if context and context.get("request").method == "POST":
             created_by = context.get("request").user
             kwargs["data"]["created_by"] = created_by.pk
@@ -24,6 +25,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
             challenge_phase = context.get("challenge_phase").pk
             kwargs["data"]["challenge_phase"] = challenge_phase
+
+            input_file = context.get('request').data['input_file']
+            kwargs["data"]["input_file"] = input_file
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
