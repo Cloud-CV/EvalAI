@@ -248,32 +248,31 @@ def create_challenge_phases(challenge, number_of_phases=1):
             uuid_stamp = uuid.uuid4().hex[0:10]
             slug = "{t}-{y}-{z}".format(t=name, y=year, z=uuid_stamp)
             slug = slug.lower().replace(" ", "-")
-            with open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt'), 'rb') as data_file:
-                data = data_file.read()
-                data = data or None
-                challenge_phase = ChallengePhase.objects.create(
-                    name=name,
-                    slug=slug,
-                    description=fake.paragraph(),
-                    leaderboard_public=True,
-                    is_public=True,
-                    is_submission_public=True,
-                    start_date=challenge.start_date,
-                    end_date=challenge.end_date,
-                    challenge=challenge,
-                    test_annotation=SimpleUploadedFile(
-                        fake.file_name(extension="txt"),
-                        data,
-                        content_type="text/plain",
-                    ),
-                    codename="{}{}".format("phase", i + 1),
+            data = data_file.read()
+            data = data or None
+            challenge_phase = ChallengePhase.objects.create(
+                name=name,
+                slug=slug,
+                description=fake.paragraph(),
+                leaderboard_public=True,
+                is_public=True,
+                is_submission_public=True,
+                start_date=challenge.start_date,
+                end_date=challenge.end_date,
+                challenge=challenge,
+                test_annotation=SimpleUploadedFile(
+                    fake.file_name(extension="txt"),
+                    data,
+                    content_type="text/plain",
+                ),
+                codename="{}{}".format("phase", i + 1),
+            )
+            challenge_phases.append(challenge_phase)
+            print(
+                "Challenge Phase created with name: {} challenge: {}".format(
+                    name, challenge.title
                 )
-                challenge_phases.append(challenge_phase)
-                print(
-                    "Challenge Phase created with name: {} challenge: {}".format(
-                        name, challenge.title
-                    )
-                )
+            )
     return challenge_phases
 
 
