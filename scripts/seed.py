@@ -87,11 +87,11 @@ def create_user(is_admin, username=""):
     """
     Creates superuser, participant user, host user and returns it.
     """
-    """if is_admin:
+    if is_admin:
         username = "admin"
         email = "admin@example.com"
-    else:"""
-    email = "%s@example.com" % (username)
+    else:
+        email = "%s@example.com" % (username)
     user = User.objects.create_user(
         email=email,
         username=username,
@@ -193,10 +193,10 @@ def create_challenge(title, start_date, end_date, host_team, anon_leaderboard):
     queue = "".join(random.choice(string.ascii_letters) for _ in range(75))
     year = datetime.date.today().year
     # add UUID here
-    uuid_stamp = uuid.uuid4().hex[0:5]
+    uuid_stamp = uuid.uuid4().hex[0:10]
     slug = "{t}-{y}-{z}".format(t=title, y=year, z=uuid_stamp)
-    slug = slug.lower().replace(" ", "-")
-    Challenge.objects.create(
+    slug = slug.lower().replace(" ", "-")[:198]
+    challenge = Challenge(
         title=title,
         short_description=fake.paragraph(),
         description=fake.paragraph(),
@@ -212,11 +212,15 @@ def create_challenge(title, start_date, end_date, host_team, anon_leaderboard):
         published=True,
         enable_forum=True,
         anonymous_leaderboard=anon_leaderboard,
-        slug=slug,
         start_date=start_date,
         end_date=end_date,
         queue=queue,
     )
+    challenge.save()
+
+    challenge.slug = slug
+    challenge.save()
+
     print(
         "Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(
             title, host_team.team_name, start_date, end_date
@@ -241,7 +245,7 @@ def create_challenge_phases(challenge, number_of_phases=1):
             "rb",
         ) as data_file:
             year = datetime.date.today().year
-            uuid_stamp = uuid.uuid4().hex[0:5]
+            uuid_stamp = uuid.uuid4().hex[0:10]
             slug = "{t}-{y}-{z}".format(t=name, y=year, z=uuid_stamp)
             slug = slug.lower().replace(" ", "-")
             with open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt'), 'rb') as data_file:
@@ -423,9 +427,9 @@ def run(*args):
             return 0
         print("Seeding...")
         # Create superuser
-        # create_user(is_admin=True)
+        create_user(is_admin=True)
         # Create host user
-        host_user = create_user(is_admin=False, username="hosttest")
+        host_user = create_user(is_admin=False, username="host")
         # Create challenge host team with challenge host
         challenge_host_team = create_challenge_host_team(user=host_user)
         # Create challenge
