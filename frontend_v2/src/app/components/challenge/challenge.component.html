@@ -22,20 +22,6 @@
                                                     {{challenge['title']}}
                                                 </strong>
                                             </span>
-                                            &nbsp;
-                                            <span *ngIf="isChallengeHost">
-                                                <a style="padding-right: 4px;"
-                                                    class="pointer"
-                                                    (click)="editChallengeTitle()">
-                                                    <i class="fa fa-pencil"
-                                                        aria-hidden="true"></i>
-                                                </a>
-                                                <a class="pointer"
-                                                    (click)="deleteChallenge()">
-                                                    <i class="fa fa-trash red-text"
-                                                        aria-hidden="true"></i>
-                                                </a>
-                                            </span>
                                             <br>
                                             <span style="line-height: 1.5"
                                                 *ngIf="challenge.creator.team_url != ''"><strong
@@ -68,11 +54,6 @@
                                                     </a>
                                                 </span>
                                             </span>
-                                            <br>
-                                            <mat-checkbox color="primary" class="fw-semibold" *ngIf="isChallengeHost"
-                                                [checked]="!challenge['is_registration_open']"
-                                                (click)="stopParticipation($event)">Close Participation
-                                            </mat-checkbox>
                                         </p>
                                     </div>
                                 </div>

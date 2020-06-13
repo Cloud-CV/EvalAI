@@ -8,6 +8,33 @@
       </div>
     </div>
     <br>
+    <!-- Edit challenge Detail -->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-regular">Edit challenge details:</span>
+      </div>
+      <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9 challenge-detail">
+        <span class="fs-18 fw-semibold challenge-title">
+              {{challenge['title']}}
+        </span>
+        <a style="padding-right: 4px;"
+        class="pointer"
+        (click)="editChallengeTitle()">
+        <i class="fa fa-pencil"
+            aria-hidden="true"></i>
+        </a>
+        <a class="pointer"
+        (click)="deleteChallenge()">
+        <i class="fa fa-trash red-text"
+            aria-hidden="true"></i>
+        </a> <br>
+        <mat-checkbox color="primary" class="fw-semibold" *ngIf="isChallengeHost"
+        [checked]="!challenge['is_registration_open']"
+        (click)="stopParticipation($event)">Close Participation
+        </mat-checkbox>
+      </div>
+    </div>
+
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
         <span class="fw-regular">Banned emails Ids:</span>
