@@ -1,0 +1,82 @@
+version: "3"
+services:
+  db:
+    image: postgres:10.4
+    ports:
+      - "5432:5432"
+
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    volumes:
+      - ./backup:/backups
+    links:
+      - db:db
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=81
+
+  sqs:
+    image: pakohan/elasticmq
+    hostname: sqs
+    ports:
+      - 9324:9324
+
+  django:
+    hostname: django
+    env_file:
+      - docker/dev/docker.env
+    image: yashdusing/evalai_django:latest
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - sqs
+    volumes:
+      - .:/code
+
+  worker:
+    image: yashdusing/evalai_worker:latest
+    env_file:
+      - docker/dev/docker.env
+    depends_on:
+      - django
+    volumes:
+      - .:/code
+
+  nodejs:
+    image: yashdusing/evalai_nodejs:latest
+    hostname: nodejs
+    environment:
+      NODE_ENV: development
+    ports:
+      - "8888:8888"
+      - "35729:35729"
+    volumes:
+      - .:/code
+      - /code/node_modules
+      - /code/bower_components
+
+  # TODO: Add alternative for AWS SQS Celery (https://docs.celeryproject.org/en/stable/getting-started/brokers/sqs.html) in dev setup.
+  # celery:
+  #   hostname: celery
+  #   env_file:
+  #     - docker/dev/docker.env
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/dev/celery/Dockerfile
+  #   depends_on:
+  #     - django
+  #   volumes:
+  #     - .:/code
+  
