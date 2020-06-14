@@ -40,6 +40,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "input_file",
             "stdout_file",
             "stderr_file",
+            "started_at",
+            "completed_at",
             "submitted_at",
             "method_name",
             "method_description",

@@ -25,7 +25,6 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from django.conf import settings
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -34,24 +33,21 @@ COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 logger = logging.getLogger(__name__)
 django.setup()
 
-DJANGO_SETTINGS_MODULE = os.environ.get(
-    "DJANGO_SETTINGS_MODULE", "settings.dev"
-)
-DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
-LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
-    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
-)
-
-from challenges.models import (
+# Load django app settings
+from django.conf import settings  # noqa
+from challenges.models import (  # noqa:E402
     Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
     LeaderboardData,
-)  # noqa
+)
 
-from jobs.models import Submission  # noqa
-from jobs.serializers import SubmissionSerializer  # noqa
+from jobs.models import Submission  # noqa:E402
+from jobs.serializers import SubmissionSerializer  # noqa:E402
 
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
+    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+)
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "challenge_data")
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "submission_files")
@@ -202,14 +198,8 @@ def create_dir_as_python_package(directory):
 
 
 def return_file_url_per_environment(url):
-
-    if DJANGO_SETTINGS_MODULE == "settings.dev":
-        base_url = "http://{0}:8000".format(DJANGO_SERVER)
-        url = "{0}{1}".format(base_url, url)
-
-    elif DJANGO_SETTINGS_MODULE == "settings.test":
-        url = "{0}{1}".format("http://testserver", url)
-
+    base_url = f"http://{settings.DJANGO_SERVER}:{settings.DJANGO_SERVER_PORT}"
+    url = "{0}{1}".format(base_url, url)
     return url
 
 

@@ -1,16 +1,15 @@
 import os
 import json
 import logging
+import random
+import string
 import uuid
 
 from botocore.exceptions import ClientError
+from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
-from base.utils import (
-    get_model_object,
-    get_boto3_client,
-    mock_if_non_prod_aws,
-)
+from base.utils import get_model_object, get_boto3_client, mock_if_non_prod_aws
 
 from .models import (
     Challenge,
@@ -37,6 +36,11 @@ def get_file_content(file_path, mode):
     if os.path.isfile(file_path):
         with open(file_path, mode) as file_content:
             return file_content.read()
+
+
+def read_file_data_as_content_file(file_path, mode, name):
+    content_file = ContentFile(get_file_content(file_path, mode), name)
+    return content_file
 
 
 def convert_to_aws_ecr_compatible_format(string):
@@ -86,9 +90,15 @@ def get_aws_credentials_for_challenge(challenge_pk):
         }
     else:
         aws_keys = {
-            "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "aws_account_id"),
-            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "aws_access_key_id"),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"),
+            "AWS_ACCOUNT_ID": os.environ.get(
+                "AWS_ACCOUNT_ID", "aws_account_id"
+            ),
+            "AWS_ACCESS_KEY_ID": os.environ.get(
+                "AWS_ACCESS_KEY_ID", "aws_access_key_id"
+            ),
+            "AWS_SECRET_ACCESS_KEY": os.environ.get(
+                "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"
+            ),
             "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
     return aws_keys
@@ -124,8 +134,10 @@ def get_or_create_ecr_repository(name, aws_keys):
         )
         repository = response["repositories"][0]
     except ClientError as e:
-        if e.response["Error"]["Code"] == "RepositoryNotFoundException" or\
-           e.response["Error"]["Code"] == "400":
+        if (
+            e.response["Error"]["Code"] == "RepositoryNotFoundException"
+            or e.response["Error"]["Code"] == "400"
+        ):
             response = client.create_repository(repositoryName=name)
             repository = response["repository"]
             created = True
@@ -248,3 +260,14 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
         if domain.lower() in email.lower():
             return True
     return False
+
+
+def get_unique_alpha_numeric_key(length):
+    """
+        Returns unique alpha numeric key of length
+        Arguments:
+            length {int} -- length of unique key to generate
+        Returns:
+            key {string} -- unique alpha numeric key of length
+    """
+    return "".join([random.choice(string.ascii_letters + string.digits) for i in range(length)])

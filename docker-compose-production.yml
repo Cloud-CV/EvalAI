@@ -1,6 +1,5 @@
 version: "3"
 services:
-
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-backend:${COMMIT_ID}
     env_file:

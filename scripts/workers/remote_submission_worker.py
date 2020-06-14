@@ -355,10 +355,7 @@ def make_request(url, method, data=None):
             )
             raise
         except requests.exceptions.HTTPError:
-            logger.exception(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
-            )
+            logger.exception(f"The request to URL {url} is failed due to {response.json()}")
             raise
         return response.json()
 
@@ -372,10 +369,7 @@ def make_request(url, method, data=None):
             )
             raise
         except requests.exceptions.HTTPError:
-            logger.info(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
-            )
+            logger.info(f"The request to URL {url} is failed due to {response.json()}")
             raise
         return response.json()
 
@@ -389,10 +383,7 @@ def make_request(url, method, data=None):
             )
             raise
         except requests.exceptions.HTTPError:
-            logger.info(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
-            )
+            logger.info(f"The request to URL {url} is failed due to {response.json()}")
             raise
         return response.json()
 
