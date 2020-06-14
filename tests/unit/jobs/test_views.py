@@ -1490,9 +1490,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_change_submission_data_and_visibility_when_is_restricted_to_select_one_submission_true(
-        self
+        self,
     ):
-    def test_toggle_baseline_when_user_is_not_a_host(self):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
             kwargs={
