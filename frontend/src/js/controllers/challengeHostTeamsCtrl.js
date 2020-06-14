@@ -106,7 +106,7 @@
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.existTeam.count / 100;
+                                    vm.currentPage = vm.existTeam.count / 10;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
@@ -136,7 +136,6 @@
         };
 
         utilities.sendRequest(parameters);
-
 
         vm.showMdDialog = function(ev, hostTeamId) {
             vm.hostTeamId = hostTeamId;
@@ -179,7 +178,7 @@
                 onSuccess: function() {
                     $mdDialog.hide();
                     vm.team = {};
-                    $rootScope.notify("success", "Host Team updated!");
+                    $rootScope.notify("success", "Host team updated!");
                     var parameters = {};
                     // Retrives the updated lists and displays it.
                     parameters.url = 'hosts/challenge_host_team';
@@ -216,26 +215,10 @@
             }
         };
 
-
         // function to create new team
         vm.createNewTeam = function() {
-            vm.isLoader = true;
+            vm.isExistLoader = true;
             vm.loaderTitle = '';
-            vm.newContainer = angular.element('.new-team-card');
-
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isLoader = true;
-                vm.loaderTitle = msg;
-                vm.newContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isLoader = false;
-                vm.loaderTitle = '';
-                vm.newContainer.removeClass('low-screen');
-            };
 
             vm.startLoader("Loading Teams");
 
@@ -421,11 +404,10 @@
             });
         };
 
-    vm.storeChallengeHostTeamId = function() {
-
-        utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
-        $state.go('web.challenge-create');
-    };
+        vm.storeChallengeHostTeamId = function() {
+            utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
+            $state.go('web.challenge-create');
+        };
 
     }
 

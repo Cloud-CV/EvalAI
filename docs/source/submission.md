@@ -2,7 +2,7 @@
 
 ### How is a submission processed?
 
-We are using REST APIs along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
+We are using REST APIs along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with URL pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
     User Submission  --> API  --> Publish  --> SQS Queue  --> Submission
                                   message                      worker(s)

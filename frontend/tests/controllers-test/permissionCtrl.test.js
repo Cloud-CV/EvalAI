@@ -14,6 +14,8 @@ describe('Unit tests for permission controller', function () {
         createController = function () {
             return $controller('PermCtrl', {$scope: $scope});
         };
+        utilities.storeData('emailError', 'Email is not verified');
+        vm = $controller('PermCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {

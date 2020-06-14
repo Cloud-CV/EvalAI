@@ -8,7 +8,9 @@ import os
 
 from django.conf import settings
 
+from base.utils import send_slack_notification
 from challenges.models import Challenge
+from .utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
@@ -55,30 +57,59 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
-def publish_submission_message(challenge_pk, phase_pk, submission_pk):
+def publish_submission_message(message):
     """
     Args:
-        challenge_pk: Challenge Id
-        phase_pk: Challenge Phase Id
-        submission_pk: Submission Id
+        message: A Dict with following keys
+            - "challenge_pk": int
+            - "phase_pk": int
+            - "submission_pk": int
+            - "submitted_image_uri": str, (only available when the challenge is a code upload challenge)
 
     Returns:
         Returns SQS response
     """
-    message = {
-        "challenge_pk": challenge_pk,
-        "phase_pk": phase_pk,
-        "submission_pk": submission_pk,
-    }
 
     try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
+        challenge = Challenge.objects.get(pk=message["challenge_pk"])
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge does not exist for the given id {}".format(challenge_pk)
+            "Challenge does not exist for the given id {}".format(
+                message["challenge_pk"]
+            )
         )
         return
     queue_name = challenge.queue
+    slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
+    # send slack notification
+    if slack_url:
+        challenge_name = challenge.title
+        submission = get_submission_model(message["submission_pk"])
+        participant_team_name = submission.participant_team.team_name
+        phase_name = submission.challenge_phase.name
+        message = {
+            "text": "A *new submission* has been uploaded to {}".format(
+                challenge_name
+            ),
+            "fields": [
+                {
+                    "title": "Challenge Phase",
+                    "value": phase_name,
+                    "short": True,
+                },
+                {
+                    "title": "Participant Team Name",
+                    "value": participant_team_name,
+                    "short": True,
+                },
+                {
+                    "title": "Submission Id",
+                    "value": message["submission_pk"],
+                    "short": True,
+                },
+            ],
+        }
+        send_slack_notification(slack_url, message)
     return response

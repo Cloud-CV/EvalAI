@@ -57,7 +57,7 @@
                         </div>
                     </div>
                     <div class="row"></div>
-                    <div class="col s12 m4 l4">
+                    <div class="col s12 m4 l3">
                         <div class="input-field align-left">
                             <span class="text-med-black w-400 fs-16">Submissions/day</span>
                             <input type="number" step="1" min="0" id="max_submissions_per_day"
@@ -67,7 +67,7 @@
                             <span class="form-icon"><i class="fa fa-text"></i></span>
                         </div>
                     </div>
-                    <div class="col s12 m4 l4">
+                    <div class="col s12 m4 l3">
                         <div class="input-field align-left">
                             <span class="text-med-black w-400 fs-16">Submissions/month</span>
                             <input type="number" step="1" min="challenge.page.challenge_phase.max_submissions_per_day"
@@ -77,13 +77,23 @@
                             <span class="form-icon"><i class="fa fa-text"></i></span>
                         </div>
                     </div>
-                    <div class="col s12 m4 l4">
+                    <div class="col s12 m4 l3">
                         <div class="input-field align-left">
                             <span class="text-med-black w-400 fs-16">Total submissions</span>
                             <input type="number" step="1" min="challenge.page.challenge_phase.max_submissions_per_month"
                                 id="max_submissions" name="max_submissions"
                                 ng-model="challenge.page.challenge_phase.max_submissions"
                                 value="{{challenge.page.challenge_phase.max_submissions}}" required>
+                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                        </div>
+                    </div>
+                    <div class="col s12 m4 l3">
+                        <div class="input-field align-left">
+                            <span class="text-med-black w-400 fs-16">Max Concurrent Submissions Allowed</span>
+                            <input type="number" step="1" min="0" id="max_concurrent_submissions_allowed"
+                                name="max_concurrent_submissions_allowed"
+                                ng-model="challenge.page.challenge_phase.max_concurrent_submissions_allowed"
+                                value="{{challenge.page.challenge_phase.max_concurrent_submissions_allowed}}" required>
                             <span class="form-icon"><i class="fa fa-text"></i></span>
                         </div>
                     </div>

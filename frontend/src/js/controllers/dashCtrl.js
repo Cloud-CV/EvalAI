@@ -19,6 +19,8 @@
         // get token
         var userKey = utilities.getData('userKey');
 
+        utilities.showLoader();
+
         // store the next redirect value
         vm.redirectUrl = {};
 
@@ -35,10 +37,12 @@
                 }
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
+                    utilities.storeData('emailError', error.detail);
 
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
@@ -71,6 +75,7 @@
                 }
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {
@@ -99,10 +104,11 @@
                 var status = response.status;
                 var details = response.data;
                 if (status == 200) {
-                    vm.hostTeamCount = details.count;
+                    vm.hostTeamCount = details.results.length;
                 }
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {
@@ -131,10 +137,12 @@
                 var status = response.status;
                 var details = response.data;
                 if (status == 200) {
-                    vm.participatedTeamCount = details.count;
+                    vm.participatedTeamCount = details.results.length;
                 }
+                utilities.hideLoader();
             },
             onError: function(response) {
+                utilities.hideLoader();
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {

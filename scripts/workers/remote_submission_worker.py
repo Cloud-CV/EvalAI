@@ -44,7 +44,7 @@ CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 EVALUATION_SCRIPTS = {}
 URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
-    "delete_message_from_sqs_queue": "/api/jobs/queues/{}/receipt/{}/",
+    "delete_message_from_sqs_queue": "/api/jobs/queues/{}/",
     "get_submission_by_pk": "/api/jobs/submission/{}",
     "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
@@ -354,10 +354,7 @@ def make_request(url, method, data=None):
             )
             raise
         except requests.exceptions.HTTPError:
-            logger.exception(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
-            )
+            logger.exception(f"The request to URL {url} is failed due to {response.json()}")
             raise
         return response.json()
 
@@ -371,10 +368,21 @@ def make_request(url, method, data=None):
             )
             raise
         except requests.exceptions.HTTPError:
+            logger.info(f"The request to URL {url} is failed due to {response.json()}")
+            raise
+        return response.json()
+
+    elif method == "POST":
+        try:
+            response = requests.post(url=url, headers=headers, data=data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException:
             logger.info(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
+                "The worker is not able to establish connection with EvalAI"
             )
+            raise
+        except requests.exceptions.HTTPError:
+            logger.info(f"The request to URL {url} is failed due to {response.json()}")
             raise
         return response.json()
 
@@ -388,11 +396,13 @@ def get_message_from_sqs_queue():
 
 def delete_message_from_sqs_queue(receipt_handle):
     url = URLS.get("delete_message_from_sqs_queue").format(
-        QUEUE_NAME, receipt_handle
+        QUEUE_NAME
     )
     url = return_url_per_environment(url)
-    response = make_request(url, "GET")  # noqa
-    return
+    response = make_request(url, "POST", data={
+        "receipt_handle": receipt_handle
+    })  # noqa
+    return response
 
 
 def get_submission_by_pk(submission_pk):

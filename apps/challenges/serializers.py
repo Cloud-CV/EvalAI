@@ -6,6 +6,7 @@ from hosts.serializers import ChallengeHostTeamSerializer
 from .models import (
     Challenge,
     ChallengeConfiguration,
+    ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
@@ -43,12 +44,14 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "end_date",
             "creator",
             "published",
+            "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
             "is_active",
             "leaderboard_description",
             "allowed_email_domains",
             "blocked_email_domains",
+            "banned_email_ids",
             "approved_by_admin",
             "forum_url",
             "is_docker_based",
@@ -87,6 +90,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_active",
             "codename",
             "slug",
+            "max_concurrent_submissions_allowed",
+            "is_restricted_to_select_one_submission"
         )
 
 
@@ -111,6 +116,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "challenge_phase_name",
             "dataset_split_name",
             "visibility",
+            "show_leaderboard_by_latest_submission",
         )
 
     def get_dataset_split_name(self, obj):
@@ -178,6 +184,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
             "leaderboard_description",
@@ -186,6 +193,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "evaluation_script",
             "allowed_email_domains",
             "blocked_email_domains",
+            "banned_email_ids",
             "forum_url",
             "remote_evaluation",
             "is_docker_based",
@@ -199,6 +207,18 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
     Serializer used for creating challenge phase split through zip file.
     """
+    def __init__(self, *args, **kwargs):
+        super(ZipChallengePhaseSplitSerializer, self).__init__(*args, **kwargs)
+
+        context = kwargs.get("context")
+        if context:
+            exclude_fields = context.get("exclude_fields")
+            if exclude_fields:
+                # check to avoid exception because of invalid fields
+                existing = set(self.fields.keys())
+                exclude_fields = set(exclude_fields)
+                for field in existing.intersection(exclude_fields):
+                    self.fields.pop(field)
 
     class Meta:
         model = ChallengePhaseSplit
@@ -208,6 +228,9 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "dataset_split",
             "leaderboard",
             "visibility",
+            "leaderboard_decimal_precision",
+            "is_leaderboard_order_descending",
+            "show_leaderboard_by_latest_submission",
         )
 
 
@@ -225,6 +248,13 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             test_annotation = context.get("test_annotation")
             if test_annotation:
                 kwargs["data"]["test_annotation"] = test_annotation
+            exclude_fields = context.get("exclude_fields")
+            if exclude_fields:
+                # check to avoid exception because of invalid fields
+                existing = set(self.fields.keys())
+                exclude_fields = set(exclude_fields)
+                for field in existing.intersection(exclude_fields):
+                    self.fields.pop(field)
 
     class Meta:
         model = ChallengePhase
@@ -245,6 +275,9 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "codename",
             "test_annotation",
             "slug",
+            "max_concurrent_submissions_allowed",
+            "environment_image",
+            "is_restricted_to_select_one_submission"
         )
 
 
@@ -309,3 +342,17 @@ class UserInvitationSerializer(serializers.ModelSerializer):
     def get_user_details(self, obj):
         serializer = UserDetailsSerializer(obj.user)
         return serializer.data
+
+
+class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChallengeEvaluationCluster
+        fields = (
+            "id",
+            "challenge",
+            "name",
+            "cluster_endpoint",
+            "cluster_ssl",
+            "cluster_yaml",
+            "kube_config"
+        )

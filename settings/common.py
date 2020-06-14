@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_docs",
     "rest_framework_expiring_authtoken",
     "drf_yasg",
+    "django_filters",
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -154,6 +155,7 @@ REST_FRAMEWORK = {
         "rest_framework.pagination.LimitOffsetPagination"
     ),
     "PAGE_SIZE": 100,
+    "TEAM_PAGE_SIZE": 10,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],
@@ -165,7 +167,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute"},
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "resend_email": "3/hour"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
@@ -186,6 +188,12 @@ AUTHENTICATION_BACKENDS = (
     # `allauth` specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend",
 )
+
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+# Broker url for celery
+CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
@@ -261,8 +269,8 @@ CACHES = {
 
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
-FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
@@ -272,6 +280,11 @@ REST_AUTH_SERIALIZERS = {
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+
+# Slack web hook url
+SLACK_WEB_HOOK_URL = os.environ.get(
+    "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"
+)
 
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "evalai.urls.swagger_api_info",
@@ -285,6 +298,9 @@ SWAGGER_SETTINGS = {
 }
 
 REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}
+
+DJANGO_SERVER = os.environ.get("DJANGO_SERVER")
+DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
 
 HOSTNAME = os.environ.get("HOSTNAME")
 

@@ -107,49 +107,50 @@ section.bg-section {
 /*simple header*/
 
 .sim-header {
-  font-size: 18px;
-  top: 0;
-  left: 0;
-  z-index: 999;
-  width: 100%;
-  position: relative;
-  nav {
-      background-color:rgba(255, 255, 255, 0.9);
-      box-shadow: 0 0 0 0 #000;
-      position: fixed;
-      top: 0;
-      left: 0;
-      padding: 0 100px;
-      transition: all 0.1s ease-in-out;
-      a.sim-header-link {
-	  color: #4d4d4d;
-	  font-weight: 400;
-	  transition: all 0.2s ease-in-out;
-          &:hover {
-	    color: #ffaf4b;
-	    background-color: rgba(0, 0, 0, 0);
-	  }
-      }
-      a.light-link {
-	  color: #9ca3be;
-	  transition: all 0.2s ease-in-out;
-          &:hover {
-	  color: #fff;
-          }
-      }
-      a.active {
-	  color: #ffaf4b;
-	  background-color: rgba(0, 0, 0, 0);
-      }
-      nav.grad-shadow-1 {
-	  box-shadow: 0 0 10px #9d9d9d;
-      }
-  }
+    font-size: 18px;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    width: 100%;
+    position: relative;
+    nav {
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 0 0 #000;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 0 100px;
+        transition: all 0.1s ease-in-out;
+        a.sim-header-link {
+            color: #4d4d4d;
+            font-weight: 400;
+            transition: all 0.2s ease-in-out;
+            &:hover {
+                color: #ffaf4b;
+                background-color: rgba(0, 0, 0, 0);
+            }
+        }
+        a.light-link {
+            color: #9ca3be;
+            transition: all 0.2s ease-in-out;
+            &:hover {
+                color: #fff;
+            }
+        }
+        a.active {
+            color: #ffaf4b;
+            background-color: rgba(0, 0, 0, 0);
+        }
+        nav.grad-shadow-1 {
+            box-shadow: 0 0 10px #9d9d9d;
+        }
+    }
 }
+
 @media only screen and (max-width: 992px) {
-  .sim-header nav {
-    padding: 0px 30px;
-  }
+    .sim-header nav {
+        padding: 0px 30px;
+    }
 }
 
 .grad-head {
@@ -393,33 +394,37 @@ a.view-more {
     }
 }
 
-.org-logo{
+.org-logo {
     max-width: 100%;
     height: 120px;
     text-align: center;
-
-    img{
+    img {
         height: 75%;
         max-width: 100%;
         width: auto;
-        transition:all 0.2s ease-in-out;
+        transition: all 0.2s ease-in-out;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: auto;
+        margin-bottom: auto;
     }
-    &:hover{
-        img{
-            -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    &:hover {
+        img {
+            -webkit-filter: grayscale(100%);
+            /* Safari 6.0 - 9.0 */
             filter: grayscale(100%);
         }
     }
 }
 
+
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
-
-    .rocket-container {	
-        display:none;	
+    .rocket-container {
+        display: none;
     }
-
     .dyn-header {
         nav {
             a.org-link {
@@ -441,58 +446,143 @@ a.view-more {
     .sim-header {
         width: 100%;
     }
-    
 }
 
 @media only screen and (max-width: $small-screen) {
-    .org-logo{
+    .org-logo {
         height: auto;
         width: 100%;
-        img{
+        img {
             width: 100%;
             height: auto;
         }
     }
 }
 
-#fb-logo{
-    height: 175px;
-    width: 160px;
-    padding-bottom:30%;
+#aptiv-logo {
+    height: 35%;
+    padding-top: 5%;
 }
 
-#mapillary-logo{
-    height:70px;
-    width:210px;
+#argoai-logo {
+    height: 50%;
+    padding-bottom: 7%;
 }
 
-#umbc-logo{
-    height:70px;
-    width:180px;
+#cmu-logo {
+    height: 50%;
 }
 
 #draper-logo {
-    height: 110px;
-    padding-bottom:5%;
+    height: 50%;
+    padding-bottom: 7%;
 }
 
-#ebay-logo{
-    padding-top:5%;
-    height: 80px;
-    width:160px;
+#ebay-logo {
+    height: 35%;
+    padding-top: 3%;
 }
 
-#iitm-logo{
-    height:100px;
-    width:100px;
+#fb-logo {
+    height: 30%;
+    padding-top: 7%;
 }
 
-#adelaide-logo{
-    height:80px;
-    width:180px;
+#gt-logo {
+    height: 40%;
 }
 
-#pitt-logo{
-    height:80px;
-    width:180px;
+#google-logo {
+    height: 40%;
+}
+
+#ibm-logo {
+    height: 35%;
+    padding-top: 5%;
+}
+
+#uiuc-logo {
+    height: 25%;
+    padding-top: 5%;
+}
+
+#iitm-logo {
+    height: 50%;
+}
+
+#intel-logo {
+    height: 45%;
+}
+
+#ju-logo {
+    height: 50%;
+}
+
+#mapillary-logo {
+    height: 40%;
+    padding-top: 7%;
+}
+
+#mit-logo {
+    height: 35%;
+    padding-top: 7%;
+}
+
+#nu-logo {
+    height: 50%;
+}
+
+#siop-logo {
+    height: 50%;
+}
+
+#stanford-logo {
+    height: 50%;
+}
+
+#adelaide-logo {
+    height: 50%;
+    padding-top: 5%;
+}
+
+#umbc-logo {
+    height: 45%;
+    padding-top: 5%;
+}
+
+#pitt-logo {
+    height: 50%;
+    padding-top: 5%;
+}
+
+#vt-logo {
+    height: 45%;
+}
+
+.evalai-sponsor-logo {
+    max-width: 100%;
+    height: 120px;
+    text-align: center;
+    img {
+        height: 55%;
+        max-width: 100%;
+        width: auto;
+        transition: all 0.2s ease-in-out;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    &:hover {
+        img {
+            -webkit-filter: grayscale(100%);
+            /* Safari 6.0 - 9.0 */
+            filter: grayscale(100%);
+        }
+    }
+}
+
+#gsoc {
+    height: 45%;
 }

@@ -25,7 +25,6 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from django.conf import settings
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -34,24 +33,21 @@ COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 logger = logging.getLogger(__name__)
 django.setup()
 
-DJANGO_SETTINGS_MODULE = os.environ.get(
-    "DJANGO_SETTINGS_MODULE", "settings.dev"
-)
-DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
-LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
-    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
-)
-
-from challenges.models import (
+# Load django app settings
+from django.conf import settings  # noqa
+from challenges.models import (  # noqa:E402
     Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
     LeaderboardData,
-)  # noqa
+)
 
-from jobs.models import Submission  # noqa
-from jobs.serializers import SubmissionSerializer  # noqa
+from jobs.models import Submission  # noqa:E402
+from jobs.serializers import SubmissionSerializer  # noqa:E402
 
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
+    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+)
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "challenge_data")
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "submission_files")
@@ -117,7 +113,7 @@ def download_and_extract_file(url, download_location):
         * `download_location` should include name of file as well.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
     except Exception as e:
         logger.error("Failed to fetch file from {}, error {}".format(url, e))
         traceback.print_exc()
@@ -125,7 +121,38 @@ def download_and_extract_file(url, download_location):
 
     if response and response.status_code == 200:
         with open(download_location, "wb") as f:
-            f.write(response.content)
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+
+
+def extract_zip_file(download_location, extract_location):
+    """
+    Helper function to extract zip file
+    Params:
+        * `download_location`: Location of zip file
+        * `extract_location`: Location of directory for extracted file
+    """
+    zip_ref = zipfile.ZipFile(download_location, "r")
+    zip_ref.extractall(extract_location)
+    zip_ref.close()
+
+
+def delete_zip_file(download_location):
+    """
+    Helper function to remove zip file from location `download_location`
+    Params:
+        * `download_location`: Location of file to be removed.
+    """
+    try:
+        os.remove(download_location)
+    except Exception as e:
+        logger.error(
+            "Failed to remove zip file {}, error {}".format(
+                download_location, e
+            )
+        )
+        traceback.print_exc()
 
 
 def download_and_extract_zip_file(url, download_location, extract_location):
@@ -134,28 +161,20 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         * `download_location` should include name of file as well.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
     except Exception as e:
         logger.error("Failed to fetch file from {}, error {}".format(url, e))
         response = None
 
     if response and response.status_code == 200:
         with open(download_location, "wb") as f:
-            f.write(response.content)
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
         # extract zip file
-        zip_ref = zipfile.ZipFile(download_location, "r")
-        zip_ref.extractall(extract_location)
-        zip_ref.close()
+        extract_zip_file(download_location, extract_location)
         # delete zip file
-        try:
-            os.remove(download_location)
-        except Exception as e:
-            logger.error(
-                "Failed to remove zip file {}, error {}".format(
-                    download_location, e
-                )
-            )
-            traceback.print_exc()
+        delete_zip_file(download_location)
 
 
 def create_dir(directory):
@@ -179,14 +198,8 @@ def create_dir_as_python_package(directory):
 
 
 def return_file_url_per_environment(url):
-
-    if DJANGO_SETTINGS_MODULE == "settings.dev":
-        base_url = "http://{0}:8000".format(DJANGO_SERVER)
-        url = "{0}{1}".format(base_url, url)
-
-    elif DJANGO_SETTINGS_MODULE == "settings.test":
-        url = "{0}{1}".format("http://testserver", url)
-
+    base_url = f"http://{settings.DJANGO_SERVER}:{settings.DJANGO_SERVER_PORT}"
+    url = "{0}{1}".format(base_url, url)
     return url
 
 
@@ -245,6 +258,7 @@ def extract_challenge_data(challenge, phases):
 
     try:
         # import the challenge after everything is finished
+        importlib.invalidate_caches()
         challenge_module = importlib.import_module(
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id)
         )
@@ -694,7 +708,7 @@ def main():
         q_params["pk"] = challenge_pk
 
     if settings.DEBUG or settings.TEST:
-        if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+        if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
             if not challenge_pk:
                 logger.exception(
                     "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
@@ -719,7 +733,7 @@ def main():
     while True:
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
-                if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+                if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
                     current_running_submissions_count = Submission.objects.filter(
                         challenge_phase__challenge=challenge.id,
                         status="running",
