@@ -65,8 +65,6 @@ from .serializers import (
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
     calculate_distinct_sorted_leaderboard_data,
-    get_submission_model,
-    get_remaining_submission_for_a_phase,
     handle_submission_rerun,
     is_url_valid,
 )
