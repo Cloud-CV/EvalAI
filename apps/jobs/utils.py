@@ -186,7 +186,6 @@ def validate_numerical_values_in_result(
     return None
 
 
-
 def is_url_valid(url):
     """
     Checks that a given URL is reachable.
