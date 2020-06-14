@@ -113,7 +113,7 @@
                             </td>
                             <td data-field="submission_time">
                                 <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
-                                    <span class="fs-20 w-300">Last submission at</span>
+                                    <span class="fs-20 w-300">Submitted at</span>
                                     <span class="fa-stack fa-1x">
                                         <i class="fa fa-sort-asc fa-stack-1x"
                                             ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-300'"></i>
@@ -124,6 +124,7 @@
                             </td>
                         </tr>
                     </thead>
+                    {{challenge.phaseRemainingSubmissions.participant_team}}
                     <tbody class="fs-16 w-300">
                         <tr ng-class="{highlightLeaderboard:isHighlight == challenge.initial_ranking[key.id]}"
                             ng-click="challenge.scrollToSpecificEntryLeaderboard('leaderboardrank-' + challenge.initial_ranking[key.id])"
@@ -135,10 +136,11 @@
                                     href="{{key.submission__participant_team__team_url}}">{{key.submission__participant_team__team_name}}</a><span
                                     ng-if="!key.submission__participant_team__team_url">{{key.submission__participant_team__team_name}}</span>
                                     <b><span ng-if="key.submission__is_public === false" class="orange-text">*</span></b>
-                                <span
-                                    ng-if="key.submission__method_name">({{key.submission__method_name | limitTo:30}})</span><span
-                                    id="baseline-badge" class="new badge orange-background baseline-tag" data-badge-caption="B"
+                                <span ng-if="key.submission__method_name">({{key.submission__method_name | limitTo:30}})</span>
+                                <span id="baseline-badge" class="new badge orange-background baseline-tag" data-badge-caption="B"
                                     ng-if="key.submission__is_baseline"></span>
+                                <span id="github-badge" class="blue-text pointer" ng-if="key.submission__is_public && key.submission__participant_team == challenge.participantTeamDetail.id"
+                                ng-click="challenge.showGithubBadgePreview($event, challenge.selectedPhaseSplit, challenge.initial_ranking[key.id], key.submission__participant_team__team_name); $event.stopPropagation();"><i class="fa fa-github"></i></span>
                             </td>
                             <td ng-repeat="(i, score) in key.result track by $index">
                                 {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}

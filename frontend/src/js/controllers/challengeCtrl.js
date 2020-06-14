@@ -73,6 +73,7 @@
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
+        vm.participantTeamDetail = "";
 
         utilities.showLoader();
 
@@ -539,6 +540,24 @@
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
+                utilities.hideLoader();
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+        // get details of the participant team in the challenge
+        parameters.url = 'participants/challenges/' + vm.challengeId + '/team_details/';
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.callback = {
+            onSuccess: function (response) {
+                var details = response.data;
+                vm.participantTeamDetail = details;
+            },
+            onError: function (response) {
+                var error = response.data;
+                $rootScope.notify("error", error);
                 utilities.hideLoader();
             }
         };
@@ -2296,7 +2315,37 @@
             }
         };
 
-
+        vm.showGithubBadgePreview = function (ev, phaseSplit, participantTeamId, participantTeamName) {
+            vm.githubBadgeURL = utilities.baseAPIURL + 'jobs/phase_splits/' + phaseSplit.id + '/teams/' + participantTeamName + '/github_badge/';
+            vm.leaderboardEntryURL = utilities.baseAPIURL + "web/challenges/challenge-page/" + vm.challengeId.toString() + "/leaderboard/" + phaseSplit.id.toString() + "#leaderboardrank-" + participantTeamId;
+            // get svg data for github badge
+            parameters.url = 'jobs/phase_splits/' + phaseSplit.id + '/teams/' + participantTeamName + '/github_badge/';
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.githubData = response.data;
+                    utilities.hideLoader();
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    utilities.hideLoader();
+                }
+            };
+            utilities.sendRequest(parameters);
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/github-badge.html',
+                escapeToClose: false
+            });
+        };
+        
+        vm.hideDialog = function () {
+            $mdDialog.hide();
+        };
     }
 
 })();

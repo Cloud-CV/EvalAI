@@ -14,7 +14,8 @@
     function utilities($http, EnvironmentConfig) {
 
         // factory for API calls
-        this.sendRequest = function(parameters, header, type) {
+        this.baseAPIURL = EnvironmentConfig.API;
+        this.sendRequest = function (parameters, header, type) {
             var url = EnvironmentConfig.API + parameters.url;
             var data = parameters.data;
             var token = parameters.token;
