@@ -261,7 +261,7 @@ def create_leaderboard():
     Creates Leaderboard schema and returns it.
     """
     schema = {
-        "labels": ["score",],
+        "labels": ["score", ],
         "default_order_by": "score",
     }
     leaderboard = Leaderboard.objects.create(schema=schema)
