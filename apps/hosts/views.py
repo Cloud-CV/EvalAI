@@ -128,7 +128,9 @@ def challenge_host_list(request, challenge_host_team_pk):
         challenge_host = ChallengeHost.objects.filter(
             **filter_condition
         ).order_by("-id")
-        paginator, result_page = team_paginated_queryset(challenge_host, request)
+        paginator, result_page = team_paginated_queryset(
+            challenge_host, request
+        )
         serializer = ChallengeHostSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
