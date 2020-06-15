@@ -18,3 +18,11 @@
   margin-left: 0;
   margin-right: 0;
 }
+
+/* media queries */
+
+@media only screen and (min-width: $screen-xlg) {
+  .ev-challenge-card {
+    width: 260px;
+  }
+}
