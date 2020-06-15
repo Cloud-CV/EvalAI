@@ -22,7 +22,7 @@
         $rootScope.canShowNewPassword = false;
         $rootScope.canShowNewConfirmPassword = false;
 
-        vm.changepassContainer = angular.element('.change-passowrd-card');
+        vm.changepassContainer = angular.element('.change-password-card');
 
         vm.startLoader = function(msg) {
             $rootScope.isLoader = true;

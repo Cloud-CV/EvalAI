@@ -352,17 +352,18 @@ class GetParticularChallengeHost(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_host_does_not_exist(self):
+        self.inavlid_challenge_pk = self.challenge_host.pk + 1
         self.url = reverse_lazy(
             "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "pk": self.challenge_host.pk + 1,
+                "pk": self.inavlid_challenge_pk,
             },
         )
-        expected = {"error": "ChallengeHost does not exist"}
+        expected = {"detail": "ChallengeHost " + str(self.inavlid_challenge_pk) + " does not exist"}
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_particular_challenge_host_team_for_challenge_host_does_not_exist(
         self,

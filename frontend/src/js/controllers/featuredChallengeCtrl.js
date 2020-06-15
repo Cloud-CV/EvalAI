@@ -111,7 +111,7 @@
         vm.getLeaderboard = function(phaseSplitId) {
             vm.isResult = true;
             vm.phaseSplitId = phaseSplitId;
-            // loader for exisiting teams
+            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
