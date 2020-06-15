@@ -208,9 +208,9 @@ class CreateChallengeTest(BaseAPITestClass):
             "enable_forum": True,
             "leaderboard_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             "anonymous_leaderboard": False,
-            'start_date': timezone.now() - timedelta(days=5),
-            'end_date': timezone.now() + timedelta(days=5),
-            'published': False,
+            "start_date": timezone.now() - timedelta(days=5),
+            "end_date": timezone.now() + timedelta(days=5),
+            "published": False,
         }
 
     def test_create_challenge_with_all_data(self):
@@ -229,10 +229,9 @@ class CreateChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_challenge_start_less_than_challenge_end(self):
-    	self.data['end_date'] = timezone.now() - timedelta(days=6)
-    	response = self.client.post(self.url, self.data)
-    	self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
+        self.data["end_date"] = timezone.now() - timedelta(days=6)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class GetParticularChallenge(BaseAPITestClass):
@@ -955,7 +954,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() + timedelta(days=5),
             end_date=timezone.now() + timedelta(days=5),
-            is_disabled=True
+            is_disabled=True,
         )
 
     def test_get_past_challenges(self):
@@ -1273,7 +1272,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=5),
             end_date=timezone.now() - timedelta(days=5),
-            featured=True
+            featured=True,
         )
 
     def test_get_featured_challenges(self):
@@ -2352,50 +2351,59 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data["detail"], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    
     def test_challenge_phase_start_greater_than_challenge_start(self):
-        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          b'Another Dummy file content',
-                                                          content_type='text/plain')
-        self.data['codename'] = "Test Code Name"
-        self.data.update(start_date = timezone.now() + timedelta(days=6))
-        response = self.client.post(self.url, self.data, format='multipart')
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "another_test_file.txt",
+            b"Another Dummy file content",
+            content_type="text/plain",
+        )
+        self.data["codename"] = "Test Code Name"
+        self.data.update(start_date=timezone.now() + timedelta(days=6))
+        response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_challenge_phase_start_less_than_challenge_end(self):
-        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          b'Another Dummy file content',
-                                                          content_type='text/plain')
-        self.data['codename'] = "Test Code Name"
-        self.data.update(start_date = timezone.now() + timedelta(days=6))
-        response = self.client.post(self.url, self.data, format='multipart')
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "another_test_file.txt",
+            b"Another Dummy file content",
+            content_type="text/plain",
+        )
+        self.data["codename"] = "Test Code Name"
+        self.data.update(start_date=timezone.now() + timedelta(days=6))
+        response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_challenge_phase_end_greater_than_challenge_start(self):
-        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          b'Another Dummy file content',
-                                                          content_type='text/plain')
-        self.data['codename'] = "Test Code Name"
-        self.data.update(end_date = timezone.now() - timedelta(days=6))
-        response = self.client.post(self.url, self.data, format='multipart')
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "another_test_file.txt",
+            b"Another Dummy file content",
+            content_type="text/plain",
+        )
+        self.data["codename"] = "Test Code Name"
+        self.data.update(end_date=timezone.now() - timedelta(days=6))
+        response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_challenge_phase_end_less_than_challenge_end(self):
-        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          b'Another Dummy file content',
-                                                          content_type='text/plain')
-        self.data['codename'] = "Test Code Name"
-        self.data.update(end_date = timezone.now() + timedelta(days=6))
-        response = self.client.post(self.url, self.data, format='multipart')
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "another_test_file.txt",
+            b"Another Dummy file content",
+            content_type="text/plain",
+        )
+        self.data["codename"] = "Test Code Name"
+        self.data.update(end_date=timezone.now() + timedelta(days=6))
+        response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_challenge_phase_start_less_than_challenge_phase_end(self):
-        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          b'Another Dummy file content',
-                                                          content_type='text/plain')
-        self.data['codename'] = "Test Code Name"
-        self.data.update(start_date = timezone.now() + timedelta(days=4))
-        response = self.client.post(self.url, self.data, format='multipart')
+        self.data["test_annotation"] = SimpleUploadedFile(
+            "another_test_file.txt",
+            b"Another Dummy file content",
+            content_type="text/plain",
+        )
+        self.data["codename"] = "Test Code Name"
+        self.data.update(start_date=timezone.now() + timedelta(days=4))
+        response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
