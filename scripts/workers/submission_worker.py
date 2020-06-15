@@ -692,17 +692,19 @@ def main():
                     "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
                 )
                 sys.exit(1)
-            maximum_concurrent_submissions, challenge = load_challenge_and_return_max_submissions(
-                q_params
-            )
+            (
+                maximum_concurrent_submissions,
+                challenge,
+            ) = load_challenge_and_return_max_submissions(q_params)
         else:
             challenges = Challenge.objects.filter(**q_params)
             for challenge in challenges:
                 load_challenge(challenge)
     else:
-        maximum_concurrent_submissions, challenge = load_challenge_and_return_max_submissions(
-            q_params
-        )
+        (
+            maximum_concurrent_submissions,
+            challenge,
+        ) = load_challenge_and_return_max_submissions(q_params)
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
