@@ -558,7 +558,7 @@
 
         utilities.sendRequest(parameters);
 
-        vm.submission_meta_attributes = [ // Temporary...for testing our frontend. This should ideally be loaded by the below method.
+        vm.submission_meta_attributes = [ // Temporary...for testing our frontend. This should ideally be loaded by the below commented out method.
                                         {
                                           "name": "TextAttribute",
                                           "description": "description",
@@ -596,13 +596,19 @@
                                           "value": null
                                         }
                                       ];
-
+        /*
         vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submission_meta_attributes
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
                 return element["phaseId"] == vm.phaseId;
-            })["attributes"];
+            });
+            if(vm.submission_meta_attributes != null){
+                vm.submission_meta_attributes = vm.submission_meta_attributes["attributes"];
+            }
+            else{
+                vm.submission_meta_attributes = undefined;
+            }
         };
-
+        */
         vm.toggleSelection = function toggleSelection(values, value){ // Make sure this modifies the reference object.
                 var idx = values.indexOf(value);
                 if (idx > -1) {
