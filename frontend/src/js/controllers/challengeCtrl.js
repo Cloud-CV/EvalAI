@@ -260,7 +260,7 @@
                                             // select team from existing list
                                             vm.selectExistTeam = function() {
 
-                                                // loader for exisiting teams
+                                                // loader for existing teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
                                                 vm.loaderContainer = angular.element('.exist-team-card');
@@ -293,7 +293,7 @@
 
                                             // to load data with pagination
                                             vm.load = function(url) {
-                                                // loader for exisiting teams
+                                                // loader for existing teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
                                                 vm.loaderContainer = angular.element('.exist-team-card');
@@ -716,7 +716,7 @@
 
             vm.isResult = true;
             vm.phaseSplitId = phaseSplitId;
-            // loader for exisiting teams
+            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
@@ -938,7 +938,7 @@
             };
             utilities.sendRequest(parameters);
 
-            // loader for exisiting teams
+            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
@@ -1006,7 +1006,7 @@
                     }
 
                     vm.load = function(url) {
-                        // loader for exisiting teams
+                        // loader for existing teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
                         vm.loaderContainer = angular.element('.exist-team-card');
