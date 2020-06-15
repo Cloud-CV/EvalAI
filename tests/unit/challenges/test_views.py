@@ -1944,7 +1944,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
         ]
 
@@ -1974,7 +1974,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2014,7 +2014,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2036,7 +2036,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             },
         ]
 
