@@ -751,7 +751,6 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    console.log(vm.leaderboard)
                     for (var j=0; j<vm.showPrivateIds.length; j++) {
                         if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
@@ -1845,7 +1844,7 @@
             vm.tempDesc = vm.page.description;
             $mdDialog.show({
                 scope: $scope,
-                preserveScope: false,
+                preserveScope: true,
                 targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-overview.html',
                 escapeToClose: false

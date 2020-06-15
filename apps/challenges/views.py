@@ -1066,10 +1066,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     data["description"] = None
 
-                logger.info("-----------------------------------------------------")
-                logger.info(data["submission_meta_attributes_schema"])
-                logger.info("-----------------------------------------------------")
-
                 test_annotation_file = data["test_annotation_file"]
                 data["slug"] = "{}-{}-{}".format(
                     challenge.title.split(" ")[0].lower(),
