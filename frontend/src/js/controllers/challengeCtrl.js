@@ -28,6 +28,7 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.submission_meta_attributes_schema = [];
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -451,6 +452,7 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
+                    formData.append("submission_meta_attribites", vm.submission_meta_attribites)
 
                     parameters.data = formData;
 
@@ -508,8 +510,6 @@
             }
         };
 
-
-
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
@@ -531,8 +531,21 @@
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
-                // navigate to challenge page
-                // $state.go('web.challenge-page.overview');
+                for(var i=0; i<details.count; i++){
+                    if(details.results[i].submission_meta_attribites_schema != undefined){
+                        var attributes = details.results[i].submission_meta_attribites_schema;
+                        attributes.forEach(function(attribute){
+                            if(attribute["type"] == "checkbox") attribute["values"] = [];
+                            else attribute["value"] = null;
+                        })
+                        data = {"phaseId":details.results[i].id, "attributes": attributes};
+                        vm.submission_meta_attributes_schema.push(data);
+                    }
+                    else{
+                        var data = {"phaseId":details.results[i].id, "attributes": undefined};
+                        vm.submission_meta_attributes_schema.push(data);
+                    }
+                }
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -545,11 +558,67 @@
 
         utilities.sendRequest(parameters);
 
+        vm.submission_meta_attributes = [ // Temporary...for testing our frontend. This should ideally be loaded by the below method.
+                                        {
+                                          "name": "TextAttribute",
+                                          "description": "description",
+                                          "type": "text",
+                                          "required": true,
+                                          "value": null
+                                        },
+                                        {
+                                          "name": "SingleOptionAttribute",
+                                          "description": "description",
+                                          "type": "radio",
+                                          "options":[
+                                              "A",
+                                              "B",
+                                              "C"
+                                            ],
+                                          "value": null
+                                        },
+                                        {
+                                          "name": "MultipleChoiceAttribute",
+                                          "description": "description",
+                                          "type": "checkbox",
+                                          "options": [
+                                              "alpha",
+                                              "beta",
+                                              "gamma"
+                                              ],
+                                           "values": []
+                                        },
+                                        {
+                                          "name": "TrueFalseField",
+                                          "description": "description",
+                                          "type": "boolean",
+                                          "required": true,
+                                          "value": null
+                                        }
+                                      ];
+
+        vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submission_meta_attributes
+            vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
+                return element["phaseId"] == vm.phaseId;
+            })["attributes"];
+        };
+
+        vm.toggleSelection = function toggleSelection(values, value){ // Make sure this modifies the reference object.
+                var idx = values.indexOf(value);
+                if (idx > -1) {
+                  values.splice(idx, 1);
+                }
+                else {
+                  values.push(value);
+                }
+            };
+
         var challengePhaseVisibility = {
             owner_and_host: 1,
             host: 2,
             public: 3,
         };
+
         // get details of the particular challenge phase split
         parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
         parameters.method = 'GET';
@@ -682,6 +751,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    console.log(vm.leaderboard)
                     for (var j=0; j<vm.showPrivateIds.length; j++) {
                         if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
@@ -767,6 +837,32 @@
         if (vm.phaseSplitId) {
             vm.getLeaderboard(vm.phaseSplitId);
         }
+
+        
+        vm.showMetaAttributesDialog = function(ev, attributes){
+            if(attributes != false){
+                vm.meta_attributes_data = [];
+                attributes.forEach(function(attribute){
+                    if (attribute.type != "checkbox") {
+                        vm.meta_attributes_data.push({"name": attribute.name, "value": attribute.value})
+                    }
+                    else {
+                        vm.meta_attributes_data.push({"name": attribute.name, "values": attribute.values})
+                    }
+                })
+
+                $mdDialog.show({
+                    scope: $scope,
+                    preserveScope: true,
+                    targetEvent: ev,
+                    templateUrl: 'src/views/web/challenge/submission-meta-attributes-dialog.html',
+                    clickOutsideToClose: true
+                });
+            }
+            else{
+                $mdDialog.hide();
+            }
+        };
 
         vm.getResults = function(phaseId) {
             // long polling (5s) for leaderboard
@@ -1749,7 +1845,7 @@
             vm.tempDesc = vm.page.description;
             $mdDialog.show({
                 scope: $scope,
-                preserveScope: true,
+                preserveScope: false,
                 targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-overview.html',
                 escapeToClose: false

@@ -91,7 +91,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "codename",
             "slug",
             "max_concurrent_submissions_allowed",
-            "is_restricted_to_select_one_submission"
+            "is_restricted_to_select_one_submission",
+            "submission_meta_attributes_schema"
         )
 
 
@@ -258,7 +259,8 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "slug",
             "max_concurrent_submissions_allowed",
             "environment_image",
-            "is_restricted_to_select_one_submission"
+            "is_restricted_to_select_one_submission",
+            "submission_meta_attributes_schema"
         )
 
 

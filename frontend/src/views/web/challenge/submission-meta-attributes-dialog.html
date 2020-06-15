@@ -1,0 +1,11 @@
+<section class="ev-md-container text-center rm-overflow-y">
+    <div class="row" ng-repeat="a in challenge.meta_attributes_data">
+        <div class="col s12 m12" ng-if="a.value!=undefined">
+            <strong>{{a.name}}</strong> : {{a.value}}
+        </div>
+        <div class="col s12 m12" ng-if="a.values!=undefined">
+            <strong>{{a.name}}</strong> : <span class="col s12 m12" ng-repeat="value in a.values">{{value}}</span>
+        </div>
+    </div>
+    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="cancel" ng-click="challenge.showMetaAttributesDialog($event, false);">Close</button>
+</section>

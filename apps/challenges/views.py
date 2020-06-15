@@ -789,7 +789,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if not isfile(test_annotation_file_path):
             message = (
                 "No test annotation file found in zip file"
-                "for challenge phase '{}'. Please add it and "
+                " for challenge phase '{}'. Please add it and "
                 " then try again!".format(data["name"])
             )
             response_data = {"error": message}
@@ -807,6 +807,46 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             return Response(
                 response_data, status=status.HTTP_400_BAD_REQUEST
             )
+
+        if(data.get("submission_meta_attributes_schema")):  # To ensure that the schema for submission metaattributes is valid.
+            for attribute in data["submission_meta_attributes_schema"]:
+
+                try:
+                    name = attribute["name"]
+                except KeyError:
+                    message = (
+                    "No name found for attribute in challenge_phase {}".format(data["id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+                try:
+                    description = attribute["description"]
+                except KeyError:
+                    message = (
+                    "No description found for attribute in challenge_phase {}".format(data["id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+                try:
+                    attribute_type = attribute["type"]
+                    valid_attribute_types = ["boolean", "text", "radio", "checkbox"]
+                    if(attribute_type in valid_attribute_types):
+                        if(attribute_type == "radio" or attribute_type == "checkbox"):
+                            options = attribute.get("options")
+                            if not options or not len(options):
+                                message = "Please include at least one option in attribute for challenge_phase {}".format(data["id"])
+                                response_data = {"error": message}
+                                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        message = "Type is invalid for attribute in challenge_phase {}".format(data["id"])
+                        response_data = {"error": message}
+                        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+                except KeyError:
+                    message = "No type found for attribute in challenge_phase {}".format(data["id"])
+                    response_data = {"error": message}
+                    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for challenge image in yaml file.
     image = yaml_file_data.get("image")
@@ -1019,6 +1059,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     ).decode("utf-8")
                 else:
                     data["description"] = None
+
+                logger.info("-----------------------------------------------------")
+                logger.info(data["submission_meta_attributes_schema"])
+                logger.info("-----------------------------------------------------")
 
                 test_annotation_file = data["test_annotation_file"]
                 data["slug"] = "{}-{}-{}".format(

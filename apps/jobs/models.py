@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Max
 from rest_framework.exceptions import PermissionDenied
@@ -116,6 +116,7 @@ class Submission(TimeStampedModel):
         blank=True,
         null=True,
     )
+    submission_meta_attributes = JSONField(blank=True, null=True) #  Store the values of meta attributes for the submission here.
 
     def __str__(self):
         return "{}".format(self.id)

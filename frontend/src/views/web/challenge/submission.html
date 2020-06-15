@@ -275,6 +275,44 @@
                                         <label for="publicationUrl">Publication URL (Optional)</label>
                                     </div>
                                 </div>
+
+                                <!-- SUBMISSION METAATTRIBUTES START HERE -->
+
+                                <div class="dynamicform" ng-init="challenge.load_phase_attributes(challenge.phaseId)">
+                                    <div ng-repeat="attribute in challenge.submission_meta_attributes" ng-if="challenge.submission_meta_attributes != undefined">
+                                       <div class="row">
+                                           <div class="">
+                                                <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
+                                                <input type="text" name="{{attribute.name}}" ng-model= "attribute.value" id="{{attribute.name}}">
+                                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                                            </div>
+                                            <div ng-if="attribute.type =='radio'">
+                                                <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
+                                                <div ng-repeat="option in attribute.options">
+                                                    <div class="">
+                                                        <input type="radio" value="{{option}}" ng-model="attribute.value"> {{option}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div ng-if="attribute.type=='checkbox'">
+                                                <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
+                                                <label ng-repeat="option in attribute.options">
+                                                    <input type="checkbox" name="attribute_name" value="{{option}}" ng-click="toggleSelection(attribute.values, option);"> {{option}} <br>
+                                                </label>
+                                            </div>
+                                            <div ng-if="attribute.type=='boolean'">
+                                                <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
+                                                <div class="">
+                                                    <select ng-model="attribute.value">
+                                                        <option value="false">False</option>
+                                                        <option value="true">True</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                       </div>
+                                    </div>
+                                </div>
+
                             </span>
                             <div class="text-highlight red-text"><strong>
                                     {{challenge.subErrors.msg}}</strong></div>

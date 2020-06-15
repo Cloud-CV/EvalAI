@@ -315,6 +315,8 @@ def calculate_distinct_sorted_leaderboard_data(
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
+        "submission__id",
+        "submission__submission_meta_attributes"
     )
     if only_public_entries:
         if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
