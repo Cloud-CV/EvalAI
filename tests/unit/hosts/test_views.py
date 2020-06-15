@@ -112,7 +112,7 @@ class CreateChallengeHostTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_challenge_host_team_when_team_with_same_name_already_exists(
-        self
+        self,
     ):
 
         expected = {
@@ -294,7 +294,7 @@ class GetChallengeHostTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_host_team_for_challenge_host_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_list",
@@ -365,7 +365,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_challenge_host_team_for_challenge_host_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_details",

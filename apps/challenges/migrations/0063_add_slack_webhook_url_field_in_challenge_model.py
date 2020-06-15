@@ -8,13 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0062_add_allowed_submission_file_types_field_in_phase_model'),
+        (
+            "challenges",
+            "0062_add_allowed_submission_file_types_field_in_phase_model",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='slack_webhook_url',
+            model_name="challenge",
+            name="slack_webhook_url",
             field=models.URLField(blank=True, null=True),
         ),
     ]

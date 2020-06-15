@@ -9,13 +9,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0058_add_show_leaderboard_by_latest_submission_field_in_challenge_phase_split_model'),
+        (
+            "challenges",
+            "0058_add_show_leaderboard_by_latest_submission_field_in_challenge_phase_split_model",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='environment_url',
-            field=models.CharField(max_length=2128, null=True, validators=[django.core.validators.URLValidator()]),
+            model_name="challengephase",
+            name="environment_url",
+            field=models.CharField(
+                max_length=2128,
+                null=True,
+                validators=[django.core.validators.URLValidator()],
+            ),
         ),
     ]

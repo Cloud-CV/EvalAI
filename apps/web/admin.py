@@ -20,9 +20,7 @@ class ContactAdmin(admin.ModelAdmin):
 
 @admin.register(Subscribers)
 class SubscriberAdmin(admin.ModelAdmin):
-    list_display = (
-        "email",
-    )
+    list_display = ("email",)
     search_fields = ("email",)
 
 

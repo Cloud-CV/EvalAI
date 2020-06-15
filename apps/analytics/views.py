@@ -334,31 +334,31 @@ def download_all_participants(request, challenge_pk):
         Returns the List of Participant Teams and its details in csv format
     """
     if is_user_a_host_of_challenge(
-            user=request.user, challenge_pk=challenge_pk
+        user=request.user, challenge_pk=challenge_pk
     ):
         challenge = get_challenge_model(challenge_pk)
-        participant_teams = challenge.participant_teams.all().order_by("-team_name")
-        teams = ChallengeParticipantSerializer(participant_teams, many=True, context={"request": request})
+        participant_teams = challenge.participant_teams.all().order_by(
+            "-team_name"
+        )
+        teams = ChallengeParticipantSerializer(
+            participant_teams, many=True, context={"request": request}
+        )
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment; filename=participant_teams_{0}.csv".format(challenge_pk)
+        response[
+            "Content-Disposition"
+        ] = "attachment; filename=participant_teams_{0}.csv".format(
+            challenge_pk
+        )
         writer = csv.writer(response)
         writer.writerow(
-            [
-                "Team Name",
-                "Team Members",
-                "Email Id",
-            ]
+            ["Team Name", "Team Members", "Email Id", ]
         )
         for team in teams.data:
             writer.writerow(
                 [
                     team["team_name"],
-                    ",".join(
-                        team["team_members"]
-                    ),
-                    ",".join(
-                        team["team_members_email_ids"]
-                    ),
+                    ",".join(team["team_members"]),
+                    ",".join(team["team_members_email_ids"]),
                 ]
             )
         return response

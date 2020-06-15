@@ -8,20 +8,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web', '0008_modify_description_field_to_be_blank'),
+        ("web", "0008_modify_description_field_to_be_blank"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Subscribers',
+            name="Subscribers",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('email', models.EmailField(max_length=70)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("email", models.EmailField(max_length=70)),
             ],
-            options={
-                'db_table': 'subscribers',
-            },
+            options={"db_table": "subscribers",},
         ),
     ]

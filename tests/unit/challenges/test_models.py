@@ -199,7 +199,9 @@ class ChallengePhaseTestCase(BaseTestCase):
         )
 
     def test_is_restricted_to_select_one_submission(self):
-        self.assertEqual(True, self.challenge_phase.is_restricted_to_select_one_submission)
+        self.assertEqual(
+            True, self.challenge_phase.is_restricted_to_select_one_submission
+        )
 
 
 class LeaderboardTestCase(BaseTestCase):

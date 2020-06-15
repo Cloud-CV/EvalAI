@@ -49,8 +49,11 @@ class TestStringMethods(BaseAPITestClass):
     def test_get_participant_teams_url(self):
         url = reverse_lazy(
             "analytics:download_all_participants",
-            kwargs={"challenge_pk": self.challenge.pk}
+            kwargs={"challenge_pk": self.challenge.pk},
         )
         self.assertEqual(
-            str(url), "/api/analytics/challenges/{0}/download_all_participants/".format(self.challenge.pk)
+            str(url),
+            "/api/analytics/challenges/{0}/download_all_participants/".format(
+                self.challenge.pk
+            ),
         )

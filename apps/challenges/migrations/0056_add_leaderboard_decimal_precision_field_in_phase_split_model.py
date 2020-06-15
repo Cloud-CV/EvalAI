@@ -8,13 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0055_add_is_leaderboard_order_descending_in_phase_split_model'),
+        (
+            "challenges",
+            "0055_add_is_leaderboard_order_descending_in_phase_split_model",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephasesplit',
-            name='leaderboard_decimal_precision',
+            model_name="challengephasesplit",
+            name="leaderboard_decimal_precision",
             field=models.PositiveIntegerField(default=2),
         ),
     ]

@@ -119,7 +119,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "slug": self.challenge_phase.slug,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase

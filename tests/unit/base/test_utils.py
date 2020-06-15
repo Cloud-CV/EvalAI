@@ -127,16 +127,10 @@ class TestSeeding(BaseAPITestClass):
 
 
 class TestSlackNotification(BaseAPITestClass):
-
     @responses.activate
     def test_if_slack_notification_works(self):
-        message = {
-            "text": "Testing slack functionality",
-            "fields": []
-        }
+        message = {"text": "Testing slack functionality", "fields": []}
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        response = send_slack_notification(
-            message=message
-        )
+        response = send_slack_notification(message=message)
         self.assertEqual(type(response), requests.models.Response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

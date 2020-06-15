@@ -10,10 +10,11 @@ class ResendEmailThrottle(SimpleRateThrottle):
     Used to limit the requests to /accounts/user/resend_email_verification/
     to 3/hour.
     """
-    if (settings.DEBUG is True) or (settings.TEST is True):
-        cache = caches['throttling']
 
-    scope = 'resend_email'
+    if (settings.DEBUG is True) or (settings.TEST is True):
+        cache = caches["throttling"]
+
+    scope = "resend_email"
 
     def get_cache_key(self, request, view):
 
@@ -21,7 +22,4 @@ class ResendEmailThrottle(SimpleRateThrottle):
             ident = request.user.pk
         else:
             ident = self.get_ident(request)
-        return self.cache_format % {
-            'scope': self.scope,
-            'ident': ident
-        }
+        return self.cache_format % {"scope": self.scope, "ident": ident}

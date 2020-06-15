@@ -14,8 +14,8 @@ def make_team_name_unique():
         for participant_team in participant_teams:
             if participant_team.team_name in participant_team_list:
                 participant_team.team_name = "{0}_{1}".format(
-                    participant_team.team_name,
-                    participant_team_iter)
+                    participant_team.team_name, participant_team_iter
+                )
                 participant_team.save()
                 participant_team_iter = participant_team_iter + 1
             else:
@@ -29,8 +29,8 @@ def make_team_name_unique():
         for host_team in host_teams:
             if host_team.team_name in host_team_list:
                 host_team.team_name = "{0}_{1}".format(
-                    host_team.team_name,
-                    host_team_iter)
+                    host_team.team_name, host_team_iter
+                )
                 host_team.save()
                 host_team_iter = host_team_iter + 1
             else:

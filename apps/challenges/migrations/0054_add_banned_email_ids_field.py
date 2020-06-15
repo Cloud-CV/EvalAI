@@ -9,13 +9,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0053_added_is_registration_open_field'),
+        ("challenges", "0053_added_is_registration_open_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='banned_email_ids',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=True, null=True), blank=True, default=[], null=True, size=None),
+            model_name="challenge",
+            name="banned_email_ids",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=True, null=True),
+                blank=True,
+                default=[],
+                null=True,
+                size=None,
+            ),
         ),
     ]

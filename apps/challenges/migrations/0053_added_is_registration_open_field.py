@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0052_add_error_bar'),
+        ("challenges", "0052_add_error_bar"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='is_registration_open',
+            model_name="challenge",
+            name="is_registration_open",
             field=models.BooleanField(default=True),
         ),
     ]

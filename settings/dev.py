@@ -59,7 +59,7 @@ SPAGHETTI_SAUCE = {
 
 CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
-    "throttling": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    "throttling": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
 }
 
 MEDIA_URL = "/media/"
