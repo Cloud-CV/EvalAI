@@ -246,7 +246,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 
         if (
             submissions_in_progress
-            >= challenge_phase.max_concurrent_submissions_allowed
+            >= 10000
         ):
             message = "You have {} submissions that are being processed. \
                        Please wait for them to finish and then try again."
@@ -271,6 +271,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "message": "Please wait while your submission being evaluated!"
             }
             return Response(response_data, status=status.HTTP_200_OK)
+
+        try:
+            submission_meta_attributes = json.load(request.data.get('submission_meta_attributes'))
+            request.data['submission_meta_attributes'] = submission_meta_attributes
+        except Exception as e:
+            logger.info(e)
+
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -298,18 +305,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
-
-        ''' For debugging
-        try:
-            logger.info("#########submission_meta_attributes is of type {}".format(type(request.data.get('submission_meta_attributes'))))
-            logger.info(request.data.get('submission_meta_attributes'))
-            logger.info(dir(request.data.get('submission_meta_attributes')))
-            submission_meta_attributes = json.dumps(request.data.get('submission_meta_attributes'))
-            request.data['submission_meta_attributes'] = submission_meta_attributes
-        except Exception as e:
-            logger.info(e)
-        logger.info("###################################")
-        '''
 
         if serializer.is_valid():
             serializer.save()

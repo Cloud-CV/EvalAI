@@ -453,7 +453,7 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
-                    formData.append("submission_meta_attributes", vm.submission_meta_attributes);
+                    formData.append("submission_meta_attributes", JSON.stringify(vm.submission_meta_attributes));
                     console.log("While making submission, vm.submission_meta_attributes is:")
                     console.log(vm.submission_meta_attributes)
 
@@ -568,28 +568,44 @@
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
                 return element["phaseId"] == phaseId;
             });
-            console.log("Inside load_phase_attributes before initialization.")
-            console.log(vm.submission_meta_attributes)
             if(vm.submission_meta_attributes != null){
                 vm.submission_meta_attributes = vm.submission_meta_attributes["attributes"];
+                vm.submission_meta_attributes.forEach(function(attribute){
+                    if(attribute.type == 'checkbox'){
+                        attribute.values = [];
+                    }
+                    else{
+                        attribute.value = null;
+                    }
+                });
             }
             else{
                 vm.submission_meta_attributes = null;
             }
-            console.log("Inside load_phase_attributes after initializtion.")
-            console.log(vm.submission_meta_attributes)
         };
 
-        vm.toggleSelection = function toggleSelection(values, value){ // Make sure this modifies the reference object.
-                var idx = values.indexOf(value);
+        vm.clear_meta_attribute_values = function(){
+            vm.submission_meta_attributes.forEach(function(attribute){
+                if(attribute.type == 'checkbox'){
+                    attribute.values = [];
+                }
+                else{
+                    attribute.value = null;
+                }
+            })
+        }
+
+        vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.
+                var idx = attribute.values.indexOf(value);
                 if (idx > -1) {
-                  values.splice(idx, 1);
+                  attribute.values.splice(idx, 1);
                 }
                 else {
-                  values.push(value);
+                  attribute.values.push(value);
                 }
-                console.log("Just toggled.");
-                console.log(values);
+                console.log("Just toggled:");
+                console.log(attribute.values);
+                console.log("meta_atts are: ")
                 console.log(vm.submission_meta_attributes);
                 console.log("Finish toggle.");
             };
