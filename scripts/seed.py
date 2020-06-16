@@ -143,7 +143,6 @@ def create_challenges(number_of_challenges, host_team=None):
     """
     anon_counter = 0  # two private leaderboards
     for i in xrange(number_of_challenges):
-
         is_leaderboard_anon = False
         if anon_counter < 2:
             is_leaderboard_anon = True
@@ -363,13 +362,8 @@ def create_participant_team(user):
     return team
 
 
-def create_submission(
-    participant_user,
-    participant_team,
-    challenge_phase,
-    dataset_splits,
-    submission_status,
-):
+def create_submission(participant_user, participant_team, challenge_phase,
+                      dataset_splits, submission_status):
     status = submission_status
     submitted_at = timezone.now()
     started_at = timezone.now()
