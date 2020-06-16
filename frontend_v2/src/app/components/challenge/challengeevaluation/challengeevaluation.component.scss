@@ -4,13 +4,16 @@
 .ev-pad {
 	padding-left: 15px;
 	padding-right: 10px;
-	margin-bottom: 20px;
 }
 
 .tnc-pad {
 	padding-left: 10px;
 	padding-right: 15px;
-	margin-bottom: 20px;
+}
+
+.challenge-card {
+  padding-bottom: 0px;
+  margin-bottom: -40px;
 }
 
 @include screen-small {
