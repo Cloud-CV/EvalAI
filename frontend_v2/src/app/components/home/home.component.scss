@@ -66,6 +66,34 @@
   z-index: 3;
 }
 
+.evalai-sponsor-logo {
+  max-width: 100%;
+  height: 120px;
+  text-align: center;
+  img {
+      height: 55%;
+      max-width: 100%;
+      width: auto;
+      transition: all 0.2s ease-in-out;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: auto;
+      margin-bottom: auto;
+  }
+  &:hover {
+      img {
+          -webkit-filter: grayscale(100%);
+          /* Safari 6.0 - 9.0 */
+          filter: grayscale(100%);
+      }
+  }
+}
+
+#gsoc {
+  height: 45%;
+}
+
 #aptiv-logo {
   height: 35%;
   padding-top: 5%;
