@@ -298,6 +298,19 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+
+        ''' For debugging
+        try:
+            logger.info("#########submission_meta_attributes is of type {}".format(type(request.data.get('submission_meta_attributes'))))
+            logger.info(request.data.get('submission_meta_attributes'))
+            logger.info(dir(request.data.get('submission_meta_attributes')))
+            submission_meta_attributes = json.dumps(request.data.get('submission_meta_attributes'))
+            request.data['submission_meta_attributes'] = submission_meta_attributes
+        except Exception as e:
+            logger.info(e)
+        logger.info("###################################")
+        '''
+
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -386,7 +399,9 @@ def change_submission_data_and_visibility(
                 # Case when the phase is restricted to make only one submission as public
                 submission_serializer = SubmissionSerializer(
                     submissions_already_public[0],
-                    data={"is_public": False},
+                    data={
+                        "is_public": False
+                    },
                     context={
                         "participant_team": participant_team,
                         "challenge_phase": challenge_phase,
@@ -504,10 +519,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split_id
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
-    (
-        response_data,
-        http_status_code,
-    ) = calculate_distinct_sorted_leaderboard_data(
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
         request.user,
         challenge_obj,
         challenge_phase_split,
@@ -552,10 +564,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    (
-        response_data,
-        http_status_code,
-    ) = calculate_distinct_sorted_leaderboard_data(
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
         request.user,
         challenge_obj,
         challenge_phase_split,
@@ -622,10 +631,7 @@ def get_remaining_submissions(request, challenge_pk):
         ).order_by("pk")
     phase_data_list = list()
     for phase in challenge_phases:
-        (
-            remaining_submission_message,
-            response_status,
-        ) = get_remaining_submission_for_a_phase(
+        remaining_submission_message, response_status = get_remaining_submission_for_a_phase(
             request.user, phase.id, challenge_pk
         )
         if response_status != status.HTTP_200_OK:
@@ -1528,10 +1534,7 @@ def get_github_badge_data(
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     data = {"schemaVersion": 1, "label": "EvalAI", "color": "blue"}
 
-    (
-        response_data,
-        http_status_code,
-    ) = calculate_distinct_sorted_leaderboard_data(
+    response_data, http_status_code = calculate_distinct_sorted_leaderboard_data(
         request.user,
         challenge_obj,
         challenge_phase_split,

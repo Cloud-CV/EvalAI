@@ -28,7 +28,8 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
-        vm.submission_meta_attributes_schema = [];
+        vm.submission_meta_attributes_schema = []; // Stores the attributes format and phase ID for all the phases of a challenge.
+        vm.submission_meta_attributes = null; // Stores the attributes for the current phase selected while making a submission.
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -452,7 +453,9 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
-                    formData.append("submission_meta_attribites", vm.submission_meta_attribites)
+                    formData.append("submission_meta_attributes", vm.submission_meta_attributes);
+                    console.log("While making submission, vm.submission_meta_attributes is:")
+                    console.log(vm.submission_meta_attributes)
 
                     parameters.data = formData;
 
@@ -481,6 +484,7 @@
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
+                            vm.submission_meta_attributes = null;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -518,6 +522,7 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+                console.log(details);
                 var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
@@ -532,8 +537,8 @@
                 }
 
                 for(var i=0; i<details.count; i++){
-                    if(details.results[i].submission_meta_attribites_schema != undefined){
-                        var attributes = details.results[i].submission_meta_attribites_schema;
+                    if(details.results[i].submission_meta_attributes_schema != undefined){
+                        var attributes = details.results[i].submission_meta_attributes_schema;
                         attributes.forEach(function(attribute){
                             if(attribute["type"] == "checkbox") attribute["values"] = [];
                             else attribute["value"] = null;
@@ -542,10 +547,11 @@
                         vm.submission_meta_attributes_schema.push(data);
                     }
                     else{
-                        var data = {"phaseId":details.results[i].id, "attributes": undefined};
+                        var data = {"phaseId":details.results[i].id, "attributes": null};
                         vm.submission_meta_attributes_schema.push(data);
                     }
                 }
+                console.log(vm.submission_meta_attributes_schema);
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -558,57 +564,22 @@
 
         utilities.sendRequest(parameters);
 
-        vm.submission_meta_attributes = [ // Temporary...for testing our frontend. This should ideally be loaded by the below commented out method.
-                                        {
-                                          "name": "TextAttribute",
-                                          "description": "description",
-                                          "type": "text",
-                                          "required": true,
-                                          "value": null
-                                        },
-                                        {
-                                          "name": "SingleOptionAttribute",
-                                          "description": "description",
-                                          "type": "radio",
-                                          "options":[
-                                              "A",
-                                              "B",
-                                              "C"
-                                            ],
-                                          "value": null
-                                        },
-                                        {
-                                          "name": "MultipleChoiceAttribute",
-                                          "description": "description",
-                                          "type": "checkbox",
-                                          "options": [
-                                              "alpha",
-                                              "beta",
-                                              "gamma"
-                                              ],
-                                           "values": []
-                                        },
-                                        {
-                                          "name": "TrueFalseField",
-                                          "description": "description",
-                                          "type": "boolean",
-                                          "required": true,
-                                          "value": null
-                                        }
-                                      ];
-        /*
         vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submission_meta_attributes
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
-                return element["phaseId"] == vm.phaseId;
+                return element["phaseId"] == phaseId;
             });
+            console.log("Inside load_phase_attributes before initialization.")
+            console.log(vm.submission_meta_attributes)
             if(vm.submission_meta_attributes != null){
                 vm.submission_meta_attributes = vm.submission_meta_attributes["attributes"];
             }
             else{
-                vm.submission_meta_attributes = undefined;
+                vm.submission_meta_attributes = null;
             }
+            console.log("Inside load_phase_attributes after initializtion.")
+            console.log(vm.submission_meta_attributes)
         };
-        */
+
         vm.toggleSelection = function toggleSelection(values, value){ // Make sure this modifies the reference object.
                 var idx = values.indexOf(value);
                 if (idx > -1) {
@@ -617,6 +588,10 @@
                 else {
                   values.push(value);
                 }
+                console.log("Just toggled.");
+                console.log(values);
+                console.log(vm.submission_meta_attributes);
+                console.log("Finish toggle.");
             };
 
         var challengePhaseVisibility = {
