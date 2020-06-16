@@ -5,6 +5,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
 </head>
+<script type="text/javascript">
+    function link(){
+    var url = window.location.origin + "/auth/login";
+    if (url.indexOf("localhost") !== -1){
+        url = "http://localhost:8888/auth/login"
+    }
+    var element = document.getElementById('login-url');
+    element.setAttribute("href",url)
+}
+</script>
 
 <!-- loader init -->
 <eval-loader></eval-loader>
@@ -45,8 +55,7 @@
         </div>
         <div class="row">
             <div class="col s12 m4 offset-m4 text-highlight center w-300">
-                <a href="https://evalai.cloudcv.org/auth/login"
-                    class="waves-effect waves-dark btn ev-btn-dark blue-grey darken-4">Log In</a>
+                <a onclick="link()" id="login-url" href="#" class="waves-effect waves-dark btn ev-btn-dark blue-grey darken-4">Log In</a>
             </div>
         </div>
         <div class="row">
