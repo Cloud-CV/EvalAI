@@ -537,7 +537,7 @@
                 }
 
                 for(var i=0; i<details.count; i++){
-                    if(details.results[i].submission_meta_attributes_schema != undefined){
+                    if(details.results[i].submission_meta_attributes_schema != undefined || details.results[i].submission_meta_attributes_schema != null){
                         var attributes = details.results[i].submission_meta_attributes_schema;
                         attributes.forEach(function(attribute){
                             if(attribute["type"] == "checkbox") attribute["values"] = [];

@@ -246,7 +246,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 
         if (
             submissions_in_progress
-            >= 10000
+            >= challenge_phase.max_concurrent_submissions_allowed
         ):
             message = "You have {} submissions that are being processed. \
                        Please wait for them to finish and then try again."
