@@ -514,6 +514,10 @@
             }
         };
 
+        vm.consoler = function(){
+            console.log("LOLOLOLOLOL");
+        };
+
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
@@ -568,8 +572,30 @@
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
                 return element["phaseId"] == phaseId;
             });
+            if(vm.submission_meta_attributes_schema != null){
+                vm.submission_meta_attributes = vm.submission_meta_attributes_schema["attributes"];
+                if(vm.submission_meta_attributes != null){
+                    vm.submission_meta_attributes.forEach(function(attribute){
+                        if(attribute.type == 'checkbox'){
+                            attribute.values = [];
+                        }
+                        else{
+                            attribute.value = null;
+                        }
+                    });
+                }
+                else{
+                    vm.submission_meta_attributes = null;
+                }
+                    
+            }
+            else{
+                vm.submission_meta_attributes = null;
+            }
+        };
+
+        vm.clear_meta_attribute_values = function(){
             if(vm.submission_meta_attributes != null){
-                vm.submission_meta_attributes = vm.submission_meta_attributes["attributes"];
                 vm.submission_meta_attributes.forEach(function(attribute){
                     if(attribute.type == 'checkbox'){
                         attribute.values = [];
@@ -579,20 +605,6 @@
                     }
                 });
             }
-            else{
-                vm.submission_meta_attributes = null;
-            }
-        };
-
-        vm.clear_meta_attribute_values = function(){
-            vm.submission_meta_attributes.forEach(function(attribute){
-                if(attribute.type == 'checkbox'){
-                    attribute.values = [];
-                }
-                else{
-                    attribute.value = null;
-                }
-            })
         }
 
         vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.
@@ -603,11 +615,6 @@
                 else {
                   attribute.values.push(value);
                 }
-                console.log("Just toggled:");
-                console.log(attribute.values);
-                console.log("meta_atts are: ")
-                console.log(vm.submission_meta_attributes);
-                console.log("Finish toggle.");
             };
 
         var challengePhaseVisibility = {
