@@ -710,7 +710,8 @@ def create_eks_nodegroup(challenge, cluster_name):
     """
     nodegroup_name = "{0}-nodegroup".format(challenge.title.replace(" ", "-"))
     client = get_boto3_client("eks", aws_keys)
-    # TODO: Move the hardcoded cluster configuration such as the instance_type, subnets, AMI to challenge configuration later.
+    # TODO: Move the hardcoded cluster configuration such as the
+    # instance_type, subnets, AMI to challenge configuration later.
     try:
         response = client.create_nodegroup(
             clusterName=cluster_name,
@@ -727,8 +728,7 @@ def create_eks_nodegroup(challenge, cluster_name):
         return response
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(
-        clusterName=cluster_name,
-        nodegroupName=nodegroup_name,
+        clusterName=cluster_name, nodegroupName=nodegroup_name,
     )
 
 
@@ -759,9 +759,7 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
             waiter = client.get_waiter("cluster_active")
             waiter.wait(name=cluster_name)
             # creating kubeconfig
-            cluster = client.describe_cluster(
-                name=cluster_name
-            )
+            cluster = client.describe_cluster(name=cluster_name)
             cluster_cert = cluster["cluster"]["certificateAuthority"]["data"]
             cluster_ep = cluster["cluster"]["endpoint"]
             cluster_config = {
@@ -771,18 +769,15 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
                     {
                         "cluster": {
                             "server": str(cluster_ep),
-                            "certificate-authority-data": str(cluster_cert)
+                            "certificate-authority-data": str(cluster_cert),
                         },
-                        "name": "kubernetes"
+                        "name": "kubernetes",
                     }
                 ],
                 "contexts": [
                     {
-                        "context": {
-                            "cluster": "kubernetes",
-                            "user": "aws"
-                        },
-                        "name": "aws"
+                        "context": {"cluster": "kubernetes", "user": "aws"},
+                        "name": "aws",
                     }
                 ],
                 "current-context": "aws",
@@ -794,13 +789,11 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
                             "exec": {
                                 "apiVersion": "client.authentication.k8s.io/v1alpha1",
                                 "command": "heptio-authenticator-aws",
-                                "args": [
-                                    "token", "-i", cluster_name
-                                ]
+                                "args": ["token", "-i", cluster_name],
                             }
-                        }
+                        },
                     }
-                ]
+                ],
             }
 
             # Write in YAML.
@@ -810,7 +803,8 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
             ChallengeEvaluationCluster.objects.create(
                 challenge=challenge,
                 name=cluster_name,
-                kube_config=config_file
+                cluster_endpoint=cluster_ep,
+                cluster_ssl=cluster_cert,
             )
             # Creating nodegroup
             create_eks_nodegroup(challenge, cluster_name)
