@@ -9,6 +9,7 @@ from django.db.models import FloatField, Q
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 
 from challenges.models import ChallengePhaseSplit, LeaderboardData
 from participants.models import ParticipantTeam
@@ -377,3 +378,20 @@ def calculate_distinct_sorted_leaderboard_data(
             ]
 
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
+
+
+def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
+    """
+        Function to calculate and return the sorted leaderboard data
+
+        Arguments:
+            submission_pk {[int]} -- Submission object primary key
+            challenge_phase_split_pk {[int]} -- ChallengePhase object primary key
+
+        Returns:
+            [Class Object] -- LeaderboardData model object
+    """
+    leaderboard_data = LeaderboardData.objects.get(submission=submission_pk,
+                                                   challenge_phase_split=challenge_phase_split_pk)
+    return leaderboard_data
+
