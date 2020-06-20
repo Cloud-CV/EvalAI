@@ -9,7 +9,6 @@ from django.db.models import FloatField, Q
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.exceptions import NotFound
 
 from challenges.models import ChallengePhaseSplit, LeaderboardData
 from participants.models import ParticipantTeam
@@ -408,4 +407,3 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     leaderboard_data = LeaderboardData.objects.get(submission=submission_pk,
                                                    challenge_phase_split__pk=challenge_phase_split_pk)
     return leaderboard_data
-
