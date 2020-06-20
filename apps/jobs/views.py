@@ -1144,7 +1144,7 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def update_partial_evaluation_submission(request, challenge_pk):
+def update_partially_evaluated_submission(request, challenge_pk):
     """
     API endpoint to update submission related attributes
 
@@ -1244,12 +1244,29 @@ def update_partial_evaluation_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
+                    "labels"
+                )
+                missing_metrics = []
                 malformed_metrics = []
                 for metric, value in accuracies.items():
+                    if metric not in leaderboard_metrics:
+                        missing_metrics.append(metric)
+
                     if not (
                         isinstance(value, float) or isinstance(value, int)
                     ):
                         malformed_metrics.append((metric, type(value)))
+
+                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                if len(missing_metrics) and not is_partial_evaluation_phase:
+                    response_data = {
+                        "error": "Following metrics are missing in the"
+                        "leaderboard data: {} of challenge phase: {}".format(missing_metrics, challenge_phase_pk)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 if len(malformed_metrics):
                     response_data = {
@@ -1323,7 +1340,9 @@ def update_partial_evaluation_submission(request, challenge_pk):
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
-        if submission_status not in [Submission.RUNNING, Submission.PARTIALLY_EVALUATED]:
+        if submission_status not in [Submission.RUNNING,
+                                     Submission.PARTIALLY_EVALUATED,
+                                     Submission.FINISHED]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1341,7 +1360,7 @@ def update_partial_evaluation_submission(request, challenge_pk):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif submission_status == Submission.PARTIALLY_EVALUATED:
+        elif submission_status == Submission.PARTIALLY_EVALUATED or submission_status == Submission.FINISHED:
             challenge_phase_pk = request.data.get("challenge_phase")
             stdout_content = request.data.get("stdout", "")
             stderr_content = request.data.get("stderr", "")
@@ -1381,7 +1400,7 @@ def update_partial_evaluation_submission(request, challenge_pk):
                     )
 
                 try:
-                    leaderboard_data = get_leaderboard_data_model(submission_pk, challenge_phase_pk)
+                    leaderboard_data = get_leaderboard_data_model(submission_pk, challenge_phase_split.pk)
                 except LeaderboardData.DoesNotExist:
                     response_data = {
                         "error": "Leaderboard Data does not exist with phase_id: {} and"
@@ -1391,12 +1410,32 @@ def update_partial_evaluation_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                updated_result = leaderboard_data.result
+                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
+                    "labels"
+                )
+                missing_metrics = []
                 malformed_metrics = []
                 for metric, value in accuracies.items():
+                    if metric not in leaderboard_metrics:
+                        missing_metrics.append(metric)
+
                     if not (
                             isinstance(value, float) or isinstance(value, int)
                     ):
                         malformed_metrics.append((metric, type(value)))
+                    updated_result[metric] = value
+
+                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                if len(missing_metrics) and not is_partial_evaluation_phase:
+                    response_data = {
+                        "error": "Following metrics are missing in the"
+                                 "leaderboard data: {} of challenge phase: {}".format(missing_metrics,
+                                                                                      challenge_phase_pk)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 if len(malformed_metrics):
                     response_data = {
@@ -1407,7 +1446,7 @@ def update_partial_evaluation_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                data = {"result": accuracies}
+                data = {"result": updated_result}
                 serializer = CreateLeaderboardDataSerializer(
                     leaderboard_data,
                     data=data,
