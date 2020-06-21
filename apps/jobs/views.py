@@ -52,6 +52,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
+
 from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
 from .models import Submission
@@ -65,13 +66,10 @@ from .serializers import (
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
     calculate_distinct_sorted_leaderboard_data,
-    handle_submission_rerun,
-    is_url_valid,
-)
-
-from .utils import (
     get_submission_model,
     get_remaining_submission_for_a_phase,
+    handle_submission_rerun,
+    is_url_valid,
     validate_numerical_values_in_result,
 )
 
