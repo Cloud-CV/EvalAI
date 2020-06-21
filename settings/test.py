@@ -24,7 +24,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
-    "throttling": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    "throttling": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
 }
 
 TEST = True
