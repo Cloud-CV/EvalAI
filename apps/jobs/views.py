@@ -12,7 +12,8 @@ from rest_framework.decorators import (
 )
 
 from django.core.files.base import ContentFile
-from django.db import transaction, IntegrityError
+from django.core.files.storage import FileSystemStorage
+from django.db import transaction, IntegrityError, models
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -29,6 +30,7 @@ from base.utils import (
     StandardResultSetPagination,
     get_or_create_sqs_queue_object,
     get_boto3_client,
+    RandomFileName
 )
 from challenges.models import (
     ChallengePhase,
@@ -61,7 +63,6 @@ from .serializers import (
     LeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
     SubmissionSerializer,
-    SubmissionFileSerializer
 )
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
@@ -71,6 +72,7 @@ from .utils import (
     handle_submission_rerun,
     is_url_valid,
 )
+from settings.custom_storages import MediaStorage
 
 logger = logging.getLogger(__name__)
 
@@ -318,16 +320,21 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_file_submission(request, challenge_id, challenge_phase_id):
     """API for uploading the submission file"""
-    serializer = SubmissionFileSerializer(
-        data=request.data,
-    )
-    if serializer.is_valid():
-        serializer.save()
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+    if request.FILES['input_file']:
+        file_obj = request.FILES.get('input_file', '')
+        file_path_within_bucket=RandomFileName("submission_files/submission_{id}")
+        media_storage = MediaStorage()
+
+        if not media_storage.exists(file_path_within_bucket): # avoid overwriting existing file
+            media_storage.save(file_path_within_bucket, file_obj)
+            file_url = media_storage.url(file_path_within_bucket)
+            return Response(
+                file_url,
+                status=status.HTTP_200_OK
+            )
     else:
         return Response(
-            serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+            'Error', status=status.HTTP_406_NOT_ACCEPTABLE
         )
 
 

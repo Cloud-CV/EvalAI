@@ -5,7 +5,7 @@ from rest_framework import serializers
 from challenges.models import ChallengePhase, LeaderboardData
 from participants.models import Participant, ParticipantTeam
 
-from .models import Submission, ChallengeSubmissionFile
+from .models import Submission
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -25,9 +25,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
             challenge_phase = context.get("challenge_phase").pk
             kwargs["data"]["challenge_phase"] = challenge_phase
-
-            input_file = context.get('request').data['input_file']
-            kwargs["data"]["input_file"] = input_file
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
@@ -241,12 +238,3 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
 
     def get_limits(self, obj):
         return self.context.get("limits")
-
-
-class SubmissionFileSerializer(serializers.ModelSerializer):
-    """
-    Serialize the ChallengeSubmissionFile Model.
-    """
-    class Meta:
-        model = ChallengeSubmissionFile
-        fields = ("id", "input_file")
