@@ -148,6 +148,7 @@
 
         // Function to login
         vm.userLogin = function(loginFormValid) {
+            console.log("User logging in");
             if (loginFormValid) {
                 vm.startLoader("Taking you to EvalAI!");
                 // call utility service
@@ -160,6 +161,7 @@
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
+                        console.log("success ==> ", response);
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
                             if ($rootScope.previousState) {
@@ -173,6 +175,7 @@
                         }
                     },
                     onError: function(response) {
+                        console.log("error ==> ", response);
                         if (response.status == 400) {
                             vm.isFormError = true;
                             var non_field_errors;
@@ -188,8 +191,10 @@
                         vm.stopLoader();
                     }
                 };
+                console.log("Sending HTTP request");
                 utilities.sendRequest(parameters, "no-header");
             } else {
+                console.log("Login form invalid")
                 vm.stopLoader();
             }
         };
