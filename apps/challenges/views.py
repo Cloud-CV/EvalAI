@@ -814,23 +814,21 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        if(data.get("submission_meta_attributes_schema")):  # To ensure that the schema for submission metaattributes is valid.
+        # To ensure that the schema for submission metaattributes is valid.
+        if (data.get("submission_meta_attributes_schema")):
             for attribute in data["submission_meta_attributes_schema"]:
-
                 try:
                     name = attribute["name"]
                 except KeyError:
                     message = (
-                    "No name found for attribute in challenge_phase {}".format(data["id"])
+                        "No name found for attribute in challenge_phase {}".format(data["id"])
                     )
                     response_data = {"error": message}
                     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-                try:
-                    description = attribute["description"]
-                except KeyError:
+                if "description" not in attribute.keys():
                     message = (
-                    "No description found for attribute in challenge_phase {}".format(data["id"])
+                        "No description found for attribute in challenge_phase {}".format(data["id"])
                     )
                     response_data = {"error": message}
                     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
