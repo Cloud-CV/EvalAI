@@ -80,26 +80,3 @@ warnings.filterwarnings(
     RuntimeWarning,
     r"django\.db\.models\.fields",
 )
-
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-
-# Amazon S3 Configurations
-AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
-
-# static files configuration on S3
-STATICFILES_LOCATION = "static"
-STATICFILES_DEV_STORAGE = "settings.custom_storages.StaticStorage"
-STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
-
-# Media files configuration on S3
-MEDIAFILES_LOCATION = "media"
-MEDIA_URL = "http://%s.s3.amazonaws.com/%s/" % (
-    AWS_STORAGE_BUCKET_NAME,
-    MEDIAFILES_LOCATION,
-)
-DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
