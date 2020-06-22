@@ -117,19 +117,19 @@ def contact_us(request):
                         {
                             "title": "Name",
                             "value": request.data["name"],
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Email",
                             "value": request.data["email"],
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Message",
                             "value": request.data["message"],
-                            "short": False
-                        }
-                    ]
+                            "short": False,
+                        },
+                    ],
                 }
                 send_slack_notification(message=message)
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -144,15 +144,15 @@ def contact_us(request):
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.AllowAny,))
 def subscribe(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         subscribers = Subscribers.objects.all().order_by("-pk")
         serializer = SubscribeSerializer(
             subscribers, many=True, context={"request": request}
         )
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    elif request.method == 'POST':
-        email = request.data.get('email')
+    elif request.method == "POST":
+        email = request.data.get("email")
         # When user has already subscribed
         if Subscribers.objects.filter(email=email).exists():
             response_data = {
@@ -164,7 +164,10 @@ def subscribe(request):
         if serializer.is_valid():
             serializer.save()
             response_data = {
-                "message", "You will be notified about our latest updates at {}.".format(email)
+                "message",
+                "You will be notified about our latest updates at {}.".format(
+                    email
+                ),
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
