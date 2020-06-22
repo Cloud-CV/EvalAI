@@ -795,7 +795,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if not isfile(test_annotation_file_path):
             message = (
                 "No test annotation file found in zip file"
-                "for challenge phase '{}'. Please add it and "
+                " for challenge phase '{}'. Please add it and "
                 " then try again!".format(data["name"])
             )
             response_data = {"error": message}
@@ -2553,3 +2553,35 @@ def validate_challenge_config(request, challenge_host_team_pk):
         message = "Challenge config validation success"
         response_data = {"Success": message}
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_worker_logs(request, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access the worker logs."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = challenge = Challenge.objects.get(pk=challenge_pk)
+    response_data = []
+    last_submission = Submission.objects.order_by('started_at').last()
+    failed = True if last_submission.status is "failed" else False 
+
+    if failed:
+        log_group = "challenge-pk-{challenge_pk}-workers".format(challenge_pk)
+        log_stream_prefix = challeneg.queue
+        pattern = "WORKER_LOG"
+        start_time = 0
+        end_time = int(round(time.time() * 1000))
+
+        logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, pattern, start_time, end_time)
+        response_data = {"logs": logs, "failing": True}
+    else:
+        response_data = {"failing": False}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+

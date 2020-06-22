@@ -265,6 +265,15 @@
             title: 'Leaderboard',
         };
 
+        var worker_logs = {
+            name: "web.challenge-main.challenge-page.worker_logs",
+            parent: "web.challenge-main.challenge-page",
+            url: "/worker_logs",
+            templateUrl: baseUrl + "/web/challenge/worker_logs.html",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
+        };
+
         var challenge_phase_leaderboard = {
             name: "web.challenge-main.challenge-page.phase-leaderboard",
             url: "/leaderboard/:phaseSplitId",
@@ -515,6 +524,8 @@
         $stateProvider.state(contact_us);
         $stateProvider.state(challenge_invitation);
         $stateProvider.state(get_submission_related_files);
+
+        $stateProvider.state(worker_logs);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');

@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import string
+import time
 
 from botocore.exceptions import ClientError
 from django.conf import settings
@@ -185,7 +186,7 @@ task_definition = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-group": "evalai-worker-{ENV}",
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
                 }},
@@ -697,3 +698,24 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 instance.pk, field_name
             )
         )
+
+# What would the start_time be? 0 or challenge start time?
+def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern=""):
+    # Add docstring here.
+    client = get_boto3_client("logs", aws_keys)
+    logs = []
+    try:
+        response = client.filter_log_events(
+            logGroupName="{log_group_name}",
+            logStreamNamePrefix="{log_stream_prefix}",
+            startTime=start_time,
+            endTime=end_time,
+            filterPattern="{pattern}"
+        )
+        for event in response["events"]:
+            logs.append(event["message"])
+    except ClientError as e:
+        logger.exception(e)
+        return ["There was some error in displaying the logs."]
+
+    return logs

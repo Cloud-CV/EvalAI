@@ -10,6 +10,7 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
+        vm.areSubmissionsFailing = false;
         vm.getAllEntriesTestOption = "Include private submissions";
         vm.showPrivateIds = [];
         vm.showLeaderboardToggle = true;
@@ -508,7 +509,30 @@
             }
         };
 
-
+        // Get the logs from worker if submissions are failing.
+        parameters.url = 'challenges/challenge/' + vm.challengeId + '/get_worker_logs';
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.callback = {
+            onSuccess: function(response) {
+                var details = response.data
+                vm.worker_logs = []
+                if (details.failing){
+                    vm.areSubmissionsFailing = true;
+                    for (var i = 0; i<details.logs.length; i++){
+                        vm.worker_logs.push(details.logs[i]);
+                    }
+                }
+                else{
+                    vm.areSubmissionsFailing = false;
+                }
+            },
+            onError: function(response) {
+                var error = response.data.error;
+                logs.push(error);
+            }
+        };
+        utilities.sendRequest(parameters);
 
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
