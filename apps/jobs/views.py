@@ -321,7 +321,7 @@ def challenge_file_submission(request, challenge_id, challenge_phase_id):
     """API for uploading the submission file"""
     if request.FILES['input_file']:
         file_obj = request.FILES.get('input_file', '')
-        file_path_within_bucket=RandomFileName("submission_files/submission_{id}")
+        file_path_within_bucket=RandomFileName("submission_files/submission_{challenge_phase_id}")
         media_storage = MediaStorage()
 
         # avoid overwriting existing file
