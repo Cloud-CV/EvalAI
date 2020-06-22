@@ -4,6 +4,7 @@ import json
 import os
 import random
 import string
+import uuid
 
 from datetime import timedelta
 
@@ -36,7 +37,7 @@ NUMBER_OF_DATASET_SPLITS = 2
 DATASET_SPLIT_ITERATOR = 0
 
 try:
-    xrange  # Python 2
+    xrange   # Python 2
 except NameError:
     xrange = range  # Python 3
 
@@ -140,13 +141,22 @@ def create_challenges(number_of_challenges, host_team=None):
     """
     Creates past challenge, on-going challenge and upcoming challenge.
     """
+    anon_counter = 0  # two private leaderboards
     for i in xrange(number_of_challenges):
+        is_leaderboard_anon = False
+        if anon_counter < 2:
+            is_leaderboard_anon = True
+            anon_counter += 1
+        else:
+            is_leaderboard_anon = False
+
         if i % 3 == 0:
             create_challenge(
                 "{} Challenge".format(fake.first_name()),
                 timezone.now() - timedelta(days=100),
                 timezone.now() + timedelta(days=500),
                 host_team,
+                is_leaderboard_anon,
             )
         elif i % 3 == 1:
             create_challenge(
@@ -154,6 +164,7 @@ def create_challenges(number_of_challenges, host_team=None):
                 timezone.now() - timedelta(days=500),
                 timezone.now() - timedelta(days=100),
                 host_team,
+                is_leaderboard_anon,
             )
         elif i % 3 == 2:
             create_challenge(
@@ -161,10 +172,11 @@ def create_challenges(number_of_challenges, host_team=None):
                 timezone.now() + timedelta(days=100),
                 timezone.now() + timedelta(days=500),
                 host_team,
+                is_leaderboard_anon,
             )
 
 
-def create_challenge(title, start_date, end_date, host_team):
+def create_challenge(title, start_date, end_date, host_team, anon_leaderboard):
     """
     Creates a challenge.
     """
@@ -179,9 +191,11 @@ def create_challenge(title, start_date, end_date, host_team):
     )
     queue = "".join(random.choice(string.ascii_letters) for _ in range(75))
     year = datetime.date.today().year
-    slug = "{t}-{y}".format(t=title, y=year)
-    slug = slug.lower().replace(" ", "-")
-    Challenge.objects.create(
+    # add UUID here
+    uuid_stamp = uuid.uuid4().hex[0:10]
+    slug = "{t}-{y}-{z}".format(t=title, y=year, z=uuid_stamp)
+    slug = slug.lower().replace(" ", "-")[:198]
+    challenge = Challenge(
         title=title,
         short_description=fake.paragraph(),
         description=fake.paragraph(),
@@ -196,12 +210,16 @@ def create_challenge(title, start_date, end_date, host_team):
         creator=host_team,
         published=True,
         enable_forum=True,
-        anonymous_leaderboard=False,
-        slug=slug,
+        anonymous_leaderboard=anon_leaderboard,
         start_date=start_date,
         end_date=end_date,
         queue=queue,
     )
+    challenge.save()
+
+    challenge.slug = slug
+    challenge.save()
+
     print(
         "Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(
             title, host_team.team_name, start_date, end_date
@@ -216,9 +234,6 @@ def create_challenge_phases(challenge, number_of_phases=1):
     challenge_phases = []
     for i in range(number_of_phases):
         name = "{} Phase".format(fake.first_name())
-        year = datetime.date.today().year
-        slug = "{t}-{y}".format(t=name, y=year)
-        slug = slug.lower().replace(" ", "-")
         with open(
             os.path.join(
                 settings.BASE_DIR,
@@ -228,31 +243,35 @@ def create_challenge_phases(challenge, number_of_phases=1):
             ),
             "rb",
         ) as data_file:
+            year = datetime.date.today().year
+            uuid_stamp = uuid.uuid4().hex[0:10]
+            slug = "{t}-{y}-{z}".format(t=name, y=year, z=uuid_stamp)
+            slug = slug.lower().replace(" ", "-")
             data = data_file.read()
-        data = data or None
-        challenge_phase = ChallengePhase.objects.create(
-            name=name,
-            slug=slug,
-            description=fake.paragraph(),
-            leaderboard_public=True,
-            is_public=True,
-            is_submission_public=True,
-            start_date=challenge.start_date,
-            end_date=challenge.end_date,
-            challenge=challenge,
-            test_annotation=SimpleUploadedFile(
-                fake.file_name(extension="txt"),
-                data,
-                content_type="text/plain",
-            ),
-            codename="{}{}".format("phase", i + 1),
-        )
-        challenge_phases.append(challenge_phase)
-        print(
-            "Challenge Phase created with name: {} challenge: {}".format(
-                name, challenge.title
+            data = data or None
+            challenge_phase = ChallengePhase.objects.create(
+                name=name,
+                slug=slug,
+                description=fake.paragraph(),
+                leaderboard_public=True,
+                is_public=True,
+                is_submission_public=True,
+                start_date=challenge.start_date,
+                end_date=challenge.end_date,
+                challenge=challenge,
+                test_annotation=SimpleUploadedFile(
+                    fake.file_name(extension="txt"),
+                    data,
+                    content_type="text/plain",
+                ),
+                codename="{}{}".format("phase", i + 1),
             )
-        )
+            challenge_phases.append(challenge_phase)
+            print(
+                "Challenge Phase created with name: {} challenge: {}".format(
+                    name, challenge.title
+                )
+            )
     return challenge_phases
 
 
@@ -343,10 +362,9 @@ def create_participant_team(user):
     return team
 
 
-def create_submission(
-    participant_user, participant_team, challenge_phase, dataset_splits
-):
-    status = Submission.FINISHED
+def create_submission(participant_user, participant_team, challenge_phase,
+                      dataset_splits, submission_status):
+    status = submission_status
     submitted_at = timezone.now()
     started_at = timezone.now()
     completed_at = timezone.now()
@@ -394,51 +412,65 @@ def create_submission(
 
 
 def run(*args):
-    NUMBER_OF_CHALLENGES = int(args[0])
-    status = check_database()
-    if status is False:
-        print("Seeding aborted.")
-        return 0
-    print("Seeding...")
-    # Create superuser
-    create_user(is_admin=True)
-    # Create host user
-    host_user = create_user(is_admin=False, username="host")
-    # Create challenge host team with challenge host
-    challenge_host_team = create_challenge_host_team(user=host_user)
-    # Create challenge
-    create_challenges(
-        number_of_challenges=NUMBER_OF_CHALLENGES,
-        host_team=challenge_host_team,
-    )
-    participant_user = create_user(is_admin=False, username="participant")
-    participant_team = create_participant_team(user=participant_user)
+    try:
+        NUMBER_OF_CHALLENGES = int(args[0])
+        status = check_database()
+        if status is False:
+            print("Seeding aborted.")
+            return 0
+        print("Seeding...")
+        # Create superuser
+        create_user(is_admin=True)
+        # Create host user
+        host_user = create_user(is_admin=False, username="host")
+        # Create challenge host team with challenge host
+        challenge_host_team = create_challenge_host_team(user=host_user)
+        # Create challenge
+        create_challenges(
+            number_of_challenges=NUMBER_OF_CHALLENGES,
+            host_team=challenge_host_team,
+        )
+        participant_user = create_user(is_admin=False, username="participant")
+        participant_team = create_participant_team(user=participant_user)
 
-    # Fetch all the created challenges
-    challenges = Challenge.objects.all()
-    for challenge in challenges:
-        # Create a leaderboard object for each challenge
-        leaderboard = create_leaderboard()
-        # Create Phases for a challenge
-        challenge_phases = create_challenge_phases(
-            challenge, number_of_phases=NUMBER_OF_PHASES
-        )
-        # Create Dataset Split for each Challenge
-        dataset_splits = create_dataset_splits(
-            number_of_splits=NUMBER_OF_DATASET_SPLITS
-        )
-        # Create Challenge Phase Split for each Phase and Dataset Split
-        for challenge_phase in challenge_phases:
-            submission = create_submission(
-                participant_user,
-                participant_team,
-                challenge_phase,
-                dataset_splits,
+        # Fetch all the created challenges
+        challenges = Challenge.objects.all()
+        for challenge in challenges:
+            # Create a leaderboard object for each challenge
+            leaderboard = create_leaderboard()
+            # Create Phases for a challenge
+            challenge_phases = create_challenge_phases(
+                challenge, number_of_phases=NUMBER_OF_PHASES
             )
-            for dataset_split in dataset_splits:
-                challenge_phase_split = create_challenge_phase_splits(
-                    challenge_phase, leaderboard, dataset_split
-                )
-                create_leaderboard_data(challenge_phase_split, submission)
+            # Create Dataset Split for each Challenge
+            dataset_splits = create_dataset_splits(
+                number_of_splits=NUMBER_OF_DATASET_SPLITS
+            )
+            # Create Challenge Phase Split for each Phase and Dataset Split
+            for challenge_phase in challenge_phases:
+                for i in range(10):
+                    if i < 5:  # ADDED: two failed submissions
+                        submission = create_submission(
+                            participant_user,
+                            participant_team,
+                            challenge_phase,
+                            dataset_splits,
+                            Submission.FAILED,
+                        )
+                    else:
+                        submission = create_submission(
+                            participant_user,
+                            participant_team,
+                            challenge_phase,
+                            dataset_splits,
+                            Submission.FINISHED,
+                        )
+                for dataset_split in dataset_splits:
+                    challenge_phase_split = create_challenge_phase_splits(
+                        challenge_phase, leaderboard, dataset_split
+                    )
+                    create_leaderboard_data(challenge_phase_split, submission)
 
-    print("Database successfully seeded.")
+        print("Database successfully seeded.")
+    except Exception as e:
+        print(e)
