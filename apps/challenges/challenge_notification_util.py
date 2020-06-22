@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def challenge_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
-    if curr == True and prev != curr:  # Checking if the challenge has been approved by admin since last time.
+    if curr and not prev:  # Checking if the challenge has been approved by admin since last time.
         challenge = instance
 
         # Start the challenge worker.
