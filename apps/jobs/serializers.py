@@ -15,7 +15,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get("context")
-        context.get("request").POST._mutable = True
         if context and context.get("request").method == "POST":
             created_by = context.get("request").user
             kwargs["data"]["created_by"] = created_by.pk
