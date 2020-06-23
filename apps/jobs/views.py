@@ -2,6 +2,7 @@ import botocore
 import datetime
 import json
 import logging
+import os
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -29,7 +30,6 @@ from base.utils import (
     StandardResultSetPagination,
     get_or_create_sqs_queue_object,
     get_boto3_client,
-    RandomFileName
 )
 from challenges.models import (
     ChallengePhase,
@@ -321,7 +321,10 @@ def challenge_file_submission(request, challenge_id, challenge_phase_id):
     """API for uploading the submission file"""
     if request.FILES['input_file']:
         file_obj = request.FILES.get('input_file', '')
-        file_path_within_bucket=RandomFileName("submission_files/submission_{challenge_phase_id}")
+        file_path_within_bucket = os.path.join(
+            "submission_files",
+            challenge_phase_id
+        )
         media_storage = MediaStorage()
 
         # avoid overwriting existing file
