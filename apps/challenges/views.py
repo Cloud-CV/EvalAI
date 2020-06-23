@@ -439,6 +439,48 @@ def get_challenge_by_pk(request, pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
+def get_all_participated_challenges(request, challenge_time):
+    """
+    Returns the list of all participated challenges
+    """
+    # make sure that a valid url is requested.
+    if challenge_time.lower() not in ("all", "future", "past", "present"):
+        response_data = {"error": "Wrong url pattern!"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    q_params = {"published": True, "approved_by_admin": True}
+
+    if challenge_time.lower() == "past":
+        q_params["end_date__lt"] = timezone.now()
+
+    elif challenge_time.lower() == "present":
+        q_params["start_date__lt"] = timezone.now()
+        q_params["end_date__gt"] = timezone.now()
+
+    elif challenge_time.lower() == "future":
+        q_params["start_date__gt"] = timezone.now()
+    # for `all` we dont need any condition in `q_params`
+
+    # don't return disabled challenges
+    q_params["is_disabled"] = False
+
+    challenges = Challenge.objects.filter(**q_params).order_by("-pk")
+    challenge_list = []
+    for challenge in challenges:
+        if has_user_participated_in_challenge(user=request.user, challenge_id=challenge.id):
+            challenge_list.append(challenge)
+    paginator, result_page = paginated_queryset(challenge_list, request)
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={"request": request}
+    )
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
     q_params = {"approved_by_admin": True, "published": True}
     participant_team_id = request.query_params.get("participant_team", None)

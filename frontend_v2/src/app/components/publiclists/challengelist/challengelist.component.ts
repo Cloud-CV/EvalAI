@@ -65,6 +65,15 @@ export class ChallengelistComponent implements OnInit {
   };
 
   /**
+   * API path mapping
+   */
+  newApiPathMapping = {
+    isUpcomingChecked: this.apiPathCommon  + 'participated/' + 'future',
+    isOngoingChecked: this.apiPathCommon  + 'participated/' + 'present',
+    isPastChecked: this.apiPathCommon  + 'participated/' + 'past'
+  };
+
+  /**
    * List of filtered challenges
    */
   filteredChallenges = [];
@@ -140,6 +149,11 @@ export class ChallengelistComponent implements OnInit {
   myChallengesRoutePathCommon = '/challenges/me';
 
   /**
+   * My participated challenges common route path
+   */
+  myParticipatedChallengesRoutePathCommon ='/challenges/participated';
+
+  /**
    * Host teams common route path
    */
   hostTeamsRoutePathCommon = '/teams/hosts';
@@ -183,12 +197,17 @@ export class ChallengelistComponent implements OnInit {
       if (!authState.isLoggedIn && this.router.url === this.myChallengesRoutePathCommon) {
         this.router.navigate([`${this.authRoutePathCommon}login`]);
       }
+      else if (!authState.isLoggedIn && this.router.url === this.myParticipatedChallengesRoutePathCommon) {
+        this.router.navigate([`${this.authRoutePathCommon}login`]);
+      }
     });
 
     if (this.router.url === this.allChallengesRoutePathCommon) {
       this.fetchChallenges();
     } else if (this.router.url === this.myChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.fetchMyTeams();
+    } else if (this.router.url === this.myParticipatedChallengesRoutePathCommon && this.authService.isLoggedIn()) {
+      this.fetchMyParticipatedChallenges();
     }
 
     this.authServicePublic = this.authService;
@@ -210,6 +229,25 @@ export class ChallengelistComponent implements OnInit {
    */
   fetchMyTeams() {
     this.fetchTeams(this.hostTeamsapiPathCommon);
+  }
+
+  /**
+   * Fetch participated challenges function.
+   * @param filter  selected filter
+   * @param callback  callback function
+   */
+  fetchMyParticipatedChallenges(filter = null, callback = null) {
+    if (!filter) {
+      const ALL_PATHS = Object.values(this.newApiPathMapping);
+      const ALL_KEYS = Object.keys(this.newApiPathMapping);
+      for (let i = 0; i < ALL_PATHS.length; i++) {
+        if (this[ALL_KEYS[i]]) {
+          this.fetchParticipatedChallengesFromApi(ALL_PATHS[i], callback);
+        }
+      }
+    } else {
+      this.fetchParticipatedChallengesFromApi(this.newApiPathMapping[filter], callback);
+    }
   }
 
   /**
@@ -327,6 +365,34 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredUpcomingChallenges = SELF.upcomingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
         this.updateChallengesView(true);
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  /**
+   * Fetch challenges from backend.
+   * @param path  Challenge fetch URL
+   * @param callback  Callback Function.
+   */
+  fetchParticipatedChallengesFromApi(path, callback = null) {
+    const SELF = this;
+    SELF.apiService.getUrl(path, true, false).subscribe(
+      data => {
+        if (path.endsWith('future')) {
+          SELF.upcomingChallenges = data['results'];
+        } else if (path.endsWith('present')) {
+          SELF.ongoingChallenges = data['results'];
+        } else if (path.endsWith('past')) {
+          SELF.pastChallenges = data['results'];
+        }
+        SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
+        SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
+        SELF.filteredUpcomingChallenges = SELF.upcomingChallenges;
+        SELF.filteredPastChallenges = SELF.pastChallenges;
       },
       err => {
         SELF.globalService.handleApiError(err);
