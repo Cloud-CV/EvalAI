@@ -2,9 +2,11 @@ import logging
 import os
 import random
 import string
+import yaml
 
 from botocore.exceptions import ClientError
 from django.conf import settings
+from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
 from base.utils import get_boto3_client
@@ -697,3 +699,116 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 instance.pk, field_name
             )
         )
+
+
+def create_eks_nodegroup(challenge, cluster_name):
+    """
+    Creates a nodegroup when a EKS cluster is created by the EvalAI admin
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+        cluster_name {str} -- name of eks cluster
+    """
+    nodegroup_name = "{0}-nodegroup".format(challenge.title.replace(" ", "-"))
+    client = get_boto3_client("eks", aws_keys)
+    # TODO: Move the hardcoded cluster configuration such as the
+    # instance_type, subnets, AMI to challenge configuration later.
+    try:
+        response = client.create_nodegroup(
+            clusterName=cluster_name,
+            nodegroupName=nodegroup_name,
+            scalingConfig={"minSize": 1, "maxSize": 10, "desiredSize": 1},
+            diskSize=100,
+            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+            instanceTypes=["g4dn.xlarge"],
+            amiType="AL2_x86_64_GPU",
+            nodeRole=settings.EKS_NODEGROUP_ROLE_ARN,
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return response
+    waiter = client.get_waiter("nodegroup_active")
+    waiter.wait(
+        clusterName=cluster_name, nodegroupName=nodegroup_name,
+    )
+
+
+def create_eks_cluster(sender, challenge, field_name, **kwargs):
+    """
+    Called when Challenge is approved by the EvalAI admin
+    calls the create_eks_nodegroup function
+
+    Arguments:
+        sender {type} -- model field called the post hook
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    from .models import ChallengeEvaluationCluster
+
+    cluster_name = "{0}-cluster".format(challenge.title.replace(" ", "-"))
+    if challenge.approved_by_admin and challenge.is_docker_based:
+        client = get_boto3_client("eks", aws_keys)
+        try:
+            response = client.create_cluster(
+                name=cluster_name,
+                version="1.15",
+                roleArn=settings.EKS_CLUSTER_ROLE_ARN,
+                resourcesVpcConfig={
+                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"], ],
+                },
+            )
+            waiter = client.get_waiter("cluster_active")
+            waiter.wait(name=cluster_name)
+            # creating kubeconfig
+            cluster = client.describe_cluster(name=cluster_name)
+            cluster_cert = cluster["cluster"]["certificateAuthority"]["data"]
+            cluster_ep = cluster["cluster"]["endpoint"]
+            cluster_config = {
+                "apiVersion": "v1",
+                "kind": "Config",
+                "clusters": [
+                    {
+                        "cluster": {
+                            "server": str(cluster_ep),
+                            "certificate-authority-data": str(cluster_cert),
+                        },
+                        "name": "kubernetes",
+                    }
+                ],
+                "contexts": [
+                    {
+                        "context": {"cluster": "kubernetes", "user": "aws"},
+                        "name": "aws",
+                    }
+                ],
+                "current-context": "aws",
+                "preferences": {},
+                "users": [
+                    {
+                        "name": "aws",
+                        "user": {
+                            "exec": {
+                                "apiVersion": "client.authentication.k8s.io/v1alpha1",
+                                "command": "heptio-authenticator-aws",
+                                "args": ["token", "-i", cluster_name],
+                            }
+                        },
+                    }
+                ],
+            }
+
+            # Write in YAML.
+            config_text = yaml.dump(cluster_config, default_flow_style=False)
+            config_file = NamedTemporaryFile(delete=True)
+            config_file.write(config_text.encode())
+            ChallengeEvaluationCluster.objects.create(
+                challenge=challenge,
+                name=cluster_name,
+                cluster_endpoint=cluster_ep,
+                cluster_ssl=cluster_cert,
+            )
+            # Creating nodegroup
+            create_eks_nodegroup(challenge, cluster_name)
+            return response
+        except ClientError as e:
+            logger.exception(e)
+            return

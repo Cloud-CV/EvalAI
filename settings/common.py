@@ -311,3 +311,12 @@ HOSTNAME = os.environ.get("HOSTNAME")
 SENDGRID_SETTINGS = {
     "TEMPLATES": {"CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420"}
 }
+
+# EKS configs for Rl-worker
+EKS_CLUSTER_ROLE_ARN = os.environ.get(
+    "EKS_CLUSTER_ROLE_ARN"
+)
+
+EKS_NODEGROUP_ROLE_ARN = os.environ.get(
+    "EKS_NODEGROUP_ROLE_ARN"
+)
