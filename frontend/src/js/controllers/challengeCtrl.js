@@ -510,29 +510,37 @@
         };
 
         // Get the logs from worker if submissions are failing.
-        parameters.url = 'challenges/challenge/' + vm.challengeId + '/get_worker_logs';
-        parameters.method = 'GET';
-        parameters.data = {};
-        parameters.callback = {
-            onSuccess: function(response) {
-                var details = response.data
-                vm.worker_logs = []
-                if (details.failing){
-                    vm.areSubmissionsFailing = true;
-                    for (var i = 0; i<details.logs.length; i++){
-                        vm.worker_logs.push(details.logs[i]);
+        vm.startLoadingLogs = function() {
+            vm.logs_poller = $interval(function(){
+                parameters.url = 'challenges/challenge/' + vm.challengeId + '/get_worker_logs';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data
+                        vm.worker_logs = []
+                        if (details.failing){
+                            vm.areSubmissionsFailing = true;
+                            for (var i = 0; i<details.logs.length; i++){
+                                vm.worker_logs.push(details.logs[i]);
+                            }
+                        }
+                        else{
+                            vm.areSubmissionsFailing = false;
+                        }
+                    },
+                    onError: function(response) {
+                        var error = response.data.error;
+                        logs.push(error);
                     }
-                }
-                else{
-                    vm.areSubmissionsFailing = false;
-                }
-            },
-            onError: function(response) {
-                var error = response.data.error;
-                logs.push(error);
-            }
+                };
+                utilities.sendRequest(parameters);
+            }, 5000);
         };
-        utilities.sendRequest(parameters);
+
+        vm.stopLoadingLogs = function(){
+            $interval.cancel(vm.logs_poller);
+        };
 
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
@@ -705,7 +713,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.leaderboard = details.results;
+                    vm.leaderboard = details.results; console.log("Just updated leaderboard as well.")
                     for (var j=0; j<vm.showPrivateIds.length; j++) {
                         if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
@@ -1079,6 +1087,7 @@
         };
 
         vm.refreshLeaderboard = function() {
+            console.log("Just got refreshed.")
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
@@ -2286,6 +2295,7 @@
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
+            vm.stopLoadingLogs();
         });
 
         $rootScope.$on('$stateChangeStart', function() {

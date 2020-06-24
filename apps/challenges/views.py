@@ -2568,7 +2568,8 @@ def get_worker_logs(request, challenge_pk):
 
     challenge = challenge = Challenge.objects.get(pk=challenge_pk)
     response_data = []
-    last_submission = Submission.objects.order_by('started_at').last()
+    last_submission = Submission.objects.filter(challenge_phase__challenge__pk=challenge.pk).order_by('started_at').last()
+
     failed = True if last_submission.status is "failed" else False 
 
     if failed:
