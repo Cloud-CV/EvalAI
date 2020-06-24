@@ -7,7 +7,7 @@ from worker_utils import EvalAI_Interface
 from kubernetes import client
 
 # TODO: Add exception in all the commands
-# from kubernetes.client.rest import ApiException
+from kubernetes.client.rest import ApiException
 
 
 class GracefulKiller:
@@ -160,6 +160,93 @@ def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     return api_instance
 
 
+def get_core_v1_api_object(cluster_name, challenge, evalai):
+    configuration = client.Configuration()
+    aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.api_key["authorization"] = aws_eks_api[
+        "aws_eks_bearer_token"
+    ]
+    configuration.api_key_prefix["authorization"] = "Bearer"
+    api_instance = client.CoreV1Api(client.ApiClient(configuration))
+    return api_instance
+
+
+def get_running_jobs(api_instance):
+    """Function to get all the current jobs on AWS EKS cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+    """
+    namespace = "default"
+    try:
+        api_response = api_instance.list_namespaced_job(namespace)
+    except ApiException as e:
+        logger.exception("Exception while receiving running Jobs{}".format(e))
+    return api_response
+
+
+def read_job(api_instance, job_name):
+    """Function to get the status of a running job on AWS EKS cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+    """
+    namespace = "default"
+    try:
+        api_response = api_instance.read_namespaced_job(job_name, namespace)
+    except ApiException as e:
+        logger.exception("Exception while reading Job with error {}".format(e))
+    return api_response
+
+
+def update_failed_jobs_and_send_logs(
+    api_instance,
+    core_v1_api_instance,
+    evalai,
+    job_name,
+    submission_pk,
+    challenge_pk,
+    phase_pk,
+):
+    job_def = read_job(api_instance, job_name)
+    controller_uid = job_def.metadata.labels["controller-uid"]
+    pod_label_selector = "controller-uid=" + controller_uid
+    pods_list = core_v1_api_instance.list_namespaced_pod(
+        namespace="default",
+        label_selector=pod_label_selector,
+        timeout_seconds=10,
+    )
+    for container in pods_list.items[0].status.container_statuses:
+        if container.name == "agent":
+            if container.state.terminated is not None:
+                if container.state.terminated.reason == "Error":
+                    pod_name = pods_list.items[0].metadata.name
+                    try:
+                        pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                            name=pod_name,
+                            namespace="default",
+                            _return_http_data_only=True,
+                            _preload_content=False,
+                            container="agent",
+                        )
+                        pod_log = pod_log_response.data.decode("utf-8")
+                        submission_data = {
+                            "challenge_phase": phase_pk,
+                            "submission": submission_pk,
+                            "stdout": "",
+                            "stderr": pod_log,
+                            "submission_status": "FAILED",
+                            "result": "[]",
+                            "metadata": "",
+                        }
+                        response = evalai.update_submission_data(
+                            submission_data, challenge_pk, phase_pk
+                        )
+                        print(response)
+                    except client.rest.ApiException as e:
+                        logger.exception(
+                            "Exception while reading Job logs {}".format(e)
+                        )
+
+
 def main():
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
@@ -185,7 +272,12 @@ def main():
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(cluster_name, cluster_endpoint, challenge, evalai)
+                api_instance = get_api_object(
+                    cluster_name, cluster_endpoint, challenge, evalai
+                )
+                core_v1_api_instance = get_core_v1_api_object(
+                    cluster_name, cluster_endpoint, challenge, evalai
+                )
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
@@ -199,7 +291,16 @@ def main():
                         message_receipt_handle
                     )
                 elif submission.get("status") == "running":
-                    continue
+                    job_name = submission.get("job_name")[-1]
+                    update_failed_jobs_and_send_logs(
+                        api_instance,
+                        core_v1_api_instance,
+                        evalai,
+                        job_name,
+                        submission_pk,
+                        challenge_pk,
+                        phase_pk,
+                    )
                 else:
                     logger.info(
                         "Processing message body: {0}".format(message_body)
@@ -210,6 +311,7 @@ def main():
                     process_submission_callback(
                         api_instance, message_body, challenge_phase, evalai
                     )
+
         if killer.kill_now:
             break
 
