@@ -10,3 +10,9 @@ a.btn-card-detail:focus {
 .none {
   margin: 1%;
 }
+
+::ng-deep .mat-tab-label .mat-tab-label-content {
+  color: #4d4d4d;
+  font-weight: 500;
+  font-size: 18px;
+}
