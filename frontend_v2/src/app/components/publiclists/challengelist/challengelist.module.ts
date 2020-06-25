@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTabsModule } from '@angular/material';
@@ -12,6 +12,7 @@ import { CardlistComponent } from '../../utility/cardlist/cardlist.component';
 
 // import module
 import { SharedModule } from '../../../shared/shared.module';
+import { AnalyticsModule } from '../../analytics/analytics.module';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { SharedModule } from '../../../shared/shared.module';
     CommonModule,
     RouterModule,
     MatTabsModule,
-    SharedModule
+    SharedModule,
+    AnalyticsModule
   ],
   exports: [
     ChallengelistComponent,
@@ -33,6 +35,7 @@ import { SharedModule } from '../../../shared/shared.module';
     TeamcardComponent,
     TeamlistComponent,
     CardlistComponent
-  ]
+  ],
+  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })
 export class ChallengelistModule { }
