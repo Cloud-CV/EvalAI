@@ -8,13 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0057_add_task_def_arn_and_workers_field_to_challenge_model'),
+        (
+            "challenges",
+            "0057_add_task_def_arn_and_workers_field_to_challenge_model",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephasesplit',
-            name='show_leaderboard_by_latest_submission',
+            model_name="challengephasesplit",
+            name="show_leaderboard_by_latest_submission",
             field=models.BooleanField(default=False),
         ),
     ]

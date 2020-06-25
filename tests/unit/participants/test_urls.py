@@ -142,7 +142,7 @@ class TestStringMethods(BaseAPITestClass):
         )
 
     def test_get_teams_and_corresponding_challenges_for_a_participant_url(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "participants:get_teams_and_corresponding_challenges_for_a_participant",
