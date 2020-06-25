@@ -8,6 +8,7 @@ import { DashboardContentComponent } from './dashboard-content/dashboard-content
 // import modules
 import { DashboardRoutingModule } from './dashboard-routing.module';
 import { SharedModule } from '../../shared/shared.module';
+import { PermissionDeniedModule } from '../permission-denied/permission-denied.module';
 
 @NgModule({
 declarations: [
@@ -17,6 +18,7 @@ declarations: [
 imports: [
   CommonModule,
   DashboardRoutingModule,
+  PermissionDeniedModule,
   SharedModule
 ],
 exports: [
