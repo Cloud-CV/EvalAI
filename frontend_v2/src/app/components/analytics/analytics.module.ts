@@ -7,7 +7,6 @@ import { HostAnalyticsComponent } from './host-analytics/host-analytics.componen
 
 // import module
 import { SharedModule } from '../../shared/shared.module';
-import { AnalyticsRoutingModule } from './analytics-routing.module';
 
 @NgModule({
   declarations: [
@@ -16,7 +15,6 @@ import { AnalyticsRoutingModule } from './analytics-routing.module';
   ],
   imports: [
     CommonModule,
-    AnalyticsRoutingModule,
     SharedModule
   ],
   exports: [
