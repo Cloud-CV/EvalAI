@@ -53,7 +53,18 @@
                                                     fs-15">Organized by:</strong>
                                                 {{challenge['creator']['team_name']}}
                                             </span>
-
+                                            <br>
+                                            <!-- Start date -->
+                                            <span class="fs-15 w-300">
+                                              <strong class="text-light-black fw-semibold">Starts on:</strong>
+                                              {{challenge['start_date'] | date:'medium'}} {{challenge['start_zone']}}
+                                            </span>
+                                            <br>
+                                            <!-- End date -->
+                                            <span class="fs-15 w-300">
+                                              <strong class="text-light-black fw-semibold">Ends on:</strong>
+                                              {{challenge['end_date'] | date:'medium'}} {{challenge['end_zone']}}
+                                            </span>
                                             <br>
                                             <span style="line-height: 1.5"
                                                 *ngIf="isChallengeHost">
@@ -76,7 +87,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="col-lg-3 col-md-3 align-right">
+                                <div class="col-lg-3 col-md-3">
                                     <button class="stars btn-waves-effect grad-rec-btn
                                         grad-btn-dark ev-btn-dark fw-light fs-14"
                                         type="submit" [class.is-clickable]="isLoggedIn"
