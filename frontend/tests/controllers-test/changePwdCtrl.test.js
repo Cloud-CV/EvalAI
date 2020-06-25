@@ -33,7 +33,7 @@ describe('Unit tests for change password controller', function () {
             expect($rootScope.canShowOldPassword).toBeFalsy();
             expect($rootScope.canShowNewPassword).toBeFalsy();
             expect($rootScope.canShowNewConfirmPassword).toBeFalsy();
-            expect(angular.element).toHaveBeenCalledWith('.change-passowrd-card');
+            expect(angular.element).toHaveBeenCalledWith('.change-password-card');
 		});
     });
     
