@@ -1,5 +1,7 @@
 <!-- The <router-outlet> tells the router where to display routed views. -->
-<router-outlet></router-outlet>
+<div id="page-wrap">
+  <router-outlet></router-outlet>
+</div>
 <app-toast></app-toast>
 <app-loading *ngIf="isLoading"></app-loading>
 <app-confirm *ngIf="confirmParams['isConfirming']" [params]="confirmParams"></app-confirm>
