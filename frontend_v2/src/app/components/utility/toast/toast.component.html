@@ -1,9 +1,8 @@
 <div id="toast" class="toast-container">
-  <div class="toast-img"><img src="assets/images/bell.png"></div>
   <div class="toast-desc" [class.toast-success]="type=='success'" [class.toast-error]="type=='error'" [class.toast-info]="type=='info'">
+    <span *ngIf="type=='success'"><i class="fa fa-check" aria-hidden="true"></i></span>
+    <span *ngIf="type=='error'"><i class="fa fa-warning" aria-hidden="true"></i></span>
+    <span *ngIf="type=='info'"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
     <span class="toast-message" id="toastmessage">{{message}}</span>
-    <span *ngIf="type=='success'"><img src="assets/images/toastsuccess.png"/></span>
-    <span *ngIf="type=='error'"><img src="assets/images/toasterror.png"/></span>
-    <span *ngIf="type=='info'"><img src="assets/images/toastinfo.png"/></span>
   </div>
 </div>
