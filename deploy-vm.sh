@@ -37,5 +37,8 @@ sudo docker-compose --version
 sudo docker-compose -f docker-compose-local.yml up -d
 
 #Restore database
+DOCKER_DB_NAME="$(docker-compose ps -q db)"
+LOCAL_DUMP_PATH="backups/weekly/postgres-202026.sql.gz"
+
 echo "Restoring latest postgres backup"
-sudo docker exec -it evalai_pgbackups_1 gunzip -c backups/weekly/postgres-202026.sql.gz | psql -h db -p 5432 -U postgres -d postgres
+sudo docker exec -it "${DOCKER_DB_NAME}" gunzip -c "${LOCAL_DUMP_PATH}" | psql -h db -p 5432 -U postgres -d postgres

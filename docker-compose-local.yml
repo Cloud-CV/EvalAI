@@ -5,13 +5,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./backup:/backups
+      - ./backups:/backups
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
     restart: always
     volumes:
-      - ./backup:/backups
+      - ./backups:/backups
     links:
       - db:db
     depends_on:
