@@ -265,11 +265,11 @@
             title: 'Leaderboard',
         };
 
-        var worker_logs = {
-            name: "web.challenge-main.challenge-page.worker_logs",
+        var manage = {
+            name: "web.challenge-main.challenge-page.manage",
             parent: "web.challenge-main.challenge-page",
-            url: "/worker_logs",
-            templateUrl: baseUrl + "/web/challenge/worker_logs.html",
+            url: "/manage",
+            templateUrl: baseUrl + "/web/challenge/manage.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
         };
@@ -525,7 +525,7 @@
         $stateProvider.state(challenge_invitation);
         $stateProvider.state(get_submission_related_files);
 
-        $stateProvider.state(worker_logs);
+        $stateProvider.state(manage);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');

@@ -643,7 +643,7 @@ def restart_workers(queryset):
     """
     The function called by the admin action method to restart all the selected workers.
 
-    Calls the delete_service_by_challenge_pk method. Before calling, verifies that the challenge worker(s) is(are) active.
+    Calls the service_manager method. Before calling, verifies that the challenge worker(s) is(are) active.
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
@@ -699,18 +699,19 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             )
         )
 
-# What would the start_time be? 0 or challenge start time?
 def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern=""):
-    # Add docstring here.
+    """
+    To fetch logs of a container from cloudwatch within a specific time frame.
+    """
     client = get_boto3_client("logs", aws_keys)
     logs = []
     try:
         response = client.filter_log_events(
-            logGroupName="{log_group_name}",
-            logStreamNamePrefix="{log_stream_prefix}",
+            logGroupName=log_group_name,
+            logStreamNamePrefix=log_stream_prefix,
             startTime=start_time,
             endTime=end_time,
-            filterPattern="{pattern}"
+            filterPattern=pattern
         )
         for event in response["events"]:
             logs.append(event["message"])

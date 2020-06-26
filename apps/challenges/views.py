@@ -4,6 +4,7 @@ import random
 import requests
 import shutil
 import tempfile
+import time
 import uuid
 import yaml
 import zipfile
@@ -110,6 +111,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
+from.aws_utils import start_workers, stop_workers, restart_workers, get_logs_from_cloudwatch
 from .utils import get_file_content, get_aws_credentials_for_submission
 
 logger = logging.getLogger(__name__)
@@ -2568,21 +2570,62 @@ def get_worker_logs(request, challenge_pk):
 
     challenge = challenge = Challenge.objects.get(pk=challenge_pk)
     response_data = []
-    last_submission = Submission.objects.filter(challenge_phase__challenge__pk=challenge.pk).order_by('started_at').last()
 
-    failed = True if last_submission.status is "failed" else False 
+    log_group_name = "challenge-pk-{}-workers".format(challenge_pk)
+    log_stream_prefix = challenge.queue
+    pattern = "WORKER_LOG"
 
-    if failed:
-        log_group = "challenge-pk-{challenge_pk}-workers".format(challenge_pk)
-        log_stream_prefix = challeneg.queue
-        pattern = "WORKER_LOG"
-        start_time = 0
-        end_time = int(round(time.time() * 1000))
+    # This is to specify the time window for fetching logs. Currently it's 15 minutes before from current time.
+    timeframe = 15
+    current_time = int(round(time.time() * 1000))
+    start_time = current_time - timeframe*900000
+    end_time = current_time
 
-        logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, pattern, start_time, end_time)
-        response_data = {"logs": logs, "failing": True}
-    else:
-        response_data = {"failing": False}
-
+    logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern)
+    
+    response_data = {"logs": logs}
     return Response(response_data, status=status.HTTP_200_OK)
 
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def manage_worker(request, challenge_pk, action):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = Challenge.objects.get(pk=challenge_pk)
+
+    response_data = {}
+
+    if action == 'start':
+        response = start_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        logging.info("Count is {} and failures are: {}".format(count, failures))
+        if count:
+            response_data = {"action":"Success"}
+        else:
+            message = failures[0]["message"]
+            response_data = {"action":"Failure", "error": message}
+    elif action == 'stop':
+        response = stop_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        if count:
+            response_data = {"action":"Success"}
+        else:
+            message = failures[0]["message"]
+            response_data = {"action":"Failure", "error": message}
+    elif action == 'restart':
+        response = restart_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        if count:
+            response_data = {"action":"Success"}
+        else:
+            message = failures[0]["message"]
+            response_data = {"action":"Failure", "error": message}
+
+    return Response(response_data, status=status.HTTP_200_OK)
