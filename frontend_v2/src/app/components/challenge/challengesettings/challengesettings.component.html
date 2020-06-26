@@ -19,11 +19,13 @@
         </span>
         <a style="padding-right: 4px;"
         class="pointer"
+        *ngIf="isChallengeHost"
         (click)="editChallengeTitle()">
         <i class="fa fa-pencil"
             aria-hidden="true"></i>
         </a>
         <a class="pointer"
+        *ngIf="isChallengeHost"
         (click)="deleteChallenge()">
         <i class="fa fa-trash red-text"
             aria-hidden="true"></i>

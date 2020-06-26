@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
+import {MatChipInputEvent} from '@angular/material/chips';
+import { Router } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {MatChipInputEvent} from '@angular/material/chips';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-challengesettings',
@@ -67,8 +69,12 @@ export class ChallengesettingsComponent implements OnInit {
    */
   isBannedEmailInputVisible: boolean;
 
-  constructor(private challengeService: ChallengeService, private globalService: GlobalService,
-              private apiService: ApiService, private endpointsService: EndpointsService, private router: Router) { }
+  constructor(private challengeService: ChallengeService,
+              private globalService: GlobalService,
+              private apiService: ApiService,
+              private endpointsService: EndpointsService,
+              private router: Router,
+              private logger: NGXLogger) { }
 
   ngOnInit() {
     this.challengeService.currentChallenge.subscribe(
@@ -231,7 +237,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('EDIT-CHALLENGE-TITLE-FINISHED')
+        () =>  this.logger.info('EDIT-CHALLENGE-TITLE-FINISHED')
       );
     };
 
@@ -276,7 +282,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('DELETE-CHALLENGE-FINISHED')
+        () => this.logger.info('DELETE-CHALLENGE-FINISHED')
       );
     };
 
@@ -299,5 +305,4 @@ export class ChallengesettingsComponent implements OnInit {
     };
     SELF.globalService.showModal(PARAMS);
   }
-
 }
