@@ -314,3 +314,12 @@ SENDGRID_SETTINGS = {
         "CHALLENGE_APPROVAL_EMAIL": "d-45e0adc0597b4b60bd7c384aa903c488 ",
     }
 }
+
+# EKS configs for Rl-worker
+EKS_CLUSTER_ROLE_ARN = os.environ.get(
+    "EKS_CLUSTER_ROLE_ARN"
+)
+
+EKS_NODEGROUP_ROLE_ARN = os.environ.get(
+    "EKS_NODEGROUP_ROLE_ARN"
+)
