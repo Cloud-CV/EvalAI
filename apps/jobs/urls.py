@@ -46,7 +46,7 @@ urlpatterns = [
         name="update_submission",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/update_partially_evaluated_submission/$",
+        r"^challenges/(?P<challenge_pk>[0-9]+)/update_partially_evaluated_submission/$",
         views.update_partially_evaluated_submission,
         name="update_partially_evaluated_submission",
     ),
