@@ -371,7 +371,7 @@ def run_submission(
         try:
             logger.info(
                 "{} Sending submission {} for remote evaluation".format(
-                    SUBMISSION_LOG_PREFIX,
+                    SUBMISSION_LOGS_PREFIX,
                     submission.id
                 )
             )

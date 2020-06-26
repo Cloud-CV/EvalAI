@@ -2578,11 +2578,11 @@ def get_worker_logs(request, challenge_pk):
     # This is to specify the time window for fetching logs. Currently it's 15 minutes before from current time.
     timeframe = 15
     current_time = int(round(time.time() * 1000))
-    start_time = current_time - timeframe*900000
+    start_time = current_time - timeframe * 900000
     end_time = current_time
 
     logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern)
-    
+
     response_data = {"logs": logs}
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -2607,25 +2607,25 @@ def manage_worker(request, challenge_pk, action):
         count, failures = response["count"], response["failures"]
         logging.info("Count is {} and failures are: {}".format(count, failures))
         if count:
-            response_data = {"action":"Success"}
+            response_data = {"action": "Success"}
         else:
             message = failures[0]["message"]
-            response_data = {"action":"Failure", "error": message}
+            response_data = {"action": "Failure", "error": message}
     elif action == 'stop':
         response = stop_workers([challenge])
         count, failures = response["count"], response["failures"]
         if count:
-            response_data = {"action":"Success"}
+            response_data = {"action": "Success"}
         else:
             message = failures[0]["message"]
-            response_data = {"action":"Failure", "error": message}
+            response_data = {"action": "Failure", "error": message}
     elif action == 'restart':
         response = restart_workers([challenge])
         count, failures = response["count"], response["failures"]
         if count:
-            response_data = {"action":"Success"}
+            response_data = {"action": "Success"}
         else:
             message = failures[0]["message"]
-            response_data = {"action":"Failure", "error": message}
+            response_data = {"action": "Failure", "error": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
