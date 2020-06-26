@@ -1,6 +1,9 @@
 import logging
 import os
 import signal
+import urllib
+import yaml
+
 
 from worker_utils import EvalAI_Interface
 
@@ -247,6 +250,29 @@ def update_failed_jobs_and_send_logs(
                         )
 
 
+def install_gpu_drivers(api_instance):
+    """Function to get the status of a running job on AWS EKS cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for creating deamonset
+    """
+    logging.info("Installing Nvidia-GPU Drivers ...")
+    link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
+    logging.info("Using daemonset file: %s", link)
+    nvidia_manifest = urllib.urlopen(link)
+    daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
+    ext_client = client.ExtensionsV1beta1Api(api_instance)
+    try:
+        namespace = daemonset_spec["metadata"]["namespace"]
+        ext_client.create_namespaced_daemon_set(namespace, daemonset_spec)
+    except ApiException as e:
+        if e.status == 409:
+            logging.info(
+                "Nvidia GPU driver daemon set has already been installed"
+            )
+        else:
+            raise
+
+
 def main():
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
@@ -263,6 +289,10 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
+    api_instance = get_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    install_gpu_drivers(api_instance)
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
