@@ -1,4 +1,4 @@
-<section class="ev-sm-container ev-view " *ngIf="authService.isEmailVerified">
+<section class="ev-sm-container ev-view">
   <div class="row">
     <div class="col s12 m6">
       <div class=" ev-card-panel ev-z-depth-5">
@@ -61,7 +61,3 @@
     </div>
   </div>
 </section>
-
-<div *ngIf="!authService.isEmailVerified">
-  <app-permission-denied></app-permission-denied>
-</div>

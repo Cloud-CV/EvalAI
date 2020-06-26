@@ -11,8 +11,6 @@ export class AuthService {
   private authStateSource = new BehaviorSubject(this.authState);
   change = this.authStateSource.asObservable();
 
-  // is email verified
-  isEmailVerified = false;
   isAuth = false;
   isMail = true;
   // getUser for signup
@@ -70,7 +68,7 @@ export class AuthService {
      */
     logOut() {
       const temp = {isLoggedIn: false};
-      const routePath = '/auth/login';
+      const routePath = '';
       this.globalService.deleteData(this.globalService.authStorageKey);
       this.authStateChange(temp);
       this.router.navigate([routePath]);
@@ -163,7 +161,6 @@ export class AuthService {
    * @param error
    */
     verifyEmail(token, success = () => {}, error = () => {}) {
-      console.log(this.isEmailVerified);
       const API_PATH = this.endpointsService.verifyEmailURL();
       const SELF = this;
       const BODY = JSON.stringify({
@@ -171,8 +168,6 @@ export class AuthService {
       });
       this.apiService.postUrl(API_PATH, BODY).subscribe(
         data => {
-          this.isEmailVerified = true;
-          console.log(this.isEmailVerified);
           success();
         },
         err => {

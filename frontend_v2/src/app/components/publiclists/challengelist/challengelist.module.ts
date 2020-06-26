@@ -12,7 +12,6 @@ import { CardlistComponent } from '../../utility/cardlist/cardlist.component';
 
 // import module
 import { SharedModule } from '../../../shared/shared.module';
-import { PermissionDeniedModule } from '../../permission-denied/permission-denied.module';
 
 @NgModule({
   declarations: [
@@ -26,8 +25,7 @@ import { PermissionDeniedModule } from '../../permission-denied/permission-denie
     CommonModule,
     RouterModule,
     MatTabsModule,
-    SharedModule,
-    PermissionDeniedModule
+    SharedModule
   ],
   exports: [
     ChallengelistComponent,

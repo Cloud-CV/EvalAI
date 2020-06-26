@@ -24,19 +24,10 @@
   }
 }
 
-.footer {
-  width: calc(100vw - 223px);
-  float: right;
-}
-
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
   .web-container {
     width: 100%;
-  }
-  .footer {
-    width: 100%;
-    float: none;
   }
 }

@@ -40,7 +40,7 @@
   </div>
    <!-- my challenges  -->
   <div *ngIf="routerPublic.url === myChallengesRoutePathCommon" [@.disabled]="true">
-    <mat-tab-group *ngIf="authService.isEmailVerified">
+    <mat-tab-group>
       <mat-tab label="My Ongoing Challenges ({{ filteredOngoingChallenges.length }})">
         <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
         <div *ngIf="!filteredOngoingChallenges.length">
@@ -81,8 +81,5 @@
         </div>
       </mat-tab>
     </mat-tab-group>
-    <div *ngIf="!authService.isEmailVerified">
-      <app-permission-denied></app-permission-denied>
-    </div>
   </div>
 </section>
