@@ -689,6 +689,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     if prev != curr:
+        challenge = None
         if field_name == "test_annotation":
             challenge = instance.challenge
         else:
@@ -707,7 +708,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             logger.warning("Worker(s) for challenge {} couldn't restart! Error: {}".format(challenge.id, failures[0]["message"]))
 
         challenge_manage_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
-        template_data = {"CHALLENGE_NAME": challenge.title, "CHALLENGE_URL": challenge_manage_url}
+        template_data = {"CHALLENGE_NAME": challenge.title, "CHALLENGE_MANAGE_URL": challenge_manage_url}
         if challenge.image:
             template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
         template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("WORKER_RESTART_EMAIL")  # TODO: Create new template for this and include id in settings.
