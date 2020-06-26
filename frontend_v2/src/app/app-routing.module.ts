@@ -41,10 +41,6 @@ const routes: Routes = [
     loadChildren: './components/contact/contact.module#ContactModule',
   },
   {
-    path: 'dashboard',
-    loadChildren: './components/dashboard/dashboard.module#DashboardModule',
-  },
-  {
     path: 'analytics',
     loadChildren: './components/analytics/analytics.module#AnalyticsModule',
   },
