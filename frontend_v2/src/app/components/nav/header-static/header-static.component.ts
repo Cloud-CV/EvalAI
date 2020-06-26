@@ -24,11 +24,6 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   atHome = true;
 
   /**
-   * At dashboard
-   */
-  isDash = false;
-
-  /**
    * Scroll position
    */
   scrolledState = false;
@@ -57,8 +52,6 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    * Inner width
    */
   public innerWidth: any;
-
-  routePath = '/dashboard';
 
 
   @ViewChild('navContainer') navContainer: ElementRef;
@@ -99,7 +92,6 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.updateElements();
     this.checkInnerWidth();
-    this.isDash = this.router.url === this.routePath;
     this.authServiceSubscription = this.authService.change.subscribe((authState) => {
       this.authState = authState;
       if (this.authState.isLoggedIn) {

@@ -247,7 +247,7 @@ export class ChallengeComponent implements OnInit {
    */
   deleteChallenge() {
     const SELF = this;
-    const redirectTo = '/dashboard';
+    const redirectTo = '/challenges/all';
 
     SELF.apiCall = () => {
       const BODY = JSON.stringify({});

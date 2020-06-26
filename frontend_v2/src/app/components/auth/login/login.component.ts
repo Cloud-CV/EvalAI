@@ -23,9 +23,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   ispasswordFocused = false;
 
   /**
-   * Route path for dashboard
+   * Route path for challenge list
    */
-  dashboardRoute = '/dashboard';
+  challengesRoute = '/challenges/all';
 
   /**
    * Route path for login
@@ -76,7 +76,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
    * @param self  Router Injection.
    */
   redirectCheck(self) {
-    let redirectTo = this.dashboardRoute;
+    let redirectTo = this.challengesRoute;
     const REDIRECT_URL = self.globalService.getData(self.globalService.redirectStorageKey);
     if (REDIRECT_URL && REDIRECT_URL['path']) {
       redirectTo = REDIRECT_URL['path'];

@@ -262,7 +262,7 @@ describe('ChallengeComponent', () => {
     expect(globalService.showModal).toHaveBeenCalled();
     component.apiCall();
     expect(apiService.postUrl).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(router.navigate).toHaveBeenCalledWith(['/challenges/all']);
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
   }));
 
