@@ -255,18 +255,20 @@ def install_gpu_drivers(api_instance):
     Arguments:
         api_instance {[AWS EKS API object]} -- API object for creating deamonset
     """
-    logging.info("Install GPU Drivers.")
+    logging.info("Installing Nvidia-GPU Drivers ...")
     link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
     logging.info("Using daemonset file: %s", link)
-    f = urllib.urlopen(link)
-    daemonset_spec = yaml.load(f, yaml.FullLoader)
+    nvidia_manifest = urllib.urlopen(link)
+    daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
     ext_client = client.ExtensionsV1beta1Api(api_instance)
     try:
         namespace = daemonset_spec["metadata"]["namespace"]
         ext_client.create_namespaced_daemon_set(namespace, daemonset_spec)
     except ApiException as e:
         if e.status == 409:
-            logging.info("GPU driver daemon set has already been installed")
+            logging.info(
+                "Nvidia GPU driver daemon set has already been installed"
+            )
         else:
             raise
 
