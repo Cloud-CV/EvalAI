@@ -533,18 +533,18 @@
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
-                for(var i=0; i<details.count; i++){
-                    if(details.results[i].submission_meta_attributes_schema != undefined || details.results[i].submission_meta_attributes_schema != null){
-                        var attributes = details.results[i].submission_meta_attributes_schema;
+                for(var k=0; k<details.count; k++){
+                    if(details.results[k].submission_meta_attributes_schema != undefined || details.results[k].submission_meta_attributes_schema != null){
+                        var attributes = details.results[k].submission_meta_attributes_schema;
                         attributes.forEach(function(attribute){
                             if(attribute["type"] == "checkbox") attribute["values"] = [];
                             else attribute["value"] = null;
-                        })
-                        data = {"phaseId":details.results[i].id, "attributes": attributes};
+                        });
+                        data = {"phaseId":details.results[k].id, "attributes": attributes};
                         vm.submission_meta_attributes_schema.push(data);
                     }
                     else{
-                        var data = {"phaseId":details.results[i].id, "attributes": null};
+                        var data = {"phaseId":details.results[k].id, "attributes": null};
                         vm.submission_meta_attributes_schema.push(data);
                     }
                 }
@@ -564,7 +564,6 @@
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
-            console.log(vm.submission_meta_attributes);
         };
 
         vm.clear_meta_attribute_values = function(){
@@ -578,7 +577,7 @@
                     }
                 });
             }
-        }
+        };
 
         vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.
                 var idx = attribute.values.indexOf(value);
@@ -820,12 +819,12 @@
                 vm.meta_attributes_data = [];
                 attributes.forEach(function(attribute){
                     if (attribute.type != "checkbox") {
-                        vm.meta_attributes_data.push({"name": attribute.name, "value": attribute.value})
+                        vm.meta_attributes_data.push({"name": attribute.name, "value": attribute.value});
                     }
                     else {
-                        vm.meta_attributes_data.push({"name": attribute.name, "values": attribute.values})
+                        vm.meta_attributes_data.push({"name": attribute.name, "values": attribute.values});
                     }
-                })
+                });
 
                 $mdDialog.show({
                     scope: $scope,
