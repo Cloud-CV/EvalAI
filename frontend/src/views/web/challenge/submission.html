@@ -309,7 +309,6 @@
                                                             <label for="{{option}}"></label>
                                                             <span  class="fs-16 w-300 submission-options">{{option}}</span>
                                                         </div>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -319,8 +318,8 @@
                                                         <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
                                                         <div class="">
                                                             <md-radio-group ng-model="attribute.value" ng-required="attribute.required != undefined">
-                                                                <md-radio-button ng-value="1">True</md-radio-button>
-                                                                <md-radio-button  ng-value="0">False</md-radio-button>
+                                                                <md-radio-button ng-value="'True'">True</md-radio-button>
+                                                                <md-radio-button  ng-value="'False'">False</md-radio-button>
                                                             </md-radio-group>
                                                         </div>
                                                     </div>
@@ -330,9 +329,7 @@
                                     </div>
                                 </div>
 
-                            </span>
-                            <div class="text-highlight red-text"><strong>
-                                    {{challenge.subErrors.msg}}</strong></div>
+                            <div class="text-highlight red-text"><strong>{{challenge.subErrors.msg}}</strong></div>
                             <section class="pagination">
                                 <div class="row rm-gut">
                                     <div class="col s12 m12">
@@ -342,8 +339,7 @@
                                                 type="submit" value="Submit">Submit</button>
                                             <br>
                                             <br>
-                                            <span
-                                                class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
+                                            <span class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
                                         </div>
                                     </div>
                                 </div>

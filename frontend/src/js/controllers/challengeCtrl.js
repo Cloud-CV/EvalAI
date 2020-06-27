@@ -564,6 +564,7 @@
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
+            console.log(vm.submission_meta_attributes);
         };
 
         vm.clear_meta_attribute_values = function(){
