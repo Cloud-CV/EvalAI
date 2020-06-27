@@ -704,8 +704,8 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             )
         )
 
-        if (count != 1):
-            logger.warning("Worker(s) for challenge {} couldn't restart! Error: {}".format(challenge.id, failures[0]["message"]))
+        if (count != challenge.workers):
+            logger.warning("All worker(s) for challenge {} couldn't restart! Error: {}".format(challenge.id, failures[0]["message"]))
         else:
             challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
             challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(settings.HOSTNAME, challenge.id)
@@ -716,10 +716,10 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 file_updated = "Evaluation script"
 
             template_data = {
-            "CHALLENGE_NAME": challenge.title, 
-            "CHALLENGE_MANAGE_URL": challenge_manage_url,
-            "CHALLENGE_URL": challenge_url,
-            "FILE_UPDATED":file_updated,
+                "CHALLENGE_NAME": challenge.title, 
+                "CHALLENGE_MANAGE_URL": challenge_manage_url,
+                "CHALLENGE_URL": challenge_url,
+                "FILE_UPDATED":file_updated,
             }
 
             if challenge.image:
