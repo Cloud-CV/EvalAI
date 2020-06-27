@@ -115,3 +115,4 @@ class TestChallengeStartNotifier(BaseTestClass):
 
         mock_start_workers.assert_called_with([self.challenge])
         self.assertEqual(mock_send_email.call_args_list, calls)
+
