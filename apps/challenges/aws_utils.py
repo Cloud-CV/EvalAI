@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
 from base.utils import get_boto3_client
-
+from evalai.celery import app
 
 logger = logging.getLogger(__name__)
 
@@ -701,6 +701,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         )
 
 
+@app.task
 def create_eks_nodegroup(challenge, cluster_name):
     """
     Creates a nodegroup when a EKS cluster is created by the EvalAI admin
@@ -732,6 +733,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     )
 
 
+@app.task
 def create_eks_cluster(sender, challenge, field_name, **kwargs):
     """
     Called when Challenge is approved by the EvalAI admin
