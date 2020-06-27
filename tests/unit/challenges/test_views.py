@@ -2351,7 +2351,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data["detail"], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_phase_start_greater_than_challenge_start(self):
+    def test_challenge_phase_start_greater_than_challenge_start_date(self):
         self.data["test_annotation"] = SimpleUploadedFile(
             "another_test_file.txt",
             b"Another Dummy file content",
@@ -2362,7 +2362,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_phase_start_less_than_challenge_end(self):
+    def test_challenge_phase_start_less_than_challenge_end_date(self):
         self.data["test_annotation"] = SimpleUploadedFile(
             "another_test_file.txt",
             b"Another Dummy file content",
@@ -2373,7 +2373,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_phase_end_greater_than_challenge_start(self):
+    def test_challenge_phase_end_greater_than_challenge_start_date(self):
         self.data["test_annotation"] = SimpleUploadedFile(
             "another_test_file.txt",
             b"Another Dummy file content",
@@ -2384,7 +2384,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_phase_end_less_than_challenge_end(self):
+    def test_challenge_phase_end_less_than_challenge_end_date(self):
         self.data["test_annotation"] = SimpleUploadedFile(
             "another_test_file.txt",
             b"Another Dummy file content",
@@ -2395,7 +2395,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_phase_start_less_than_challenge_phase_end(self):
+    def test_challenge_phase_start_less_than_challenge_phase_end_date(self):
         self.data["test_annotation"] = SimpleUploadedFile(
             "another_test_file.txt",
             b"Another Dummy file content",
