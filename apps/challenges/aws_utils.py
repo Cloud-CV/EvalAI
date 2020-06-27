@@ -710,16 +710,16 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
             challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(settings.HOSTNAME, challenge.id)
 
-            if field_name is "test_annotation":
+            if field_name == "test_annotation":
                 file_updated = "Test Annotation"
-            elif field_name is "evaluation_script":
+            elif field_name == "evaluation_script":
                 file_updated = "Evaluation script"
 
             template_data = {
-                "CHALLENGE_NAME": challenge.title, 
+                "CHALLENGE_NAME": challenge.title,
                 "CHALLENGE_MANAGE_URL": challenge_manage_url,
                 "CHALLENGE_URL": challenge_url,
-                "FILE_UPDATED":file_updated,
+                "FILE_UPDATED": file_updated,
             }
 
             if challenge.image:
