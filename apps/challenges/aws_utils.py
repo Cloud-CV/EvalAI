@@ -956,12 +956,21 @@ def create_eks_cluster(challenge):
             config_text = yaml.dump(cluster_config, default_flow_style=False)
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
-            ChallengeEvaluationCluster.objects.create(
-                challenge=challenge_obj,
-                name=cluster_name,
-                cluster_endpoint=cluster_ep,
-                cluster_ssl=cluster_cert,
-            )
+            try:
+                ChallengeEvaluationCluster.objects.create(
+                    challenge=challenge,
+                    name=cluster_name,
+                    cluster_endpoint=cluster_ep,
+                    cluster_ssl=cluster_cert,
+                )
+            except BaseException:
+                ChallengeEvaluationCluster.objects.filter(
+                    challenge=challenge
+                ).update(
+                    name=cluster_name,
+                    cluster_endpoint=cluster_ep,
+                    cluster_ssl=cluster_cert,
+                )
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
