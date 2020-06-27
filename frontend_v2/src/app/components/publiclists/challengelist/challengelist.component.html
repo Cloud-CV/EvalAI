@@ -104,8 +104,7 @@
         <div class="challenge-page-title" id="ongoing-challenges"><strong class="text-med-black fs-18">My Participated
             Challenges</strong></div>
         <div *ngIf="!filteredPastChallenges.length">
-          You haven't participated in any challenge. Please <a [routerLink]="allChallengesRoutePathCommon" class="highlight-link">click
-            here</a> to participate in one!
+          You haven't participated in any of the past challenges.
         </div>
         <div class="row" *ngIf="filteredPastChallenges.length">
           <div class="col s12 m3" *ngFor="let challenge of filteredPastChallenges">
