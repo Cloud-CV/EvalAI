@@ -142,6 +142,8 @@
                             </td>
                             <td ng-repeat="(i, score) in key.result track by $index">
                                 {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
+                                <span class="new badge orange-background fs-16 w-300 partial-evaluation"
+                                      data-badge-caption="E" ng-if="score === '#'"></span>
                                 <span ng-if="key.error != nil"> ±
                                     {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                             </td>

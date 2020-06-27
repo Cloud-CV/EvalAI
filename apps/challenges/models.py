@@ -248,6 +248,8 @@ class ChallengePhase(TimeStampedModel):
     )
     # Flag to restrict user to select only one submission for leaderboard
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
+    # Flag to allow reporting partial metrics for submission evaluation
+    is_partial_submission_evaluation_enabled = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
