@@ -38,7 +38,13 @@ sudo docker-compose -f docker-compose-local.yml up -d
 
 #Restore database
 DOCKER_DB_NAME="$(docker-compose ps -q db)"
-LOCAL_DUMP_PATH="backups/weekly/postgres-202026.sql.gz"
+LOCAL_DUMP_PATH=$(ls -t backup/* | head -1)
 
-echo "Restoring latest postgres backup"
-sudo docker exec -it "${DOCKER_DB_NAME}" gunzip -c "${LOCAL_DUMP_PATH}" | psql -h db -p 5432 -U postgres -d postgres
+if [ -n "${DUMP_FILE}" ]
+then    
+    echo "Backup file exists: ${DUMP_FILE}"
+    echo "Restoring latest postgres backup"
+    sudo docker exec -it "${DOCKER_DB_NAME}" gunzip -c "${LOCAL_DUMP_PATH}" | psql -h db -p 5432 -U postgres -d postgres
+else
+    echo "No backup file exists"
+fi
