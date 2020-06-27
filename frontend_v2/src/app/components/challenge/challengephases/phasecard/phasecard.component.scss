@@ -1,0 +1,17 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.phase-card {
+	margin-bottom: 20px;
+	padding-bottom: 1px;
+}
+
+.phase-value {
+	color: $overlay-darker;
+}
+
+.phase-card {
+	.row-lr-margin {
+		margin-bottom: 20px;
+	}
+}

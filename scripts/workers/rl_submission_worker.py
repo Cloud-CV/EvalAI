@@ -1,13 +1,16 @@
 import logging
 import os
 import signal
+import urllib
+import yaml
+
 
 from worker_utils import EvalAI_Interface
 
-from kubernetes import client, config
+from kubernetes import client
 
 # TODO: Add exception in all the commands
-# from kubernetes.client.rest import ApiException
+from kubernetes.client.rest import ApiException
 
 
 class GracefulKiller:
@@ -22,7 +25,6 @@ class GracefulKiller:
 
 
 logger = logging.getLogger(__name__)
-config.load_kube_config()
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
@@ -147,15 +149,128 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
         )
 
 
-def get_api_object(cluster_name, challenge, evalai):
+def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
+    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.host = cluster_endpoint
+    configuration.verify_ssl = False
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
     configuration.api_key_prefix["authorization"] = "Bearer"
     api_instance = client.BatchV1Api(client.ApiClient(configuration))
     return api_instance
+
+
+def get_core_v1_api_object(cluster_name, challenge, evalai):
+    configuration = client.Configuration()
+    aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.api_key["authorization"] = aws_eks_api[
+        "aws_eks_bearer_token"
+    ]
+    configuration.api_key_prefix["authorization"] = "Bearer"
+    api_instance = client.CoreV1Api(client.ApiClient(configuration))
+    return api_instance
+
+
+def get_running_jobs(api_instance):
+    """Function to get all the current jobs on AWS EKS cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+    """
+    namespace = "default"
+    try:
+        api_response = api_instance.list_namespaced_job(namespace)
+    except ApiException as e:
+        logger.exception("Exception while receiving running Jobs{}".format(e))
+    return api_response
+
+
+def read_job(api_instance, job_name):
+    """Function to get the status of a running job on AWS EKS cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+    """
+    namespace = "default"
+    try:
+        api_response = api_instance.read_namespaced_job(job_name, namespace)
+    except ApiException as e:
+        logger.exception("Exception while reading Job with error {}".format(e))
+    return api_response
+
+
+def update_failed_jobs_and_send_logs(
+    api_instance,
+    core_v1_api_instance,
+    evalai,
+    job_name,
+    submission_pk,
+    challenge_pk,
+    phase_pk,
+):
+    job_def = read_job(api_instance, job_name)
+    controller_uid = job_def.metadata.labels["controller-uid"]
+    pod_label_selector = "controller-uid=" + controller_uid
+    pods_list = core_v1_api_instance.list_namespaced_pod(
+        namespace="default",
+        label_selector=pod_label_selector,
+        timeout_seconds=10,
+    )
+    for container in pods_list.items[0].status.container_statuses:
+        if container.name == "agent":
+            if container.state.terminated is not None:
+                if container.state.terminated.reason == "Error":
+                    pod_name = pods_list.items[0].metadata.name
+                    try:
+                        pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                            name=pod_name,
+                            namespace="default",
+                            _return_http_data_only=True,
+                            _preload_content=False,
+                            container="agent",
+                        )
+                        pod_log = pod_log_response.data.decode("utf-8")
+                        submission_data = {
+                            "challenge_phase": phase_pk,
+                            "submission": submission_pk,
+                            "stdout": "",
+                            "stderr": pod_log,
+                            "submission_status": "FAILED",
+                            "result": "[]",
+                            "metadata": "",
+                        }
+                        response = evalai.update_submission_data(
+                            submission_data, challenge_pk, phase_pk
+                        )
+                        print(response)
+                    except client.rest.ApiException as e:
+                        logger.exception(
+                            "Exception while reading Job logs {}".format(e)
+                        )
+
+
+def install_gpu_drivers(api_instance):
+    """Function to get the status of a running job on AWS EKS cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for creating deamonset
+    """
+    logging.info("Installing Nvidia-GPU Drivers ...")
+    link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
+    logging.info("Using daemonset file: %s", link)
+    nvidia_manifest = urllib.urlopen(link)
+    daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
+    ext_client = client.ExtensionsV1beta1Api(api_instance)
+    try:
+        namespace = daemonset_spec["metadata"]["namespace"]
+        ext_client.create_namespaced_daemon_set(namespace, daemonset_spec)
+    except ApiException as e:
+        if e.status == 409:
+            logging.info(
+                "Nvidia GPU driver daemon set has already been installed"
+            )
+        else:
+            raise
 
 
 def main():
@@ -173,6 +288,11 @@ def main():
     challenge = evalai.get_challenge_by_queue_name()
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
+    cluster_endpoint = cluster_details.get("cluster_endpoint")
+    api_instance = get_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    install_gpu_drivers(api_instance)
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
@@ -182,7 +302,12 @@ def main():
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(cluster_name, challenge, evalai)
+                api_instance = get_api_object(
+                    cluster_name, cluster_endpoint, challenge, evalai
+                )
+                core_v1_api_instance = get_core_v1_api_object(
+                    cluster_name, cluster_endpoint, challenge, evalai
+                )
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
@@ -196,7 +321,16 @@ def main():
                         message_receipt_handle
                     )
                 elif submission.get("status") == "running":
-                    continue
+                    job_name = submission.get("job_name")[-1]
+                    update_failed_jobs_and_send_logs(
+                        api_instance,
+                        core_v1_api_instance,
+                        evalai,
+                        job_name,
+                        submission_pk,
+                        challenge_pk,
+                        phase_pk,
+                    )
                 else:
                     logger.info(
                         "Processing message body: {0}".format(message_body)
@@ -207,6 +341,7 @@ def main():
                     process_submission_callback(
                         api_instance, message_body, challenge_phase, evalai
                     )
+
         if killer.kill_now:
             break
 

@@ -11,7 +11,8 @@
 
     function AuthCtrl(utilities, $state, $rootScope) {
         var vm = this;
-
+        // condition for showing password strength
+        vm.showPasswordStrength = false;
         vm.isRem = false;
         vm.isAuth = false;
         vm.isMail = true;
@@ -197,6 +198,12 @@
 
         // function to check password strength
         vm.checkStrength = function(password) {
+            if(password) {
+                vm.showPasswordStrength = true;
+            }
+            else {
+                vm.showPasswordStrength = false;
+            }
             var passwordStrength = utilities.passwordStrength(password);
             vm.message = passwordStrength[0];
             vm.color = passwordStrength[1];
