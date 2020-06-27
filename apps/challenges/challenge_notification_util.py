@@ -17,14 +17,14 @@ def challenge_start_notifier(sender, instance, field_name, **kwargs):
         if challenge.is_docker_based:
             response = create_eks_cluster(challenge)
             if response is None:
-                logger.warning("Could not create EKS cluster for docker based challenge {}!".format(challenge.id))
+                logger.error("Could not create EKS cluster for docker based challenge {}!".format(challenge.id))
             else:
                 construct_and_send_worker_start_mail(challenge)
         else:
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if (count != 1):
-                logger.warning("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
+                logger.error("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
             else:
                 construct_and_send_worker_start_mail(challenge)
 
