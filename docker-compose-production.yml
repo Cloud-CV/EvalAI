@@ -13,7 +13,7 @@ services:
       driver: awslogs
       options:
         awslogs-region: ${AWS_DEFAULT_REGION}
-        awslogs-group: django_production
+        awslogs-group: "django_production"
         awslogs-create-group: true
 
   celery:
