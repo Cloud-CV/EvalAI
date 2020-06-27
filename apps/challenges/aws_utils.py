@@ -712,7 +712,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
 
             if field_name is "test_annotation":
                 file_updated = "Test Annotation"
-            else if field_name is "evaluation_script":
+            elif field_name is "evaluation_script":
                 file_updated = "Evaluation script"
 
             template_data = {
