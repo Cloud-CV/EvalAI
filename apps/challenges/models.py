@@ -248,7 +248,8 @@ class ChallengePhase(TimeStampedModel):
     )
     # Flag to restrict user to select only one submission for leaderboard
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
-    submission_meta_attributes_schema = JSONField(blank=True, null=True) #  Store the schema for the submission meta attributes of this challenge phase.
+    # Store the schema for the submission meta attributes of this challenge phase.
+    submission_meta_attributes_schema = JSONField(blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
