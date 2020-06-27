@@ -8,7 +8,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import restart_workers_signal_callback, create_eks_cluster
+from .aws_utils import restart_workers_signal_callback
 
 from base.models import (
     TimeStampedModel,
