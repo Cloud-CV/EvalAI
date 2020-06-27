@@ -8,8 +8,6 @@ import {GlobalService} from '../../../services/global.service';
 import {RouterTestingModule} from '@angular/router/testing';
 import {HttpClientModule} from '@angular/common/http';
 import {Routes} from '@angular/router';
-import {DashboardComponent} from '../../dashboard/dashboard.component';
-import {LoginComponent} from '../../auth/login/login.component';
 import {NotFoundComponent} from '../../not-found/not-found.component';
 import {WindowService} from '../../../services/window.service';
 import {FormsModule} from '@angular/forms';

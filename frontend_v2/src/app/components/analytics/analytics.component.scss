@@ -1,14 +1,7 @@
 @import "styles/variables";
 
-.dashboard-flex {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.dashboard-content {
-  flex: 1;
-  min-height: 100vh;
+.analytics-content {
+  margin-left: 2%;
 }
 
 .web-container {
