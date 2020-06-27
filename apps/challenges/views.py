@@ -444,7 +444,7 @@ def get_all_participated_challenges(request, challenge_time):
     Returns the list of all participated challenges
     """
     # make sure that a valid url is requested.
-    if challenge_time.lower() not in ("all", "future", "past", "present"):
+    if challenge_time.lower() not in ("all", "past", "present"):
         response_data = {"error": "Wrong url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -457,19 +457,12 @@ def get_all_participated_challenges(request, challenge_time):
         q_params["start_date__lt"] = timezone.now()
         q_params["end_date__gt"] = timezone.now()
 
-    elif challenge_time.lower() == "future":
-        q_params["start_date__gt"] = timezone.now()
-    # for `all` we dont need any condition in `q_params`
-
     # don't return disabled challenges
     q_params["is_disabled"] = False
-
+    participant_team_ids = get_participant_teams_for_user(request.user)
+    q_params["participant_teams__pk__in"] = participant_team_ids
     challenges = Challenge.objects.filter(**q_params).order_by("-pk")
-    challenge_list = []
-    for challenge in challenges:
-        if has_user_participated_in_challenge(user=request.user, challenge_id=challenge.id):
-            challenge_list.append(challenge)
-    paginator, result_page = paginated_queryset(challenge_list, request)
+    paginator, result_page = paginated_queryset(challenges, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
     )

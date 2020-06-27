@@ -68,7 +68,6 @@ export class ChallengelistComponent implements OnInit {
    * API path mapping
    */
   newApiPathMapping = {
-    isUpcomingChecked: this.apiPathCommon  + 'participated/' + 'future',
     isOngoingChecked: this.apiPathCommon  + 'participated/' + 'present',
     isPastChecked: this.apiPathCommon  + 'participated/' + 'past'
   };
@@ -374,7 +373,7 @@ export class ChallengelistComponent implements OnInit {
   }
 
   /**
-   * Fetch challenges from backend.
+   * Fetch participated challenges from backend.
    * @param path  Challenge fetch URL
    * @param callback  Callback Function.
    */
@@ -382,16 +381,13 @@ export class ChallengelistComponent implements OnInit {
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
       data => {
-        if (path.endsWith('future')) {
-          SELF.upcomingChallenges = data['results'];
-        } else if (path.endsWith('present')) {
+        if (path.endsWith('present')) {
           SELF.ongoingChallenges = data['results'];
         } else if (path.endsWith('past')) {
           SELF.pastChallenges = data['results'];
         }
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
-        SELF.filteredUpcomingChallenges = SELF.upcomingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
       },
       err => {
