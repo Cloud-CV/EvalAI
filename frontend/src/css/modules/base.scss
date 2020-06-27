@@ -950,6 +950,20 @@ h4.challenge-step-title {
     display: inline-block !important;
 }
 
+.meta-attributes-dialog {}
+
+.dialog-close-button {
+    position: absolute;
+    right: 10%;
+    bottom: 10%;
+}
+
+.meta_attributes_checkox_list {
+    display: list-item; 
+    list-style-position: inside; 
+    list-style-type: disc;
+}
+
 @media only screen and (min-width: $xlarge-screen) {
 
     body,

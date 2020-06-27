@@ -32,12 +32,13 @@ get_dataset_split_model = get_model_object(DatasetSplit)
 get_challenge_phase_split_model = get_model_object(ChallengePhaseSplit)
 
 
-def key_exists_in_json(json, key):
-    try:
-        name = json[key]
-        return True
-    except KeyError:
-        return False
+def keys_exists_in_json(json, keys):
+    missing = []
+    for key in keys:
+        if key in json.keys():
+            missing.append(key)
+    return missing
+
 
 def get_file_content(file_path, mode):
     if os.path.isfile(file_path):

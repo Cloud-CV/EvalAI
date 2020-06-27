@@ -110,7 +110,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
-from .utils import get_file_content, get_aws_credentials_for_submission, key_exists_in_json
+from .utils import get_file_content, get_aws_credentials_for_submission, keys_exists_in_json
 
 logger = logging.getLogger(__name__)
 
@@ -817,34 +817,25 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         # To ensure that the schema for submission metaattributes is valid.
         if (data.get("submission_meta_attributes_schema")):
             for attribute in data["submission_meta_attributes_schema"]:
-                if not key_exists_in_json(attribute, "name"):
-                    message = (
-                        "No name found for attribute in challenge_phase {}".format(data["id"])
-                    )
+
+                keys = ["name", "description", "type"]
+                missing = keys_exists_in_json(attribute, keys)
+
+                if missing == []:
+                    valid_attribute_types = ["boolean", "text", "radio", "checkbox"]
+                    attribute_type = attribute["type"]
+                    if attribute_type in valid_attribute_types:
+                        if attribute_type == "radio" or attribute_type == "checkbox":
+                            options = attribute.get("options")
+                            if not options or not len(options):
+                                message = "Please include at least one option in attribute for challenge_phase {}".format(data["id"])
+                                response_data = {"error": message}
+                                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+                else:
+                    missing_string = ", ".join(missing)
+                    message = "Please enter the following to attribute in phase {}: {}.".format(data["id"], missing_string)
                     response_data = {"error": message}
                     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-                if not key_exists_in_json(attribute, "description"):
-                    message = (
-                        "No description found for attribute in challenge_phase {}".format(data["id"])
-                    )
-                    response_data = {"error": message}
-                    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-                if not key_exists_in_json(attribute, "type"):
-                    message = "No type found for attribute in challenge_phase {}".format(data["id"])
-                    response_data = {"error": message}
-                    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-                valid_attribute_types = ["boolean", "text", "radio", "checkbox"]
-                attribute_type = attribute["type"]
-                if(attribute_type in valid_attribute_types):
-                    if(attribute_type == "radio" or attribute_type == "checkbox"):
-                        options = attribute.get("options")
-                        if not options or not len(options):
-                            message = "Please include at least one option in attribute for challenge_phase {}".format(data["id"])
-                            response_data = {"error": message}
-                            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for challenge image in yaml file.
     image = yaml_file_data.get("image")
