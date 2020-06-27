@@ -116,7 +116,9 @@ class Submission(TimeStampedModel):
         blank=True,
         null=True,
     )
-    submission_meta_attributes = JSONField(blank=True, null=True)  # Store the values of meta attributes for the submission here.
+    # Store the values of meta attributes for the submission here.
+    submission_meta_attributes = JSONField(blank=True, null=True)
+    ignore_submission = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}".format(self.id)
