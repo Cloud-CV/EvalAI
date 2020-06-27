@@ -700,6 +700,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             )
         )
 
+
 @app.task
 def create_eks_nodegroup(challenge, cluster_name):
     """
@@ -730,6 +731,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     waiter.wait(
         clusterName=cluster_name, nodegroupName=nodegroup_name,
     )
+
 
 @app.task
 def create_eks_cluster(sender, challenge, field_name, **kwargs):
