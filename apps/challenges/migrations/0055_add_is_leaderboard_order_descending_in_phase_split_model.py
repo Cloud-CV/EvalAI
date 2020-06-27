@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0054_add_banned_email_ids_field'),
+        ("challenges", "0054_add_banned_email_ids_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephasesplit',
-            name='is_leaderboard_order_descending',
+            model_name="challengephasesplit",
+            name="is_leaderboard_order_descending",
             field=models.BooleanField(default=True),
         ),
     ]

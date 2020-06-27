@@ -9,8 +9,8 @@ challenges = Challenge.objects.all()
 
 try:
     for challenge in challenges:
-        challenge_title = challenge.title.split(' ')
-        challenge_slug = '-'.join(challenge_title).lower()
+        challenge_title = challenge.title.split(" ")
+        challenge_slug = "-".join(challenge_title).lower()
         challenge.slug = challenge_slug
         challenge.save()
 except Exception as e:

@@ -8,7 +8,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import restart_workers_signal_callback
+from .aws_utils import restart_workers_signal_callback, create_eks_cluster
 
 from base.models import (
     TimeStampedModel,
@@ -174,6 +174,11 @@ signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(
         restart_workers_signal_callback
     ),
+    sender=Challenge,
+    weak=False,
+)
+signals.post_save.connect(
+    model_field_name(field_name="approved_by_admin")(create_eks_cluster),
     sender=Challenge,
     weak=False,
 )
@@ -438,7 +443,11 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
     challenge = models.OneToOneField(Challenge)
     name = models.CharField(max_length=200, unique=True, db_index=True)
-    cluster_yaml = models.FileField(upload_to=RandomFileName("cluster_yaml"))
+    cluster_endpoint = models.URLField(max_length=200, blank=True, null=True)
+    cluster_ssl = models.TextField(null=True, blank=True)
+    cluster_yaml = models.FileField(
+        upload_to=RandomFileName("cluster_yaml"), blank=True, null=True
+    )
     kube_config = models.FileField(
         upload_to=RandomFileName("kube_config"), blank=True, null=True
     )

@@ -1,0 +1,152 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.ev-md-container {
+  padding-bottom: 0px;
+  .phase-title {
+    margin-bottom: 20px;
+  }
+}
+
+.show-submission-count {
+  background: #252833;
+  text-align: center;
+  color: white;
+  padding: 2px 5px 2px 5px;
+  border-radius: 3px 3px 3px 3px;
+  font-weight: $fw-light;
+  transition: all 0.2s ease-in-out;
+}
+
+@include screen-small-medium {
+  .download-submissions {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+}
+
+.add-line-height {
+	line-height: 51px;
+}
+
+.result-wrn {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.marker {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.pad-top {
+  padding-top: 40px;
+  padding-bottom: 10px;
+  .show-on-leaderboard {
+    color: rgb(169, 169, 169);
+    font-size: 14px;
+    font-weight: $fw-regular;
+    line-height: 1.25;
+  }
+}
+
+.cbx-label {
+  margin-left: 55px;
+  margin-right: 55px;
+}
+
+.cbx:checked ~ .cbx-label {
+  background: #4CAF50;
+}
+
+.collapsible-table{
+  overflow: auto;
+}
+
+tr.detail-row {
+  height: 0;
+  overflow: hidden;
+}
+
+.cell-outside {
+  padding: 8px;
+}
+
+tr.element-row:not(.expanded-row):hover {	
+  td {	
+    color: #efefef;	
+  }	
+  background: #252833;	
+}	
+
+ tr.element-row:not(.expanded-row):active {	
+  background: #efefef;	
+}
+
+.expanded-row {
+  margin-top: 24px;
+  margin-bottom: 14px;
+}
+
+.elements {
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+.elements-detail {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+
+  padding-right: 80px;
+}
+
+.elements-action {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-left: 40px;
+}
+
+.element {
+  margin-bottom: 10px;
+}
+
+.element-description {
+  margin-left: 10px;
+}
+
+.element-description-attribution {
+  opacity: 0.5;
+}
+
+@include screen-small {
+  .elements {
+    flex-direction: column;
+  }
+  .elements-action {
+    margin-left: 0;
+    margin-top: 20px;
+  }
+  .elements-detail {
+    border-right-style: none;
+    padding-right: 0;
+
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+  }
+  .element {
+    display: flex;
+    flex-direction: column;
+  }
+  .element-description {
+    margin-left: 0;
+  }
+}

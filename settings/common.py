@@ -167,7 +167,11 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "resend_email": "3/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/minute",
+        "user": "100/minute",
+        "resend_email": "3/hour",
+    },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
@@ -299,8 +303,20 @@ SWAGGER_SETTINGS = {
 
 REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}
 
+DJANGO_SERVER = os.environ.get("DJANGO_SERVER")
+DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
+
 HOSTNAME = os.environ.get("HOSTNAME")
 
 SENDGRID_SETTINGS = {
     "TEMPLATES": {"CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420"}
 }
+
+# EKS configs for Rl-worker
+EKS_CLUSTER_ROLE_ARN = os.environ.get(
+    "EKS_CLUSTER_ROLE_ARN"
+)
+
+EKS_NODEGROUP_ROLE_ARN = os.environ.get(
+    "EKS_NODEGROUP_ROLE_ARN"
+)
