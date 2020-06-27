@@ -111,7 +111,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
-from.aws_utils import start_workers, stop_workers, restart_workers, get_logs_from_cloudwatch
+from .aws_utils import start_workers, stop_workers, restart_workers, get_logs_from_cloudwatch
 from .utils import get_file_content, get_aws_credentials_for_submission
 
 logger = logging.getLogger(__name__)
