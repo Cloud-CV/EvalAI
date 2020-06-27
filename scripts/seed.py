@@ -331,10 +331,10 @@ def create_dataset_splits(number_of_splits):
     Creates dataset splits and returns it.
     """
     dataset_splits = []
-    for i in range(number_of_splits):
+    for split in range(number_of_splits):
         global DATASET_SPLIT_ITERATOR
         name = "Split {}".format(DATASET_SPLIT_ITERATOR + 1)
-        codename = "{}{}".format("split", i + 1)
+        codename = "{}{}".format("split", split + 1)
         dataset_split = DatasetSplit.objects.create(
             name=name, codename=codename,
         )
