@@ -454,8 +454,6 @@
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
                     formData.append("submission_meta_attributes", JSON.stringify(vm.submission_meta_attributes));
-                    console.log("While making submission, vm.submission_meta_attributes is:")
-                    console.log(vm.submission_meta_attributes)
 
                     parameters.data = formData;
 
@@ -514,10 +512,6 @@
             }
         };
 
-        vm.consoler = function(){
-            console.log("LOLOLOLOLOL");
-        };
-
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
@@ -526,7 +520,6 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
-                console.log(details);
                 var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
@@ -555,7 +548,6 @@
                         vm.submission_meta_attributes_schema.push(data);
                     }
                 }
-                console.log(vm.submission_meta_attributes_schema);
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -571,27 +563,7 @@
         vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submission_meta_attributes
             vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
                 return element["phaseId"] == phaseId;
-            });
-            if(vm.submission_meta_attributes_schema != null){
-                vm.submission_meta_attributes = vm.submission_meta_attributes_schema["attributes"];
-                if(vm.submission_meta_attributes != null){
-                    vm.submission_meta_attributes.forEach(function(attribute){
-                        if(attribute.type == 'checkbox'){
-                            attribute.values = [];
-                        }
-                        else{
-                            attribute.value = null;
-                        }
-                    });
-                }
-                else{
-                    vm.submission_meta_attributes = null;
-                }
-                    
-            }
-            else{
-                vm.submission_meta_attributes = null;
-            }
+            }).attributes;
         };
 
         vm.clear_meta_attribute_values = function(){
