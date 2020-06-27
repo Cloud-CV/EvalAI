@@ -65,8 +65,9 @@ from .serializers import (
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
     calculate_distinct_sorted_leaderboard_data,
-    get_submission_model,
+    get_leaderboard_data_model,
     get_remaining_submission_for_a_phase,
+    get_submission_model,
     handle_submission_rerun,
     is_url_valid,
 )
@@ -1016,6 +1017,490 @@ def update_submission(request, challenge_pk):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    methods=["put"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        )
+    ],
+    operation_id="update_submission",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "challenge_phase": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Challenge Phase ID"
+            ),
+            "submission": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Submission ID"
+            ),
+            "stdout": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Submission output file content",
+            ),
+            "stderr": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Submission error file content",
+            ),
+            "submission_status": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
+            ),
+            "result": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description="Submission results in array format."
+                " API will throw an error if any split and/or metric is missing)",
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "split1": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="dataset split 1 codename",
+                        ),
+                        "show_to_participant": openapi.Schema(
+                            type=openapi.TYPE_BOOLEAN,
+                            description="Boolean to decide if the results are shown to participant or not",
+                        ),
+                        "accuracies": openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            description="Accuracies on different metrics",
+                            properties={
+                                "metric1": openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description="Numeric accuracy on metric 1",
+                                ),
+                                "metric2": openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description="Numeric accuracy on metric 2",
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ),
+            "metadata": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description="It contains the metadata related to submission (only visible to challenge hosts)",
+                properties={
+                    "foo": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Some data relevant to key",
+                    )
+                },
+            ),
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            "{'success': 'Submission result has been successfully updated'}"
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
+@swagger_auto_schema(
+    methods=["patch"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        )
+    ],
+    operation_id="update_submission",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "submission": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Submission ID"
+            ),
+            "job_name": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Job name for the running submission",
+            ),
+            "submission_status": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Updated status of submission from submitted i.e. RUNNING",
+            ),
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response("{<updated submission-data>}"),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
+@api_view(["PUT", "PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def update_partially_evaluated_submission(request, challenge_pk):
+    """
+    API endpoint to update submission related attributes
+
+    Query Parameters:
+
+     - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
+     - ``submission``: submission id, e.g. 123 (**required**)
+     - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
+     - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``submission_status``: Status of submission after evaluation
+        (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`/`PARTIALLY_EVALUATED`),
+        e.g. FINISHED (**required**)
+     - ``result``: contains accuracies for each metric, (**required**) e.g.
+            [
+                {
+                    "split": "split1-codename",
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 90
+                    }
+                },
+                {
+                    "split": "split2-codename",
+                    "show_to_participant": False,
+                    "accuracies": {
+                        "metric1": 50,
+                        "metric2": 40
+                    }
+                }
+            ]
+     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+            {
+                "average-evaluation-time": "5 sec",
+                "foo": "bar"
+            }
+    """
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "PUT":
+        challenge_phase_pk = request.data.get("challenge_phase")
+        submission_pk = request.data.get("submission")
+        submission_status = request.data.get("submission_status", "").lower()
+        stdout_content = request.data.get("stdout", "")
+        stderr_content = request.data.get("stderr", "")
+        submission_result = request.data.get("result", "")
+        metadata = request.data.get("metadata", "")
+        submission = get_submission_model(submission_pk)
+
+        public_results = []
+        successful_submission = (
+            True if (submission_status == Submission.FINISHED
+                     or submission_status == Submission.PARTIALLY_EVALUATED) else False
+        )
+        if submission_status not in [
+            Submission.FAILED,
+            Submission.CANCELLED,
+            Submission.FINISHED,
+            Submission.PARTIALLY_EVALUATED,
+        ]:
+            response_data = {"error": "Sorry, submission status is invalid"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if successful_submission:
+            try:
+                results = json.loads(submission_result)
+            except (ValueError, TypeError) as exc:
+                response_data = {
+                    "error": "`result` key contains invalid data with error {}."
+                    "Please try again with correct format.".format(str(exc))
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            leaderboard_data_list = []
+            for phase_result in results:
+                split = phase_result.get("split")
+                accuracies = phase_result.get("accuracies")
+                show_to_participant = phase_result.get(
+                    "show_to_participant", False
+                )
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(
+                        challenge_phase__pk=challenge_phase_pk,
+                        dataset_split__codename=split,
+                    )
+                except ChallengePhaseSplit.DoesNotExist:
+                    response_data = {
+                        "error": "Challenge Phase Split does not exist with phase_id: {} and"
+                        "split codename: {}".format(challenge_phase_pk, split)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
+                    "labels"
+                )
+                missing_metrics = []
+                malformed_metrics = []
+                for metric, value in accuracies.items():
+                    if metric not in leaderboard_metrics:
+                        missing_metrics.append(metric)
+
+                    if not (
+                        isinstance(value, float) or isinstance(value, int)
+                    ):
+                        malformed_metrics.append((metric, type(value)))
+
+                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                if len(missing_metrics) and not is_partial_evaluation_phase:
+                    response_data = {
+                        "error": "Following metrics are missing in the"
+                        "leaderboard data: {} of challenge phase: {}".format(missing_metrics, challenge_phase_pk)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                if len(malformed_metrics):
+                    response_data = {
+                        "error": "Values for following metrics are not of"
+                        "float/int: {}".format(malformed_metrics)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                data = {"result": accuracies}
+                serializer = CreateLeaderboardDataSerializer(
+                    data=data,
+                    context={
+                        "challenge_phase_split": challenge_phase_split,
+                        "submission": submission,
+                        "request": request,
+                    },
+                )
+                if serializer.is_valid():
+                    leaderboard_data_list.append(serializer)
+                else:
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # Only after checking if the serializer is valid, append the public split results to results file
+                if show_to_participant:
+                    public_results.append(accuracies)
+
+            try:
+                with transaction.atomic():
+                    for serializer in leaderboard_data_list:
+                        serializer.save()
+            except IntegrityError:
+                logger.exception(
+                    "Failed to update submission_id {} related metadata".format(
+                        submission_pk
+                    )
+                )
+                response_data = {
+                    "error": "Failed to update submission_id {} related metadata".format(
+                        submission_pk
+                    )
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
+        submission.status = submission_status
+        submission.completed_at = timezone.now()
+        submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
+        submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+        submission.submission_result_file.save(
+            "submission_result.json", ContentFile(str(public_results))
+        )
+        submission.submission_metadata_file.save(
+            "submission_metadata_file.json", ContentFile(str(metadata))
+        )
+        submission.save()
+        response_data = {
+            "success": "Submission result has been successfully updated"
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    if request.method == "PATCH":
+        submission_pk = request.data.get("submission")
+        submission_status = request.data.get("submission_status", "").lower()
+        job_name = request.data.get("job_name", "").lower()
+        submission = get_submission_model(submission_pk)
+        jobs = submission.job_name
+        if job_name:
+            jobs.append(job_name)
+        if submission_status not in [Submission.RUNNING,
+                                     Submission.PARTIALLY_EVALUATED,
+                                     Submission.FINISHED]:
+            response_data = {"error": "Sorry, submission status is invalid"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if submission_status == Submission.RUNNING:
+            data = {
+                "status": submission_status,
+                "started_at": str(timezone.now()),
+                "job_name": jobs,
+            }
+            serializer = SubmissionSerializer(
+                submission, data=data, partial=True, context={"request": request}
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif submission_status == Submission.PARTIALLY_EVALUATED or submission_status == Submission.FINISHED:
+            challenge_phase_pk = request.data.get("challenge_phase")
+            stdout_content = request.data.get("stdout", "")
+            stderr_content = request.data.get("stderr", "")
+            submission_result = request.data.get("result", "")
+
+            try:
+                results = json.loads(submission_result)
+            except (ValueError, TypeError) as exc:
+                response_data = {
+                    "error": "`result` key contains invalid data with error {}."
+                    "Please try again with correct format.".format(str(exc))
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            public_results = []
+            leaderboard_data_list = []
+            for phase_result in results:
+                split = phase_result.get("split")
+                accuracies = phase_result.get("accuracies")
+                show_to_participant = phase_result.get(
+                    "show_to_participant", False
+                )
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(
+                        challenge_phase__pk=challenge_phase_pk,
+                        dataset_split__codename=split,
+                    )
+                except ChallengePhaseSplit.DoesNotExist:
+                    response_data = {
+                        "error": "Challenge Phase Split does not exist with phase_id: {} and"
+                                 "split codename: {}".format(challenge_phase_pk, split)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                try:
+                    leaderboard_data = get_leaderboard_data_model(submission_pk, challenge_phase_split.pk)
+                except LeaderboardData.DoesNotExist:
+                    response_data = {
+                        "error": "Leaderboard Data does not exist with phase_id: {} and"
+                                 "submission id: {}".format(challenge_phase_pk, submission_pk)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                updated_result = leaderboard_data.result
+                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
+                    "labels"
+                )
+                missing_metrics = []
+                malformed_metrics = []
+                for metric, value in accuracies.items():
+                    if metric not in leaderboard_metrics:
+                        missing_metrics.append(metric)
+
+                    if not (
+                            isinstance(value, float) or isinstance(value, int)
+                    ):
+                        malformed_metrics.append((metric, type(value)))
+                    updated_result[metric] = value
+
+                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                if len(missing_metrics) and not is_partial_evaluation_phase:
+                    response_data = {
+                        "error": "Following metrics are missing in the"
+                                 "leaderboard data: {} of challenge phase: {}".format(missing_metrics,
+                                                                                      challenge_phase_pk)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                if len(malformed_metrics):
+                    response_data = {
+                        "error": "Values for following metrics are not of"
+                                 "float/int: {}".format(malformed_metrics)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                data = {"result": updated_result}
+                serializer = CreateLeaderboardDataSerializer(
+                    leaderboard_data,
+                    data=data,
+                    partial=True,
+                    context={
+                        "challenge_phase_split": challenge_phase_split,
+                        "submission": submission,
+                        "request": request,
+                    },
+                )
+                if serializer.is_valid():
+                    leaderboard_data_list.append(serializer)
+                else:
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # Only after checking if the serializer is valid, append the public split results to results file
+                if show_to_participant:
+                    public_results.append(accuracies)
+
+            try:
+                with transaction.atomic():
+                    for serializer in leaderboard_data_list:
+                        serializer.save()
+            except IntegrityError:
+                logger.exception(
+                    "Failed to update submission_id {} related metadata".format(
+                        submission_pk
+                    )
+                )
+                response_data = {
+                    "error": "Failed to update submission_id {} related metadata".format(
+                        submission_pk
+                    )
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            submission.status = submission_status
+            submission.completed_at = timezone.now()
+            submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
+            submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+            submission.submission_result_file.save(
+                "submission_result.json", ContentFile(str(public_results))
+            )
+            submission.save()
+            response_data = {
+                "success": "Submission result has been successfully updated"
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        response_data = {"error": "Sorry, submission status is invalid"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])

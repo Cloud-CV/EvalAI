@@ -285,10 +285,16 @@ def calculate_distinct_sorted_leaderboard_data(
     )
 
     # Get all the successful submissions related to the challenge phase split
+    all_valid_submission_status = [Submission.FINISHED]
+
+    # Handle the case for challenges with partial submission evaluation feature
+    if challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled:
+        all_valid_submission_status.append(Submission.PARTIALLY_EVALUATED)
+
     leaderboard_data = leaderboard_data.filter(
         challenge_phase_split=challenge_phase_split,
         submission__is_flagged=False,
-        submission__status=Submission.FINISHED,
+        submission__status__in=all_valid_submission_status,
     ).order_by("-created_at")
 
     leaderboard_data = leaderboard_data.annotate(
@@ -335,6 +341,8 @@ def calculate_distinct_sorted_leaderboard_data(
                 break
         if leaderboard_item["error"] is None:
             leaderboard_item.update(filtering_error=0)
+        if leaderboard_item["filtering_score"] is None:
+            leaderboard_item.update(filtering_score=0)
 
     if challenge_phase_split.show_leaderboard_by_latest_submission:
         sorted_leaderboard_data = leaderboard_data
@@ -367,9 +375,15 @@ def calculate_distinct_sorted_leaderboard_data(
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     for item in distinct_sorted_leaderboard_data:
-        item["result"] = [
-            item["result"][index] for index in leaderboard_labels
-        ]
+        item_result = []
+        for index in leaderboard_labels:
+            # Handle case for partially evaluated submissions
+            if index in item["result"].keys():
+                item_result.append(item["result"][index])
+            else:
+                item_result.append("#")
+        item["result"] = item_result
+
         if item["error"] is not None:
             item["error"] = [
                 item["error"]["error_{0}".format(index)]
@@ -377,3 +391,19 @@ def calculate_distinct_sorted_leaderboard_data(
             ]
 
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
+
+
+def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
+    """
+        Function to calculate and return the sorted leaderboard data
+
+        Arguments:
+            submission_pk {[int]} -- Submission object primary key
+            challenge_phase_split_pk {[int]} -- ChallengePhase object primary key
+
+        Returns:
+            [Class Object] -- LeaderboardData model object
+    """
+    leaderboard_data = LeaderboardData.objects.get(submission=submission_pk,
+                                                   challenge_phase_split__pk=challenge_phase_split_pk)
+    return leaderboard_data
