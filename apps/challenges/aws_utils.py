@@ -732,14 +732,13 @@ def create_eks_nodegroup(challenge, cluster_name):
     )
 
 
-def create_eks_cluster(sender, challenge, field_name, **kwargs):
+def create_eks_cluster(challenge):
     """
     Called when Challenge is approved by the EvalAI admin
     calls the create_eks_nodegroup function
 
     Arguments:
-        sender {type} -- model field called the post hook
-        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+        challenge (<class 'challenges.models.Challenge'>): The challenge object
     """
     from .models import ChallengeEvaluationCluster
 

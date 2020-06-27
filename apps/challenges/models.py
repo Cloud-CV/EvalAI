@@ -184,11 +184,6 @@ signals.post_save.connect(
     sender=Challenge,
     weak=False,
 )
-signals.post_save.connect(
-    model_field_name(field_name="approved_by_admin")(create_eks_cluster),
-    sender=Challenge,
-    weak=False,
-)
 
 
 class DatasetSplit(TimeStampedModel):
