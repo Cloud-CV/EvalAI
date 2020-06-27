@@ -11,7 +11,6 @@ export class AuthService {
   private authStateSource = new BehaviorSubject(this.authState);
   change = this.authStateSource.asObservable();
 
-
   isAuth = false;
   isMail = true;
   // getUser for signup
@@ -69,7 +68,7 @@ export class AuthService {
      */
     logOut() {
       const temp = {isLoggedIn: false};
-      const routePath = '/auth/login';
+      const routePath = '';
       this.globalService.deleteData(this.globalService.authStorageKey);
       this.authStateChange(temp);
       this.router.navigate([routePath]);
