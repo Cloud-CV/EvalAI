@@ -2,7 +2,6 @@ import logging
 import os
 import random
 import string
-import time
 import yaml
 
 from botocore.exceptions import ClientError
