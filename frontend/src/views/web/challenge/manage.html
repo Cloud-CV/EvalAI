@@ -1,0 +1,11 @@
+<section class="ev-sm-container ev-view challenge-container" ng-init="challenge.startLoadingLogs();">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('start');">Start Worker</button>
+        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('stop');">Stop Worker</button>
+        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('restart');">Restart Worker</button>
+    </div>
+
+    <div class="ev-logs-card ev-z-depth-5">
+        <div ng-repeat="log in challenge.workerLogs track by $index" class="ev-logs">{{log}}</div>
+    </div>
+</section>

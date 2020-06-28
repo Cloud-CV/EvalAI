@@ -107,6 +107,8 @@
                             All Submissions</a></li>
                     <li class="margin-btm-0"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-th-list"></i> Leaderboard</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".manage" ui-sref-active="active-challenge"
+                            class="text-light-black w-300"><i class="fa fa-th-list"></i> Manage</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isForumEnabled && challenge.forumURL"><a
                             href="{{challenge.forumURL}}" target="_blank" class="text-light-black w-300"><i
                                 class="fa fa-comments"></i> Discuss</a></li>

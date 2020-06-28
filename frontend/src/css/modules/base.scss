@@ -353,6 +353,25 @@ nav {
     box-shadow: 0px 0px 12px $shadow-black;
 }
 
+.ev-logs-card{
+    height: 400px;
+    padding: 40px;
+    color: white;
+    position: relative;
+    display: block;
+    background-color: #262626;
+    width: 100%;
+    border-radius: 4px;
+    overflow: scroll;
+    box-shadow: 0px 0px 12px $shadow-black;
+}
+
+.ev-logs{
+    font-family: 'Courier'; 
+    font-weight: bold;
+    padding: 5px;
+}
+
 .ev-card-content {
     padding: 10px;
 }
