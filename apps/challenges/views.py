@@ -2568,7 +2568,7 @@ def get_worker_logs(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge = Challenge.objects.get(pk=challenge_pk)
+    challenge = get_challenge_model(challenge_pk)
     response_data = []
 
     log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
