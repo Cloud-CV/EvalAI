@@ -10,6 +10,8 @@ from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
+from .challenge_notification_util import construct_and_send_worker_start_mail
+
 from base.utils import get_boto3_client
 from evalai.celery import app
 
@@ -819,3 +821,18 @@ def create_eks_cluster(challenge):
         except ClientError as e:
             logger.exception(e)
             return
+
+
+def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
+    prev = getattr(instance, "_original_{}".format(field_name))
+    curr = getattr(instance, "{}".format(field_name))
+    challenge = instance
+
+    if curr and not prev:   # Checking if the challenge has been approved by admin since last time.
+        if not challenge.is_docker_based:
+            response = start_workers([challenge])
+            count, failures = response["count"], response["failures"]
+            if (count != 1):
+                logger.error("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
+            else:
+                construct_and_send_worker_start_mail(challenge)
