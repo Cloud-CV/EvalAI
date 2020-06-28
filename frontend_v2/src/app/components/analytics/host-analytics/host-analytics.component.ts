@@ -41,6 +41,7 @@ export class HostAnalyticsComponent implements OnInit {
     this.globalService.stopLoader();
     this.globalService.handleApiError(err);
     if (err.status === 403) {
+      this.router.navigate(['permission-denied']);
       this.globalService.showToast('error', 'Permission Denied');
     } else if (err.status === 401) {
       this.globalService.showToast('error', 'Timeout, Please login again to continue!');
