@@ -280,7 +280,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "max_concurrent_submissions_allowed",
             "environment_image",
             "is_restricted_to_select_one_submission",
-            "submission_meta_attributes_schema"
+            "submission_meta_attributes_schema",
             "is_partial_submission_evaluation_enabled",
         )
 
