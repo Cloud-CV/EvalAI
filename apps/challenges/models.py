@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from django.core import serializers
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -9,14 +10,12 @@ from django.db import models
 from django.db.models import signals
 
 from .aws_utils import restart_workers_signal_callback
+from .challenge_notification_util import challenge_workers_start_notifier
 
-from base.models import (
-    TimeStampedModel,
-    model_field_name,
-    create_post_model_field,
-)
-from base.utils import RandomFileName, get_slug
-from challenges.challenge_notification_util import challenge_start_notifier
+from base.models import TimeStampedModel, model_field_name
+from base.utils import RandomFileName, get_slug, is_model_field_changed
+
+
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
@@ -168,22 +167,29 @@ class Challenge(TimeStampedModel):
 
 
 signals.post_save.connect(
-    model_field_name(field_name="evaluation_script")(create_post_model_field),
-    sender=Challenge,
-    weak=False,
-)
-signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(
         restart_workers_signal_callback
     ),
     sender=Challenge,
     weak=False,
 )
+
 signals.post_save.connect(
-    model_field_name(field_name="approved_by_admin")(challenge_start_notifier),
+    model_field_name(field_name="approved_by_admin")(challenge_workers_start_notifier),
     sender=Challenge,
     weak=False,
 )
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
+    field_name = "approved_by_admin"
+    if not created and is_model_field_changed(instance, field_name):
+        if (
+            instance.approved_by_admin is True
+            and instance.is_docker_based is True
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            create_eks_cluster.delay(serialized_obj)
 
 
 class DatasetSplit(TimeStampedModel):
@@ -250,6 +256,10 @@ class ChallengePhase(TimeStampedModel):
     )
     # Flag to restrict user to select only one submission for leaderboard
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
+    # Flag to allow reporting partial metrics for submission evaluation
+    is_partial_submission_evaluation_enabled = models.BooleanField(
+        default=False
+    )
 
     class Meta:
         app_label = "challenges"
@@ -292,11 +302,6 @@ class ChallengePhase(TimeStampedModel):
         return challenge_phase_instance
 
 
-signals.post_save.connect(
-    model_field_name(field_name="test_annotation")(create_post_model_field),
-    sender=ChallengePhase,
-    weak=False,
-)
 signals.post_save.connect(
     model_field_name(field_name="test_annotation")(
         restart_workers_signal_callback

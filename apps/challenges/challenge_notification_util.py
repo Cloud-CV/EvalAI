@@ -3,30 +3,22 @@ import logging
 from django.conf import settings
 
 from base.utils import send_email
-from challenges.aws_utils import create_eks_cluster, start_workers
+from challenges.aws_utils import start_workers
 
 logger = logging.getLogger(__name__)
 
 
-def challenge_start_notifier(sender, instance, field_name, **kwargs):
+def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     if curr and not prev:  # Checking if the challenge has been approved by admin since last time.
         challenge = instance
-
-        if challenge.is_docker_based:
-            response = create_eks_cluster(challenge)
-            if response is None:
-                logger.error("Could not create EKS cluster for docker based challenge {}!".format(challenge.id))
-            else:
-                construct_and_send_worker_start_mail(challenge)
+        response = start_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        if (count != 1):
+            logger.error("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
         else:
-            response = start_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if (count != 1):
-                logger.error("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
-            else:
-                construct_and_send_worker_start_mail(challenge)
+            construct_and_send_worker_start_mail(challenge)
 
 
 def construct_and_send_worker_start_mail(challenge):
