@@ -516,7 +516,7 @@ def leaderboard(request, challenge_phase_split_id):
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     (
-        response_data, 
+        response_data,
         http_status_code
     ) = calculate_distinct_sorted_leaderboard_data(
         request.user,
@@ -631,7 +631,7 @@ def get_remaining_submissions(request, challenge_pk):
     phase_data_list = list()
     for phase in challenge_phases:
         (
-            remaining_submission_message, 
+            remaining_submission_message,
             response_status
         ) = get_remaining_submission_for_a_phase(
             request.user, phase.id, challenge_pk
@@ -2021,7 +2021,7 @@ def get_github_badge_data(
     data = {"schemaVersion": 1, "label": "EvalAI", "color": "blue"}
 
     (
-        response_data, 
+        response_data,
         http_status_code
     ) = calculate_distinct_sorted_leaderboard_data(
         request.user,

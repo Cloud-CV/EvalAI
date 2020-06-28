@@ -28,8 +28,8 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
-        vm.submission_meta_attributes_schema = []; // Stores the attributes format and phase ID for all the phases of a challenge.
-        vm.submission_meta_attributes = null; // Stores the attributes for the current phase selected while making a submission.
+        vm.submissionMetaAttributesSchema = []; // Stores the attributes format and phase ID for all the phases of a challenge.
+        vm.submissionMetaAttributes = null; // Stores the attributes for the current phase selected while making a submission.
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -453,7 +453,7 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
-                    formData.append("submission_meta_attributes", JSON.stringify(vm.submission_meta_attributes));
+                    formData.append("submissionMetaAttributes", JSON.stringify(vm.submissionMetaAttributes));
 
                     parameters.data = formData;
 
@@ -482,7 +482,7 @@
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
-                            vm.submission_meta_attributes = null;
+                            vm.submissionMetaAttributes = null;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -534,18 +534,18 @@
                 }
 
                 for(var k=0; k<details.count; k++){
-                    if(details.results[k].submission_meta_attributes_schema != undefined || details.results[k].submission_meta_attributes_schema != null){
-                        var attributes = details.results[k].submission_meta_attributes_schema;
+                    if(details.results[k].submissionMetaAttributesSchema != undefined || details.results[k].submissionMetaAttributesSchema != null){
+                        var attributes = details.results[k].submissionMetaAttributesSchema;
                         attributes.forEach(function(attribute){
                             if(attribute["type"] == "checkbox") attribute["values"] = [];
                             else attribute["value"] = null;
                         });
                         data = {"phaseId":details.results[k].id, "attributes": attributes};
-                        vm.submission_meta_attributes_schema.push(data);
+                        vm.submissionMetaAttributesSchema.push(data);
                     }
                     else{
                         var data = {"phaseId":details.results[k].id, "attributes": null};
-                        vm.submission_meta_attributes_schema.push(data);
+                        vm.submissionMetaAttributesSchema.push(data);
                     }
                 }
                 utilities.hideLoader();
@@ -560,15 +560,15 @@
 
         utilities.sendRequest(parameters);
 
-        vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submission_meta_attributes
-            vm.submission_meta_attributes = vm.submission_meta_attributes_schema.find(function(element){
+        vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submissionMetaAttributes
+            vm.submissionMetaAttributes = vm.submissionMetaAttributesSchema.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
         };
 
         vm.clear_meta_attribute_values = function(){
-            if(vm.submission_meta_attributes != null){
-                vm.submission_meta_attributes.forEach(function(attribute){
+            if(vm.submissionMetaAttributes != null){
+                vm.submissionMetaAttributes.forEach(function(attribute){
                     if(attribute.type == 'checkbox'){
                         attribute.values = [];
                     }
