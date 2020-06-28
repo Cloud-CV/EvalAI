@@ -9,10 +9,12 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import restart_workers_signal_callback, create_eks_cluster
+from .aws_utils import restart_workers_signal_callback, create_eks_cluster, challenge_workers_start_notifier
 
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
+
+
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
@@ -167,6 +169,12 @@ signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(
         restart_workers_signal_callback
     ),
+    sender=Challenge,
+    weak=False,
+)
+
+signals.post_save.connect(
+    model_field_name(field_name="approved_by_admin")(challenge_workers_start_notifier),
     sender=Challenge,
     weak=False,
 )
