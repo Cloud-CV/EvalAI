@@ -38,7 +38,7 @@ sudo docker-compose -f docker-compose-local.yml up -d
 
 #Restore database
 DOCKER_DB_NAME="$(docker-compose ps -q db)"
-LOCAL_DUMP_PATH=$(ls -t backup/* | head -1)
+LOCAL_DUMP_PATH=$(ls -t backups/* | head -1)
 
 if [ -n "${DUMP_FILE}" ]
 then    

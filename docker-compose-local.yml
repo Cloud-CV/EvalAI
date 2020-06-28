@@ -62,6 +62,7 @@ services:
     environment:
       NODE_ENV: development
     ports:
+      - "80:8888"
       - "8888:8888"
       - "35729:35729"
     volumes:
