@@ -34,15 +34,3 @@ def model_field_name(field_name, *args, **kwargs):
         return model_field_name_wrapper
 
     return model_field_name_decorator
-
-
-def create_post_model_field(sender, instance, field_name, **kwargs):
-    """
-    When any model field value changes, it is used to log the change.
-    """
-    if getattr(instance, "_original_{}".format(field_name)) is False:
-        logger.info(
-            "{} for {} is added first time !".format(field_name, instance.pk)
-        )
-    else:
-        logger.info("{} for {} changed !".format(field_name, instance.pk))

@@ -6,6 +6,7 @@ import yaml
 
 from botocore.exceptions import ClientError
 from django.conf import settings
+from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
@@ -709,7 +710,11 @@ def create_eks_nodegroup(challenge, cluster_name):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
     """
-    nodegroup_name = "{0}-nodegroup".format(challenge.title.replace(" ", "-"))
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    nodegroup_name = "{0}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-")
+    )
     client = get_boto3_client("eks", aws_keys)
     # TODO: Move the hardcoded cluster configuration such as the
     # instance_type, subnets, AMI to challenge configuration later.
@@ -719,7 +724,7 @@ def create_eks_nodegroup(challenge, cluster_name):
             nodegroupName=nodegroup_name,
             scalingConfig={"minSize": 1, "maxSize": 10, "desiredSize": 1},
             diskSize=100,
-            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"]],
             instanceTypes=["g4dn.xlarge"],
             amiType="AL2_x86_64_GPU",
             nodeRole=settings.EKS_NODEGROUP_ROLE_ARN,
@@ -728,13 +733,11 @@ def create_eks_nodegroup(challenge, cluster_name):
         logger.exception(e)
         return response
     waiter = client.get_waiter("nodegroup_active")
-    waiter.wait(
-        clusterName=cluster_name, nodegroupName=nodegroup_name,
-    )
+    waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
 
 
 @app.task
-def create_eks_cluster(sender, challenge, field_name, **kwargs):
+def create_eks_cluster(challenge):
     """
     Called when Challenge is approved by the EvalAI admin
     calls the create_eks_nodegroup function
@@ -745,8 +748,10 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
     """
     from .models import ChallengeEvaluationCluster
 
-    cluster_name = "{0}-cluster".format(challenge.title.replace(" ", "-"))
-    if challenge.approved_by_admin and challenge.is_docker_based:
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
+    if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
         client = get_boto3_client("eks", aws_keys)
         try:
             response = client.create_cluster(
@@ -754,8 +759,8 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
                 version="1.15",
                 roleArn=settings.EKS_CLUSTER_ROLE_ARN,
                 resourcesVpcConfig={
-                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
-                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"], ],
+                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"]],
+                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"]],
                 },
             )
             waiter = client.get_waiter("cluster_active")
@@ -803,13 +808,13 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
             ChallengeEvaluationCluster.objects.create(
-                challenge=challenge,
+                challenge=challenge_obj,
                 name=cluster_name,
                 cluster_endpoint=cluster_ep,
                 cluster_ssl=cluster_cert,
             )
             # Creating nodegroup
-            create_eks_nodegroup(challenge, cluster_name)
+            create_eks_nodegroup.delay(challenge, cluster_name)
             return response
         except ClientError as e:
             logger.exception(e)
