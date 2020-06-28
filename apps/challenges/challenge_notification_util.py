@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 
 from base.utils import send_email
-from challenges.aws_utils import start_workers
+from .aws_utils import start_workers
 
 logger = logging.getLogger(__name__)
 
