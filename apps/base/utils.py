@@ -272,3 +272,21 @@ def suppress_autotime(model, fields):
                 field.auto_now_add = _original_values[field.name][
                     "auto_now_add"
                 ]
+
+
+def is_model_field_changed(model_obj, field_name):
+    """
+    Function to check if a model field is changed or not
+
+    Args:
+        model_obj ([Model Class Object]): Models.model class object
+        field_name ([str]): Field which needs to be checked
+
+    Return:
+        {bool} : True/False if the model is changed or not
+    """
+    prev = getattr(model_obj, "_original_{}".format(field_name))
+    curr = getattr(model_obj, "{}".format(field_name))
+    if prev != curr:
+        return True
+    return False

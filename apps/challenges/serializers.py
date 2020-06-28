@@ -92,6 +92,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "slug",
             "max_concurrent_submissions_allowed",
             "is_restricted_to_select_one_submission",
+            "is_partial_submission_evaluation_enabled",
         )
 
 
@@ -278,6 +279,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "max_concurrent_submissions_allowed",
             "environment_image",
             "is_restricted_to_select_one_submission",
+            "is_partial_submission_evaluation_enabled",
         )
 
 
