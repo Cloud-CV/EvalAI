@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import signal
@@ -48,7 +49,7 @@ def create_job_object(message, environment_image):
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
         name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
     )
-    MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=str(message))
+    MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
     # Configureate Pod agent container
