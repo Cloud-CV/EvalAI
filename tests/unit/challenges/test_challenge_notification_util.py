@@ -90,7 +90,7 @@ class TestChallengeStartNotifier(BaseTestClass):
         super(TestChallengeStartNotifier, self).setUp()
 
     @mock.patch("challenges.challenge_notification_util.send_email")
-    @mock.patch("challenges.challenge_notification_util.start_workers")
+    @mock.patch("challenges.aws_utils.start_workers")
     def test_feature(self, mock_start_workers, mock_send_email):
         challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, self.challenge.id)
         host_emails = [self.user.email]
