@@ -703,7 +703,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         )
 
 
-def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern=""):
+def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern):
     """
     To fetch logs of a container from cloudwatch within a specific time frame.
     """
@@ -721,7 +721,7 @@ def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_
             logs.append(event["message"])
     except ClientError as e:
         logger.exception(e)
-        return ["There was some error in displaying the logs."]
+        return ["There was an error in displaying the logs."]
 
     return logs
 

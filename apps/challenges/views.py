@@ -2573,9 +2573,9 @@ def get_worker_logs(request, challenge_pk):
 
     log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
     log_stream_prefix = challenge.queue
-    pattern = "WORKER_LOG"
+    pattern = ""  # Empty string to get all logs including container logs.
 
-    # This is to specify the time window for fetching logs. Currently it's 15 minutes before from current time.
+    # This is to specify the time window for fetching logs: 15 minutes before from current time.
     timeframe = 15
     current_time = int(round(time.time() * 1000))
     start_time = current_time - timeframe * 900000
