@@ -1,0 +1,66 @@
+li.analytics-list {
+  margin-top: 25px;
+}
+
+.analytics-challenge-title {
+  margin-bottom: 20px;
+}
+
+.analytics-team-input {
+  input[type="radio"].selectTeam + label {
+    padding-left: 0px;
+    width: 100%;
+  }
+}
+
+div.show-member-title {
+  width: calc(100% - 35px);
+  float: right;
+}
+
+.show-analytics-btn {
+  margin-top: 30px;
+}
+
+h4.analytics-details-head {
+  margin-top: 2px;
+}
+
+.analytics-image {
+  img {
+    width: 100%;
+  }
+}
+
+.analytics-card-content {
+  h3 {
+    margin-bottom: 2px;
+  }
+}
+
+.analytics-phases-card {
+  margin-top: 10px;
+}
+
+.analytics-heading {
+  height: 40px;
+}
+
+.analytics-content {
+  height: 50px;
+}
+
+
+.participant-download-btn {
+ margin-top: 0px !important;
+}
+
+.analytics-challenge-single-line{
+  display:flex;
+  flex-direction: row;
+  .show-count {
+    margin-left: 5px !important;
+  }
+}
+
+
