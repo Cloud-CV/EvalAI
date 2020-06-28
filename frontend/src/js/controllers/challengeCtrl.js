@@ -453,7 +453,7 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
-                    formData.append("submissionMetaAttributes", JSON.stringify(vm.submissionMetaAttributes));
+                    formData.append("submission_meta_attributes", JSON.stringify(vm.submissionMetaAttributes));
 
                     parameters.data = formData;
 
