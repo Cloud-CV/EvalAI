@@ -68,10 +68,10 @@ COMMON_SETTINGS_DICT = {
 }
 
 VPC_DICT = {
-    "SUBNET_1": os.environ.get("SUBNET_1", "subnet-e260d5be"),
-    "SUBNET_2": os.environ.get("SUBNET_2", "subnet-300ea557"),
+    "SUBNET_1": os.environ.get("SUBNET_1", "subnet1"),
+    "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
     "SUBNET_SECURITY_GROUP": os.environ.get(
-        "SUBNET_SECURITY_GROUP", "sg-148b4a5e"
+        "SUBNET_SECURITY_GROUP", "sg"
     ),
 }
 
@@ -192,6 +192,7 @@ task_definition = """
                     "awslogs-group": "challenge-pk-{challenge_pk}-workers",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
                 }},
             }},
         }}

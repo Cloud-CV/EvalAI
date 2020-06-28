@@ -75,7 +75,7 @@
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
 
-        vm.worker_logs = []
+        vm.worker_logs = [];
 
         utilities.showLoader();
 
@@ -101,7 +101,7 @@
             parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
-                    var details = response.data
+                    var details = response.data;
                     if (details.action == "Success"){
                         $rootScope.notify("success", "Worker(s) " + action + "ed succesfully.");
                     }
@@ -120,7 +120,7 @@
                 }
             };
             utilities.sendRequest(parameters);
-        }
+        };
 
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function() {
@@ -130,8 +130,8 @@
                 parameters.data = {};
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var details = response.data
-                        vm.worker_logs = []
+                        var details = response.data;
+                        vm.worker_logs = [];
                         for (var i = 0; i<details.logs.length; i++){
                             vm.worker_logs.push(details.logs[i]);
                         }
@@ -739,7 +739,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.leaderboard = details.results; console.log("Just updated leaderboard as well.")
+                    vm.leaderboard = details.results;
                     for (var j=0; j<vm.showPrivateIds.length; j++) {
                         if (vm.showPrivateIds[j] == vm.phaseSplitId) {
                             vm.showLeaderboardToggle = false;
@@ -1113,7 +1113,6 @@
         };
 
         vm.refreshLeaderboard = function() {
-            console.log("Just got refreshed.")
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
