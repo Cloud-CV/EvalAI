@@ -89,6 +89,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 max_submissions_per_month=100000,
                 codename="Phase Code Name",
                 is_restricted_to_select_one_submission=True,
+                is_partial_submission_evaluation_enabled=False,
             )
             self.challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -120,6 +121,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -147,6 +149,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             }
             self.challenge_phase_create_serializer_without_max_submissions_per_month = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -173,6 +176,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             }
             self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -206,6 +210,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "environment_image",
                     "is_restricted_to_select_one_submission",
                     "submission_meta_attributes_schema",
+                    "is_partial_submission_evaluation_enabled",
                 ]
             ),
         )
@@ -284,6 +289,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "environment_image",
                     "is_restricted_to_select_one_submission",
                     "submission_meta_attributes_schema",
+                    "is_partial_submission_evaluation_enabled",
                 ]
             ),
         )
@@ -358,6 +364,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "environment_image",
                     "is_restricted_to_select_one_submission",
                     "submission_meta_attributes_schema",
+                    "is_partial_submission_evaluation_enabled",
                 ]
             ),
         )

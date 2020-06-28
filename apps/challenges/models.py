@@ -250,6 +250,8 @@ class ChallengePhase(TimeStampedModel):
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
     # Store the schema for the submission meta attributes of this challenge phase.
     submission_meta_attributes_schema = JSONField(default=None, blank=True, null=True)
+    # Flag to allow reporting partial metrics for submission evaluation
+    is_partial_submission_evaluation_enabled = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
