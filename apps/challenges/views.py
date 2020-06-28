@@ -2568,10 +2568,10 @@ def get_worker_logs(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge = challenge = Challenge.objects.get(pk=challenge_pk)
+    challenge = Challenge.objects.get(pk=challenge_pk)
     response_data = []
 
-    log_group_name = "challenge-pk-{}-workers".format(challenge_pk)
+    log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
     log_stream_prefix = challenge.queue
     pattern = "WORKER_LOG"
 
@@ -2594,15 +2594,15 @@ def get_worker_logs(request, challenge_pk):
 def manage_worker(request, challenge_pk, action):
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
-            "error": "Sorry, you are not authorized."
+            "error": "Sorry, you are not authorized for access worker operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge = Challenge.objects.get(pk=challenge_pk)
+    challenge = get_challenge_model(challenge_pk)
 
     response_data = {}
 
-    if action == 'start':
+    if action == "start":
         response = start_workers([challenge])
         count, failures = response["count"], response["failures"]
         logging.info("Count is {} and failures are: {}".format(count, failures))
@@ -2611,7 +2611,7 @@ def manage_worker(request, challenge_pk, action):
         else:
             message = failures[0]["message"]
             response_data = {"action": "Failure", "error": message}
-    elif action == 'stop':
+    elif action == "stop":
         response = stop_workers([challenge])
         count, failures = response["count"], response["failures"]
         if count:
@@ -2619,7 +2619,7 @@ def manage_worker(request, challenge_pk, action):
         else:
             message = failures[0]["message"]
             response_data = {"action": "Failure", "error": message}
-    elif action == 'restart':
+    elif action == "restart":
         response = restart_workers([challenge])
         count, failures = response["count"], response["failures"]
         if count:
