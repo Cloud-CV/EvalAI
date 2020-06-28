@@ -48,6 +48,9 @@ from jobs.serializers import SubmissionSerializer  # noqa:E402
 LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
     "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
 )
+DJANGO_SETTINGS_MODULE = os.environ.get(
+    "DJANGO_SETTINGS_MODULE", "settings.dev"
+)
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "challenge_data")
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "submission_files")
@@ -198,8 +201,14 @@ def create_dir_as_python_package(directory):
 
 
 def return_file_url_per_environment(url):
-    base_url = f"http://{settings.DJANGO_SERVER}:{settings.DJANGO_SERVER_PORT}"
-    url = "{0}{1}".format(base_url, url)
+    if (
+        DJANGO_SETTINGS_MODULE == "settings.dev"
+        or DJANGO_SETTINGS_MODULE == "settings.test"
+    ):
+        base_url = (
+            f"http://{settings.DJANGO_SERVER}:{settings.DJANGO_SERVER_PORT}"
+        )
+        url = "{0}{1}".format(base_url, url)
     return url
 
 
