@@ -9,8 +9,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import restart_workers_signal_callback
-from .challenge_notification_util import challenge_workers_start_notifier
+from .aws_utils import restart_workers_signal_callback, create_eks_cluster, challenge_workers_start_notifier
 
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
@@ -179,6 +178,7 @@ signals.post_save.connect(
     sender=Challenge,
     weak=False,
 )
+
 
 @receiver(signals.post_save, sender="challenges.Challenge")
 def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
