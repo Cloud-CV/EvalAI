@@ -817,7 +817,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         # To ensure that the schema for submission metaattributes is valid.
         if (data.get("submission_meta_attributes_schema")):
             for attribute in data["submission_meta_attributes_schema"]:
-
                 keys = ["name", "description", "type"]
                 missing = keys_exists_in_json(attribute, keys)
 

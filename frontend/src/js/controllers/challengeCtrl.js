@@ -534,8 +534,8 @@
                 }
 
                 for(var k=0; k<details.count; k++){
-                    if(details.results[k].submissionMetaAttributesSchema != undefined || details.results[k].submissionMetaAttributesSchema != null){
-                        var attributes = details.results[k].submissionMetaAttributesSchema;
+                    if(details.results[k].submission_meta_attributes_schema != undefined || details.results[k].submission_meta_attributes_schema != null){
+                        var attributes = details.results[k].submission_meta_attributes_schema;
                         attributes.forEach(function(attribute){
                             if(attribute["type"] == "checkbox") attribute["values"] = [];
                             else attribute["value"] = null;
@@ -560,13 +560,13 @@
 
         utilities.sendRequest(parameters);
 
-        vm.load_phase_attributes = function(phaseId){ // Loads attributes of a phase into vm.submissionMetaAttributes
+        vm.loadPhaseAttributes = function(phaseId){ // Loads attributes of a phase into vm.submissionMetaAttributes
             vm.submissionMetaAttributes = vm.submissionMetaAttributesSchema.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
         };
 
-        vm.clear_meta_attribute_values = function(){
+        vm.clearMetaAttributeValues = function(){
             if(vm.submissionMetaAttributes != null){
                 vm.submissionMetaAttributes.forEach(function(attribute){
                     if(attribute.type == 'checkbox'){

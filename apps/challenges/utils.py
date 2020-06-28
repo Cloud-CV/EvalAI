@@ -35,7 +35,7 @@ get_challenge_phase_split_model = get_model_object(ChallengePhaseSplit)
 def keys_exists_in_json(json, keys):
     missing = []
     for key in keys:
-        if key in json.keys():
+        if key not in json.keys():
             missing.append(key)
     return missing
 
