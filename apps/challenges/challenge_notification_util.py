@@ -11,9 +11,12 @@ logger = logging.getLogger(__name__)
 def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
-    if not challenge.is_docker_based:
-        if curr and not prev:  # Checking if the challenge has been approved by admin since last time.
-            challenge = instance
+    challenge = instance
+
+    if curr and not prev:
+        if challenge.is_docker_based:
+            construct_and_send_worker_start_mail(challenge)
+        else:  # Checking if the challenge has been approved by admin since last time.
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if (count != 1):

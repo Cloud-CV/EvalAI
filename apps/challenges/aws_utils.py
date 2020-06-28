@@ -10,9 +10,7 @@ from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
-from .challenge_notification_util import construct_and_send_worker_start_mail
-
-from base.utils import get_boto3_client, send_email
+from base.utils import get_boto3_client
 from evalai.celery import app
 
 logger = logging.getLogger(__name__)
@@ -816,7 +814,6 @@ def create_eks_cluster(challenge):
             )
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
-            construct_and_send_worker_start_mail(challenge_obj)
             return response
         except ClientError as e:
             logger.error("Could not create EKS cluster for challenge {}".format(challenge_obj.pk))
