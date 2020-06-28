@@ -817,10 +817,8 @@ def create_eks_cluster(challenge):
             )
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
-            construct_and_send_worker_start_mail(challenge)
             return response
         except ClientError as e:
-            logger.warning("Failure while creating EKS cluster for challenge {}.".format(challenge_obj.pk))
             logger.exception(e)
             return
 
