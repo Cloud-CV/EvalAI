@@ -13,7 +13,8 @@ services:
       driver: awslogs
       options:
         awslogs-region: ${AWS_DEFAULT_REGION}
-        awslogs-group: "django_production"
+        awslogs-group: django_production
+        awslogs-create-group: true
 
   celery:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-celery:${COMMIT_ID}
@@ -28,7 +29,8 @@ services:
       driver: awslogs
       options:
         awslogs-region: ${AWS_DEFAULT_REGION}
-        awslogs-group: "celery_production"
+        awslogs-group: celery_production
+        awslogs-create-group: true
 
   worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker:${COMMIT_ID}
@@ -55,7 +57,8 @@ services:
       driver: awslogs
       options:
         awslogs-region: ${AWS_DEFAULT_REGION}
-        awslogs-group: "nodejs_production"
+        awslogs-group: nodejs_production
+        awslogs-create-group: true
 
   remote-worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-remote-worker:${COMMIT_ID}
