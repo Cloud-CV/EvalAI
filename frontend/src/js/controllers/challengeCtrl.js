@@ -75,7 +75,7 @@
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
 
-        vm.worker_logs = [];
+        vm.workerLogs = [];
 
         utilities.showLoader();
 
@@ -131,14 +131,14 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
-                        vm.worker_logs = [];
+                        vm.workerLogs = [];
                         for (var i = 0; i<details.logs.length; i++){
-                            vm.worker_logs.push(details.logs[i]);
+                            vm.workerLogs.push(details.logs[i]);
                         }
                     },
                     onError: function(response) {
                         var error = response.data.error;
-                        vm.worker_logs.push(error);
+                        vm.workerLogs.push(error);
                     }
                 };
                 utilities.sendRequest(parameters);
