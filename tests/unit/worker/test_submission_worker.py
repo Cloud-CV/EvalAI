@@ -137,6 +137,9 @@ class BaseAPITestClass(APITestCase):
             is_flagged=True,
         )
 
+        self.WORKER_LOGS_PREFIX = "WORKER_LOG"
+        self.SUBMISSION_LOGS_PREFIX = "SUBMISSION_LOG"
+
     def get_submission_input_file_path(self, submission_id, input_file):
         """Helper Method: Takes `submission_id` and `input_file` as input and
         returns corresponding path to submitted input file"""
@@ -216,7 +219,7 @@ class BaseAPITestClass(APITestCase):
         non_existing_submission_pk = self.submission.pk + 1
         value = extract_submission_data(non_existing_submission_pk)
         mock_logger.assert_called_with(
-            "Submission {} does not exist".format(non_existing_submission_pk)
+            "{} Submission {} does not exist".format(self.SUBMISSION_LOGS_PREFIX, non_existing_submission_pk)
         )
         self.assertEqual(value, None)
 
@@ -304,8 +307,8 @@ class DownloadAndExtractFileTest(BaseAPITestClass):
     def test_download_and_extract_file_when_download_fails(self, mock_logger):
         error = "ExampleError: Example Error description"
         responses.add(responses.GET, self.req_url, body=Exception(error))
-        expected = "Failed to fetch file from {}, error {}".format(
-            self.req_url, error
+        expected = "{} Failed to fetch file from {}, error {}".format(
+            self.WORKER_LOGS_PREFIX, self.req_url, error
         )
 
         download_and_extract_file(self.req_url, self.download_location)
@@ -370,8 +373,8 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
     ):
         e = "Error description"
         responses.add(responses.GET, self.req_url, body=Exception(e))
-        error_message = "Failed to fetch file from {}, error {}".format(
-            self.req_url, e
+        error_message = "{} Failed to fetch file from {}, error {}".format(
+            self.WORKER_LOGS_PREFIX, self.req_url, e
         )
 
         download_and_extract_zip_file(
@@ -403,8 +406,8 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
     def test_delete_zip_file_error(self, mock_remove, mock_logger):
         e = "Error description"
         mock_remove.side_effect = Exception(e)
-        error_message = "Failed to remove zip file {}, error {}".format(
-            self.download_location, e
+        error_message = "{} Failed to remove zip file {}, error {}".format(
+            self.WORKER_LOGS_PREFIX, self.download_location, e
         )
 
         delete_zip_file(self.download_location)

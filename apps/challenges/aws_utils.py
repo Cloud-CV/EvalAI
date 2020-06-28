@@ -69,10 +69,10 @@ COMMON_SETTINGS_DICT = {
 }
 
 VPC_DICT = {
-    "SUBNET_1": os.environ.get("SUBNET_1", "subnet-e260d5be"),
-    "SUBNET_2": os.environ.get("SUBNET_2", "subnet-300ea557"),
+    "SUBNET_1": os.environ.get("SUBNET_1", "subnet1"),
+    "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
     "SUBNET_SECURITY_GROUP": os.environ.get(
-        "SUBNET_SECURITY_GROUP", "sg-148b4a5e"
+        "SUBNET_SECURITY_GROUP", "sg"
     ),
 }
 
@@ -190,9 +190,10 @@ task_definition = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-group": "evalai-worker-{ENV}",
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
                 }},
             }},
         }}
@@ -647,7 +648,7 @@ def restart_workers(queryset):
     """
     The function called by the admin action method to restart all the selected workers.
 
-    Calls the delete_service_by_challenge_pk method. Before calling, verifies that the challenge worker(s) is(are) active.
+    Calls the service_manager method. Before calling, verifies that the challenge worker(s) is(are) active.
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
@@ -738,6 +739,29 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                     template_id=template_id,
                     template_data=template_data,
                 )
+
+
+def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern):
+    """
+    To fetch logs of a container from cloudwatch within a specific time frame.
+    """
+    client = get_boto3_client("logs", aws_keys)
+    logs = []
+    try:
+        response = client.filter_log_events(
+            logGroupName=log_group_name,
+            logStreamNamePrefix=log_stream_prefix,
+            startTime=start_time,
+            endTime=end_time,
+            filterPattern=pattern
+        )
+        for event in response["events"]:
+            logs.append(event["message"])
+    except ClientError as e:
+        logger.exception(e)
+        return ["There was an error in displaying the logs."]
+
+    return logs
 
 
 @app.task
