@@ -503,13 +503,13 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if ENV == 'dev' or ENV == 'test':
+    if ENV == 'dev':
         logger.info("Entered start_workers method.")
         failures = []
         for challenge in queryset:
             failures.append(
                 {
-                    "message": "Does not work in test/dev environment.",
+                    "message": "Does not work in dev environment.",
                     "challenge_pk": challenge.pk,
                 }
             )
@@ -553,13 +553,13 @@ def stop_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if ENV == 'dev' or ENV == 'test':
+    if ENV == 'dev':
         logger.info("Entered stop_workers method.")
         failures = []
         for challenge in queryset:
             failures.append(
                 {
-                    "message": "Does not work in test/dev environment.",
+                    "message": "Does not work in dev environment.",
                     "challenge_pk": challenge.pk,
                 }
             )
@@ -603,13 +603,13 @@ def scale_workers(queryset, num_of_tasks):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if ENV == 'dev' or ENV == 'test':
+    if ENV == 'dev':
         logger.info("Entered scale_workers method.")
         failures = []
         for challenge in queryset:
             failures.append(
                 {
-                    "message": "Does not work in test/dev environment.",
+                    "message": "Does not work in dev environment.",
                     "challenge_pk": challenge.pk,
                 }
             )
@@ -658,13 +658,13 @@ def delete_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if ENV == 'dev' or ENV == 'test':
+    if ENV == 'dev':
         logger.info("Entered delete_workers method.")
         failures = []
         for challenge in queryset:
             failures.append(
                 {
-                    "message": "Does not work in test/dev environment.",
+                    "message": "Does not work in dev environment.",
                     "challenge_pk": challenge.pk,
                 }
             )
@@ -705,13 +705,13 @@ def restart_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if ENV == 'dev' or ENV == 'test':
+    if ENV == 'dev':
         logger.info("Entered restart_workers method.")
         failures = []
         for challenge in queryset:
             failures.append(
                 {
-                    "message": "Does not work in test/dev environment.",
+                    "message": "Does not work in dev environment.",
                     "challenge_pk": challenge.pk,
                 }
             )
@@ -750,7 +750,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     Called when either evaluation_script or test_annotation_script for challenge
     is updated, to restart the challenge workers.
     """
-    if ENV == "test" or ENV == "dev":
+    if ENV == "dev":
         logger.info("Inside restart_workers_signal_callback method.")
         return
 
@@ -812,7 +812,7 @@ def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_
     """
     client = get_boto3_client("logs", aws_keys)
     logs = []
-    if ENV == 'test' or ENV == 'dev':
+    if ENV == 'dev':
         logs = ["Sample Log. Can't fetch Cloudwatch logs in test/dev environment."]
     else:
         try:
@@ -954,7 +954,6 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
-    logger.info("IN here")
     if curr and not prev:   # Checking if the challenge has been approved by admin since last time.
         if not challenge.is_docker_based:
             response = start_workers([challenge])

@@ -12,7 +12,7 @@ ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 
 
 def construct_and_send_worker_start_mail(challenge):
-    if ENV == "test" or ENV == "dev":
+    if ENV == "dev":
         logger.info("Inside construct_and_send_worker_start_mail method.")
         return
 
