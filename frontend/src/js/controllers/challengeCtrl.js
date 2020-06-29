@@ -795,10 +795,10 @@
                     }
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         if (vm.leaderboard[i].submission__submission_meta_attributes == null){
-                            vm.isLeaderboardHavingMetaAtts = false;
+                            vm.showSubmissionMetaAttributesOnLeaderboard = false;
                         }
                         else {
-                            vm.isLeaderboardHavingMetaAtts = true;
+                            vm.showSubmissionMetaAttributesOnLeaderboard = true;
                         }
 
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
@@ -883,13 +883,13 @@
         
         vm.showMetaAttributesDialog = function(ev, attributes){
             if (attributes != false){
-                vm.meta_attributes_data = [];
+                vm.metaAttributesData = [];
                 attributes.forEach(function(attribute){
                     if (attribute.type != "checkbox") {
-                        vm.meta_attributes_data.push({"name": attribute.name, "value": attribute.value});
+                        vm.metaAttributesData.push({"name": attribute.name, "value": attribute.value});
                     }
                     else {
-                        vm.meta_attributes_data.push({"name": attribute.name, "values": attribute.values});
+                        vm.metaAttributesData.push({"name": attribute.name, "values": attribute.values});
                     }
                 });
 
