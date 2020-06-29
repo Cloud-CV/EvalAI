@@ -370,6 +370,9 @@ export class TeamlistComponent implements OnInit, OnDestroy {
         }
       },
       err => {
+        if (err.status === 403) {
+          this.router.navigate(['permission-denied']);
+        }
         this.globalService.stopLoader();
         SELF.globalService.handleApiError(err, false);
       },
@@ -417,7 +420,10 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     const SELF = this;
     let TeamUrl;
     const editTeam = (team) => {
-    TeamUrl = (this.isHost) ? SELF.endpointsService.hostTeamURL(team) : SELF.endpointsService.participantTeamURL(team);
+    const teamId = team['id'];
+    const teamName = team['team_name'];
+    const teamUrl = team['team_url'];
+    TeamUrl = (this.isHost) ? SELF.endpointsService.hostTeamURL(teamId) : SELF.endpointsService.participantTeamURL(teamId);
       SELF.apiCall = (params) => {
         const BODY = JSON.stringify(params);
         SELF.apiService.patchUrl(TeamUrl, BODY).subscribe(
@@ -440,15 +446,17 @@ export class TeamlistComponent implements OnInit, OnDestroy {
         deny: 'Cancel',
         form: [
           {
-            isRequired: true,
+            isRequired: false,
             label: 'team_name',
             placeholder: 'Team Name',
+            value: teamName,
             type: 'text'
           },
           {
             isRequired: false,
             label: 'team_url',
             placeholder: 'Team URL',
+            value: teamUrl,
             type: 'text'
           }
         ],

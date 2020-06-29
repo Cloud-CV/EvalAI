@@ -1,16 +1,5 @@
 @import "styles/variables";
 
-.dashboard-flex {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.dashboard-content {
-  flex: 1;
-  min-height: 100vh;
-}
-
 .web-container {
   width: calc(100vw - 223px);
   float: right;
@@ -24,14 +13,21 @@
   }
 }
 
+section {
+  height: 100vh;
+}
+
+.card .card-content a {
+  color: white;
+}
+
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
   .web-container {
     width: 100%;
   }
+  .card {
+    margin: 0px;
+  }
 }
-
-.light-dark-container {
-}
-

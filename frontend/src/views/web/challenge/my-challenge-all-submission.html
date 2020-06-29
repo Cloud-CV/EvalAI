@@ -99,7 +99,7 @@
 
                             <td>{{key.created_by}}</td>
 
-                            <td class="val-style capitalize" ng-class="key.status">{{key.status}}
+                            <td class="val-style capitalize" ng-class="key.status">{{key.status.split('_').join(' ')}}
                             </td>
 
                             <td>{{key.execution_time}}</td>

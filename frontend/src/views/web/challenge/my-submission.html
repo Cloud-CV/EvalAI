@@ -126,12 +126,12 @@
                                     <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                 </td>
                                 <td ng-if="challenge.isChallengeHost" class="center">
-                                    <input ng-checked="key.is_baseline" ng-if="key.status == 'finished'"
+                                    <input ng-checked="key.is_baseline" ng-if="key.status == 'finished' || key.status == 'partially_evaluated'"
                                         ng-model="challenge.baselineStatus[key.id]" type="checkbox"
                                         id="baselineSubmission{{ key.id }}"
                                         ng-change="challenge.changeBaselineStatus(key.id)" />
                                     <label for="baselineSubmission{{ key.id }}"></label>
-                                    <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
+                                    <span ng-if="key.status !== 'finished' && key.status !== 'partially_evaluated'" class="center"> N/A </span>
                                 </td>
                                 <td><a class="pointer" ng-click="challenge.showMdDialog($event, key.id)"><i
                                             class="fa fa-pencil" aria-hidden="true"></i></a></td>

@@ -110,7 +110,7 @@ class CreateParticipantTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_participant_team_with_team_name_same_as_with_existing_team(
-        self
+        self,
     ):
 
         expected = {
@@ -366,9 +366,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
-            kwargs={
-                "pk": self.participant_team1.pk
-            },
+            kwargs={"pk": self.participant_team1.pk},
         )
 
         response = self.client.post(self.url, self.data)
@@ -400,9 +398,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
-            kwargs={
-                "pk": self.participant_team1.pk
-            },
+            kwargs={"pk": self.participant_team1.pk},
         )
         response = self.client.post(self.url, self.data)
         message = "You cannot invite as the invited user has been banned "
@@ -433,9 +429,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
-            kwargs={
-                "pk": self.participant_team1.pk
-            },
+            kwargs={"pk": self.participant_team1.pk},
         )
 
         response = self.client.post(self.url, self.data)
@@ -466,9 +460,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
-            kwargs={
-                "pk": self.participant_team1.pk
-            },
+            kwargs={"pk": self.participant_team1.pk},
         )
 
         response = self.client.post(self.url, self.data)
@@ -649,7 +641,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_when_participant_does_not_have_permissions_to_remove_another_participant(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "participants:delete_participant_from_team",

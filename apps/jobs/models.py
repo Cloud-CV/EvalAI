@@ -49,6 +49,7 @@ class Submission(TimeStampedModel):
     FINISHED = "finished"
     SUBMITTING = "submitting"
     ARCHIVED = "archived"
+    PARTIALLY_EVALUATED = "partially_evaluated"
 
     STATUS_OPTIONS = (
         (SUBMITTED, SUBMITTED),
@@ -58,6 +59,7 @@ class Submission(TimeStampedModel):
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
+        (PARTIALLY_EVALUATED, PARTIALLY_EVALUATED)
     )
 
     participant_team = models.ForeignKey(
@@ -116,6 +118,7 @@ class Submission(TimeStampedModel):
         blank=True,
         null=True,
     )
+    ignore_submission = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}".format(self.id)
