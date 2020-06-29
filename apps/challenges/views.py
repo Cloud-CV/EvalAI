@@ -823,7 +823,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 keys = ["name", "description", "type"]
                 missing = keys_exists_in_json(attribute, keys)
 
-                if missing == []:
+                if len(missing) == 0:
                     valid_attribute_types = ["boolean", "text", "radio", "checkbox"]
                     attribute_type = attribute["type"]
                     if attribute_type in valid_attribute_types:

@@ -116,7 +116,7 @@
                     if (error == undefined){
                         $rootScope.notify("error", "There was an error.");
                     }
-                    else{
+                    else {
                         $rootScope.notify("error", "There was an error: " + error);
                     }
                 }
@@ -594,16 +594,16 @@
                 }
 
                 for(var k=0; k<details.count; k++){
-                    if(details.results[k].submission_meta_attributes_schema != undefined || details.results[k].submission_meta_attributes_schema != null){
+                    if (details.results[k].submission_meta_attributes_schema != undefined || details.results[k].submission_meta_attributes_schema != null){
                         var attributes = details.results[k].submission_meta_attributes_schema;
                         attributes.forEach(function(attribute){
-                            if(attribute["type"] == "checkbox") attribute["values"] = [];
+                            if (attribute["type"] == "checkbox") attribute["values"] = [];
                             else attribute["value"] = null;
                         });
                         data = {"phaseId":details.results[k].id, "attributes": attributes};
                         vm.submissionMetaAttributesSchema.push(data);
                     }
-                    else{
+                    else {
                         var data = {"phaseId":details.results[k].id, "attributes": null};
                         vm.submissionMetaAttributesSchema.push(data);
                     }
@@ -627,12 +627,12 @@
         };
 
         vm.clearMetaAttributeValues = function(){
-            if(vm.submissionMetaAttributes != null){
+            if (vm.submissionMetaAttributes != null){
                 vm.submissionMetaAttributes.forEach(function(attribute){
-                    if(attribute.type == 'checkbox'){
+                    if (attribute.type == 'checkbox'){
                         attribute.values = [];
                     }
-                    else{
+                    else {
                         attribute.value = null;
                     }
                 });
@@ -663,7 +663,7 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phaseSplits = details;
-                if(details.length == 0) {
+                if (details.length == 0) {
                     vm.isChallengeLeaderboardPrivate = true; 
                 }
                 for(var i=0; i<details.length; i++) {
@@ -882,7 +882,7 @@
 
         
         vm.showMetaAttributesDialog = function(ev, attributes){
-            if(attributes != false){
+            if (attributes != false){
                 vm.meta_attributes_data = [];
                 attributes.forEach(function(attribute){
                     if (attribute.type != "checkbox") {
@@ -901,7 +901,7 @@
                     clickOutsideToClose: true
                 });
             }
-            else{
+            else {
                 $mdDialog.hide();
             }
         };
@@ -1349,7 +1349,7 @@
                     vm.getAllEntriesTestOption = "Exclude private submissions";
                     vm.getAllEntriesOnPublicLeaderboard(vm.phaseSplitId);
                 }
-                else{
+                else {
                     vm.getAllEntriesTestOption = "Include private submissions";
                     vm.getLeaderboard(vm.phaseSplitId);
                 }
@@ -1549,7 +1549,7 @@
                 onSuccess: function(response) {
                     var status = response.status;
                     var message = "";
-                    if(status === 200) {
+                    if (status === 200) {
                       var detail = response.data;
                       if (detail['is_public'] == true) {
                         message = "The submission is made public.";
@@ -1573,7 +1573,7 @@
                 onError: function(response) {
                     var error = response.data;
                     var status = response.status;
-                    if(status === 400 || status === 403) {
+                    if (status === 400 || status === 403) {
                        $rootScope.notify("error", error.error);
                     }
                     if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
@@ -1945,7 +1945,7 @@
         };
 
         vm.deleteChallenge = function(deleteChallengeForm) {
-            if(deleteChallengeForm){
+            if (deleteChallengeForm){
                 var parameters = {};
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/disable";
                 parameters.method = 'POST';
