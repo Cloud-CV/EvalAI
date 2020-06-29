@@ -795,10 +795,10 @@
                     }
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         if (vm.leaderboard[i].submission__submission_meta_attributes == null){
-                            vm.IsLeaderboardHavingMetaAtts = false;
+                            vm.isLeaderboardHavingMetaAtts = false;
                         }
                         else {
-                            vm.IsLeaderboardHavingMetaAtts = true;
+                            vm.isLeaderboardHavingMetaAtts = true;
                         }
 
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];

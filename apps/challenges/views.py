@@ -835,7 +835,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
                 else:
                     missing_string = ", ".join(missing)
-                    message = "Please enter the following to attribute in phase {}: {}.".format(data["id"], missing_string)
+                    message = "Please enter the following to the submission meta attribute in phase {}: {}.".format(data["id"], missing_string)
                     response_data = {"error": message}
                     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 

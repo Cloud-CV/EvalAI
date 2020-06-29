@@ -122,7 +122,7 @@
                                     </span>
                                 </a>
                             </td>
-                            <td data-field="" ng-if="challenge.IsLeaderboardHavingMetaAtts">
+                            <td data-field="" ng-if="challenge.isLeaderboardHavingMetaAtts">
                                 <span class="fs-20 w-300">Meta Attributes</span>
                             </td>
                         </tr>
@@ -152,7 +152,7 @@
                             </td>
                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                             </td>
-                            <td ng-if="challenge.IsLeaderboardHavingMetaAtts">
+                            <td ng-if="challenge.isLeaderboardHavingMetaAtts">
                                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="key.submission__submission_meta_attributes == undefined || key.submission__submission_meta_attributes == null;" type="submit" value="view" ng-click="challenge.showMetaAttributesDialog($event, key.submission__submission_meta_attributes);">View</button>
                             </td>
                         </tr>
