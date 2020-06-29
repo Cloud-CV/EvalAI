@@ -1,4 +1,5 @@
 import logging
+import os
 
 from django.conf import settings
 
@@ -6,8 +7,15 @@ from base.utils import send_email
 
 logger = logging.getLogger(__name__)
 
+DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
+ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
+
 
 def construct_and_send_worker_start_mail(challenge):
+    if ENV == "test" or ENV == "dev":
+        logger.info("Inside construct_and_send_worker_start_mail method.")
+        return
+
     challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
 
     template_data = {"CHALLENGE_NAME": challenge.title, "CHALLENGE_URL": challenge_url}

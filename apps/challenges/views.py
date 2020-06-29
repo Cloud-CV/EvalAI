@@ -2604,6 +2604,8 @@ def get_worker_logs(request, challenge_pk):
     start_time = current_time - timeframe * 900000
     end_time = current_time
 
+    logger.info("COming here at least")
+
     logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern)
 
     response_data = {"logs": logs}

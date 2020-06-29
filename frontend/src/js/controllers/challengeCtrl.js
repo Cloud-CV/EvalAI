@@ -98,7 +98,7 @@
         // API call to manage the worker from UI.
         // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
         vm.manageWorker = function(action){
-            parameters.url = 'challenges/' + vm.challengeId + '/manage_worker/' + action;
+            parameters.url = 'challenges/' + vm.challengeId + '/manage_worker/' + action +'/';
             parameters.method = 'PUT';
             parameters.data = {};
             parameters.callback = {
@@ -127,7 +127,7 @@
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function() {
             vm.logs_poller = $interval(function(){
-                parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs';
+                parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
                 parameters.method = 'GET';
                 parameters.data = {};
                 parameters.callback = {
@@ -794,6 +794,13 @@
                         }
                     }
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        if (vm.leaderboard[i].submission__submission_meta_attributes == null){
+                            vm.IsLeaderboardHavingMetaAtts = false;
+                        }
+                        else {
+                            vm.IsLeaderboardHavingMetaAtts = true;
+                        }
+
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());

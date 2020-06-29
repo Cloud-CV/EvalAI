@@ -503,6 +503,18 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if ENV == 'dev' or ENV == 'test':
+        logger.info("Entered start_workers method.")
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Does not work in test/dev environment.",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -541,6 +553,18 @@ def stop_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if ENV == 'dev' or ENV == 'test':
+        logger.info("Entered stop_workers method.")
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Does not work in test/dev environment.",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -579,6 +603,18 @@ def scale_workers(queryset, num_of_tasks):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if ENV == 'dev' or ENV == 'test':
+        logger.info("Entered scale_workers method.")
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Does not work in test/dev environment.",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -622,6 +658,18 @@ def delete_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if ENV == 'dev' or ENV == 'test':
+        logger.info("Entered delete_workers method.")
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Does not work in test/dev environment.",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     count = 0
     failures = []
     for challenge in queryset:
@@ -657,6 +705,18 @@ def restart_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if ENV == 'dev' or ENV == 'test':
+        logger.info("Entered restart_workers method.")
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Does not work in test/dev environment.",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -690,6 +750,10 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     Called when either evaluation_script or test_annotation_script for challenge
     is updated, to restart the challenge workers.
     """
+    if ENV == "test" or ENV == "dev":
+        logger.info("Inside restart_workers_signal_callback method.")
+        return
+
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     if prev != curr:
@@ -700,6 +764,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             challenge = instance
 
         response = restart_workers([challenge])
+
         count, failures = response["count"], response["failures"]
 
         logger.info(
@@ -747,20 +812,22 @@ def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_
     """
     client = get_boto3_client("logs", aws_keys)
     logs = []
-    try:
-        response = client.filter_log_events(
-            logGroupName=log_group_name,
-            logStreamNamePrefix=log_stream_prefix,
-            startTime=start_time,
-            endTime=end_time,
-            filterPattern=pattern
-        )
-        for event in response["events"]:
-            logs.append(event["message"])
-    except ClientError as e:
-        logger.exception(e)
-        return ["There was an error in displaying the logs."]
-
+    if ENV == 'test' or ENV == 'dev':
+        logs = ["Sample Log. Can't fetch Cloudwatch logs in test/dev environment."]
+    else:
+        try:
+            response = client.filter_log_events(
+                logGroupName=log_group_name,
+                logStreamNamePrefix=log_stream_prefix,
+                startTime=start_time,
+                endTime=end_time,
+                filterPattern=pattern
+            )
+            for event in response["events"]:
+                logs.append(event["message"])
+        except Exception as e:
+            logger.exception(e)
+            return ["There was an error in displaying the logs."]
     return logs
 
 
@@ -887,7 +954,7 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
-
+    logger.info("IN here")
     if curr and not prev:   # Checking if the challenge has been approved by admin since last time.
         if not challenge.is_docker_based:
             response = start_workers([challenge])

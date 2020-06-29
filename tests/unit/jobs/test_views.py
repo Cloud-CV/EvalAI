@@ -1979,8 +1979,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission.method_name,
                     "submission__is_public": self.submission.is_public,
-                    "submission__id":self.submission.id,
-                    "submission__submission_meta_attributes": self.submission.submission_meta_attributes,
+                    "submission__id":self.host_participant_team_submission.id,
+                    "submission__submission_meta_attributes": self.host_participant_team_submission.submission_meta_attributes,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2053,8 +2053,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission.method_name,
                     "submission__is_public": self.submission.is_public,
-                    "submission__id":self.submission.id,
-                    "submission__submission_meta_attributes": self.submission.submission_meta_attributes,
+                    "submission__id":self.host_participant_team_submission.id,
+                    "submission__submission_meta_attributes": self.host_participant_team_submission.submission_meta_attributes,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2095,8 +2095,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission_2.method_name,
                     "submission__is_public": self.submission.is_public,
-                    "submission__id":self.submission.id,
-                    "submission__submission_meta_attributes": self.submission.submission_meta_attributes,
+                    "submission__id":self.host_participant_team_submission_2.id,
+                    "submission__submission_meta_attributes": self.host_participant_team_submission_2.submission_meta_attributes,
                 },
             ],
         }
@@ -2181,8 +2181,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": False,
                     "submission__method_name": self.private_submission.method_name,
                     "submission__is_public": self.private_submission.is_public,
-                    "submission__id":self.submission.id,
-                    "submission__submission_meta_attributes": self.submission.submission_meta_attributes,
+                    "submission__id":self.private_submission.id,
+                    "submission__submission_meta_attributes": self.private_submission.submission_meta_attributes,
                 }
             ],
         }
