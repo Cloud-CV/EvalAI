@@ -4,6 +4,7 @@ import random
 import requests
 import shutil
 import tempfile
+import time
 import uuid
 import yaml
 import zipfile
@@ -110,6 +111,7 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
+from .aws_utils import start_workers, stop_workers, restart_workers, get_logs_from_cloudwatch
 from .utils import get_file_content, get_aws_credentials_for_submission
 
 logger = logging.getLogger(__name__)
@@ -795,7 +797,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if not isfile(test_annotation_file_path):
             message = (
                 "No test annotation file found in zip file"
-                "for challenge phase '{}'. Please add it and "
+                " for challenge phase '{}'. Please add it and "
                 " then try again!".format(data["name"])
             )
             response_data = {"error": message}
@@ -2553,3 +2555,77 @@ def validate_challenge_config(request, challenge_host_team_pk):
         message = "Challenge config validation success"
         response_data = {"Success": message}
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_worker_logs(request, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access the worker logs."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+    response_data = []
+
+    log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+    log_stream_prefix = challenge.queue
+    pattern = ""  # Empty string to get all logs including container logs.
+
+    # This is to specify the time window for fetching logs: 15 minutes before from current time.
+    timeframe = 15
+    current_time = int(round(time.time() * 1000))
+    start_time = current_time - timeframe * 900000
+    end_time = current_time
+
+    logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern)
+
+    response_data = {"logs": logs}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def manage_worker(request, challenge_pk, action):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    response_data = {}
+
+    if action == "start":
+        response = start_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        logging.info("Count is {} and failures are: {}".format(count, failures))
+        if count:
+            response_data = {"action": "Success"}
+        else:
+            message = failures[0]["message"]
+            response_data = {"action": "Failure", "error": message}
+    elif action == "stop":
+        response = stop_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        if count:
+            response_data = {"action": "Success"}
+        else:
+            message = failures[0]["message"]
+            response_data = {"action": "Failure", "error": message}
+    elif action == "restart":
+        response = restart_workers([challenge])
+        count, failures = response["count"], response["failures"]
+        if count:
+            response_data = {"action": "Success"}
+        else:
+            message = failures[0]["message"]
+            response_data = {"action": "Failure", "error": message}
+
+    return Response(response_data, status=status.HTTP_200_OK)
