@@ -219,6 +219,7 @@ def extract_challenge_data(challenge, phases):
     """
         * Expects a challenge object and an array of phase object
         * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
+
     """
 
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
