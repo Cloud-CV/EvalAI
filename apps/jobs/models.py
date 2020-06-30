@@ -59,7 +59,7 @@ class Submission(TimeStampedModel):
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
-        (PARTIALLY_EVALUATED, PARTIALLY_EVALUATED)
+        (PARTIALLY_EVALUATED, PARTIALLY_EVALUATED),
     )
 
     participant_team = models.ForeignKey(
@@ -118,9 +118,9 @@ class Submission(TimeStampedModel):
         blank=True,
         null=True,
     )
-    # Store the values of meta attributes for the submission here.
-    submission_meta_attributes = JSONField(blank=True, null=True)
     ignore_submission = models.BooleanField(default=False)
+    # Store the values of meta attributes for the submission here.
+    submission_metadata = JSONField(blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.id)

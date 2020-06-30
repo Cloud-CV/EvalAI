@@ -32,10 +32,12 @@ def get_yaml_files_from_challenge_config(zip_ref):
     extracted_folder_name = None
     for name in zip_ref.namelist():
         if (name.endswith(".yaml") or name.endswith(".yml")) and (
-                not name.startswith("__MACOSX")
+            not name.startswith("__MACOSX")
         ):
             yaml_file_name = name
-            extracted_folder_name = yaml_file_name.split(basename(yaml_file_name))[0]
+            extracted_folder_name = yaml_file_name.split(
+                basename(yaml_file_name)
+            )[0]
             yaml_file_count += 1
 
     if not yaml_file_count:
@@ -74,7 +76,9 @@ def get_yaml_read_error(exc):
     return error_description, line_number, column_number
 
 
-def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+def is_challenge_config_yaml_html_field_valid(
+    yaml_file_data, key, base_location
+):
     """
         Arguments:
             yaml_file_data {dict} -- challenge config yaml dict
@@ -92,13 +96,17 @@ def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location
         if file_path.endswith(".html") and isfile(file_path):
             is_valid = True
         else:
-            message = "ERROR: No {}.html file is present in the zip file.".format(key)
+            message = "ERROR: No {}.html file is present in the zip file.".format(
+                key
+            )
     else:
         message = "ERROR: There is no key for {} in YAML file".format(key)
     return is_valid, message
 
 
-def is_challenge_phase_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+def is_challenge_phase_config_yaml_html_field_valid(
+    yaml_file_data, key, base_location
+):
     """
         Arguments:
             yaml_file_data {dict} -- challenge config yaml dict
@@ -116,10 +124,14 @@ def is_challenge_phase_config_yaml_html_field_valid(yaml_file_data, key, base_lo
         if file_path.endswith(".html") and isfile(file_path):
             is_valid = True
         else:
-            message = (" ERROR: There is no html file present for key"
-                       " {} in phase {}.".format(key, yaml_file_data["name"]))
+            message = (
+                " ERROR: There is no html file present for key"
+                " {} in phase {}.".format(key, yaml_file_data["name"])
+            )
     else:
-        message = " ERROR: There is no key for {} in phase {}.".format(key, yaml_file_data["name"])
+        message = " ERROR: There is no key for {} in phase {}.".format(
+            key, yaml_file_data["name"]
+        )
     return is_valid, message
 
 
@@ -144,8 +156,7 @@ def download_and_write_file(url, stream, output_path, mode):
                 is_success = True
         except IOError:
             message = (
-                "Unable to process the uploaded zip file. "
-                "Please try again!"
+                "Unable to process the uploaded zip file. " "Please try again!"
             )
     except requests.exceptions.RequestException:
         message = (
@@ -155,7 +166,9 @@ def download_and_write_file(url, stream, output_path, mode):
     return is_success, message
 
 
-def is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids, dataset_split_ids, phase_split):
+def is_challenge_phase_split_mapping_valid(
+    phase_ids, leaderboard_ids, dataset_split_ids, phase_split
+):
     """
         Arguments:
             phase_ids {array} -- list of phase ids

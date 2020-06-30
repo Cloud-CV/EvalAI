@@ -3338,8 +3338,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     ],
                     "created_at": submission.created_at,
                     "method_name": submission.method_name,
-                    "submission_meta_attributes": None,
-
+                    "submission_metadata": None,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
@@ -3386,7 +3385,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
-                "submission_meta_attributes": None,
+                "submission_metadata": None,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)

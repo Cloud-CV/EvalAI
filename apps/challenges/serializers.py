@@ -92,7 +92,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "slug",
             "max_concurrent_submissions_allowed",
             "is_restricted_to_select_one_submission",
-            "submission_meta_attributes_schema",
+            "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
         )
 
@@ -209,6 +209,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
     Serializer used for creating challenge phase split through zip file.
     """
+
     def __init__(self, *args, **kwargs):
         super(ZipChallengePhaseSplitSerializer, self).__init__(*args, **kwargs)
 
@@ -280,7 +281,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "max_concurrent_submissions_allowed",
             "environment_image",
             "is_restricted_to_select_one_submission",
-            "submission_meta_attributes_schema",
+            "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
         )
 
@@ -358,5 +359,5 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "cluster_endpoint",
             "cluster_ssl",
             "cluster_yaml",
-            "kube_config"
+            "kube_config",
         )

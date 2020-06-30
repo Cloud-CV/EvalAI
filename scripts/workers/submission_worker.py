@@ -121,7 +121,11 @@ def download_and_extract_file(url, download_location):
     try:
         response = requests.get(url, stream=True)
     except Exception as e:
-        logger.error("{} Failed to fetch file from {}, error {}".format(WORKER_LOGS_PREFIX, url, e))
+        logger.error(
+            "{} Failed to fetch file from {}, error {}".format(
+                WORKER_LOGS_PREFIX, url, e
+            )
+        )
         traceback.print_exc()
         response = None
 
@@ -169,7 +173,11 @@ def download_and_extract_zip_file(url, download_location, extract_location):
     try:
         response = requests.get(url, stream=True)
     except Exception as e:
-        logger.error("{} Failed to fetch file from {}, error {}".format(WORKER_LOGS_PREFIX, url, e))
+        logger.error(
+            "{} Failed to fetch file from {}, error {}".format(
+                WORKER_LOGS_PREFIX, url, e
+            )
+        )
         response = None
 
     if response and response.status_code == 200:
@@ -277,8 +285,9 @@ def extract_challenge_data(challenge, phases):
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except Exception:
         logger.exception(
-            "{} Exception raised while creating Python module for challenge_id: {}"
-            .format(WORKER_LOGS_PREFIX, challenge.id)
+            "{} Exception raised while creating Python module for challenge_id: {}".format(
+                WORKER_LOGS_PREFIX, challenge.id
+            )
         )
         raise
 
@@ -301,7 +310,11 @@ def extract_submission_data(submission_id):
     try:
         submission = Submission.objects.get(id=submission_id)
     except Submission.DoesNotExist:
-        logger.critical("{} Submission {} does not exist".format(SUBMISSION_LOGS_PREFIX, submission_id))
+        logger.critical(
+            "{} Submission {} does not exist".format(
+                SUBMISSION_LOGS_PREFIX, submission_id
+            )
+        )
         traceback.print_exc()
         # return from here so that the message can be acked
         # This also indicates that we don't want to take action
@@ -380,8 +393,7 @@ def run_submission(
         try:
             logger.info(
                 "{} Sending submission {} for remote evaluation".format(
-                    SUBMISSION_LOGS_PREFIX,
-                    submission.id
+                    SUBMISSION_LOGS_PREFIX, submission.id
                 )
             )
             with stdout_redirect(stdout) as new_stdout, stderr_redirect(
@@ -591,7 +603,11 @@ def process_submission_message(message):
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
-        logger.exception("{} Challenge Phase {} does not exist".format(WORKER_LOGS_PREFIX, phase_id))
+        logger.exception(
+            "{} Challenge Phase {} does not exist".format(
+                WORKER_LOGS_PREFIX, phase_id
+            )
+        )
         raise
 
     user_annotation_file_path = join(
@@ -612,7 +628,11 @@ def process_add_challenge_message(message):
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
-        logger.exception("{} Challenge {} does not exist".format(WORKER_LOGS_PREFIX, challenge_id))
+        logger.exception(
+            "{} Challenge {} does not exist".format(
+                WORKER_LOGS_PREFIX, challenge_id
+            )
+        )
 
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
@@ -620,15 +640,18 @@ def process_add_challenge_message(message):
 
 def process_submission_callback(body):
     try:
-        logger.info("{} [x] Received submission message {}" .format(SUBMISSION_LOGS_PREFIX, body))
+        logger.info(
+            "{} [x] Received submission message {}".format(
+                SUBMISSION_LOGS_PREFIX, body
+            )
+        )
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
-                SUBMISSION_LOGS_PREFIX,
-                e
+                SUBMISSION_LOGS_PREFIX, e
             )
         )
 
@@ -673,7 +696,9 @@ def load_challenge_and_return_max_submissions(q_params):
         challenge = Challenge.objects.get(**q_params)
     except Challenge.DoesNotExist:
         logger.exception(
-            "{} Challenge with pk {} doesn't exist".format(WORKER_LOGS_PREFIX, q_params["pk"])
+            "{} Challenge with pk {} doesn't exist".format(
+                WORKER_LOGS_PREFIX, q_params["pk"]
+            )
         )
         raise
     load_challenge(challenge)
@@ -686,7 +711,9 @@ def load_challenge_and_return_max_submissions(q_params):
 def main():
     killer = GracefulKiller()
     logger.info(
-        "{} Using {} as temp directory to store data".format(WORKER_LOGS_PREFIX, BASE_TEMP_DIR)
+        "{} Using {} as temp directory to store data".format(
+            WORKER_LOGS_PREFIX, BASE_TEMP_DIR
+        )
     )
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
@@ -703,7 +730,9 @@ def main():
         if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
             if not challenge_pk:
                 logger.exception(
-                    "{} Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file.".format(WORKER_LOGS_PREFIX)
+                    "{} Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file.".format(
+                        WORKER_LOGS_PREFIX
+                    )
                 )
                 sys.exit(1)
             (
@@ -739,14 +768,18 @@ def main():
                         pass
                     else:
                         logger.info(
-                            "{} Processing message body: {}".format(WORKER_LOGS_PREFIX, message.body)
+                            "{} Processing message body: {}".format(
+                                WORKER_LOGS_PREFIX, message.body
+                            )
                         )
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
                 else:
                     logger.info(
-                        "{} Processing message body: {}".format(WORKER_LOGS_PREFIX, message.body)
+                        "{} Processing message body: {}".format(
+                            WORKER_LOGS_PREFIX, message.body
+                        )
                     )
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
@@ -762,7 +795,9 @@ def main():
                     pass
                 else:
                     logger.info(
-                        "{} Processing message body: {}".format(WORKER_LOGS_PREFIX, message.body)
+                        "{} Processing message body: {}".format(
+                            WORKER_LOGS_PREFIX, message.body
+                        )
                     )
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed

@@ -29,8 +29,8 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
-        vm.submissionMetaAttributesSchema = []; // Stores the attributes format and phase ID for all the phases of a challenge.
-        vm.submissionMetaAttributes = null; // Stores the attributes for the current phase selected while making a submission.
+        vm.submissionMetaAttributes = []; // Stores the attributes format and phase ID for all the phases of a challenge.
+        vm.metaAttributesforCurrentSubmission = null; // Stores the attributes while making a submission for a selected phase.
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -513,7 +513,7 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
-                    formData.append("submission_meta_attributes", JSON.stringify(vm.submissionMetaAttributes));
+                    formData.append("submission_metadata", JSON.stringify(vm.metaAttributesforCurrentSubmission));
 
                     parameters.data = formData;
 
@@ -542,7 +542,7 @@
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
-                            vm.submissionMetaAttributes = null;
+                            vm.metaAttributesforCurrentSubmission = null;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -594,18 +594,18 @@
                 }
 
                 for(var k=0; k<details.count; k++){
-                    if (details.results[k].submission_meta_attributes_schema != undefined || details.results[k].submission_meta_attributes_schema != null){
-                        var attributes = details.results[k].submission_meta_attributes_schema;
+                    if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null){
+                        var attributes = details.results[k].submission_meta_attributes;
                         attributes.forEach(function(attribute){
                             if (attribute["type"] == "checkbox") attribute["values"] = [];
                             else attribute["value"] = null;
                         });
                         data = {"phaseId":details.results[k].id, "attributes": attributes};
-                        vm.submissionMetaAttributesSchema.push(data);
+                        vm.submissionMetaAttributes.push(data);
                     }
                     else {
                         var data = {"phaseId":details.results[k].id, "attributes": null};
-                        vm.submissionMetaAttributesSchema.push(data);
+                        vm.submissionMetaAttributes.push(data);
                     }
                 }
                 utilities.hideLoader();
@@ -621,14 +621,14 @@
         utilities.sendRequest(parameters);
 
         vm.loadPhaseAttributes = function(phaseId){ // Loads attributes of a phase into vm.submissionMetaAttributes
-            vm.submissionMetaAttributes = vm.submissionMetaAttributesSchema.find(function(element){
+            vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
         };
 
         vm.clearMetaAttributeValues = function(){
-            if (vm.submissionMetaAttributes != null){
-                vm.submissionMetaAttributes.forEach(function(attribute){
+            if (vm.metaAttributesforCurrentSubmission != null){
+                vm.metaAttributesforCurrentSubmission.forEach(function(attribute){
                     if (attribute.type == 'checkbox'){
                         attribute.values = [];
                     }
@@ -794,7 +794,7 @@
                         }
                     }
                     for (var i=0; i<vm.leaderboard.length; i++) {
-                        if (vm.leaderboard[i].submission__submission_meta_attributes == null){
+                        if (vm.leaderboard[i].submission__submission_metadata == null){
                             vm.showSubmissionMetaAttributesOnLeaderboard = false;
                         }
                         else {

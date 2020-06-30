@@ -312,15 +312,11 @@ SENDGRID_SETTINGS = {
     "TEMPLATES": {
         "CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420",
         "CHALLENGE_APPROVAL_EMAIL": "d-45e0adc0597b4b60bd7c384aa903c488 ",
-        "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd"
+        "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd",
     }
 }
 
 # EKS configs for Rl-worker
-EKS_CLUSTER_ROLE_ARN = os.environ.get(
-    "EKS_CLUSTER_ROLE_ARN"
-)
+EKS_CLUSTER_ROLE_ARN = os.environ.get("EKS_CLUSTER_ROLE_ARN")
 
-EKS_NODEGROUP_ROLE_ARN = os.environ.get(
-    "EKS_NODEGROUP_ROLE_ARN"
-)
+EKS_NODEGROUP_ROLE_ARN = os.environ.get("EKS_NODEGROUP_ROLE_ARN")
