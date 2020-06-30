@@ -219,9 +219,7 @@ class BaseAPITestClass(APITestCase):
         non_existing_submission_pk = self.submission.pk + 1
         value = extract_submission_data(non_existing_submission_pk)
         mock_logger.assert_called_with(
-            "{} Submission {} does not exist".format(
-                self.SUBMISSION_LOGS_PREFIX, non_existing_submission_pk
-            )
+            "{} Submission {} does not exist".format(self.SUBMISSION_LOGS_PREFIX, non_existing_submission_pk)
         )
         self.assertEqual(value, None)
 
