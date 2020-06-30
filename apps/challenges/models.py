@@ -9,7 +9,11 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import restart_workers_signal_callback, create_eks_cluster, challenge_workers_start_notifier
+from .aws_utils import (
+    restart_workers_signal_callback,
+    create_eks_cluster,
+    challenge_workers_start_notifier,
+)
 
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
@@ -174,7 +178,9 @@ signals.post_save.connect(
 )
 
 signals.post_save.connect(
-    model_field_name(field_name="approved_by_admin")(challenge_workers_start_notifier),
+    model_field_name(field_name="approved_by_admin")(
+        challenge_workers_start_notifier
+    ),
     sender=Challenge,
     weak=False,
 )
@@ -256,6 +262,8 @@ class ChallengePhase(TimeStampedModel):
     )
     # Flag to restrict user to select only one submission for leaderboard
     is_restricted_to_select_one_submission = models.BooleanField(default=False)
+    # Store the schema for the submission meta attributes of this challenge phase.
+    submission_meta_attributes = JSONField(default=None, blank=True, null=True)
     # Flag to allow reporting partial metrics for submission evaluation
     is_partial_submission_evaluation_enabled = models.BooleanField(
         default=False
