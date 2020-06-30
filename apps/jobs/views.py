@@ -272,6 +272,15 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "message": "Please wait while your submission being evaluated!"
             }
             return Response(response_data, status=status.HTTP_200_OK)
+
+        if request.data.get("submission_meta_attributes"):
+            submission_meta_attributes = json.load(
+                request.data.get("submission_meta_attributes")
+            )
+            request.data[
+                "submission_meta_attributes"
+            ] = submission_meta_attributes
+
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -299,6 +308,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -1199,8 +1209,12 @@ def update_partially_evaluated_submission(request, challenge_pk):
 
         public_results = []
         successful_submission = (
-            True if (submission_status == Submission.FINISHED
-                     or submission_status == Submission.PARTIALLY_EVALUATED) else False
+            True
+            if (
+                submission_status == Submission.FINISHED
+                or submission_status == Submission.PARTIALLY_EVALUATED
+            )
+            else False
         )
         if submission_status not in [
             Submission.FAILED,
@@ -1258,11 +1272,15 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     ):
                         malformed_metrics.append((metric, type(value)))
 
-                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                is_partial_evaluation_phase = (
+                    challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                )
                 if len(missing_metrics) and not is_partial_evaluation_phase:
                     response_data = {
                         "error": "Following metrics are missing in the"
-                        "leaderboard data: {} of challenge phase: {}".format(missing_metrics, challenge_phase_pk)
+                        "leaderboard data: {} of challenge phase: {}".format(
+                            missing_metrics, challenge_phase_pk
+                        )
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1340,9 +1358,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
-        if submission_status not in [Submission.RUNNING,
-                                     Submission.PARTIALLY_EVALUATED,
-                                     Submission.FINISHED]:
+        if submission_status not in [
+            Submission.RUNNING,
+            Submission.PARTIALLY_EVALUATED,
+            Submission.FINISHED,
+        ]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1353,14 +1373,22 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 "job_name": jobs,
             }
             serializer = SubmissionSerializer(
-                submission, data=data, partial=True, context={"request": request}
+                submission,
+                data=data,
+                partial=True,
+                context={"request": request},
             )
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif submission_status == Submission.PARTIALLY_EVALUATED or submission_status == Submission.FINISHED:
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+        elif (
+            submission_status == Submission.PARTIALLY_EVALUATED
+            or submission_status == Submission.FINISHED
+        ):
             challenge_phase_pk = request.data.get("challenge_phase")
             stdout_content = request.data.get("stdout", "")
             stderr_content = request.data.get("stderr", "")
@@ -1393,18 +1421,22 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {
                         "error": "Challenge Phase Split does not exist with phase_id: {} and"
-                                 "split codename: {}".format(challenge_phase_pk, split)
+                        "split codename: {}".format(challenge_phase_pk, split)
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
                 try:
-                    leaderboard_data = get_leaderboard_data_model(submission_pk, challenge_phase_split.pk)
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
                 except LeaderboardData.DoesNotExist:
                     response_data = {
                         "error": "Leaderboard Data does not exist with phase_id: {} and"
-                                 "submission id: {}".format(challenge_phase_pk, submission_pk)
+                        "submission id: {}".format(
+                            challenge_phase_pk, submission_pk
+                        )
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1421,17 +1453,20 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         missing_metrics.append(metric)
 
                     if not (
-                            isinstance(value, float) or isinstance(value, int)
+                        isinstance(value, float) or isinstance(value, int)
                     ):
                         malformed_metrics.append((metric, type(value)))
                     updated_result[metric] = value
 
-                is_partial_evaluation_phase = challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                is_partial_evaluation_phase = (
+                    challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                )
                 if len(missing_metrics) and not is_partial_evaluation_phase:
                     response_data = {
                         "error": "Following metrics are missing in the"
-                                 "leaderboard data: {} of challenge phase: {}".format(missing_metrics,
-                                                                                      challenge_phase_pk)
+                        "leaderboard data: {} of challenge phase: {}".format(
+                            missing_metrics, challenge_phase_pk
+                        )
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1440,7 +1475,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 if len(malformed_metrics):
                     response_data = {
                         "error": "Values for following metrics are not of"
-                                 "float/int: {}".format(malformed_metrics)
+                        "float/int: {}".format(malformed_metrics)
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1489,8 +1524,12 @@ def update_partially_evaluated_submission(request, challenge_pk):
 
             submission.status = submission_status
             submission.completed_at = timezone.now()
-            submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
-            submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+            submission.stdout_file.save(
+                "stdout.txt", ContentFile(stdout_content)
+            )
+            submission.stderr_file.save(
+                "stderr.txt", ContentFile(stderr_content)
+            )
             submission.submission_result_file.save(
                 "submission_result.json", ContentFile(str(public_results))
             )

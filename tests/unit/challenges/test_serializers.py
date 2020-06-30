@@ -209,6 +209,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_concurrent_submissions_allowed",
                     "environment_image",
                     "is_restricted_to_select_one_submission",
+                    "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                 ]
             ),
@@ -287,6 +288,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_concurrent_submissions_allowed",
                     "environment_image",
                     "is_restricted_to_select_one_submission",
+                    "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                 ]
             ),
@@ -361,6 +363,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "max_concurrent_submissions_allowed",
                     "environment_image",
                     "is_restricted_to_select_one_submission",
+                    "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                 ]
             ),

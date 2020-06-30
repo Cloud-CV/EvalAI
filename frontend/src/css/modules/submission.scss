@@ -63,3 +63,30 @@ code {
 .update-submission-visibility-card {
     padding: 20px 20px 0px 20px;
 }
+
+.submission-options {
+    margin-left: 10px;
+}
+
+md-radio-button.md-default-theme .md-on, md-radio-button .md-on {
+    background-color: black;
+}
+
+md-radio-button.md-default-theme.md-checked .md-off, md-radio-button.md-checked .md-off {
+    border-color: black;
+}
+
+md-radio-button .md-off {
+    width: 16px;
+    height: 16px;
+}
+
+md-radio-button .md-on {
+    width: 16px;
+    height: 16px;
+}
+
+[type="checkbox"] + label:before, [type="checkbox"]:not(.filled-in) + label:after {
+    width: 16px;
+    height: 16px;
+}

@@ -127,11 +127,11 @@ ul.inline-list {
 }
 
 .trix-container ul:not(.browser-default) li {
-	list-style-type: disc;
+    list-style-type: disc;
 }
 
 .editor ul:not(.browser-default) li {
-	list-style-type: disc;
+    list-style-type: disc;
 }
 
 trix-editor ul li {
@@ -139,7 +139,7 @@ trix-editor ul li {
 }
 
 .trix-container ul li {
-	margin-left: 4%;
+    margin-left: 4%;
 }
 
 span.inline {
@@ -967,6 +967,20 @@ h4.challenge-step-title {
 
 .display-inline-block {
     display: inline-block !important;
+}
+
+.meta-attributes-dialog {}
+
+.dialog-close-button {
+    position: absolute;
+    right: 10%;
+    bottom: 10%;
+}
+
+.meta_attributes_checkox_list {
+    display: list-item; 
+    list-style-position: inside; 
+    list-style-type: disc;
 }
 
 @media only screen and (min-width: $xlarge-screen) {

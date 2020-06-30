@@ -1,0 +1,22 @@
+<section class="ev-md-container text-center rm-overflow-y">
+    <div class="row">
+        <div class="col s12 m12">
+            <div class="ev-md-container ev-card-body update-profile-card">
+                <div class="pass-title"><strong>Meta Attributes for submission</strong></div>
+                <div ng-repeat="a in challenge.metaAttributesData">
+                    <div ng-if="!a.values">
+                        <div class="col s12 m12 meta_attributes_dialog_atts" style="padding-bottom: 10px;" ng-if="a.value">
+                            {{a.name}} : {{a.value}}
+                        </div>
+                    </div>
+                    <div class="col s12 m12 meta_attributes_dialog_atts" style="padding-bottom: 10px;" ng-if="a.values && a.values.length != 0">
+                        {{a.name}} : <span class="meta_attributes_checkox_list" ng-repeat="value in a.values">{{value}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 dialog-close-button" type="cancel" ng-click="challenge.showMetaAttributesDialog($event, false);">Close</button>
+</section>

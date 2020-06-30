@@ -53,6 +53,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "when_made_public",
             "is_baseline",
             "job_name",
+            "submission_metadata",
         )
 
     def get_participant_team_name(self, obj):
@@ -121,6 +122,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "created_at",
             "method_name",
             "participant_team_members",
+            "submission_metadata",
         )
 
     def get_participant_team(self, obj):

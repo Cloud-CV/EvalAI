@@ -71,9 +71,7 @@ COMMON_SETTINGS_DICT = {
 VPC_DICT = {
     "SUBNET_1": os.environ.get("SUBNET_1", "subnet1"),
     "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
-    "SUBNET_SECURITY_GROUP": os.environ.get(
-        "SUBNET_SECURITY_GROUP", "sg"
-    ),
+    "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
 
 
@@ -290,7 +288,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             container_name=container_name,
             ENV=ENV,
             challenge_pk=challenge.pk,
-            **COMMON_SETTINGS_DICT
+            **COMMON_SETTINGS_DICT,
         )
         definition = eval(definition)
         if not challenge.task_def_arn:
@@ -355,7 +353,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             service_name=service_name,
             task_def_arn=task_def_arn,
             client_token=client_token,
-            **VPC_DICT
+            **VPC_DICT,
         )
         definition = eval(definition)
         try:
@@ -503,6 +501,17 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -541,6 +550,17 @@ def stop_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be stopped on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -579,6 +599,17 @@ def scale_workers(queryset, num_of_tasks):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be scaled on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -622,6 +653,17 @@ def delete_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be deleted on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     count = 0
     failures = []
     for challenge in queryset:
@@ -657,6 +699,17 @@ def restart_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be restarted on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -690,6 +743,9 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     Called when either evaluation_script or test_annotation_script for challenge
     is updated, to restart the challenge workers.
     """
+    if settings.DEBUG:
+        return
+
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     if prev != curr:
@@ -700,6 +756,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             challenge = instance
 
         response = restart_workers([challenge])
+
         count, failures = response["count"], response["failures"]
 
         logger.info(
@@ -709,10 +766,18 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         )
 
         if count != 1:
-            logger.warning("Worker(s) for challenge {} couldn't restart! Error: {}".format(challenge.id, failures[0]["message"]))
+            logger.warning(
+                "Worker(s) for challenge {} couldn't restart! Error: {}".format(
+                    challenge.id, failures[0]["message"]
+                )
+            )
         else:
-            challenge_url = "https://{}/web/challenges/challenge-page/{}".format(settings.HOSTNAME, challenge.id)
-            challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(settings.HOSTNAME, challenge.id)
+            challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
+                settings.HOSTNAME, challenge.id
+            )
+            challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
+                settings.HOSTNAME, challenge.id
+            )
 
             if field_name == "test_annotation":
                 file_updated = "Test Annotation"
@@ -729,7 +794,9 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             if challenge.image:
                 template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
 
-            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get("WORKER_RESTART_EMAIL")
+            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+                "WORKER_RESTART_EMAIL"
+            )
 
             emails = challenge.creator.get_all_challenge_host_email()
             for email in emails:
@@ -741,26 +808,34 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 )
 
 
-def get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern):
+def get_logs_from_cloudwatch(
+    log_group_name, log_stream_prefix, start_time, end_time, pattern
+):
     """
     To fetch logs of a container from cloudwatch within a specific time frame.
     """
     client = get_boto3_client("logs", aws_keys)
     logs = []
-    try:
-        response = client.filter_log_events(
-            logGroupName=log_group_name,
-            logStreamNamePrefix=log_stream_prefix,
-            startTime=start_time,
-            endTime=end_time,
-            filterPattern=pattern
-        )
-        for event in response["events"]:
-            logs.append(event["message"])
-    except ClientError as e:
-        logger.exception(e)
-        return ["There was an error in displaying the logs."]
-
+    if settings.DEBUG:
+        logs = [
+            "The worker logs in the development environment are available on the terminal. Please use docker-compose worker -f to view the logs."
+        ]
+    else:
+        try:
+            response = client.filter_log_events(
+                logGroupName=log_group_name,
+                logStreamNamePrefix=log_stream_prefix,
+                startTime=start_time,
+                endTime=end_time,
+                filterPattern=pattern,
+            )
+            for event in response["events"]:
+                logs.append(event["message"])
+        except Exception as e:
+            logger.exception(e)
+            return [
+                f"There is an error in displaying logs. Please find the full error traceback here {e}"
+            ]
     return logs
 
 
@@ -887,12 +962,17 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
-
-    if curr and not prev:   # Checking if the challenge has been approved by admin since last time.
+    if (
+        curr and not prev
+    ):  # Checking if the challenge has been approved by admin since last time.
         if not challenge.is_docker_based:
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
-            if (count != 1):
-                logger.error("Worker for challenge {} couldn't start! Error: {}".format(challenge.id, failures[0]["message"]))
+            if count != 1:
+                logger.error(
+                    "Worker for challenge {} couldn't start! Error: {}".format(
+                        challenge.id, failures[0]["message"]
+                    )
+                )
             else:
                 construct_and_send_worker_start_mail(challenge)
