@@ -33,11 +33,14 @@ sudo chmod +x /usr/local/bin/docker-compose
 echo "Finished installing docker-compose. Check docker-compose version"
 sudo docker-compose --version 
 
+
+# remember to set DJANGO_SERVER_URL in config.js 
+
 # Pull images & run containers 
-sudo docker-compose -f docker-compose-local.yml up -d
+sudo docker-compose -f docker-compose-local-nginx.yml up -d --build
 
 #Restore database
-DOCKER_DB_NAME="$(docker-compose ps -q db)"
+DOCKER_DB_NAME="$(sudo docker-compose -f docker-compose-local-nginx.yml ps -q db)"
 LOCAL_DUMP_PATH=$(ls -t backups/* | head -1)
 
 if [ -n "${DUMP_FILE}" ]
