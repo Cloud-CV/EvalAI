@@ -13,9 +13,9 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-region: us-east-1
         awslogs-group: django_staging
-        awslogs-create-group: true
+        awslogs-create-group: "true"
 
   celery:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-celery:${COMMIT_ID}
@@ -29,9 +29,9 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-region: us-east-1
         awslogs-group: celery_staging
-        awslogs-create-group: true
+        awslogs-create-group: "true"
 
   worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${COMMIT_ID}
@@ -57,9 +57,9 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-region: us-east-1
         awslogs-group: nodejs_staging
-        awslogs-create-group: true
+        awslogs-create-group: "true"
 
   remote-worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-remote-worker:${COMMIT_ID}
