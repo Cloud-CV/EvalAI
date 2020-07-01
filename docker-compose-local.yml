@@ -4,12 +4,14 @@ services:
     image: postgres:10.4
     ports:
       - "5432:5432"
+    volumes:
+      - ./backups:/backups
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
     restart: always
     volumes:
-      - ./backup:/backups
+      - ./backups:/backups
     links:
       - db:db
     depends_on:
@@ -60,23 +62,11 @@ services:
     environment:
       NODE_ENV: development
     ports:
+      - "80:8888"
       - "8888:8888"
       - "35729:35729"
     volumes:
       - .:/code
       - /code/node_modules
       - /code/bower_components
-
-  # TODO: Add alternative for AWS SQS Celery (https://docs.celeryproject.org/en/stable/getting-started/brokers/sqs.html) in dev setup.
-  # celery:
-  #   hostname: celery
-  #   env_file:
-  #     - docker/dev/docker.env
-  #   build:
-  #     context: ./
-  #     dockerfile: docker/dev/celery/Dockerfile
-  #   depends_on:
-  #     - django
-  #   volumes:
-  #     - .:/code
   

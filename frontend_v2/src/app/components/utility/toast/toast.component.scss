@@ -1,0 +1,121 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.toast-container {
+  visibility: hidden;
+  min-width: 70px;
+  max-width: 70px;
+  height: 70px;
+  margin: auto;
+  background-color: rgba(0, 0, 0, 0);
+  color: #fff;
+  text-align: center;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  font-size: 17px;
+  white-space: nowrap;
+  .toast-desc {
+    visibility: hidden;
+    padding: 15px 0px;
+    margin-top: 3px;
+    margin-left: -5px;
+    padding-left: 35px;
+    height: 60px;
+    text-align: center;
+    border-radius: 5px;
+    display: inline-block;
+    background-color: rgb(8, 160, 3);
+    min-width: 400px;
+    @include box-shadow(0px, 0px, 10px, 5px, $overlay-light);
+    .toast-message {
+      color: white;
+      font-size: $fs-14;
+      font-weight: $fw-bolder;
+      max-width: 400px;
+      overflow: hidden;
+      word-wrap: break-word;
+      display: inline-block;
+    }
+    .fa-info-circle {
+      font-size: 30px;
+      margin-right: 8px;
+    }
+
+    .fa-warning {
+      font-size: 30px;
+      margin-right: 8px;
+    }
+
+    .fa-check{
+      font-size: 30px;
+      margin-right: 8px;
+    }
+  }
+  &.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, shake 1s 0.5s, shake 1s 0.5s; //stay 5s 1s, shrink 0.5s 2s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, shake 1s 0.5s, shake 1s 0.5s; //stay 5s 1s, shrink 0.5s 4s, fadeout 0.5s 4.5s;
+    min-width: 400px;
+    transition: min-width 0.5s;
+    transition-delay: 1.5s;
+    .toast-desc {
+      visibility: visible;
+      transition: visibility 0s;
+      transition-delay: 1.5s;
+      -webkit-animation: showpls 0s 1s;
+      animation: showpls 0s 1s;
+    }
+  }
+}
+
+@include screen-small {
+  .toast-container {
+    &.show {
+      min-width: 400px;
+    }
+    .toast-desc {
+      margin-left: -15px;
+      min-width: 250px;
+      .toast-message {
+        max-width: 250px;
+      }
+    }
+  }
+}
+
+@include keyframes(fadein) {
+  from {
+    bottom: 0;
+    opacity: 0;
+  }
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
+}
+
+@include keyframes(shake) {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
