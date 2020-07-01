@@ -13,7 +13,7 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-region: us-east-1
         awslogs-group: django_staging
         awslogs-create-group: "true"
 
@@ -29,7 +29,7 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-region: us-east-1
         awslogs-group: celery_staging
         awslogs-create-group: "true"
 
@@ -57,7 +57,7 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-region: us-east-1
         awslogs-group: nodejs_staging
         awslogs-create-group: "true"
 
