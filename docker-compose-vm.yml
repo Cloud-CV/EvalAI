@@ -57,16 +57,14 @@ services:
       - .:/code
 
   nodejs:
-    image: yashdusing/evalai_nodejs:latest
-    hostname: nodejs
-    environment:
-      NODE_ENV: development
+    build:
+      context: ./
+      dockerfile: docker/prod/nodejs/Dockerfile
+      args:
+        NODE_ENV: vm
     ports:
-      - "80:8888"
-      - "8888:8888"
-      - "35729:35729"
+      - "80:80"
+      - "443:443"
     volumes:
-      - .:/code
       - /code/node_modules
       - /code/bower_components
-  
