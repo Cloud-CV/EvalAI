@@ -51,6 +51,11 @@ export class ChallengelistComponent implements OnInit {
   apiPathCommon = 'challenges/challenge/';
 
   /**
+   * participated challenges API common path
+   */
+  newApiPathCommon = 'challenges/challenges/';
+
+  /**
    * Host teams API common path
    */
   hostTeamsapiPathCommon = 'hosts/challenge_host_team';
@@ -68,8 +73,8 @@ export class ChallengelistComponent implements OnInit {
    * API path mapping
    */
   newApiPathMapping = {
-    isOngoingChecked: this.apiPathCommon  + 'participated/' + 'present',
-    isPastChecked: this.apiPathCommon  + 'participated/' + 'past'
+    isOngoingChecked: this.newApiPathCommon  + 'participated/' + 'present/',
+    isPastChecked: this.newApiPathCommon  + 'participated/' + 'past/'
   };
 
   /**
@@ -381,9 +386,9 @@ export class ChallengelistComponent implements OnInit {
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
       data => {
-        if (path.endsWith('present')) {
+        if (path.endsWith('present/')) {
           SELF.ongoingChallenges = data['results'];
-        } else if (path.endsWith('past')) {
+        } else if (path.endsWith('past/')) {
           SELF.pastChallenges = data['results'];
         }
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);

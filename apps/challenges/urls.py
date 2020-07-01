@@ -40,7 +40,7 @@ urlpatterns = [
         name="get_all_challenges",
     ),
     url(
-        r"^challenge/participated/(?P<challenge_time>[A-Za-z]+)$",
+        r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
         views.get_all_participated_challenges,
         name="get_all_participated_challenges",
     ),
