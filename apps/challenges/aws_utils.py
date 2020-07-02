@@ -261,10 +261,10 @@ def client_token_generator(challenge_pk):
     str: string of size 32 composed of digits and letters
     """
     remaining_chars = 32 - len(str(challenge_pk))
-    s = "".join(
+    random_char_string = "".join(
         random.choices(string.ascii_letters + string.digits, k=remaining_chars)
     )
-    client_token = str(challenge_pk) + s
+    client_token = f"{str(challenge_pk)}{random_char_string}"
 
     return client_token
 
