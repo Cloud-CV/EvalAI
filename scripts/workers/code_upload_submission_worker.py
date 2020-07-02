@@ -164,7 +164,7 @@ def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     return api_instance
 
 
-def get_instance(cluster_name, cluster_endpoint, challenge, evalai):
+def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
     # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
@@ -284,7 +284,6 @@ def install_gpu_drivers(api_instance):
         ext_client.create_namespaced_daemon_set(namespace, daemonset_spec)
     except ApiException as e:
         if e.status == 409:
-            print("done")
             logging.info(
                 "Nvidia GPU driver daemon set has already been installed"
             )
@@ -308,7 +307,7 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
-    api_instance = get_instance(
+    api_instance = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
