@@ -12,7 +12,7 @@ def construct_and_send_worker_start_mail(challenge):
         return
 
     challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
-        settings.HOSTNAME, challenge.id
+        settings.HOSTNAME, challenge.pk
     )
 
     template_data = {

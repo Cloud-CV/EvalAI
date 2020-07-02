@@ -251,7 +251,7 @@ delete_service_args = """
 """
 
 
-def client_token_generator():
+def client_token_generator(challenge_pk):
     """
     Returns a 32 characters long client token to ensure idempotency with create_service boto3 requests.
 
@@ -260,10 +260,12 @@ def client_token_generator():
     Returns:
     str: string of size 32 composed of digits and letters
     """
-
-    client_token = "".join(
-        random.choices(string.ascii_letters + string.digits, k=32)
+    remaining_chars = 32 - len(str(challenge_pk))
+    random_char_string = "".join(
+        random.choices(string.ascii_letters + string.digits, k=remaining_chars)
     )
+    client_token = f"{str(challenge_pk)}{random_char_string}"
+
     return client_token
 
 
@@ -481,7 +483,7 @@ def service_manager(
         )
         return response
     else:
-        client_token = client_token_generator()
+        client_token = client_token_generator(challenge.pk)
         response = create_service_by_challenge_pk(
             client, challenge, client_token
         )
@@ -962,6 +964,7 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
+    challenge._original_approved_by_admin = curr
     if (
         curr and not prev
     ):  # Checking if the challenge has been approved by admin since last time.
