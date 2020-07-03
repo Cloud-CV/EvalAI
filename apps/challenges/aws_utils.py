@@ -750,6 +750,12 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
 
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
+
+    if field_name == "evaluation_script":
+        instance._original_evaluation_script = curr
+    elif field_name == "test_annotation":
+        instance._original_test_annotation = curr
+
     if prev != curr:
         challenge = None
         if field_name == "test_annotation":
