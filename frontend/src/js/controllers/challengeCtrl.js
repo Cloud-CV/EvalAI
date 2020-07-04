@@ -2308,8 +2308,8 @@
                           .title('Make this challenge ' + vm.toggleChallengeState + '?')
                           .ariaLabel('')
                           .targetEvent(ev)
-                          .ok('I\'m sure')
-                          .cancel('No.');
+                          .ok('Yes')
+                          .cancel('No');
 
             $mdDialog.show(confirm).then(function() {
                 parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
