@@ -354,15 +354,15 @@ nav {
 }
 
 .ev-logs-card{
-    height: 400px;
-    padding: 40px;
+    height: 600px;
+    padding: 15px;
     color: white;
     position: relative;
     display: block;
     background-color: #262626;
     width: 100%;
     border-radius: 4px;
-    overflow: scroll;
+    overflow-y: scroll;
     box-shadow: 0px 0px 12px $shadow-black;
 }
 
