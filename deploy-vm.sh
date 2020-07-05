@@ -1,11 +1,11 @@
 #!/bin/bash
- 
+
 # Install requirements (docker)
-echo "Removing existing docker libs"
+echo "### Removing existing docker libs"
 sudo apt-get remove docker docker-engine docker.io containerd runc -y
 sudo apt-get update -y
 
-echo "Installing docker requirements"
+echo "### Installing docker requirements"
 sudo apt-get install \
     apt-transport-https \
     ca-certificates \
@@ -19,35 +19,39 @@ sudo add-apt-repository \
    stable"
 sudo apt-get update -y
 
-echo "Installing docker"
+echo "### Installing docker"
 sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 
-echo "Finished installing docker. Check docker version"
+echo "### Finished installing docker. Check docker version"
 sudo docker --version
 
 
-echo "Installing docker-compose"
+echo "### Installing docker-compose"
 sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-echo "Finished installing docker-compose. Check docker-compose version"
+echo "### Finished installing docker-compose. Check docker-compose version"
 sudo docker-compose --version 
 
+export DJANGO_SERVER_URL=temp
 
-# remember to set DJANGO_SERVER_URL in config.js 
+
+echo "### Initiating letsencrypt with certbot"
+chmod +x init-letsencrypt.sh
+./init-letsencrypt.sh
 
 # Pull images & run containers 
-sudo docker-compose -f docker-compose-local-nginx.yml up -d --build
+sudo docker-compose -f docker-compose-vm.yml up -d --build
 
 #Restore database
-DOCKER_DB_NAME="$(sudo docker-compose -f docker-compose-local-nginx.yml ps -q db)"
+DOCKER_DB_NAME="$(sudo docker-compose -f docker-compose-vm.yml ps -q db)"
 LOCAL_DUMP_PATH=$(ls -t backups/* | head -1)
 
 if [ -n "${DUMP_FILE}" ]
 then    
-    echo "Backup file exists: ${DUMP_FILE}"
-    echo "Restoring latest postgres backup"
+    echo "# Backup file exists: ${DUMP_FILE}"
+    echo "# Restoring latest postgres backup"
     sudo docker exec -it "${DOCKER_DB_NAME}" gunzip -c "${LOCAL_DUMP_PATH}" | psql -h db -p 5432 -U postgres -d postgres
 else
-    echo "No backup file exists"
+    echo "# No backup file exists"
 fi
