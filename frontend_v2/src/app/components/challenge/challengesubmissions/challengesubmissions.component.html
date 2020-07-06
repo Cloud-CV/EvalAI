@@ -134,6 +134,11 @@
                     Show On Leaderboard
                   </mat-checkbox>
                 </div>
+                <div class="element" *ngIf="isChallengeHost">
+                  <mat-checkbox [checked]="element.is_baseline" [disabled]="element.status !== 'finished'" (change)="changeBaselineStatus(element.id, element.is_baseline)">
+                    BaseLine
+                  </mat-checkbox>
+                </div>
                 <div class="element">
                   <a (click)="editSubmission(element)" >
                     <i class="fa fa-pencil"></i>
