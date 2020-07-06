@@ -169,11 +169,11 @@ urlpatterns = [
     url(
         r"^(?P<challenge_pk>[0-9]+)/get_worker_logs/$",
         views.get_worker_logs,
-        name="get_worker_logs"
+        name="get_worker_logs",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/manage_worker/(?P<action>[\w-]+)$/",
+        r"^(?P<challenge_pk>[0-9]+)/manage_worker/(?P<action>[\w-]+)/$",
         views.manage_worker,
-        name="manage_worker"
-    )
+        name="manage_worker",
+    ),
 ]

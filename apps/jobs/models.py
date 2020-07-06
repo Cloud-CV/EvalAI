@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Max
 from rest_framework.exceptions import PermissionDenied
@@ -59,7 +59,7 @@ class Submission(TimeStampedModel):
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
-        (PARTIALLY_EVALUATED, PARTIALLY_EVALUATED)
+        (PARTIALLY_EVALUATED, PARTIALLY_EVALUATED),
     )
 
     participant_team = models.ForeignKey(
@@ -119,6 +119,8 @@ class Submission(TimeStampedModel):
         null=True,
     )
     ignore_submission = models.BooleanField(default=False)
+    # Store the values of meta attributes for the submission here.
+    submission_metadata = JSONField(blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.id)

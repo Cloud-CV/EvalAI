@@ -122,6 +122,9 @@
                                     </span>
                                 </a>
                             </td>
+                            <td data-field="" ng-if="challenge.showSubmissionMetaAttributesOnLeaderboard">
+                                <span class="fs-20 w-300">Meta Attributes</span>
+                            </td>
                         </tr>
                     </thead>
                     <tbody class="fs-16 w-300">
@@ -148,6 +151,9 @@
                                     {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                             </td>
                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
+                            </td>
+                            <td ng-if="challenge.showSubmissionMetaAttributesOnLeaderboard">
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="key.submission__submission_metadata == undefined || key.submission__submission_metadata == null;" type="submit" value="view" ng-click="challenge.showMetaAttributesDialog($event, key.submission__submission_metadata);">View</button>
                             </td>
                         </tr>
                     </tbody>
