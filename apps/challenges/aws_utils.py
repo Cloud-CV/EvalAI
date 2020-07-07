@@ -974,7 +974,10 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     if (
         curr and not prev
     ):  # Checking if the challenge has been approved by admin since last time.
-        if not challenge.is_docker_based:
+        if (
+            not challenge.is_docker_based
+            and challenge.remote_evaluation is False
+        ):
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if count != 1:

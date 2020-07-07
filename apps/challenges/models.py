@@ -193,6 +193,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         if (
             instance.approved_by_admin is True
             and instance.is_docker_based is True
+            and instance.remote_evaluation is False
         ):
             serialized_obj = serializers.serialize("json", [instance])
             create_eks_cluster.delay(serialized_obj)
