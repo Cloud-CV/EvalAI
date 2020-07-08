@@ -16,6 +16,11 @@
   margin-bottom: -40px;
 }
 
+.terms-and-condition {
+  text-align: right;
+  padding-right: 0px;
+}
+
 @include screen-small {
 	.ev-pad {
 		padding-right: 15px;
