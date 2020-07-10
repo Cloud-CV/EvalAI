@@ -140,7 +140,7 @@
                                                 [routerLink]="['./leaderboard']"
                                                 class="text-light-black fw-semibold fs-15">
                                                 <i class="fa fa-th-list"></i> Leaderboard</a></li>
-                                        <li *ngIf="isForumEnabled && forumURL || isChallengeHost"><a
+                                        <li *ngIf="isForumEnabled && (forumURL || isChallengeHost)"><a
                                                 [class.selected]="localRouter.url.endsWith('discuss')"
                                                 [routerLink]="['./discuss']"
                                                 class="text-light-black fw-semibold fs-15">
