@@ -17,6 +17,7 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
+from serializers import ChallengeEvaluationClusterSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -957,20 +958,18 @@ def create_eks_cluster(challenge):
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
             try:
-                ChallengeEvaluationCluster.objects.create(
+                cluster_details =  ChallengeEvaluationCluster.objects.get(
+                    challenge=challenge,
+                )
+            except ChallengeEvaluationCluster.DoesNotExist:
+                serializer = ChallengeEvaluationClusterSerializer(
                     challenge=challenge,
                     name=cluster_name,
                     cluster_endpoint=cluster_ep,
                     cluster_ssl=cluster_cert,
                 )
-            except BaseException:
-                ChallengeEvaluationCluster.objects.filter(
-                    challenge=challenge
-                ).update(
-                    name=cluster_name,
-                    cluster_endpoint=cluster_ep,
-                    cluster_ssl=cluster_cert,
-                )
+                if serializer.is_valid():
+                    serializer.save()
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
