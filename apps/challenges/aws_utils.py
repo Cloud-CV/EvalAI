@@ -6,11 +6,14 @@ import yaml
 
 from botocore.exceptions import ClientError
 from django.conf import settings
+from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
-from base.utils import get_boto3_client
+from .challenge_notification_util import construct_and_send_worker_start_mail
 
+from base.utils import get_boto3_client, send_email
+from evalai.celery import app
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +69,9 @@ COMMON_SETTINGS_DICT = {
 }
 
 VPC_DICT = {
-    "SUBNET_1": os.environ.get("SUBNET_1", "subnet-e260d5be"),
-    "SUBNET_2": os.environ.get("SUBNET_2", "subnet-300ea557"),
-    "SUBNET_SECURITY_GROUP": os.environ.get(
-        "SUBNET_SECURITY_GROUP", "sg-148b4a5e"
-    ),
+    "SUBNET_1": os.environ.get("SUBNET_1", "subnet1"),
+    "SUBNET_2": os.environ.get("SUBNET_2", "subnet2"),
+    "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
 
 
@@ -187,9 +188,10 @@ task_definition = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-group": "evalai-worker-{ENV}",
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
                 }},
             }},
         }}
@@ -249,7 +251,7 @@ delete_service_args = """
 """
 
 
-def client_token_generator():
+def client_token_generator(challenge_pk):
     """
     Returns a 32 characters long client token to ensure idempotency with create_service boto3 requests.
 
@@ -258,10 +260,12 @@ def client_token_generator():
     Returns:
     str: string of size 32 composed of digits and letters
     """
-
-    client_token = "".join(
-        random.choices(string.ascii_letters + string.digits, k=32)
+    remaining_chars = 32 - len(str(challenge_pk))
+    random_char_string = "".join(
+        random.choices(string.ascii_letters + string.digits, k=remaining_chars)
     )
+    client_token = f"{str(challenge_pk)}{random_char_string}"
+
     return client_token
 
 
@@ -286,7 +290,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             container_name=container_name,
             ENV=ENV,
             challenge_pk=challenge.pk,
-            **COMMON_SETTINGS_DICT
+            **COMMON_SETTINGS_DICT,
         )
         definition = eval(definition)
         if not challenge.task_def_arn:
@@ -351,7 +355,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             service_name=service_name,
             task_def_arn=task_def_arn,
             client_token=client_token,
-            **VPC_DICT
+            **VPC_DICT,
         )
         definition = eval(definition)
         try:
@@ -479,7 +483,7 @@ def service_manager(
         )
         return response
     else:
-        client_token = client_token_generator()
+        client_token = client_token_generator(challenge.pk)
         response = create_service_by_challenge_pk(
             client, challenge, client_token
         )
@@ -499,6 +503,17 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -537,6 +552,17 @@ def stop_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be stopped on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -575,6 +601,17 @@ def scale_workers(queryset, num_of_tasks):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be scaled on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -618,6 +655,17 @@ def delete_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be deleted on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     count = 0
     failures = []
     for challenge in queryset:
@@ -644,7 +692,7 @@ def restart_workers(queryset):
     """
     The function called by the admin action method to restart all the selected workers.
 
-    Calls the delete_service_by_challenge_pk method. Before calling, verifies that the challenge worker(s) is(are) active.
+    Calls the service_manager method. Before calling, verifies that the challenge worker(s) is(are) active.
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
@@ -653,6 +701,17 @@ def restart_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be restarted on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     failures = []
@@ -660,7 +719,7 @@ def restart_workers(queryset):
         if (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client,
-                challenge,
+                challenge=challenge,
                 num_of_tasks=challenge.workers,
                 force_new_deployment=True,
             )
@@ -686,21 +745,109 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     Called when either evaluation_script or test_annotation_script for challenge
     is updated, to restart the challenge workers.
     """
+    if settings.DEBUG:
+        return
+
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
+
+    if field_name == "evaluation_script":
+        instance._original_evaluation_script = curr
+    elif field_name == "test_annotation":
+        instance._original_test_annotation = curr
+
     if prev != curr:
+        challenge = None
         if field_name == "test_annotation":
             challenge = instance.challenge
         else:
             challenge = instance
-        restart_workers([challenge])
+
+        response = restart_workers([challenge])
+
+        count, failures = response["count"], response["failures"]
+
         logger.info(
             "The worker service for challenge {} was restarted, as {} was changed.".format(
-                instance.pk, field_name
+                challenge.pk, field_name
             )
         )
 
+        if count != 1:
+            logger.warning(
+                "Worker(s) for challenge {} couldn't restart! Error: {}".format(
+                    challenge.id, failures[0]["message"]
+                )
+            )
+        else:
+            challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
+                settings.HOSTNAME, challenge.id
+            )
+            challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
+                settings.HOSTNAME, challenge.id
+            )
 
+            if field_name == "test_annotation":
+                file_updated = "Test Annotation"
+            elif field_name == "evaluation_script":
+                file_updated = "Evaluation script"
+
+            template_data = {
+                "CHALLENGE_NAME": challenge.title,
+                "CHALLENGE_MANAGE_URL": challenge_manage_url,
+                "CHALLENGE_URL": challenge_url,
+                "FILE_UPDATED": file_updated,
+            }
+
+            if challenge.image:
+                template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
+
+            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+                "WORKER_RESTART_EMAIL"
+            )
+
+            emails = challenge.creator.get_all_challenge_host_email()
+            for email in emails:
+                send_email(
+                    sender=settings.CLOUDCV_TEAM_EMAIL,
+                    recipient=email,
+                    template_id=template_id,
+                    template_data=template_data,
+                )
+
+
+def get_logs_from_cloudwatch(
+    log_group_name, log_stream_prefix, start_time, end_time, pattern
+):
+    """
+    To fetch logs of a container from cloudwatch within a specific time frame.
+    """
+    client = get_boto3_client("logs", aws_keys)
+    logs = []
+    if settings.DEBUG:
+        logs = [
+            "The worker logs in the development environment are available on the terminal. Please use docker-compose worker -f to view the logs."
+        ]
+    else:
+        try:
+            response = client.filter_log_events(
+                logGroupName=log_group_name,
+                logStreamNamePrefix=log_stream_prefix,
+                startTime=start_time,
+                endTime=end_time,
+                filterPattern=pattern,
+            )
+            for event in response["events"]:
+                logs.append(event["message"])
+        except Exception as e:
+            logger.exception(e)
+            return [
+                f"There is an error in displaying logs. Please find the full error traceback here {e}"
+            ]
+    return logs
+
+
+@app.task
 def create_eks_nodegroup(challenge, cluster_name):
     """
     Creates a nodegroup when a EKS cluster is created by the EvalAI admin
@@ -708,7 +855,11 @@ def create_eks_nodegroup(challenge, cluster_name):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
     """
-    nodegroup_name = "{0}-nodegroup".format(challenge.title.replace(" ", "-"))
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    nodegroup_name = "{0}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-")
+    )
     client = get_boto3_client("eks", aws_keys)
     # TODO: Move the hardcoded cluster configuration such as the
     # instance_type, subnets, AMI to challenge configuration later.
@@ -718,7 +869,7 @@ def create_eks_nodegroup(challenge, cluster_name):
             nodegroupName=nodegroup_name,
             scalingConfig={"minSize": 1, "maxSize": 10, "desiredSize": 1},
             diskSize=100,
-            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
+            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"]],
             instanceTypes=["g4dn.xlarge"],
             amiType="AL2_x86_64_GPU",
             nodeRole=settings.EKS_NODEGROUP_ROLE_ARN,
@@ -727,12 +878,11 @@ def create_eks_nodegroup(challenge, cluster_name):
         logger.exception(e)
         return response
     waiter = client.get_waiter("nodegroup_active")
-    waiter.wait(
-        clusterName=cluster_name, nodegroupName=nodegroup_name,
-    )
+    waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
 
 
-def create_eks_cluster(sender, challenge, field_name, **kwargs):
+@app.task
+def create_eks_cluster(challenge):
     """
     Called when Challenge is approved by the EvalAI admin
     calls the create_eks_nodegroup function
@@ -743,8 +893,10 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
     """
     from .models import ChallengeEvaluationCluster
 
-    cluster_name = "{0}-cluster".format(challenge.title.replace(" ", "-"))
-    if challenge.approved_by_admin and challenge.is_docker_based:
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
+    if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
         client = get_boto3_client("eks", aws_keys)
         try:
             response = client.create_cluster(
@@ -752,8 +904,8 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
                 version="1.15",
                 roleArn=settings.EKS_CLUSTER_ROLE_ARN,
                 resourcesVpcConfig={
-                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"], ],
-                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"], ],
+                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"]],
+                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"]],
                 },
             )
             waiter = client.get_waiter("cluster_active")
@@ -801,14 +953,38 @@ def create_eks_cluster(sender, challenge, field_name, **kwargs):
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
             ChallengeEvaluationCluster.objects.create(
-                challenge=challenge,
+                challenge=challenge_obj,
                 name=cluster_name,
                 cluster_endpoint=cluster_ep,
                 cluster_ssl=cluster_cert,
             )
             # Creating nodegroup
-            create_eks_nodegroup(challenge, cluster_name)
+            create_eks_nodegroup.delay(challenge, cluster_name)
             return response
         except ClientError as e:
             logger.exception(e)
             return
+
+
+def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
+    prev = getattr(instance, "_original_{}".format(field_name))
+    curr = getattr(instance, "{}".format(field_name))
+    challenge = instance
+    challenge._original_approved_by_admin = curr
+    if (
+        curr and not prev
+    ):  # Checking if the challenge has been approved by admin since last time.
+        if (
+            not challenge.is_docker_based
+            and challenge.remote_evaluation is False
+        ):
+            response = start_workers([challenge])
+            count, failures = response["count"], response["failures"]
+            if count != 1:
+                logger.error(
+                    "Worker for challenge {} couldn't start! Error: {}".format(
+                        challenge.id, failures[0]["message"]
+                    )
+                )
+            else:
+                construct_and_send_worker_start_mail(challenge)
