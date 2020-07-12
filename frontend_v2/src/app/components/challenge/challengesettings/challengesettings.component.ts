@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatChipInputEvent} from '@angular/material/chips';
 import { Router } from '@angular/router';
-import { NGXLogger } from 'ngx-logger';
+import * as moment from 'moment';
 
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
@@ -73,8 +73,7 @@ export class ChallengesettingsComponent implements OnInit {
               private globalService: GlobalService,
               private apiService: ApiService,
               private endpointsService: EndpointsService,
-              private router: Router,
-              private logger: NGXLogger) { }
+              private router: Router) { }
 
   ngOnInit() {
     this.challengeService.currentChallenge.subscribe(
@@ -237,7 +236,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () =>  this.logger.info('EDIT-CHALLENGE-TITLE-FINISHED')
+        () =>  console.log('EDIT-CHALLENGE-TITLE-FINISHED')
       );
     };
 
@@ -282,7 +281,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => this.logger.info('DELETE-CHALLENGE-FINISHED')
+        () => console.log('DELETE-CHALLENGE-FINISHED')
       );
     };
 
@@ -301,6 +300,60 @@ export class ChallengesettingsComponent implements OnInit {
           value: ''
         },
       ],
+      confirmCallback: SELF.apiCall
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  challengeDateDialog() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      if (new Date(params.start_date).valueOf() < new Date(params.end_date).valueOf()) {
+        const BODY = JSON.stringify({
+          'start_date': new Date(params.start_date).toISOString(),
+          'end_date': new Date(params.end_date).toISOString()
+        });
+        SELF.apiService.patchUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          BODY
+        ).subscribe(
+          data => {
+            SELF.challenge.start_date = (data.start_date);
+            SELF.challenge.end_date = (data.end_date);
+            SELF.globalService.showToast('success', 'The Challenge start and end date successfully updated!', 5);
+          },
+          err => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => console.log('EDIT-CHALLENGE-START-AND-END-DATE-FINISHED')
+        );
+      } else {
+        SELF.globalService.showToast('error', 'The challenge start date cannot be same or greater than end date.', 5);
+      }
+    };
+    const PARAMS = {
+      title: 'Edit Challenge Start and End Date',
+      content: '',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: false,
+          label: 'start_date',
+          placeholder: 'Start Date and Time',
+          type: 'text',
+          value: moment(this.challenge.start_date).format('MM-DD-YYYY hh:mm a')
+        },
+        {
+          isRequired: false,
+          label: 'end_date',
+          placeholder: 'End Date and Time',
+          type: 'text',
+          value: moment(this.challenge.end_date).format('MM-DD-YYYY hh:mm a')
+        }
+      ],
+      isButtonDisabled: true,
       confirmCallback: SELF.apiCall
     };
     SELF.globalService.showModal(PARAMS);

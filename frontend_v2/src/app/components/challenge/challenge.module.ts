@@ -8,7 +8,6 @@ import {
   MatIconModule,
   MatDividerModule,
   MatCheckboxModule } from '@angular/material';
-import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -27,7 +26,6 @@ import { ChallengeComponent } from './challenge.component';
 import { ChallengeRoutingModule } from './challenge-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 import { ChallengelistModule } from '../publiclists/challengelist/challengelist.module';
-import { environment } from '../../../environments/environment';
 
 @NgModule({
   declarations: [
@@ -47,10 +45,6 @@ import { environment } from '../../../environments/environment';
     CommonModule,
     ChallengeRoutingModule,
     SharedModule,
-    LoggerModule.forRoot({
-      level: !environment.production ? NgxLoggerLevel.DEBUG : NgxLoggerLevel.OFF, //  Logger config based on environment
-      serverLogLevel: NgxLoggerLevel.OFF
-    }),
     MatChipsModule,
     MatIconModule,
     ChallengelistModule,

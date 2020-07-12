@@ -18,21 +18,44 @@
               {{challenge['title']}}
         </span>
         <a style="padding-right: 4px;"
-        class="pointer"
+        class="pointer fs-16"
         *ngIf="isChallengeHost"
         (click)="editChallengeTitle()">
         <i class="fa fa-pencil"
             aria-hidden="true"></i>
         </a>
-        <a class="pointer"
+        <a class="pointer fs-16"
         *ngIf="isChallengeHost"
         (click)="deleteChallenge()">
         <i class="fa fa-trash red-text"
             aria-hidden="true"></i>
         </a> <br>
+        <!-- Start date -->
+        <span class="fs-16 fw-light">
+          <strong class="text-light-black">Starts on:</strong>
+          {{challenge['start_date'] | date:'medium'}} {{challenge['start_zone']}}
+        </span>
+        &nbsp;
+        <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+            <a class="pointer fs-16" (click)="challengeDateDialog()">
+                <i class="fa fa-pencil" aria-hidden="true"></i>
+            </a>
+        </span>
+        <br>
+        <!-- End date -->
+        <span class="fs-16 fw-light">
+          <strong class="text-light-black">Ends on:</strong>
+          {{challenge['end_date'] | date:'medium'}} {{challenge['end_zone']}}
+        </span>
+        <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+          <a class="pointer fs-16" (click)="challengeDateDialog()">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </a>
+        </span>
+        <br>
         <mat-checkbox color="primary" class="fw-semibold" *ngIf="isChallengeHost"
         [checked]="!challenge['is_registration_open']"
-        (click)="stopParticipation($event)">Close Participation
+        (click)="stopParticipation($event)"><strong class="text-light-black fs-15">Close Participation</strong>
         </mat-checkbox>
       </div>
     </div>
