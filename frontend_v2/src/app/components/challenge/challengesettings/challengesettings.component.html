@@ -2,19 +2,17 @@
   <div class="bottom-card-container ev-card-panel">
     <div class="row">
       <div class="col-md-8 col-sm-8">
-        <span class="fs-18">
-          <span class="fw-semibold">Challenge Settings</span>
-        </span>
+          <h5 class="fw-light">Challenge Settings</h5>
       </div>
     </div>
     <br>
     <!-- Edit challenge Detail -->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-regular">Edit challenge details:</span>
+        <span class="fw-light fs-18">Edit challenge details:</span>
       </div>
       <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9 challenge-detail">
-        <span class="fs-18 fw-semibold challenge-title">
+        <span class="fs-20 fw-semibold challenge-title">
               {{challenge['title']}}
         </span>
         <a style="padding-right: 4px;"
@@ -62,7 +60,7 @@
 
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-regular">Banned emails Ids:</span>
+        <span class="fw-light fs-18">Banned emails Ids:</span>
       </div>
       <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9">
         <mat-form-field class="example-chip-list">
@@ -79,7 +77,7 @@
           </mat-chip-list>
         </mat-form-field>
         <div class="error-message" *ngIf="isValidationError">{{message}}</div>
-        <div class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14" [class.disabled]="isValidationError" (click)="reflectChange()">
+        <div class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16" [class.disabled]="isValidationError" (click)="reflectChange()">
           <span>Update</span>
         </div>
       </div>
