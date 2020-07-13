@@ -168,6 +168,28 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
+def get_presigned_url_for_file_upload(filename, file_key):
+    """
+    """
+    try:
+        aws_keys = {
+        "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
+        "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+        "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+        }
+
+        s3 = get_boto3_client("s3", aws_keys)
+        response = s3.generate_presigned_url(
+            ClientMethod='upload_file',
+            Params={'Filename': filename, 'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_key},
+            ExpiresIn=settings.PRESIGNED_URL_EXPIRY,
+        )
+        return response
+    except Exception as e:
+        logger.exception(e)
+        # Handle the error case by sending back a response here?
+
+
 def get_or_create_sqs_queue_object(queue_name):
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"

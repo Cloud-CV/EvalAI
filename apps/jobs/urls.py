@@ -85,4 +85,15 @@ urlpatterns = [
         views.get_github_badge_data,
         name="get_github_badge_data",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/"
+        r"challenge_phase/(?P<challenge_phase_pk>[0-9]+)/get_presigned_url_for_submission/$",
+        views.get_presigned_url_for_submission,
+        name="get_presigned_url_for_submission",
+    ),
+    url(
+        r"^publish_submission_message/$",
+        views.publish_submission_message_api,
+        name="publish_submission_message_api",
+    ),
 ]

@@ -40,6 +40,7 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
+    get_presigned_url_for_file_upload,
     get_queue_name,
     get_url_from_hostname,
     paginated_queryset,
@@ -2705,3 +2706,29 @@ def manage_worker(request, challenge_pk, action):
             response_data = {"action": "Failure", "error": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_presigned_url_for_annotations(request, challenge_phase_pk):
+    response_data = {
+            "error": "Sorry, you are not authorized for uploading an annotation file."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    filename = ""
+    key = ""
+    presigned_url = get_presigned_url_for_file_upload(filename, key)
+
+    challenge_phase.test_annotation.path = presigned_url
+    challenge_phase.save()
+
+    response_data = {"presigned_url": presigned_url}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+

@@ -285,6 +285,9 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
+# Expiry time of a presigned url for uploading files to AWS, in seconds.
+PRESIGNED_URL_EXPIRY = 3600
+
 # Slack web hook url
 SLACK_WEB_HOOK_URL = os.environ.get(
     "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"

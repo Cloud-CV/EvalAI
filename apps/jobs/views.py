@@ -29,6 +29,7 @@ from base.utils import (
     StandardResultSetPagination,
     get_or_create_sqs_queue_object,
     get_boto3_client,
+    get_presigned_url_for_file_upload,
 )
 from challenges.models import (
     ChallengePhase,
@@ -2073,3 +2074,170 @@ def get_github_badge_data(
         else:
             data["message"] = f"{challenge_obj.title}"
     return Response(data, status=http_status_code)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
+    # Abstract out the validation
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # check if the challenge phase exists or not
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            pk=challenge_phase_pk, challenge=challenge
+        )
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(
+            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+
+    # check if challenge phase is active
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(
+            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+
+    # check if user is a challenge host or a participant
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        # check if challenge phase is public and accepting solutions
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(
+                response_data, status=status.HTTP_403_FORBIDDEN
+            )
+
+        # if allowed email ids list exist, check if the user exist in that list or not
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(
+            pk=participant_team_id
+        )
+    except ParticipantTeam.DoesNotExist:
+        response_data = {
+            "error": "You haven't participated in the challenge"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(
+                response_data, status=status.HTTP_403_FORBIDDEN
+            )
+
+    # Fetch the number of submissions under progress.
+    submissions_in_progress_status = [
+        Submission.SUBMITTED,
+        Submission.SUBMITTING,
+        Submission.RUNNING,
+    ]
+    submissions_in_progress = Submission.objects.filter(
+        participant_team=participant_team_id,
+        challenge_phase=challenge_phase,
+        status__in=submissions_in_progress_status,
+    ).count()
+
+    if (
+        submissions_in_progress
+        >= challenge_phase.max_concurrent_submissions_allowed
+    ):
+        message = "You have {} submissions that are being processed. \
+                   Please wait for them to finish and then try again."
+        response_data = {"error": message.format(submissions_in_progress)}
+        return Response(
+            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+
+    serializer = SubmissionSerializer(
+        data=request.data,
+        context={
+            "participant_team": participant_team,
+            "challenge_phase": challenge_phase,
+            "request": request,
+        },
+    )
+
+    message = {
+        "challenge_pk": challenge_id,
+        "phase_pk": challenge_phase_id,
+    }
+
+    if challenge.is_docker_based:  # How does this relate? 
+        try:
+            file_content = json.loads(request.FILES["input_file"].read())
+            message["submitted_image_uri"] = file_content[
+                "submitted_image_uri"
+            ]
+        except Exception as ex:
+            response_data = {
+                "error": "Error {} in submitted_image_uri from submission file".format(
+                    ex
+                )
+            }
+            return Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
+
+    if serializer.is_valid():
+        serializer.save()
+        submission = serializer.instance
+        message["submission_pk"] = submission.id
+
+        filename = ""
+        file_key = ""
+        url = get_presigned_url_for_file_upload(filename, key)
+        submission.input_file.path = url
+
+        response_data = {"presigned_url": url, "submission_message": message}
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(
+        serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+    )
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def publish_submission_message_api(request):
+    message = request.data.get("submission_message")
+    publish_submission_message(message)
+    response_data = {"id":message["submission_pk"]}
+    return Response(response_data, status=status.HTTP_200_OK)
