@@ -305,6 +305,9 @@ export class ChallengesettingsComponent implements OnInit {
     SELF.globalService.showModal(PARAMS);
   }
 
+  /**
+   * Edit challenge start and end date function
+   */
   challengeDateDialog() {
     const SELF = this;
     SELF.apiCall = (params) => {
@@ -354,6 +357,52 @@ export class ChallengesettingsComponent implements OnInit {
         }
       ],
       isButtonDisabled: true,
+      confirmCallback: SELF.apiCall
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Edit challenge image function
+   */
+  editChallengeImage() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+        const FORM_DATA: FormData = new FormData();
+        FORM_DATA.append('image', params['image']);
+        SELF.apiService.patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        ).subscribe(
+          data => {
+            SELF.globalService.showToast('success', 'The Challenge image successfully updated!', 5);
+          },
+          err => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => console.log('EDIT-CHALLENGE-IMAGE-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Challenge Image',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Challenge Image',
+          isRequired: true,
+          label: 'image',
+          placeholder: '',
+          type: 'file',
+          value: ''
+        }
+      ],
       confirmCallback: SELF.apiCall
     };
     SELF.globalService.showModal(PARAMS);
