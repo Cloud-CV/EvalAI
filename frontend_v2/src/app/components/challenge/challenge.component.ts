@@ -289,7 +289,7 @@ export class ChallengeComponent implements OnInit {
 
   stopParticipation(event) {
     event.preventDefault();
-    const participationState = (this.challenge['is_registration_open']) ? 'close' : 'open';
+    const participationState = (this.challenge['is_registration_open']) ? 'Close' : 'Open';
 
     this.apiCall = () => {
       if (this.isChallengeHost && this.challenge['id'] !== null) {
