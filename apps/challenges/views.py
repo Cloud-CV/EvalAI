@@ -1377,6 +1377,14 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 }
                 send_slack_notification(message=message)
 
+            response = start_workers([challenge])
+            count, failures = response["count"], response["failures"]
+            logging.info("Total worker start count is {} and failures are: {}".format(count, failures))
+            if count:
+                logging.info("{} workers started successfully".format(count))
+            else:
+                logging.error("Failure when starting workers {}".format(failures))
+
             response_data = {
                 "success": "Challenge {} has been created successfully and"
                 " sent for review to EvalAI Admin.".format(challenge.title)

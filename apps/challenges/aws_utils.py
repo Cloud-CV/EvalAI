@@ -609,6 +609,7 @@ def service_manager(
         return response
 
 
+@app.task
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -663,6 +664,7 @@ def start_workers(queryset):
     return {"count": count, "failures": failures}
 
 
+@app.task
 def stop_workers(queryset):
     """
     The function called by the admin action method to stop all the selected workers.
@@ -717,6 +719,7 @@ def stop_workers(queryset):
     return {"count": count, "failures": failures}
 
 
+@app.task
 def scale_workers(queryset, num_of_tasks):
     """
     The function called by the admin action method to scale all the selected workers.
@@ -771,6 +774,7 @@ def scale_workers(queryset, num_of_tasks):
     return {"count": count, "failures": failures}
 
 
+@app.task
 def delete_workers(queryset):
     """
     The function called by the admin action method to delete all the selected workers.
@@ -824,6 +828,7 @@ def delete_workers(queryset):
     return {"count": count, "failures": failures}
 
 
+@app.task
 def restart_workers(queryset):
     """
     The function called by the admin action method to restart all the selected workers.
