@@ -41,20 +41,20 @@
    <!-- my challenges  -->
   <div *ngIf="routerPublic.url === myChallengesRoutePathCommon" [@.disabled]="true">
     <mat-tab-group>
-      <mat-tab label="My Ongoing Challenges ({{ filteredOngoingChallenges.length }})">
-        <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
-        <div *ngIf="!filteredOngoingChallenges.length">
+      <mat-tab label="Hosted Challenges ({{ filteredChallenges.length }})">
+        <!-- <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div> -->
+        <div *ngIf="!filteredChallenges.length">
           You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
         </div>
-        <div class="row" *ngIf="filteredOngoingChallenges.length">
-          <div class="col s12 m3" *ngFor="let challenge of filteredOngoingChallenges">
+        <div class="row" *ngIf="filteredChallenges.length">
+          <div class="col s12 m3" *ngFor="let challenge of filteredChallenges">
             <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge['id']]">
               <app-challengecard [challenge]="challenge"></app-challengecard>
             </a>
           </div>
         </div>
       </mat-tab>
-      <mat-tab label="My Upcoming Challenges ({{ filteredUpcomingChallenges.length }})">
+      <!-- <mat-tab label="My Upcoming Challenges ({{ filteredUpcomingChallenges.length }})">
         <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
         <div *ngIf="!filteredUpcomingChallenges.length">
           You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
@@ -78,8 +78,8 @@
               <app-challengecard [challenge]="challenge"></app-challengecard>
             </a>
           </div>
-        </div>
-      </mat-tab>
+        </div> -->
+      <!-- </mat-tab> -->
       <!-- Analytics -->
       <mat-tab label="Analytics">
         <app-analytics></app-analytics>

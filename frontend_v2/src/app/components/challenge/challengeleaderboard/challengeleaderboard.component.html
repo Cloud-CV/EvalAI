@@ -44,14 +44,9 @@
                 <mat-chip-list class="leaderboard-description-span">
                   <b><span class="leaderboard-description">*</span></b> - Private submission
                 </mat-chip-list>
-                <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
-                  <div (click)="showLeaderboardByLatestOrBest()" class="btn-switch sort-leaderboard-switch" [ngClass]="{'btn-switch--on':showLeaderboardByLatest}"
-                  [(ngModel)]="showLeaderboardByLatest" ngDefaultControl>
-                      <div class="btn-switch-circle" [ngClass]="{'btn-switch--on':showLeaderboardByLatest}"
-                      [(ngModel)]="showLeaderboardByLatest" ngDefaultControl></div>
-                  </div>
-                  <span class="w-400"> {{sortLeaderboardTextOption}}</span>
-                </mat-chip-list>
+                <mat-checkbox class="pull-right sort-leaderboard-switch" *ngIf="isChallengeHost" (change)="showLeaderboardByLatestOrBest()" [(ngModel)]="showLeaderboardByLatest">
+                  <label class="w-400 complete-leaderboard-text"> {{sortLeaderboardTextOption}}</label>
+                </mat-checkbox>
                 <mat-checkbox class="pull-right complete-leaderboard" *ngIf="isChallengeHost && showLeaderboardToggle"
                   (change)="toggleLeaderboard(getAllEntries)"
                   [(ngModel)]="getAllEntries">
