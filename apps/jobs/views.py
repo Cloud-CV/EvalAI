@@ -132,6 +132,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    if not challenge.approved_by_admin:
+        response_data = {"error": "Challenge is not yet approved by admin."}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
@@ -2082,7 +2086,9 @@ def get_github_badge_data(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
+def get_presigned_url_for_submission(
+    request, challenge_pk, challenge_phase_pk
+):
     # Abstract out the validation
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -2105,18 +2111,14 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
 
     if not challenge.is_active:
         response_data = {"error": "Challenge is not active"}
-        return Response(
-            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check if challenge phase is active
     if not challenge_phase.is_active:
         response_data = {
             "error": "Sorry, cannot accept submissions since challenge phase is not active"
         }
-        return Response(
-            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check if user is a challenge host or a participant
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
@@ -2125,9 +2127,7 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
             response_data = {
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
             }
-            return Response(
-                response_data, status=status.HTTP_403_FORBIDDEN
-            )
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         # if allowed email ids list exist, check if the user exist in that list or not
         if challenge_phase.allowed_email_ids:
@@ -2143,13 +2143,9 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
         request.user, challenge_pk
     )
     try:
-        participant_team = ParticipantTeam.objects.get(
-            pk=participant_team_id
-        )
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
     except ParticipantTeam.DoesNotExist:
-        response_data = {
-            "error": "You haven't participated in the challenge"
-        }
+        response_data = {"error": "You haven't participated in the challenge"}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     all_participants_email = participant_team.get_all_participants_email()
@@ -2160,9 +2156,7 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
                 participant_team.team_name
             )
             response_data = {"error": message}
-            return Response(
-                response_data, status=status.HTTP_403_FORBIDDEN
-            )
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     # Fetch the number of submissions under progress.
     submissions_in_progress_status = [
@@ -2183,9 +2177,7 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
         message = "You have {} submissions that are being processed. \
                    Please wait for them to finish and then try again."
         response_data = {"error": message.format(submissions_in_progress)}
-        return Response(
-            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     serializer = SubmissionSerializer(
         data=request.data,
@@ -2201,7 +2193,7 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
         "phase_pk": challenge_phase_id,
     }
 
-    if challenge.is_docker_based:  # How does this relate? 
+    if challenge.is_docker_based:  # How does this relate?
         try:
             file_content = json.loads(request.FILES["input_file"].read())
             message["submitted_image_uri"] = file_content[
@@ -2213,25 +2205,28 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
                     ex
                 )
             }
-            return Response(
-                response_data, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if serializer.is_valid():
         serializer.save()
         submission = serializer.instance
         message["submission_pk"] = submission.id
 
-        filename = "submission_files/presigned_url_files/submission_{}/{}".format(submission.id, uuid.uuid4())
-        file_key = filename
-        presigned_url = get_presigned_url_for_file_upload(filename, file_key)
-        submission.input_file.path = presigned_url
+        file_name = "submission_files/presigned_url_files/submission_{}/{}".format(
+            submission.id, uuid.uuid4()
+        )
+        file_key = file_name
+        presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
+        submission.input_file.url = "evalai.s3.amazonaws.com{}{}".format(
+            settings.MEDIA_URL, file_name
+        )
 
-        response_data = {"presigned_url": presigned_url, "submission_message": message}
+        response_data = {
+            "presigned_url": presigned_url,
+            "submission_message": message,
+        }
         return Response(response_data, status=status.HTTP_201_CREATED)
-    return Response(
-        serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
-    )
+    return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["POST"])
@@ -2241,5 +2236,5 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
 def publish_submission_message_api(request):
     message = request.data.get("submission_message")
     publish_submission_message(message)
-    response_data = {"id":message["submission_pk"]}
+    response_data = {"id": message["submission_pk"]}
     return Response(response_data, status=status.HTTP_200_OK)

@@ -2722,11 +2722,11 @@ def get_presigned_url_for_annotations(request, challenge_phase_pk):
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
-    filename = "test_annotations/presigned_url_files/challenge_phase_{}/{}".format(challenge_phase_pk, uuid.uuid4())
-    key = filename
-    presigned_url = get_presigned_url_for_file_upload(filename, key)
+    file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}".format(challenge_phase_pk, uuid.uuid4())
+    file_key = file_name
+    presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
 
-    challenge_phase.test_annotation.path = presigned_url  # I don't think presigned url works for downloading the file in the sub worker. 
+    challenge_phase.test_annotation.url = "evalai.s3.amazonaws.com{}{}".format(settings.MEDIA_URL, file_name)
     challenge_phase.save()
 
     response_data = {"presigned_url": presigned_url}
