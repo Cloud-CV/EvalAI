@@ -40,6 +40,7 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
+    RandomFileName,
     get_presigned_url_for_file_upload,
     get_queue_name,
     get_url_from_hostname,
@@ -2713,18 +2714,19 @@ def manage_worker(request, challenge_pk, action):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_presigned_url_for_annotations(request, challenge_phase_pk):
-    response_data = {
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
             "error": "Sorry, you are not authorized for uploading an annotation file."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
-    filename = ""
-    key = ""
+    filename = "test_annotations/presigned_url_files/challenge_phase_{}/{}".format(challenge_phase_pk, uuid.uuid4())
+    key = filename
     presigned_url = get_presigned_url_for_file_upload(filename, key)
 
-    challenge_phase.test_annotation.path = presigned_url
+    challenge_phase.test_annotation.path = presigned_url  # I don't think presigned url works for downloading the file in the sub worker. 
     challenge_phase.save()
 
     response_data = {"presigned_url": presigned_url}

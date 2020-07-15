@@ -2,6 +2,7 @@ import botocore
 import datetime
 import json
 import logging
+import uuid
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -25,11 +26,12 @@ from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
-    paginated_queryset,
+    RandomFileName,
     StandardResultSetPagination,
-    get_or_create_sqs_queue_object,
     get_boto3_client,
+    get_or_create_sqs_queue_object,
     get_presigned_url_for_file_upload,
+    paginated_queryset,
 )
 from challenges.models import (
     ChallengePhase,
@@ -2220,12 +2222,12 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
         submission = serializer.instance
         message["submission_pk"] = submission.id
 
-        filename = ""
-        file_key = ""
-        url = get_presigned_url_for_file_upload(filename, key)
-        submission.input_file.path = url
+        filename = "submission_files/presigned_url_files/submission_{}/{}".format(submission.id, uuid.uuid4())
+        file_key = filename
+        presigned_url = get_presigned_url_for_file_upload(filename, file_key)
+        submission.input_file.path = presigned_url
 
-        response_data = {"presigned_url": url, "submission_message": message}
+        response_data = {"presigned_url": presigned_url, "submission_message": message}
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(
         serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
