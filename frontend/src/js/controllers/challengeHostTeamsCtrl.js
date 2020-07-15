@@ -406,10 +406,8 @@ vm.confirmMemberDelete = function(ev, hostTeamId, hostId) {
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function() {
-
                 vm.team.error = false;
                 $rootScope.notify("info", "You have removed the member successfully");
-
                 var parameters = {};
                 parameters.url = 'hosts/challenge_host_team';
                 parameters.method = 'GET';
@@ -420,7 +418,6 @@ vm.confirmMemberDelete = function(ev, hostTeamId, hostId) {
                         var details = response.data;
                         if (status == 200) {
                             vm.existTeam = details;
-
 
                             // condition for pagination
                             if (vm.existTeam.next === null) {
@@ -437,9 +434,7 @@ vm.confirmMemberDelete = function(ev, hostTeamId, hostId) {
                                 vm.isPrev = '';
                             }
 
-
                             if (vm.existTeam.count === 0) {
-
                                 vm.showPagination = false;
                                 vm.paginationMsg = "No team exists for now. Start by creating a new team!";
                             } else {

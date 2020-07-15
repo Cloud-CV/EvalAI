@@ -202,7 +202,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 
             if (challenge_host.user == request.user):  # when the user tries to remove himself
                 response_data = {
-                    "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
+                    "error": "You are not allowed to remove yourself since you are the team admin. Please delete the team if you want to do so!"
                 }  # noqa: ignore=E501
                 return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
             else:

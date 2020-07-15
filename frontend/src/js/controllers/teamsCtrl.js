@@ -361,7 +361,6 @@ vm.confirmMemberDelete = function(ev, participantTeamId, participantId) {
                         if (status == 200) {
                             vm.existTeam = details;
 
-
                             // condition for pagination
                             if (vm.existTeam.next === null) {
                                 vm.isNext = 'disabled';
@@ -376,7 +375,6 @@ vm.confirmMemberDelete = function(ev, participantTeamId, participantId) {
                             } else {
                                 vm.isPrev = '';
                             }
-
 
                             if (vm.existTeam.count === 0) {
 
