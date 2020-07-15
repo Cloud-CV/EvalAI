@@ -90,7 +90,7 @@ def publish_submission_message(message):
         participant_team_name = submission.participant_team.team_name
         phase_name = submission.challenge_phase.name
         message = {
-            "text": "A *new submission* is uploaded to {}".format(
+            "text": "A *new submission* has been uploaded to {}".format(
                 challenge_name
             ),
             "fields": [
@@ -102,6 +102,11 @@ def publish_submission_message(message):
                 {
                     "title": "Participant Team Name",
                     "value": participant_team_name,
+                    "short": True,
+                },
+                {
+                    "title": "Submission Id",
+                    "value": message["submission_pk"],
                     "short": True,
                 },
             ],

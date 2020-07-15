@@ -1,7 +1,6 @@
 FROM evalai_django
 
 RUN apt-get update && \
-  apt-get upgrade -y && \
   apt-get install -q -y default-jdk
 
 RUN pip install -U cffi service_identity cython==0.29 numpy==1.14.5

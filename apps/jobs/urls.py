@@ -31,6 +31,11 @@ urlpatterns = [
         name="leaderboard",
     ),
     url(
+        r"^phase_split/(?P<challenge_phase_split_pk>[0-9]+)/public_leaderboard_all_entries/$",
+        views.get_all_entries_on_public_leaderboard,
+        name="get_all_entries_on_public_leaderboard",
+    ),
+    url(
         r"^submission/(?P<submission_id>[0-9]+)$",
         views.get_submission_by_pk,
         name="get_submission_by_pk",
@@ -39,6 +44,11 @@ urlpatterns = [
         r"^challenge/(?P<challenge_pk>[0-9]+)/update_submission/$",
         views.update_submission,
         name="update_submission",
+    ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/update_partially_evaluated_submission/$",
+        views.update_partially_evaluated_submission,
+        name="update_partially_evaluated_submission",
     ),
     url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/submission/",
@@ -69,5 +79,10 @@ urlpatterns = [
         r"^challenge/(?P<challenge_pk>[0-9]+)/eks_bearer_token/$",
         views.get_bearer_token,
         name="get_bearer_token",
+    ),
+    url(
+        r"^phase_splits/(?P<challenge_phase_split_pk>[0-9]+)/teams/(?P<participant_team_pk>[0-9]+)/github_badge/$",
+        views.get_github_badge_data,
+        name="get_github_badge_data",
     ),
 ]

@@ -355,8 +355,7 @@ def make_request(url, method, data=None):
             raise
         except requests.exceptions.HTTPError:
             logger.exception(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
+                f"The request to URL {url} is failed due to {response.json()}"
             )
             raise
         return response.json()
@@ -372,8 +371,7 @@ def make_request(url, method, data=None):
             raise
         except requests.exceptions.HTTPError:
             logger.info(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
+                f"The request to URL {url} is failed due to {response.json()}"
             )
             raise
         return response.json()
@@ -389,8 +387,7 @@ def make_request(url, method, data=None):
             raise
         except requests.exceptions.HTTPError:
             logger.info(
-                "The request to URL {} is failed due to {}"
-                % (url, response.json())
+                f"The request to URL {url} is failed due to {response.json()}"
             )
             raise
         return response.json()
@@ -404,13 +401,11 @@ def get_message_from_sqs_queue():
 
 
 def delete_message_from_sqs_queue(receipt_handle):
-    url = URLS.get("delete_message_from_sqs_queue").format(
-        QUEUE_NAME
-    )
+    url = URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
     url = return_url_per_environment(url)
-    response = make_request(url, "POST", data={
-        "receipt_handle": receipt_handle
-    })  # noqa
+    response = make_request(
+        url, "POST", data={"receipt_handle": receipt_handle}
+    )  # noqa
     return response
 
 

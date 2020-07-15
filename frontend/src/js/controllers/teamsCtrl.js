@@ -26,7 +26,7 @@
         vm.team.error = false;
         vm.showPagination = false;
 
-        // loader for existng teams// loader for exisiting teams
+        // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
@@ -83,7 +83,7 @@
                     // select team from existing list
                     vm.selectExistTeam = function() {
 
-                        // loader for exisiting teams
+                        // loader for existing teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
                         vm.loaderContainer = angular.element('.exist-team-card');
@@ -111,7 +111,7 @@
 
                     // to load data with pagination
                     vm.load = function(url) {
-                        // loader for exisiting teams
+                        // loader for existing teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
                         vm.loaderContainer = angular.element('.exist-team-card');
@@ -134,7 +134,7 @@
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.existTeam.count / 100;
+                                    vm.currentPage = vm.existTeam.count / 10;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);

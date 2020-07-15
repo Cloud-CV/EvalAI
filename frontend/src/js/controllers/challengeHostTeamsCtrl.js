@@ -27,7 +27,7 @@
         vm.hostTeamId = null;
         vm.challengeHostTeamId = null;
 
-        // loader for existng teams// loader for exisiting teams
+        // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
@@ -36,22 +36,6 @@
 
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
-
-        vm.newContainer = angular.element('.new-team-card');
-
-        // show loader
-        vm.startLoader = function(msg) {
-            vm.isLoader = true;
-            vm.loaderTitle = msg;
-            vm.newContainer.addClass('low-screen');
-        };
-
-        // stop loader
-        vm.stopLoader = function() {
-            vm.isLoader = false;
-            vm.loaderTitle = '';
-            vm.newContainer.removeClass('low-screen');
-        };
 
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
@@ -100,7 +84,7 @@
 
                     // to load data with pagination
                     vm.load = function(url) {
-                        // loader for exisiting teams
+                        // loader for existing teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
                         vm.loaderContainer = angular.element('.exist-team-card');
@@ -122,7 +106,7 @@
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.existTeam.count / 100;
+                                    vm.currentPage = vm.existTeam.count / 10;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
@@ -194,7 +178,7 @@
                 onSuccess: function() {
                     $mdDialog.hide();
                     vm.team = {};
-                    $rootScope.notify("success", "Host Team updated!");
+                    $rootScope.notify("success", "Host team updated!");
                     var parameters = {};
                     // Retrives the updated lists and displays it.
                     parameters.url = 'hosts/challenge_host_team';
@@ -233,7 +217,7 @@
 
         // function to create new team
         vm.createNewTeam = function() {
-            vm.isLoader = true;
+            vm.isExistLoader = true;
             vm.loaderTitle = '';
 
             vm.startLoader("Loading Teams");

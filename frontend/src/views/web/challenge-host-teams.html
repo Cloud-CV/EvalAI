@@ -45,7 +45,7 @@
                                 <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
                                     <i class="fa fa-chevron-left"></i>
                                 </a>
-                                <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/100 | ceil}} </strong></span>
+                                <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/10 | ceil}} </strong></span>
                                 <a ng-class="challengeHostTeams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.next)">
                                     <i class="fa fa-chevron-right"></i>
                                 </a>
@@ -66,7 +66,7 @@
         <div class="col s12 m6">
             <div class=" ev-card-panel ev-z-depth-5">
                 <div class="ev-md-container ev-panel-title"><strong>Create a New Team</strong></div>
-                <div class="loader-container card-loader-container" id="loader" ng-show="challengeHostTeams.isLoader" class="fade">
+                <div class="loader-container card-loader-container" id="sim-loader" class="fade">
                     <!-- <div class="text-dark-gray center w-300 loader-title">{{challengeHostTeams.loaderTitle}}</div> -->
                     <div class="loader">
                         <div></div>

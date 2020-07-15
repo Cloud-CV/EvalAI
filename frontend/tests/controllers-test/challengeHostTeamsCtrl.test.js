@@ -51,7 +51,7 @@ describe('Unit tests for challenge host team controller', function () {
             var message = 'Start Loader';
             vm = createController();
             vm.startLoader(message);
-            expect(vm.isLoader).toEqual(true);
+            expect(vm.isExistLoader).toEqual(true);
             expect(vm.loaderTitle).toEqual(message);
         });
 
@@ -59,7 +59,7 @@ describe('Unit tests for challenge host team controller', function () {
             var message = '';
             vm = createController();
             vm.stopLoader();
-            expect(vm.isLoader).toEqual(false);
+            expect(vm.isExistLoader).toEqual(false);
             expect(vm.loaderTitle).toEqual(message);
         });
     });
@@ -273,7 +273,7 @@ describe('Unit tests for challenge host team controller', function () {
             vm.team.TeamURL = "https://team.url";
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
             expect($mdDialog.hide).toHaveBeenCalled();
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Host Team updated!");
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Host team updated!");
         });
 
         it('successfully retrive the updated list `hosts/challenge_host_team`', function () {
@@ -363,7 +363,7 @@ describe('Unit tests for challenge host team controller', function () {
                 successResponse = response;
                 
                 vm.createNewTeam();
-                expect(vm.isLoader).toEqual(true);
+                expect(vm.isExistLoader).toEqual(true);
                 expect(vm.loaderTitle).toEqual('');
 
                 expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
@@ -397,7 +397,7 @@ describe('Unit tests for challenge host team controller', function () {
         it('backend error on creating new host team', function () {
             success = false;
             vm.createNewTeam();
-            expect(vm.isLoader).toEqual(true);
+            expect(vm.isExistLoader).toEqual(true);
             expect(vm.loaderTitle).toEqual('');
             expect(vm.startLoader("Loading Teams"));
             expect(vm.team.error).toEqual('error')
@@ -415,7 +415,7 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
          it('open dialog to confirm delete', function () {
-            var participantTeamId = 1;
+            var hostTeamId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -424,7 +424,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Yes')
                 .cancel("No");
-            vm.confirmDelete(ev, participantTeamId);
+            vm.confirmDelete(ev, hostTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });
@@ -463,7 +463,7 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
          it('open dialog to invite others', function () {
-            var participantTeamId = 1;
+            var hostId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.prompt()
                 .title('Add other members to your team')
@@ -473,7 +473,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Add')
                 .cancel('Cancel');
-            vm.inviteOthers(ev, participantTeamId);
+            vm.inviteOthers(ev, hostId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });

@@ -43,7 +43,7 @@
                                 <a ng-class="teams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.previous)">
                                     <i class="fa fa-chevron-left"></i>
                                 </a>
-                                <span class="pagination-title"> <strong class="text-med-black"> Page {{teams.currentPage | ceil}} of {{teams.existTeam.count/100 | ceil}} </strong></span>
+                                <span class="pagination-title"> <strong class="text-med-black"> Page {{teams.currentPage | ceil}} of {{teams.existTeam.count/10 | ceil}} </strong></span>
                                 <a ng-class="teams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.next)">
                                     <i class="fa fa-chevron-right"></i>
                                 </a>
@@ -94,5 +94,17 @@
             <h2></h2>
             <p></p>
         </md-dialog>
+    </div>
+</div>
+
+<!-- simple loader -->
+<div class="loader-container" id="sim-loader">
+    <div class="text-white center w-300 loader-title">Loading</div>
+    <div class="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
     </div>
 </div>

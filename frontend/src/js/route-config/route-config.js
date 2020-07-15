@@ -265,6 +265,15 @@
             title: 'Leaderboard',
         };
 
+        var manage = {
+            name: "web.challenge-main.challenge-page.manage",
+            parent: "web.challenge-main.challenge-page",
+            url: "/manage",
+            templateUrl: baseUrl + "/web/challenge/manage.html",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
+        };
+
         var challenge_phase_leaderboard = {
             name: "web.challenge-main.challenge-page.phase-leaderboard",
             url: "/leaderboard/:phaseSplitId",
@@ -516,6 +525,8 @@
         $stateProvider.state(challenge_invitation);
         $stateProvider.state(get_submission_related_files);
 
+        $stateProvider.state(manage);
+
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
             state.go('error-404');
@@ -588,7 +599,7 @@
                 return (typeof arg === undefined ? def : arg);
             }
 
-            timeout = pick(timeout, 3000);
+            timeout = pick(timeout, 5000);
             toaster.pop({
                 type: type,
                 body: message,

@@ -85,7 +85,7 @@ class TestChallengeHost(BaseTestClass):
         self.assertEqual(output, expected)
 
     def test_is_user_a_host_of_challenge_with_authenticated_not_host_user(
-        self
+        self,
     ):
 
         self.client.force_authenticate(user=self.user)
