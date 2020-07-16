@@ -132,10 +132,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not challenge.approved_by_admin:
-        response_data = {"error": "Challenge is not yet approved by admin."}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
@@ -2095,6 +2091,10 @@ def get_presigned_url_for_submission(
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge.approved_by_admin:
+        response_data = {"error": "Challenge is not yet approved by admin."}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check if the challenge phase exists or not
     try:
