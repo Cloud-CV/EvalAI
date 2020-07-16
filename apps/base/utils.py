@@ -168,26 +168,27 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_presigned_url_for_file_upload(filename, file_key):
+def get_presigned_url_for_file_upload(file_name, file_key):
     """
+    Function to get the presigned url to upload a file to s3 with name file_name and key as file_key.
     """
     try:
         aws_keys = {
-        "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-        "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+        "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+        "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
         "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
 
         s3 = get_boto3_client("s3", aws_keys)
         response = s3.generate_presigned_url(
             ClientMethod='upload_file',
-            Params={'Filename': filename, 'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_key},
-            ExpiresIn=settings.PRESIGNED_URL_EXPIRY,
+            Params={'Filename': file_name, 'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_key},
+            ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
         )
         return response
     except Exception as e:
         logger.exception(e)
-        # Handle the error case by sending back a response here?
+        return ""
 
 
 def get_or_create_sqs_queue_object(queue_name):

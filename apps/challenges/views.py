@@ -2720,13 +2720,20 @@ def get_presigned_url_for_annotations(request, challenge_phase_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    challenge_phase = ChallengePhase.objects.get(
+        pk=challenge_phase_pk, challenge=challenge
+    )
 
-    file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}".format(challenge_phase_pk, uuid.uuid4())
+    file_ext = os.path.splitext(request.data["file_name"])[-1]
+    file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(challenge_phase_pk, uuid.uuid4(), file_ext)
     file_key = file_name
-    presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
 
-    challenge_phase.test_annotation.url = "evalai.s3.amazonaws.com{}{}".format(settings.MEDIA_URL, file_name)
+    presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
+    if presigned_url == "":
+        response_data = {"error": "Could not fetch presigned url."}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge_phase.test_annotation.url = "{}{}".format(settings.MEDIA_URL, file_name)
     challenge_phase.save()
 
     response_data = {"presigned_url": presigned_url}

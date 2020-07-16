@@ -2193,7 +2193,7 @@ def get_presigned_url_for_submission(
         "phase_pk": challenge_phase_id,
     }
 
-    if challenge.is_docker_based:  # How does this relate?
+    if challenge.is_docker_based:
         try:
             file_content = json.loads(request.FILES["input_file"].read())
             message["submitted_image_uri"] = file_content[
@@ -2212,12 +2212,18 @@ def get_presigned_url_for_submission(
         submission = serializer.instance
         message["submission_pk"] = submission.id
 
-        file_name = "submission_files/presigned_url_files/submission_{}/{}".format(
-            submission.id, uuid.uuid4()
+        file_ext = os.path.splitext(request.data["file_name"])[-1]
+        file_name = "submission_files/presigned_url_files/submission_{}/{}{}".format(
+            submission.id, uuid.uuid4(), file_ext
         )
         file_key = file_name
+
         presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
-        submission.input_file.url = "evalai.s3.amazonaws.com{}{}".format(
+        if presigned_url == "":
+            response_data = {"error": "Could not fetch presigned url."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        submission.input_file.url = "{}{}".format(
             settings.MEDIA_URL, file_name
         )
 
