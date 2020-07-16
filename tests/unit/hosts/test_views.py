@@ -479,7 +479,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             },
         )
 
-        expected = {"error": "ChallengeHost does not exist"}
+        expected = {"error": "ChallengeHost" + self.challenge_host3.pk + 1 + "does not exist"}
 
         response = self.client.delete(self.url, {})
         self.assertEqual(response.data, expected)
@@ -510,7 +510,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         )
 
         expected = {
-            "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"  # noqa: ignore=E501
+            "error": "You are not allowed to remove yourself since you are the team admin. Please delete the team if you want to do so!"  # noqa: ignore=E501
         }
 
         response = self.client.delete(self.url, {})
