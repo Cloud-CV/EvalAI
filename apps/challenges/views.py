@@ -2725,7 +2725,9 @@ def get_presigned_url_for_annotations(request, challenge_phase_pk):
     )
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
-    file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(challenge_phase_pk, uuid.uuid4(), file_ext)
+    file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(
+        challenge_phase_pk, uuid.uuid4(), file_ext
+    )
     file_key = file_name
 
     presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
@@ -2733,11 +2735,10 @@ def get_presigned_url_for_annotations(request, challenge_phase_pk):
         response_data = {"error": "Could not fetch presigned url."}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_phase.test_annotation.url = "{}{}".format(settings.MEDIA_URL, file_name)
+    challenge_phase.test_annotation.url = "{}{}".format(
+        settings.MEDIA_URL, file_name
+    )
     challenge_phase.save()
 
     response_data = {"presigned_url": presigned_url}
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-
