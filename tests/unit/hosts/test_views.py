@@ -482,7 +482,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         expected = {"error": "ChallengeHost " + str(self.challenge_host3.pk + 1) + " does not exist"}
 
         response = self.client.delete(self.url, {})
-        self.assertDictEqual(response.data, expected)
+        self.assertEqual(str(response.data['detail'][0]), expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
