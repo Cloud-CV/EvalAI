@@ -181,7 +181,7 @@ def get_presigned_url_for_file_upload(file_name, file_key):
 
         s3 = get_boto3_client("s3", aws_keys)
         response = s3.generate_presigned_url(
-            ClientMethod='upload_file',
+            ClientMethod='upload_fileobj',
             Params={'Filename': file_name, 'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_key},
             ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
         )
