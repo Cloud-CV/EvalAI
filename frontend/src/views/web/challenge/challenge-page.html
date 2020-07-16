@@ -1,14 +1,9 @@
 <section class="ev-sm-container"
-         ng-if="challenge.isChallengeHost && challenge.approved_by_admin && challenge.showChallengeSubmissionBanner">
+         ng-if="challenge.isChallengeHost && !challenge.approved_by_admin && challenge.showChallengeSubmissionBanner">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-banner">
         <div class="row margin-bottom-cancel">
-            <div class="col s10 m10 l10">Thank you for successfully creating a challenge on EvalAI.
-                Please note that the challenge requires approval from the EvalAI Team so that the challenge is visible to public.
-            </div>
-            <div class="col s2 m2 l2 center">
-                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit"
-                    ng-click="challenge.closeChallengeBanner()">
-                    <i class="fa fa-close"></i>Close</button>
+            <div class="col s12 m12 l12">Thank you for successfully creating a challenge on EvalAI.
+                Please note that the challenge requires approval from the EvalAI Team so that the challenge is visible to the public.
             </div>
         </div>
     </div>
