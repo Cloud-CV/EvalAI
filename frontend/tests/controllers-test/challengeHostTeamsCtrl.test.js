@@ -443,7 +443,7 @@ describe('Unit tests for challenge host team controller', function () {
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove this member?')
-                .textContent('Note: This action will remove this member from the team.')
+                .textContent('Note: This action will remove the member from team.')
                 .ariaLabel('Lucky day')
                 .targetEvent(ev)
                 .ok('Yes')

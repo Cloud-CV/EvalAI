@@ -548,7 +548,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             },
         )
         response = self.client.delete(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertDictEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_particular_challenge_host_delete(self):
         self.url = reverse_lazy(
