@@ -479,7 +479,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             },
         )
 
-        expected = {"ChallengeHost " + str(self.challenge_host3.pk + 1) + " does not exist"}
+        expected = "ChallengeHost " + str(self.challenge_host3.pk + 1) + " does not exist"
 
         response = self.client.delete(self.url, {})
         self.assertEqual(str(response.data['detail']), expected)
