@@ -2082,9 +2082,7 @@ def get_github_badge_data(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_submission(
-    request, challenge_pk, challenge_phase_pk
-):
+def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
     # Abstract out the validation
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -2192,20 +2190,6 @@ def get_presigned_url_for_submission(
         "challenge_pk": challenge_id,
         "phase_pk": challenge_phase_id,
     }
-
-    if challenge.is_docker_based:
-        try:
-            file_content = json.loads(request.FILES["input_file"].read())
-            message["submitted_image_uri"] = file_content[
-                "submitted_image_uri"
-            ]
-        except Exception as ex:
-            response_data = {
-                "error": "Error {} in submitted_image_uri from submission file".format(
-                    ex
-                )
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if serializer.is_valid():
         serializer.save()

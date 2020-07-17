@@ -177,7 +177,7 @@ urlpatterns = [
         name="manage_worker",
     ),
     url(
-        r"^challenge_phase/(?P<challenge_phase_pk>[0-9]+)/get_presigned_url_for_annotations/$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/get_presigned_url_for_annotations/$",
         views.get_presigned_url_for_annotations,
         name="get_presigned_url_for_annotations",
     ),

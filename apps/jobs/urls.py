@@ -86,8 +86,7 @@ urlpatterns = [
         name="get_github_badge_data",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/"
-        r"challenge_phase/(?P<challenge_phase_pk>[0-9]+)/get_presigned_url_for_submission/$",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/get_presigned_url_for_submission/$",
         views.get_presigned_url_for_submission,
         name="get_presigned_url_for_submission",
     ),
