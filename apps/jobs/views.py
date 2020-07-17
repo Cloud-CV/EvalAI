@@ -2084,7 +2084,9 @@ def get_github_badge_data(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
+def get_presigned_url_for_submission(
+    request, challenge_pk, challenge_phase_pk
+):
     # Abstract out the validation
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
