@@ -174,9 +174,9 @@ def get_presigned_url_for_file_upload(file_name, file_key):
     """
     try:
         aws_keys = {
-        "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
-        "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
-        "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+            "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
+            "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
 
         s3 = get_boto3_client("s3", aws_keys)

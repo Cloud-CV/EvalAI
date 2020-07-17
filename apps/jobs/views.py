@@ -28,7 +28,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
-    RandomFileName,
     StandardResultSetPagination,
     get_boto3_client,
     get_or_create_sqs_queue_object,
@@ -2207,7 +2206,7 @@ def get_presigned_url_for_submission(
         )
         file_key = file_name
 
-        presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
+        presigned_url = "vurvcgurvcuru"# get_presigned_url_for_file_upload(file_name, file_key)
         if presigned_url == "":
             response_data = {"error": "Could not fetch presigned url."}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

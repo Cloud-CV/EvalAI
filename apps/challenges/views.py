@@ -1,5 +1,6 @@
 import csv
 import logging
+import os
 import random
 import requests
 import shutil
@@ -2713,7 +2714,7 @@ def manage_worker(request, challenge_pk, action):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_annotations(request, challenge_phase_pk):
+def get_presigned_url_for_annotations(request, challenge_pk, challenge_phase_pk):
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized for uploading an annotation file."
