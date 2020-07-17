@@ -483,7 +483,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
         response = self.client.delete(self.url, {})
         self.assertEqual(str(response.data['detail']), expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
         self.url = reverse_lazy(
@@ -498,7 +498,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
         response = self.client.delete(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_delete_challenge_host_when_admin_tries_to_delete_himself(self):
         self.url = reverse_lazy(
