@@ -971,9 +971,8 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
     challenge._original_approved_by_admin = curr
-    if (
-        curr and not prev
-    ):  # Checking if the challenge has been approved by admin since last time.
+
+    if curr and not prev:
         if (
             not challenge.is_docker_based
             and challenge.remote_evaluation is False
@@ -988,3 +987,17 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
                 )
             else:
                 construct_and_send_worker_start_mail(challenge)
+
+    if prev and not curr:
+        if (
+            not challenge.is_docker_based
+            and challenge.remote_evaluation is False
+        ):
+            response = delete_workers([challenge])
+            count, failures = response["count"], response["failures"]
+            if count != 1:
+                logger.error(
+                    "Worker for challenge {} couldn't be deleted! Error: {}".format(
+                        challenge.id, failures[0]["message"]
+                    )
+                )
