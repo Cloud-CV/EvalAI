@@ -2720,9 +2720,7 @@ def get_presigned_url_for_annotations(request, challenge_phase_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_phase = ChallengePhase.objects.get(
-        pk=challenge_phase_pk, challenge=challenge
-    )
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(
@@ -2735,9 +2733,7 @@ def get_presigned_url_for_annotations(request, challenge_phase_pk):
         response_data = {"error": "Could not fetch presigned url."}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_phase.test_annotation.url = "{}{}".format(
-        settings.MEDIA_URL, file_name
-    )
+    challenge_phase.test_annotation = file_name
     challenge_phase.save()
 
     response_data = {"presigned_url": presigned_url}

@@ -2,6 +2,7 @@ import botocore
 import datetime
 import json
 import logging
+import os
 import uuid
 
 from rest_framework import permissions, status
@@ -12,6 +13,7 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.utils import timezone
@@ -2186,19 +2188,20 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
         },
     )
 
-    message = {
-        "challenge_pk": challenge_id,
-        "phase_pk": challenge_phase_id,
+    submission_message = {
+        "challenge_pk": challenge_pk,
+        "phase_pk": challenge_phase_pk,
     }
 
     if serializer.is_valid():
         serializer.save()
         submission = serializer.instance
-        message["submission_pk"] = submission.id
+
+        submission_message["submission_pk"] = submission.pk
 
         file_ext = os.path.splitext(request.data["file_name"])[-1]
         file_name = "submission_files/presigned_url_files/submission_{}/{}{}".format(
-            submission.id, uuid.uuid4(), file_ext
+            submission.pk, uuid.uuid4(), file_ext
         )
         file_key = file_name
 
@@ -2207,13 +2210,12 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
             response_data = {"error": "Could not fetch presigned url."}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        submission.input_file.url = "{}{}".format(
-            settings.MEDIA_URL, file_name
-        )
+        submission.input_file = file_name
+        submission.save()
 
         response_data = {
             "presigned_url": presigned_url,
-            "submission_message": message,
+            "submission_message": submission_message,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -2224,7 +2226,7 @@ def get_presigned_url_for_submission(request, challenge_pk, challenge_phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def publish_submission_message_api(request):
-    message = request.data.get("submission_message")
+    message = json.loads(request.data.get("submission_message"))
     publish_submission_message(message)
-    response_data = {"id": message["submission_pk"]}
+    response_data = {"id": message.get("submission_pk")}
     return Response(response_data, status=status.HTTP_200_OK)
