@@ -1,6 +1,7 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { GestureConfig } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
 
@@ -47,7 +48,8 @@ import { SharedModule } from './shared/shared.module';
     ApiService,
     GlobalService,
     ChallengeService,
-    EndpointsService
+    EndpointsService,
+    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig }
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
   bootstrap: [AppComponent],
