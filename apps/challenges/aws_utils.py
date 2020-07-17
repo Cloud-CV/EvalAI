@@ -972,11 +972,8 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     challenge = instance
     challenge._original_approved_by_admin = curr
 
-    if curr and not prev:
-        if (
-            not challenge.is_docker_based
-            and challenge.remote_evaluation is False
-        ):
+    if not challenge.is_docker_based and challenge.remote_evaluation is False:
+        if curr and not prev:
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if count != 1:
@@ -988,11 +985,7 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
             else:
                 construct_and_send_worker_start_mail(challenge)
 
-    if prev and not curr:
-        if (
-            not challenge.is_docker_based
-            and challenge.remote_evaluation is False
-        ):
+        if prev and not curr:
             response = delete_workers([challenge])
             count, failures = response["count"], response["failures"]
             if count != 1:
