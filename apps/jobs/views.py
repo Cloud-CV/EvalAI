@@ -13,7 +13,6 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 
-from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.utils import timezone
@@ -2206,7 +2205,7 @@ def get_presigned_url_for_submission(
         )
         file_key = file_name
 
-        presigned_url = "vurvcgurvcuru"# get_presigned_url_for_file_upload(file_name, file_key)
+        presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
         if presigned_url == "":
             response_data = {"error": "Could not fetch presigned url."}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

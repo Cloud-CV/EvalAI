@@ -41,7 +41,6 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
-    RandomFileName,
     get_presigned_url_for_file_upload,
     get_queue_name,
     get_url_from_hostname,
