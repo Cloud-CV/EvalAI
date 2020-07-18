@@ -84,7 +84,7 @@
               <i class="fa fa-external-link"></i>
               Link
             </a>
-            <span [ngClass]="element[column]" *ngIf="element[column] !== null && column === 'status'">{{element[column]}}</span>
+            <span [class.green-text]="column === 'status'" *ngIf="element[column] !== null && column === 'status'">{{element[column]}}</span>
             <span *ngIf="element[column] === null">{{"None"}}</span>
           </td>
         </ng-container>
@@ -122,7 +122,7 @@
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Execution Time</span>
-                  <span class="fw-regular element-z"> {{element.execution_time}} </span>
+                  <span class="fw-regular element-description"> {{element.execution_time}} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Submitted At</span>
