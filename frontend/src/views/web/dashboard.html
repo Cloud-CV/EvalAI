@@ -1,4 +1,18 @@
 <section class="ev-md-container center">
+    <div ng-if="dash.isPrivileged == false">
+        <div class="row">
+            <div class="col s12 m6 offset-m3">
+                <div class="card horizontal ev-md-container ev-card-panel" style="height: 100px; padding: 10px;">
+                    <div class="card-image">
+                        <img src="dist/images/email.png" height="80" width="80">
+                    </div>
+                    <div class="card-content">
+                        <p><strong> You have limited privileges. <br> Please verify your email Id for getting all privileges!</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col s12">
             <!-- <h3 class="fs-20">Your Analysis for Host challenges are ready.</h3> -->
