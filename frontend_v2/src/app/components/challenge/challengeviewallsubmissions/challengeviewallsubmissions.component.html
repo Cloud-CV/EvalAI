@@ -67,8 +67,8 @@
         <ng-container matColumnDef="{{column}}" *ngFor="let column of columnsToDisplay; let i = index">
           <th class="cell-outside table-header fs-16" mat-header-cell *matHeaderCellDef> {{columnsHeadings[i]}} </th>
           <td class="cell-outside fw-regular align-center" mat-cell *matCellDef="let element" >
-            <span *ngIf="column === 'status' && element[column] !== null" class="{{element[column]}}">
-              {{element[column]}}</span>
+            <span *ngIf="column === 'status' && element[column] !== null" class="{{element[column]}} fs-12">
+              {{element[column] | uppercase}}</span>
             <span *ngIf="column !== 'status' && element[column] !== null && column!=='submitted_file' && column!=='submission_result_file'">
               {{element[column]}}</span>
             <a target="_blank" class="blue-text" [href]="element[column]"
@@ -110,33 +110,33 @@
                     </strong></p>
                 </div>
                 <div class="row rm-margin">
-                  <div class="col-sm-3 col-md-3 col-lg-3 no-pad-lr element">
-                    <p><strong class="text-light-black fw-semibold fs-12">Stdout File</strong>
-                      <br> <a target="_blank" class="blue-text " [href]="element.stdout_file"
+                  <div class="col-sm-3 col-md-3 col-lg-4 no-pad-lr element">
+                    <p><strong class="text-light-black fw-semibold fs-12">Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong>
+                      <br> <a target="_blank" class="blue-text fs-12" [href]="element.stdout_file"
                               *ngIf="element.stdout_file">
-                        <i class="fa fa-external-link"></i>
+                        <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stdout_file" class="fw-semibold fs-14">
+                      <strong *ngIf="!element.stdout_file" class="fw-semibold fs-12">
                         None
                       </strong></p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p><strong class="text-light-black fw-semibold fs-12">Stderr File</strong>
-                      <br> <a target="_blank" class="blue-text " [href]="element.stderr_file"
+                  <div class="col-sm-4 col-md-4 col-lg-5">
+                    <p><strong class="text-light-black fw-semibold fs-12">Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong>
+                      <br> <a target="_blank" class="blue-text fs-12" [href]="element.stderr_file"
                               *ngIf="element.stderr_file">
-                        <i class="fa fa-external-link"></i>
+                        <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stderr_file" class="fw-semibold fs-14">
+                      <strong *ngIf="!element.stderr_file" class="fw-semibold fs-12">
                         None
                       </strong></p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p><strong class="text-light-black fw-semibold fs-12">Metadata File</strong>
-                      <br> <a target="_blank" class="blue-text " [href]="element.submission_metadata_file"
+                  <div class="col-sm-5 col-md-5 col-lg-3">
+                    <p><strong class="text-light-black fw-semibold fs-12">Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong>
+                      <br> <a target="_blank" class="blue-text fs-12" [href]="element.submission_metadata_file"
                               *ngIf="element.submission_metadata_file">
-                        <i class="fa fa-external-link"></i>
+                        <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-14">
+                      <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-12">
                         None
                       </strong></p>
                   </div>
@@ -147,8 +147,8 @@
                 <div class="row rm-margin">
                   <div class="col-sm-6 sol-md-6 col-lg-6 no-pad-lr">
                     <p><strong class="text-light-black fw-semibold fs-12">Status</strong>
-                      <br> <strong class="fw-semibold fs-14" [ngClass]="element.status">
-                        {{element.status}}
+                      <br> <strong class="fw-semibold fs-14" [ngClass]="element.status" class="fs-12">
+                        {{element.status | uppercase}}
                       </strong></p>
                   </div>
                   <div class="col-sm-6 sol-md-6 col-lg-6 no-pad-lr">
@@ -165,30 +165,17 @@
                     </strong></p>
                 </div>
                 <div class="element">
-                  <mat-checkbox class="element-icon" [checked]="element.is_public" [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']" (change)="changeSubmissionVisibility(element.id, element.is_public)">
+                  <mat-checkbox class="element-icon fw-semibold" [checked]="element.is_public" [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']" (change)="confirmSubmissionVisibility(element, element.is_public)">
                     Show On Leaderboard
                   </mat-checkbox>
                 </div>
                 <div class="element">
-                  <a [matMenuTriggerFor]="settingsmenu" >
-                    <p><strong class="text-light-black fw-semibold fs-12">
-                      <i class="fa fa-gear element-icon"></i>Options
-                      </strong></p>
+                  <mat-checkbox class="element-icon fw-semibold" [checked]="element.is_flagged" (change)="confirmSubmissionFlagChange(element, element.is_flagged)">
+                    {{element.submissionFlagText}}
+                  </mat-checkbox>
+                  <a class="fa fa-refresh pointer"
+                                        (click)="reRunSubmission(element.id)"> Re-run submission
                   </a>
-                  <mat-menu #settingsmenu="matMenu" yPosition="below">
-                    <button (click)="confirmSubmissionFlagChange(element, element.is_flagged)" mat-menu-item>
-                      <mat-icon>{{element.submissionFlagIcon}}</mat-icon>
-                      <span>{{element.submissionFlagText}}</span>
-                    </button>
-                    <button *ngIf="element.status == 'finished'" (click)="confirmSubmissionVisibility(element, element.is_public)" mat-menu-item>
-                      <mat-icon>{{element.submissionVisibilityIcon}}</mat-icon>
-                      <span>{{element.submissionVisibilityText}}</span>
-                    </button>
-                    <button (click)="reRunSubmission(element.id)" mat-menu-item>
-                      <mat-icon>refresh</mat-icon>
-                      <span>Re-run submission</span>
-                    </button>
-                  </mat-menu>
                 </div>
               </div>
             </div>

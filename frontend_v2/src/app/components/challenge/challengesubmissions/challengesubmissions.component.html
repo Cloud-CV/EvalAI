@@ -85,7 +85,7 @@
               <i class="fa fa-external-link"></i>
               Link
             </a>
-            <span [class.green-text]="column === 'status'" *ngIf="element[column] !== null && column === 'status'">{{element[column]}}</span>
+            <span [ngClass]="element[column]" *ngIf="element[column] !== null && column === 'status'" class="fs-12">{{element[column] | uppercase}}</span>
             <span *ngIf="element[column] === null">{{"None"}}</span>
           </td>
         </ng-container>
@@ -119,7 +119,7 @@
               <div class="elements-action">
                 <div class="element">
                   <span class="element-description-attribution">Status</span>
-                  <span class="fw-regular element-description" [ngClass]="element.status"> {{element.status}} </span>
+                  <span class="fw-semibold element-description fs-12" [ngClass]="element.status"> {{element.status | uppercase}} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Execution Time</span>
@@ -134,9 +134,9 @@
                     Show On Leaderboard
                   </mat-checkbox>
                 </div>
-                <div class="element">
+                <div class="element fs-14 pointer">
                   <a (click)="editSubmission(element)" >
-                    <i class="fa fa-pencil"></i>
+                    Edit submission detail &nbsp;<i class="fa fa-pencil"></i>
                   </a>
                 </div>
               </div>
