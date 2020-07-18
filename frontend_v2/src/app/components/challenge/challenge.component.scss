@@ -79,6 +79,14 @@
   padding-top: 0px;
 }
 
+.edit-title {
+  padding-right: 4px;
+}
+
+.title-line {
+  line-height: 1.5
+}
+
 @media only screen and (max-width: $med-screen) {
   .challenge-flex {
     width: 100%;

@@ -18,8 +18,7 @@
                                             <h4 class="challenge-title fw-light">
                                                     {{challenge['title']}}
                                             <span *ngIf="isChallengeHost">
-                                                <a style="padding-right: 4px;"
-                                                    class="pointer"
+                                                <a class="pointer edit-title"
                                                     (click)="editChallengeTitle()">
                                                     <i class="fa fa-pencil fs-16"
                                                         aria-hidden="true"></i>
@@ -31,7 +30,7 @@
                                                 </a>
                                             </span>
                                             </h4>
-                                            <span style="line-height: 1.5" class="fw-light fs-16"
+                                            <span class="title-line fw-light fs-16"
                                                 *ngIf="challenge.creator.team_url != ''"><strong
                                                     class="text-light-black">
                                                     Organized by:</strong><a
@@ -41,14 +40,13 @@
                                                     {{challenge['creator']['team_name']}}
                                                 </a>
                                             </span>
-                                            <span style="line-height: 1.5" class="fw-light fs-16"
+                                            <span class="title-line fw-light fs-16"
                                                 *ngIf="challenge.creator.team_url == ''"><strong
                                                     class="text-light-black">Organized by:</strong>
                                                 {{challenge['creator']['team_name']}}
                                             </span>
                                             <br>
-                                            <span style="line-height: 1.5"
-                                            *ngIf="isChallengeHost">
+                                            <span class="title-line" *ngIf="isChallengeHost">
                                               <span class="fs-16 fw-light">
                                                 <a class="pointer"
                                                     (click)="togglePublishChallengeState()">
