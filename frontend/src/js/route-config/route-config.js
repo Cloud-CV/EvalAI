@@ -617,7 +617,7 @@
                 onSuccess: function() {
                     utilities.resetStorage();
                     $rootScope.isLoader = false;
-                    $state.go("auth.login");
+                    $state.go("home");
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Successfully logged out!");
                 },

@@ -103,10 +103,49 @@
                     onSuccess: function(response) {
                         if (response.status == 201) {
                             vm.isFormError = false;
-                            // vm.regMsg = "Registered successfully, Login to continue!";
+                            // Redirecting to Dashboard on Signup with limited privilege
                             $rootScope.notify("success", "Registered successfully. Please verify your email address!");
-                            $state.go('auth.login');
-                        }
+                            vm.startLoader("Taking you to EvalAI!");
+                            // call utility service
+                            var loginParameters = {};
+                            loginParameters.url = 'auth/login/';
+                            loginParameters.method = 'POST';
+                            loginParameters.data = {
+                                "username": vm.regUser.name,
+                                "password": vm.regUser.password,
+                            };
+                            loginParameters.callback = {
+                                onSuccess: function(response) {
+                                    if (response.status == 200) {
+                                        utilities.storeData('userKey', response.data.token);
+                                        if ($rootScope.previousState) {
+                                            $state.go($rootScope.previousState);
+                                            vm.stopLoader();
+                                        } else {
+                                            $state.go('web.dashboard');
+                                        }
+                                    } else {
+                                        alert("Something went wrong");
+                                    }
+                                },
+                                onError: function(response) {
+                                    if (response.status == 400) {
+                                        vm.isFormError = true;
+                                        var non_field_errors;
+                                        try {
+                                            non_field_errors = typeof(response.data.non_field_errors) !== 'undefined' ? true : false;
+                                            if (non_field_errors) {
+                                                vm.FormError = response.data.non_field_errors[0];
+                                            }
+                                        } catch (error) {
+                                            $rootScope.notify("error", error);
+                                        }
+                                    }
+                                    vm.stopLoader();
+                                }
+                            };
+                            utilities.sendRequest(loginParameters, "no-header");
+                        } 
                         vm.stopLoader();
                     },
                     onError: function(response) {
