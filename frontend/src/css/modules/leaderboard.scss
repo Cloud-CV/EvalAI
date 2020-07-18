@@ -40,3 +40,13 @@
 .complete-leaderboard {
 	vertical-align:top;
 }
+
+span.badge.partial-evaluation {
+  min-width: 3rem;
+  padding: 0 6px;
+  text-align: center;
+  font-size: 1rem;
+  line-height: inherit;
+  float: left;
+  box-sizing: border-box;
+}

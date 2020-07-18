@@ -8,12 +8,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web', '0009_added_subscribers_model'),
+        ("web", "0009_added_subscribers_model"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='subscribers',
-            options={'verbose_name_plural': 'Subscribers'},
+            name="subscribers", options={"verbose_name_plural": "Subscribers"},
         ),
     ]

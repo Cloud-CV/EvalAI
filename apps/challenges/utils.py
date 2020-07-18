@@ -1,9 +1,12 @@
 import os
 import json
 import logging
+import random
+import string
 import uuid
 
 from botocore.exceptions import ClientError
+from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
 from base.utils import get_model_object, get_boto3_client, mock_if_non_prod_aws
@@ -29,10 +32,33 @@ get_dataset_split_model = get_model_object(DatasetSplit)
 get_challenge_phase_split_model = get_model_object(ChallengePhaseSplit)
 
 
+def get_missing_keys_from_dict(dictionary, keys):
+    """
+    Function to get a list of missing keys from a python dict.
+
+    Parameters:
+    dict: keys-> 'dictionary': A python dictionary.
+                 'keys': List of keys to check for in the dictionary.
+
+    Returns:
+    list: A list of keys missing from the dictionary object.
+    """
+    missing_keys = []
+    for key in keys:
+        if key not in dictionary.keys():
+            missing_keys.append(key)
+    return missing_keys
+
+
 def get_file_content(file_path, mode):
     if os.path.isfile(file_path):
         with open(file_path, mode) as file_content:
             return file_content.read()
+
+
+def read_file_data_as_content_file(file_path, mode, name):
+    content_file = ContentFile(get_file_content(file_path, mode), name)
+    return content_file
 
 
 def convert_to_aws_ecr_compatible_format(string):
@@ -252,3 +278,19 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
         if domain.lower() in email.lower():
             return True
     return False
+
+
+def get_unique_alpha_numeric_key(length):
+    """
+        Returns unique alpha numeric key of length
+        Arguments:
+            length {int} -- length of unique key to generate
+        Returns:
+            key {string} -- unique alpha numeric key of length
+    """
+    return "".join(
+        [
+            random.choice(string.ascii_letters + string.digits)
+            for i in range(length)
+        ]
+    )

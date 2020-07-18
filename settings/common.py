@@ -167,7 +167,11 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "resend_email": "3/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/minute",
+        "user": "100/minute",
+        "resend_email": "3/hour",
+    },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
@@ -305,5 +309,18 @@ DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT")
 HOSTNAME = os.environ.get("HOSTNAME")
 
 SENDGRID_SETTINGS = {
-    "TEMPLATES": {"CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420"}
+    "TEMPLATES": {
+        "CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420",
+        "CHALLENGE_APPROVAL_EMAIL": "d-45e0adc0597b4b60bd7c384aa903c488",
+        "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd"
+    }
 }
+
+# EKS configs for Rl-worker
+EKS_CLUSTER_ROLE_ARN = os.environ.get(
+    "EKS_CLUSTER_ROLE_ARN"
+)
+
+EKS_NODEGROUP_ROLE_ARN = os.environ.get(
+    "EKS_NODEGROUP_ROLE_ARN"
+)

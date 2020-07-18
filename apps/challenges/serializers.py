@@ -91,7 +91,9 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "codename",
             "slug",
             "max_concurrent_submissions_allowed",
-            "is_restricted_to_select_one_submission"
+            "is_restricted_to_select_one_submission",
+            "submission_meta_attributes",
+            "is_partial_submission_evaluation_enabled",
         )
 
 
@@ -208,6 +210,19 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     Serializer used for creating challenge phase split through zip file.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(ZipChallengePhaseSplitSerializer, self).__init__(*args, **kwargs)
+
+        context = kwargs.get("context")
+        if context:
+            exclude_fields = context.get("exclude_fields")
+            if exclude_fields:
+                # check to avoid exception because of invalid fields
+                existing = set(self.fields.keys())
+                exclude_fields = set(exclude_fields)
+                for field in existing.intersection(exclude_fields):
+                    self.fields.pop(field)
+
     class Meta:
         model = ChallengePhaseSplit
         fields = (
@@ -236,6 +251,13 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             test_annotation = context.get("test_annotation")
             if test_annotation:
                 kwargs["data"]["test_annotation"] = test_annotation
+            exclude_fields = context.get("exclude_fields")
+            if exclude_fields:
+                # check to avoid exception because of invalid fields
+                existing = set(self.fields.keys())
+                exclude_fields = set(exclude_fields)
+                for field in existing.intersection(exclude_fields):
+                    self.fields.pop(field)
 
     class Meta:
         model = ChallengePhase
@@ -258,7 +280,9 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "slug",
             "max_concurrent_submissions_allowed",
             "environment_image",
-            "is_restricted_to_select_one_submission"
+            "is_restricted_to_select_one_submission",
+            "submission_meta_attributes",
+            "is_partial_submission_evaluation_enabled",
         )
 
 
@@ -335,5 +359,5 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "cluster_endpoint",
             "cluster_ssl",
             "cluster_yaml",
-            "kube_config"
+            "kube_config",
         )

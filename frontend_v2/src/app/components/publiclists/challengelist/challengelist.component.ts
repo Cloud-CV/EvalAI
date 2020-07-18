@@ -271,7 +271,7 @@ export class ChallengelistComponent implements OnInit {
   fetchTeams(path) {
     const SELF = this;
     SELF.filteredChallenges = [];
-    this.apiService.getUrl(path).subscribe(
+    this.apiService.getUrl(path, true, false).subscribe(
       data => {
         if (data['results']) {
           const TEAMS = data['results'].map((item) => item['id']);
@@ -281,6 +281,9 @@ export class ChallengelistComponent implements OnInit {
         }
       },
       err => {
+        if (err.status === 403) {
+          this.router.navigate(['permission-denied']);
+        }
         SELF.globalService.handleApiError(err, false);
       },
       () => {}
@@ -313,7 +316,7 @@ export class ChallengelistComponent implements OnInit {
    */
   fetchChallengesFromApi(path, callback = null) {
     const SELF = this;
-    SELF.apiService.getUrl(path).subscribe(
+    SELF.apiService.getUrl(path, true, false).subscribe(
       data => {
         if (path.endsWith('future')) {
           SELF.upcomingChallenges = data['results'];
