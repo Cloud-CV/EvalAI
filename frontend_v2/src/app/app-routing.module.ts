@@ -41,10 +41,6 @@ const routes: Routes = [
     loadChildren: './components/contact/contact.module#ContactModule',
   },
   {
-    path: 'dashboard',
-    loadChildren: './components/dashboard/dashboard.module#DashboardModule',
-  },
-  {
     path: 'analytics',
     loadChildren: './components/analytics/analytics.module#AnalyticsModule',
   },
@@ -66,7 +62,11 @@ const routes: Routes = [
   },
   {
     path: 'teams',
-   loadChildren: './components/publiclists/publiclist.module#TeamlistsModule',
+    loadChildren: './components/publiclists/publiclist.module#TeamlistsModule',
+  },
+  {
+    path: 'permission-denied',
+    loadChildren: './components/permission-denied/permission-denied.module#PermissionDeniedModule'
   },
   {
     path: '404',
