@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
-import {MatChipInputEvent} from '@angular/material/chips';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
 
@@ -181,6 +181,8 @@ export class ChallengesettingsComponent implements OnInit {
   stopParticipation(event) {
     event.preventDefault();
     const participationState = (this.challenge['is_registration_open']) ? 'Close' : 'Open';
+    const closeParticipationMsg = 'Participation is closed successfully';
+    const openParticipationMsg = 'Participation is opened successfully';
 
     this.apiCall = () => {
       if (this.isChallengeHost && this.challenge['id'] !== null) {
@@ -193,9 +195,11 @@ export class ChallengesettingsComponent implements OnInit {
         ).subscribe(
           () => {
             this.challenge['is_registration_open'] = !this.challenge['is_registration_open'];
-            this.globalService.showToast(
-              'success', 'Participation is ' + participationState.replace('n', 'ne') + 'd successfully', 5
-            );
+            if (this.challenge['is_registration_open']) {
+              this.globalService.showToast('success', openParticipationMsg, 5);
+            } else {
+              this.globalService.showToast('success', closeParticipationMsg, 5);
+            }
           },
           err => {
             this.globalService.handleApiError(err, true);
@@ -236,7 +240,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () =>  console.log('EDIT-CHALLENGE-TITLE-FINISHED')
+        () => {}
       );
     };
 
@@ -281,7 +285,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('DELETE-CHALLENGE-FINISHED')
+        () => {}
       );
     };
 
@@ -329,7 +333,7 @@ export class ChallengesettingsComponent implements OnInit {
             SELF.globalService.handleApiError(err, true);
             SELF.globalService.showToast('error', err);
           },
-          () => console.log('EDIT-CHALLENGE-START-AND-END-DATE-FINISHED')
+          () => {}
         );
       } else {
         SELF.globalService.showToast('error', 'The challenge start date cannot be same or greater than end date.', 5);
@@ -381,7 +385,7 @@ export class ChallengesettingsComponent implements OnInit {
             SELF.globalService.handleApiError(err, true);
             SELF.globalService.showToast('error', err);
           },
-          () => console.log('EDIT-CHALLENGE-IMAGE-FINISHED')
+          () => {}
         );
     };
 
