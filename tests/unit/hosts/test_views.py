@@ -375,10 +375,10 @@ class GetParticularChallengeHost(BaseAPITestClass):
                 "pk": self.challenge_host.pk,
             },
         )
-        expected = {"detail": "ChallengeHost " + str(self.inavlid_challenge_pk) + " does not exist"}
+        expected = {"error": "ChallengeHostTeam does not exist"}
         response = self.client.get(self.url, {})
-        self.assertDictEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
 class UpdateParticularChallengeHost(BaseAPITestClass):
