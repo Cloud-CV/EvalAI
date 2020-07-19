@@ -241,16 +241,17 @@ export class ChallengelistComponent implements OnInit {
    * @param callback  callback function
    */
   fetchMyParticipatedChallenges(filter = null, callback = null) {
+    const SELF = this;
     if (!filter) {
-      const ALL_PATHS = Object.values(this.newApiPathMapping);
-      const ALL_KEYS = Object.keys(this.newApiPathMapping);
+      const ALL_PATHS = Object.values(SELF.newApiPathMapping);
+      const ALL_KEYS = Object.keys(SELF.newApiPathMapping);
       for (let i = 0; i < ALL_PATHS.length; i++) {
-        if (this[ALL_KEYS[i]]) {
-          this.fetchParticipatedChallengesFromApi(ALL_PATHS[i], callback);
+        if (SELF[ALL_KEYS[i]]) {
+          SELF.fetchParticipatedChallengesFromApi(ALL_PATHS[i], callback);
         }
       }
     } else {
-      this.fetchParticipatedChallengesFromApi(this.newApiPathMapping[filter], callback);
+      SELF.fetchParticipatedChallengesFromApi(SELF.newApiPathMapping[filter], callback);
     }
   }
 
