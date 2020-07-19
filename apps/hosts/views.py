@@ -15,6 +15,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
+from hosts.utils import get_challenge_host_team_model
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
     ChallengeHostSerializer,
@@ -157,12 +158,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
-    try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
-    except ChallengeHostTeam.DoesNotExist:
-        response_data = {"error": "ChallengeHostTeam does not exist"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
+    challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
     challenge_host = get_challenge_host_model(pk)
 
     if request.method == "GET":
@@ -203,7 +199,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
             if (challenge_host.user == request.user):  # when the user tries to remove himself
                 response_data = {
                     "error": "You are not allowed to remove yourself since you are the team admin. Please delete the team if you want to do so!"
-                }  # noqa: ignore=E501
+                }
                 return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
                 challenge_host.delete()
