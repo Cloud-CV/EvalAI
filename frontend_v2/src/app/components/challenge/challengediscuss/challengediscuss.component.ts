@@ -78,7 +78,7 @@ export class ChallengediscussComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('EDIT-CHALLENGE-FORUM-URL-FINISHED')
+        () => {}
       );
     };
 

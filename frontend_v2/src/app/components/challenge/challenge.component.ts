@@ -54,12 +54,12 @@ export class ChallengeComponent implements OnInit {
   /**
    * Is Forum enabled in Challenge
    */
-  isForumEnabled;
+  isForumEnabled: boolean;
 
   /**
    * Forum Url of Challenge
    */
-  forumURL;
+  forumURL: any;
 
   /**
    * Challenge object
