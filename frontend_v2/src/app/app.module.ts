@@ -3,6 +3,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // Import services
 import { WindowService } from './services/window.service';
@@ -23,6 +24,7 @@ import { TermsAndConditionsModalComponent } from './components/challenge/challen
 
 // import module
 import { SharedModule } from './shared/shared.module';
+import { environment } from '../environments/environment'
 
 @NgModule({
   declarations: [
@@ -40,6 +42,10 @@ import { SharedModule } from './shared/shared.module';
     HttpClientModule,
     FroalaEditorModule.forRoot(),
     FroalaViewModule.forRoot(),
+    LoggerModule.forRoot({
+      level: !environment.production ? NgxLoggerLevel.TRACE : NgxLoggerLevel.OFF,
+      serverLogLevel: NgxLoggerLevel.OFF
+    })
   ],
   providers: [
     WindowService,
