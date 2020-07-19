@@ -375,10 +375,10 @@ class GetParticularChallengeHost(BaseAPITestClass):
                 "pk": self.challenge_host.pk,
             },
         )
-        expected = {"error": "ChallengeHostTeam does not exist"}
+        expected = "ChallengeHost " + str(self.challenge_host3.pk) + " does not exist"
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class UpdateParticularChallengeHost(BaseAPITestClass):
@@ -482,7 +482,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         expected = "ChallengeHost " + str(self.challenge_host3.pk + 1) + " does not exist"
 
         response = self.client.delete(self.url, {})
-        self.assertEqual(str(response.data['detail']), expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
@@ -494,11 +494,10 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             },
         )
 
-        expected = {"error": "ChallengeHostTeam does not exist"}
-
+        expected = "ChallengeHost " + str(self.challenge_host2.pk) + " does not exist"
         response = self.client.delete(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_challenge_host_when_admin_tries_to_delete_himself(self):
         self.url = reverse_lazy(
