@@ -43,9 +43,9 @@
 .toast-desc {
   word-break: initial;
   &.toast-success {
-           background-color:  rgb(8, 160, 3);
+           background-color:  $green-med
            &:hover {
-                       background-color: rgb(8, 160, 3);
+                       background-color: $green-med
                    }
   }
   &.toast-error {
