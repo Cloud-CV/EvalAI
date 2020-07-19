@@ -265,6 +265,15 @@
             title: 'Leaderboard',
         };
 
+        var manage = {
+            name: "web.challenge-main.challenge-page.manage",
+            parent: "web.challenge-main.challenge-page",
+            url: "/manage",
+            templateUrl: baseUrl + "/web/challenge/manage.html",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
+        };
+
         var challenge_phase_leaderboard = {
             name: "web.challenge-main.challenge-page.phase-leaderboard",
             url: "/leaderboard/:phaseSplitId",
@@ -516,6 +525,8 @@
         $stateProvider.state(challenge_invitation);
         $stateProvider.state(get_submission_related_files);
 
+        $stateProvider.state(manage);
+
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
             state.go('error-404');
@@ -606,7 +617,7 @@
                 onSuccess: function() {
                     utilities.resetStorage();
                     $rootScope.isLoader = false;
-                    $state.go("auth.login");
+                    $state.go("home");
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Successfully logged out!");
                 },
