@@ -137,7 +137,29 @@ def create_challenge_host_team(user):
     return team
 
 
-def create_challenges(number_of_challenges, host_team=None):
+def create_challenge_host_participant_team(challenge_host_team):
+    """
+        Creates challenge host participant team and returns it.
+    """
+    emails = challenge_host_team.get_all_challenge_host_email()
+    team_name = "Host_{}_Team".format(random.randint(1, 100000))
+    participant_host_team = ParticipantTeam(
+        team_name=team_name,
+        created_by=challenge_host_team.created_by,
+    )
+    participant_host_team.save()
+    for email in emails:
+        user = User.objects.get(email=email)
+        host = Participant(
+            user=user,
+            status=Participant.ACCEPTED,
+            team=participant_host_team,
+        )
+        host.save()
+    return participant_host_team
+
+
+def create_challenges(number_of_challenges, host_team=None, participant_host_team=None):
     """
     Creates past challenge, on-going challenge and upcoming challenge.
     """
@@ -156,6 +178,7 @@ def create_challenges(number_of_challenges, host_team=None):
                 timezone.now() - timedelta(days=100),
                 timezone.now() + timedelta(days=500),
                 host_team,
+                participant_host_team,
                 is_leaderboard_anon,
             )
         elif i % 3 == 1:
@@ -164,6 +187,7 @@ def create_challenges(number_of_challenges, host_team=None):
                 timezone.now() - timedelta(days=500),
                 timezone.now() - timedelta(days=100),
                 host_team,
+                participant_host_team,
                 is_leaderboard_anon,
             )
         elif i % 3 == 2:
@@ -172,11 +196,12 @@ def create_challenges(number_of_challenges, host_team=None):
                 timezone.now() + timedelta(days=100),
                 timezone.now() + timedelta(days=500),
                 host_team,
+                participant_host_team,
                 is_leaderboard_anon,
             )
 
 
-def create_challenge(title, start_date, end_date, host_team, anon_leaderboard):
+def create_challenge(title, start_date, end_date, host_team, participant_host_team, anon_leaderboard):
     """
     Creates a challenge.
     """
@@ -218,6 +243,7 @@ def create_challenge(title, start_date, end_date, host_team, anon_leaderboard):
     challenge.save()
 
     challenge.slug = slug
+    challenge.participant_teams.add(participant_host_team)
     challenge.save()
 
     print(
@@ -305,10 +331,10 @@ def create_dataset_splits(number_of_splits):
     Creates dataset splits and returns it.
     """
     dataset_splits = []
-    for i in range(number_of_splits):
+    for split in range(number_of_splits):
         global DATASET_SPLIT_ITERATOR
         name = "Split {}".format(DATASET_SPLIT_ITERATOR + 1)
-        codename = "{}{}".format("split", DATASET_SPLIT_ITERATOR + 1)
+        codename = "{}{}".format("split", split + 1)
         dataset_split = DatasetSplit.objects.create(
             name=name, codename=codename,
         )
@@ -425,10 +451,13 @@ def run(*args):
         host_user = create_user(is_admin=False, username="host")
         # Create challenge host team with challenge host
         challenge_host_team = create_challenge_host_team(user=host_user)
+        # Create challenge participant team for challenge host
+        participant_host_team = create_challenge_host_participant_team(challenge_host_team)
         # Create challenge
         create_challenges(
             number_of_challenges=NUMBER_OF_CHALLENGES,
             host_team=challenge_host_team,
+            participant_host_team=participant_host_team
         )
         participant_user = create_user(is_admin=False, username="participant")
         participant_team = create_participant_team(user=participant_user)

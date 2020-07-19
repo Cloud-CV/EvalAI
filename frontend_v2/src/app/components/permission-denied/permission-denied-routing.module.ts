@@ -2,12 +2,13 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 // import component
-import { DashboardComponent } from './dashboard.component';
+import { PermissionDeniedComponent } from './permission-denied.component';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: DashboardComponent,
+    component: PermissionDeniedComponent
   },
 ];
 
@@ -15,4 +16,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class DashboardRoutingModule { }
+export class PermissionDeniedRoutingModule { }

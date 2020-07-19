@@ -324,6 +324,9 @@ export class ChallengelistComponent implements OnInit {
         }
       },
       err => {
+        if (err.status === 403) {
+          this.router.navigate(['permission-denied']);
+        }
         SELF.globalService.handleApiError(err, false);
       },
       () => {}

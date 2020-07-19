@@ -125,6 +125,9 @@ class BaseTestClass(APITestCase):
             is_public=True,
         )
 
+        self.WORKER_LOGS_PREFIX = "WORKER_LOG"
+        self.SUBMISSION_LOGS_PREFIX = "SUBMISSION_LOG"
+
     def tearDown(self):
         try:
             shutil.rmtree("/tmp/evalai")
@@ -162,7 +165,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         submission_worker.process_submission_callback(body)
 
         mock_logger.assert_called_with(
-            "Exception while receiving message from submission queue with error test error"
+            "{} Exception while receiving message from submission queue with error test error".format(self.SUBMISSION_LOGS_PREFIX)
         )
 
     @mock.patch(
@@ -234,7 +237,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
             submission_worker.process_submission_message(message)
 
         mock_logger.assert_called_with(
-            "Challenge Phase {} does not exist".format(phase_pk)
+            "{} Challenge Phase {} does not exist".format(self.WORKER_LOGS_PREFIX, phase_pk)
         )
 
 
@@ -246,7 +249,7 @@ class ExtractSubmissionDataTestClass(BaseTestClass):
         submission_pk = self.submission.pk - 999
         value = submission_worker.extract_submission_data(submission_pk)
         mock_logger.assert_called_with(
-            "Submission {} does not exist".format(submission_pk)
+            "{} Submission {} does not exist".format(self.SUBMISSION_LOGS_PREFIX, submission_pk)
         )
         self.assertEqual(value, None)
 

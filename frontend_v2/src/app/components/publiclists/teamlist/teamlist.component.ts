@@ -370,6 +370,9 @@ export class TeamlistComponent implements OnInit, OnDestroy {
         }
       },
       err => {
+        if (err.status === 403) {
+          this.router.navigate(['permission-denied']);
+        }
         this.globalService.stopLoader();
         SELF.globalService.handleApiError(err, false);
       },
