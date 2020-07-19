@@ -44,7 +44,7 @@ import { environment } from '../environments/environment'
     FroalaViewModule.forRoot(),
     LoggerModule.forRoot({
       level: !environment.production ? NgxLoggerLevel.TRACE : NgxLoggerLevel.OFF,
-      serverLogLevel: NgxLoggerLevel.OFF
+      serverLogLevel: NgxLoggerLevel.ERROR
     })
   ],
   providers: [
