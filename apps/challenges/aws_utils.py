@@ -764,14 +764,17 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         else:
             challenge = instance
 
-        restart_workers_on_file_change.delay(field_name, challenge)
+        serialized_challenge = serializers.serialize("json", [challenge])
+        restart_workers_on_file_change.delay(field_name, serialized_challenge)
 
 
 @app.task
-def restart_workers_on_file_change(field_name, challenge):
+def restart_workers_on_file_change(field_name, serialized_challenge):
     """
     Restarts the challenge workers, and sends email notifications to the hosts.
     """
+    for obj in serializers.deserialize("json", serialized_challenge):
+        challenge = obj.object
     response = restart_workers([challenge])
 
     count, failures = response["count"], response["failures"]
