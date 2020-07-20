@@ -375,7 +375,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
                 "pk": self.challenge_host.pk,
             },
         )
-        expected = {"detail": "ChallengeHost " + str(self.challenge_host.pk) + " does not exist"}
+        expected = {"detail": "ChallengeHostTeam " + str(self.challenge_host_team.pk + 1) + " does not exist"}
         response = self.client.get(self.url, {})
         self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -494,7 +494,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             },
         )
 
-        expected = {"detail": "ChallengeHost " + str(self.challenge_host2.pk) + " does not exist"}
+        expected = {"detail": "ChallengeHostTeam " + str(self.challenge_host_team.pk + 1) + " does not exist"}
         response = self.client.delete(self.url, {})
         self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
