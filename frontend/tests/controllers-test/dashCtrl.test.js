@@ -89,7 +89,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.isPrivileged).toEqual(false);
         });
 
         it('401 backend error on getting user details `auth/user/`', function () {
@@ -143,7 +143,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.isPrivileged).toEqual(false);
         });
 
         it('401 backend error on getting all ongoing challenges `challenges/challenge/present`', function () {
@@ -198,7 +198,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.isPrivileged).toEqual(false);
         });
 
         it('401 backend error on getting host team details `hosts/challenge_host_team/`', function () {
@@ -253,7 +253,7 @@ describe('Unit tests for dashboard controller', function () {
             };
             vm = createController();
             expect(vm.error).toEqual(errorResponse);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
+            expect(vm.isPrivileged).toEqual(false);
         });
 
         it('401 backend error on getting participated team details `participants/participant_team`', function () {
