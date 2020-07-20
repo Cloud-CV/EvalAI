@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import string
+import time
 import yaml
 
 from botocore.exceptions import ClientError
@@ -743,7 +744,7 @@ def restart_workers(queryset):
 def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     """
     Called when either evaluation_script or test_annotation_script for challenge
-    is updated, to restart the challenge workers.
+    is updated.
     """
     if settings.DEBUG:
         return
@@ -763,57 +764,107 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         else:
             challenge = instance
 
-        response = restart_workers([challenge])
+        restart_workers_on_file_change.delay(field_name, challenge)
 
-        count, failures = response["count"], response["failures"]
 
-        logger.info(
-            "The worker service for challenge {} was restarted, as {} was changed.".format(
-                challenge.pk, field_name
+@app.task
+def restart_workers_on_file_change(field_name, challenge):
+    """
+    Restarts the challenge workers, and sends email notifications to the hosts.
+    """
+    response = restart_workers([challenge])
+
+    count, failures = response["count"], response["failures"]
+
+    logger.info(
+        "The worker service for challenge {} was restarted, as {} was changed.".format(
+            challenge.pk, field_name
+        )
+    )
+
+    if count != 1:
+        logger.warning(
+            "Worker(s) for challenge {} couldn't restart! Error: {}".format(
+                challenge.id, failures[0]["message"]
             )
         )
+    else:
 
-        if count != 1:
-            logger.warning(
-                "Worker(s) for challenge {} couldn't restart! Error: {}".format(
-                    challenge.id, failures[0]["message"]
+        challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
+            settings.HOSTNAME, challenge.id
+        )
+        challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
+            settings.HOSTNAME, challenge.id
+        )
+
+        if field_name == "test_annotation":
+            file_updated = "Test Annotation"
+        elif field_name == "evaluation_script":
+            file_updated = "Evaluation script"
+
+        template_data = {
+            "CHALLENGE_NAME": challenge.title,
+            "CHALLENGE_MANAGE_URL": challenge_manage_url,
+            "CHALLENGE_URL": challenge_url,
+            "FILE_UPDATED": file_updated,
+        }
+
+        if challenge.image:
+            template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
+
+        emails = challenge.creator.get_all_challenge_host_email()
+
+        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+            "WORKERS_RESTARTING_NOTIFIER"
+        )
+        for email in emails:
+            send_email(
+                sender=settings.CLOUDCV_TEAM_EMAIL,
+                recipient=email,
+                template_id=template_id,
+                template_data=template_data,
+            )
+
+        ecs = get_boto3_client("ecs", aws_keys)
+        queue_name = challenge.queue
+        service_name = "{}_service".format(queue_name)
+
+        # Checking if the new workers are launched and old workers are stopped.
+        for i in range(100):
+            time.sleep(2)
+            try:
+                response = ecs.describe_services(
+                    cluster=COMMON_SETTINGS_DICT["CLUSTER"],
+                    services=[service_name],
                 )
-            )
-        else:
-            challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
-                settings.HOSTNAME, challenge.id
-            )
-            challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
-                settings.HOSTNAME, challenge.id
-            )
-
-            if field_name == "test_annotation":
-                file_updated = "Test Annotation"
-            elif field_name == "evaluation_script":
-                file_updated = "Evaluation script"
-
-            template_data = {
-                "CHALLENGE_NAME": challenge.title,
-                "CHALLENGE_MANAGE_URL": challenge_manage_url,
-                "CHALLENGE_URL": challenge_url,
-                "FILE_UPDATED": file_updated,
-            }
-
-            if challenge.image:
-                template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
-
-            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-                "WORKER_RESTART_EMAIL"
-            )
-
-            emails = challenge.creator.get_all_challenge_host_email()
-            for email in emails:
-                send_email(
-                    sender=settings.CLOUDCV_TEAM_EMAIL,
-                    recipient=email,
-                    template_id=template_id,
-                    template_data=template_data,
+                num_of_workers = response.get("services")[0].get(
+                    "runningCount"
                 )
+                desired_num_of_workers = response.get("services")[0].get(
+                    "desiredCount"
+                )
+                pending_count = response.get("services")[0].get("pendingCount")
+
+                if (
+                    num_of_workers == challenge.workers
+                    and desired_num_of_workers == challenge.workers
+                    and pending_count == 0
+                ):
+                    break
+            except ClientError as e:
+                logger.exception(e)
+                return
+
+        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+            "WORKERS_RESTARTED"
+        )
+        for email in emails:
+            send_email(
+                sender=settings.CLOUDCV_TEAM_EMAIL,
+                recipient=email,
+                template_id=template_id,
+                template_data=template_data,
+            )
 
 
 def get_logs_from_cloudwatch(
