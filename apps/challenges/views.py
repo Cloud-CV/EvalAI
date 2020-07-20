@@ -2748,7 +2748,9 @@ def manage_worker(request, challenge_pk, action):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_annotations(request, challenge_pk, challenge_phase_pk):
+def get_presigned_url_for_annotations(
+    request, challenge_pk, challenge_phase_pk
+):
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized for uploading an annotation file."
@@ -2761,7 +2763,7 @@ def get_presigned_url_for_annotations(request, challenge_pk, challenge_phase_pk)
     file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(
         challenge_phase_pk, uuid.uuid4(), file_ext
     )
-    file_key = file_name
+    file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
 
     response = get_presigned_url_for_file_upload(file_name, file_key)
     if response.get("error"):
@@ -2771,6 +2773,5 @@ def get_presigned_url_for_annotations(request, challenge_pk, challenge_phase_pk)
     challenge_phase.test_annotation = file_name
     challenge_phase.save()
 
-    response_data = {"presigned_url": response["presigned_url"]}
+    response_data = {"presigned_response": response, "file_key": file_key}
     return Response(response_data, status=status.HTTP_200_OK)
-

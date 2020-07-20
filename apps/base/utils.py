@@ -137,6 +137,7 @@ def send_email(
         )
     return
 
+
 def get_aws_secret_keys():
     aws_keys = {
         "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
@@ -176,7 +177,7 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_presigned_url_for_file_upload(file_name, file_key):
+def get_presigned_url_for_file_upload(file_key):
     """
     Function to get the presigned url to upload a file to s3 with name file_name and key as file_key.
     """
@@ -184,12 +185,12 @@ def get_presigned_url_for_file_upload(file_name, file_key):
         aws_keys = get_aws_secret_keys()
 
         s3 = get_boto3_client("s3", aws_keys)
-        response = s3.generate_presigned_url(
-            ClientMethod='upload_fileobj',
-            Params={'Filename': file_name, 'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_key},
+        response = s3.generate_presigned_post(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=file_key,
             ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
         )
-        return {"presigned_url": response}
+        return response
     except Exception as e:
         logger.exception(e)
         return {"error": "Could not fetch presigned url."}

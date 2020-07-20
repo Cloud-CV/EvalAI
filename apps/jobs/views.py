@@ -2092,7 +2092,10 @@ def get_presigned_url_for_submission(
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not is_user_a_host_of_challenge(request.user, challenge_pk) and not challenge.approved_by_admin:
+    if (
+        not is_user_a_host_of_challenge(request.user, challenge_pk)
+        and not challenge.approved_by_admin
+    ):
         response_data = {"error": "Challenge is not yet approved by admin."}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2203,7 +2206,7 @@ def get_presigned_url_for_submission(
         file_name = "submission_files/presigned_url_files/submission_{}/{}{}".format(
             submission.pk, uuid.uuid4(), file_ext
         )
-        file_key = file_name
+        file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
 
         response = get_presigned_url_for_file_upload(file_name, file_key)
         if response.get("error"):
@@ -2214,7 +2217,8 @@ def get_presigned_url_for_submission(
         submission.save()
 
         response_data = {
-            "presigned_url": response["presigned_url"],
+            "presigned_response": response,
+            "file_key": file_key,
             "submission_message": submission_message,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
