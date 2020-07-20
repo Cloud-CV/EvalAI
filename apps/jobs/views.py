@@ -2219,8 +2219,7 @@ def get_presigned_url_for_submission(
         submission.save()
 
         response_data = {
-            "presigned_response": response,
-            "file_key": file_key,
+            "presigned_url": response.get("presigned_url"),
             "submission_message": submission_message,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)

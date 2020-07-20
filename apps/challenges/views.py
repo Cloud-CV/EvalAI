@@ -2773,5 +2773,5 @@ def get_presigned_url_for_annotations(
     challenge_phase.test_annotation = file_name
     challenge_phase.save()
 
-    response_data = {"presigned_response": response, "file_key": file_key}
+    response_data = {"presigned_url": response.get("presigned_url")}
     return Response(response_data, status=status.HTTP_200_OK)

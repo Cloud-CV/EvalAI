@@ -183,16 +183,23 @@ def get_presigned_url_for_file_upload(file_key):
     """
     Function to get the presigned url to upload a file to s3 with name file_name and key as file_key.
     """
+    if settings.DEBUG:
+        return
+
     try:
         aws_keys = get_aws_secret_keys()
 
         s3 = get_boto3_client("s3", aws_keys)
-        response = s3.generate_presigned_post(
-            Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
-            Key=file_key,
+        response = s3.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+                "Key": file_key,
+            },
             ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
+            HttpMethod="PUT",
         )
-        return response
+        return {"presigned_url": response}
     except Exception as e:
         logger.exception(e)
         return {"error": "Could not fetch presigned url."}
