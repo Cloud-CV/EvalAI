@@ -34,11 +34,6 @@
               <mat-slider thumbLabel min="0" max="20"  step="1" thumbLabel placeholder="leaderboardPrecisionValue" [(ngModel)]="leaderboardPrecisionValue"
                             (change)="updateLeaderboardDecimalPrecision($event)">
               </mat-slider>
-              <span class="fa-stack-2x value" *ngIf="leaderboardPrecisionValue">
-                <span class="val">
-                  {{ leaderboardPrecisionValue }}
-                </span>
-              </span>
           </div>
         </div>
       </div>

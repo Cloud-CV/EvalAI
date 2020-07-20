@@ -135,23 +135,6 @@ mat-slider {
   padding-right: 0px;
 }
 
-.value {
-  margin-left: 90%;
-  margin-top: 20px;
-  width: 22px;
-  height: 22px;
-  font-weight: $fw-semibold;
-  color:white;
-  background-color: black;
-  border-radius: 10px;
-}
-
-.val {
-  margin-top: -18px;
-  font-size: $fs-12;
-  display:block;
-}
-
 .complete-leaderboard {
   margin-right: 2%;
 }
@@ -192,10 +175,5 @@ mat-slider {
 
   mat-slider {
     margin-left: 20%;
-  }
-
-  .value {
-    margin-left: 150%;
-    margin-top: -32%;
   }
 }
