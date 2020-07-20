@@ -2728,13 +2728,14 @@ def get_presigned_url_for_annotations(request, challenge_pk, challenge_phase_pk)
     )
     file_key = file_name
 
-    presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
-    if presigned_url == "":
-        response_data = {"error": "Could not fetch presigned url."}
+    response = get_presigned_url_for_file_upload(file_name, file_key)
+    if response.get("error"):
+        response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge_phase.test_annotation = file_name
     challenge_phase.save()
 
-    response_data = {"presigned_url": presigned_url}
+    response_data = {"presigned_url": response["presigned_url"]}
     return Response(response_data, status=status.HTTP_200_OK)
+

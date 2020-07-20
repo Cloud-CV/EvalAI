@@ -137,6 +137,14 @@ def send_email(
         )
     return
 
+def get_aws_secret_keys():
+    aws_keys = {
+        "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+        "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
+        "AWS_REGION": settings.AWS_REGION,
+    }
+    return aws_keys
+
 
 def get_url_from_hostname(hostname):
     if settings.DEBUG or settings.TEST:
@@ -173,11 +181,7 @@ def get_presigned_url_for_file_upload(file_name, file_key):
     Function to get the presigned url to upload a file to s3 with name file_name and key as file_key.
     """
     try:
-        aws_keys = {
-            "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
-            "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
-            "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-        }
+        aws_keys = get_aws_secret_keys()
 
         s3 = get_boto3_client("s3", aws_keys)
         response = s3.generate_presigned_url(
@@ -185,10 +189,10 @@ def get_presigned_url_for_file_upload(file_name, file_key):
             Params={'Filename': file_name, 'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_key},
             ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
         )
-        return response
+        return {"presigned_url": response}
     except Exception as e:
         logger.exception(e)
-        return ""
+        return {"error": "Could not fetch presigned url."}
 
 
 def get_or_create_sqs_queue_object(queue_name):

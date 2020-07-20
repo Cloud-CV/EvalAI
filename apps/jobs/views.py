@@ -2092,7 +2092,7 @@ def get_presigned_url_for_submission(
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not challenge.approved_by_admin:
+    if not is_user_a_host_of_challenge(request.user, challenge_pk) and not challenge.approved_by_admin:
         response_data = {"error": "Challenge is not yet approved by admin."}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2205,16 +2205,16 @@ def get_presigned_url_for_submission(
         )
         file_key = file_name
 
-        presigned_url = get_presigned_url_for_file_upload(file_name, file_key)
-        if presigned_url == "":
-            response_data = {"error": "Could not fetch presigned url."}
+        response = get_presigned_url_for_file_upload(file_name, file_key)
+        if response.get("error"):
+            response_data = response
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
         submission.input_file = file_name
         submission.save()
 
         response_data = {
-            "presigned_url": presigned_url,
+            "presigned_url": response["presigned_url"],
             "submission_message": submission_message,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
