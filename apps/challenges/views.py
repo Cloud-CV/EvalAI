@@ -2765,7 +2765,7 @@ def get_presigned_url_for_annotations(
     )
     file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
 
-    response = get_presigned_url_for_file_upload(file_name, file_key)
+    response = get_presigned_url_for_file_upload(file_key)
     if response.get("error"):
         response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
