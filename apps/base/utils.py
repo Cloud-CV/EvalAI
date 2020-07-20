@@ -140,9 +140,11 @@ def send_email(
 
 def get_aws_secret_keys():
     aws_keys = {
+        "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID"),
         "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
         "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
-        "AWS_REGION": settings.AWS_REGION,
+        "AWS_REGION": settings.AWS_DEFAULT_REGION,
+        "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
     }
     return aws_keys
 
@@ -186,7 +188,7 @@ def get_presigned_url_for_file_upload(file_key):
 
         s3 = get_boto3_client("s3", aws_keys)
         response = s3.generate_presigned_post(
-            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
             Key=file_key,
             ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
         )

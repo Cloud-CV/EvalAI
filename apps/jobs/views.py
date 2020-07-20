@@ -2093,10 +2093,6 @@ def get_presigned_url_for_submission(
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not is_user_a_host_of_challenge(request.user, challenge_pk) and not challenge.approved_by_admin:
-        response_data = {"error": "Challenge is not yet approved by admin."}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
@@ -2129,6 +2125,14 @@ def get_presigned_url_for_submission(
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
         # if allowed email ids list exist, check if the user exist in that list or not
         if challenge_phase.allowed_email_ids:
@@ -2214,7 +2218,11 @@ def get_presigned_url_for_submission(
         submission.input_file = file_name
         submission.save()
 
-        response_data = {"presigned_response": response, "file_key": file_key, "submission_message": submission_message}
+        response_data = {
+            "presigned_response": response,
+            "file_key": file_key,
+            "submission_message": submission_message,
+        }
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
