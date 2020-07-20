@@ -890,6 +890,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                     response_data,
                                     status=status.HTTP_406_NOT_ACCEPTABLE,
                                 )
+                    else:
+                        message = (
+                            "ERROR: Please ensure that the submission meta attribute types for attribute in "
+                            "challenge phase {} are from among the following: boolean, text, radio or checkbox.".format(data["id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
                 else:
                     missing_keys_string = ", ".join(missing_keys)
                     message = "Please enter the following to the submission meta attribute in phase {}: {}.".format(
@@ -2541,6 +2550,44 @@ def validate_challenge_config(request, challenge_host_team_pk):
                 "challenge phase {}.".format(data["name"])
             )
             error_messages.append(message)
+
+        # To ensure that the schema for submission meta attributes is valid.
+        if data.get("submission_meta_attributes"):
+            for attribute in data["submission_meta_attributes"]:
+                keys = ["name", "description", "type"]
+                missing_keys = get_missing_keys_from_dict(attribute, keys)
+
+                if len(missing_keys) == 0:
+                    valid_attribute_types = [
+                        "boolean",
+                        "text",
+                        "radio",
+                        "checkbox",
+                    ]
+                    attribute_type = attribute["type"]
+                    if attribute_type in valid_attribute_types:
+                        if (
+                            attribute_type == "radio"
+                            or attribute_type == "checkbox"
+                        ):
+                            options = attribute.get("options")
+                            if not options or not len(options):
+                                message = "ERROR: Please include at least one option in attribute for {} type in challenge phase {}".format(
+                                    attribute_type, data["id"]
+                                )
+                                error_messages.append(message)
+                    else:
+                        message = (
+                            "ERROR: Please ensure that the submission meta attribute types for attribute in "
+                            "challenge phase {} are from among the following: boolean, text, radio or checkbox.".format(data["id"])
+                        )
+                        error_messages.append(message)
+                else:
+                    missing_keys_string = ", ".join(missing_keys)
+                    message = "ERROR: Please enter the following to the submission meta attribute in phase {}: {}.".format(
+                        data["id"], missing_keys_string
+                    )
+                    error_messages.append(message)
 
     phase_ids = []
     for data in challenge_phases_data:
