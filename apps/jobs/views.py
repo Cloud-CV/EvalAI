@@ -2086,14 +2086,13 @@ def get_github_badge_data(
 def get_presigned_url_for_submission(
     request, challenge_pk, challenge_phase_pk
 ):
-    # Abstract out the validation
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # check if the challenge phase exists or not
+    # Check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_pk, challenge=challenge
@@ -2110,16 +2109,16 @@ def get_presigned_url_for_submission(
         response_data = {"error": "Challenge is not active"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # check if challenge phase is active
+    # Check if challenge phase is active
     if not challenge_phase.is_active:
         response_data = {
             "error": "Sorry, cannot accept submissions since challenge phase is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # check if user is a challenge host or a participant
+    # Check if user is a challenge host or a participant
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        # check if challenge phase is public and accepting solutions
+        # Check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"

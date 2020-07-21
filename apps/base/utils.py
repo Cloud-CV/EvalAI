@@ -185,7 +185,6 @@ def get_presigned_url_for_file_upload(file_key):
     """
     if settings.DEBUG:
         return
-
     try:
         aws_keys = get_aws_secret_keys()
 
