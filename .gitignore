@@ -66,4 +66,5 @@ ssl/
 *.iws
 out/
 .idea_modules/
-
+# Terraform generated files
+.terraform/
