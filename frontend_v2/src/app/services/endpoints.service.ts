@@ -364,4 +364,21 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   downloadParticipantsAnalyticsURL(challengeId) {
     return `${this.analytics}challenges/${challengeId}/download_all_participants/`;
   }
+
+  /**
+   * Manage worker
+   * @param challengeId challenge id
+   * @param action phase id
+   */
+  manageWorkerURL(challengeId, action) {
+    return `${this.challenges}${challengeId}/manage_worker/${action}/`;
+  }
+
+  /**
+   * Manage worker
+   * @param challengeId challenge id
+   */
+  getLogsURL(challengeId) {
+    return `${this.challenges}${challengeId}/get_worker_logs/`;
+  }
 }
