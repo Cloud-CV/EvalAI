@@ -175,6 +175,19 @@ def get_core_v1_api_object(cluster_name, challenge, evalai):
     return api_instance
 
 
+def get_rbac_authorization_V1_api_object(cluster_name, challenge, evalai):
+    configuration = client.Configuration()
+    aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.api_key["authorization"] = aws_eks_api[
+        "aws_eks_bearer_token"
+    ]
+    configuration.api_key_prefix["authorization"] = "Bearer"
+    api_instance = client.RbacAuthorizationV1Api(
+        client.ApiClient(configuration)
+    )
+    return api_instance
+
+
 def get_running_jobs(api_instance):
     """Function to get all the current jobs on AWS EKS cluster
     Arguments:
@@ -842,14 +855,20 @@ def main():
     api_instance = get_api_object(
         cluster_name, cluster_endpoint, challenge, evalai
     )
+    core_v1_api_instance = get_core_v1_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    rbac_authorization_V1_api_instance = get_rbac_authorization_V1_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
     install_gpu_drivers(api_instance)
     # installing fluentd
-    create_namespace()
-    create_service_account()
-    create_cluster_role()
-    create_cluster_role_binding()
-    create_config_map()
-    install_fluentd()
+    create_namespace(core_v1_api_instance)
+    create_service_account(core_v1_api_instance)
+    create_cluster_role(rbac_authorization_V1_api_instance)
+    create_cluster_role_binding(rbac_authorization_V1_api_instance)
+    create_config_map(core_v1_api_instance)
+    install_fluentd(api_instance)
 
     while True:
         message = evalai.get_message_from_sqs_queue()
@@ -863,9 +882,7 @@ def main():
                 api_instance = get_api_object(
                     cluster_name, cluster_endpoint, challenge, evalai
                 )
-                core_v1_api_instance = get_core_v1_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
+
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
