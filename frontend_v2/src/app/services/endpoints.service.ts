@@ -368,7 +368,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   /**
    * Manage worker
    * @param challengeId challenge id
-   * @param action phase id
+   * @param action worker action
    */
   manageWorkerURL(challengeId, action) {
     return `${this.challenges}${challengeId}/manage_worker/${action}/`;
