@@ -376,7 +376,7 @@ def create_config_map(api_instance):
         api_instance {[AWS EKS API object]} -- API object for creating config_map
     """
     namespace = "amazon-cloudwatch"
-    fluent_conf = """
+    fluent_conf = r"""
         |
     @include containers.conf
     @include systemd.conf
