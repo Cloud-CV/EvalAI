@@ -286,7 +286,13 @@ def create_namespace(api_instance):
             name="amazon-cloudwatch", labels={"name": "amazon-cloudwatch"}
         ),
     )
-    api_response = api_instance.create_namespace(body)
+    try:
+        api_instance.create_namespace(body)
+    except ApiException as e:
+        if e.status == 409:
+            logging.info("Namespace Already created")
+        else:
+            raise
 
 
 def create_service_account(api_instance):
@@ -300,9 +306,15 @@ def create_service_account(api_instance):
         kind="ServiceAccount",
         metadata=client.V1ObjectMeta(name="fluentd"),
     )
-    api_instance.create_namespaced_service_account(
-        namespace=namespace, body=body,
-    )
+    try:
+        api_instance.create_namespaced_service_account(
+            namespace=namespace, body=body,
+        )
+    except ApiException as e:
+        if e.status == 409:
+            logging.info("Service Account Already created")
+        else:
+            raise
 
 
 def create_cluster_role(api_instance):
@@ -320,7 +332,13 @@ def create_cluster_role(api_instance):
             verbs=["get", "list", "watch"],
         ),
     )
-    api_instance.create_cluster_role(body=body)
+    try:
+        api_instance.create_cluster_role(body=body)
+    except ApiException as e:
+        if e.status == 409:
+            logging.info("cluster_role Already created")
+        else:
+            raise
 
 
 def create_cluster_role_binding(api_instance):
@@ -343,7 +361,13 @@ def create_cluster_role_binding(api_instance):
             namespace="amazon-cloudwatch",
         ),
     )
-    api_instance.create_cluster_role_binding(body)
+    try:
+        api_instance.create_cluster_role_binding(body)
+    except ApiException as e:
+        if e.status == 409:
+            logging.info("cluster_role_binding Already created")
+        else:
+            raise
 
 
 def create_config_map(api_instance):
@@ -351,7 +375,7 @@ def create_config_map(api_instance):
     Arguments:
         api_instance {[AWS EKS API object]} -- API object for creating config_map
     """
-    namespace="amazon-cloudwatch"
+    namespace = "amazon-cloudwatch"
     fluent_conf = """
         |
     @include containers.conf
@@ -681,6 +705,13 @@ def create_config_map(api_instance):
         },
     )
     api_instance.create_namespaced_config_map(namespace, body)
+    try:
+        api_instance.create_namespaced_config_map(namespace, body)
+    except ApiException as e:
+        if e.status == 409:
+            logging.info("Configmap Already created")
+        else:
+            raise
 
 
 def install_fluentd(api_instance):
@@ -812,6 +843,14 @@ def main():
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
+    # installing fluentd
+    create_namespace()
+    create_service_account()
+    create_cluster_role()
+    create_cluster_role_binding()
+    create_config_map()
+    install_fluentd()
+
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
