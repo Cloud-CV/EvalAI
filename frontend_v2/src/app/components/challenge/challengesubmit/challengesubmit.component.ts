@@ -63,6 +63,16 @@ isSubmissionUsingUrl: any;
   submissionGuidelines = '';
 
   /**
+   * Stores the attributes format and phase ID for all the phases of a challenge.
+   */
+  submissionMetaAttributes = [];
+
+  /**
+   * Stores the attributes while making a submission for a selected phase.
+   */
+  metaAttributesforCurrentSubmission = null;
+
+  /**
    * Form fields name
    */
   submitForm = 'formsubmit';
@@ -357,6 +367,60 @@ isSubmissionUsingUrl: any;
   }
 
   /**
+   * Fetch Meta Attributes for a particular challenge phase.
+   * @param challenge  challenge id
+   * @param phase  phase id
+   */
+  getMetaDataDetails(challenge, phaseId) {
+    const API_PATH = this.endpointsService.challengePhaseURL(challenge);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      data => {
+        for (let i = 0; i < data.count; i++) {
+          if (data.results[i].submission_meta_attributes !== undefined && data.results[i].submission_meta_attributes !== null) {
+            const attributes = data.results[i].submission_meta_attributes;
+            attributes.forEach(function (attribute) {
+              if (attribute['type'] === 'checkbox') {
+                attribute['values'] = [];
+              } else {
+                attribute['value'] = null;
+              }
+            });
+            data = { 'phaseId': data.results[i].id, 'attributes': attributes };
+            this.submissionMetaAttributes.push(data);
+          } else {
+            const detail = { 'phaseId': data.results[i].id, 'attributes': null };
+            this.submissionMetaAttributes.push(detail);
+          }
+        }
+        // Loads attributes of a phase into this.submissionMetaAttributes
+        this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
+          return element['phaseId'] === phaseId;
+        }).attributes;
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => { }
+    );
+  }
+
+  /**
+   * Clear the data of metaAttributesforCurrentSubmission
+   */
+  clearMetaAttributeValues() {
+    if (this.metaAttributesforCurrentSubmission != null) {
+      this.metaAttributesforCurrentSubmission.forEach(function (attribute) {
+        if (attribute.type === 'checkbox') {
+          attribute.values = [];
+        } else {
+          attribute.value = null;
+        }
+      });
+    }
+  }
+
+  /**
    * Called when a phase is selected (from child components)
    */
   phaseSelected() {
@@ -364,7 +428,9 @@ isSubmissionUsingUrl: any;
     return (phase) => {
       SELF.selectedPhase = phase;
       if (SELF.challenge['id'] && phase['id']) {
+        SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
+        SELF.clearMetaAttributeValues();
       }
     };
   }
@@ -419,6 +485,8 @@ isSubmissionUsingUrl: any;
     FORM_DATA.append('method_description', self.globalService.formValueForLabel(self.components, 'method_description'));
     FORM_DATA.append('project_url', self.globalService.formValueForLabel(self.components, 'project_url'));
     FORM_DATA.append('publication_url', self.globalService.formValueForLabel(self.components, 'publication_url'));
+    FORM_DATA.append('submission_metadata',
+                    self.globalService.formValueForLabel('submission_metadata', JSON.stringify(this.metaAttributesforCurrentSubmission)));
     self.challengeService.challengeSubmission(
       self.challenge['id'],
       self.selectedPhase['id'],
@@ -433,6 +501,7 @@ isSubmissionUsingUrl: any;
         self.globalService.setFormValueForLabel(self.components, 'method_description', '');
         self.globalService.setFormValueForLabel(self.components, 'project_url', '');
         self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
+        self.globalService.setFormValueForLabel('submission_metadata', JSON.stringify(this.metaAttributesforCurrentSubmission));
       }
     );
   }

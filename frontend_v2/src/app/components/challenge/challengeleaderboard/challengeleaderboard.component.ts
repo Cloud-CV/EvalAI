@@ -99,6 +99,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   selectedPhaseSplit: any = null;
 
   /**
+   * Meta attribute data
+   */
+  metaAttributesData: any;
+
+  /**
+   * Flag for meta attribute data
+   */
+  showSubmissionMetaAttributesOnLeaderboard: any;
+
+  /**
    * Current state of whether leaderboard is sorted by latest
    */
   showLeaderboardByLatest = false;
@@ -304,6 +314,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       const SUBMISSION_TIME = new Date(Date.parse(leaderboard[i].submission__submitted_at));
       const DURATION = self.globalService.getDateDifferenceString(DATE_NOW, SUBMISSION_TIME);
       leaderboard[i]['submission__submitted_at_formatted'] = DURATION + ' ago';
+      if (leaderboard[i].submission__submission_metadata == null) {
+        this.showSubmissionMetaAttributesOnLeaderboard = false;
+      } else {
+        this.showSubmissionMetaAttributesOnLeaderboard = true;
+      }
     }
     self.leaderboard = leaderboard.slice();
     self.sortLeaderboard();
@@ -513,4 +528,20 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       () => {}
     );
   }
+
+  showMetaAttributesDialog(ev, attributes) {
+    if (attributes !== false) {
+      this.metaAttributesData = [];
+      attributes.forEach(function (attribute) {
+        if (attribute.type !== 'checkbox') {
+          this.metaAttributesData.push({ 'name': attribute.name, 'value': attribute.value });
+        } else {
+          this.metaAttributesData.push({ 'name': attribute.name, 'values': attribute.values });
+        }
+      });
+    }
+    // Dialogue box or showing meta data
+    
+  }
+
 }
