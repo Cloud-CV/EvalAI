@@ -190,7 +190,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             create_eks_cluster.delay(serialized_obj)
-    challenge_workers_start_notifier
+    challenge_workers_start_notifier(sender, instance, field_name, **kwargs)
 
 
 class DatasetSplit(TimeStampedModel):
