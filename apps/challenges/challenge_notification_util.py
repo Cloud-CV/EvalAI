@@ -34,3 +34,25 @@ def construct_and_send_worker_start_mail(challenge):
             template_id=template_id,
             template_data=template_data,
         )
+
+
+def construct_and_send_eks_cluster_creation_mail(challenge):
+    if settings.DEBUG:
+        return
+
+    template_data = {
+        "CHALLENGE_NAME": challenge.title,
+    }
+    if challenge.image:
+        template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
+
+    template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+        "CLUSTER_CREATION_TEMPLATE"
+    )
+
+    send_email(
+        sender=settings.CLOUDCV_TEAM_EMAIL,
+        recipient=settings.ADMIN_EMAIL,
+        template_id=template_id,
+        template_data=template_data,
+    )
