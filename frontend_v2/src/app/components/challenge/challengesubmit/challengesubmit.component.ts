@@ -397,6 +397,7 @@ isSubmissionUsingUrl: any;
         this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
           return element['phaseId'] === phaseId;
         }).attributes;
+        this.metaAttributesforCurrentSubmission = [];
       },
       err => {
         SELF.globalService.handleApiError(err);
@@ -485,8 +486,7 @@ isSubmissionUsingUrl: any;
     FORM_DATA.append('method_description', self.globalService.formValueForLabel(self.components, 'method_description'));
     FORM_DATA.append('project_url', self.globalService.formValueForLabel(self.components, 'project_url'));
     FORM_DATA.append('publication_url', self.globalService.formValueForLabel(self.components, 'publication_url'));
-    FORM_DATA.append('submission_metadata',
-                    self.globalService.formValueForLabel('submission_metadata', JSON.stringify(this.metaAttributesforCurrentSubmission)));
+    FORM_DATA.append('submission_metadata', JSON.stringify(self.metaAttributesforCurrentSubmission));
     self.challengeService.challengeSubmission(
       self.challenge['id'],
       self.selectedPhase['id'],
@@ -501,7 +501,6 @@ isSubmissionUsingUrl: any;
         self.globalService.setFormValueForLabel(self.components, 'method_description', '');
         self.globalService.setFormValueForLabel(self.components, 'project_url', '');
         self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
-        self.globalService.setFormValueForLabel('submission_metadata', JSON.stringify(this.metaAttributesforCurrentSubmission));
       }
     );
   }
@@ -571,4 +570,15 @@ isSubmissionUsingUrl: any;
       }
     }
   }
+
+  // unchecking checked options
+  toggleSelection(attribute, value) {
+    const idx = attribute.values.indexOf(value);
+    if (idx > -1) {
+      attribute.values.splice(idx, 1);
+    } else {
+      attribute.values.push(value);
+    }
+  }
+
 }

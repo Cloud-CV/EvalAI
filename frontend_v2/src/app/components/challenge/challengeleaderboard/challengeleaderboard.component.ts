@@ -1,4 +1,5 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
@@ -6,6 +7,7 @@ import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
+import { SubmissionMetaAttributesDialogueComponent } from '../submission-meta-attributes-dialogue/submission-meta-attributes-dialogue.component';
 
 /**
  * Component Class
@@ -183,7 +185,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
               private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, public dialog: MatDialog) { }
 
   /**
    * Component after view initialized.
@@ -529,19 +531,29 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     );
   }
 
-  showMetaAttributesDialog(ev, attributes) {
+  openDialog(metaAttribute) {
+    const dialogRef = this.dialog.open(SubmissionMetaAttributesDialogueComponent, {
+      width: '30%',
+      data: { attribute: metaAttribute }
+    });
+
+    return dialogRef.afterClosed();
+  }
+
+  // Show dialogue box for viewing metadata
+  showMetaAttributesDialog(attributes) {
+    const SELF = this;
     if (attributes !== false) {
-      this.metaAttributesData = [];
+      SELF.metaAttributesData = [];
       attributes.forEach(function (attribute) {
         if (attribute.type !== 'checkbox') {
-          this.metaAttributesData.push({ 'name': attribute.name, 'value': attribute.value });
+          SELF.metaAttributesData.push({ 'name': attribute.name, 'value': attribute.value });
         } else {
-          this.metaAttributesData.push({ 'name': attribute.name, 'values': attribute.values });
+          SELF.metaAttributesData.push({ 'name': attribute.name, 'values': attribute.values });
         }
       });
     }
-    // Dialogue box or showing meta data
-    
+    SELF.openDialog(SELF.metaAttributesData);
   }
 
 }
