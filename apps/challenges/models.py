@@ -177,18 +177,11 @@ signals.post_save.connect(
     weak=False,
 )
 
-signals.post_save.connect(
-    model_field_name(field_name="approved_by_admin")(
-        challenge_workers_start_notifier
-    ),
-    sender=Challenge,
-    weak=False,
-)
-
 
 @receiver(signals.post_save, sender="challenges.Challenge")
 def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
+
     if not created and is_model_field_changed(instance, field_name):
         if (
             instance.approved_by_admin is True
@@ -197,6 +190,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             create_eks_cluster.delay(serialized_obj)
+    challenge_workers_start_notifier(sender, instance, field_name, **kwargs)
 
 
 class DatasetSplit(TimeStampedModel):
