@@ -30,7 +30,7 @@
   <div *ngIf="challenge.is_docker_based" class="ev-md-container ev-card-panel
     card-bt-margin">
     <div class="row row-lr-margin">
-      <div class="col-lg-12 col-mat-12 col-sm-12 col-lr-pad">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-lr-pad">
         <span class="fs-20 fw-light">
           Submission instructions for docker image using evalai-cli
         </span>
@@ -179,7 +179,7 @@
                 </div>
                 <div  [hidden]="!showForm" class="form">
                   <div class="row row-lr-margin">
-                    <div class="col-mat-10 col-sm-10 col-lr-pad
+                    <div class="col-md-10 col-sm-10 col-lr-pad
                       submit-upload-file">
                       <div [hidden]="isSubmissionUsingUrl">
                         <app-input (change)="validateInput($event.target.value)"
@@ -350,7 +350,7 @@
           </div>
         </div>
       </div>
-      <div *ngIf="selectedPhaseSubmissions.showClock" class="col-mat-5 col-sm-12 col-xs-12">
+      <div *ngIf="selectedPhaseSubmissions.showClock" class="col-md-5 col-sm-12 col-xs-12">
         <div class="ev-card-body exist-team-card ev-remaining-submission
         remaining-submission-clock">
           <div class="row row-lr-margin">
