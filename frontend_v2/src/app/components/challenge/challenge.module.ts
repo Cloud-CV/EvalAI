@@ -27,6 +27,7 @@ import { ChallengeRoutingModule } from './challenge-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 import { ChallengelistModule } from '../publiclists/challengelist/challengelist.module';
 import { ChallengemanageComponent } from './challengemanage/challengemanage.component';
+import { ChallengediscussComponent } from './challengediscuss/challengediscuss.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { ChallengemanageComponent } from './challengemanage/challengemanage.comp
     ChallengesubmissionsComponent,
     ChallengeviewallsubmissionsComponent,
     PhasecardComponent,
-    ChallengemanageComponent
+    ChallengemanageComponent,
+    ChallengediscussComponent
   ],
   imports: [
     CommonModule,
