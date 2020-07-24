@@ -44,7 +44,7 @@ from challenges.utils import (
     get_challenge_phase_split_model,
 )
 from hosts.models import ChallengeHost
-from hosts.utils import is_user_a_host_of_challenge, get_challenge_host_teams_for_user
+from hosts.utils import is_user_a_host_of_challenge
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_model,
