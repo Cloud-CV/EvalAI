@@ -10,6 +10,7 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
+        vm.areSubmissionsFailing = false;
         vm.getAllEntriesTestOption = "Include private submissions";
         vm.showPrivateIds = [];
         vm.showLeaderboardToggle = true;
@@ -28,6 +29,8 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.submissionMetaAttributes = []; // Stores the attributes format and phase ID for all the phases of a challenge.
+        vm.metaAttributesforCurrentSubmission = null; // Stores the attributes while making a submission for a selected phase.
         vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
@@ -74,6 +77,8 @@
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
 
+        vm.workerLogs = [];
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -87,6 +92,63 @@
                     $scope.isHighlight = elementId.split("leaderboardrank-")[1];
                 }
             }, 500);
+        };
+
+
+        // API call to manage the worker from UI.
+        // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
+        vm.manageWorker = function(action){
+            parameters.url = 'challenges/' + vm.challengeId + '/manage_worker/' + action +'/';
+            parameters.method = 'PUT';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    if (details.action == "Success"){
+                        $rootScope.notify("success", "Worker(s) " + action + "ed succesfully.");
+                    }
+                    else {
+                        $rootScope.notify("error", details.error);
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data.error;
+                    if (error == undefined){
+                        $rootScope.notify("error", "There was an error.");
+                    }
+                    else {
+                        $rootScope.notify("error", "There was an error: " + error);
+                    }
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        // Get the logs from worker if submissions are failing.
+        vm.startLoadingLogs = function() {
+            vm.logs_poller = $interval(function(){
+                parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        vm.workerLogs = [];
+                        for (var i = 0; i<details.logs.length; i++){
+                            vm.workerLogs.push(details.logs[i]);
+                        }
+                    },
+                    onError: function(response) {
+                        var error = response.data.error;
+                        vm.workerLogs.push(error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }, 5000);
+        };
+
+        vm.stopLoadingLogs = function(){
+            $interval.cancel(vm.logs_poller);
         };
 
          // scroll to the specific entry of the leaderboard
@@ -259,7 +321,7 @@
                                             // select team from existing list
                                             vm.selectExistTeam = function() {
 
-                                                // loader for exisiting teams
+                                                // loader for existing teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
                                                 vm.loaderContainer = angular.element('.exist-team-card');
@@ -292,7 +354,7 @@
 
                                             // to load data with pagination
                                             vm.load = function(url) {
-                                                // loader for exisiting teams
+                                                // loader for existing teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
                                                 vm.loaderContainer = angular.element('.exist-team-card');
@@ -451,6 +513,7 @@
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
+                    formData.append("submission_metadata", JSON.stringify(vm.metaAttributesforCurrentSubmission));
 
                     parameters.data = formData;
 
@@ -479,6 +542,7 @@
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
+                            vm.metaAttributesforCurrentSubmission = null;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -508,8 +572,6 @@
             }
         };
 
-
-
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
@@ -531,8 +593,21 @@
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
                 }
 
-                // navigate to challenge page
-                // $state.go('web.challenge-page.overview');
+                for(var k=0; k<details.count; k++){
+                    if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null){
+                        var attributes = details.results[k].submission_meta_attributes;
+                        attributes.forEach(function(attribute){
+                            if (attribute["type"] == "checkbox") attribute["values"] = [];
+                            else attribute["value"] = null;
+                        });
+                        data = {"phaseId":details.results[k].id, "attributes": attributes};
+                        vm.submissionMetaAttributes.push(data);
+                    }
+                    else {
+                        var data = {"phaseId":details.results[k].id, "attributes": null};
+                        vm.submissionMetaAttributes.push(data);
+                    }
+                }
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -545,11 +620,41 @@
 
         utilities.sendRequest(parameters);
 
+        vm.loadPhaseAttributes = function(phaseId){ // Loads attributes of a phase into vm.submissionMetaAttributes
+            vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function(element){
+                return element["phaseId"] == phaseId;
+            }).attributes;
+        };
+
+        vm.clearMetaAttributeValues = function(){
+            if (vm.metaAttributesforCurrentSubmission != null){
+                vm.metaAttributesforCurrentSubmission.forEach(function(attribute){
+                    if (attribute.type == 'checkbox'){
+                        attribute.values = [];
+                    }
+                    else {
+                        attribute.value = null;
+                    }
+                });
+            }
+        };
+
+        vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.
+                var idx = attribute.values.indexOf(value);
+                if (idx > -1) {
+                  attribute.values.splice(idx, 1);
+                }
+                else {
+                  attribute.values.push(value);
+                }
+            };
+
         var challengePhaseVisibility = {
             owner_and_host: 1,
             host: 2,
             public: 3,
         };
+
         // get details of the particular challenge phase split
         parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
         parameters.method = 'GET';
@@ -558,7 +663,7 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phaseSplits = details;
-                if(details.length == 0) {
+                if (details.length == 0) {
                     vm.isChallengeLeaderboardPrivate = true; 
                 }
                 for(var i=0; i<details.length; i++) {
@@ -647,7 +752,7 @@
 
             vm.isResult = true;
             vm.phaseSplitId = phaseSplitId;
-            // loader for exisiting teams
+            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
@@ -689,6 +794,13 @@
                         }
                     }
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        if (vm.leaderboard[i].submission__submission_metadata == null){
+                            vm.showSubmissionMetaAttributesOnLeaderboard = false;
+                        }
+                        else {
+                            vm.showSubmissionMetaAttributesOnLeaderboard = true;
+                        }
+
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -768,6 +880,32 @@
             vm.getLeaderboard(vm.phaseSplitId);
         }
 
+        
+        vm.showMetaAttributesDialog = function(ev, attributes){
+            if (attributes != false){
+                vm.metaAttributesData = [];
+                attributes.forEach(function(attribute){
+                    if (attribute.type != "checkbox") {
+                        vm.metaAttributesData.push({"name": attribute.name, "value": attribute.value});
+                    }
+                    else {
+                        vm.metaAttributesData.push({"name": attribute.name, "values": attribute.values});
+                    }
+                });
+
+                $mdDialog.show({
+                    scope: $scope,
+                    preserveScope: true,
+                    targetEvent: ev,
+                    templateUrl: 'src/views/web/challenge/submission-meta-attributes-dialog.html',
+                    clickOutsideToClose: true
+                });
+            }
+            else {
+                $mdDialog.hide();
+            }
+        };
+
         vm.getResults = function(phaseId) {
             // long polling (5s) for leaderboard
             vm.start = function() {
@@ -842,7 +980,7 @@
             };
             utilities.sendRequest(parameters);
 
-            // loader for exisiting teams
+            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
@@ -910,7 +1048,7 @@
                     }
 
                     vm.load = function(url) {
-                        // loader for exisiting teams
+                        // loader for existing teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
                         vm.loaderContainer = angular.element('.exist-team-card');
@@ -1211,7 +1349,7 @@
                     vm.getAllEntriesTestOption = "Exclude private submissions";
                     vm.getAllEntriesOnPublicLeaderboard(vm.phaseSplitId);
                 }
-                else{
+                else {
                     vm.getAllEntriesTestOption = "Include private submissions";
                     vm.getLeaderboard(vm.phaseSplitId);
                 }
@@ -1411,7 +1549,7 @@
                 onSuccess: function(response) {
                     var status = response.status;
                     var message = "";
-                    if(status === 200) {
+                    if (status === 200) {
                       var detail = response.data;
                       if (detail['is_public'] == true) {
                         message = "The submission is made public.";
@@ -1435,7 +1573,7 @@
                 onError: function(response) {
                     var error = response.data;
                     var status = response.status;
-                    if(status === 400 || status === 403) {
+                    if (status === 400 || status === 403) {
                        $rootScope.notify("error", error.error);
                     }
                     if (vm.isCurrentPhaseRestrictedToSelectOneSubmission) {
@@ -1807,7 +1945,7 @@
         };
 
         vm.deleteChallenge = function(deleteChallengeForm) {
-            if(deleteChallengeForm){
+            if (deleteChallengeForm){
                 var parameters = {};
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/disable";
                 parameters.method = 'POST';
@@ -2170,8 +2308,8 @@
                           .title('Make this challenge ' + vm.toggleChallengeState + '?')
                           .ariaLabel('')
                           .targetEvent(ev)
-                          .ok('I\'m sure')
-                          .cancel('No.');
+                          .ok('Yes')
+                          .cancel('No');
 
             $mdDialog.show(confirm).then(function() {
                 parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
@@ -2262,6 +2400,7 @@
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
+            vm.stopLoadingLogs();
         });
 
         $rootScope.$on('$stateChangeStart', function() {

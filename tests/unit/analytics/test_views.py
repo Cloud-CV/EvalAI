@@ -440,7 +440,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         )
 
     def test_get_challenge_phase_submission_count_by_team_when_challenge_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_challenge_phase_submission_count_by_team",
@@ -460,7 +460,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phase_submission_count_by_team_when_challenge_phase_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_challenge_phase_submission_count_by_team",
@@ -480,7 +480,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phase_submission_count_by_team_for_participant_team_1(
-        self
+        self,
     ):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.participant_teams.add(self.participant_team3)
@@ -503,7 +503,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_submission_count_by_team_for_participant_team_3(
-        self
+        self,
     ):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.participant_teams.add(self.participant_team3)
@@ -629,7 +629,7 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         )
 
     def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_challenge_phase_submission_analysis",
@@ -649,7 +649,7 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_challenge_phase_submission_analysis",
@@ -748,7 +748,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_last_submission_time_when_challenge_phase_does_not_exists(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_last_submission_time",
@@ -857,7 +857,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_last_submission_datetime_when_challenge_phase_does_not_exists(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_last_submission_datetime_analysis",
@@ -877,7 +877,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_last_submission_datetime_when_no_submission_is_made_to_challenge(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_last_submission_datetime_analysis",
@@ -894,7 +894,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_last_submission_datetime_when_no_submission_is_made_to_challenge_phase(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "analytics:get_last_submission_datetime_analysis",
@@ -987,25 +987,21 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         expected = io.StringIO()
         expected_participant_teams = csv.writer(expected)
         expected_participant_teams.writerow(
-            [
-                "Team Name",
-                "Team Members",
-                "Email Id",
-            ]
+            ["Team Name", "Team Members", "Email Id", ]
         )
         challenge = get_challenge_model(self.challenge.pk)
-        participant_team = challenge.participant_teams.all().order_by("-team_name")
-        participant_teams = ChallengeParticipantSerializer(participant_team, many=True)
+        participant_team = challenge.participant_teams.all().order_by(
+            "-team_name"
+        )
+        participant_teams = ChallengeParticipantSerializer(
+            participant_team, many=True
+        )
         for team in participant_teams.data:
             expected_participant_teams.writerow(
                 [
                     team["team_name"],
-                    ",".join(
-                        team["team_members"]
-                    ),
-                    ",".join(
-                        team["team_members_email_ids"]
-                    ),
+                    ",".join(team["team_members"]),
+                    ",".join(team["team_members_email_ids"]),
                 ]
             )
         self.client.force_authenticate(user=self.user)
