@@ -43,8 +43,8 @@ from challenges.utils import (
     get_challenge_phase_model,
     get_challenge_phase_split_model,
 )
-from hosts.models import ChallengeHost
-from hosts.utils import is_user_a_host_of_challenge
+from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.utils import is_user_a_host_of_challenge, get_challenge_host_teams_for_user
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_model,
@@ -320,6 +320,43 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(
             serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
         )
+
+
+@api_view(["DELETE"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def challenge_submission_delete(request, challenge_pk, challenge_phase_pk, submission_pk):
+    """
+    Delete submission by the challenge Host
+    """
+    # check if the challenge exists or not
+    challenge = get_challenge_model(challenge_pk)
+
+    # check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    
+    challenge_host_team_pk = get_challenge_host_teams_for_user(
+        request.user
+    )
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        try:
+            submission = Submission.objects.get(
+                challenge_phase=challenge_phase,
+                id=submission_pk,
+            )
+            submission.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Submission.DoesNotExist:
+            response_data = {"error": "Submission does not exist"}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        response_data = {"error": "Only challenge hosts are allowed to delete a submission"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(["PATCH"])
