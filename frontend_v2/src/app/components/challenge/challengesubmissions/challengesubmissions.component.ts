@@ -389,20 +389,44 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   changeSubmissionVisibility(id, is_public) {
     is_public = !is_public;
-    this.updateSubmissionVisibility(id);
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
-      const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(this.challenge['id'], this.selectedPhase['id'], id);
       const SELF = this;
-      const BODY = JSON.stringify({is_public: is_public});
-      this.apiService.patchUrl(API_PATH, BODY).subscribe(
-        data => {},
-        err => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => {
-          console.log('Updated submission visibility', id);
-        }
-      );
+      SELF.apiCall = (params) => {
+        const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(this.challenge['id'], this.selectedPhase['id'], id);
+        const BODY = JSON.stringify({ is_public: is_public });
+        this.apiService.patchUrl(API_PATH, BODY).subscribe(
+          () => {
+            this.updateSubmissionVisibility(id);
+           },
+          err => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {
+            console.log('Updated submission visibility', id);
+          }
+        );
+      };
+      const PARAMS = {
+        title: 'Update Submission Visibility',
+        content: 'Challenge host can still see your submission. Do u still want to continue?',
+        isButtonDisabled: true,
+        confirm: 'Yes',
+        deny: 'No',
+        confirmCallback: SELF.apiCall
+      };
+      const HOST_PARAMS = {
+        title: 'Update Submission Visibility',
+        content: 'Are you sure to change the submission visibility?',
+        isButtonDisabled: true,
+        confirm: 'Yes',
+        deny: 'No',
+        confirmCallback: SELF.apiCall
+      };
+      if (SELF.isChallengeHost || is_public) {
+        SELF.globalService.showModal(HOST_PARAMS);
+      } else {
+        SELF.globalService.showModal(PARAMS);
+      }
     }
   }
 
