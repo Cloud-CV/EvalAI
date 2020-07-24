@@ -52,6 +52,16 @@ export class ChallengeComponent implements OnInit {
   isParticipated = false;
 
   /**
+   * Is Forum enabled in Challenge
+   */
+  isForumEnabled: boolean;
+
+  /**
+   * Forum Url of Challenge
+   */
+  forumURL: any;
+
+  /**
    * Challenge object
    */
   challenge: any;
@@ -106,6 +116,8 @@ export class ChallengeComponent implements OnInit {
     });
     this.challengeService.currentChallenge.subscribe(challenge => {
       this.challenge = challenge;
+      this.isForumEnabled = challenge.enable_forum;
+      this.forumURL = challenge.forum_url;
       // update meta tag
       SELF.meta.updateTag({
         property: 'og:title',
