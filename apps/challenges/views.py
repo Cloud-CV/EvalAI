@@ -41,7 +41,7 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
-    get_presigned_url_for_file_upload,
+    generate_presigned_url,
     get_queue_name,
     get_url_from_hostname,
     paginated_queryset,
@@ -2748,16 +2748,21 @@ def manage_worker(request, challenge_pk, action):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_annotations(
-    request, challenge_pk, challenge_phase_pk
-):
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+def get_annotation_file_presigned_url(request, challenge_phase_pk):
+    # Check if the challenge phase exists or not
+    try:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(
+        request.user, challenge_phase.challenge.pk
+    ):
         response_data = {
             "error": "Sorry, you are not authorized for uploading an annotation file."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(
@@ -2765,7 +2770,7 @@ def get_presigned_url_for_annotations(
     )
     file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
 
-    response = get_presigned_url_for_file_upload(file_key)
+    response = generate_presigned_url(file_key)
     if response.get("error"):
         response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

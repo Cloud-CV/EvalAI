@@ -179,16 +179,19 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_presigned_url_for_file_upload(file_key):
+def generate_presigned_url(file_key):
+    """Function to get the presigned url to upload a file to s3.
+
+    Keyword Arguments:
+        file_key {string} -- The S3 key for the file to be uploaded.
+
     """
-    Function to get the presigned url to upload a file to s3 with name file_name and key as file_key.
-    """
-    if settings.DEBUG:
+    if settings.DEBUG or settings.TEST:
         return
     try:
         aws_keys = get_aws_secret_keys()
 
-        s3 = get_boto3_client("s3", aws_keys)
+        s3 = get_boto3_client("s3", file_key)
         response = s3.generate_presigned_url(
             "put_object",
             Params={

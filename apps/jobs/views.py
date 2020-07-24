@@ -31,7 +31,7 @@ from base.utils import (
     StandardResultSetPagination,
     get_boto3_client,
     get_or_create_sqs_queue_object,
-    get_presigned_url_for_file_upload,
+    generate_presigned_url,
     paginated_queryset,
 )
 from challenges.models import (
@@ -2083,26 +2083,18 @@ def get_github_badge_data(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_presigned_url_for_submission(
-    request, challenge_pk, challenge_phase_pk
-):
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {"error": "Challenge does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+def get_submission_file_presigned_url(request, challenge_phase_pk):
     # Check if the challenge phase exists or not
     try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge
-        )
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
     except ChallengePhase.DoesNotExist:
         response_data = {"error": "Challenge Phase does not exist"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    challenge = challenge_phase.challenge
+
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-        request.user, challenge_pk
+        request.user, challenge.pk
     )
 
     if not challenge.is_active:
@@ -2117,7 +2109,7 @@ def get_presigned_url_for_submission(
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is a challenge host or a participant
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
         # Check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
@@ -2144,7 +2136,7 @@ def get_presigned_url_for_submission(
                 )
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-        request.user, challenge_pk
+        request.user, challenge.pk
     )
     try:
         participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
@@ -2192,16 +2184,9 @@ def get_presigned_url_for_submission(
         },
     )
 
-    submission_message = {
-        "challenge_pk": challenge_pk,
-        "phase_pk": challenge_phase_pk,
-    }
-
     if serializer.is_valid():
         serializer.save()
         submission = serializer.instance
-
-        submission_message["submission_pk"] = submission.pk
 
         file_ext = os.path.splitext(request.data["file_name"])[-1]
         file_name = "submission_files/presigned_url_files/submission_{}/{}{}".format(
@@ -2209,7 +2194,7 @@ def get_presigned_url_for_submission(
         )
         file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
 
-        response = get_presigned_url_for_file_upload(file_key)
+        response = generate_presigned_url(file_key)
         if response.get("error"):
             response_data = response
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -2219,7 +2204,7 @@ def get_presigned_url_for_submission(
 
         response_data = {
             "presigned_url": response.get("presigned_url"),
-            "submission_message": submission_message,
+            "submission_pk": submission.pk,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -2229,8 +2214,84 @@ def get_presigned_url_for_submission(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def publish_submission_message_api(request):
-    message = json.loads(request.data.get("submission_message"))
-    publish_submission_message(message)
-    response_data = {"id": message.get("submission_pk")}
+def send_submission_message(request, challenge_phase_pk, submission_pk):
+    try:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        get_submission_model(submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    submission_message = {
+        "submission_pk": submission_pk,
+        "phase_pk": challenge_phase_pk,
+        "challenge_pk": challenge.pk,
+    }
+
+    publish_submission_message(submission_message)
+    response_data = {}
     return Response(response_data, status=status.HTTP_200_OK)
