@@ -339,10 +339,7 @@ def challenge_submission_delete(request, challenge_pk, challenge_phase_pk, submi
     if not challenge.is_active:
         response_data = {"error": "Challenge is not active"}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-    
-    challenge_host_team_pk = get_challenge_host_teams_for_user(
-        request.user
-    )
+
     if is_user_a_host_of_challenge(request.user, challenge_pk):
         try:
             submission = Submission.objects.get(
