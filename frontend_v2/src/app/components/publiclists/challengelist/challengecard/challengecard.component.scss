@@ -6,7 +6,8 @@
 
 .bg-img {
   width: 100%;
-  margin: -5% auto auto;
+  height: 100%;
+  margin: auto;
 }
 
 .margin-top-btm {
@@ -17,4 +18,13 @@
 .card {
   margin-left: 0;
   margin-right: 0;
+}
+
+p {
+  word-wrap: break-word;
+}
+
+.card-content  {
+  height: 275px;
+  overflow: hidden;
 }
