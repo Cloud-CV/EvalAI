@@ -389,6 +389,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   changeSubmissionVisibility(id, is_public) {
     is_public = !is_public;
+    console.log('is Public', is_public);
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
       const SELF = this;
       SELF.apiCall = (params) => {
@@ -414,7 +415,19 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         deny: 'No',
         confirmCallback: SELF.apiCall
       };
-      SELF.globalService.showModal(PARAMS);
+      const HOST_PARAMS = {
+        title: 'Update Submission Visibility',
+        content: 'Are you sure to change the submission visibility?',
+        isButtonDisabled: true,
+        confirm: 'Yes',
+        deny: 'No',
+        confirmCallback: SELF.apiCall
+      };
+      if (SELF.isChallengeHost || is_public) {
+        SELF.globalService.showModal(HOST_PARAMS);
+      } else {
+        SELF.globalService.showModal(PARAMS);
+      }
     }
   }
 
