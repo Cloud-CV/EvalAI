@@ -389,7 +389,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   changeSubmissionVisibility(id, is_public) {
     is_public = !is_public;
-    console.log('is Public', is_public);
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
       const SELF = this;
       SELF.apiCall = (params) => {
