@@ -67,3 +67,4 @@ sudo docker-compose -f docker-compose-vm.yml run --rm --entrypoint "\
 
 echo "### Reloading nginx ..."
 sudo docker-compose -f docker-compose-vm.yml exec nodejs nginx -s reload
+
