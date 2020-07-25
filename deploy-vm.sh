@@ -12,11 +12,14 @@ sudo apt-get install \
     curl \
     gnupg-agent \
     software-properties-common -y
+
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
 sudo add-apt-repository \
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
    $(lsb_release -cs) \
    stable"
+
 sudo apt-get update -y
 
 echo "### Installing docker"
@@ -33,9 +36,6 @@ sudo chmod +x /usr/local/bin/docker-compose
 echo "### Finished installing docker-compose. Check docker-compose version"
 sudo docker-compose --version 
 
-export DJANGO_SERVER_URL=temp
-
-
 echo "### Initiating letsencrypt with certbot"
 chmod +x init-letsencrypt.sh
 ./init-letsencrypt.sh
@@ -43,7 +43,8 @@ chmod +x init-letsencrypt.sh
 # Pull images & run containers 
 sudo docker-compose -f docker-compose-vm.yml up -d --build
 
-#Restore database
+# Restore database
+sudo mkdir backups
 DOCKER_DB_NAME="$(sudo docker-compose -f docker-compose-vm.yml ps -q db)"
 LOCAL_DUMP_PATH=$(ls -t backups/* | head -1)
 
