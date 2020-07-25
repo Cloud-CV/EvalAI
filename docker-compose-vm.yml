@@ -62,6 +62,8 @@ services:
       dockerfile: docker/prod/nodejs/Dockerfile
       args:
         NODE_ENV: vm
+    environment: 
+      DOMAIN_NAME: ${DOMAIN_NAME}
     depends_on:
       - django
     ports:
@@ -77,6 +79,8 @@ services:
   certbot:
     image: certbot/certbot
     restart: unless-stopped
+    environment: 
+      DOMAIN_NAME: ${DOMAIN_NAME}
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
