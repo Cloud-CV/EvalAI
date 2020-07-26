@@ -677,11 +677,39 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     Creates a challenge using a zip file.
     """
+    is_template_challenge = False
+    if request.data.get("is_template_challenge"):
+        is_template_challenge = True
+
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    serializer = ChallengeConfigSerializer(
-        data=request.data, context={"request": request}
-    )
+    if is_template_challenge:
+        template_id = request.data.get("templateId")
+        try:
+            template = ChallengeTemplate.objects.get(
+                id=template_id, is_active=True
+            )
+        except ChallengeTemplate.DoesNotExist:
+            response_data = {"error": "Sorry, this template is not available."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        template_url = template.template_file.url
+        zip_file_path = download_file(template_url).get("file_path")
+        zip_file = open(zip_file_path, "rb")
+        challenge_zip_file = SimpleUploadedFile(
+            zip_file.name, zip_file.read(), content_type="application/zip"
+        )
+        # Copy request data so that we can mutate it to add template
+        challenge_data = request.data.copy()
+        challenge_data["zip_configuration"] = challenge_zip_file
+        serializer = ChallengeConfigSerializer(
+            data=challenge_data, context={"request": request}
+        )
+    else:
+        serializer = ChallengeConfigSerializer(
+            data=request.data, context={"request": request}
+        )
+
     if serializer.is_valid():
         uploaded_zip_file = serializer.save()
         uploaded_zip_file_path = serializer.data["zip_configuration"]
@@ -776,6 +804,34 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    '''
+    THIS IS CODE TO CHANGE ALL THE FIELDS. PROLLY USE A FUNCTION? NAH.
+
+    if is_template_challenge:
+        yaml_file_data["title"] = request.data.get("title")
+        yaml_file_data["start_date"] = request.datra.get("start_date")
+        yaml_file_data["end_date"] = request.datra.get("end_date")
+        yaml_file_data["short_description"] = request.data.get("short_description")
+        yaml_file_data["leaderboard"] = json.load(request.data.get("leaderboard"))
+        
+        # Mapping the challenge phase data to that in yaml_file_data
+        challenge_phases = yaml_file_data["challenge_phases"]
+        for i in range(len(challenge_phases)):
+            challenge_phases[i]["name"] = requests["challenge_phases"][i]["name"]
+            challenge_phases[i]["description"] = requests["challenge_phases"][i]["description"] ##CHeck this
+            challenge_phases[i]["leaderboard_public"] = requests["challenge_phases"][i]["leaderboard_public"]
+            challenge_phases[i]["start_date"] = requests["challenge_phases"][i]["start_date"]
+            challenge_phases[i]["end_date"] = requests["challenge_phases"][i]["end_date"]
+            challenge_phases[i]["max_submissions_per_day"] = requests["challenge_phases"][i]["max_submissions_per_day"]
+            challenge_phases[i]["max_submissions_per_month"] = requests["challenge_phases"][i]["max_submissions_per_month"]
+            challenge_phases[i]["max_submissions"] = requests["challenge_phases"][i]["max_submissions"]
+            challenge_phases[i]["submission_meta_attributes"] = json.load(requests["challenge_phases"][i]["submission_meta_attributes"])
+
+        dataset_splits = yaml_file_data["dataset_splits"]
+        for i in range(len(dataset_splits)):
+            dataset_splits["name"] = requests["dataset_splits"][i]["name"]
+    '''
 
     # Check for evaluation script path in yaml file.
     try:
@@ -2740,3 +2796,11 @@ def manage_worker(request, challenge_pk, action):
             response_data = {"action": "Failure", "error": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_challenge_templates(request):
+
