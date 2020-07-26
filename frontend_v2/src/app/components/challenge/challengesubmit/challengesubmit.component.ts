@@ -394,48 +394,10 @@ isSubmissionUsingUrl: any;
           }
         }
         // Loads attributes of a phase into this.submissionMetaAttributes
-        // this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
-        //   return element['phaseId'] === phaseId;
-        // }).attributes;
-
-    this.metaAttributesforCurrentSubmission = [
-    {
-              'name': 'TextAttribute',
-              'description': 'This is a text attribute',
-              'type': 'text',
-              'required': true,
-              'value': null
-            },
-            {
-              'name': 'OptionAttribute',
-              'description': 'This is a single option attribute',
-              'type': 'radio',
-              'options': [
-                'Option A',
-                'Option B',
-                'Option C'
-              ],
-              'value': null
-            },
-            {
-              'name': 'MultipleChoiceAttribute',
-              'description': 'This is a multiple choice attributh',
-              'type': 'checkbox',
-              'options': [
-                'alpha',
-                'beta',
-                'gamma'
-              ],
-              'values': []
-            },
-            {
-              'name': 'BooleanField',
-              'description': 'Select true or false',
-              'type': 'boolean',
-              'required': true,
-              'value': null
-            }
-          ];
+        this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
+          return element['phaseId'] === phaseId;
+        }).attributes;
+        this.metaAttributesforCurrentSubmission = [];
       },
       err => {
         SELF.globalService.handleApiError(err);
