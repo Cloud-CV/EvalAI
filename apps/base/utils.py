@@ -19,6 +19,8 @@ from rest_framework.pagination import PageNumberPagination
 
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
+from challenges.utils import get_aws_credentials_for_challenge
+
 logger = logging.getLogger(__name__)
 
 
@@ -138,17 +140,6 @@ def send_email(
     return
 
 
-def get_aws_secret_keys():
-    aws_keys = {
-        "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID"),
-        "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
-        "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
-        "AWS_REGION": settings.AWS_DEFAULT_REGION,
-        "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
-    }
-    return aws_keys
-
-
 def get_url_from_hostname(hostname):
     if settings.DEBUG or settings.TEST:
         scheme = "http"
@@ -179,7 +170,7 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def generate_presigned_url(file_key):
+def generate_presigned_url(file_key, challenge_pk):
     """Function to get the presigned url to upload a file to s3.
 
     Keyword Arguments:
@@ -189,7 +180,7 @@ def generate_presigned_url(file_key):
     if settings.DEBUG or settings.TEST:
         return
     try:
-        aws_keys = get_aws_secret_keys()
+        aws_keys = get_aws_credentials_for_challenge(file_key, challenge_pk)
 
         s3 = get_boto3_client("s3", file_key)
         response = s3.generate_presigned_url(

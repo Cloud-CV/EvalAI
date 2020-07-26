@@ -6,6 +6,7 @@ import string
 import uuid
 
 from botocore.exceptions import ClientError
+from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
@@ -108,16 +109,11 @@ def get_aws_credentials_for_challenge(challenge_pk):
         }
     else:
         aws_keys = {
-            "AWS_ACCOUNT_ID": os.environ.get(
-                "AWS_ACCOUNT_ID", "aws_account_id"
-            ),
-            "AWS_ACCESS_KEY_ID": os.environ.get(
-                "AWS_ACCESS_KEY_ID", "aws_access_key_id"
-            ),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get(
-                "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"
-            ),
-            "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            "AWS_ACCOUNT_ID": settings.AWS_ACCOUNT_ID,
+            "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+            "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
+            "AWS_REGION": settings.AWS_DEFAULT_REGION,
+            "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
         }
     return aws_keys
 

@@ -193,9 +193,12 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_REGION = os.environ.get("AWS_DEFAULT_REGION")
+AWS_ACCOUNT_ID = (os.environ.get("AWS_ACCOUNT_ID", "aws_account_id"),)
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "aws_access_key_id")
+AWS_SECRET_ACCESS_KEY = os.environ.get(
+    "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"
+)
+AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)

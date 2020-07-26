@@ -2770,7 +2770,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     )
     file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
 
-    response = generate_presigned_url(file_key)
+    response = generate_presigned_url(file_key, challenge_phase.challenge.pk)
     if response.get("error"):
         response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
