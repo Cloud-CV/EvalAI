@@ -104,7 +104,6 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   fetchTeamsPath: any;
 
-
   /**
    * Create teams URL
    */
