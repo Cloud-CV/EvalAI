@@ -95,7 +95,7 @@ export class EndpointsService {
    * @param teamName  team name
    */
   FilteredParticipantTeamURL(teamName) {
-    return `${this.participants}participant_team?participant_team_team_name=${teamName}`;
+    return `${this.participants}participant_team?team_name=${teamName}`;
   }
 
   /**
@@ -116,7 +116,7 @@ export class EndpointsService {
    * @param teamName  team name
    */
   FilteredHostTeamURL(teamName) {
-    return `${this.hosts}challenge_host_team?host_team_team_name=${teamName}`;
+    return `${this.hosts}challenge_host_team?team_name=${teamName}`;
   }
 
   /**

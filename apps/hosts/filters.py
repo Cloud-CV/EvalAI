@@ -6,7 +6,7 @@ from .models import ChallengeHostTeam
 class HostTeamsFilter(django_filters.FilterSet):
     class Meta:
         model = ChallengeHostTeam
-        fields = ["host_team_team_name"]
+        fields = ["team_name"]
         filter_overrides = {
             models.CharField: {
                 "filter_class": django_filters.CharFilter,
