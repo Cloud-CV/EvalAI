@@ -810,10 +810,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     if is_template_challenge:
         yaml_file_data["title"] = request.data.get("title")
+        yaml_file_data["short_description"] = request.data.get("short_description")
+        yaml_file_data["description"] = request.data.get("description") # Check how for files.
+        yaml_file_data["evaluation_details"] = request.data.get("evaluation_details")
+        yaml_file_data["image"] = request.data.get("image")
+        yaml_file_data["submission_guidelines"] = request.data.get("submission_guidelines")
+        yaml_file_data["leaderboard_description"] = request.data.get("leaderboard_description")
+        yaml_file_data["evaluation_script"] = request.data.get("evaluation_script")
         yaml_file_data["start_date"] = request.datra.get("start_date")
         yaml_file_data["end_date"] = request.datra.get("end_date")
-        yaml_file_data["short_description"] = request.data.get("short_description")
         yaml_file_data["leaderboard"] = json.load(request.data.get("leaderboard"))
+
         
         # Mapping the challenge phase data to that in yaml_file_data
         challenge_phases = yaml_file_data["challenge_phases"]
