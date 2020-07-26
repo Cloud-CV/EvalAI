@@ -10,7 +10,10 @@ from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
-from .challenge_notification_util import construct_and_send_worker_start_mail
+from .challenge_notification_util import (
+    construct_and_send_worker_start_mail,
+    construct_and_send_eks_cluster_creation_mail,
+)
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
@@ -879,6 +882,7 @@ def create_eks_nodegroup(challenge, cluster_name):
         return response
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+    construct_and_send_eks_cluster_creation_mail(challenge)
 
 
 @app.task
@@ -974,7 +978,10 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
     if (
         curr and not prev
     ):  # Checking if the challenge has been approved by admin since last time.
-        if not challenge.is_docker_based:
+        if (
+            not challenge.is_docker_based
+            and challenge.remote_evaluation is False
+        ):
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if count != 1:
