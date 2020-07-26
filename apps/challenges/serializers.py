@@ -9,6 +9,7 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
     StarChallenge,
@@ -360,4 +361,16 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "cluster_ssl",
             "cluster_yaml",
             "kube_config",
+        )
+
+class TemplateChallengeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChallengeTemplate
+        fields = (
+            "title",
+            "image",
+            "dataset",
+            "eval_criteria",
+            "phases",
+            "splits",
         )
