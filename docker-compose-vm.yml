@@ -59,11 +59,10 @@ services:
   nodejs:
     build:
       context: ./
-      dockerfile: docker/prod/nodejs/Dockerfile
+      dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
-    environment: 
-      DOMAIN_NAME: ${DOMAIN_NAME}
+        DOMAIN_NAME: ${DOMAIN_NAME}
     depends_on:
       - django
     ports:

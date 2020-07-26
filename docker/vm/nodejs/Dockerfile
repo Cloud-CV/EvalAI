@@ -1,6 +1,7 @@
 FROM node:8.11.2 as node
 
 ARG NODE_ENV
+ARG DOMAIN_NAME
 WORKDIR /code
 
 # Add dependencies
@@ -18,11 +19,15 @@ RUN npm cache clean -f
 RUN npm install
 RUN bower install --allow-root
 ADD frontend /code/frontend
+RUN sed -i "s/example.com/${DOMAIN_NAME}/g" frontend/src/js/config.json
 
 RUN gulp ${NODE_ENV}
 
 FROM nginx:1.13-alpine
 # Adding NODE_ENV here as well since this is a multistage build
 ARG NODE_ENV
+ARG DOMAIN_NAME
 COPY docker/vm/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
+RUN sed -i "s/example.com/${DOMAIN_NAME}/g" /etc/nginx/conf.d/default.conf
+RUN cat /etc/nginx/conf.d/default.conf
 COPY --from=node /code /code
