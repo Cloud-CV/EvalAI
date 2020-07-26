@@ -4,6 +4,20 @@
       <div class=" ev-card-panel ev-z-depth-5">
         <div class="ev-md-container ev-panel-title"><strong>{{teamSelectTitle}}</strong></div>
         <div class="ev-md-container ev-card-body exist-team-card">
+          <div class="search-team">
+            <div class="row">
+              <div class="col-sm-12 col-xs-12 filter-team">
+                <strong class="fw-light content fs-14">Filter Submissions by Team name</strong>
+              </div>
+            </div>
+            <div class="row row-lr-margin">
+              <div class="col-sm-6 col-xs-12 col-lr-pad team-name-filter">
+                <app-input [name]="'filterByTeamName'" (input)="filterTeam($event.target.value)"
+                  [label]="'Team name'" [placeholder]="'Team name'" [type]="'text'" #formFilter>
+                </app-input>
+              </div>
+            </div>
+          </div>
           <div *ngIf="allTeams.length === 0" class="page-msg">No team exists for now. Start by creating a new team!</div>
           <ul class="collapsible" data-collapsible="accordion">
             <app-teamcard *ngFor="let team of filteredTeams"

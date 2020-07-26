@@ -105,6 +105,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   fetchTeamsPath: any;
 
   /**
+   * Fetch teams URL
+   */
+  fetchFilteredTeamsPath: any;
+
+  /**
    * Create teams URL
    */
   createTeamsPath: any;
@@ -169,6 +174,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    * Route path for create challenge
    */
   createChallengeRoutePath = '/challenge-create';
+
+  /**
+   * Filter query as participant team name
+   */
+  filterTeamsQuery = '';
 
   /**
    * Content for terms and conditions
@@ -298,7 +308,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   fetchMyTeams(path) {
     if (this.authService.isLoggedIn()) {
-      this.fetchTeams(path);
+      if (this.filterTeamsQuery === '') {
+        this.fetchTeams(path);
+      } else {
+        this.filterTeam(this.filterTeamsQuery);
+      }
     }
   }
 
@@ -633,4 +647,32 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     return deleteTeamMember;
   }
 
+  /**
+  * Filter teams by team
+  * @param TeamName Participant team name
+  */
+  filterTeam(teamName) {
+    const SELF = this;
+    SELF.filterTeamsQuery = teamName;
+    let API_PATH = SELF.endpointsService.FilteredParticipantTeamURL(teamName);
+    if (SELF.isHost) {
+      API_PATH = SELF.endpointsService.FilteredHostTeamURL(teamName);
+    }
+    SELF.apiService.getUrl(API_PATH).subscribe(
+      data => {
+        console.log('Data', data);
+        if (data['results']) {
+          SELF.allTeams = data['results'];
+          if (SELF.isHost || SELF.isOnChallengePage) {
+            SELF.allTeams = SELF.appendIsSelected(SELF.allTeams);
+          }
+          SELF.updateTeamsView(true);
+        }
+      },
+      err => {
+        SELF.globalService.handleApiError(err, true);
+      },
+      () => {}
+    );
+  }
 }
