@@ -29,5 +29,4 @@ ARG NODE_ENV
 ARG DOMAIN_NAME
 COPY docker/vm/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
 RUN sed -i "s/example.com/${DOMAIN_NAME}/g" /etc/nginx/conf.d/default.conf
-RUN cat /etc/nginx/conf.d/default.conf
 COPY --from=node /code /code
