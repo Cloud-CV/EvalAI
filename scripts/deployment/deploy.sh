@@ -42,7 +42,7 @@ case $opt in
             eval $(aws ecr get-login --no-include-email) && \
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env && \
             docker-compose -f docker-compose-${env}.yml pull && \
-            docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery "
+            docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery "
             ;;
         pull)
             aws_login;
@@ -61,6 +61,11 @@ case $opt in
         deploy-nodejs)
             echo "Deploying nodejs docker container..."
             docker-compose -f docker-compose-${env}.yml up -d nodejs
+            echo "Completed deploy operation."
+            ;;
+        deploy-nodejs-v2)
+            echo "Deploying new frontend docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d nodejs_v2
             echo "Completed deploy operation."
             ;;
         deploy-celery)
@@ -150,6 +155,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-django production"
         echo "    deploy-nodejs : Deploy nodejs containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-nodejs production"
+        echo "    deploy-nodejs-v2 : Deploy new frontend container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-nodejs-v2 production"
         echo "    deploy-celery : Deploy celery containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-celery production"
         echo "    deploy-worker : Deploy worker container for a challenge using challenge pk."
