@@ -469,6 +469,10 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
 class ChallengeTemplate(TimeStampedModel):
     """Model to store challenge templates
+ 
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
     """
 
     title = models.CharField(max_length=500)
