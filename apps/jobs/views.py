@@ -326,14 +326,21 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_submission_delete(request, challenge_pk, challenge_phase_pk, submission_pk):
+def delete_challenge_submission(request, challenge_pk, challenge_phase_pk, submission_pk):
     """
-    Delete submission by the challenge Host
+    API Endpoint for deleting a submission.
+    Only challenge host has access to this endpoint.
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk
+        challenge_phase_pk {int} -- Primary key for the challenge phase for which submission is to be deleted
+        submission_pk {int} -- Primary key for the submission which is to be deleted
     """
-    # check if the challenge exists or not
+    # Check if the challenge exists or not
     challenge = get_challenge_model(challenge_pk)
 
-    # check if the challenge phase exists or not
+    # Check if the challenge phase exists or not
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     if not challenge.is_active:

@@ -12,8 +12,8 @@ urlpatterns = [
     url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/"
         r"challenge_phase/(?P<challenge_phase_pk>[0-9]+)/submission/(?P<submission_pk>[0-9]+)/delete/$",
-        views.challenge_submission_delete,
-        name="challenge_submission_delete",
+        views.delete_challenge_submission,
+        name="delete_challenge_submission",
     ),
     url(
         r"^challenge/(?P<challenge_id>[0-9]+)/"
