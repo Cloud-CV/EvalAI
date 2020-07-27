@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 import random
 import requests
@@ -15,6 +16,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
@@ -92,6 +94,7 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     ChallengeConfiguration,
     StarChallenge,
     UserInvitation,
@@ -104,6 +107,7 @@ from .serializers import (
     ChallengePhaseCreateSerializer,
     ChallengePhaseSplitSerializer,
     ChallengeSerializer,
+    ChallengeTemplateSerializer,
     DatasetSplitSerializer,
     LeaderboardSerializer,
     StarChallengeSerializer,
@@ -677,11 +681,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     Creates a challenge using a zip file.
     """
-    is_template_challenge = False
     if request.data.get("is_template_challenge"):
         is_template_challenge = True
+    else:
+        is_template_challenge = False
 
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    # All files download and extract location.
+    BASE_LOCATION = tempfile.mkdtemp()
 
     if is_template_challenge:
         template_id = request.data.get("templateId")
@@ -690,20 +698,48 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 id=template_id, is_active=True
             )
         except ChallengeTemplate.DoesNotExist:
-            response_data = {"error": "Sorry, this template is not available."}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            response_data = {
+                "error": "Sorry, a server error occured while creating the challenge. Please try again!"
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
         template_url = template.template_file.url
-        zip_file_path = download_file(template_url).get("file_path")
-        zip_file = open(zip_file_path, "rb")
+        # zip_file_path = download_file(template_url).get("file_path")
+
+        unique_folder_name = get_unique_alpha_numeric_key(10)
+        challenge_template_download_location = join(
+            BASE_LOCATION, "{}.zip".format(unique_folder_name)
+        )
+
+        try:
+            response = requests.get(template_url, stream=True)
+        except Exception as e:
+            logger.error(
+                "Failed to fetch file from {}, error {}".format(
+                    template_url, e
+                )
+            )
+            response_data = {
+                "error": "Sorry, there was an error in the server"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if response and response.status_code == 200:
+            with open(challenge_template_download_location, "wb") as f:
+                f.write(response.content)
+
+        zip_file = open(challenge_template_download_location, "rb")
         challenge_zip_file = SimpleUploadedFile(
             zip_file.name, zip_file.read(), content_type="application/zip"
         )
+
         # Copy request data so that we can mutate it to add template
-        challenge_data = request.data.copy()
-        challenge_data["zip_configuration"] = challenge_zip_file
+        challenge_data_from_hosts = request.data.copy()
+        challenge_data_from_hosts["zip_configuration"] = challenge_zip_file
         serializer = ChallengeConfigSerializer(
-            data=challenge_data, context={"request": request}
+            data=challenge_data_from_hosts, context={"request": request}
         )
     else:
         serializer = ChallengeConfigSerializer(
@@ -717,8 +753,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = serializer.errors
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # All files download and extract location.
-    BASE_LOCATION = tempfile.mkdtemp()
     try:
         response = requests.get(uploaded_zip_file_path, stream=True)
         unique_folder_name = get_unique_alpha_numeric_key(10)
@@ -805,40 +839,86 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    '''
-    THIS IS CODE TO CHANGE ALL THE FIELDS. PROLLY USE A FUNCTION? NAH.
-
+    # Manipulating the challenge data of the template challenge with data sent by hosts
     if is_template_challenge:
-        yaml_file_data["title"] = request.data.get("title")
-        yaml_file_data["short_description"] = request.data.get("short_description")
-        yaml_file_data["description"] = request.data.get("description") # Check how for files.
-        yaml_file_data["evaluation_details"] = request.data.get("evaluation_details")
-        yaml_file_data["image"] = request.data.get("image")
-        yaml_file_data["submission_guidelines"] = request.data.get("submission_guidelines")
-        yaml_file_data["leaderboard_description"] = request.data.get("leaderboard_description")
-        yaml_file_data["evaluation_script"] = request.data.get("evaluation_script")
-        yaml_file_data["start_date"] = request.datra.get("start_date")
-        yaml_file_data["end_date"] = request.datra.get("end_date")
-        yaml_file_data["leaderboard"] = json.load(request.data.get("leaderboard"))
+        yaml_file_data["title"] = challenge_data_from_hosts.get("title")
+        yaml_file_data["short_description"] = challenge_data_from_hosts.get(
+            "short_description"
+        )
+        yaml_file_data["description"] = challenge_data_from_hosts.get(
+            "description"
+        )
+        yaml_file_data["evaluation_details"] = challenge_data_from_hosts.get(
+            "evaluation_details"
+        )
+        yaml_file_data["image"] = challenge_data_from_hosts.get("image")
+        yaml_file_data[
+            "submission_guidelines"
+        ] = challenge_data_from_hosts.get("submission_guidelines")
+        yaml_file_data[
+            "leaderboard_description"
+        ] = challenge_data_from_hosts.get("leaderboard_description")
+        yaml_file_data["evaluation_script"] = challenge_data_from_hosts.get(
+            "evaluation_script"
+        )
+        yaml_file_data["start_date"] = challenge_data_from_hosts.get(
+            "start_date"
+        )
+        yaml_file_data["end_date"] = challenge_data_from_hosts.get("end_date")
+        yaml_file_data["leaderboard"] = json.load(
+            challenge_data_from_hosts.get("leaderboard")
+        )
 
-        
         # Mapping the challenge phase data to that in yaml_file_data
-        challenge_phases = yaml_file_data["challenge_phases"]
-        for i in range(len(challenge_phases)):
-            challenge_phases[i]["name"] = requests["challenge_phases"][i]["name"]
-            challenge_phases[i]["description"] = requests["challenge_phases"][i]["description"] ##CHeck this
-            challenge_phases[i]["leaderboard_public"] = requests["challenge_phases"][i]["leaderboard_public"]
-            challenge_phases[i]["start_date"] = requests["challenge_phases"][i]["start_date"]
-            challenge_phases[i]["end_date"] = requests["challenge_phases"][i]["end_date"]
-            challenge_phases[i]["max_submissions_per_day"] = requests["challenge_phases"][i]["max_submissions_per_day"]
-            challenge_phases[i]["max_submissions_per_month"] = requests["challenge_phases"][i]["max_submissions_per_month"]
-            challenge_phases[i]["max_submissions"] = requests["challenge_phases"][i]["max_submissions"]
-            challenge_phases[i]["submission_meta_attributes"] = json.load(requests["challenge_phases"][i]["submission_meta_attributes"])
+        challenge_phases_data = yaml_file_data["challenge_phases"]
+        challenge_phases_data_from_hosts = challenge_data_from_hosts.get(
+            "challenge_phases"
+        )
+        for i in range(len(challenge_phases_data)):
+            challenge_phases_data[i][
+                "name"
+            ] = challenge_phases_data_from_hosts.get("challenge_phases")[
+                i
+            ].get(
+                "name"
+            )
+            challenge_phases_data[i][
+                "description"
+            ] = challenge_phases_data_from_hosts[i].get("description")
+            challenge_phases_data[i][
+                "leaderboard_public"
+            ] = challenge_phases_data_from_hosts[i].get("leaderboard_public")
+            challenge_phases_data[i][
+                "start_date"
+            ] = challenge_phases_data_from_hosts[i].get("start_date")
+            challenge_phases_data[i][
+                "end_date"
+            ] = challenge_phases_data_from_hosts[i].get("end_date")
+            challenge_phases_data[i][
+                "max_submissions_per_day"
+            ] = challenge_phases_data_from_hosts[i].get(
+                "max_submissions_per_day"
+            )
+            challenge_phases_data[i][
+                "max_submissions_per_month"
+            ] = challenge_phases_data_from_hosts[i].get(
+                "max_submissions_per_month"
+            )
+            challenge_phases_data[i][
+                "max_submissions"
+            ] = challenge_phases_data_from_hosts[i].get("max_submissions")
+            challenge_phases_data[i]["submission_meta_attributes"] = json.load(
+                challenge_phases_data_from_hosts[i].get(
+                    "submission_meta_attributes"
+                )
+            )
 
+        # Mapping the dataset splits data to that in yaml_file_data
         dataset_splits = yaml_file_data["dataset_splits"]
         for i in range(len(dataset_splits)):
-            dataset_splits["name"] = requests["dataset_splits"][i]["name"]
-    '''
+            dataset_splits["name"] = challenge_data_from_hosts.get(
+                "dataset_splits"
+            )[i]["name"]
 
     # Check for evaluation script path in yaml file.
     try:
@@ -2810,4 +2890,9 @@ def manage_worker(request, challenge_pk, action):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_all_challenge_templates(request):
-
+    q_params = {"is_active": True}
+    challenges = ChallengeTemplate.objects.filter(**q_params).order_by("-pk")
+    paginator, result_page = paginated_queryset(challenges, request)
+    serializer = ChallengeTemplateSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)

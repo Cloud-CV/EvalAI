@@ -468,11 +468,13 @@ class ChallengeEvaluationCluster(TimeStampedModel):
 
 
 class ChallengeTemplate(TimeStampedModel):
+    """Model to store challenge templates
     """
-    Model to store challenge templates
-    """
+
     title = models.CharField(max_length=500)
-    template_file = models.FileField(upload_to=RandomFileName("templates"))  # stores the challenge zip file
+    template_file = models.FileField(
+        upload_to=RandomFileName("templates")
+    )  # stores the challenge zip file
     is_active = models.BooleanField(default=False, db_index=True)
     image = models.ImageField(
         upload_to=RandomFileName("templates/preview-images/"),
@@ -482,7 +484,9 @@ class ChallengeTemplate(TimeStampedModel):
     )
     dataset = models.CharField(max_length=200, default="")
     eval_criteria = ArrayField(
-        models.CharField(max_length=200, blank=True), default=["Accuracy"], blank=True
+        models.CharField(max_length=200, blank=True),
+        default=["Accuracy"],
+        blank=True,
     )
     phases = models.IntegerField(null=True, blank=True, default=None)
     splits = models.IntegerField(null=True, blank=True, default=None)
