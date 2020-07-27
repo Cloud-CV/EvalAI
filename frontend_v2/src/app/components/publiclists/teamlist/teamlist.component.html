@@ -1,14 +1,12 @@
 <section class="ev-sm-container ev-view">
-    <div *ngIf="!(allTeams.length == 0 && filterTeamsQuery == '')" class=" list-card ev-card-panel ev-z-depth-5 col s12 m6 filter-card">
+    <div *ngIf="!(allTeams.length == 0 && filterTeamsQuery == '')" class="filter-card">
       <div class="filter-team">
         <strong class="fw-semibiold content fs-14">Filter Team by Team name</strong>
       </div>
       <div class="ev-md-container ev-card-body new-team-card">
         <div class="row row-lr-margin">
           <div class="col-sm-6 col-xs-12 col-lr-pad team-name-filter">
-            <app-input [name]="'filterByTeamName'" (input)="filterTeam($event.target.value)"
-              [label]="'Team name'" [placeholder]="'Team name'" [type]="'text'" #formFilter>
-            </app-input>
+            <input type="text" label="'Team name'" placeholder="'Team name'" name="'filterByTeamName'" (input)="filterTeam($event.target.value)">
           </div>
         </div>
       </div>

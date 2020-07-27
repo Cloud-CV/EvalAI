@@ -173,7 +173,7 @@ section {
 }
 
 .team-name-filter {
-  width: 80%;
+  width: 95%;
 }
 
 .filter-team {
@@ -181,7 +181,20 @@ section {
 }
 
 .filter-card {
-  height: 180px;
+  height: 80px;
+}
+
+.filter-card input {
+  border: 1px solid #000;
+  height: 20px;
+  padding: 10px;
+  font-size: fs-14;
+  text-align: center;
+  &:focus {
+    outline: none;
+    border: 1px solid $yellow;
+    box-shadow: none;
+  }
 }
 
 @media only screen and (max-width: 992px) and (min-width: 601px) {
