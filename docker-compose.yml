@@ -37,17 +37,15 @@ services:
     volumes:
       - .:/code
 
-  rl-worker:
+  code-upload-worker:
     hostname: rl-worker
     env_file:
-      - docker/dev/docker_rl_worker.env
+      - docker/dev/docker_code_upload_worker.env
     build:
       context: ./
-      dockerfile: docker/dev/rl-worker/Dockerfile
+      dockerfile: docker/dev/code-upload-worker/Dockerfile
     depends_on:
       - django
-    volumes:
-      - ~/.kube:/root/.kube/
 
   nodejs:
     hostname: nodejs
