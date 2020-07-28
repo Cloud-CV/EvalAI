@@ -16,6 +16,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
@@ -830,27 +831,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 extracted_folder_name,
                 test_annotation_file,
             )
-        else:
-            message = (
-                "There is no key for test annotation file for"
-                "challenge phase {} in yaml file. Please add it"
-                " and then try again!".format(data["name"])
-            )
-            response_data = {"error": message}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+            if not isfile(test_annotation_file_path):
+                message = (
+                    "No test annotation file found in zip file"
+                    " for challenge phase '{}'. Please add it and "
+                    " then try again!".format(data["name"])
+                )
+                response_data = {"error": message}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
-        if not isfile(test_annotation_file_path):
-            message = (
-                "No test annotation file found in zip file"
-                " for challenge phase '{}'. Please add it and "
-                " then try again!".format(data["name"])
-            )
-            response_data = {"error": message}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
         if data.get("is_submission_public") and data.get(
             "is_restricted_to_select_one_submission"
         ):
@@ -1140,13 +1131,22 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         "max_submissions", None
                     )
 
-                serializer = ChallengePhaseCreateSerializer(
-                    data=data,
-                    context={
-                        "challenge": challenge,
-                        "test_annotation": challenge_test_annotation_file,
-                    },
-                )
+                if test_annotation_file:
+                    serializer = ChallengePhaseCreateSerializer(
+                        data=data,
+                        context={
+                            "challenge": challenge,
+                            "test_annotation": challenge_test_annotation_file,
+                        },
+                    )
+                else:
+                    # This is when the host wants to upload the annotation file later through CLI
+                    serializer = ChallengePhaseCreateSerializer(
+                        data=data,
+                        context={
+                            "challenge": challenge
+                        },
+                    )
                 if serializer.is_valid():
                     serializer.save()
                     challenge_phase_ids[
@@ -2765,18 +2765,37 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
-    file_name = "test_annotations/presigned_url_files/challenge_phase_{}/{}{}".format(
-        challenge_phase_pk, uuid.uuid4(), file_ext
-    )
-    file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
+    random_file_name = uuid.uuid4()
+    
+    if not challenge_phase.test_annotation:
+        # This file shall be replaced with the one uploaded through the presigned url from the CLI
+        test_annotation_file = SimpleUploadedFile(
+            "{}{}".format(random_file_name, file_ext),
+            b"Dummy file content",
+            content_type="text/plain",
+        )
+        serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data={"test_annotation": test_annotation_file},
+                    context={"challenge": challenge_phase.challenge},
+                    partial=True,
+                )
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            response_data = {"error": serializer.errors}
+            return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+        challenge_phase = serializer.instance
+        file_key = challenge_phase.test_annotation.name
+    else:
+        file_key = challenge_phase.test_annotation.name # make sure while testing that this includes /media.
 
     response = generate_presigned_url(file_key, challenge_phase.challenge.pk)
     if response.get("error"):
         response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    challenge_phase.test_annotation = file_name
-    challenge_phase.save()
 
     response_data = {"presigned_url": response.get("presigned_url")}
     return Response(response_data, status=status.HTTP_200_OK)

@@ -15,6 +15,7 @@ from rest_framework.decorators import (
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
 from django.utils import timezone
 
@@ -2175,8 +2176,18 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         response_data = {"error": message.format(submissions_in_progress)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    file_ext = os.path.splitext(request.data["file_name"])[-1]
+    random_file_name = uuid.uuid4()
+    # This file shall be replaced with the one uploaded through the presigned url from the CLI
+    input_file = SimpleUploadedFile(
+        "{}{}".format(random_file_name, file_ext), 
+        b"file_content", 
+        content_type="text/plain"
+    )
+    submission_data = request.data.copy()
+    submission_data["input_file"] = input_file
     serializer = SubmissionSerializer(
-        data=request.data,
+        data=submission_data,
         context={
             "participant_team": participant_team,
             "challenge_phase": challenge_phase,
@@ -2188,26 +2199,19 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         serializer.save()
         submission = serializer.instance
 
-        file_ext = os.path.splitext(request.data["file_name"])[-1]
-        file_name = "submission_files/presigned_url_files/submission_{}/{}{}".format(
-            submission.pk, uuid.uuid4(), file_ext
-        )
-        file_key = "{}/{}".format(settings.MEDIAFILES_LOCATION, file_name)
-
-        response = generate_presigned_url(file_key)
+        file_key = submission.input_file.name
+        response = generate_presigned_url(file_key, challenge.pk)
         if response.get("error"):
             response_data = response
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        submission.input_file = file_name
-        submission.save()
 
         response_data = {
             "presigned_url": response.get("presigned_url"),
             "submission_pk": submission.pk,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+    response_data = {"error": serializer.errors}
+    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["POST"])
