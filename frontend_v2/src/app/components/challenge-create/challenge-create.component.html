@@ -45,9 +45,21 @@
           </div>
         </div>
       </section>
-
     </div>
     <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
+  </div>
+</div>
+
+<div>
+  <strong>You can select a template from the following to create a challenge!</strong>
+  <br>
+  <div *ngIf="challengeTemplates.length === 0" class="none">None</div>
+  <div class="row">
+    <div class="col s12 m3" *ngFor="let template of challengeTemplates">
+      <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge.id]">
+        <app-challenge-template-card [template]="template" ></app-challenge-template-card>
+      </a>
+    </div>
   </div>
 </div>
 

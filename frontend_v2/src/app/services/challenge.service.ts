@@ -356,5 +356,10 @@ export class ChallengeService {
     return  this.apiService.postFileUrl(API_PATH, formData);
   }
 
+  getChallengeTemplates() {
+    const API_PATH = this.endpointsService.getChallengeTemplates();
+    return this.apiService.getFileUrl(API_PATH);
+  }
+
 
 }

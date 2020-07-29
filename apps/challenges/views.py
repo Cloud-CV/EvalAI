@@ -2892,7 +2892,6 @@ def manage_worker(request, challenge_pk, action):
 def get_all_challenge_templates(request):
     q_params = {"is_active": True}
     challenges = ChallengeTemplate.objects.filter(**q_params).order_by("-pk")
-    paginator, result_page = paginated_queryset(challenges, request)
-    serializer = ChallengeTemplateSerializer(result_page, many=True)
+    serializer = ChallengeTemplateSerializer(challenges, many=True)
     response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+    return Response(response_data, status=status.HTTP_200_OK)

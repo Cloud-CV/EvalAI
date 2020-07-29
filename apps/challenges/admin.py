@@ -21,6 +21,7 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
     LeaderboardData,
@@ -267,6 +268,33 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
 
     get_challenge.short_description = "Challenge"
     get_challenge.admin_order_field = "challenge_phase__challenge"
+
+
+@admin.register(ChallengeTemplate)
+class ChallengeTemplate(ImportExportTimeStampedAdmin):
+    list_display = (
+        "id",
+        "title",
+        "image",
+        "dataset",
+        "eval_criteria",
+        "phases",
+        "splits",
+    )
+    list_filter = (
+        "title",
+        "dataset",
+        "phases",
+        "splits",
+        "eval_criteria",
+    )
+    search_fields = (
+        "title",
+        "dataset",
+        "phases",
+        "splits",
+        "eval_criteria",
+    )
 
 
 @admin.register(DatasetSplit)

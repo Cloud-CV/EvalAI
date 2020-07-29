@@ -54,6 +54,8 @@ export class ChallengeCreateComponent implements OnInit {
    */
   hostTeamsRoute = '/teams/hosts';
 
+  getChallengeTemplatesRoute = '/challenges/challenge/get_all_challenge_template'
+
   /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
@@ -77,6 +79,7 @@ export class ChallengeCreateComponent implements OnInit {
     }
     this.authServicePublic = this.authService;
     this.routerPublic = this.router;
+    this.fetchChallengeTemplates();
     this.challengeService.currentHostTeam.subscribe((hostTeam) => {
       this.hostTeam = hostTeam;
       if (!hostTeam) {
@@ -86,6 +89,10 @@ export class ChallengeCreateComponent implements OnInit {
         this.router.navigate([this.hostTeamsRoute]);
       }
     });
+  }
+
+  getTemplateChallenges() {
+
   }
 
   challengeCreate() {
@@ -128,6 +135,20 @@ export class ChallengeCreateComponent implements OnInit {
     } else {
       this.isFormError = true;
     }
+  }
+
+  fetchChallengeTemplates(callback = null) {
+    const SELF = this;
+    path = SELF.getChallengeTemplatesRoute;
+    SELF.apiService.getUrl(path, true, true).subscribe(
+      data => {
+        SELF.challengeTemplates = data['results'];
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
   }
 
 }
