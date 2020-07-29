@@ -173,19 +173,23 @@ section {
 }
 
 .team-name-filter {
-  width: 95%;
+  width: 100%;
+  margin: 8px -10px;
 }
 
 .filter-team {
-  margin: 30px 0px 0px 40px;
+  margin: 30px 0px 0px 0px;
 }
 
 .filter-card {
-  height: 80px;
+  height: 60px;
 }
 
 .filter-card input {
-  border: 1px solid #000;
+  width: 47%;
+  outline: none !important;
+  border-radius: 4px;
+  box-shadow: 0 0 12px #dedede;
   height: 20px;
   padding: 10px;
   font-size: $fs-14;
@@ -200,5 +204,11 @@ section {
 @media only screen and (max-width: 992px) and (min-width: 601px) {
   .team-heading {
     margin-top: 30px;
+  }
+}
+
+@media only screen and (max-width: $small-screen) {
+  .filter-card input {
+    width: 100%;
   }
 }
