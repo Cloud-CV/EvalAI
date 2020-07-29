@@ -1,0 +1,20 @@
+<div class="card ev-card-panel ev-challenge-card ev-card-hover">
+  <div class="card-image ev-card-image">
+    <img class="bg-img" [src]="challenge['image']">
+    <span class=" ev-card-title fs-14"><span><img [src]="template['image']"></span>{{template['title']}}</span>
+  </div>
+  <div class="card-content">
+    <p><strong class="text-light-black fs-12">Dataset</strong>
+      <br> <strong>{{template['dataset']}}</strong></p>
+    <p><strong class="text-light-black fs-12">Evaluation Criteria</strong>
+      <br> 
+      <div *ngFor="let metric of template['eval_criteria']">
+        <span>metric</span><br>
+      </div>
+    <p><strong class="text-light-black fs-12">Phases</strong>
+      <br> <strong>{{template['phases']}}</strong></p>
+    <p><strong class="text-light-black fs-12">Splits</strong>
+      <br> <strong>{{template['splits']}}</strong></p>
+  </div>
+  <div class=" btn-card-detail waves-effect waves-dark fw-light fs-14"><strong>Create</strong> &nbsp;</div>
+</div>
