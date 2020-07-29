@@ -17,6 +17,7 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
+from serializers import ChallengeEvaluationClusterSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +186,54 @@ task_definition = """
                   "name": "SENTRY_URL",
                   "value": "{SENTRY_URL}"
                 }},
+            ],
+            "workingDirectory": "/code",
+            "readonlyRootFilesystem": False,
+            "logConfiguration": {{
+                "logDriver": "awslogs",
+                "options": {{
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
+                }},
+            }},
+        }}
+    ],
+    "requiresCompatibilities":[
+        "FARGATE"
+    ],
+    "cpu": "{CPU}",
+    "memory": "{MEMORY}",
+}}
+"""
+
+task_definition_code_upload_worker = """
+{{
+    "family":"{queue_name}",
+    "executionRoleArn":"{EXECUTION_ROLE_ARN}",
+    "networkMode":"awsvpc",
+    "containerDefinitions":[
+        {{
+            "name": "{container_name}",
+            "image": "{WORKER_IMAGE}",
+            "essential": True,
+            "environment": [
+                
+                {{
+                  "name": "CHALLENGE_QUEUE",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "DJANGO_SERVER",
+                  "value": "{DJANGO_SERVER}"
+                }},
+               
+                {{
+                    "name": "PYTHONUNBUFFERED",
+                    "value": "1"
+                }},
+              
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -883,6 +932,10 @@ def create_eks_nodegroup(challenge, cluster_name):
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
+    # starting the code-upload-worker
+    client = get_boto3_client("ecs", aws_keys)
+    client_token = client_token_generator(challenge_obj.pk)
+    create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
 @app.task
@@ -956,12 +1009,17 @@ def create_eks_cluster(challenge):
             config_text = yaml.dump(cluster_config, default_flow_style=False)
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
-            ChallengeEvaluationCluster.objects.create(
-                challenge=challenge_obj,
-                name=cluster_name,
-                cluster_endpoint=cluster_ep,
-                cluster_ssl=cluster_cert,
-            )
+            try:
+                ChallengeEvaluationCluster.objects.get(challenge=challenge,)
+            except ChallengeEvaluationCluster.DoesNotExist:
+                serializer = ChallengeEvaluationClusterSerializer(
+                    challenge=challenge,
+                    name=cluster_name,
+                    cluster_endpoint=cluster_ep,
+                    cluster_ssl=cluster_cert,
+                )
+                if serializer.is_valid():
+                    serializer.save()
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
