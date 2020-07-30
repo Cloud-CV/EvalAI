@@ -19,8 +19,6 @@ from rest_framework.pagination import PageNumberPagination
 
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
-from challenges.utils import get_aws_credentials_for_challenge
-
 logger = logging.getLogger(__name__)
 
 
@@ -168,34 +166,6 @@ def get_boto3_client(resource, aws_keys):
         return client
     except Exception as e:
         logger.exception(e)
-
-
-def generate_presigned_url(file_key, challenge_pk):
-    """Function to get the presigned url to upload a file to s3.
-
-    Keyword Arguments:
-        file_key {string} -- The S3 key for the file to be uploaded.
-
-    """
-    if settings.DEBUG or settings.TEST:
-        return
-    try:
-        aws_keys = get_aws_credentials_for_challenge(file_key, challenge_pk)
-
-        s3 = get_boto3_client("s3", file_key)
-        response = s3.generate_presigned_url(
-            "put_object",
-            Params={
-                "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
-                "Key": file_key,
-            },
-            ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
-            HttpMethod="PUT",
-        )
-        return {"presigned_url": response}
-    except Exception as e:
-        logger.exception(e)
-        return {"error": "Could not fetch presigned url."}
 
 
 def get_or_create_sqs_queue_object(queue_name):

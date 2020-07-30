@@ -112,10 +112,39 @@ def get_aws_credentials_for_challenge(challenge_pk):
             "AWS_ACCOUNT_ID": settings.AWS_ACCOUNT_ID,
             "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
             "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
-            "AWS_REGION": settings.AWS_DEFAULT_REGION,
+            "AWS_REGION": settings.AWS_REGION,
             "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
         }
     return aws_keys
+
+
+def generate_presigned_url(file_key_on_s3, challenge_pk):
+    """Function to get the presigned url to upload a file to s3.
+
+    Keyword Arguments:
+        file_key_on_s3 {string} -- The S3 key for the file to be uploaded.
+
+    """
+    if settings.DEBUG or settings.TEST:
+        return
+
+    try:
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+
+        s3 = get_boto3_client("s3", aws_keys)
+        response = s3.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+                "Key": file_key_on_s3,
+            },
+            ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
+            HttpMethod="PUT",
+        )
+        return {"presigned_url": response}
+    except Exception as e:
+        logger.exception(e)
+        return {"error": "Could not fetch presigned url."}
 
 
 def get_or_create_ecr_repository(name, aws_keys):

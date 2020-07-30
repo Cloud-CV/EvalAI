@@ -32,7 +32,6 @@ from base.utils import (
     StandardResultSetPagination,
     get_boto3_client,
     get_or_create_sqs_queue_object,
-    generate_presigned_url,
     paginated_queryset,
 )
 from challenges.models import (
@@ -43,6 +42,7 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import (
+    generate_presigned_url,
     get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
@@ -2180,9 +2180,9 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     random_file_name = uuid.uuid4()
     # This file shall be replaced with the one uploaded through the presigned url from the CLI
     input_file = SimpleUploadedFile(
-        "{}{}".format(random_file_name, file_ext), 
-        b"file_content", 
-        content_type="text/plain"
+        "{}{}".format(random_file_name, file_ext),
+        b"file_content",
+        content_type="text/plain",
     )
     submission_data = request.data.copy()
     submission_data["input_file"] = input_file
@@ -2194,17 +2194,17 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
             "request": request,
         },
     )
-
     if serializer.is_valid():
         serializer.save()
         submission = serializer.instance
 
-        file_key = submission.input_file.name
-        response = generate_presigned_url(file_key, challenge.pk)
+        file_key_on_s3 = "{}/{}".format(
+            settings.MEDIAFILES_LOCATION, submission.input_file.name
+        )
+        response = generate_presigned_url(file_key_on_s3, challenge.pk)
         if response.get("error"):
             response_data = response
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
         response_data = {
             "presigned_url": response.get("presigned_url"),
             "submission_pk": submission.pk,
