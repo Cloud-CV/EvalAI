@@ -13,7 +13,8 @@ const routes: Routes = [
     children: [
       {path: '', redirectTo: 'all', pathMatch: 'full'},
       {path: 'all', component: ChallengelistComponent},
-      {path: 'me', component: ChallengelistComponent}
+      {path: 'me', component: ChallengelistComponent},
+      {path: 'participated', component: ChallengelistComponent}
     ]
   }
 ];
