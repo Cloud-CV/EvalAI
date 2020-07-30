@@ -337,13 +337,22 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
     if execution_role_arn:
-        definition = task_definition.format(
-            queue_name=queue_name,
-            container_name=container_name,
-            ENV=ENV,
-            challenge_pk=challenge.pk,
-            **COMMON_SETTINGS_DICT,
-        )
+        if challenge.is_docker_based:
+            definition = task_definition_code_upload_worker.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                **COMMON_SETTINGS_DICT,
+            )
+        else:
+            definition = task_definition.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                **COMMON_SETTINGS_DICT,
+            )
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
