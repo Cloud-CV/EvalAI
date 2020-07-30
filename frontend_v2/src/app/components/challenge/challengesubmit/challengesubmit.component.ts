@@ -394,10 +394,47 @@ isSubmissionUsingUrl: any;
           }
         }
         // Loads attributes of a phase into this.submissionMetaAttributes
-        this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
-          return element['phaseId'] === phaseId;
-        }).attributes;
-        this.metaAttributesforCurrentSubmission = [];
+        // this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
+        //   return element['phaseId'] === phaseId;
+        // }).attributes;
+        this.metaAttributesforCurrentSubmission = [
+          {
+                    'name': 'TextAttribute',
+                    'description': 'This is a text attribute',
+                    'type': 'text',
+                    'required': true,
+                    'value': null
+                  },
+                  {
+                    'name': 'OptionAttribute',
+                    'description': 'This is a single option attribute',
+                    'type': 'radio',
+                    'options': [
+                      'Option A',
+                      'Option B',
+                      'Option C'
+                    ],
+                    'value': null
+                  },
+                  {
+                    'name': 'MultipleChoiceAttribute',
+                    'description': 'This is a multiple choice attributh',
+                    'type': 'checkbox',
+                    'options': [
+                      'alpha',
+                      'beta',
+                      'gamma'
+                    ],
+                    'values': []
+                  },
+                  {
+                    'name': 'BooleanField',
+                    'description': 'Select true or false',
+                    'type': 'boolean',
+                    'required': true,
+                    'value': null
+                  }
+                ];
       },
       err => {
         SELF.globalService.handleApiError(err);
@@ -453,6 +490,7 @@ isSubmissionUsingUrl: any;
    */
   formSubmit(self) {
     self.submissionError = '';
+    let metaValue = true;
     const submissionFile = self.globalService.formItemForLabel(self.components, 'input_file').fileValue;
     const submissionProjectUrl = self.globalService.formValueForLabel(self.components, 'project_url');
     const submissionPublicationUrl = self.globalService.formValueForLabel(self.components, 'publication_url');
@@ -472,6 +510,17 @@ isSubmissionUsingUrl: any;
       return;
     } else if (submissionPublicationUrl !== '' && !regex.test(submissionPublicationUrl)) {
       self.submissionError = 'Please provide a valid publication url!';
+      return;
+    }
+    if (self.metaAttributesforCurrentSubmission != null) {
+      self.metaAttributesforCurrentSubmission.forEach(attribute => {
+        if (attribute.value === null || attribute.value === undefined) {
+          metaValue = false;
+        }
+      });
+    }
+    if (metaValue !== true) {
+      self.submissionError = 'Please provide input for meta attributes!';
       return;
     }
 
