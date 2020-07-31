@@ -15,76 +15,64 @@
                                 </div>
                                 <div class="col-lg-7 col-md-6">
                                     <div class="card-content">
-                                        <p>
-                                            <span style="line-height: 1.5" class="fs-18">
-                                                <strong style="color: rgba(0, 0, 0, 0.87);"
-                                                    class="fw-semibold">
+                                            <h4 class="challenge-title fw-light">
                                                     {{challenge['title']}}
-                                                </strong>
-                                            </span>
-                                            &nbsp;
                                             <span *ngIf="isChallengeHost">
-                                                <a style="padding-right: 4px;"
-                                                    class="pointer"
+                                                <a class="pointer edit-title"
                                                     (click)="editChallengeTitle()">
-                                                    <i class="fa fa-pencil"
+                                                    <i class="fa fa-pencil fs-16"
                                                         aria-hidden="true"></i>
                                                 </a>
                                                 <a class="pointer"
                                                     (click)="deleteChallenge()">
-                                                    <i class="fa fa-trash red-text"
+                                                    <i class="fa fa-trash red-text fs-16"
                                                         aria-hidden="true"></i>
                                                 </a>
                                             </span>
-                                            <br>
-                                            <span style="line-height: 1.5"
+                                            </h4>
+                                            <span class="title-line fw-light fs-16"
                                                 *ngIf="challenge.creator.team_url != ''"><strong
-                                                    class="text-light-black fw-semibold
-                                                    fs-15">Organized by:</strong><a
+                                                    class="text-light-black">
+                                                    Organized by:</strong><a
                                                     class="orange-text"
                                                     href="{{challenge['creator']['team_url']}}"
                                                     target="_blank">
                                                     {{challenge['creator']['team_name']}}
                                                 </a>
                                             </span>
-                                            <span style="line-height: 1.5"
+                                            <span class="title-line fw-light fs-16"
                                                 *ngIf="challenge.creator.team_url == ''"><strong
-                                                    class="text-light-black fw-semibold
-                                                    fs-15">Organized by:</strong>
+                                                    class="text-light-black">Organized by:</strong>
                                                 {{challenge['creator']['team_name']}}
                                             </span>
                                             <br>
+                                            <span class="title-line" *ngIf="isChallengeHost">
+                                              <span class="fs-16 fw-light">
+                                                <a class="pointer"
+                                                    (click)="togglePublishChallengeState()">
+                                                    <strong class="text-light-black">{{publishChallenge.state}}
+                                                    </strong>
+                                                    <i class="{{publishChallenge.icon}}"
+                                                        aria-hidden="true"></i>
+                                                </a>
+                                              </span> <br>
+                                            </span>
                                             <!-- Start date -->
-                                            <span class="fs-15 w-300">
-                                              <strong class="text-light-black fw-semibold">Starts on:</strong>
+                                            <span class="fs-16 fw-light">
+                                              <strong class="text-light-black">Starts on:</strong>
                                               {{challenge['start_date'] | date:'medium'}} {{challenge['start_zone']}}
                                             </span>
                                             <br>
                                             <!-- End date -->
-                                            <span class="fs-15 w-300">
-                                              <strong class="text-light-black fw-semibold">Ends on:</strong>
+                                            <span class="fs-16 fw-light">
+                                              <strong class="text-light-black">Ends on:</strong>
                                               {{challenge['end_date'] | date:'medium'}} {{challenge['end_zone']}}
                                             </span>
                                             <br>
-                                            <span style="line-height: 1.5"
-                                                *ngIf="isChallengeHost">
-                                                <span>
-                                                    <a class="pointer"
-                                                        (click)="togglePublishChallengeState()">
-                                                        <strong class="text-light-black
-                                                            fw-semibold fs-15">{{publishChallenge.state}}
-                                                        </strong>
-                                                        <i class="{{publishChallenge.icon}}"
-                                                            aria-hidden="true"></i>
-                                                    </a>
-                                                </span>
-                                            </span>
-                                            <br>
-                                            <mat-checkbox color="primary" class="fw-semibold" *ngIf="isChallengeHost"
+                                            <mat-checkbox color="primary" class="fs-16 fw-light" *ngIf="isChallengeHost"
                                                 [checked]="!challenge['is_registration_open']"
-                                                (click)="stopParticipation($event)">Close Participation
+                                                (click)="stopParticipation($event)"> <span class="fs-16 fw-semibold">Close Participation</span>
                                             </mat-checkbox>
-                                        </p>
                                     </div>
                                 </div>
                                 <div class="col-lg-3 col-md-3">
@@ -101,55 +89,55 @@
                                         <li><a
                                                 [class.selected]="localRouter.url.endsWith('overview')"
                                                 [routerLink]="['./overview']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-info"></i> Overview</a></li>
                                         <li><a
                                                 [class.selected]="localRouter.url.endsWith('evaluation')"
                                                 [routerLink]="['./evaluation']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-bar-chart-o"></i>
                                                 Evaluation</a></li>
                                         <li><a
                                                 [class.selected]="localRouter.url.endsWith('phases')"
                                                 [routerLink]="['./phases']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-level-up"></i> Phases</a></li>
                                         <li *ngIf="!isParticipated"><a
                                                 [class.selected]="localRouter.url.endsWith('participate')"
                                                 [routerLink]="['./participate']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-free-code-camp"></i>
                                                 Participate</a></li>
                                         <li *ngIf="isParticipated"><a
                                                 [class.selected]="localRouter.url.endsWith('submit')"
                                                 [routerLink]="['./submit']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-upload"></i> Submit</a></li>
                                         <li *ngIf="isParticipated"><a
                                                 [class.selected]="localRouter.url.endsWith('my-submissions')"
                                                 [routerLink]="['./my-submissions']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-eye"></i> My Submissions</a></li>
                                         <li *ngIf="isChallengeHost"><a
                                                 [class.selected]="localRouter.url.endsWith('view-all-submissions')"
                                                 [routerLink]="['./view-all-submissions']"
-                                                class="text-light-black fw-semibold fs-15">
-                                                <i class="fa fa-eye"></i>View All Submissions</a></li>
+                                                class="text-light-black fw-light fs-15">
+                                                <i class="fa fa-list"></i> All Submissions</a></li>
                                         <li><a
                                                 [class.selected]="localRouter.url.endsWith('leaderboard')"
                                                 [routerLink]="['./leaderboard']"
-                                                class="text-light-black fw-semibold fs-15">
-                                                <i class="fa fa-th-list"></i> Leaderboard</a></li>
+                                                class="text-light-black fw-light fs-15">
+                                                <i class="fa fa-line-chart"></i> Leaderboard</a></li>
                                         <li *ngIf="isForumEnabled && (forumURL || isChallengeHost)"><a
                                                 [class.selected]="localRouter.url.endsWith('discuss')"
                                                 [routerLink]="['./discuss']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-comments"></i> Discuss
                                             </a></li>
                                         <li *ngIf="isChallengeHost">
                                             <a [class.selected]="localRouter.url.endsWith('settings')"
                                                 [routerLink]="['./settings']"
-                                                class="text-light-black fw-semibold fs-15">
+                                                class="text-light-black fw-light fs-15">
                                                 <i class="fa fa-gear"></i> Settings
                                             </a>
                                         </li>
