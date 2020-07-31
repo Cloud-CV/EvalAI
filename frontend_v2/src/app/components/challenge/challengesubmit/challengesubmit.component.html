@@ -184,7 +184,7 @@
                       <div [hidden]="isSubmissionUsingUrl">
                         <app-input (change)="validateInput($event.target.value)"
                         [label]="'input_file'" [accept]="'.json, .zip, .txt, .tsv, .gz'"
-                        [placeholder]="''" [type]="'file'" [value]="''"
+                        [placeholder]="''" [type]="'file'" [value]="''" (change)="fileValidate()"
                         #formsubmit></app-input>
                       </div>
                       <div [hidden]="!isSubmissionUsingUrl">

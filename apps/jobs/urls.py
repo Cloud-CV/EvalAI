@@ -16,6 +16,18 @@ urlpatterns = [
         name="challenge_submission",
     ),
     url(
+        r"^challenge/(?P<challenge_id>[0-9]+)/"
+        r"challenge_phase/(?P<challenge_phase_id>[0-9]+)/file_submission/$",
+        views.challenge_file_submission,
+        name="challenge_file_submission",
+    ),
+    url(
+        r"^challenge/(?P<challenge_id>[0-9]+)/"
+        r"challenge_phase/(?P<challenge_phase_id>[0-9]+)/v2/submission/$",
+        views.challenge_submission_v2,
+        name="challenge_submission_v2",
+    ),
+    url(
         r"^(?P<challenge_pk>[0-9]+)/" r"remaining_submissions/$",
         views.get_remaining_submissions,
         name="get_remaining_submissions",

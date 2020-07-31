@@ -256,6 +256,24 @@ export class EndpointsService {
   }
 
   /**
+   * Challenge Submission
+   * @param challenge  challenge id
+   * @param phase  phase id
+   */
+  newChallengeSubmissionURL(challenge, phase) {
+    return `${this.jobs}${this.challenge}${challenge}/challenge_phase/${phase}/v2/submission/`;
+  }
+
+  /**
+   * Challenge Submission
+   * @param challenge  challenge id
+   * @param phase  phase id
+   */
+  challengeSubmissionFileURL(challenge, phase) {
+    return `${this.jobs}${this.challenge}${challenge}/challenge_phase/${phase}/file_submission/`;
+  }
+
+  /**
    * Filter challenge submissions in my submissions by participant team name
    * @param challenge challenge id
    * @param phase phase id

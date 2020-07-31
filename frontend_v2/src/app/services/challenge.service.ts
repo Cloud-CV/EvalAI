@@ -329,7 +329,7 @@ export class ChallengeService {
    * @param callback callback function
    */
   challengeSubmission(challenge, phase, formData, callback = () => {}) {
-    const API_PATH = this.endpointsService.challengeSubmissionURL(challenge, phase);
+    const API_PATH = this.endpointsService.newChallengeSubmissionURL(challenge, phase);
     const SELF = this;
     this.apiService.postFileUrl(API_PATH, formData).subscribe(
       data => {

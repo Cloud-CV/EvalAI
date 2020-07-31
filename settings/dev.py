@@ -40,6 +40,8 @@ INSTALLED_APPS += [  # noqa: ignore=F405
     "debug_toolbar",
     "django_extensions",
     "silk",
+    "storages",
+    "raven.contrib.django.raven_compat"
 ]
 
 SPAGHETTI_SAUCE = {
