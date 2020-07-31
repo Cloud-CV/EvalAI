@@ -1,11 +1,16 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MatSliderChange } from '@angular/material';
+
+// import component
+import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
-import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 
 /**
  * Component Class
@@ -22,6 +27,21 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    */
   @ViewChildren('phasesplitselect')
   components: QueryList<SelectphaseComponent>;
+
+  /**
+   * Leaderboard precision value
+   */
+  leaderboardPrecisionValue = 2;
+
+  /**
+   * Set leaderboard precision value
+   */
+  setLeaderboardPrecisionValue = '1.2-2';
+
+  /**
+   * Challenge phase split ID
+   */
+  challengePhaseSplitId;
 
   /**
    * Is user logged in
@@ -425,6 +445,8 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
       data => {
+        this.challengePhaseSplitId = data.results[0].challenge_phase_split;
+        SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(phaseSplitId);
       },
@@ -510,5 +532,30 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       },
       () => {}
     );
+  }
+
+  // Update leaderboard decimal precision value
+  updateLeaderboardDecimalPrecision(event: MatSliderChange) {
+    const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+    const SELF = this;
+    SELF.leaderboardPrecisionValue = event.value;
+    SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
+    const BODY = JSON.stringify({
+      'leaderboard_decimal_precision': SELF.leaderboardPrecisionValue
+    });
+    SELF.apiService.patchUrl(
+      API_PATH,
+      BODY
+    ).subscribe(
+      data => {
+        SELF.globalService.showToast('success', 'The leaderboard decimal precision value is successfully updated!', 5);
+      },
+      err => {
+        SELF.globalService.handleApiError(err, true);
+        SELF.globalService.showToast('error', err);
+      },
+      () => console.log('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
+    );
+
   }
 }

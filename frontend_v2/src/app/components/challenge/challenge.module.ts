@@ -7,7 +7,8 @@ import {
   MatSelectModule,
   MatIconModule,
   MatDividerModule,
-  MatCheckboxModule } from '@angular/material';
+  MatCheckboxModule,
+  MatSliderModule } from '@angular/material';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -54,7 +55,8 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     MatTableModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatMenuModule
+    MatMenuModule,
+    MatSliderModule
   ],
   exports: [
     ChallengeComponent,
