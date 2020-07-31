@@ -57,7 +57,7 @@
       <mat-tab label="My Upcoming Challenges ({{ filteredUpcomingChallenges.length }})">
         <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
         <div *ngIf="!filteredUpcomingChallenges.length">
-          You haven't any upcoming hosted challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
+          No upcoming hosted challenges found. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
         </div>
         <div class="row" *ngIf="filteredUpcomingChallenges.length">
           <div class="col s12 m3" *ngFor="let challenge of filteredUpcomingChallenges">
@@ -70,7 +70,7 @@
       <mat-tab label="My Past Challenges ({{ filteredPastChallenges.length }})">
         <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
         <div *ngIf="!filteredPastChallenges.length">
-          You haven't any past hosted challenge.
+          No past hosted challenges found.
         </div>
         <div class="row" *ngIf="filteredPastChallenges.length">
           <div class="col s12 m3" *ngFor="let challenge of filteredPastChallenges">
