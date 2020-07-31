@@ -45,8 +45,8 @@ export class ChallengemanageComponent implements OnInit, OnDestroy {
     this.challengeService.currentChallenge.subscribe(challenge => {
       this.challenge = challenge;
     });
-    this.startLoadingLogs(true);
-    this.getLogs();
+    this.fetchWorkerLogs();
+    this.startLoadingLogs();
   }
 
   // API call to manage the worker from UI.
@@ -71,10 +71,10 @@ export class ChallengemanageComponent implements OnInit, OnDestroy {
   }
 
   // Get the logs from worker if submissions are failing.
-  startLoadingLogs(setPageFlag) {
+  fetchWorkerLogs() {
     const API_PATH = this.endpointService.getLogsURL(this.challenge['id']);
     const SELF = this;
-    SELF.apiService.getUrl(API_PATH).subscribe(
+    SELF.apiService.getUrl(API_PATH, true, false).subscribe(
       data => {
         SELF.workerLogs = [];
         for (let i = 0; i < data.logs.length; i++) {
@@ -88,11 +88,12 @@ export class ChallengemanageComponent implements OnInit, OnDestroy {
     );
   }
 
-  getLogs() {
-    setInterval(() => {
-      // Passing the false flag would prevent page reset to 1 and hinder user interaction
-      this.startLoadingLogs(false);
-    }, 50000);
+  // Get the logs from worker if submissions are failing at an interval of 5sec.
+  startLoadingLogs() {
+    const SELF = this;
+    SELF.pollingInterval = setInterval(function () {
+     SELF.fetchWorkerLogs();
+    }, 5000);
   }
 
   ngOnDestroy() {
