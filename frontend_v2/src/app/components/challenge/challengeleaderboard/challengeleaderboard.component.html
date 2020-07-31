@@ -27,6 +27,15 @@
             #phasesplitselect>
           </app-selectphase>
         </div>
+        <div class="leaderboard-precision" *ngIf="leaderboard.length>0 && selectedPhaseSplit!=null">
+          <span class="spacer"></span>
+          <span class="fw-regular"> Leaderboard precision value:</span>
+            <div class="rangeslider fa-stack fa-2x">
+              <mat-slider thumbLabel min="0" max="20"  step="1" thumbLabel placeholder="leaderboardPrecisionValue" [(ngModel)]="leaderboardPrecisionValue"
+                            (change)="updateLeaderboardDecimalPrecision($event)">
+              </mat-slider>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -115,7 +124,7 @@
                         </mat-chip-list>
                       </span>
                     </td>
-                    <td *ngFor="let score of key.result">{{score | number : '1.2-2'}}</td>
+                    <td *ngFor="let score of key.result">{{score | number : setLeaderboardPrecisionValue }}</td>
                     <td><div>{{ key.submission__submitted_at_formatted }}</div></td>
                   </tr>
                 </tbody>
