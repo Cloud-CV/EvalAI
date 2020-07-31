@@ -437,7 +437,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
 
   // function for toggeling between public leaderboard and complete leaderboard [public/private]
   toggleLeaderboard(getAllEntries) {
-    console.log(getAllEntries);
     this.getAllEntries = getAllEntries;
     if (getAllEntries) {
       this.getAllEntriesTextOption = 'Exclude private submissions';
@@ -503,7 +502,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       BODY
     ).subscribe(
       data => {
-        SELF.showLeaderboardByLatest = !SELF.showLeaderboardByLatest;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
         SELF.refreshLeaderboard();
       },
