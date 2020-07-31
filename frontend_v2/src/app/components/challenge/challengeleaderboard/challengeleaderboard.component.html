@@ -3,9 +3,9 @@
     <div class="ev-md-container ev-panel-title" *ngIf="challenge.leaderboard_description">
       <div class="row row-lr-margin">
         <div class="col-sm-12 col-xs-12 col-lr-pad">
-          <span class="fw-regular">Description</span>
+          <h5 class="fw-light">Leaderboard</h5>
         </div>
-        <div class="col-sm-12 md-body-1 col-lr-pad" [innerHTML]="challenge.leaderboard_description"></div>
+        <div class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light" [innerHTML]="challenge.leaderboard_description"></div>
       </div>
     </div>
     <div class="ev-md-container bottom-hr-line">
@@ -15,7 +15,7 @@
       </div>
       <div class="row row-lr-margin phase-title">
         <div class="col-sm-12">
-          <strong class="fw-semibold content fs-15">Please select from following phases!</strong>
+          <strong class="fw-semibold content fs-16">Please select from following phases!</strong>
         </div>
       </div>
       <div class="row row-lr-margin">
@@ -44,14 +44,9 @@
                 <mat-chip-list class="leaderboard-description-span">
                   <b><span class="leaderboard-description">*</span></b> - Private submission
                 </mat-chip-list>
-                <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
-                  <div (click)="showLeaderboardByLatestOrBest()" class="btn-switch sort-leaderboard-switch" [ngClass]="{'btn-switch--on':showLeaderboardByLatest}"
-                  [(ngModel)]="showLeaderboardByLatest" ngDefaultControl>
-                      <div class="btn-switch-circle" [ngClass]="{'btn-switch--on':showLeaderboardByLatest}"
-                      [(ngModel)]="showLeaderboardByLatest" ngDefaultControl></div>
-                  </div>
-                  <span class="w-400"> {{sortLeaderboardTextOption}}</span>
-                </mat-chip-list>
+                <mat-checkbox class="pull-right sort-leaderboard-switch" *ngIf="isChallengeHost" (change)="showLeaderboardByLatestOrBest()" [(ngModel)]="showLeaderboardByLatest">
+                  <label class="w-400 complete-leaderboard-text"> {{sortLeaderboardTextOption}}</label>
+                </mat-checkbox>
                 <mat-checkbox class="pull-right complete-leaderboard" *ngIf="isChallengeHost && showLeaderboardToggle"
                   (change)="toggleLeaderboard(getAllEntries)"
                   [(ngModel)]="getAllEntries">
