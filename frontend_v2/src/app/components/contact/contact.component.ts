@@ -1,12 +1,14 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { Router, ActivatedRoute} from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
 import { InputComponent } from '../../components/utility/input/input.component';
 import { WindowService } from '../../services/window.service';
 import { ApiService } from '../../services/api.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { GlobalService } from '../../services/global.service';
-import { Router, ActivatedRoute} from '@angular/router';
 
 /**
  * Component Class
@@ -54,7 +56,8 @@ export class ContactComponent implements OnInit, AfterViewInit {
               private apiService: ApiService,
               private route: ActivatedRoute,
               private router: Router,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService,
+              private logger: NGXLogger) { }
 
   /**
    * Component on initialized.
@@ -100,7 +103,7 @@ export class ContactComponent implements OnInit, AfterViewInit {
       err => {
         self.globalService.handleFormError(self.components, err, false);
       },
-      () => console.log('CONTACT-FORM-SUBMITTED')
+      () => this.logger.info('CONTACT-FORM-SUBMITTED')
     );
   }
 

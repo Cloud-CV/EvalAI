@@ -1,5 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { ChallengeService } from '../../../services/challenge.service';
 import { ApiService } from '../../../services/api.service';
 import { EndpointsService } from '../../../services/endpoints.service';
@@ -48,7 +51,7 @@ export class ChallengeevaluationComponent implements OnInit {
    */
   constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document,
               private endpointsService: EndpointsService, private apiService: ApiService,
-              private globalService: GlobalService) { }
+              private globalService: GlobalService, private logger: NGXLogger) { }
 
   /**
    * Component on init function.
@@ -96,7 +99,7 @@ export class ChallengeevaluationComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
+        () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
       );
     };
 
@@ -135,7 +138,7 @@ export class ChallengeevaluationComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('EDIT-TERMS-AND-CONDITIONS-FINISHED')
+        () => this.logger.info('EDIT-TERMS-AND-CONDITIONS-FINISHED')
       );
     };
 
@@ -172,7 +175,7 @@ export class ChallengeevaluationComponent implements OnInit {
         err => {
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('EDIT-EVALUATION-SCRIPT-FINISHED')
+        () => this.logger.info('EDIT-EVALUATION-SCRIPT-FINISHED')
       );
     };
 

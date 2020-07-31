@@ -1,9 +1,12 @@
 import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { EndpointsService } from '../../../services/endpoints.service';
 
 /**
@@ -181,7 +184,7 @@ isSubmissionUsingUrl: any;
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
               private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, private logger: NGXLogger) { }
 
   /**
    * Component on intialization.
@@ -304,7 +307,7 @@ isSubmissionUsingUrl: any;
         err => {
           SELF.globalService.handleApiError(err);
         },
-        () => console.log('Remaining submissions fetched for docker based challenge')
+        () => this.logger.info('Remaining submissions fetched for docker based challenge')
       );
     }
   }
@@ -351,7 +354,7 @@ isSubmissionUsingUrl: any;
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Remaining submissions fetched for challenge-phase', challenge, phase);
+        this.logger.info('Remaining submissions fetched for challenge-phase', challenge, phase);
       }
     );
   }

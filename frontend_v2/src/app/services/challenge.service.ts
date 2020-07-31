@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { ApiService } from './api.service';
 import { GlobalService } from './global.service';
-import { BehaviorSubject } from 'rxjs';
 import { AuthService } from './auth.service';
 import { EndpointsService } from './endpoints.service';
 
@@ -40,7 +43,8 @@ export class ChallengeService {
    * @param authService  AuthService Injection.
    */
   constructor(private apiService: ApiService, private globalService: GlobalService,
-              private authService: AuthService, private endpointsService: EndpointsService) { }
+              private authService: AuthService, private endpointsService: EndpointsService,
+              private logger: NGXLogger) { }
 
   /**
    * Update current Challenge.
@@ -158,7 +162,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Challenge', id, 'fetched!');
+        this.logger.info('Challenge', id, 'fetched!');
     });
   }
 
@@ -181,7 +185,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err, false);
       },
       () => {
-        console.log('Stars', id, 'fetched!');
+        this.logger.info('Stars', id, 'fetched!');
       }
     );
   }
@@ -208,7 +212,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err, false);
       },
       () => {
-        console.log('Stars', id, 'fetched!');
+        this.logger.info('Stars', id, 'fetched!');
       }
     );
   }
@@ -249,7 +253,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Participant Teams fetched');
+        this.logger.info('Participant Teams fetched');
     });
   }
 
@@ -273,7 +277,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Phases fetched');
+        this.logger.info('Phases fetched');
     });
   }
 
@@ -296,7 +300,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Phase Splits fetched');
+        this.logger.info('Phase Splits fetched');
     });
   }
 
@@ -317,7 +321,7 @@ export class ChallengeService {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Challenge participated');
+        this.logger.info('Challenge participated');
     });
   }
 
@@ -341,7 +345,7 @@ export class ChallengeService {
         callback();
       },
       () => {
-        console.log('Submission Uploaded');
+        this.logger.info('Submission Uploaded');
     });
   }
 

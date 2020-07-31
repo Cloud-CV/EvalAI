@@ -3,6 +3,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { GlobalService } from '../../../services/global.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 
 /**
  * Component Class
@@ -48,7 +49,8 @@ export class ChallengeparticipateComponent implements OnInit {
    * @param challengeService  ChallengeService Injection.
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
-              private challengeService: ChallengeService, private globalService: GlobalService) { }
+              private challengeService: ChallengeService, private globalService: GlobalService,
+              private logger: NGXLogger) { }
 
   /**
    * Component on initialized
@@ -70,7 +72,7 @@ export class ChallengeparticipateComponent implements OnInit {
           this.globalService.deleteData(this.globalService.redirectStorageKey);
           this.router.navigate([REDIRECT['path']]);
         } else {
-          console.log('navigating to /submit', status);
+          this.logger.info('navigating to /submit', status);
           this.router.navigate(['../submit'], {relativeTo: this.route});
         }
       }
