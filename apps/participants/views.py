@@ -23,7 +23,7 @@ from challenges.utils import (
     is_user_in_blocked_email_domains,
 )
 from hosts.utils import is_user_a_host_of_challenge
-
+from .filters import ParticipantTeamsFilter
 from .models import Participant, ParticipantTeam
 from .serializers import (
     InviteParticipantToTeamSerializer,
@@ -55,8 +55,11 @@ def participant_team_list(request):
         participant_teams = ParticipantTeam.objects.filter(
             id__in=participant_teams_id
         ).order_by("-id")
+        filtered_teams = ParticipantTeamsFilter(
+            request.GET, queryset=participant_teams
+        )
         paginator, result_page = team_paginated_queryset(
-            participant_teams, request
+            filtered_teams.qs, request
         )
         serializer = ParticipantTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
