@@ -15,6 +15,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
+from .filters import HostTeamsFilter
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
     ChallengeHostSerializer,
@@ -40,8 +41,11 @@ def challenge_host_team_list(request):
         challenge_host_teams = ChallengeHostTeam.objects.filter(
             id__in=challenge_host_team_ids
         ).order_by("-id")
+        filtered_teams = HostTeamsFilter(
+            request.GET, queryset=challenge_host_teams
+        )
         paginator, result_page = team_paginated_queryset(
-            challenge_host_teams, request
+            filtered_teams.qs, request
         )
         serializer = HostTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data

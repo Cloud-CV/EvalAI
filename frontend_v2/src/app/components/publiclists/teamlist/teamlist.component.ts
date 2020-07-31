@@ -171,6 +171,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   createChallengeRoutePath = '/challenge-create';
 
   /**
+   * Filter query as participant team name
+   */
+  filterTeamsQuery = '';
+
+  /**
    * Content for terms and conditions
    */
   termsAndConditionContent = [
@@ -298,7 +303,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   fetchMyTeams(path) {
     if (this.authService.isLoggedIn()) {
-      this.fetchTeams(path);
+      if (this.filterTeamsQuery === '') {
+        this.fetchTeams(path);
+      } else {
+        this.filterTeam(this.filterTeamsQuery);
+      }
     }
   }
 
@@ -361,13 +370,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     this.apiService.getUrl(path).subscribe(
       data => {
         this.globalService.stopLoader();
-        if (data['results']) {
-          SELF.allTeams = data['results'];
-          if (SELF.isHost || SELF.isOnChallengePage) {
-            SELF.allTeams = SELF.appendIsSelected(SELF.allTeams);
-          }
-          SELF.updateTeamsView(true);
-        }
+        SELF.updateTeamsData(data);
       },
       err => {
         if (err.status === 403) {
@@ -633,4 +636,41 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     return deleteTeamMember;
   }
 
+  /**
+  * Filter teams by team name
+  * @param teamName Participant team name
+  */
+  filterTeam(teamName) {
+    const SELF = this;
+    SELF.filterTeamsQuery = teamName;
+    let API_PATH;
+    if (SELF.isHost) {
+      API_PATH = SELF.endpointsService.FilteredHostTeamURL(teamName);
+    } else {
+      API_PATH = SELF.endpointsService.FilteredParticipantTeamURL(teamName);
+    }
+    SELF.apiService.getUrl(API_PATH).subscribe(
+      data => {
+        SELF.updateTeamsData(data);
+      },
+      err => {
+        SELF.globalService.handleApiError(err, true);
+      },
+      () => {}
+    );
+  }
+
+  /**
+   * Update teams data.
+   * @param teamsData  Fetched teams data.
+   */
+  updateTeamsData(teamsData) {
+    if (teamsData['results']) {
+      this.allTeams = teamsData['results'];
+      if (this.isHost || this.isOnChallengePage) {
+        this.allTeams = this.appendIsSelected(this.allTeams);
+      }
+      this.updateTeamsView(true);
+    }
+  }
 }
