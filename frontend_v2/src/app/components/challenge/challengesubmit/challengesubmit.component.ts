@@ -367,6 +367,29 @@ isSubmissionUsingUrl: any;
   }
 
   /**
+   * Store Meta Attributes for a particular challenge phase.
+  */
+  storeMetadata(data) {
+    for (let i = 0; i < data.count; i++) {
+      if (data.results[i].submission_meta_attributes !== undefined && data.results[i].submission_meta_attributes !== null) {
+        const attributes = data.results[i].submission_meta_attributes;
+        attributes.forEach(function (attribute) {
+          if (attribute['type'] === 'checkbox') {
+            attribute['values'] = [];
+          } else {
+            attribute['value'] = null;
+          }
+        });
+        data = { 'phaseId': data.results[i].id, 'attributes': attributes };
+        this.submissionMetaAttributes.push(data);
+      } else {
+        const detail = { 'phaseId': data.results[i].id, 'attributes': null };
+        this.submissionMetaAttributes.push(detail);
+      }
+    }
+  }
+
+  /**
    * Fetch Meta Attributes for a particular challenge phase.
    * @param challenge  challenge id
    * @param phase  phase id
@@ -376,24 +399,8 @@ isSubmissionUsingUrl: any;
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
       data => {
-        for (let i = 0; i < data.count; i++) {
-          if (data.results[i].submission_meta_attributes !== undefined && data.results[i].submission_meta_attributes !== null) {
-            const attributes = data.results[i].submission_meta_attributes;
-            attributes.forEach(function (attribute) {
-              if (attribute['type'] === 'checkbox') {
-                attribute['values'] = [];
-              } else {
-                attribute['value'] = null;
-              }
-            });
-            data = { 'phaseId': data.results[i].id, 'attributes': attributes };
-            this.submissionMetaAttributes.push(data);
-          } else {
-            const detail = { 'phaseId': data.results[i].id, 'attributes': null };
-            this.submissionMetaAttributes.push(detail);
-          }
-        }
-        // Loads attributes of a phase into this.submissionMetaAttributes
+        SELF.storeMetadata(data);
+         // Loads attributes of a phase into this.submissionMetaAttributes
         this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
           return element['phaseId'] === phaseId;
         }).attributes;
