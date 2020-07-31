@@ -69,9 +69,22 @@
 .top-card-container ul.inline-list {
   margin: 0px;
 }
+
 .top-card-container ul.inline-list li {
   margin: 0 40px 1.5% 0;
   min-height: 40px;
+}
+
+.challenge-title {
+  padding-top: 0px;
+}
+
+.edit-title {
+  padding-right: 4px;
+}
+
+.title-line {
+  line-height: 1.5
 }
 
 @media only screen and (max-width: $med-screen) {

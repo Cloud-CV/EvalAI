@@ -3,21 +3,19 @@
 		<div class="ev-pad">
 			<div class="ev-md-container ev-card-panel">
 				<div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 content">
-					<span class="fw-semibold fs-18">
-						<strong class="fw-semibold">Evaluation Criteria</strong>
-					</span>
-					<div class="evaluation-details" id="challenge-evaluation"></div>
+						<h5 class="fw-light">Evaluation Criteria</h5> <br>
+					<div class="evaluation-details fs-16 fw-light" id="challenge-evaluation"></div>
 				</div>
 				<div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1">
-					<a class="pointer" (click)="editEvaluationCriteria()">
+					<a class="pointer fs-16" (click)="editEvaluationCriteria()">
 						<i class="fa fa-pencil" aria-hidden="true">
-						</i>
+						</i>&nbsp;edit
 					</a>
 				</div>
 				<div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1">
-					<a class="pointer" (click)="editEvaluationScript()">
+					<a class="pointer fs-15" (click)="editEvaluationScript()">
 						<i class="fa fa-file" aria-hidden="true">
-						</i>
+						</i>&nbsp;upload
 					</a>
 				</div>
 			</div>
@@ -27,15 +25,13 @@
     <div class="tnc-pad">
 			<div class="ev-md-container ev-card-panel">
 				<div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 content">
-					<span class="fw-semibold fs-18">
-						<strong class="fw-semibold">Terms And Conditions</strong>
-					</span>
-					<div class="terms-and-conditions" id="challenge-tnc"></div>
+						<h5 class="fw-light">Terms And Conditions</h5> <br>
+					<div class="terms-and-conditions fs-16 fw-light" id="challenge-tnc"></div>
 				</div>
-				<div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1">
-					<a class="pointer" (click)="editTermsAndConditions()">
+				<div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1 terms-and-condition">
+					<a class="pointer fs-16" (click)="editTermsAndConditions()">
 						<i class="fa fa-pencil" aria-hidden="true">
-						</i>
+						</i>&nbsp;edit
 					</a>
 				</div>
 			</div>
