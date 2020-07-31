@@ -5,6 +5,7 @@ import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EndpointsService } from '../../../services/endpoints.service';
+import { interval } from 'rxjs';
 
 /**
  * Component Class
@@ -165,6 +166,21 @@ isSubmissionUsingUrl: any;
   timer: any;
 
   /**
+   * File upload progress value
+   */
+  progressValue = 0;
+
+  /**
+   * File upload progress time
+   */
+  curSec = 0;
+
+  /**
+   * Is file seleced
+   */
+  isFileSelected = false;
+
+  /**
    * Component Class
    */
   @ViewChildren('formsubmit')
@@ -228,6 +244,22 @@ isSubmissionUsingUrl: any;
       this.displayDockerSubmissionInstructions(this.challenge.id, this.isParticipated);
     }
     this.authToken = this.globalService.getAuthToken();
+  }
+
+  progress(files: FileList) {
+    this.isFileSelected = true;
+    const fileToUpload = files.item(0);
+    const seconds = fileToUpload.size;
+    const timer$ = interval(10);
+
+    const sub = timer$.subscribe((sec) => {
+      this.progressValue = 0 + sec * 100 / seconds;
+      this.curSec = sec;
+
+      if (this.curSec === seconds) {
+        sub.unsubscribe();
+      }
+    });
   }
 
   /**
