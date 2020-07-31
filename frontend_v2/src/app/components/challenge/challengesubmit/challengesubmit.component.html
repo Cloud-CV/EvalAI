@@ -4,24 +4,24 @@
         active.</strong></p>
     <div *ngIf="isActive" class="row row-lr-margin">
       <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
-        <span class="fs-20 fw-regular">Submission Guidelines</span>
+        <h5 class="fw-light">Submission Guidelines</h5>
         <div *ngIf="isChallengeHost">
-          <div class="fw-semibold content">
-            <p><strong class="fw-regular">Note: </strong>Your submissions won't
+          <div class="content">
+            <p class="fs-16"><strong>Note: </strong>Your submissions won't
               be visible on leaderboard for
-              <strong class="fw-regular blue-text"> Public Challenge Phases
+              <strong class="blue-text"> Public Challenge Phases
               </strong> since you are a challenge host
-              for this challenge.<br> This feature is only for your testing
+              for this challenge.This feature is only for your testing
               purposes.</p>
           </div>
         </div>
-        <div [innerHTML]="submissionGuidelines" class="submission-guidelines content"></div>
+        <div [innerHTML]="submissionGuidelines" class="submission-guidelines content fs-16"></div>
       </div>
 
       <div *ngIf="isChallengeHost" class="col-md-1 col-sm-1 col-xs-2 col-lr-pad">
-        <a class="pointer" (click)="editSubmissionGuideline()">
+        <a class="pointer fs-16" (click)="editSubmissionGuideline()">
           <i class="fa fa-pencil" aria-hidden="true">
-          </i>
+          </i>&nbsp;edit
         </a>
       </div>
     </div>
@@ -62,7 +62,7 @@
               </i>
             </button>
           </li>
-          <li class="content">For more commands, please refer to 
+          <li class="content">For more commands, please refer to
             <a class="text-highlight"
               href="https://evalai-cli.cloudcv.org/" target="_blank">evalai-cli
               documentation.</a>
@@ -77,11 +77,11 @@
     <span class="fs-20 fw-light">
       Submission limits
     </span><br><br>
-    <span class="fs-15">
-      <strong class="fw-semibold content">Team name:</strong>
+    <span class="fs-16 fw-light">
+      <strong class="content">Team name:</strong>
       {{phaseRemainingSubmissions.participant_team}}
     </span>
-    <table align="center" class="centered responsive-table">
+    <table align="center" class="centered responsive-table fs-16 fw-light">
       <thead>
         <tr>
           <th class="content">Phase details</th>
@@ -146,34 +146,34 @@
 
   <div *ngIf="!challenge.is_docker_based" class="ev-card-panel">
     <div class="bottom-card-container bottom-hr-line">
-      <strong class="fw-regular content">
-        Please fill the following fields to submit
-      </strong>
+      <div class="col s12">
+        <h5 class="fw-light">Make Submission</h5>
+      </div>
     </div>
     <div class="row">
       <div class="col-md-7 col-sm-7 col-xs-10">
         <div class="exist-team-card">
           <ul>
-            <b class="fw-bold content fs-14">Select phase:</b>
+            <p class="content fs-18 fw-light">Select phase:</p>
             <app-selectphase [phases]="filteredPhases"
               [phaseSelectionListType]="phaseSelectionListType"
               [phaseSelectionType]="phaseSelectionType"
               [phaseSelected]="phaseSelected()" (click)="isPhaseSelected=true"></app-selectphase>
               <div [hidden]="!isPhaseSelected" class="row">
                 <div id="submission_option_style">
-                  <b class="fw-bold content fs-14">Submission Options:</b>
+                  <p class="fw-light content fs-18">Submission Options:</p>
                   <li>
                     <input type="radio" name="submissionOptions" class="with-gap selectPhase"
                       id="fileUrl" (click)="isSubmissionUsingUrl = true; showForm = true">
                       <label for="fileUrl"></label>
                       <div id="radio_button_url" class="show-member-title pointer">
-                        <strong class="text-med-black">Enter file URL (for file size > 400MB) </strong>
+                        <strong class="text-med-black fs-16">Enter file URL (for file size > 400MB) </strong>
                       </div>
                       <input type="radio" name="submissionOptions" class="with-gap selectPhase"
                         id="fileUpload" (click)="isSubmissionUsingUrl = false; showForm = true">
                         <label for="fileUpload"></label>
                     <div id="radio_button_file" class="show-member-title pointer">
-                      <strong  class="text-med-black">Upload file </strong>
+                      <strong  class="text-med-black fs-16">Upload file </strong>
                     </div>
                   </li>
                 </div>
@@ -188,7 +188,7 @@
                         #formsubmit></app-input>
                       </div>
                       <div [hidden]="!isSubmissionUsingUrl">
-                        <app-input (input)="validateInput($event.target.value)" 
+                        <app-input (input)="validateInput($event.target.value)"
                         [label]="'file_url'" [placeholder]="'Submission file URL'"
                         [type]="'URL'" [icon]="''" [value]="''" [message]="inputErrorMessage"
                         #formsubmit></app-input>
@@ -246,13 +246,13 @@
             </ul>
           </div>
         </div>
-      <div *ngIf="selectedPhaseSubmissions.maxExceeded" 
+      <div *ngIf="selectedPhaseSubmissions.maxExceeded"
       class="col-md-5 col-sm-4 col-xs-12">
         <div class="ev-submission-card-body exist-team-card
           ev-remaining-submission remaining-submission-clock">
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-semibold fs-15 red-text">
+              <strong class="fw-semibold fs-16 red-text">
                 {{ selectedPhaseSubmissions.maxExceededMessage }}
               </strong>
             </span>
@@ -260,40 +260,40 @@
         </div>
       </div>
       <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails" class="col-md-5 col-sm-5 col-xs-12">
-        <div class="ev-card-body exist-team-card ev-remaining-submission 
+        <div class="ev-card-body exist-team-card ev-remaining-submission
         remaining-submission-clock">
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-regular fs-15">
+              <strong class="fw-semibold fs-16">
                 Today's remaining Submissions:
               </strong>
             </span>
             <span class="color-black">
-              <strong class="fw-light fs-15">
+              <strong class="fw-light fs-16">
                 {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_today_count}}
               </strong>
             </span>
           </div>
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-regular fs-15">
+              <strong class="fw-semibold fs-16">
                 Monthly remaining submissions:
               </strong>
             </span>
             <span class="color-black">
-              <strong class="fw-light fs-15">
+              <strong class="fw-light fs-16">
                 {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_this_month_count}}
               </strong>
             </span>
           </div>
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-regular fs-15">
+              <strong class="fw-semibold fs-16">
                 Total remaining submissions:
               </strong>
             </span>
             <span class="color-black">
-              <strong class="fw-light fs-15">
+              <strong class="fw-light fs-16">
                 {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_count}}
               </strong>
             </span>
@@ -301,7 +301,7 @@
         </div>
       </div>
       <div *ngIf="selectedPhaseSubmissions.showClock" class="col-md-5 col-sm-12 col-xs-12">
-        <div class="ev-card-body exist-team-card ev-remaining-submission 
+        <div class="ev-card-body exist-team-card ev-remaining-submission
         remaining-submission-clock">
           <div class="row row-lr-margin">
             <strong class="fw-regular text-med-black">

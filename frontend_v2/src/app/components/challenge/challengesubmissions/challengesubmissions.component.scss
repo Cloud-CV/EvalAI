@@ -8,6 +8,10 @@
   }
 }
 
+.ev-btn {
+  padding: 8px 20px;
+}
+
 .show-submission-count {
   background: #252833;
   text-align: center;
@@ -72,15 +76,15 @@ tr.detail-row {
   padding: 8px;
 }
 
-tr.element-row:not(.expanded-row):hover {	
-  td {	
-    color: #efefef;	
-  }	
-  background: #252833;	
-}	
+tr.element-row:not(.expanded-row):hover {
+  td {
+    color: #efefef;
+  }
+  background: #252833;
+}
 
- tr.element-row:not(.expanded-row):active {	
-  background: #efefef;	
+ tr.element-row:not(.expanded-row):active {
+  background: #efefef;
 }
 
 .expanded-row {
