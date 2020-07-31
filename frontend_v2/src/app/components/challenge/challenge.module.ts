@@ -9,7 +9,8 @@ import {
   MatDividerModule,
   MatCheckboxModule,
   MatRadioModule,
-  MatDialogModule} from '@angular/material';
+  MatDialogModule,
+  MatSliderModule } from '@angular/material';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -60,7 +61,8 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     MatDividerModule,
     MatMenuModule,
     MatRadioModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSliderModule
   ],
   exports: [
     ChallengeComponent,
