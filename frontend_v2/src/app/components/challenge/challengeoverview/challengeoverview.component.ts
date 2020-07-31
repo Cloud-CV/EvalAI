@@ -1,5 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { ApiService } from '../../../services/api.service';
@@ -37,7 +40,7 @@ export class ChallengeoverviewComponent implements OnInit {
    */
   constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document,
               private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, private logger: NGXLogger) { }
 
   /**
    * Component on initialized.
@@ -69,7 +72,7 @@ export class ChallengeoverviewComponent implements OnInit {
             SELF.globalService.handleApiError(err, true);
             SELF.globalService.showToast('error', err);
           },
-          () => console.log('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
+          () => this.logger.info('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
         );
     };
 
