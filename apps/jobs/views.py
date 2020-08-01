@@ -139,13 +139,7 @@ def challenge_submission(request, challenge_id, challenge_phase_pk_or_slug, vers
             response_data = {"error": "Challenge Phase does not exist"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
-        try:
-            challenge_phase = ChallengePhase.objects.get(
-                pk=challenge_phase_pk_or_slug, challenge=challenge
-            )
-        except ChallengePhase.DoesNotExist:
-            response_data = {"error": "Challenge Phase does not exist"}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     if request.method == "GET":
         # getting participant team object for the user for a particular challenge.

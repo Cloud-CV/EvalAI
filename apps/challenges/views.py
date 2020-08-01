@@ -1349,17 +1349,7 @@ def get_all_submissions_of_challenge(
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     else:
-        try:
-            challenge_phase = ChallengePhase.objects.get(
-                pk=challenge_phase_pk_or_slug, challenge=challenge
-            )
-        except ChallengePhase.DoesNotExist:
-            response_data = {
-                "error": "Challenge Phase {} does not exist".format(
-                    challenge_phase_pk_or_slug
-                )
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     # To check for the user as a host of the challenge from the request and challenge_pk.
     if is_user_a_host_of_challenge(
@@ -1437,18 +1427,8 @@ def download_all_submissions(
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     else:
-        try:
-            challenge_phase = ChallengePhase.objects.get(
-                pk=challenge_phase_pk_or_slug, challenge=challenge
-            )
-        except ChallengePhase.DoesNotExist:
-            response_data = {
-                "error": "Challenge Phase {} does not exist".format(
-                    challenge_phase_pk_or_slug
-                )
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-    print(challenge_phase, challenge)
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
+
     if request.method == "GET":
         if file_type == "csv":
             if is_user_a_host_of_challenge(
