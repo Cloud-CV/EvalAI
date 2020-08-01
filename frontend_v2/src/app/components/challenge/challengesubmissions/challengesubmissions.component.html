@@ -7,9 +7,8 @@
           <i class="fa fa-refresh text-highlight"></i></span>
       </div>
       <div class="row row-lr-margin phase-title">
-        <div *ngIf="!selectedPhase" class="col-sm-12">
-          <strong class="fw-semibold content fs-15">
-            Please select a phase to get list of submissions!</strong>
+        <div class="col-sm-12">
+          <h5 class="fw-light">My Submissions</h5>
         </div>
       </div>
       <div class="row row-lr-margin">
@@ -32,7 +31,7 @@
         </div>
         <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
           <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark
-            grad-btn-dark fw-light fs-14" (click)='downloadSubmission()'>Download</a>
+            grad-btn-dark fw-light fs-15" (click)='downloadSubmission()'>Download</a>
         </div>
         <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 col-lr-pad"
              *ngIf="selectedPhase">
@@ -85,7 +84,7 @@
               <i class="fa fa-external-link"></i>
               Link
             </a>
-            <span [class.green-text]="column === 'status'" *ngIf="element[column] !== null && column === 'status'">{{element[column]}}</span>
+            <span [ngClass]="element[column]" *ngIf="element[column] !== null && column === 'status'" class="fs-12">{{element[column] | uppercase}}</span>
             <span *ngIf="element[column] === null">{{"None"}}</span>
           </td>
         </ng-container>
@@ -119,7 +118,7 @@
               <div class="elements-action">
                 <div class="element">
                   <span class="element-description-attribution">Status</span>
-                  <span class="fw-regular element-description" [ngClass]="element.status"> {{element.status}} </span>
+                  <span class="fw-semibold element-description fs-12" [ngClass]="element.status"> {{element.status | uppercase}} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Execution Time</span>
@@ -131,12 +130,17 @@
                 </div>
                 <div class="element">
                   <mat-checkbox [checked]="element.is_public" [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']" (change)="changeSubmissionVisibility(element.id, element.is_public)">
-                    Show On Leaderboard
+                    <span class="fs-14">Show on leaderboard</span>
                   </mat-checkbox>
                 </div>
-                <div class="element">
+                <div class="element" *ngIf="isChallengeHost">
+                  <mat-checkbox [checked]="element.is_baseline" [disabled]="element.status !== 'finished'" (change)="changeBaselineStatus(element.id, element.is_baseline)">
+                    <span class="fs-14">Baseline</span>
+                  </mat-checkbox>
+                </div>
+                <div class="element fs-14 pointer">
                   <a (click)="editSubmission(element)" >
-                    <i class="fa fa-pencil"></i>
+                    Edit submission detail &nbsp;<i class="fa fa-pencil"></i>
                   </a>
                 </div>
               </div>

@@ -55,7 +55,7 @@ from challenges.utils import (
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
-    read_file_data_as_content_file
+    read_file_data_as_content_file,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -65,7 +65,7 @@ from challenges.challenge_config_utils import (
     is_challenge_config_yaml_html_field_valid,
     is_challenge_phase_config_yaml_html_field_valid,
     is_challenge_phase_split_mapping_valid,
-    read_yaml_file
+    read_yaml_file,
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -111,8 +111,18 @@ from .serializers import (
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
-from .aws_utils import start_workers, stop_workers, restart_workers, get_logs_from_cloudwatch
-from .utils import get_file_content, get_aws_credentials_for_submission
+
+from .aws_utils import (
+    start_workers,
+    stop_workers,
+    restart_workers,
+    get_logs_from_cloudwatch,
+)
+from .utils import (
+    get_file_content,
+    get_aws_credentials_for_submission,
+    get_missing_keys_from_dict,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -435,6 +445,41 @@ def get_challenge_by_pk(request, pk):
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_participated_challenges(request, challenge_time):
+    """
+    Returns the list of all participated challenges
+    """
+    # make sure that a valid url is requested.
+    if challenge_time.lower() not in ("all", "past", "present"):
+        response_data = {"error": "Wrong url pattern!"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    q_params = {"published": True, "approved_by_admin": True}
+
+    if challenge_time.lower() == "past":
+        q_params["end_date__lt"] = timezone.now()
+
+    elif challenge_time.lower() == "present":
+        q_params["start_date__lt"] = timezone.now()
+        q_params["end_date__gt"] = timezone.now()
+
+    # don't return disabled challenges
+    q_params["is_disabled"] = False
+    participant_team_ids = get_participant_teams_for_user(request.user)
+    q_params["participant_teams__pk__in"] = participant_team_ids
+    challenges = Challenge.objects.filter(**q_params).order_by("-pk")
+    paginator, result_page = paginated_queryset(challenges, request)
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={"request": request}
+    )
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
 
 
 @api_view(["GET"])
@@ -815,6 +860,45 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        # To ensure that the schema for submission meta attributes is valid.
+        if data.get("submission_meta_attributes"):
+            for attribute in data["submission_meta_attributes"]:
+                keys = ["name", "description", "type"]
+                missing_keys = get_missing_keys_from_dict(attribute, keys)
+
+                if len(missing_keys) == 0:
+                    valid_attribute_types = [
+                        "boolean",
+                        "text",
+                        "radio",
+                        "checkbox",
+                    ]
+                    attribute_type = attribute["type"]
+                    if attribute_type in valid_attribute_types:
+                        if (
+                            attribute_type == "radio"
+                            or attribute_type == "checkbox"
+                        ):
+                            options = attribute.get("options")
+                            if not options or not len(options):
+                                message = "Please include at least one option in attribute for challenge_phase {}".format(
+                                    data["id"]
+                                )
+                                response_data = {"error": message}
+                                return Response(
+                                    response_data,
+                                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                                )
+                else:
+                    missing_keys_string = ", ".join(missing_keys)
+                    message = "Please enter the following to the submission meta attribute in phase {}: {}.".format(
+                        data["id"], missing_keys_string
+                    )
+                    response_data = {"error": message}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
 
     # Check for challenge image in yaml file.
     image = yaml_file_data.get("image")
@@ -2287,8 +2371,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
     challenge_zip_download_location = join(
         base_location, "challenge_config.zip"
     )
-    is_success, error_description = download_and_write_file(uploaded_zip_file_path, True,
-                                                            challenge_zip_download_location, "wb")
+    is_success, error_description = download_and_write_file(
+        uploaded_zip_file_path, True, challenge_zip_download_location, "wb"
+    )
 
     if not is_success:
         response_data["error"] = error_description
@@ -2296,13 +2381,19 @@ def validate_challenge_config(request, challenge_host_team_pk):
 
     # Extract zip file
     try:
-        zip_ref = extract_zip_file(challenge_zip_download_location, "r", base_location)
+        zip_ref = extract_zip_file(
+            challenge_zip_download_location, "r", base_location
+        )
     except zipfile.BadZipfile:
         message = "The zip file contents cannot be extracted. Please check the format!"
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    yaml_file_count, yaml_file, extracted_folder_name = get_yaml_files_from_challenge_config(zip_ref)
+    (
+        yaml_file_count,
+        yaml_file,
+        extracted_folder_name,
+    ) = get_yaml_files_from_challenge_config(zip_ref)
 
     if not yaml_file_count:
         message = "There is no YAML file in zip file you uploaded!"
@@ -2310,7 +2401,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if yaml_file_count > 1:
-        message = "There are {0} YAML files instead of one in zip file!".format(yaml_file_count)
+        message = "There are {0} YAML files instead of one in zip file!".format(
+            yaml_file_count
+        )
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2318,7 +2411,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
         yaml_file_path = join(base_location, yaml_file)
         yaml_file_data = read_yaml_file(yaml_file_path, "r")
     except (yaml.YAMLError, ScannerError) as exc:
-        error_description, line_number, column_number = get_yaml_read_error(exc)
+        error_description, line_number, column_number = get_yaml_read_error(
+            exc
+        )
         message = "\n{} in line {}, column {}\n".format(
             error_description, line_number, column_number
         )
@@ -2344,8 +2439,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
             base_location, extracted_folder_name, image
         )
         if isfile(challenge_image_path):
-            challenge_image_file = read_file_data_as_content_file(challenge_image_path,
-                                                                  "rb", image)
+            challenge_image_file = read_file_data_as_content_file(
+                challenge_image_path, "rb", image
+            )
         else:
             challenge_image_file = None
             message = "ERROR: Please add challenge image file."
@@ -2357,41 +2453,44 @@ def validate_challenge_config(request, challenge_host_team_pk):
 
     # Check for challenge description file
     challenge_config_location = join(base_location, extracted_folder_name)
-    is_valid, message = is_challenge_config_yaml_html_field_valid(yaml_file_data,
-                                                                  "description",
-                                                                  challenge_config_location)
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
+        yaml_file_data, "description", challenge_config_location
+    )
     if not is_valid:
         error_messages.append(message)
 
     # Check for evaluation details file
-    is_valid, message = is_challenge_config_yaml_html_field_valid(yaml_file_data,
-                                                                  "evaluation_details",
-                                                                  challenge_config_location)
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
+        yaml_file_data, "evaluation_details", challenge_config_location
+    )
     if not is_valid:
         error_messages.append(message)
 
     # Check for terms and conditions file
-    is_valid, message = is_challenge_config_yaml_html_field_valid(yaml_file_data,
-                                                                  "terms_and_conditions",
-                                                                  challenge_config_location)
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
+        yaml_file_data, "terms_and_conditions", challenge_config_location
+    )
     if not is_valid:
         error_messages.append(message)
 
     # Check for submission guidelines file
-    is_valid, message = is_challenge_config_yaml_html_field_valid(yaml_file_data,
-                                                                  "submission_guidelines",
-                                                                  challenge_config_location)
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
+        yaml_file_data, "submission_guidelines", challenge_config_location
+    )
     if not is_valid:
         error_messages.append(message)
 
     # Check for evaluation script path
     evaluation_script = yaml_file_data.get("evaluation_script")
     if evaluation_script:
-        evaluation_script_path = join(challenge_config_location, evaluation_script)
+        evaluation_script_path = join(
+            challenge_config_location, evaluation_script
+        )
         # Check for evaluation script file in extracted zip folder
         if isfile(evaluation_script_path):
-            challenge_evaluation_script_file = read_file_data_as_content_file(evaluation_script_path,
-                                                                              "rb", evaluation_script_path)
+            challenge_evaluation_script_file = read_file_data_as_content_file(
+                evaluation_script_path, "rb", evaluation_script_path
+            )
         else:
             message = "ERROR: No evaluation script is present in the zip file. Please add it and then try again!"
             error_messages.append(message)
@@ -2428,13 +2527,13 @@ def validate_challenge_config(request, challenge_host_team_pk):
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
             test_annotation_file_path = join(
-                challenge_config_location,
-                test_annotation_file,
+                challenge_config_location, test_annotation_file,
             )
 
             if isfile(test_annotation_file_path):
-                challenge_test_annotation_file = read_file_data_as_content_file(test_annotation_file_path,
-                                                                                "rb", test_annotation_file_path)
+                challenge_test_annotation_file = read_file_data_as_content_file(
+                    test_annotation_file_path, "rb", test_annotation_file_path
+                )
             else:
                 message = (
                     "ERROR: No test annotation file found in zip file"
@@ -2450,9 +2549,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
 
     phase_ids = []
     for data in challenge_phases_data:
-        is_valid, message = is_challenge_phase_config_yaml_html_field_valid(data,
-                                                                            "description",
-                                                                            challenge_config_location)
+        is_valid, message = is_challenge_phase_config_yaml_html_field_valid(
+            data, "description", challenge_config_location
+        )
         if not is_valid:
             error_messages.append(message)
 
@@ -2465,8 +2564,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
         )
         if not serializer.is_valid():
             serializer_error = str(serializer.errors)
-            message = "ERROR: Challenge phase {} has following schema errors:\n {}".format(data["id"],
-                                                                                           serializer_error)
+            message = "ERROR: Challenge phase {} has following schema errors:\n {}".format(
+                data["id"], serializer_error
+            )
             error_messages.append(message)
         else:
             phase_ids.append(data["id"])
@@ -2476,11 +2576,11 @@ def validate_challenge_config(request, challenge_host_team_pk):
     leaderboard_ids = []
     if leaderboard:
         error = False
-        if 'schema' not in leaderboard[0]:
+        if "schema" not in leaderboard[0]:
             message = "ERROR: There is no leaderboard schema in the YAML configuration file."
             error_messages.append(message)
             error = True
-        if 'default_order_by' not in leaderboard[0].get('schema'):
+        if "default_order_by" not in leaderboard[0].get("schema"):
             message = "ERROR: There is no 'default_order_by' key in leaderboard schema."
             error_messages.append(message)
             error = True
@@ -2494,8 +2594,9 @@ def validate_challenge_config(request, challenge_host_team_pk):
                 serializer = LeaderboardSerializer(data=data)
                 if not serializer.is_valid():
                     serializer_error = str(serializer.errors)
-                    message = "ERROR: Leaderboard {} has following schema errors:\n {}".format(data["id"],
-                                                                                               serializer_error)
+                    message = "ERROR: Leaderboard {} has following schema errors:\n {}".format(
+                        data["id"], serializer_error
+                    )
                     error_messages.append(message)
                 else:
                     leaderboard_ids.append(data["id"])
@@ -2510,15 +2611,18 @@ def validate_challenge_config(request, challenge_host_team_pk):
         for split in dataset_splits:
             name = split.get("name")
             if not name:
-                message = "ERROR: There is no name for dataset split {}.".format(split.get("id"))
+                message = "ERROR: There is no name for dataset split {}.".format(
+                    split.get("id")
+                )
                 error_messages.append(message)
 
         for split in dataset_splits:
             serializer = DatasetSplitSerializer(data=split)
             if not serializer.is_valid():
                 serializer_error = str(serializer.errors)
-                message = "ERROR: Dataset split {} has following schema errors:\n {}".format(split["id"],
-                                                                                             serializer_error)
+                message = "ERROR: Dataset split {} has following schema errors:\n {}".format(
+                    split["id"], serializer_error
+                )
                 error_messages.append(message)
             else:
                 dataset_splits_ids.append(split["id"])
@@ -2532,19 +2636,22 @@ def validate_challenge_config(request, challenge_host_team_pk):
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            serializer = ZipChallengePhaseSplitSerializer(data=data,
-                                                          context={
-                                                              "exclude_fields": exclude_fields
-                                                          })
+            serializer = ZipChallengePhaseSplitSerializer(
+                data=data, context={"exclude_fields": exclude_fields}
+            )
             if not serializer.is_valid():
                 serializer_error = str(serializer.errors)
-                message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(phase_split,
-                                                                                                      serializer_error)
+                message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(
+                    phase_split, serializer_error
+                )
                 error_messages.append(message)
-            if not is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids,
-                                                          dataset_splits_ids, data):
-                message = ("ERROR: Challenge phase split {} has invalid keys "
-                           "for challenge_phase_id, leaderboard_id, dataset_split_id").format(phase_split)
+            if not is_challenge_phase_split_mapping_valid(
+                phase_ids, leaderboard_ids, dataset_splits_ids, data
+            ):
+                message = (
+                    "ERROR: Challenge phase split {} has invalid keys "
+                    "for challenge_phase_id, leaderboard_id, dataset_split_id"
+                ).format(phase_split)
                 error_messages.append(message)
             phase_split += 1
     else:
@@ -2586,7 +2693,9 @@ def get_worker_logs(request, challenge_pk):
     start_time = current_time - timeframe * 900000
     end_time = current_time
 
-    logs = get_logs_from_cloudwatch(log_group_name, log_stream_prefix, start_time, end_time, pattern)
+    logs = get_logs_from_cloudwatch(
+        log_group_name, log_stream_prefix, start_time, end_time, pattern
+    )
 
     response_data = {"logs": logs}
     return Response(response_data, status=status.HTTP_200_OK)
@@ -2610,7 +2719,9 @@ def manage_worker(request, challenge_pk, action):
     if action == "start":
         response = start_workers([challenge])
         count, failures = response["count"], response["failures"]
-        logging.info("Count is {} and failures are: {}".format(count, failures))
+        logging.info(
+            "Count is {} and failures are: {}".format(count, failures)
+        )
         if count:
             response_data = {"action": "Success"}
         else:

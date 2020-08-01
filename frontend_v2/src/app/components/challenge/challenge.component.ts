@@ -1,12 +1,15 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
+import { NGXLogger } from 'ngx-logger';
+
+// import services
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
 import { EndpointsService } from '../../services/endpoints.service';
-import { Meta } from '@angular/platform-browser';
-import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -52,6 +55,16 @@ export class ChallengeComponent implements OnInit {
   isParticipated = false;
 
   /**
+   * Is Forum enabled in Challenge
+   */
+  isForumEnabled: boolean;
+
+  /**
+   * Forum Url of Challenge
+   */
+  forumURL: any;
+
+  /**
    * Challenge object
    */
   challenge: any;
@@ -85,7 +98,8 @@ export class ChallengeComponent implements OnInit {
   constructor(@Inject(DOCUMENT) document: any, private router: Router, private route: ActivatedRoute,
               private apiService: ApiService, private globalService: GlobalService,
               private challengeService: ChallengeService, public authService: AuthService,
-              private endpointsService: EndpointsService, private meta: Meta) { }
+              private endpointsService: EndpointsService, private meta: Meta,
+              private logger: NGXLogger) { }
 
   /**
    * Component on initialized
@@ -106,6 +120,8 @@ export class ChallengeComponent implements OnInit {
     });
     this.challengeService.currentChallenge.subscribe(challenge => {
       this.challenge = challenge;
+      this.isForumEnabled = challenge.enable_forum;
+      this.forumURL = challenge.forum_url;
       // update meta tag
       SELF.meta.updateTag({
         property: 'og:title',
@@ -184,7 +200,7 @@ export class ChallengeComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('PUBLISH-CHALLENGE-UPDATE-FINISHED')
+        () => this.logger.info('PUBLISH-CHALLENGE-UPDATE-FINISHED')
       );
     };
 
@@ -218,7 +234,7 @@ export class ChallengeComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('EDIT-CHALLENGE-TITLE-FINISHED')
+        () => this.logger.info('EDIT-CHALLENGE-TITLE-FINISHED')
       );
     };
 
@@ -263,7 +279,7 @@ export class ChallengeComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('DELETE-CHALLENGE-FINISHED')
+        () => this.logger.info('DELETE-CHALLENGE-FINISHED')
       );
     };
 

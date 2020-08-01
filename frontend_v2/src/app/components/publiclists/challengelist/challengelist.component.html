@@ -41,8 +41,7 @@
    <!-- my challenges  -->
   <div *ngIf="routerPublic.url === myChallengesRoutePathCommon" [@.disabled]="true">
     <mat-tab-group>
-      <mat-tab label="My Ongoing Challenges ({{ filteredOngoingChallenges.length }})">
-        <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
+      <mat-tab label="Ongoing Hosted Challenges ({{ filteredOngoingChallenges.length }})">
         <div *ngIf="!filteredOngoingChallenges.length">
           You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
         </div>
@@ -54,8 +53,7 @@
           </div>
         </div>
       </mat-tab>
-      <mat-tab label="My Upcoming Challenges ({{ filteredUpcomingChallenges.length }})">
-        <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
+      <mat-tab label="Upcoming Hosted Challenges ({{ filteredUpcomingChallenges.length }})">
         <div *ngIf="!filteredUpcomingChallenges.length">
           You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
         </div>
@@ -67,8 +65,7 @@
         </div>
         </div>
       </mat-tab>
-      <mat-tab label="My Past Challenges ({{ filteredPastChallenges.length }})">
-        <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
+      <mat-tab label="Past Hosted Challenges ({{ filteredPastChallenges.length }})">
         <div *ngIf="!filteredPastChallenges.length">
           You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
         </div>
@@ -83,6 +80,40 @@
       <!-- Analytics -->
       <mat-tab label="Analytics">
         <app-analytics></app-analytics>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+  <!-- my participated challenges  -->
+  <div *ngIf="routerPublic.url === myParticipatedChallengesRoutePathCommon" [@.disabled]="true">
+    <mat-tab-group>
+      <mat-tab label="Ongoing Participated Challenges ({{ filteredOngoingChallenges.length }})">
+        <div class="challenge-page-title" id="ongoing-challenges"><strong class="text-med-black fs-18">My Participated
+            Challenges</strong></div>
+        <div *ngIf="!filteredOngoingChallenges.length">
+          You haven't participated in any challenge. Please <a [routerLink]="allChallengesRoutePathCommon" class="highlight-link">click
+            here</a> to participate in one!
+        </div>
+        <div class="row" *ngIf="filteredOngoingChallenges.length">
+          <div class="col s12 m3" *ngFor="let challenge of filteredOngoingChallenges">
+            <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge['id']]">
+              <app-challengecard [challenge]="challenge"></app-challengecard>
+            </a>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Past Participated Challenges ({{ filteredPastChallenges.length }})">
+        <div class="challenge-page-title" id="ongoing-challenges"><strong class="text-med-black fs-18">My Participated
+            Challenges</strong></div>
+        <div *ngIf="!filteredPastChallenges.length">
+          You haven't participated in any of the past challenges.
+        </div>
+        <div class="row" *ngIf="filteredPastChallenges.length">
+          <div class="col s12 m3" *ngFor="let challenge of filteredPastChallenges">
+            <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge['id']]">
+              <app-challengecard [challenge]="challenge"></app-challengecard>
+            </a>
+          </div>
+        </div>
       </mat-tab>
     </mat-tab-group>
   </div>

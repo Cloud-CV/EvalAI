@@ -1,11 +1,16 @@
 import { Component, OnInit, QueryList, ViewChildren, ViewChild, Input, AfterViewInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { WindowService } from '../../../services/window.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
+
+// import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { InputComponent } from '../../utility/input/input.component';
 
@@ -170,7 +175,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
               private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private windowService: WindowService, private endpointsService: EndpointsService) { }
+              private windowService: WindowService, private endpointsService: EndpointsService, private logger: NGXLogger) { }
 
   /**
    * Component after view initialized.
@@ -286,7 +291,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Fetched submissions', challenge, phase);
+        this.logger.info('Fetched submissions', challenge, phase);
       }
     );
   }
@@ -318,7 +323,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           SELF.globalService.handleApiError(err);
         },
         () => {
-          console.log('Download complete.', this.challenge['id'], this.selectedPhase['id']);
+          this.logger.info('Download complete.', this.challenge['id'], this.selectedPhase['id']);
         }
       );
     } else {
@@ -363,7 +368,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           SELF.globalService.handleApiError(err);
         },
         () => {
-          console.log('Fetched pagination submissions');
+          this.logger.info('Fetched pagination submissions');
         }
       );
     }
@@ -389,20 +394,44 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   changeSubmissionVisibility(id, is_public) {
     is_public = !is_public;
-    this.updateSubmissionVisibility(id);
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
-      const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(this.challenge['id'], this.selectedPhase['id'], id);
       const SELF = this;
-      const BODY = JSON.stringify({is_public: is_public});
-      this.apiService.patchUrl(API_PATH, BODY).subscribe(
-        data => {},
-        err => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => {
-          console.log('Updated submission visibility', id);
-        }
-      );
+      SELF.apiCall = (params) => {
+        const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(this.challenge['id'], this.selectedPhase['id'], id);
+        const BODY = JSON.stringify({ is_public: is_public });
+        this.apiService.patchUrl(API_PATH, BODY).subscribe(
+          () => {
+            this.updateSubmissionVisibility(id);
+           },
+          err => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {
+            this.logger.info('Updated submission visibility', id);
+          }
+        );
+      };
+      const PARAMS = {
+        title: 'Update Submission Visibility',
+        content: 'Challenge host can still see your submission. Do u still want to continue?',
+        isButtonDisabled: true,
+        confirm: 'Yes',
+        deny: 'No',
+        confirmCallback: SELF.apiCall
+      };
+      const HOST_PARAMS = {
+        title: 'Update Submission Visibility',
+        content: 'Are you sure to change the submission visibility?',
+        isButtonDisabled: true,
+        confirm: 'Yes',
+        deny: 'No',
+        confirmCallback: SELF.apiCall
+      };
+      if (SELF.isChallengeHost || is_public) {
+        SELF.globalService.showModal(HOST_PARAMS);
+      } else {
+        SELF.globalService.showModal(PARAMS);
+      }
     }
   }
 
@@ -441,7 +470,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           SELF.globalService.handleApiError(err);
         },
         () => {
-          console.log('Updated submission visibility', submissionId);
+          this.logger.info('Updated submission visibility', submissionId);
         }
       );
     }
@@ -465,7 +494,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Fetched submission counts', challenge, phase);
+        this.logger.info('Fetched submission counts', challenge, phase);
       }
     );
   }
@@ -490,7 +519,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         err => {
           SELF.globalService.handleApiError(err, true);
         },
-        () => console.log('SUBMISSION-UPDATE-FINISHED')
+        () => this.logger.info('SUBMISSION-UPDATE-FINISHED')
       );
     };
     const PARAMS = {

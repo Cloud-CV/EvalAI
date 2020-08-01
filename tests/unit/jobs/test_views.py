@@ -684,6 +684,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "when_made_public": self.submission.when_made_public,
                 "is_baseline": self.submission.is_baseline,
                 "job_name": self.submission.job_name,
+                "submission_metadata": None,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -1391,6 +1392,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
+            "submission_metadata": None,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1439,6 +1441,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
+            "submission_metadata": None,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1505,6 +1508,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
+            "submission_metadata": None,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1589,6 +1593,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_baseline": True,
             "job_name": self.host_participant_team_submission.job_name,
+            "submission_metadata": None,
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1665,6 +1670,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
+            "submission_metadata": None,
         }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1708,6 +1714,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
+            "submission_metadata": None,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1948,6 +1955,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": False,
                     "submission__method_name": self.submission.method_name,
                     "submission__is_public": self.submission.is_public,
+                    "submission__id": self.submission.id,
+                    "submission__submission_metadata": self.submission.submission_metadata,
                 }
             ],
         }
@@ -1992,6 +2001,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission.method_name,
                     "submission__is_public": self.submission.is_public,
+                    "submission__id": self.host_participant_team_submission.id,
+                    "submission__submission_metadata": self.host_participant_team_submission.submission_metadata,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2011,6 +2022,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": False,
                     "submission__method_name": self.submission.method_name,
                     "submission__is_public": self.submission.is_public,
+                    "submission__id": self.submission.id,
+                    "submission__submission_metadata": self.submission.submission_metadata,
                 },
             ],
         }
@@ -2062,6 +2075,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission.method_name,
                     "submission__is_public": self.submission.is_public,
+                    "submission__id": self.host_participant_team_submission.id,
+                    "submission__submission_metadata": self.host_participant_team_submission.submission_metadata,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2081,6 +2096,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": False,
                     "submission__method_name": self.submission.method_name,
                     "submission__is_public": self.submission.is_public,
+                    "submission__id": self.submission.id,
+                    "submission__submission_metadata": self.submission.submission_metadata,
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
@@ -2100,6 +2117,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission_2.method_name,
                     "submission__is_public": self.submission.is_public,
+                    "submission__id": self.host_participant_team_submission_2.id,
+                    "submission__submission_metadata": self.host_participant_team_submission_2.submission_metadata,
                 },
             ],
         }
@@ -2184,6 +2203,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_baseline": False,
                     "submission__method_name": self.private_submission.method_name,
                     "submission__is_public": self.private_submission.is_public,
+                    "submission__id": self.private_submission.id,
+                    "submission__submission_metadata": self.private_submission.submission_metadata,
                 }
             ],
         }

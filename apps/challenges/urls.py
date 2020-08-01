@@ -40,6 +40,11 @@ urlpatterns = [
         name="get_all_challenges",
     ),
     url(
+        r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
+        views.get_all_participated_challenges,
+        name="get_all_participated_challenges",
+    ),
+    url(
         r"^featured/$",
         views.get_featured_challenges,
         name="get_featured_challenges",
@@ -170,11 +175,11 @@ urlpatterns = [
     url(
         r"^(?P<challenge_pk>[0-9]+)/get_worker_logs/$",
         views.get_worker_logs,
-        name="get_worker_logs"
+        name="get_worker_logs",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/manage_worker/(?P<action>[\w-]+)$/",
+        r"^(?P<challenge_pk>[0-9]+)/manage_worker/(?P<action>[\w-]+)/$",
         views.manage_worker,
-        name="manage_worker"
-    )
+        name="manage_worker",
+    ),
 ]

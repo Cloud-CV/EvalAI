@@ -288,7 +288,9 @@ def calculate_distinct_sorted_leaderboard_data(
     all_valid_submission_status = [Submission.FINISHED]
 
     # Handle the case for challenges with partial submission evaluation feature
-    if challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled:
+    if (
+        challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+    ):
         all_valid_submission_status.append(Submission.PARTIALLY_EVALUATED)
 
     leaderboard_data = leaderboard_data.filter(
@@ -321,6 +323,8 @@ def calculate_distinct_sorted_leaderboard_data(
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
+        "submission__id",
+        "submission__submission_metadata",
     )
     if only_public_entries:
         if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
@@ -404,6 +408,8 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
         Returns:
             [Class Object] -- LeaderboardData model object
     """
-    leaderboard_data = LeaderboardData.objects.get(submission=submission_pk,
-                                                   challenge_phase_split__pk=challenge_phase_split_pk)
+    leaderboard_data = LeaderboardData.objects.get(
+        submission=submission_pk,
+        challenge_phase_split__pk=challenge_phase_split_pk,
+    )
     return leaderboard_data
