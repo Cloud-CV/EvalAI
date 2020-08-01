@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { AuthService } from '../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
 
 /**
  * Component Class
@@ -29,7 +32,8 @@ export class OurTeamComponent implements OnInit {
               private globalService: GlobalService,
               private router: Router,
               private route: ActivatedRoute,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService,
+              private logger: NGXLogger) { }
 
   /**
    * Core team type
@@ -198,7 +202,7 @@ export class OurTeamComponent implements OnInit {
       err => {
         SELF.globalService.handleApiError(err);
       },
-      () => console.log('Ongoing challenges fetched!')
+      () => this.logger.info('Ongoing challenges fetched!')
     );
   }
 }
