@@ -257,15 +257,19 @@ class BaseAPITestClass(APITestCase):
 
         self.challenge_phase.delete()
 
-        expected = {"error": "Challenge Phase does not exist"}
+        expected = {
+            "detail": "Challenge Phase {} does not exist".format(
+                self.challenge_phase.pk
+            )
+        }
 
         response = self.client.post(
             self.url,
             {"status": "submitting", "input_file": self.input_file},
             format="multipart",
         )
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
         self.url = reverse_lazy(
@@ -604,11 +608,15 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         self.challenge_phase.delete()
 
-        expected = {"error": "Challenge Phase does not exist"}
+        expected = {
+            "detail": "Challenge Phase {} does not exist".format(
+                self.challenge_phase.pk
+            )
+        }
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy(

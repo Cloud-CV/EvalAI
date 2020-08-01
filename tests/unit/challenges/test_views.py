@@ -3286,12 +3286,12 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
+            "detail": "Challenge Phase {} does not exist".format(
                 self.challenge5_phase3.pk + 10
             )
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all_submissions_when_user_is_host_of_challenge(self):
@@ -3535,12 +3535,12 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
+            "detail": "Challenge Phase {} does not exist".format(
                 self.challenge_phase.pk + 10
             )
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_file_type_is_not_csv(self):
