@@ -336,11 +336,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       const SUBMISSION_TIME = new Date(Date.parse(leaderboard[i].submission__submitted_at));
       const DURATION = self.globalService.getDateDifferenceString(DATE_NOW, SUBMISSION_TIME);
       leaderboard[i]['submission__submitted_at_formatted'] = DURATION + ' ago';
-      if (leaderboard[i].submission__submission_metadata == null) {
-        this.showSubmissionMetaAttributesOnLeaderboard = false;
-      } else {
-        this.showSubmissionMetaAttributesOnLeaderboard = true;
-      }
+      this.showSubmissionMetaAttributesOnLeaderboard =  !(leaderboard[i].submission__submission_metadata == null);
     }
     self.leaderboard = leaderboard.slice();
     self.sortLeaderboard();
@@ -552,11 +548,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   }
 
   openDialog(metaAttribute) {
-    const dialogRef = this.dialog.open(SubmissionMetaAttributesDialogueComponent, {
+    const dialogueData = {
       width: '30%',
       data: { attribute: metaAttribute }
-    });
-
+    };
+    const dialogRef = this.dialog.open(SubmissionMetaAttributesDialogueComponent, dialogueData);
     return dialogRef.afterClosed();
   }
 

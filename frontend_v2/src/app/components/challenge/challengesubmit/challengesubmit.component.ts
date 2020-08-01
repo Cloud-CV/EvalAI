@@ -371,7 +371,7 @@ isSubmissionUsingUrl: any;
   */
   storeMetadata(data) {
     for (let i = 0; i < data.count; i++) {
-      if (data.results[i].submission_meta_attributes !== undefined && data.results[i].submission_meta_attributes !== null) {
+      if (data.results[i].submission_meta_attributes) {
         const attributes = data.results[i].submission_meta_attributes;
         attributes.forEach(function (attribute) {
           if (attribute['type'] === 'checkbox') {
