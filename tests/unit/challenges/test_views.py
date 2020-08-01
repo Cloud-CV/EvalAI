@@ -3286,7 +3286,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge Phase " + str(self.challenge5_phase3.pk + 10) + " does not exist"
+            "detail": "ChallengePhase {} does not exist".format(
+                self.challenge5_phase3.pk + 10
+            )
         }
         response = self.client.get(self.url, {})
         self.assertDictEqual(response.data, expected)
@@ -3533,7 +3535,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             },
         )
         expected = {
-            "detail": "Challenge Phase " + str(self.challenge_phase.pk + 10) + " does not exist"
+            "detail": "ChallengePhase {} does not exist".format(
+                self.challenge_phase.pk + 10
+            )
         }
         response = self.client.get(self.url, {})
         self.assertDictEqual(response.data, expected)
