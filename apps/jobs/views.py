@@ -161,12 +161,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
-        submission_reordered = sorted(filtered_submissions.qs,
+        reordered_submissions = sorted(filtered_submissions.qs,
                                       key=reorder_submissions_comparator_to_key(
                                           reorder_submissions_comparator
                                       ))
         paginator, result_page = paginated_queryset(
-            submission_reordered, request
+            reordered_submissions, request
         )
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
