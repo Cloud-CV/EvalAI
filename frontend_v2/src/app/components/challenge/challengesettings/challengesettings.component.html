@@ -2,15 +2,75 @@
   <div class="bottom-card-container ev-card-panel">
     <div class="row">
       <div class="col-md-8 col-sm-8">
-        <span class="fs-18">
-          <span class="fw-semibold">Challenge Settings</span>
-        </span>
+          <h5 class="fw-light">Challenge Settings</h5>
       </div>
     </div>
     <br>
+    <!-- Edit challenge Detail -->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-regular">Banned emails Ids:</span>
+        <span class="fw-light fs-18">Edit challenge details:</span>
+      </div> <br>
+      <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9 challenge-detail">
+        <div class="col-lg-5 col-md-12 col-sm-7 col-xs-12">
+          <div class="image-container">
+              <a class="pointer"
+                *ngIf="isChallengeHost"
+                (click)="editChallengeImage()">
+                <img *ngIf="challenge['image'] != null" [src]='challenge["image"]' width=100%>
+                <img *ngIf="challenge['image'] == null" src='assets/images/404.png' width=80%>
+              </a>
+          </div>
+        </div>
+        <span class="fs-20 fw-semibold challenge-title">
+              {{challenge['title']}}
+        </span>
+        <a style="padding-right: 4px;"
+        class="pointer fs-16"
+        *ngIf="isChallengeHost"
+        (click)="editChallengeTitle()">
+        <i class="fa fa-pencil"
+            aria-hidden="true"></i>
+        </a>
+        <a class="pointer fs-16"
+        *ngIf="isChallengeHost"
+        (click)="deleteChallenge()">
+        <i class="fa fa-trash red-text"
+            aria-hidden="true"></i>
+        </a> <br>
+        <!-- Start date -->
+        <span class="fs-16 fw-light">
+          <strong class="text-light-black">Starts on:</strong>
+          {{challenge['start_date'] | date:'medium'}} {{challenge['start_zone']}}
+        </span>
+        &nbsp;
+        <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+            <a class="pointer fs-16" (click)="challengeDateDialog()">
+                <i class="fa fa-pencil" aria-hidden="true"></i>
+            </a>
+        </span>
+        <br>
+        <!-- End date -->
+        <span class="fs-16 fw-light">
+          <strong class="text-light-black">Ends on:</strong>
+          {{challenge['end_date'] | date:'medium'}} {{challenge['end_zone']}}
+        </span>
+        <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+          <a class="pointer fs-16" (click)="challengeDateDialog()">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+          </a>
+        </span>
+        <br>
+        <mat-checkbox color="primary" class="fw-semibold" *ngIf="isChallengeHost"
+        [checked]="!challenge['is_registration_open']"
+        (click)="stopParticipation($event)"><strong class="text-light-black fs-15">Close Participation</strong>
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Banned emails Ids:</span>
       </div>
       <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9">
         <mat-form-field class="example-chip-list">
@@ -27,7 +87,7 @@
           </mat-chip-list>
         </mat-form-field>
         <div class="error-message" *ngIf="isValidationError">{{message}}</div>
-        <div class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14" [class.disabled]="isValidationError" (click)="reflectChange()">
+        <div class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16" [class.disabled]="isValidationError" (click)="reflectChange()">
           <span>Update</span>
         </div>
       </div>

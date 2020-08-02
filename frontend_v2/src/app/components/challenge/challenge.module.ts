@@ -7,7 +7,10 @@ import {
   MatSelectModule,
   MatIconModule,
   MatDividerModule,
-  MatCheckboxModule } from '@angular/material';
+  MatCheckboxModule,
+  MatRadioModule,
+  MatDialogModule,
+  MatSliderModule } from '@angular/material';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -26,6 +29,7 @@ import { ChallengeComponent } from './challenge.component';
 import { ChallengeRoutingModule } from './challenge-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 import { ChallengelistModule } from '../publiclists/challengelist/challengelist.module';
+import { SubmissionMetaAttributesDialogueComponent } from './submission-meta-attributes-dialogue/submission-meta-attributes-dialogue.component';
 import { ChallengediscussComponent } from './challengediscuss/challengediscuss.component';
 
 @NgModule({
@@ -41,6 +45,7 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     ChallengesubmissionsComponent,
     ChallengeviewallsubmissionsComponent,
     PhasecardComponent,
+    SubmissionMetaAttributesDialogueComponent,
     ChallengediscussComponent
   ],
   imports: [
@@ -54,7 +59,10 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     MatTableModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatMenuModule
+    MatMenuModule,
+    MatRadioModule,
+    MatDialogModule,
+    MatSliderModule
   ],
   exports: [
     ChallengeComponent,
@@ -70,5 +78,8 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     PhasecardComponent,
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  entryComponents: [
+    SubmissionMetaAttributesDialogueComponent
+  ]
 })
 export class ChallengeModule { }
