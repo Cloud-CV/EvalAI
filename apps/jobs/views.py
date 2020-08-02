@@ -76,6 +76,7 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
+
 @swagger_auto_schema(
     methods=["post"],
     manual_parameters=[
@@ -161,10 +162,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
+        # rerank in progress submissions in ascending order of submitted_at
         reordered_submissions = sorted(filtered_submissions.qs,
-                                      key=reorder_submissions_comparator_to_key(
-                                          reorder_submissions_comparator
-                                      ))
+                                       key=reorder_submissions_comparator_to_key(
+                                           reorder_submissions_comparator
+                                       ))
         paginator, result_page = paginated_queryset(
             reordered_submissions, request
         )

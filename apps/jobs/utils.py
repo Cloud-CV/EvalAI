@@ -446,7 +446,7 @@ def reorder_submissions_comparator_to_key(comparator):
         Returns:
             [class] -- key class object for lamdbda
     """
-    class K:
+    class ComparatorToLambdaKey:
         def __init__(self, obj, *args):
             self.obj = obj
 
@@ -467,4 +467,4 @@ def reorder_submissions_comparator_to_key(comparator):
 
         def __ne__(self, other):
             return comparator(self.obj, other.obj) != 0
-    return K
+    return ComparatorToLambdaKey
