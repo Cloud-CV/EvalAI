@@ -1074,7 +1074,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                queue_name = get_queue_name(challenge.title)
+                queue_name = get_queue_name(challenge.title, challenge.pk)
                 challenge.queue = queue_name
                 challenge.save()
             else:
