@@ -334,7 +334,6 @@ def delete_challenge_submission(request, challenge_pk, submission_pk):
     Arguments:
         request {HttpRequest} -- The request object
         challenge_pk {int} -- The challenge pk
-        challenge_phase_pk {int} -- Primary key for the challenge phase for which submission is to be deleted
         submission_pk {int} -- Primary key for the submission which is to be deleted
     """
     # Check if the challenge exists or not
@@ -346,10 +345,9 @@ def delete_challenge_submission(request, challenge_pk, submission_pk):
 
     if is_user_a_host_of_challenge(request.user, challenge_pk):
         try:
-            submission = Submission.objects.get(
+            Submission.objects.get(
                 id=submission_pk,
-            )
-            submission.delete()
+            ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Submission.DoesNotExist:
             response_data = {"error": "Submission does not exist"}

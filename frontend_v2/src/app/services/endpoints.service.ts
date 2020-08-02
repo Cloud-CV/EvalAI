@@ -316,7 +316,6 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   /**
    * Delete Challenge Submission
    * @param challenge  challenge id
-   * @param phase  phase id
    * @param submission  submission id
    */
   deleteChallengeSubmissionURL(challenge, submission) {
