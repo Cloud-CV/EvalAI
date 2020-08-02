@@ -256,7 +256,7 @@ class BaseAPITestClass(APITestCase):
         )
 
         expected = {
-            "detail": "ChallengePase {} does not exist".format(
+            "detail": "ChallengePhase {} does not exist".format(
                 self.challenge_phase.pk
             )
         }
