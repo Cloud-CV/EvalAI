@@ -255,13 +255,12 @@ class BaseAPITestClass(APITestCase):
             },
         )
 
-        self.challenge_phase.delete()
-
         expected = {
             "detail": "ChallengePase {} does not exist".format(
                 self.challenge_phase.pk
             )
         }
+        self.challenge_phase.delete()
 
         response = self.client.post(
             self.url,
@@ -606,13 +605,12 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             },
         )
 
-        self.challenge_phase.delete()
-
         expected = {
             "detail": "ChallengePhase {} does not exist".format(
                 self.challenge_phase.pk
             )
         }
+        self.challenge_phase.delete()
 
         response = self.client.get(self.url, {})
         self.assertDictEqual(response.data, expected)
