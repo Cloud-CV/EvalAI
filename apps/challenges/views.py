@@ -2707,6 +2707,13 @@ def manage_worker(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # make sure that the action is valid.
+    if action not in ("start", "stop", "restart"):
+        response_data = {
+            "error": "The action {} is invalid for worker".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     challenge = get_challenge_model(challenge_pk)
 
     response_data = {}
