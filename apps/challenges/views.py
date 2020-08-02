@@ -2710,7 +2710,6 @@ def manage_worker(request, challenge_pk, action):
     challenge = get_challenge_model(challenge_pk)
 
     response_data = {}
-    response = {}
 
     if action == "start":
         response = start_workers([challenge])
