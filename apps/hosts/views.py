@@ -14,7 +14,8 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import team_paginated_queryset
+from base.utils import get_model_object, team_paginated_queryset
+from .filters import HostTeamsFilter
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
     ChallengeHostSerializer,
@@ -23,6 +24,8 @@ from .serializers import (
     HostTeamDetailSerializer,
 )
 from .utils import is_user_part_of_host_team
+
+get_challenge_host_model = get_model_object(ChallengeHost)
 
 
 @api_view(["GET", "POST"])
@@ -38,8 +41,11 @@ def challenge_host_team_list(request):
         challenge_host_teams = ChallengeHostTeam.objects.filter(
             id__in=challenge_host_team_ids
         ).order_by("-id")
+        filtered_teams = HostTeamsFilter(
+            request.GET, queryset=challenge_host_teams
+        )
         paginator, result_page = team_paginated_queryset(
-            challenge_host_teams, request
+            filtered_teams.qs, request
         )
         serializer = HostTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
@@ -128,7 +134,9 @@ def challenge_host_list(request, challenge_host_team_pk):
         challenge_host = ChallengeHost.objects.filter(
             **filter_condition
         ).order_by("-id")
-        paginator, result_page = team_paginated_queryset(challenge_host, request)
+        paginator, result_page = team_paginated_queryset(
+            challenge_host, request
+        )
         serializer = ChallengeHostSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -161,11 +169,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
         response_data = {"error": "ChallengeHostTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        challenge_host = ChallengeHost.objects.get(pk=pk)
-    except ChallengeHost.DoesNotExist:
-        response_data = {"error": "ChallengeHost does not exist"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    challenge_host = get_challenge_host_model(pk)
 
     if request.method == "GET":
         serializer = ChallengeHostSerializer(challenge_host)

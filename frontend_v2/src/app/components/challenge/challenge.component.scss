@@ -46,8 +46,13 @@
 .top-card-container {
   .stars {
     cursor: default;
+    margin-left: 45%;
+    padding: 0.5rem 2.2rem;
     &.is-clickable {
       cursor:pointer;
+    }
+    i .start {
+      font-size: 1 rem;
     }
   }
 
@@ -64,13 +69,32 @@
 .top-card-container ul.inline-list {
   margin: 0px;
 }
+
 .top-card-container ul.inline-list li {
   margin: 0 40px 1.5% 0;
   min-height: 40px;
+}
+
+.challenge-title {
+  padding-top: 0px;
+}
+
+.edit-title {
+  padding-right: 4px;
+}
+
+.title-line {
+  line-height: 1.5
 }
 
 @media only screen and (max-width: $med-screen) {
   .challenge-flex {
     width: 100%;
   }
+  .top-card-container {
+    .stars {
+      margin-left: 0px;
+    }
+  }
 }
+

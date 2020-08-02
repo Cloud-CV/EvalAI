@@ -1,12 +1,15 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
+import { NGXLogger } from 'ngx-logger';
+
+// import services
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
 import { EndpointsService } from '../../services/endpoints.service';
-import { Meta } from '@angular/platform-browser';
-import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -52,6 +55,16 @@ export class ChallengeComponent implements OnInit {
   isParticipated = false;
 
   /**
+   * Is Forum enabled in Challenge
+   */
+  isForumEnabled: boolean;
+
+  /**
+   * Forum Url of Challenge
+   */
+  forumURL: any;
+
+  /**
    * Challenge object
    */
   challenge: any;
@@ -85,7 +98,8 @@ export class ChallengeComponent implements OnInit {
   constructor(@Inject(DOCUMENT) document: any, private router: Router, private route: ActivatedRoute,
               private apiService: ApiService, private globalService: GlobalService,
               private challengeService: ChallengeService, public authService: AuthService,
-              private endpointsService: EndpointsService, private meta: Meta) { }
+              private endpointsService: EndpointsService, private meta: Meta,
+              private logger: NGXLogger) { }
 
   /**
    * Component on initialized
@@ -106,6 +120,8 @@ export class ChallengeComponent implements OnInit {
     });
     this.challengeService.currentChallenge.subscribe(challenge => {
       this.challenge = challenge;
+      this.isForumEnabled = challenge.enable_forum;
+      this.forumURL = challenge.forum_url;
       // update meta tag
       SELF.meta.updateTag({
         property: 'og:title',
@@ -184,7 +200,7 @@ export class ChallengeComponent implements OnInit {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
-        () => console.log('PUBLISH-CHALLENGE-UPDATE-FINISHED')
+        () => this.logger.info('PUBLISH-CHALLENGE-UPDATE-FINISHED')
       );
     };
 
@@ -196,133 +212,6 @@ export class ChallengeComponent implements OnInit {
       confirmCallback: SELF.apiCall
     };
     SELF.globalService.showConfirm(PARAMS);
-  }
-
-  /**
-   * Edit challenge title function
-   */
-  editChallengeTitle() {
-    const SELF = this;
-
-    SELF.apiCall = (params) => {
-      const BODY = JSON.stringify(params);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-        ).subscribe(
-        data => {
-          SELF.challenge.title = data.title;
-          SELF.globalService.showToast('success', 'The challenge title is  successfully updated!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => console.log('EDIT-CHALLENGE-TITLE-FINISHED')
-      );
-    };
-
-    const PARAMS = {
-      title: 'Edit Challenge Title',
-      content: '',
-      confirm: 'Submit',
-      deny: 'Cancel',
-      form: [
-        {
-          name: 'editChallengeTitle',
-          isRequired: true,
-          label: 'title',
-          placeholder: 'Challenge Title',
-          type: 'text',
-          value: this.challenge.title
-        },
-      ],
-      confirmCallback: SELF.apiCall
-    };
-    SELF.globalService.showModal(PARAMS);
-  }
-
-  /**
-   * Delete challenge
-   */
-  deleteChallenge() {
-    const SELF = this;
-    const redirectTo = '/dashboard';
-
-    SELF.apiCall = () => {
-      const BODY = JSON.stringify({});
-      SELF.apiService.postUrl(
-        SELF.endpointsService.deleteChallengeURL(SELF.challenge.id),
-        BODY
-        ).subscribe(
-        data => {
-          SELF.router.navigate([redirectTo]);
-          SELF.globalService.showToast('success', 'The Challenge is successfully deleted!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => console.log('DELETE-CHALLENGE-FINISHED')
-      );
-    };
-
-    const PARAMS = {
-      title: 'Delete Challenge',
-      content: '',
-      confirm: 'I understand consequences, delete the challenge',
-      deny: 'Cancel',
-      form: [
-        {
-          name: 'challegenDeleteInput',
-          isRequired: true,
-          label: '',
-          placeholder: 'Please type in the name of the challenge to confirm',
-          type: 'text',
-          value: ''
-        },
-      ],
-      confirmCallback: SELF.apiCall
-    };
-    SELF.globalService.showModal(PARAMS);
-  }
-
-  stopParticipation(event) {
-    event.preventDefault();
-    const participationState = (this.challenge['is_registration_open']) ? 'Close' : 'Open';
-
-    this.apiCall = () => {
-      if (this.isChallengeHost && this.challenge['id'] !== null) {
-        const BODY = JSON.stringify({
-          'is_registration_open': !this.challenge['is_registration_open']
-        });
-        this.apiService.patchUrl(
-          this.endpointsService.editChallengeDetailsURL(this.challenge.creator.id, this.challenge.id),
-          BODY
-        ).subscribe(
-          () => {
-            this.challenge['is_registration_open'] = !this.challenge['is_registration_open'];
-            this.globalService.showToast(
-              'success', 'Participation is ' + participationState.replace('n', 'ne') + 'd successfully', 5
-            );
-          },
-          err => {
-            this.globalService.handleApiError(err, true);
-            this.globalService.showToast('error', err);
-          },
-          () => {}
-          );
-      }
-    };
-
-    const PARAMS = {
-      title: participationState + ' participation in the challenge?',
-      content: '',
-      confirm: 'Yes, I\'m sure',
-      deny: 'No',
-      confirmCallback: this.apiCall
-    };
-    this.globalService.showConfirm(PARAMS);
   }
 
 }

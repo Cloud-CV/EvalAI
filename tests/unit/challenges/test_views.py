@@ -1875,6 +1875,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions=100000,
                 codename="Phase Code Name",
                 is_restricted_to_select_one_submission=True,
+                is_partial_submission_evaluation_enabled=False,
             )
             self.challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -1901,6 +1902,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions=100000,
                 codename="Private Phase Code Name",
                 is_restricted_to_select_one_submission=True,
+                is_partial_submission_evaluation_enabled=False,
             )
             self.private_challenge_phase.slug = "{}-{}-{}".format(
                 self.challenge.title.split(" ")[0].lower(),
@@ -1946,6 +1948,8 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1967,7 +1971,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             },
         ]
 
@@ -1997,7 +2003,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2037,7 +2045,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2059,7 +2069,9 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
                 "slug": self.private_challenge_phase.slug,
-                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission
+                "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             },
         ]
 
@@ -2305,6 +2317,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "max_concurrent_submissions_allowed": 3,
             "codename": "Phase Code Name 2",
             "is_restricted_to_select_one_submission": True,
+            "is_partial_submission_evaluation_enabled": False,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2355,6 +2368,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "max_concurrent_submissions_allowed": 3,
             "codename": "Phase Code Name 2",
             "is_restricted_to_select_one_submission": True,
+            "is_partial_submission_evaluation_enabled": False,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2402,6 +2416,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "submission_meta_attributes": None,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2434,6 +2450,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "slug": self.challenge_phase.slug,
             "environment_image": self.challenge_phase.environment_image,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "submission_meta_attributes": None,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -2490,6 +2508,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "submission_meta_attributes": None,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2585,6 +2605,8 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "slug": self.challenge_phase.slug,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "submission_meta_attributes": None,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -3339,6 +3361,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     ],
                     "created_at": submission.created_at,
                     "method_name": submission.method_name,
+                    "submission_metadata": None,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
@@ -3385,6 +3408,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
+                "submission_metadata": None,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
@@ -4077,6 +4101,8 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "codename": self.challenge_phase.codename,
             "slug": self.challenge_phase.slug,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+            "submission_meta_attributes": None,
+            "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4145,6 +4171,8 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "slug": self.private_challenge_phase.slug,
                 "environment_image": self.private_challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4171,6 +4199,8 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "slug": self.challenge_phase.slug,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
+                "submission_meta_attributes": None,
+                "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             },
         ]
         response = self.client.get(self.url, {})
