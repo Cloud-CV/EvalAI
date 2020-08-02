@@ -13,6 +13,7 @@ from rest_framework.decorators import (
 
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
+from django.db.models import Count
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -2073,3 +2074,31 @@ def get_github_badge_data(
         else:
             data["message"] = f"{challenge_obj.title}"
     return Response(data, status=http_status_code)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def challenge_phase_submissions_by_status(request, challenge_phase_id):
+    """
+        API to generate and return bearer token AWS EKS requests
+
+        Arguments:
+            request {HttpRequest} -- The request object
+            challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+
+        Returns:
+            Response object -- Response object with appropriate response code (200/400/404)
+    """
+    # check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_id)
+
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase,
+    ).values('status').annotate(count=Count("id"))
+
+    response_data = {
+        "data": submissions
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
