@@ -129,6 +129,12 @@
                                                 <i class="fa fa-gear"></i> Settings
                                             </a>
                                         </li>
+                                        <li *ngIf=isChallengeHost>
+                                          <a [class.selected]="localRouter.url.endsWith('manage')"
+                                          [routerLink]="['./manage']"
+                                          class="text-light-black fw-semibold fs-15"><i class="fa fa-cogs"></i> Manage
+                                          </a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
