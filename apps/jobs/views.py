@@ -2082,11 +2082,11 @@ def get_github_badge_data(
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_submissions_by_status(request, challenge_phase_id):
     """
-        API to generate and return bearer token AWS EKS requests
+        API for fetching count of submissions by status for a challenge phase
 
         Arguments:
-            request {HttpRequest} -- The request object
-            challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+            request {HttpRequest} -- request object
+            challenge_phase_id {int} -- challenge phase pk
 
         Returns:
             Response object -- Response object with appropriate response code (200/400/404)
