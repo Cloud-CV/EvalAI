@@ -319,8 +319,8 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    * @param phase  phase id
    * @param submission  submission id
    */
-  deleteChallengeSubmissionURL(challenge, phase, submission) {
-    return `${this.challengeSubmissionURL(challenge, phase)}${submission}/delete/`;
+  deleteChallengeSubmissionURL(challenge, submission) {
+    return `${this.jobs}${this.challenge}${challenge}/submission/${submission}/delete/`;
   }
 
   /**

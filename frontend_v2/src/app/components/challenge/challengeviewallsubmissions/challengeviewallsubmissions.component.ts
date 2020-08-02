@@ -563,7 +563,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     const SELF = this;
     SELF.apiCall = () => {
       SELF.apiService.deleteUrl(
-        SELF.endpointsService.deleteChallengeSubmissionURL(SELF.challenge.id, SELF.selectedPhase['id'], submission.id)
+        SELF.endpointsService.deleteChallengeSubmissionURL(SELF.challenge.id, submission.id)
         ).subscribe(
         () => {
           SELF.globalService.showToast('success', 'Submission Deleted successfully', 5);
