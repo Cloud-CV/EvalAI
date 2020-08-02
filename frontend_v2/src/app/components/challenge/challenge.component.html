@@ -17,18 +17,6 @@
                                     <div class="card-content">
                                             <h4 class="challenge-title fw-light">
                                                     {{challenge['title']}}
-                                            <span *ngIf="isChallengeHost">
-                                                <a class="pointer edit-title"
-                                                    (click)="editChallengeTitle()">
-                                                    <i class="fa fa-pencil fs-16"
-                                                        aria-hidden="true"></i>
-                                                </a>
-                                                <a class="pointer"
-                                                    (click)="deleteChallenge()">
-                                                    <i class="fa fa-trash red-text fs-16"
-                                                        aria-hidden="true"></i>
-                                                </a>
-                                            </span>
                                             </h4>
                                             <span class="title-line fw-light fs-16"
                                                 *ngIf="challenge.creator.team_url != ''"><strong
