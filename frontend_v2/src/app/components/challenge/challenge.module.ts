@@ -7,7 +7,8 @@ import {
   MatSelectModule,
   MatIconModule,
   MatDividerModule,
-  MatCheckboxModule } from '@angular/material';
+  MatCheckboxModule,
+  MatSliderModule } from '@angular/material';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -26,6 +27,7 @@ import { ChallengeComponent } from './challenge.component';
 import { ChallengeRoutingModule } from './challenge-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 import { ChallengelistModule } from '../publiclists/challengelist/challengelist.module';
+import { ChallengediscussComponent } from './challengediscuss/challengediscuss.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +41,8 @@ import { ChallengelistModule } from '../publiclists/challengelist/challengelist.
     ChallengesubmitComponent,
     ChallengesubmissionsComponent,
     ChallengeviewallsubmissionsComponent,
-    PhasecardComponent
+    PhasecardComponent,
+    ChallengediscussComponent
   ],
   imports: [
     CommonModule,
@@ -52,7 +55,8 @@ import { ChallengelistModule } from '../publiclists/challengelist/challengelist.
     MatTableModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatMenuModule
+    MatMenuModule,
+    MatSliderModule
   ],
   exports: [
     ChallengeComponent,
