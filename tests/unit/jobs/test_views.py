@@ -258,7 +258,9 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.delete()
 
         expected = {
-            "detail": "ChallengePhase None does not exist"
+            "detail": "ChallengePase {} does not exist".format(
+                self.challenge_phase.pk
+            )
         }
 
         response = self.client.post(
@@ -607,7 +609,9 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         self.challenge_phase.delete()
 
         expected = {
-            "detail": "ChallengePhase None does not exist"
+            "detail": "ChallengePhase {} does not exist".format(
+                self.challenge_phase.pk
+            )
         }
 
         response = self.client.get(self.url, {})
