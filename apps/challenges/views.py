@@ -2710,6 +2710,7 @@ def manage_worker(request, challenge_pk, action):
     challenge = get_challenge_model(challenge_pk)
 
     response_data = {}
+    response = {}
 
     if action == "start":
         response = start_workers([challenge])
@@ -2718,7 +2719,7 @@ def manage_worker(request, challenge_pk, action):
     elif action == "restart":
         response = restart_workers([challenge])
 
-    if response_data:
+    if response:
         count, failures = response["count"], response["failures"]
         logging.info(
             "Count is {} and failures are: {}".format(count, failures)
