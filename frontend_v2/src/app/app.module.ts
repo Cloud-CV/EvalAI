@@ -1,8 +1,10 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { GestureConfig } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // Import services
 import { WindowService } from './services/window.service';
@@ -23,6 +25,7 @@ import { TermsAndConditionsModalComponent } from './components/challenge/challen
 
 // import module
 import { SharedModule } from './shared/shared.module';
+import { environment } from '../environments/environment'
 
 @NgModule({
   declarations: [
@@ -40,6 +43,10 @@ import { SharedModule } from './shared/shared.module';
     HttpClientModule,
     FroalaEditorModule.forRoot(),
     FroalaViewModule.forRoot(),
+    LoggerModule.forRoot({
+      level: !environment.production ? NgxLoggerLevel.TRACE : NgxLoggerLevel.OFF,
+      serverLogLevel: NgxLoggerLevel.ERROR
+    })
   ],
   providers: [
     WindowService,
@@ -47,7 +54,8 @@ import { SharedModule } from './shared/shared.module';
     ApiService,
     GlobalService,
     ChallengeService,
-    EndpointsService
+    EndpointsService,
+    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig }
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
   bootstrap: [AppComponent],

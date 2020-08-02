@@ -10,5 +10,5 @@ COPY frontend_v2/ /code
 RUN ng build --prod
 
 FROM nginx:1.13.12-alpine
-COPY docker/dev/nodejs_v2/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/prod/nodejs_v2/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=node /code/dist /usr/share/nginx/html

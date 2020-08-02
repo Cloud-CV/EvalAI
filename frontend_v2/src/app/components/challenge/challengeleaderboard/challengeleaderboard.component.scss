@@ -120,6 +120,21 @@
 	display: inline-block;
 }
 
+.spacer {
+  margin-left: 14%;
+}
+
+.rangeslider {
+  width: 50%;
+  display: inline-block;
+}
+
+mat-slider {
+  width: 55%;
+  margin-left: 25%;
+  padding-right: 0px;
+}
+
 .complete-leaderboard {
   margin-right: 2%;
 }
@@ -137,4 +152,28 @@
 .complete-leaderboard-text {
   font-size: $fs-16;
   color: $gray-darker;
+}
+
+/*media queries*/
+
+@media only screen and (max-width: $screen-md) {
+  .spacer {
+    margin-left: 20%;
+  }
+
+  mat-slider {
+    width: 45%;
+    margin-left: 40%;
+  }
+}
+
+@media only screen and (max-width: $screen-sm) {
+  .spacer {
+    margin-left: 10%;
+    margin-top: 10px;
+  }
+
+  mat-slider {
+    margin-left: 20%;
+  }
 }
