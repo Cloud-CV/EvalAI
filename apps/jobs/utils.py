@@ -413,3 +413,58 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
         challenge_phase_split__pk=challenge_phase_split_pk,
     )
     return leaderboard_data
+
+
+def reorder_submissions_comparator(submission1, submission2):
+    """
+        Comparator for reordering my submissions page
+
+        Arguments:
+             submission1 {[Class Object]} -- Submission object
+             submission2 {[Class Object]} -- Submission object
+
+        Returns:
+            [int] -- comparison result
+    """
+    submissions_in_progress_status = [
+        Submission.SUBMITTED,
+        Submission.SUBMITTING,
+        Submission.RUNNING,
+    ]
+    if submission1.status in submissions_in_progress_status and submission2.status in submissions_in_progress_status:
+        return submission1.submitted_at > submission2.submitted_at
+    return submission1.submitted_at < submission2.submitted_at
+
+
+def reorder_submissions_comparator_to_key(comparator):
+    """
+        Convert a cmp= function into a key= function'
+
+        Arguments:
+             comparator {[function]} -- comparator function
+
+        Returns:
+            [class] -- key class object for lamdbda
+    """
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+
+        def __lt__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        def __gt__(self, other):
+            return comparator(self.obj, other.obj) > 0
+
+        def __eq__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        def __le__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        def __ge__(self, other):
+            return comparator(self.obj, other.obj) >= 0
+
+        def __ne__(self, other):
+            return comparator(self.obj, other.obj) != 0
+    return K
