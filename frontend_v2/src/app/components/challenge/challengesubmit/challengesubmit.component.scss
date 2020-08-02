@@ -61,6 +61,39 @@ td, th {
   padding-top: 55px;
 }
 
+.meta-label {
+  margin-right: 10px;
+  color: black;
+  font-weight: $fw-semibold;
+}
+
+::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle{
+  border-color: black;
+}
+
+::ng-deep .mat-radio-outer-circle {
+  border-color: black;
+}
+
+::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle{
+  border-color: black;
+  background-color: black;
+}
+
+// overwrite the checkbox background
+::ng-deep .mat-checkbox-checked .mat-checkbox-background, .mat-checkbox-indeterminate .mat-checkbox-background {
+  background-color: black !important;
+}
+
+// overwrite the ripple overlay on hover and click
+::ng-deep .mat-checkbox:not(.mat-checkbox-disabled) .mat-checkbox-ripple .mat-ripple-element {
+  background-color: black !important;
+}
+
+::ng-deep .mat-checkbox .mat-checkbox-frame {
+  border-color: black;
+}
+
 @include screen-small {
   .remaining-submission-clock {
     padding-top: 0px;

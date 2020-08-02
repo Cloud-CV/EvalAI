@@ -1,9 +1,11 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSliderChange } from '@angular/material';
 
 // import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
+import { SubmissionMetaAttributesDialogueComponent } from '../submission-meta-attributes-dialogue/submission-meta-attributes-dialogue.component';
 
 // import service
 import { AuthService } from '../../../services/auth.service';
@@ -119,6 +121,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   selectedPhaseSplit: any = null;
 
   /**
+   * Meta attribute data
+   */
+  metaAttributesData: any;
+
+  /**
+   * Flag for meta attribute data
+   */
+  showSubmissionMetaAttributesOnLeaderboard: any;
+
+  /**
    * Current state of whether leaderboard is sorted by latest
    */
   showLeaderboardByLatest = false;
@@ -193,7 +205,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
               private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, public dialog: MatDialog) { }
 
   /**
    * Component after view initialized.
@@ -324,6 +336,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       const SUBMISSION_TIME = new Date(Date.parse(leaderboard[i].submission__submitted_at));
       const DURATION = self.globalService.getDateDifferenceString(DATE_NOW, SUBMISSION_TIME);
       leaderboard[i]['submission__submitted_at_formatted'] = DURATION + ' ago';
+      this.showSubmissionMetaAttributesOnLeaderboard =  !(leaderboard[i].submission__submission_metadata == null);
     }
     self.leaderboard = leaderboard.slice();
     self.sortLeaderboard();
@@ -532,6 +545,31 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       },
       () => {}
     );
+  }
+
+  openDialog(metaAttribute) {
+    const dialogueData = {
+      width: '30%',
+      data: { attribute: metaAttribute }
+    };
+    const dialogRef = this.dialog.open(SubmissionMetaAttributesDialogueComponent, dialogueData);
+    return dialogRef.afterClosed();
+  }
+
+  // Show dialogue box for viewing metadata
+  showMetaAttributesDialog(attributes) {
+    const SELF = this;
+    if (attributes !== false) {
+      SELF.metaAttributesData = [];
+      attributes.forEach(function (attribute) {
+        if (attribute.type !== 'checkbox') {
+          SELF.metaAttributesData.push({ 'name': attribute.name, 'value': attribute.value });
+        } else {
+          SELF.metaAttributesData.push({ 'name': attribute.name, 'values': attribute.values });
+        }
+      });
+    }
+    SELF.openDialog(SELF.metaAttributesData);
   }
 
   // Update leaderboard decimal precision value

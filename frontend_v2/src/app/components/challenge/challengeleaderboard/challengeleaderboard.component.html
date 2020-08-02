@@ -111,6 +111,9 @@
                         </span>
                       </a>
                     </td>
+                    <td data-field="" *ngIf="showSubmissionMetaAttributesOnLeaderboard">
+                      <span class="fs-18 fw-regular">Meta Attributes</span>
+                  </td>
                   </tr>
                 </thead>
                 <tbody>
@@ -126,6 +129,10 @@
                     </td>
                     <td *ngFor="let score of key.result">{{score | number : setLeaderboardPrecisionValue }}</td>
                     <td><div>{{ key.submission__submitted_at_formatted }}</div></td>
+                    <td *ngIf="showSubmissionMetaAttributesOnLeaderboard">
+                      <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12" [disabled]="key.submission__submission_metadata == undefined || key.submission__submission_metadata == null"
+                              type="submit" value="view" (click)="showMetaAttributesDialog(key.submission__submission_metadata);">View</button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
