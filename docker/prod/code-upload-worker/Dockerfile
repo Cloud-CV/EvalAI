@@ -7,7 +7,7 @@ WORKDIR /code
 
 ADD requirements/* /code/
 
-RUN pip install -r rl-worker.txt
+RUN pip install -r code_upload_worker.txt
 
 ADD . /code
 
