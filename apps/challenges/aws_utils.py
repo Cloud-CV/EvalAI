@@ -17,7 +17,7 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
-from serializers import ChallengeEvaluationClusterSerializer
+from .serializers import ChallengeEvaluationClusterSerializer
 
 logger = logging.getLogger(__name__)
 
