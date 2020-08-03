@@ -970,18 +970,25 @@ def create_eks_cluster(challenge):
             return
 
 
-def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
+def challenge_approval_callback(sender, instance, field_name, **kwargs):
+    """ This is to check if a challenge has been approved or disapproved since last time.
+
+    On approval of a challenge, it launches a worker on Fargate.
+    On disapproval, it scales down the workers to 0, and deletes the challenge's service on Fargate.
+
+    Arguments:
+        sender -- The model which initated this callback (Challenge)
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model (a challenge object)
+        field_name {str} -- The name of the field to check for a change (approved_by_admin)
+
+    """
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
     challenge._original_approved_by_admin = curr
-    if (
-        curr and not prev
-    ):  # Checking if the challenge has been approved by admin since last time.
-        if (
-            not challenge.is_docker_based
-            and challenge.remote_evaluation is False
-        ):
+
+    if not challenge.is_docker_based and challenge.remote_evaluation is False:
+        if curr and not prev:
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if count != 1:
@@ -992,3 +999,13 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
                 )
             else:
                 construct_and_send_worker_start_mail(challenge)
+
+        if prev and not curr:
+            response = delete_workers([challenge])
+            count, failures = response["count"], response["failures"]
+            if count != 1:
+                logger.error(
+                    "Worker for challenge {} couldn't be deleted! Error: {}".format(
+                        challenge.id, failures[0]["message"]
+                    )
+                )

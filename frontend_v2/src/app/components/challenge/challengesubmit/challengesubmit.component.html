@@ -226,6 +226,55 @@
                       #formsubmit></app-input>
                     </div>
                   </div>
+                  <div class="dynamicform" *ngIf="metaAttributesforCurrentSubmission != null">
+                    <div *ngFor="let attribute of metaAttributesforCurrentSubmission">
+                      <div class="row">
+                        <div *ngIf="attribute.type == 'text'">
+                          <div class="row row-lr-margin">
+                            <div class="align-left col-sm-10 col-lr-pad">
+                              <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
+                              <input type="text" [(ngModel)]="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}">
+                              <span class="form-icon"><i class="fa fa-text"></i></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div *ngIf="attribute.type == 'radio'">
+                          <div class="row row-lr-margin">
+                            <div class="align-left col-sm-10 col-lr-pad">
+                              <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br> <br>
+                              <mat-radio-group [(ngModel)]="attribute.value" name="{{attribute.name}}">
+                                <mat-radio-button *ngFor="let option of attribute.options" [value]="option">
+                                  <label class="fw-semibold fs-16 meta-label">{{option}}</label>
+                                </mat-radio-button>
+                              </mat-radio-group>
+                            </div>
+                          </div>
+                        </div>
+                        <div *ngIf="attribute.type =='checkbox'">
+                          <div class="row row-lr-margin">
+                            <div class="align-left col-sm-10 col-lr-pad">
+                              <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br> <br>
+                              <mat-checkbox *ngFor="let option of attribute.options" class="checkbox-options"
+                                            (change)="toggleSelection(attribute, option);" id="{{option}}" [value]="option">
+                              <label class="fw-semibold fs-16 meta-label" for="{{option}}">{{option}}</label>
+                              </mat-checkbox>
+                            </div>
+                          </div>
+                        </div>
+                        <div *ngIf="attribute.type=='boolean'">
+                          <div class="row row-lr-margin">
+                            <div class="align-left col-sm-10 col-lr-pad">
+                              <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br> <br>
+                                <mat-radio-group [(ngModel)]="attribute.value" name="{{attribute.name}}">
+                                  <mat-radio-button [value]="'True'"><label class="fw-semibold fs-16 meta-label">True</label></mat-radio-button> <br>
+                                  <mat-radio-button [value]="'False'"><label class="fw-semibold fs-16 meta-label">False</label></mat-radio-button>
+                                </mat-radio-group>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div *ngIf="submissionError" class="red-text col-lr-pad">
                     <strong class="fw-semibold">{{submissionError}}</strong><br><br>
                   </div>
