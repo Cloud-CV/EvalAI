@@ -12,7 +12,7 @@ from django.db.models import signals
 from .aws_utils import (
     restart_workers_signal_callback,
     create_eks_cluster,
-    challenge_workers_start_notifier,
+    challenge_approval_callback,
 )
 
 from base.models import TimeStampedModel, model_field_name
@@ -190,7 +190,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             create_eks_cluster.delay(serialized_obj)
-    challenge_workers_start_notifier(sender, instance, field_name, **kwargs)
+    challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
 class DatasetSplit(TimeStampedModel):
