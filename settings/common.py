@@ -193,6 +193,7 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID", "aws_account_id")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "aws_access_key_id")
 AWS_SECRET_ACCESS_KEY = os.environ.get(

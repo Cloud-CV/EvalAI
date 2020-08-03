@@ -2085,6 +2085,17 @@ def get_github_badge_data(
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_file_presigned_url(request, challenge_phase_pk):
+    """
+    API to generate a presigned url to upload a submission file
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+    """
+    if settings.DEBUG or settings.TEST:
+        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        return Response(response_data)
+
     # Check if the challenge phase exists or not
     try:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
