@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { GlobalService } from '../../../../services/global.service';
-import { ApiService } from '../../../../services/api.service';
-import { AuthService } from '../../../../services/auth.service';
-import { ChallengeService } from '../../../../services/challenge.service';
+import { GlobalService } from '../../../services/global.service';
+import { ApiService } from '../../../services/api.service';
+import { AuthService } from '../../../services/auth.service';
+import { ChallengeService } from '../../../services/challenge.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
 /**
@@ -13,7 +13,7 @@ import { Router, ActivatedRoute } from '@angular/router';
   templateUrl: './challenge-template-card.component.html',
   styleUrls: ['./challenge-template-card.component.scss']
 })
-export class ChallengecardComponent implements OnInit {
+export class ChallengeTemplateCardComponent implements OnInit {
 
   /**
    * Challenge object
@@ -39,17 +39,15 @@ export class ChallengecardComponent implements OnInit {
   /**
    * Component on initialized.
    */
-  ngOnInit() {
-    this.routerPublic = this.router;
-    if (this.authService.isLoggedIn()) {
-      this.isLoggedIn = true;
-    }
-  }
+  ngOnInit() { }
 
   /**
    * Participate in the current challenge card (redirect).
    */
   createTemplateChallenge() {
-    //this.router.navigate(['/challenge', this.template['id'], 'participate']);
+    /*On clicking a challenge template from the view, this should be triggered, and the page should change to the template-challenge-create
+    component view. 
+    The component is here: app/components/template-challenge-create
+    */
   }
 }

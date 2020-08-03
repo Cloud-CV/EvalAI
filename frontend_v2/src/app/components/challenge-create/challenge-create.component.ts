@@ -54,7 +54,7 @@ export class ChallengeCreateComponent implements OnInit {
    */
   hostTeamsRoute = '/teams/hosts';
 
-  getChallengeTemplatesRoute = '/challenges/challenge/get_all_challenge_template'
+  challengeTemplates = null;
 
   /**
    * Constructor.
@@ -137,9 +137,21 @@ export class ChallengeCreateComponent implements OnInit {
     }
   }
 
+  // This method should run on loading the challenge create page, and fetches all templates from backend. 
+  /*
+     Template object is of form:
+     {
+        "title": <title of the challenge template>,
+        "image": <preview image of the challenge template>,
+        "dataset": <string discribing the dataset>,
+        "eval_criteria": <an array or list of strings which are the leaderboard metrics>,
+        "phases": <number of challenge phases>,
+        "splits": <number of dataset splits>,
+     }
+  */
   fetchChallengeTemplates(callback = null) {
     const SELF = this;
-    path = SELF.getChallengeTemplatesRoute;
+    var path = 'challenges/get_all_challenge_templates/';
     SELF.apiService.getUrl(path, true, true).subscribe(
       data => {
         SELF.challengeTemplates = data['results'];

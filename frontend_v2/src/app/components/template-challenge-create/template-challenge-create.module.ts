@@ -11,8 +11,7 @@ import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   declarations: [
-    ChallengeCreateComponent,
-    ChallengeTemplateCardComponent
+    TemplateChallengeCreateComponent
   ],
   imports: [
     CommonModule,
@@ -20,8 +19,7 @@ import { SharedModule } from '../../shared/shared.module';
     SharedModule
   ],
   exports: [
-    ChallengeCreateComponent,
-    ChallengeTemplateCardComponent
+    TemplateChallengeCreateComponent
   ]
 })
-export class ChallengeCreateModule { }
+export class TemplateChallengeCreateModule { }

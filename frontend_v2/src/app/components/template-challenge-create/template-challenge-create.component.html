@@ -1,0 +1,46 @@
+<div class="dynamicform" *ngIf="template != null">
+	<div class="row row-lr-margin">
+        <div class="align-left col-sm-10 col-lr-pad">
+          <span><strong>Title</strong></span><br>
+          <input type="text" [(ngModel)]="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}">
+          <span class="form-icon"><i class="fa fa-text"></i></span>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>Description</strong></span><br>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>Image</strong></span><br>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>Submission Guidelines</strong></span><br>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>Start Date</strong></span><br>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>End Date</strong></span><br>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>Challenge Phases</strong></span><br>
+        	<div *ngFor="let phase in templateChallengeData.challenge_phases">
+        		<span>Name<span><br>
+        		<input type="text" [(ngModel)]="phase.name" name="{{phase.id}}" id="{{phase.id}}}">
+        		<span class="form-icon"><i class="fa fa-text"></i></span> <br>
+        		<span>Description<span><br>
+        		<span>Start Date<span><br>
+        		<span>End Date<span><br>
+        	</div>
+        </div>
+        <div class="align-left col-sm-10 col-lr-pad">
+        	<span><strong>Dataset Splits</strong></span><br>
+        	<div *ngFor="let split in templateChallengeData.dataset_splits">
+        		<span>Name<span><br>
+        		<input type="text" [(ngModel)]="split.name" name="{{split.id}}" id="{{split.id}}">
+        		<span class="form-icon"><i class="fa fa-text"></i></span>
+        	</div>
+        </div>
+     </div>
+     <div class="align-left">
+      <button class="" (click)="createTemplateChallenge()">Create</button>
+    </div>
+</div>
