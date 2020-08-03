@@ -2094,6 +2094,14 @@ def challenge_phase_submissions_by_status(request, challenge_phase_id):
     # check if the challenge phase exists or not
     challenge_phase = get_challenge_phase_model(challenge_phase_id)
 
+    challenge = challenge_phase.challenge
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase,
     ).values('status').annotate(count=Count("id"))
