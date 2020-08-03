@@ -86,8 +86,8 @@ urlpatterns = [
         name="get_github_badge_data",
     ),
     url(
-        r"^challenge_phase/(?P<challenge_phase_id>[0-9]+)/challenge_phase_submissions_by_status/$",
-        views.challenge_phase_submissions_by_status,
+        r"^phases/(?P<challenge_phase_id>[0-9]+)/submission_count_by_status/$",
+        views.challenge_phase_submission_count_by_status,
         name="challenge_phase_submissions_by_status",
     ),
 ]

@@ -2080,7 +2080,7 @@ def get_github_badge_data(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_phase_submissions_by_status(request, challenge_phase_id):
+def challenge_phase_submission_count_by_status(request, challenge_phase_id):
     """
         API for fetching count of submissions by status for a challenge phase
 
