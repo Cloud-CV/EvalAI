@@ -181,9 +181,4 @@ urlpatterns = [
         views.manage_worker,
         name="manage_worker",
     ),
-    url(
-        r"^get_all_challenge_templates$",
-        views.get_all_challenge_templates,
-        name="get_all_challenge_templates",
-    ),
 ]

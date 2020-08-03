@@ -363,18 +363,3 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "kube_config",
         )
 
-
-class ChallengeTemplateSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super(ChallengeTemplateSerializer, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = ChallengeTemplate
-        fields = (
-            "title",
-            "image",
-            "dataset",
-            "eval_criteria",
-            "phases",
-            "splits",
-        )
