@@ -17,7 +17,7 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
-from .serializers import ChallengeEvaluationClusterSerializer
+
 
 logger = logging.getLogger(__name__)
 
@@ -897,6 +897,7 @@ def create_eks_cluster(challenge):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
     from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
