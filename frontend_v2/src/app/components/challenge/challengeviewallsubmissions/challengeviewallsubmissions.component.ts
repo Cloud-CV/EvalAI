@@ -1,14 +1,17 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { WindowService } from '../../../services/window.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { environment } from '../../../../environments/environment.staging';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 
 /**
  * Component Class
@@ -159,7 +162,8 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
               private challengeService: ChallengeService, private globalService: GlobalService,
-              private apiService: ApiService, private windowService: WindowService, private endpointsService: EndpointsService) { }
+              private apiService: ApiService, private windowService: WindowService, private endpointsService: EndpointsService,
+              private logger: NGXLogger) { }
 
   /**
    * Component after view initialized.
@@ -286,7 +290,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Fetched submissions', challenge, phase);
+        this.logger.info('Fetched submissions', challenge, phase);
       }
     );
   }
@@ -319,7 +323,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.globalService.handleApiError(err);
           },
           () => {
-            console.log('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
+            this.logger.info('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
           }
         );
       }
@@ -364,7 +368,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
           SELF.globalService.handleApiError(err);
         },
         () => {
-          console.log('Fetched pagination submissions');
+          this.logger.info('Fetched pagination submissions');
         }
       );
     }
@@ -496,7 +500,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Fetched submission counts', challenge, phase);
+        this.logger.info('Fetched submission counts', challenge, phase);
       }
     );
   }

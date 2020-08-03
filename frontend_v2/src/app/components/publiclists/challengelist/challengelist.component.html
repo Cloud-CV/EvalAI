@@ -55,7 +55,7 @@
       </mat-tab>
       <mat-tab label="Upcoming Hosted Challenges ({{ filteredUpcomingChallenges.length }})">
         <div *ngIf="!filteredUpcomingChallenges.length">
-          You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
+          No upcoming hosted challenges found. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
         </div>
         <div class="row" *ngIf="filteredUpcomingChallenges.length">
           <div class="col s12 m3" *ngFor="let challenge of filteredUpcomingChallenges">
@@ -67,7 +67,7 @@
       </mat-tab>
       <mat-tab label="Past Hosted Challenges ({{ filteredPastChallenges.length }})">
         <div *ngIf="!filteredPastChallenges.length">
-          You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
+          No past hosted challenges found.
         </div>
         <div class="row" *ngIf="filteredPastChallenges.length">
           <div class="col s12 m3" *ngFor="let challenge of filteredPastChallenges">
@@ -87,8 +87,6 @@
   <div *ngIf="routerPublic.url === myParticipatedChallengesRoutePathCommon" [@.disabled]="true">
     <mat-tab-group>
       <mat-tab label="Ongoing Participated Challenges ({{ filteredOngoingChallenges.length }})">
-        <div class="challenge-page-title" id="ongoing-challenges"><strong class="text-med-black fs-18">My Participated
-            Challenges</strong></div>
         <div *ngIf="!filteredOngoingChallenges.length">
           You haven't participated in any challenge. Please <a [routerLink]="allChallengesRoutePathCommon" class="highlight-link">click
             here</a> to participate in one!
@@ -102,8 +100,6 @@
         </div>
       </mat-tab>
       <mat-tab label="Past Participated Challenges ({{ filteredPastChallenges.length }})">
-        <div class="challenge-page-title" id="ongoing-challenges"><strong class="text-med-black fs-18">My Participated
-            Challenges</strong></div>
         <div *ngIf="!filteredPastChallenges.length">
           You haven't participated in any of the past challenges.
         </div>

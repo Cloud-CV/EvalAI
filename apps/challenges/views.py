@@ -1067,7 +1067,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                queue_name = get_queue_name(challenge.title)
+                queue_name = get_queue_name(challenge.title, challenge.pk)
                 challenge.queue = queue_name
                 challenge.save()
             else:
@@ -2706,32 +2706,29 @@ def manage_worker(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # make sure that the action is valid.
+    if action not in ("start", "stop", "restart"):
+        response_data = {
+            "error": "The action {} is invalid for worker".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     challenge = get_challenge_model(challenge_pk)
 
     response_data = {}
 
     if action == "start":
         response = start_workers([challenge])
+    elif action == "stop":
+        response = stop_workers([challenge])
+    elif action == "restart":
+        response = restart_workers([challenge])
+
+    if response:
         count, failures = response["count"], response["failures"]
         logging.info(
             "Count is {} and failures are: {}".format(count, failures)
         )
-        if count:
-            response_data = {"action": "Success"}
-        else:
-            message = failures[0]["message"]
-            response_data = {"action": "Failure", "error": message}
-    elif action == "stop":
-        response = stop_workers([challenge])
-        count, failures = response["count"], response["failures"]
-        if count:
-            response_data = {"action": "Success"}
-        else:
-            message = failures[0]["message"]
-            response_data = {"action": "Failure", "error": message}
-    elif action == "restart":
-        response = restart_workers([challenge])
-        count, failures = response["count"], response["failures"]
         if count:
             response_data = {"action": "Success"}
         else:
