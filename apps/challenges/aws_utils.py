@@ -958,7 +958,7 @@ def create_eks_cluster(challenge):
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
             try:
-                cluster_details =  ChallengeEvaluationCluster.objects.get(
+                ChallengeEvaluationCluster.objects.get(
                     challenge=challenge,
                 )
             except ChallengeEvaluationCluster.DoesNotExist:
