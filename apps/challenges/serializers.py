@@ -9,7 +9,6 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
-    ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
     StarChallenge,

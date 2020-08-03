@@ -91,10 +91,6 @@ export class ChallengeCreateComponent implements OnInit {
     });
   }
 
-  getTemplateChallenges() {
-
-  }
-
   challengeCreate() {
     if (this.ChallengeCreateForm['input_file'] !== null) {
       const FORM_DATA: FormData = new FormData();
@@ -139,7 +135,7 @@ export class ChallengeCreateComponent implements OnInit {
 
   // This method should run on loading the challenge create page, and fetches all templates from backend. 
   /*
-     Template object is of form:
+     Template is of form: //(You can use a dummy dict while developing.)
      {
         "title": <title of the challenge template>,
         "image": <preview image of the challenge template>,

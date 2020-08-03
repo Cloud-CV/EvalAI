@@ -2304,9 +2304,11 @@ def get_challenge_phase_environment_url(request, slug):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_evaluation_cluster_details(request, challenge_pk):
     """API to get challenge evaluation cluster details for a challenge
+
     Arguments:
         request {HttpRequest} -- The request object
         challenge_pk {int} -- The challenge pk for which the cluster details are required
+
     Returns:
         Response object -- Response object with appropriate response code (200/400/403/404)
     """
