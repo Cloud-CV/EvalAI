@@ -32,19 +32,7 @@
                                                 *ngIf="challenge.creator.team_url == ''"><strong
                                                     class="text-light-black">Organized by:</strong>
                                                 {{challenge['creator']['team_name']}}
-                                            </span>
-                                            <br>
-                                            <span class="title-line" *ngIf="isChallengeHost">
-                                              <span class="fs-16 fw-light">
-                                                <a class="pointer"
-                                                    (click)="togglePublishChallengeState()">
-                                                    <strong class="text-light-black">{{publishChallenge.state}}
-                                                    </strong>
-                                                    <i class="{{publishChallenge.icon}}"
-                                                        aria-hidden="true"></i>
-                                                </a>
-                                              </span> <br>
-                                            </span>
+                                            </span> <br>
                                             <!-- Start date -->
                                             <span class="fs-16 fw-light">
                                               <strong class="text-light-black">Starts on:</strong>
@@ -57,10 +45,17 @@
                                               {{challenge['end_date'] | date:'medium'}} {{challenge['end_zone']}}
                                             </span>
                                             <br>
-                                            <mat-checkbox color="primary" class="fs-16 fw-light" *ngIf="isChallengeHost"
-                                                [checked]="!challenge['is_registration_open']"
-                                                (click)="stopParticipation($event)"> <span class="fs-16 fw-semibold">Close Participation</span>
-                                            </mat-checkbox>
+                                            <span class="title-line" *ngIf="isChallengeHost">
+                                              <span class="fs-16 fw-light">
+                                                <a class="pointer"
+                                                    (click)="togglePublishChallengeState()">
+                                                    <strong class="text-light-black">{{publishChallenge.state}}
+                                                    </strong>
+                                                    <i class="{{publishChallenge.icon}}"
+                                                        aria-hidden="true"></i>
+                                                </a>
+                                              </span>
+                                            </span>
                                     </div>
                                 </div>
                                 <div class="col-lg-3 col-md-3">
