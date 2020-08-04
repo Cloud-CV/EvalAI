@@ -156,6 +156,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         submission = Submission.objects.filter(
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,
+            ignore_submission=False
         ).order_by("-submitted_at")
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
@@ -692,7 +693,7 @@ def get_remaining_submissions(request, challenge_pk):
     return Response(phases_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -710,23 +711,28 @@ def get_submission_by_pk(request, submission_id):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     host_team = submission.challenge_phase.challenge.creator
+    if request.method == "GET":
+        if (
+            request.user.id == submission.created_by.id
+            or ChallengeHost.objects.filter(
+                user=request.user.id, team_name__pk=host_team.pk
+            ).exists()
+        ):
+            serializer = SubmissionSerializer(
+                submission, context={"request": request}
+            )
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
 
-    if (
-        request.user.id == submission.created_by.id
-        or ChallengeHost.objects.filter(
-            user=request.user.id, team_name__pk=host_team.pk
-        ).exists()
-    ):
-        serializer = SubmissionSerializer(
-            submission, context={"request": request}
-        )
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        response_data = {
+            "error": "Sorry, you are not authorized to access this submission."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    response_data = {
-        "error": "Sorry, you are not authorized to access this submission."
-    }
-    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    elif request.method == "POST":
+        submission.ignore_submission = True
+        submission.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @swagger_auto_schema(

@@ -191,7 +191,7 @@ class TestJobsUrls(BaseAPITestClass):
             kwargs={"submission_id": self.submission.pk},
         )
         self.assertEqual(
-            self.url, "/api/jobs/submission/{}".format(self.submission.pk)
+            self.url, "/api/jobs/submission/{}/".format(self.submission.pk)
         )
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, "jobs:get_submission_by_pk")

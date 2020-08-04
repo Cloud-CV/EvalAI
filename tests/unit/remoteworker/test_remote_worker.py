@@ -44,7 +44,7 @@ class BaseTestClass(TestCase):
         return "/api/jobs/queues/{}/".format(queue_name)
 
     def get_submission_by_pk_url(self, submission_pk):
-        return "/api/jobs/submission/{}".format(submission_pk)
+        return "/api/jobs/submission/{}/".format(submission_pk)
 
     def get_challenge_phases_by_challenge_pk_url(self, challenge_pk):
         return "/api/challenges/{}/phases/".format(challenge_pk)

@@ -315,11 +315,10 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
 
   /**
    * Delete Challenge Submission
-   * @param challenge  challenge id
    * @param submission  submission id
    */
-  deleteChallengeSubmissionURL(challenge, submission) {
-    return `${this.jobs}${this.challenge}${challenge}/submission/${submission}/delete/`;
+  disableChallengeSubmissionURL(submission) {
+    return `${this.jobs}submission/${submission}/`;
   }
 
   /**

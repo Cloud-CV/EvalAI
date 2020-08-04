@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
     "delete_message_from_sqs_queue": "/api/jobs/queues/{}/",
-    "get_submission_by_pk": "/api/jobs/submission/{}",
+    "get_submission_by_pk": "/api/jobs/submission/{}/",
     "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
     "get_challenge_phase_by_pk": "/api/challenges/challenge/{}/challenge_phase/{}",

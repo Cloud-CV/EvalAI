@@ -10,12 +10,6 @@ urlpatterns = [
         name="change_submission_data_and_visibility",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/"
-        r"submission/(?P<submission_pk>[0-9]+)/delete/$",
-        views.delete_challenge_submission,
-        name="delete_challenge_submission",
-    ),
-    url(
         r"^challenge/(?P<challenge_id>[0-9]+)/"
         r"challenge_phase/(?P<challenge_phase_id>[0-9]+)/submission/$",
         views.challenge_submission,
@@ -42,7 +36,7 @@ urlpatterns = [
         name="get_all_entries_on_public_leaderboard",
     ),
     url(
-        r"^submission/(?P<submission_id>[0-9]+)$",
+        r"^submission/(?P<submission_id>[0-9]+)/$",
         views.get_submission_by_pk,
         name="get_submission_by_pk",
     ),
