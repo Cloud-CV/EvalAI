@@ -227,12 +227,12 @@ task_definition_code_upload_worker = """
                   "name": "DJANGO_SERVER",
                   "value": "{DJANGO_SERVER}"
                 }},
-               
+
                 {{
                     "name": "PYTHONUNBUFFERED",
                     "value": "1"
                 }},
-              
+
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
