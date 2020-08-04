@@ -12,6 +12,7 @@ import { ChallengesubmissionsComponent } from './challengesubmissions/challenges
 import { ChallengeviewallsubmissionsComponent } from './challengeviewallsubmissions/challengeviewallsubmissions.component';
 import { ChallengeleaderboardComponent } from './challengeleaderboard/challengeleaderboard.component';
 import { ChallengesettingsComponent } from './challengesettings/challengesettings.component';
+import { ChallengemanageComponent } from './challengemanage/challengemanage.component';
 import { ChallengediscussComponent } from './challengediscuss/challengediscuss.component';
 
 const routes: Routes = [
@@ -33,6 +34,7 @@ const routes: Routes = [
       {path: 'leaderboard/:split', component: ChallengeleaderboardComponent},
       {path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent},
       {path: 'settings', component: ChallengesettingsComponent},
+      {path: 'manage', component: ChallengemanageComponent},
       {path: 'discuss', component: ChallengediscussComponent}
     ]
   }

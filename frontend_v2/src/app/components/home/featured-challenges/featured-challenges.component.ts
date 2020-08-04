@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { ApiService } from '../../../services/api.service';
-import { HttpClientModule } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router';
 
 /**
  * Component Class
@@ -42,7 +45,8 @@ export class FeaturedChallengesComponent implements OnInit {
               private globalService: GlobalService,
               private router: Router,
               private route: ActivatedRoute,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService,
+              private logger: NGXLogger) { }
 
   /**
    * Component on initialized
@@ -71,7 +75,7 @@ export class FeaturedChallengesComponent implements OnInit {
       err => {
         SELF.globalService.handleApiError(err);
       },
-      () => console.log('Present-Featured challenges fetched!')
+      () => this.logger.info('Present-Featured challenges fetched!')
     );
   }
 
