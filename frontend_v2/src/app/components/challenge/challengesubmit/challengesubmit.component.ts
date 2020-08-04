@@ -1,9 +1,12 @@
 import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { EndpointsService } from '../../../services/endpoints.service';
 
 /**
@@ -61,6 +64,16 @@ isSubmissionUsingUrl: any;
    * Guidelines text
    */
   submissionGuidelines = '';
+
+  /**
+   * Stores the attributes format and phase ID for all the phases of a challenge.
+   */
+  submissionMetaAttributes = [];
+
+  /**
+   * Stores the attributes while making a submission for a selected phase.
+   */
+  metaAttributesforCurrentSubmission = null;
 
   /**
    * Form fields name
@@ -181,7 +194,7 @@ isSubmissionUsingUrl: any;
    */
   constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
               private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, private logger: NGXLogger) { }
 
   /**
    * Component on intialization.
@@ -304,7 +317,7 @@ isSubmissionUsingUrl: any;
         err => {
           SELF.globalService.handleApiError(err);
         },
-        () => console.log('Remaining submissions fetched for docker based challenge')
+        () => this.logger.info('Remaining submissions fetched for docker based challenge')
       );
     }
   }
@@ -351,9 +364,71 @@ isSubmissionUsingUrl: any;
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Remaining submissions fetched for challenge-phase', challenge, phase);
+        this.logger.info('Remaining submissions fetched for challenge-phase', challenge, phase);
       }
     );
+  }
+
+  /**
+   * Store Meta Attributes for a particular challenge phase.
+  */
+  storeMetadata(data) {
+    for (let i = 0; i < data.count; i++) {
+      if (data.results[i].submission_meta_attributes) {
+        const attributes = data.results[i].submission_meta_attributes;
+        attributes.forEach(function (attribute) {
+          if (attribute['type'] === 'checkbox') {
+            attribute['values'] = [];
+          } else {
+            attribute['value'] = null;
+          }
+        });
+        data = { 'phaseId': data.results[i].id, 'attributes': attributes };
+        this.submissionMetaAttributes.push(data);
+      } else {
+        const detail = { 'phaseId': data.results[i].id, 'attributes': null };
+        this.submissionMetaAttributes.push(detail);
+      }
+    }
+  }
+
+  /**
+   * Fetch Meta Attributes for a particular challenge phase.
+   * @param challenge  challenge id
+   * @param phase  phase id
+   */
+  getMetaDataDetails(challenge, phaseId) {
+    const API_PATH = this.endpointsService.challengePhaseURL(challenge);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      data => {
+        SELF.storeMetadata(data);
+         // Loads attributes of a phase into this.submissionMetaAttributes
+        this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
+          return element['phaseId'] === phaseId;
+        }).attributes;
+        this.metaAttributesforCurrentSubmission = [];
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => { }
+    );
+  }
+
+  /**
+   * Clear the data of metaAttributesforCurrentSubmission
+   */
+  clearMetaAttributeValues() {
+    if (this.metaAttributesforCurrentSubmission != null) {
+      this.metaAttributesforCurrentSubmission.forEach(function (attribute) {
+        if (attribute.type === 'checkbox') {
+          attribute.values = [];
+        } else {
+          attribute.value = null;
+        }
+      });
+    }
   }
 
   /**
@@ -364,7 +439,9 @@ isSubmissionUsingUrl: any;
     return (phase) => {
       SELF.selectedPhase = phase;
       if (SELF.challenge['id'] && phase['id']) {
+        SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
+        SELF.clearMetaAttributeValues();
       }
     };
   }
@@ -386,6 +463,7 @@ isSubmissionUsingUrl: any;
    */
   formSubmit(self) {
     self.submissionError = '';
+    let metaValue = true;
     const submissionFile = self.globalService.formItemForLabel(self.components, 'input_file').fileValue;
     const submissionProjectUrl = self.globalService.formValueForLabel(self.components, 'project_url');
     const submissionPublicationUrl = self.globalService.formValueForLabel(self.components, 'publication_url');
@@ -407,6 +485,17 @@ isSubmissionUsingUrl: any;
       self.submissionError = 'Please provide a valid publication url!';
       return;
     }
+    if (self.metaAttributesforCurrentSubmission != null) {
+      self.metaAttributesforCurrentSubmission.forEach(attribute => {
+        if (attribute.value === null || attribute.value === undefined) {
+          metaValue = false;
+        }
+      });
+    }
+    if (metaValue !== true) {
+      self.submissionError = 'Please provide input for meta attributes!';
+      return;
+    }
 
     const FORM_DATA: FormData = new FormData();
     FORM_DATA.append('status', 'submitting');
@@ -419,6 +508,7 @@ isSubmissionUsingUrl: any;
     FORM_DATA.append('method_description', self.globalService.formValueForLabel(self.components, 'method_description'));
     FORM_DATA.append('project_url', self.globalService.formValueForLabel(self.components, 'project_url'));
     FORM_DATA.append('publication_url', self.globalService.formValueForLabel(self.components, 'publication_url'));
+    FORM_DATA.append('submission_metadata', JSON.stringify(self.metaAttributesforCurrentSubmission));
     self.challengeService.challengeSubmission(
       self.challenge['id'],
       self.selectedPhase['id'],
@@ -502,4 +592,15 @@ isSubmissionUsingUrl: any;
       }
     }
   }
+
+  // unchecking checked options
+  toggleSelection(attribute, value) {
+    const idx = attribute.values.indexOf(value);
+    if (idx > -1) {
+      attribute.values.splice(idx, 1);
+    } else {
+      attribute.values.push(value);
+    }
+  }
+
 }
