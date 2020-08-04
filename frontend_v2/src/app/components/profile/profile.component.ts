@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { ApiService } from '../../services/api.service';
 import { WindowService } from '../../services/window.service';
 import { GlobalService } from '../../services/global.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { AuthService } from '../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
-import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { InputComponent } from '../utility/input/input.component';
 
 /**
@@ -75,7 +78,8 @@ export class ProfileComponent implements OnInit {
               private router: Router,
               private route: ActivatedRoute,
               private endpointsService: EndpointsService,
-              private windowService: WindowService) { }
+              private windowService: WindowService,
+              private logger: NGXLogger) { }
 
   /**
    * Component on intialized.
@@ -144,7 +148,7 @@ export class ProfileComponent implements OnInit {
         err => {
           SELF.globalService.handleApiError(err, true);
         },
-        () => console.log('USER-UPDATE-FINISHED')
+        () => this.logger.info('USER-UPDATE-FINISHED')
       );
     };
     const PARAMS = {
@@ -250,7 +254,7 @@ export class ProfileComponent implements OnInit {
             SELF.globalService.handleApiError(err, true);
           }
         },
-        () => console.log('PASSWORD-UPDATE-FINISHED')
+        () => this.logger.info('PASSWORD-UPDATE-FINISHED')
       );
     };
     const PARAMS = {
