@@ -323,41 +323,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
 
 
-@api_view(["DELETE"])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def delete_challenge_submission(request, challenge_pk, submission_pk):
-    """
-    API Endpoint for deleting a submission.
-    Only challenge host has access to this endpoint.
-
-    Arguments:
-        request {HttpRequest} -- The request object
-        challenge_pk {int} -- The challenge pk
-        submission_pk {int} -- Primary key for the submission which is to be deleted
-    """
-    # Check if the challenge exists or not
-    challenge = get_challenge_model(challenge_pk)
-
-    if not challenge.is_active:
-        response_data = {"error": "Challenge is not active"}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-    if is_user_a_host_of_challenge(request.user, challenge_pk):
-        try:
-            Submission.objects.get(
-                id=submission_pk,
-            ).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Submission.DoesNotExist:
-            response_data = {"error": "Submission does not exist"}
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-    else:
-        response_data = {"error": "Only challenge hosts are allowed to delete a submission"}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
