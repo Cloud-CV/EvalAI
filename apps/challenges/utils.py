@@ -119,11 +119,13 @@ def get_aws_credentials_for_challenge(challenge_pk):
 
 
 def generate_presigned_url(file_key_on_s3, challenge_pk):
-    """Function to get the presigned url to upload a file to s3.
-
-    Keyword Arguments:
-        file_key_on_s3 {string} -- The S3 key for the file to be uploaded.
-
+    """
+    Function to get the presigned url to upload a file to s3
+    Arguments:
+        file_key_on_s3 {string} -- The S3 key for the file to be uploaded
+        challenge_pk {int} -- challenge pk for which credentails are to be fetched
+    Returns:
+        response_data {dict} -- Dict containing the presigned_url or the error if request failed
     """
     if settings.DEBUG or settings.TEST:
         return
@@ -141,10 +143,12 @@ def generate_presigned_url(file_key_on_s3, challenge_pk):
             ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
             HttpMethod="PUT",
         )
-        return {"presigned_url": response}
+        response_data = {"presigned_url": response}
+        return response_data
     except Exception as e:
         logger.exception(e)
-        return {"error": "Could not fetch presigned url."}
+        response_data = {"error": "Could not fetch presigned url."}
+        return response_data
 
 
 def get_or_create_ecr_repository(name, aws_keys):

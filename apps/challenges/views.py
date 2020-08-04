@@ -2752,6 +2752,8 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     Arguments:
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
+    Returns:
+         Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
     if settings.DEBUG or settings.TEST:
         response_data = {"error": "Sorry, this feature is not available in development or test environment."}

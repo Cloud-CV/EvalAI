@@ -2091,6 +2091,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     Arguments:
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
+    Returns:
+         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
     """
     if settings.DEBUG or settings.TEST:
         response_data = {"error": "Sorry, this feature is not available in development or test environment."}
@@ -2230,6 +2232,16 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def send_submission_message(request, challenge_phase_pk, submission_pk):
+    """
+    API to send a submisison message to the challenge specific SQS queue
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+        submission_pk {int} -- Submission primary key
+    Returns:
+         Response Object -- An object containing an empty dict and having a HTTP_200_0k status
+    """
     try:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
     except ChallengePhase.DoesNotExist:
