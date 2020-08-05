@@ -2754,7 +2754,8 @@ def download_environment_logs(request, challenge_pk, submission_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     s3_log_file = export_cloudwatch_logs()
     download_logs_s3(s3_log_file)
-    response_data = {}
+    message = "Logs Download Started"
+        response_data = {"Success": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
     
