@@ -438,7 +438,7 @@ def reorder_submissions_comparator(submission1, submission2):
 
 def reorder_submissions_comparator_to_key(comparator):
     """
-        Convert a cmp= function into a key= function'
+        Convert a cmp= function into a key= function for lambda
 
         Arguments:
              comparator {[function]} -- comparator function
@@ -450,21 +450,27 @@ def reorder_submissions_comparator_to_key(comparator):
         def __init__(self, obj, *args):
             self.obj = obj
 
+        # Compares if first object is less than second object
         def __lt__(self, other):
             return comparator(self.obj, other.obj) == 0
 
+        # Compares if first object is greater than second object
         def __gt__(self, other):
             return comparator(self.obj, other.obj) > 0
 
+        # Compares if first object is equal than second object
         def __eq__(self, other):
             return comparator(self.obj, other.obj) == 0
 
+        # Compares if first object is less than equal to second object
         def __le__(self, other):
             return comparator(self.obj, other.obj) == 0
 
+        # Compares if first object is greater than equal to second object
         def __ge__(self, other):
             return comparator(self.obj, other.obj) >= 0
 
+        # Compares if first object is not equal to second object
         def __ne__(self, other):
             return comparator(self.obj, other.obj) != 0
     return ComparatorToLambdaKey
