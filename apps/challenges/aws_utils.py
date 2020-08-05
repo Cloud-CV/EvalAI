@@ -1009,3 +1009,43 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                         challenge.id, failures[0]["message"]
                     )
                 )
+
+
+def export_cloudwatch_logs(challenge):
+    """ 
+    This is to export cloudwatch logs for a submission into S3 bucket.
+    """
+
+    client = get_boto3_client("logs", aws_keys)
+    taskName = "{0}-task".format(challenge.title.replace(" ", "-"))
+    log_group_name = "/aws/containerinsights/{0}/application".format(cluster_name)
+    log_stream_prefix = "{0}".format()
+    try:
+        response = client.create_export_task(
+            taskName=taskName,
+            logGroupName=log_group_name,
+            logStreamNamePrefix='container',
+            fromTime=123,
+            to=123,
+            destination=settings.AWS_STORAGE_BUCKET_NAME,
+            destinationPrefix='submission'
+        )
+
+    except ClientError as e:
+        logger.exception(e)
+        return response
+
+
+def download_s3_logs(filename, object_name):
+    """ 
+    This is to download logs from S3 bucket.
+    """
+    
+    client = get_boto3_client("s3", aws_keys)
+    try:
+        with open(filename, 'wb') as f:
+        client.download_fileobj(settings.AWS_STORAGE_BUCKET_NAME, object_name, f)
+
+    except ClientError as e:
+        logger.exception(e)
+        return response
