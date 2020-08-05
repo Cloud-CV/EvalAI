@@ -117,7 +117,10 @@ from .aws_utils import (
     stop_workers,
     restart_workers,
     get_logs_from_cloudwatch,
+    export_cloudwatch_logs,
+    download_logs_s3,
 )
+
 from .utils import (
     get_file_content,
     get_aws_credentials_for_submission,
@@ -2737,3 +2740,21 @@ def manage_worker(request, challenge_pk, action):
             response_data = {"action": "Failure", "error": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def download_environment_logs(request, challenge_pk, submission_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    s3_log_file = export_cloudwatch_logs()
+    download_logs_s3(s3_log_file)
+    response_data = {}
+
+    return Response(response_data, status=status.HTTP_200_OK)
+    
