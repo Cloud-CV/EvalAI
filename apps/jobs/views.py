@@ -2080,19 +2080,19 @@ def get_github_badge_data(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_phase_submission_count_by_status(request, challenge_phase_id):
+def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
     """
         API for fetching count of submissions by status for a challenge phase
 
         Arguments:
             request {HttpRequest} -- request object
-            challenge_phase_id {int} -- challenge phase pk
+            challenge_phase_pk {int} -- challenge phase pk
 
         Returns:
             Response object -- Response object with appropriate response code (200/400/404)
     """
     # check if the challenge phase exists or not
-    challenge_phase = get_challenge_phase_model(challenge_phase_id)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     challenge = challenge_phase.challenge
 
