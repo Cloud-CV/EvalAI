@@ -415,13 +415,13 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     return leaderboard_data
 
 
-def reorder_submissions_comparator(submission1, submission2):
+def reorder_submissions_comparator(submission_1, submission_2):
     """
         Comparator for reordering my submissions page
 
         Arguments:
-             submission1 {[Class Object]} -- Submission object
-             submission2 {[Class Object]} -- Submission object
+             submission_1 {[Class Object]} -- Submission object
+             submission_2 {[Class Object]} -- Submission object
 
         Returns:
             [int] -- comparison result
@@ -431,9 +431,9 @@ def reorder_submissions_comparator(submission1, submission2):
         Submission.SUBMITTING,
         Submission.RUNNING,
     ]
-    if submission1.status in submissions_in_progress_status and submission2.status in submissions_in_progress_status:
-        return submission1.submitted_at > submission2.submitted_at
-    return submission1.submitted_at < submission2.submitted_at
+    if submission_1.status in submissions_in_progress_status and submission_2.status in submissions_in_progress_status:
+        return submission_1.submitted_at > submission_2.submitted_at
+    return submission_1.submitted_at < submission_2.submitted_at
 
 
 def reorder_submissions_comparator_to_key(comparator):
