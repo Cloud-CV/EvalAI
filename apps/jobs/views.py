@@ -658,7 +658,7 @@ def get_remaining_submissions(request, challenge_pk):
     return Response(phases_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET", "POST"])
+@api_view(["GET", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -694,10 +694,21 @@ def get_submission_by_pk(request, submission_id):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    elif request.method == "POST":
-        submission.ignore_submission = True
-        submission.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == "DELETE":
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={
+                "ignore_submission": True,
+                "request": request,
+            },
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
