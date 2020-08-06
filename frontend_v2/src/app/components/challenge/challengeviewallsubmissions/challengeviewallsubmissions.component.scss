@@ -58,6 +58,18 @@
   }
 }
 
+tr.element-row:not(.expanded-row):hover {
+  cursor: pointer;
+  td {
+    font-weight: $fw-semibold;
+  }
+  background: $grad-light-black;
+}
+
+tr.element-row.expanded-row {
+  cursor: pointer;
+}
+
 .cell-outside {
   padding: 8px;
 }
