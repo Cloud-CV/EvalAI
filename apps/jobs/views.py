@@ -2107,6 +2107,6 @@ def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
     ).values('status').annotate(count=Count("id"))
 
     response_data = {
-        "data": submissions
+        "status": submissions
     }
     return Response(response_data, status=status.HTTP_200_OK)
