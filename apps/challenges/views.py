@@ -80,7 +80,6 @@ from jobs.serializers import (
     ChallengeSubmissionManagementSerializer,
 )
 from participants.models import Participant, ParticipantTeam
-from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
@@ -244,30 +243,6 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
     elif request.method == "DELETE":
         challenge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@api_view(['GET'])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def team_name_for_challenge(request, challenge_pk):
-    """
-    API to return the participated team name in the challenge.
-    """
-    if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
-        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(request.user, challenge_pk)
-        try:
-            participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
-        except ParticipantTeam.DoesNotExist:
-            response_data = {"error": "ParticipantTeam does not exist"}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-        serializer = ParticipantTeamDetailSerializer(participant_team)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        message = ("You are not a participant!")
-        response_data = {"error": message}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["POST"])

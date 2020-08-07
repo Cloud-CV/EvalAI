@@ -572,20 +572,6 @@
             }
         };
 
-
-        // get names of the team that has participated in the current challenge
-        parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/team_name';
-        parameters.method = 'GET';
-        parameters.data={};
-        parameters.callback = {
-            onSuccess: function(response) {
-                var details = response.data;
-                vm.participated_team_name = details["team_name"];
-            },
-        };
-        utilities.sendRequest(parameters);
-
-
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';

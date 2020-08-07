@@ -185,37 +185,6 @@ class GetChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
-class GetParticipantTeamNameTest(BaseAPITestClass):
-
-    def setUp(self):
-        super(GetParticipantTeamNameTest, self).setUp()
-
-        self.participant = Participant.objects.create(
-            user=self.user,
-            status=Participant.ACCEPTED,
-            team=self.participant_team
-        )
-
-        self.challenge.participant_teams.add(self.participant_team)
-
-    def test_team_name_for_challenge(self):
-        self.url = reverse_lazy('challenges:get_team_name_for_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk})
-
-        expected = {"Participant Team for Challenge"}
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['team_name'], expected)
-
-    def test_team_name_for_challenge_with_participant_team_does_not_exist(self):
-        self.url = reverse_lazy('challenges:get_team_name_for_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk + 2})
-        expected = {"error": "ParticipantTeam doesn't exist"}
-        response = self.client.post(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
-
 class CreateChallengeTest(BaseAPITestClass):
     def setUp(self):
         super(CreateChallengeTest, self).setUp()
