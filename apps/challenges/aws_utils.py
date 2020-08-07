@@ -218,7 +218,6 @@ task_definition_code_upload_worker = """
             "image": "{WORKER_IMAGE}",
             "essential": True,
             "environment": [
-        
                 {{
                   "name": "QUEUE_NAME",
                   "value": "{queue_name}"
