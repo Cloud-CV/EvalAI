@@ -218,9 +218,9 @@ task_definition_code_upload_worker = """
             "image": "{WORKER_IMAGE}",
             "essential": True,
             "environment": [
-
+        
                 {{
-                  "name": "CHALLENGE_QUEUE",
+                  "name": "QUEUE_NAME",
                   "value": "{queue_name}"
                 }},
                 {{
@@ -229,10 +229,13 @@ task_definition_code_upload_worker = """
                 }},
 
                 {{
-                    "name": "PYTHONUNBUFFERED",
-                    "value": "1"
+                    "name": "AUTH_TOKEN",
+                    "value": "{auth_token}"
                 }},
-
+                {{
+                  "name": "DJANGO_SERVER_PORT",
+                  "value": "8000"
+                }},
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
