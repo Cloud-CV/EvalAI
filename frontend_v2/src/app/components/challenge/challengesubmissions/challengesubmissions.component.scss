@@ -77,10 +77,15 @@ tr.detail-row {
 }
 
 tr.element-row:not(.expanded-row):hover {
+  cursor: pointer;
   td {
-    color: #efefef;
+    font-weight: $fw-semibold;
   }
-  background: #252833;
+  background: $grad-light-black;
+}
+
+tr.element-row.expanded-row {
+  cursor: pointer;
 }
 
  tr.element-row:not(.expanded-row):active {
