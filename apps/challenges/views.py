@@ -252,7 +252,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def team_name_for_challenge(request, challenge_pk):
     """
-    Returns the name of the user's participation team in the current challenge.
+    API to return the participated team name in the challenge.
     """
     if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(request.user, challenge_pk)
@@ -262,8 +262,9 @@ def team_name_for_challenge(request, challenge_pk):
             response_data = {"error": "ParticipantTeam does not exist"}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         serializer = ParticipantTeamDetailSerializer(participant_team)
-        details = serializer.data
-        response_data = {"team_name": details['team_name']}
+        # details = serializer.data
+        response_data = serializer.data
+        # {"team_name": details['team_name']}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         message = ("You are not a participant!")

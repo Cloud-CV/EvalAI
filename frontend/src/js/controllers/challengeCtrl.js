@@ -580,7 +580,7 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
-                vm.participated_team_name = details.team_name;
+                vm.participated_team_name = details["team_name"];
             },
         };
         utilities.sendRequest(parameters);
