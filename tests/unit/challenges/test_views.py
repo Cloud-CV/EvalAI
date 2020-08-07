@@ -210,7 +210,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
     def test_team_name_for_challenge_with_participant_team_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_team_name_for_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk + 2})
-        expected = {"error": "ParticipantTeam doesn't exist"}
+        expected = {"error": "You are not a participant!"}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
