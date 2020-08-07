@@ -262,9 +262,7 @@ def team_name_for_challenge(request, challenge_pk):
             response_data = {"error": "ParticipantTeam does not exist"}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         serializer = ParticipantTeamDetailSerializer(participant_team)
-        # details = serializer.data
         response_data = serializer.data
-        # {"team_name": details['team_name']}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         message = ("You are not a participant!")

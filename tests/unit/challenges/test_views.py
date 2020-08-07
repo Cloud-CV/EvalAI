@@ -205,7 +205,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         expected = {"team_name": "Participant Team for Challenge"}
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.data['team_name'], expected)
 
     def test_team_name_for_challenge_with_participant_team_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_team_name_for_challenge',
