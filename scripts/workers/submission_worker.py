@@ -69,7 +69,6 @@ EVALUATION_SCRIPTS = {}
 # Use: On arrival of submission message, lookup here to fetch phase file name
 # this saves db query just to fetch phase annotation file name
 PHASE_ANNOTATION_FILE_NAME_MAP = {}
-
 WORKER_LOGS_PREFIX = "WORKER_LOG"
 SUBMISSION_LOGS_PREFIX = "SUBMISSION_LOG"
 
@@ -156,6 +155,24 @@ def delete_zip_file(download_location):
         logger.error(
             "{} Failed to remove zip file {}, error {}".format(
                 WORKER_LOGS_PREFIX, download_location, e
+            )
+        )
+        traceback.print_exc()
+
+
+def delete_submission_data_directory(location):
+    """
+        Helper function to delete submission data from location `location`
+
+        Arguments:
+            location {[string]} -- Location of directory to be removed.
+    """
+    try:
+        shutil.rmtree(location)
+    except Exception as e:
+        logger.error(
+            "{} Failed to delete submission data directory {}, error {}".format(
+                WORKER_LOGS_PREFIX, location, e
             )
         )
         traceback.print_exc()
@@ -604,6 +621,9 @@ def process_submission_message(message):
         submission_instance,
         user_annotation_file_path,
     )
+    # Delete submission data after processing submission
+    delete_submission_data_directory(
+        SUBMISSION_DATA_DIR.format(submission_id=submission_id))
 
 
 def process_add_challenge_message(message):
