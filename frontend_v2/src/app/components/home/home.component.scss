@@ -5,27 +5,21 @@
   margin-right: auto;
 }
 
-.org-logo{
+.org-logo {
   max-width: 100%;
   height: 120px;
   text-align: center;
 
-  img{
+  img {
     height: 75%;
     max-width: 100%;
     width: auto;
-    transition:all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
     display: block;
     margin-left: auto;
     margin-right: auto;
     margin-top: auto;
     margin-bottom: auto;
-  }
-  &:hover{
-    img{
-      -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
-      filter: grayscale(100%);
-    }
   }
 }
 
@@ -39,7 +33,7 @@ p {
   word-wrap: break-word;
 }
 
-.card-content  {
+.card-content {
   height: 275px;
   overflow: hidden;
 }
@@ -50,10 +44,10 @@ p {
 }
 
 @media only screen and (max-width: $small-screen) {
-  .org-logo{
+  .org-logo {
     height: auto;
     width: 100%;
-    img{
+    img {
       width: 100%;
       height: auto;
     }
@@ -86,22 +80,15 @@ p {
   height: 120px;
   text-align: center;
   img {
-      height: 55%;
-      max-width: 100%;
-      width: auto;
-      transition: all 0.2s ease-in-out;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      margin-top: auto;
-      margin-bottom: auto;
-  }
-  &:hover {
-      img {
-          -webkit-filter: grayscale(100%);
-          /* Safari 6.0 - 9.0 */
-          filter: grayscale(100%);
-      }
+    height: 55%;
+    max-width: 100%;
+    width: auto;
+    transition: all 0.2s ease-in-out;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
   }
 }
 
@@ -123,8 +110,8 @@ p {
   padding-top: 5%;
 }
 
-#mapillary-logo{
-  height:40%;
+#mapillary-logo {
+  height: 40%;
   padding-top: 7%;
 }
 
@@ -141,7 +128,7 @@ p {
   height: 50%;
 }
 
-#umbc-logo{
+#umbc-logo {
   height: 45%;
   padding-top: 5%;
 }
@@ -151,7 +138,7 @@ p {
   padding-bottom: 7%;
 }
 
-#ebay-logo{
+#ebay-logo {
   height: 35%;
   padding-top: 3%;
 }
@@ -169,7 +156,7 @@ p {
   height: 40%;
 }
 
-#pitt-logo{
+#pitt-logo {
   height: 50%;
   padding-top: 5%;
 }
@@ -178,7 +165,7 @@ p {
   height: 45%;
 }
 
-#iitm-logo{
+#iitm-logo {
   height: 50%;
 }
 
@@ -204,12 +191,12 @@ p {
   height: 50%;
 }
 
-#adelaide-logo{
+#adelaide-logo {
   height: 50%;
   padding-top: 5%;
 }
 
-#pitt-logo{
+#pitt-logo {
   height: 50%;
   padding-top: 5%;
 }
