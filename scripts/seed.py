@@ -166,50 +166,39 @@ def create_challenges(number_of_challenges, host_team=None, participant_host_tea
     Creates past challenge, on-going challenge and upcoming challenge.
     """
     anon_counter = 0  # two private leaderboards
-    num_featured_challenges = 3
     for i in xrange(number_of_challenges):
-        is_leaderboard_anon = False
-        is_featured = (i < num_featured_challenges)
+        anonymous_leaderboard = False
+        is_featured = False
+        title = "{} Challenge".format(fake.first_name())
         if anon_counter < 2:
-            is_leaderboard_anon = True
+            anonymous_leaderboard = True
             anon_counter += 1
-        else:
-            is_leaderboard_anon = False
 
-        if i % 3 == 0:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-                is_featured=is_featured,
-            )
-        elif i % 3 == 1:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=500),
-                timezone.now() - timedelta(days=100),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-                is_featured=is_featured,
-            )
-        elif i % 3 == 2:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() + timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-                is_featured=is_featured,
-            )
+        start_date = timezone.now() - timedelta(days=100)
+        end_date = timezone.now() + timedelta(days=500)
+
+        if i % 4 == 1:
+            start_date = timezone.now() - timedelta(days=100)
+            end_date = timezone.now() - timedelta(days=500)
+        elif i % 4 == 2:
+            start_date = timezone.now() + timedelta(days=100)
+            end_date = timezone.now() + timedelta(days=500)
+        elif i % 4 == 3:
+            is_featured = True
+
+        create_challenge(
+            title,
+            start_date,
+            end_date,
+            host_team,
+            participant_host_team,
+            anonymous_leaderboard,
+            is_featured=is_featured,
+        )
 
 
 def create_challenge(title, start_date, end_date, host_team, participant_host_team,
-                     anon_leaderboard, is_featured=False):
+                     anon_leaderboard=False, is_featured=False):
     """
     Creates a challenge.
     """
