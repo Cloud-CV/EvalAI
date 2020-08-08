@@ -7,10 +7,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-confirm',
   templateUrl: './confirm.component.html',
-  styleUrls: ['./confirm.component.scss']
+  styleUrls: ['./confirm.component.scss'],
 })
 export class ConfirmComponent implements OnInit {
-
   /**
    * Input parameters object
    */
@@ -50,7 +49,7 @@ export class ConfirmComponent implements OnInit {
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService) { }
+  constructor(private globalService: GlobalService) {}
 
   /**
    * Component on initialized.
@@ -91,5 +90,4 @@ export class ConfirmComponent implements OnInit {
     this.globalService.hideConfirm();
     this.denyCallback();
   }
-
 }

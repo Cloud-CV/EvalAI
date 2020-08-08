@@ -2,91 +2,85 @@
 @import './mixins.scss';
 
 .rules-container {
-	margin-top:200px;
-	margin-bottom:50px;
-	.heading {
-		text-align:left;
-	}
-	.rules-image {
-		width:80%;
-		display:inline-block;
-		vertical-align:top;
-		background-size: 100% 100%;
-		text-align: center;
-	}
-	.rules-content{
-		display:inline-block;
+  margin-top: 200px;
+  margin-bottom: 50px;
+  .heading {
+    text-align: left;
+  }
+  .rules-image {
+    width: 80%;
+    display: inline-block;
+    vertical-align: top;
+    background-size: 100% 100%;
+    text-align: center;
+  }
+  .rules-content {
+    display: inline-block;
+  }
 
-	}
-
-	.rule-laptop {
-		height:300px;
-		margin-top: 150px;
-		margin-bottom:33% !important;
-	}
-	.rule-img {
-		height:90px;
-		margin-left:5px;
-
-	}
-	.rule-title {
-		line-height:90px;
-		vertical-align:top;
-		font-size:$fs-18;
-		font-weight:$fw-bolder;
-		color:$gray-darker;
-
-	}
-	.rule-text {
-		padding:5px;
-		margin-left:20px;
-		padding-right:20px;
-		margin-bottom:20px;
-		font-size:$fs-16;
-		font-weight:$fw-regular;
-		color:$gray-darker;
-		text-align:left;
-		line-height: 20px;
-        letter-spacing: 0.5px;
-
-	}
+  .rule-laptop {
+    height: 300px;
+    margin-top: 150px;
+    margin-bottom: 33% !important;
+  }
+  .rule-img {
+    height: 90px;
+    margin-left: 5px;
+  }
+  .rule-title {
+    line-height: 90px;
+    vertical-align: top;
+    font-size: $fs-18;
+    font-weight: $fw-bolder;
+    color: $gray-darker;
+  }
+  .rule-text {
+    padding: 5px;
+    margin-left: 20px;
+    padding-right: 20px;
+    margin-bottom: 20px;
+    font-size: $fs-16;
+    font-weight: $fw-regular;
+    color: $gray-darker;
+    text-align: left;
+    line-height: 20px;
+    letter-spacing: 0.5px;
+  }
 }
 
 @include screen-medium {
-	.rules-container {
-		.rules-image{
-				width:100%;
-		}
-		.rule-laptop {
-			height:200px !important;
-			margin-top: 100px;
-		}
-	}
+  .rules-container {
+    .rules-image {
+      width: 100%;
+    }
+    .rule-laptop {
+      height: 200px !important;
+      margin-top: 100px;
+    }
+  }
 }
 
 @include screen-small {
-	.rules-container {
-		.rules-image{
-			width:100%;
-			display:block !important;
-		}
-		.rules-content{
-			display:block !important;
-			padding-left:20px !important;
-		}
-		.rules-container .participate{
-			margin-left:50px;
-		}
-		.rules-container .row .btn-fire{
-			width:50% !important;
-			min-width:50% !important;
-		}
-		.rule-laptop {
-			height:200px !important;
-			margin-top: 150px;
-			margin-bottom:100px;
-		}
-	}
+  .rules-container {
+    .rules-image {
+      width: 100%;
+      display: block !important;
+    }
+    .rules-content {
+      display: block !important;
+      padding-left: 20px !important;
+    }
+    .rules-container .participate {
+      margin-left: 50px;
+    }
+    .rules-container .row .btn-fire {
+      width: 50% !important;
+      min-width: 50% !important;
+    }
+    .rule-laptop {
+      height: 200px !important;
+      margin-top: 150px;
+      margin-bottom: 100px;
+    }
+  }
 }
-
-

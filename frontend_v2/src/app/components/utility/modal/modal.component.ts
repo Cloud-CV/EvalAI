@@ -11,10 +11,9 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.scss']
+  styleUrls: ['./modal.component.scss'],
 })
 export class ModalComponent implements OnInit {
-
   /**
    * Input parameters object
    */
@@ -136,8 +135,11 @@ export class ModalComponent implements OnInit {
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService, private challengeService: ChallengeService,
-              private authService: AuthService) { }
+  constructor(
+    private globalService: GlobalService,
+    private challengeService: ChallengeService,
+    private authService: AuthService
+  ) {}
 
   /**
    * Component on intialized.
@@ -186,7 +188,7 @@ export class ModalComponent implements OnInit {
     if (this.isEditorRequired || this.isButtonDisabled) {
       this.isDisabled = false;
     }
-    this.challengeService.currentChallenge.subscribe(challenge => this.challenge = challenge);
+    this.challengeService.currentChallenge.subscribe((challenge) => (this.challenge = challenge));
   }
 
   /**
@@ -250,8 +252,10 @@ export class ModalComponent implements OnInit {
   }
 
   validURL(string) {
-    const res = string.match(/^((http|https):\/\/.)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-    return (res !== null);
+    const res = string.match(
+      /^((http|https):\/\/.)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g
+    );
+    return res !== null;
   }
 
   validateModalInput(e) {
@@ -270,10 +274,10 @@ export class ModalComponent implements OnInit {
       if (this.validURL(e.target.value) || e.target.value === '') {
         this.isDisabled = false;
 
-        this.invalidFields = this.invalidFields.filter(element => element !== 'Google Scholar');
+        this.invalidFields = this.invalidFields.filter((element) => element !== 'Google Scholar');
         this.convertFieldArrayIntoText(this.invalidFields);
       } else {
-        if (!(this.invalidFields.find(element => element === 'Google Scholar'))) {
+        if (!this.invalidFields.find((element) => element === 'Google Scholar')) {
           this.invalidFields.push('Google Scholar');
         }
       }
@@ -281,10 +285,10 @@ export class ModalComponent implements OnInit {
       if (this.validURL(e.target.value) || e.target.value === '') {
         this.isDisabled = false;
 
-        this.invalidFields = this.invalidFields.filter(element => element !== 'GitHub');
+        this.invalidFields = this.invalidFields.filter((element) => element !== 'GitHub');
         this.convertFieldArrayIntoText(this.invalidFields);
       } else {
-        if (!(this.invalidFields.find(element => element === 'GitHub'))) {
+        if (!this.invalidFields.find((element) => element === 'GitHub')) {
           this.invalidFields.push('GitHub');
         }
       }
@@ -292,10 +296,10 @@ export class ModalComponent implements OnInit {
       if (this.validURL(e.target.value) || e.target.value === '') {
         this.isDisabled = false;
 
-        this.invalidFields = this.invalidFields.filter(element => element !== 'LinkedIn');
+        this.invalidFields = this.invalidFields.filter((element) => element !== 'LinkedIn');
         this.convertFieldArrayIntoText(this.invalidFields);
       } else {
-        if (!(this.invalidFields.find(element => element === 'LinkedIn'))) {
+        if (!this.invalidFields.find((element) => element === 'LinkedIn')) {
           this.invalidFields.push('LinkedIn');
         }
       }

@@ -7,7 +7,7 @@ li.analytics-list {
 }
 
 .analytics-team-input {
-  input[type="radio"].selectTeam + label {
+  input[type='radio'].selectTeam + label {
     padding-left: 0px;
     width: 100%;
   }
@@ -50,13 +50,12 @@ h4.analytics-details-head {
   height: 50px;
 }
 
-
 .participant-download-btn {
- margin-top: 0px !important;
+  margin-top: 0px !important;
 }
 
-.analytics-challenge-single-line{
-  display:flex;
+.analytics-challenge-single-line {
+  display: flex;
   flex-direction: row;
   .show-count {
     margin-left: 5px !important;

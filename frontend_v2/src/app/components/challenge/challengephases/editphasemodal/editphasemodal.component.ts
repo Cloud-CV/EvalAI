@@ -5,10 +5,9 @@ import { InputComponent } from '../../../utility/input/input.component';
 @Component({
   selector: 'app-editphasemodal',
   templateUrl: './editphasemodal.component.html',
-  styleUrls: ['./editphasemodal.component.scss']
+  styleUrls: ['./editphasemodal.component.scss'],
 })
 export class EditphasemodalComponent implements OnInit {
-
   /**
    * Input parameters object
    */
@@ -134,7 +133,7 @@ export class EditphasemodalComponent implements OnInit {
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService) { }
+  constructor(private globalService: GlobalService) {}
 
   ngOnInit() {
     if (this.params) {
@@ -185,7 +184,7 @@ export class EditphasemodalComponent implements OnInit {
    * Form Validate function.
    */
   formValidate() {
-    this.formComponents.map(val => {
+    this.formComponents.map((val) => {
       if (val.label === 'max_submissions_per_day') {
         this.maxSubmissionsPerDay = parseInt(val.value, 10);
       }
@@ -216,13 +215,15 @@ export class EditphasemodalComponent implements OnInit {
     if (self.maxSubmissionsPerDay > self.maxSubmissionsPerMonth) {
       self.denyCallback();
       self.isPerDaySubmissionFieldMessage = true;
-      self.perDaySubmisionValidationMessage = 'Max number of per day submission cannot be greater than max number of per month submissions';
+      self.perDaySubmisionValidationMessage =
+        'Max number of per day submission cannot be greater than max number of per month submissions';
       return;
     }
     if (self.maxSubmissionsPerMonth > self.maxSubmissions) {
       self.denyCallback();
-      self.  isPerMonthSubmissionFieldMessage = true;
-      self.PerMonthSubmissionValidationMessage = 'Max number of per month submissions cannot be greater than max total submissions';
+      self.isPerMonthSubmissionFieldMessage = true;
+      self.PerMonthSubmissionValidationMessage =
+        'Max number of per month submissions cannot be greater than max total submissions';
       return;
     }
     const PARAMS = self.globalService.formFields(self.formComponents);
