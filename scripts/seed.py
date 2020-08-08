@@ -25,6 +25,7 @@ from challenges.models import (
     Leaderboard,
     LeaderboardData,
 )
+from challenges.utils import get_file_content
 from hosts.models import ChallengeHostTeam, ChallengeHost
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
@@ -35,6 +36,7 @@ NUMBER_OF_CHALLENGES = 1
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
 DATASET_SPLIT_ITERATOR = 0
+CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
 
 try:
     xrange   # Python 2
@@ -165,43 +167,38 @@ def create_challenges(number_of_challenges, host_team=None, participant_host_tea
     """
     anon_counter = 0  # two private leaderboards
     for i in xrange(number_of_challenges):
-        is_leaderboard_anon = False
+        anonymous_leaderboard = False
+        is_featured = False
+        title = "{} Challenge".format(fake.first_name())
         if anon_counter < 2:
-            is_leaderboard_anon = True
+            anonymous_leaderboard = True
             anon_counter += 1
-        else:
-            is_leaderboard_anon = False
 
-        if i % 3 == 0:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-            )
-        elif i % 3 == 1:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=500),
-                timezone.now() - timedelta(days=100),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-            )
-        elif i % 3 == 2:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() + timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-            )
+        start_date = timezone.now() - timedelta(days=100)
+        end_date = timezone.now() + timedelta(days=500)
+
+        if i % 4 == 1:
+            start_date = timezone.now() - timedelta(days=100)
+            end_date = timezone.now() - timedelta(days=500)
+        elif i % 4 == 2:
+            start_date = timezone.now() + timedelta(days=100)
+            end_date = timezone.now() + timedelta(days=500)
+        elif i % 4 == 3:
+            is_featured = True
+
+        create_challenge(
+            title,
+            start_date,
+            end_date,
+            host_team,
+            participant_host_team,
+            anonymous_leaderboard,
+            is_featured=is_featured,
+        )
 
 
-def create_challenge(title, start_date, end_date, host_team, participant_host_team, anon_leaderboard):
+def create_challenge(title, start_date, end_date, host_team, participant_host_team,
+                     anon_leaderboard=False, is_featured=False):
     """
     Creates a challenge.
     """
@@ -220,6 +217,9 @@ def create_challenge(title, start_date, end_date, host_team, participant_host_te
     uuid_stamp = uuid.uuid4().hex[0:10]
     slug = "{t}-{y}-{z}".format(t=title, y=year, z=uuid_stamp)
     slug = slug.lower().replace(" ", "-")[:198]
+    image_file = ContentFile(
+        get_file_content(CHALLENGE_IMAGE_PATH, "rb"), "logo.png"
+    )
     challenge = Challenge(
         title=title,
         short_description=fake.paragraph(),
@@ -239,6 +239,8 @@ def create_challenge(title, start_date, end_date, host_team, participant_host_te
         start_date=start_date,
         end_date=end_date,
         queue=queue,
+        featured=is_featured,
+        image=image_file,
     )
     challenge.save()
 
