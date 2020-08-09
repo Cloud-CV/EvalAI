@@ -170,12 +170,11 @@ def delete_submission_data_directory(location):
     try:
         shutil.rmtree(location)
     except Exception as e:
-        logger.error(
+        logger.exception(
             "{} Failed to delete submission data directory {}, error {}".format(
                 WORKER_LOGS_PREFIX, location, e
             )
         )
-        traceback.print_exc()
 
 
 def download_and_extract_zip_file(url, download_location, extract_location):
