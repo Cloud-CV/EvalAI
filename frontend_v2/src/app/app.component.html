@@ -1,5 +1,5 @@
 <!-- The <router-outlet> tells the router where to display routed views. -->
-<div id="page-wrap">
+<div [ngClass]="(router.url !='/')?'page-wrap':''">
   <router-outlet></router-outlet>
 </div>
 <app-toast></app-toast>
