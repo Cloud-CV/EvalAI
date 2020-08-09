@@ -230,7 +230,7 @@ task_definition_code_upload_worker = """
                   "value": "{queue_name}"
                 }},
                 {{
-                  "name": "DJANGO_SERVER",
+                  "name": "EVALAI_API_SERVER",
                   "value": "{DJANGO_SERVER}"
                 }},
 
