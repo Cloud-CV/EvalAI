@@ -34,6 +34,7 @@ aws_keys = {
 
 
 COMMON_SETTINGS_DICT = {
+    "AUTH_TOKEN": os.environ.get("AUTH_TOKEN"),
     "AWS_DEFAULT_REGION": aws_keys["AWS_REGION"],
     "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
     "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -47,6 +48,12 @@ COMMON_SETTINGS_DICT = {
     ),
     "WORKER_IMAGE": os.environ.get(
         "WORKER_IMAGE",
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], ENV
+        ),
+    ),
+    "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
+        "CODE_UPLOAD_WORKER_IMAGE",
         "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
             aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
@@ -215,7 +222,7 @@ task_definition_code_upload_worker = """
     "containerDefinitions":[
         {{
             "name": "{container_name}",
-            "image": "{WORKER_IMAGE}",
+            "image": "{CODE_UPLOAD_WORKER_IMAGE}",
             "essential": True,
             "environment": [
                 {{
@@ -229,12 +236,9 @@ task_definition_code_upload_worker = """
 
                 {{
                     "name": "AUTH_TOKEN",
-                    "value": "{auth_token}"
+                    "value": "{AUTH_TOKEN}"
                 }},
-                {{
-                  "name": "DJANGO_SERVER_PORT",
-                  "value": "8000"
-                }},
+
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
