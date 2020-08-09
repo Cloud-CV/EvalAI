@@ -146,9 +146,9 @@ fluent_conf = r"""
         </buffer>
       </match>
     </label>
-    """
+"""
 
-    systemd_conf = """
+systemd_conf = """
         |
     <source>
       @type systemd
@@ -237,9 +237,9 @@ fluent_conf = r"""
         </buffer>
       </match>
     </label>
-    """
+"""
 
-    host_conf = """
+host_conf = """
         |
     <source>
       @type tail

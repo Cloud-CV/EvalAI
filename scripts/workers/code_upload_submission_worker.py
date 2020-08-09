@@ -12,7 +12,7 @@ from kubernetes import client
 
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
-
+from fluent_conf import fluent_conf, host_conf, systemd_conf
 
 class GracefulKiller:
     kill_now = False
