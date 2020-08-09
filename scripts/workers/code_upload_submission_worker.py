@@ -14,6 +14,7 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 from fluent_conf import fluent_conf, host_conf, systemd_conf
 
+
 class GracefulKiller:
     kill_now = False
 
@@ -389,8 +390,6 @@ def create_config_map(api_instance):
         api_instance {[AWS EKS API object]} -- API object for creating config_map
     """
     namespace = "amazon-cloudwatch"
-    
-
     body = client.client.V1ConfigMap(
         api_version="v1",
         kind="ConfigMap",
