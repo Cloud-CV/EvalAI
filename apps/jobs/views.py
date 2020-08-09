@@ -71,6 +71,8 @@ from .utils import (
     get_submission_model,
     handle_submission_rerun,
     is_url_valid,
+    reorder_submissions_comparator,
+    reorder_submissions_comparator_to_key
 )
 
 logger = logging.getLogger(__name__)
@@ -161,8 +163,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
+        # rerank in progress submissions in ascending order of submitted_at
+        reordered_submissions = sorted(filtered_submissions.qs,
+                                       key=reorder_submissions_comparator_to_key(
+                                           reorder_submissions_comparator
+                                       ))
         paginator, result_page = paginated_queryset(
-            filtered_submissions.qs, request
+            reordered_submissions, request
         )
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
