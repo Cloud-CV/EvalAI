@@ -84,14 +84,12 @@ export class ChallengeevaluationComponent implements OnInit {
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      console.log(BODY);
       SELF.apiService.patchUrl(
         SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
         BODY
       ).subscribe(
         data => {
           SELF.challenge.evaluation_details = data.evaluation_details;
-          console.log(data);
           this.updateView();
           SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
         },
