@@ -22,7 +22,7 @@ describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   beforeEach(async(() => {
@@ -36,19 +36,12 @@ describe('HomeComponent', () => {
         RulesComponent,
         TestimonialsComponent,
         FeaturedChallengesComponent,
-        TwitterFeedComponent
+        TwitterFeedComponent,
       ],
-      providers: [
-        GlobalService,
-        AuthService,
-        ApiService,
-        EndpointsService,
-        WindowService
-      ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      providers: [GlobalService, AuthService, ApiService, EndpointsService, WindowService],
+      imports: [RouterTestingModule, HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

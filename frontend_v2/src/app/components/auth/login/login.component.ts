@@ -7,7 +7,7 @@ import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { GlobalService } from '../../../services/global.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute} from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 /**
  * Component Class
@@ -15,10 +15,9 @@ import { Router, ActivatedRoute} from '@angular/router';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit, AfterViewInit {
-
   isnameFocused = false;
   ispasswordFocused = false;
 
@@ -48,15 +47,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
    * @param globalService  GlobalService Injection.
    * @param endpointsService
    */
-  constructor(@Inject(DOCUMENT) private document: Document,
-              private windowService: WindowService,
-              private globalService: GlobalService,
-              private apiService: ApiService,
-              public authService: AuthService,
-              private route: ActivatedRoute,
-              private router: Router,
-              private endpointsService: EndpointsService) {
-  }
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private windowService: WindowService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    public authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private endpointsService: EndpointsService
+  ) {}
 
   /**
    * Constructor on initialization
@@ -68,8 +68,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   /**
    * After view is initialized.
    */
-  ngAfterViewInit() {
-  }
+  ngAfterViewInit() {}
 
   /**
    * Constructor.
@@ -85,7 +84,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     self.router.navigate([redirectTo]);
   }
 
-
   // Function to login
   userLogin(loginFormValid) {
     if (!loginFormValid) {
@@ -96,25 +94,25 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.globalService.startLoader('Taking you to EvalAI!');
 
     const LOGIN_BODY = {
-      'username': this.authService.getUser['name'],
-      'password': this.authService.getUser['password'],
+      username: this.authService.getUser['name'],
+      password: this.authService.getUser['password'],
     };
 
     this.apiService.postUrl(this.endpointsService.loginURL(), LOGIN_BODY).subscribe(
-      data => {
+      (data) => {
         this.globalService.storeData(this.globalService.authStorageKey, data['token']);
         this.authService.loggedIn(true);
         this.globalService.stopLoader();
         this.redirectCheck(this);
       },
 
-      err => {
+      (err) => {
         this.globalService.stopLoader();
 
         if (err.status === 400) {
           this.authService.isFormError = true;
           try {
-            const non_field_errors = typeof (err.error.non_field_errors) !== 'undefined';
+            const non_field_errors = typeof err.error.non_field_errors !== 'undefined';
             if (non_field_errors) {
               this.authService.FormError = err.error.non_field_errors[0];
             }
@@ -130,5 +128,4 @@ export class LoginComponent implements OnInit, AfterViewInit {
       () => {}
     );
   }
-
 }

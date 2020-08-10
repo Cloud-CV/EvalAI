@@ -413,3 +413,64 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
         challenge_phase_split__pk=challenge_phase_split_pk,
     )
     return leaderboard_data
+
+
+def reorder_submissions_comparator(submission_1, submission_2):
+    """
+        Comparator for reordering my submissions page
+
+        Arguments:
+             submission_1 {[Class Object]} -- Submission object
+             submission_2 {[Class Object]} -- Submission object
+
+        Returns:
+            [int] -- comparison result
+    """
+    submissions_in_progress_status = [
+        Submission.SUBMITTED,
+        Submission.SUBMITTING,
+        Submission.RUNNING,
+    ]
+    if submission_1.status in submissions_in_progress_status and submission_2.status in submissions_in_progress_status:
+        return submission_1.submitted_at > submission_2.submitted_at
+    return submission_1.submitted_at < submission_2.submitted_at
+
+
+def reorder_submissions_comparator_to_key(comparator):
+    """
+        Convert a cmp= function into a key= function for lambda
+
+        Arguments:
+             comparator {[function]} -- comparator function
+
+        Returns:
+            [class] -- key class object for lamdbda
+    """
+    class ComparatorToLambdaKey:
+        def __init__(self, obj, *args):
+            self.obj = obj
+
+        # Compares if first object is less than second object
+        def __lt__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        # Compares if first object is greater than second object
+        def __gt__(self, other):
+            return comparator(self.obj, other.obj) > 0
+
+        # Compares if first object is equal than second object
+        def __eq__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        # Compares if first object is less than equal to second object
+        def __le__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        # Compares if first object is greater than equal to second object
+        def __ge__(self, other):
+            return comparator(self.obj, other.obj) >= 0
+
+        # Compares if first object is not equal to second object
+        def __ne__(self, other):
+            return comparator(self.obj, other.obj) != 0
+    return ComparatorToLambdaKey

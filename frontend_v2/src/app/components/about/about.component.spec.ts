@@ -14,20 +14,14 @@ describe('AboutComponent', () => {
   let component: AboutComponent;
   let fixture: ComponentFixture<AboutComponent>;
   const fakeActivatedRoute = {
-    snapshot: { data: {} }
+    snapshot: { data: {} },
   } as ActivatedRoute;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AboutComponent, HeaderStaticComponent, FooterComponent ],
-      providers: [
-      GlobalService,
-      AuthService,
-      ApiService,
-      EndpointsService
-      ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [AboutComponent, HeaderStaticComponent, FooterComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -12,10 +12,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-challengesettings',
   templateUrl: './challengesettings.component.html',
-  styleUrls: ['./challengesettings.component.scss']
+  styleUrls: ['./challengesettings.component.scss'],
 })
 export class ChallengesettingsComponent implements OnInit {
-
   /**
    * Challenge object
    */
@@ -69,19 +68,20 @@ export class ChallengesettingsComponent implements OnInit {
    */
   isBannedEmailInputVisible: boolean;
 
-  constructor(private challengeService: ChallengeService,
-              private globalService: GlobalService,
-              private apiService: ApiService,
-              private endpointsService: EndpointsService,
-              private router: Router) { }
+  constructor(
+    private challengeService: ChallengeService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
-    this.challengeService.currentChallenge.subscribe(
-      challenge => {
-        this.challenge = challenge;
-        this.updateView();
+    this.challengeService.currentChallenge.subscribe((challenge) => {
+      this.challenge = challenge;
+      this.updateView();
     });
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -139,7 +139,7 @@ export class ChallengesettingsComponent implements OnInit {
       return true;
     }
     const regex = /^\s*[\w\-\+_]+(\.[\w\-\+_]+)*\@[\w\-\+_]+\.[\w\-\+_]+(\.[\w\-\+_]+)*\s*$/;
-    return String(email).search (regex) !== -1;
+    return String(email).search(regex) !== -1;
   }
 
   reflectChange() {
@@ -155,19 +155,18 @@ export class ChallengesettingsComponent implements OnInit {
   updateBannedEmailList() {
     const SELF = this;
     const BODY = JSON.stringify({
-      banned_email_ids: SELF.bannedEmailIds
+      banned_email_ids: SELF.bannedEmailIds,
     });
-    SELF.apiService.patchUrl(
-      SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-      BODY
-    ).subscribe(
-        data => {
+    SELF.apiService
+      .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+      .subscribe(
+        (data) => {
           SELF.challenge.banned_email_ids = data.banned_email_ids;
           SELF.isBannedEmailInputVisible = false;
           SELF.globalService.showToast('success', 'Banned participant emails are successfully updated!', 5);
           this.formerBannedEmailIds = this.bannedEmailIds.concat(); // Creating deep copy
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
@@ -180,32 +179,31 @@ export class ChallengesettingsComponent implements OnInit {
    */
   stopParticipation(event) {
     event.preventDefault();
-    const participationState = (this.challenge['is_registration_open']) ? 'Close' : 'Open';
+    const participationState = this.challenge['is_registration_open'] ? 'Close' : 'Open';
     const closeParticipationMsg = 'Participation is closed successfully';
     const openParticipationMsg = 'Participation is opened successfully';
 
     this.apiCall = () => {
       if (this.isChallengeHost && this.challenge['id'] !== null) {
         const BODY = JSON.stringify({
-          'is_registration_open': !this.challenge['is_registration_open']
+          is_registration_open: !this.challenge['is_registration_open'],
         });
-        this.apiService.patchUrl(
-          this.endpointsService.editChallengeDetailsURL(this.challenge.creator.id, this.challenge.id),
-          BODY
-        ).subscribe(
-          () => {
-            this.challenge['is_registration_open'] = !this.challenge['is_registration_open'];
-            if (this.challenge['is_registration_open']) {
-              this.globalService.showToast('success', openParticipationMsg, 5);
-            } else {
-              this.globalService.showToast('success', closeParticipationMsg, 5);
-            }
-          },
-          err => {
-            this.globalService.handleApiError(err, true);
-            this.globalService.showToast('error', err);
-          },
-          () => {}
+        this.apiService
+          .patchUrl(this.endpointsService.editChallengeDetailsURL(this.challenge.creator.id, this.challenge.id), BODY)
+          .subscribe(
+            () => {
+              this.challenge['is_registration_open'] = !this.challenge['is_registration_open'];
+              if (this.challenge['is_registration_open']) {
+                this.globalService.showToast('success', openParticipationMsg, 5);
+              } else {
+                this.globalService.showToast('success', closeParticipationMsg, 5);
+              }
+            },
+            (err) => {
+              this.globalService.handleApiError(err, true);
+              this.globalService.showToast('error', err);
+            },
+            () => {}
           );
       }
     };
@@ -213,9 +211,9 @@ export class ChallengesettingsComponent implements OnInit {
     const PARAMS = {
       title: participationState + ' participation in the challenge?',
       content: '',
-      confirm: 'Yes, I\'m sure',
+      confirm: "Yes, I'm sure",
       deny: 'No',
-      confirmCallback: this.apiCall
+      confirmCallback: this.apiCall,
     };
     this.globalService.showConfirm(PARAMS);
   }
@@ -228,20 +226,19 @@ export class ChallengesettingsComponent implements OnInit {
 
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-        ).subscribe(
-        data => {
-          SELF.challenge.title = data.title;
-          SELF.globalService.showToast('success', 'The challenge title is  successfully updated!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => {}
-      );
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.title = data.title;
+            SELF.globalService.showToast('success', 'The challenge title is  successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
     };
 
     const PARAMS = {
@@ -256,10 +253,10 @@ export class ChallengesettingsComponent implements OnInit {
           label: 'title',
           placeholder: 'Challenge Title',
           type: 'text',
-          value: this.challenge.title
+          value: this.challenge.title,
         },
       ],
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
@@ -273,15 +270,12 @@ export class ChallengesettingsComponent implements OnInit {
 
     SELF.apiCall = () => {
       const BODY = JSON.stringify({});
-      SELF.apiService.postUrl(
-        SELF.endpointsService.deleteChallengeURL(SELF.challenge.id),
-        BODY
-        ).subscribe(
-        data => {
+      SELF.apiService.postUrl(SELF.endpointsService.deleteChallengeURL(SELF.challenge.id), BODY).subscribe(
+        (data) => {
           SELF.router.navigate([redirectTo]);
           SELF.globalService.showToast('success', 'The Challenge is successfully deleted!', 5);
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err, true);
           SELF.globalService.showToast('error', err);
         },
@@ -301,10 +295,10 @@ export class ChallengesettingsComponent implements OnInit {
           label: '',
           placeholder: 'Please type in the name of the challenge to confirm',
           type: 'text',
-          value: ''
+          value: '',
         },
       ],
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
@@ -317,24 +311,23 @@ export class ChallengesettingsComponent implements OnInit {
     SELF.apiCall = (params) => {
       if (new Date(params.start_date).valueOf() < new Date(params.end_date).valueOf()) {
         const BODY = JSON.stringify({
-          'start_date': new Date(params.start_date).toISOString(),
-          'end_date': new Date(params.end_date).toISOString()
+          start_date: new Date(params.start_date).toISOString(),
+          end_date: new Date(params.end_date).toISOString(),
         });
-        SELF.apiService.patchUrl(
-          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-          BODY
-        ).subscribe(
-          data => {
-            SELF.challenge.start_date = (data.start_date);
-            SELF.challenge.end_date = (data.end_date);
-            SELF.globalService.showToast('success', 'The Challenge start and end date successfully updated!', 5);
-          },
-          err => {
-            SELF.globalService.handleApiError(err, true);
-            SELF.globalService.showToast('error', err);
-          },
-          () => {}
-        );
+        SELF.apiService
+          .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+          .subscribe(
+            (data) => {
+              SELF.challenge.start_date = data.start_date;
+              SELF.challenge.end_date = data.end_date;
+              SELF.globalService.showToast('success', 'The Challenge start and end date successfully updated!', 5);
+            },
+            (err) => {
+              SELF.globalService.handleApiError(err, true);
+              SELF.globalService.showToast('error', err);
+            },
+            () => {}
+          );
       } else {
         SELF.globalService.showToast('error', 'The challenge start date cannot be same or greater than end date.', 5);
       }
@@ -350,18 +343,18 @@ export class ChallengesettingsComponent implements OnInit {
           label: 'start_date',
           placeholder: 'Start Date and Time',
           type: 'text',
-          value: moment(this.challenge.start_date).format('MM-DD-YYYY hh:mm a')
+          value: moment(this.challenge.start_date).format('MM-DD-YYYY hh:mm a'),
         },
         {
           isRequired: false,
           label: 'end_date',
           placeholder: 'End Date and Time',
           type: 'text',
-          value: moment(this.challenge.end_date).format('MM-DD-YYYY hh:mm a')
-        }
+          value: moment(this.challenge.end_date).format('MM-DD-YYYY hh:mm a'),
+        },
       ],
       isButtonDisabled: true,
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
@@ -372,16 +365,18 @@ export class ChallengesettingsComponent implements OnInit {
   editChallengeImage() {
     const SELF = this;
     SELF.apiCall = (params) => {
-        const FORM_DATA: FormData = new FormData();
-        FORM_DATA.append('image', params['image']);
-        SELF.apiService.patchFileUrl(
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('image', params['image']);
+      SELF.apiService
+        .patchFileUrl(
           SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
           FORM_DATA
-        ).subscribe(
-          data => {
+        )
+        .subscribe(
+          (data) => {
             SELF.globalService.showToast('success', 'The Challenge image successfully updated!', 5);
           },
-          err => {
+          (err) => {
             SELF.globalService.handleApiError(err, true);
             SELF.globalService.showToast('error', err);
           },
@@ -404,10 +399,10 @@ export class ChallengesettingsComponent implements OnInit {
           label: 'image',
           placeholder: '',
           type: 'file',
-          value: ''
-        }
+          value: '',
+        },
       ],
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }

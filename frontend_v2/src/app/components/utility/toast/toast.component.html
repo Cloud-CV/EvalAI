@@ -1,8 +1,11 @@
 <div id="toast" class="toast-container">
-  <div class="toast-desc" [ngClass]="{'toast-success': type=='success', 'toast-error': type=='error', 'toast-info': type=='info'}">
-    <span *ngIf="type=='success'"><i class="fa fa-check" aria-hidden="true"></i></span>
-    <span *ngIf="type=='error'"><i class="fa fa-warning" aria-hidden="true"></i></span>
-    <span *ngIf="type=='info'"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
-    <span class="toast-message" id="toastmessage">{{message}}</span>
+  <div
+    class="toast-desc"
+    [ngClass]="{ 'toast-success': type == 'success', 'toast-error': type == 'error', 'toast-info': type == 'info' }"
+  >
+    <span *ngIf="type == 'success'"><i class="fa fa-check" aria-hidden="true"></i></span>
+    <span *ngIf="type == 'error'"><i class="fa fa-warning" aria-hidden="true"></i></span>
+    <span *ngIf="type == 'info'"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
+    <span class="toast-message" id="toastmessage">{{ message }}</span>
   </div>
 </div>

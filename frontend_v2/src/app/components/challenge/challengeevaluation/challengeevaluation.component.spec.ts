@@ -5,7 +5,7 @@ import { ChallengeService } from '../../../services/challenge.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { HttpClientModule } from '@angular/common/http';
-import {RouterTestingModule} from '@angular/router/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { AuthService } from '../../../services/auth.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { Observable } from 'rxjs';
@@ -17,11 +17,10 @@ describe('ChallengeevaluationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeevaluationComponent ],
-      providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [ChallengeevaluationComponent],
+      providers: [ChallengeService, ApiService, GlobalService, AuthService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -47,11 +46,13 @@ describe('ChallengeevaluationComponent', () => {
   it('should show modal and successfully edit the evaluation details', () => {
     const updatedEvaluationDetails = 'Updated challenge evaluation details';
     const expectedSuccessMsg = 'The evaluation details is successfully updated!';
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.next({evaluation_details: updatedEvaluationDetails});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ evaluation_details: updatedEvaluationDetails });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editEvaluationCriteria();
     expect(globalService.showModal).toHaveBeenCalled();
@@ -66,13 +67,15 @@ describe('ChallengeevaluationComponent', () => {
   it('should handle the API error for `editEvaluationCriteria` method', () => {
     const updatedEvaluationDetails = 'Updated challenge evaluation details';
     const expectedErrorMsg = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedErrorMsg.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editEvaluationCriteria();
     expect(globalService.showModal).toHaveBeenCalled();
@@ -84,11 +87,13 @@ describe('ChallengeevaluationComponent', () => {
   it('should show modal and successfully edit the terms and conditions', () => {
     const updatedTermsAndConditions = 'Updated terms and conditions of challenge';
     const expectedSuccessMsg = 'The terms and conditions are successfully updated!';
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.next({terms_and_conditions: updatedTermsAndConditions});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ terms_and_conditions: updatedTermsAndConditions });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editTermsAndConditions();
     expect(globalService.showModal).toHaveBeenCalled();
@@ -103,13 +108,15 @@ describe('ChallengeevaluationComponent', () => {
   it('should handle the API error for `editTermsAndConditions` method', () => {
     const updatedTermsAndConditions = 'Updated terms and conditions of challenge';
     const expectedErrorMsg = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedErrorMsg.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editTermsAndConditions();
     expect(globalService.showModal).toHaveBeenCalled();
@@ -120,14 +127,16 @@ describe('ChallengeevaluationComponent', () => {
 
   it('should show modal and successfully edit evaluation script', () => {
     const parameters = {
-      'evaluation_script': 'evaluation_script'
+      evaluation_script: 'evaluation_script',
     };
     const expectedSuccessMsg = 'The evaluation script is successfully updated!';
-    spyOn(apiService, 'patchFileUrl').and.returnValue(new Observable((observer) => {
-      observer.next({results: [{}]});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editEvaluationScript();
     expect(globalService.showModal).toHaveBeenCalled();
@@ -138,16 +147,18 @@ describe('ChallengeevaluationComponent', () => {
 
   it('should handle the API error for `editEvaluationScript` method', () => {
     const parameters = {
-      'evaluation_script': 'evaluation_script'
+      evaluation_script: 'evaluation_script',
     };
     const expectedErrorMsg = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'patchFileUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedErrorMsg.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editEvaluationScript();
     expect(globalService.showModal).toHaveBeenCalled();
