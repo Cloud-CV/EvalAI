@@ -608,7 +608,7 @@ li:last-child {
 }
 
 /* checkbox styles */
-[type="checkbox"] + label {
+[type='checkbox'] + label {
   position: relative;
   padding-left: 35px;
   cursor: pointer;
@@ -629,7 +629,7 @@ li:last-child {
   opacity: 0;
 }
 
-input[type="checkbox"] {
+input[type='checkbox'] {
   box-sizing: border-box;
   padding: 0;
 }
@@ -647,7 +647,7 @@ input[type="checkbox"].filled-in:checked + label:after {
   background-color: #ffaf4b;
 }
 
-[type="checkbox"].filled-in:checked + label:after {
+[type='checkbox'].filled-in:checked + label:after {
   top: 0;
   width: 20px;
   height: 20px;
@@ -656,7 +656,7 @@ input[type="checkbox"].filled-in:checked + label:after {
   z-index: 0;
 }
 
-[type="checkbox"].filled-in:checked + label:before {
+[type='checkbox'].filled-in:checked + label:before {
   top: 0;
   left: 1px;
   width: 8px;
@@ -681,7 +681,7 @@ input[type="checkbox"].filled-in:checked + label:after {
   z-index: 1;
 }
 
-[type="checkbox"].filled-in + label:after {
+[type='checkbox'].filled-in + label:after {
   border-radius: 2px;
 }
 
@@ -711,7 +711,7 @@ input[type="checkbox"].filled-in:not(:checked) + label:after {
   background-color: transparent;
 }
 
-[type="checkbox"].filled-in:not(:checked) + label:before {
+[type='checkbox'].filled-in:not(:checked) + label:before {
   border: 3px solid transparent;
   -webkit-transform: rotateZ(37deg);
   transform: rotateZ(37deg);
@@ -1961,20 +1961,20 @@ a.text-light-black:hover {
 
 /* label color */
 
-input[type="radio"].selectTeam + label {
+input[type='radio'].selectTeam + label {
   font-size: 15px;
   color: $med-black;
   vertical-align: middle;
 }
 
-[type="radio"]:checked + label:after,
-[type="radio"].with-gap:checked + label:after {
+[type='radio']:checked + label:after,
+[type='radio'].with-gap:checked + label:after {
   background-color: #252833;
 }
 
-[type="radio"]:checked + label:after,
-[type="radio"].with-gap:checked + label:before,
-[type="radio"].with-gap:checked + label:after {
+[type='radio']:checked + label:after,
+[type='radio'].with-gap:checked + label:before,
+[type='radio'].with-gap:checked + label:after {
   border: 2px solid #252833;
 }
 

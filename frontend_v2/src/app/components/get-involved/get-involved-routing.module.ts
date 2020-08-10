@@ -7,12 +7,12 @@ import { GetInvolvedComponent } from './get-involved.component';
 const routes: Routes = [
   {
     path: '',
-    component: GetInvolvedComponent
+    component: GetInvolvedComponent,
   },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class GetInvolvedRoutingModule { }
+export class GetInvolvedRoutingModule {}

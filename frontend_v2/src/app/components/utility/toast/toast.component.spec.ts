@@ -9,10 +9,9 @@ describe('ToastComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ToastComponent ],
-      providers: [ GlobalService ]
-    })
-    .compileComponents();
+      declarations: [ToastComponent],
+      providers: [GlobalService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

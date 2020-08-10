@@ -14,7 +14,7 @@ export class ApiService {
    * @param http  Http Injection.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private http: HttpClient, private globalService: GlobalService) { }
+  constructor(private http: HttpClient, private globalService: GlobalService) {}
 
   /**
    * Prepares headers for each request to API.
@@ -32,7 +32,7 @@ export class ApiService {
       delete TEMP['Content-Type'];
     }
     this.HTTP_OPTIONS = {
-      headers: new HttpHeaders(TEMP)
+      headers: new HttpHeaders(TEMP),
     };
     return TEMP;
   }
@@ -120,7 +120,9 @@ export class ApiService {
   loadingWrapper(httpCall, isLoader = true) {
     const SELF = this;
     if (isLoader) {
-      setTimeout(() => {this.globalService.toggleLoading(true); }, 100);
+      setTimeout(() => {
+        this.globalService.toggleLoading(true);
+      }, 100);
     }
     let success = (params) => {};
     let error = (params) => {};
@@ -130,18 +132,22 @@ export class ApiService {
         success = fa;
         error = fb;
         final = fc;
-      }
+      },
     };
     httpCall.subscribe(
       (data) => {
         success(data);
       },
       (err) => {
-        setTimeout(() => {this.globalService.toggleLoading(false); }, 100);
+        setTimeout(() => {
+          this.globalService.toggleLoading(false);
+        }, 100);
         error(err);
       },
       () => {
-        setTimeout(() => {this.globalService.toggleLoading(false); } , 100);
+        setTimeout(() => {
+          this.globalService.toggleLoading(false);
+        }, 100);
         final();
       }
     );

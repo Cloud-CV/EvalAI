@@ -10,11 +10,10 @@ describe('InputComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule, OwlDateTimeModule ],
-      declarations: [ InputComponent ],
-      providers: [ GlobalService ]
-    })
-    .compileComponents();
+      imports: [FormsModule, OwlDateTimeModule],
+      declarations: [InputComponent],
+      providers: [GlobalService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
