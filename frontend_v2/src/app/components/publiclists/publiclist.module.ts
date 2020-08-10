@@ -12,33 +12,16 @@ import { ChallengelistModule } from './challengelist/challengelist.module';
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    PubliclistsComponent
-  ],
-  imports: [
-    CommonModule,
-    PubliclistRoutingModule,
-    ChallengelistModule,
-    SharedModule
-  ],
-  exports: [
-   ChallengelistModule,
-    PubliclistsComponent
-  ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  declarations: [PubliclistsComponent],
+  imports: [CommonModule, PubliclistRoutingModule, ChallengelistModule, SharedModule],
+  exports: [ChallengelistModule, PubliclistsComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PubliclistModule {}
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    TeamlistsRoutingModule,
-    PubliclistModule,
-    SharedModule
-  ],
-  exports: [
-    PubliclistModule,
-  ]
+  imports: [CommonModule, TeamlistsRoutingModule, PubliclistModule, SharedModule],
+  exports: [PubliclistModule],
 })
-export class TeamlistsModule { }
+export class TeamlistsModule {}

@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
-import { Router} from '@angular/router';
+import { Router } from '@angular/router';
 
 /**
  * Component Class
@@ -8,10 +8,9 @@ import { Router} from '@angular/router';
 @Component({
   selector: 'app-forcelogin',
   templateUrl: './forcelogin.component.html',
-  styleUrls: ['./forcelogin.component.scss']
+  styleUrls: ['./forcelogin.component.scss'],
 })
 export class ForceloginComponent implements OnInit {
-
   /**
    * Path of redirect-to page
    */
@@ -22,20 +21,18 @@ export class ForceloginComponent implements OnInit {
    * @param router  GlobalService Injection.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService, private router: Router) { }
+  constructor(private globalService: GlobalService, private router: Router) {}
 
   /**
    * Component on initialized.
    */
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   /**
    * Redirects to login page.
    */
   redirectToLogin() {
-    this.globalService.storeData('redirect', {path: this.path});
+    this.globalService.storeData('redirect', { path: this.path });
     this.router.navigate(['/auth/login']);
   }
-
 }

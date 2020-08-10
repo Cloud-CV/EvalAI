@@ -1,248 +1,245 @@
 @import './variables.scss';
 @import './mixins.scss';
- 
+
 #card_container {
-	
-	.card {
-		background: $gray-lighter;
-		padding-bottom:30px;
-		width:50%;
-		margin:0 auto;
-	}
-	
-	font-size:$fs-16;
-	font-weight: $fw-light;
-	color:$gray-dark;
-	margin:30px;
-	.dark {
-		color:$gray-darker;
-	}
+  .card {
+    background: $gray-lighter;
+    padding-bottom: 30px;
+    width: 50%;
+    margin: 0 auto;
+  }
 
-	.highlight {
-		color: $yellow;
-	}
+  font-size: $fs-16;
+  font-weight: $fw-light;
+  color: $gray-dark;
+  margin: 30px;
+  .dark {
+    color: $gray-darker;
+  }
 
-	.item {
-		margin-bottom: 13px;
-		text-align: center;
-	}
+  .highlight {
+    color: $yellow;
+  }
 
-	.profile-photo {
-		height:80px;
-	    border-radius:50%;
-		@include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-	}
+  .item {
+    margin-bottom: 13px;
+    text-align: center;
+  }
 
-	.user-details {
-		margin-top: 14px;
-		margin-bottom: 14px;
-	}
-	
-	.change-password {
-		margin-top: 25px;
-		margin-bottom: 14px;
-		.change-password-text {
-			margin-right: 20px;
-			margin-bottom: 12px;
-		}
-	}
-	
-	.modal-container {
-		&.hidden {
-			display:none;
-		}
-	}
-	
-	.copy {
-		background: none !important;
-		border: none !important;
-		color: $red-light !important;
-		font-size: $fs-24 !important;
-		i {
-			margin-left:-20px;
-		}
-		&:hover {
-			box-shadow:none !important;
-			color: $red-medium;
-		}
-	}
+  .profile-photo {
+    height: 80px;
+    border-radius: 50%;
+    @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  }
+
+  .user-details {
+    margin-top: 14px;
+    margin-bottom: 14px;
+  }
+
+  .change-password {
+    margin-top: 25px;
+    margin-bottom: 14px;
+    .change-password-text {
+      margin-right: 20px;
+      margin-bottom: 12px;
+    }
+  }
+
+  .modal-container {
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .copy {
+    background: none !important;
+    border: none !important;
+    color: $red-light !important;
+    font-size: $fs-24 !important;
+    i {
+      margin-left: -20px;
+    }
+    &:hover {
+      box-shadow: none !important;
+      color: $red-medium;
+    }
+  }
 }
-.modal-container{
-	.modal-card {
-		.title {
-			margin-bottom: 20px;
-		}
-		.code-btn {
-			margin-top: 15px;
-		}
-	}
+.modal-container {
+  .modal-card {
+    .title {
+      margin-bottom: 20px;
+    }
+    .code-btn {
+      margin-top: 15px;
+    }
+  }
 }
 
 @include screen-medium {
-	.profile-container {
-		.card {
-			width:70%;
-		}
-	}
+  .profile-container {
+    .card {
+      width: 70%;
+    }
+  }
 }
 
 @include screen-small {
-	.profile-container {
-		.card {
-			width:90%;
-		}
-	}
+  .profile-container {
+    .card {
+      width: 90%;
+    }
+  }
 }
 
 .profile-sidebar {
-    position: fixed;
-    z-index: 9;
-    font-size: 14px;
-    min-width: 200px;
-    min-height: 100vh;
-    background-color: $dust-gray;
-    top: 0;
-    left: -200px;
-    text-align: center;
-    color: #fff;
-    ul {
-        margin-top: 20px;
-        text-align: left;
-        li {
-			padding: 10px 0px;
-		}
-	}
-	input[type="checkbox"] + label {
-		font-size: 12px;
-	}
+  position: fixed;
+  z-index: 9;
+  font-size: 14px;
+  min-width: 200px;
+  min-height: 100vh;
+  background-color: $dust-gray;
+  top: 0;
+  left: -200px;
+  text-align: center;
+  color: #fff;
+  ul {
+    margin-top: 20px;
+    text-align: left;
+    li {
+      padding: 10px 0px;
+    }
+  }
+  input[type='checkbox'] + label {
+    font-size: 12px;
+  }
 }
 
 .token-width {
-    width: 400px;
+  width: 400px;
 }
 
 .profile-edit-group {
-	margin-bottom: 50px;
-	margin-right: -20px;
+  margin-bottom: 50px;
+  margin-right: -20px;
 }
 
 .pass-title {
-    margin-bottom: 30px;
+  margin-bottom: 30px;
 }
 
 .back-profile-group {
-    margin-top: 60px;
+  margin-top: 60px;
 }
 
 img.profile-pic {
-    height: 80px;
+  height: 80px;
 }
 
 .user-info {
-    li {
-     margin-bottom: 36px;
+  li {
+    margin-bottom: 36px;
   }
-   margin-top: 20px;
- }
+  margin-top: 20px;
+}
 
- .user-urls {
-      li {
-		margin-bottom: 33px;
-	  }
-	  margin-bottom: 20px;
-	  margin-top: 25px;
- }
+.user-urls {
+  li {
+    margin-bottom: 33px;
+  }
+  margin-bottom: 20px;
+  margin-top: 25px;
+}
 
 .container-fluid {
-	width: calc(100vw - 223px);
-    float: right;
-    padding-top: 70px;
-	overflow-x: hidden;
+  width: calc(100vw - 223px);
+  float: right;
+  padding-top: 70px;
+  overflow-x: hidden;
 }
 
 .main_content {
-	box-sizing: inherit;
-	background-color: rgb(250,250,250);
+  box-sizing: inherit;
+  background-color: rgb(250, 250, 250);
 }
 
-.row { 
-	display: -webkit-box;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    flex-direction: column;
-	
+.row {
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
 }
 
 .dashboard {
-	-webkit-box-flex: 1;
-    flex: 1;
-	
+  -webkit-box-flex: 1;
+  flex: 1;
 }
 
 #card_container {
-	padding: 40px;
-	min-height: 100vh;
-	margin: 0px;
+  padding: 40px;
+  min-height: 100vh;
+  margin: 0px;
 }
 
 #sty_card {
-	margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
 }
 
 .challenge-title-container {
-	padding-bottom: 0;
+  padding-bottom: 0;
 }
 
 .ev-card-panel {
-	position: relative;
-    display: block;
-    background-color: #fff;
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: 0 0 12px #dedede;
+  position: relative;
+  display: block;
+  background-color: #fff;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 12px #dedede;
 }
 
 .ev-z-depth-5 {
-	box-shadow: 0 0 10px #dedede;
+  box-shadow: 0 0 10px #dedede;
 }
 
 #user_info {
-	margin-top: 25px;
+  margin-top: 25px;
 }
 
 @media only screen and (max-width: 992px) {
-	.container-fluid {
-	  width: 100%; 
-	}
+  .container-fluid {
+    width: 100%;
+  }
 }
 
 #profile_layout {
-	margin-top: 40px;
+  margin-top: 40px;
 }
 
 #auth_tok {
-	max-lines: 80;
+  max-lines: 80;
 }
 
 #sty_button {
-	max-lines: 80;
+  max-lines: 80;
 }
 #auth_button_style {
-	margin-top: -80px;
-	margin-left: 90%;
+  margin-top: -80px;
+  margin-left: 90%;
 }
-#auth_tok_button{
-	@media (min-width: 600px) {
-		padding-top: 3px;
-		padding-bottom: 3px;
-		line-height: 16px;
-	}
-	@media (max-width:1200px) {
-		height: auto;
-	}
+#auth_tok_button {
+  @media (min-width: 600px) {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    line-height: 16px;
+  }
+  @media (max-width: 1200px) {
+    height: auto;
+  }
 }

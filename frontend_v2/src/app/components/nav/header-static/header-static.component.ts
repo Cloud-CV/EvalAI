@@ -1,10 +1,20 @@
-import {Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, HostListener, ViewChild, ElementRef, AfterViewInit} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  Inject,
+  HostListener,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
-import {ApiService} from '../../../services/api.service';
-import {el} from '@angular/platform-browser/testing/src/browser_util';
+import { ApiService } from '../../../services/api.service';
+import { el } from '@angular/platform-browser/testing/src/browser_util';
 
 /**
  * Component Class
@@ -12,11 +22,10 @@ import {el} from '@angular/platform-browser/testing/src/browser_util';
 @Component({
   selector: 'app-header-static',
   templateUrl: './header-static.component.html',
-  styleUrls: ['./header-static.component.scss']
+  styleUrls: ['./header-static.component.scss'],
 })
 export class HeaderStaticComponent implements OnInit, OnDestroy {
-
-  user = {username: ''};
+  user = { username: '' };
 
   /**
    * Is router at '/'
@@ -53,7 +62,6 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    */
   public innerWidth: any;
 
-
   @ViewChild('navContainer') navContainer: ElementRef;
 
   /**
@@ -66,22 +74,24 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    * @param apiService  ApiService Injection.
    * @param ref  Angular Change Detector Injection.
    */
-  constructor(private globalService: GlobalService,
-              private route: ActivatedRoute,
-              private router: Router,
-              private ref: ChangeDetectorRef,
-              public authService: AuthService,
-              private apiService: ApiService,
-              @Inject(DOCUMENT) private document: Document) {
-                 this.authState = authService.authState;
-              }
+  constructor(
+    private globalService: GlobalService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private ref: ChangeDetectorRef,
+    public authService: AuthService,
+    private apiService: ApiService,
+    @Inject(DOCUMENT) private document: Document
+  ) {
+    this.authState = authService.authState;
+  }
 
   /**
    * Update View Elements (called after onInit).
    */
   updateElements() {
     this.atHome = true;
-    this.globalServiceSubscription = this.globalService.currentScrolledState.subscribe(scrolledState => {
+    this.globalServiceSubscription = this.globalService.currentScrolledState.subscribe((scrolledState) => {
       this.scrolledState = scrolledState;
     });
   }
@@ -158,5 +168,4 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
       this.isMenuExpanded = true;
     }
   }
-
 }

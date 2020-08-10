@@ -1,48 +1,69 @@
 <section class="ev-sm-container">
   <div class="row">
     <div class="col s12">
-      <span class="text-med-black fs-22"><strong>Challenges Analytics</strong>&nbsp;<i class="fa fa-bar-chart"></i></span>
+      <span class="text-med-black fs-22"
+        ><strong>Challenges Analytics</strong>&nbsp;<i class="fa fa-bar-chart"></i
+      ></span>
     </div>
   </div>
   <div class="row">
     <div class="col s12 m5">
-      <h4 class="fs-18">Select challenge to view Analysis </h4>
+      <h4 class="fs-18">Select challenge to view Analysis</h4>
       <div>
-                <span class="main-title">
-                    Total Challenges hosted :
-                </span>
+        <span class="main-title">
+          Total Challenges hosted :
+        </span>
         <span class="show-count">
-                    {{challengeListCount}}
-                </span>
+          {{ challengeListCount }}
+        </span>
       </div>
       <ul>
-        <li class="analytics-list analytics-team-input" *ngFor="let value  of challengeList">
-          <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" [(ngModel)]="challengeId">
-          <label for="{{value.id}}">
-            <div class="show-member-title pointer">{{value.title}} <span class="text-light-black">hosted by</span> {{value.creator.team_name}}
+        <li class="analytics-list analytics-team-input" *ngFor="let value of challengeList">
+          <input
+            type="radio"
+            name="selectExistTeam"
+            class="with-gap selectTeam"
+            id="{{ value.id }}"
+            value="{{ value.id }}"
+            [(ngModel)]="challengeId"
+          />
+          <label for="{{ value.id }}">
+            <div class="show-member-title pointer">
+              {{ value.title }} <span class="text-light-black">hosted by</span> {{ value.creator.team_name }}
             </div>
           </label>
         </li>
       </ul>
-      <div class="mt-30 btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 show-analytics-btn" *ngIf="challengeListCount !== 0" (click)="showChallengeAnalysis()">Show Analysis &nbsp;<i class="fa fa-chevron-right"></i> </div>
+      <div
+        class="mt-30 btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 show-analytics-btn"
+        *ngIf="challengeListCount !== 0"
+        (click)="showChallengeAnalysis()"
+      >
+        Show Analysis &nbsp;<i class="fa fa-chevron-right"></i>
+      </div>
     </div>
     <div class="col s12 m7">
       <h4 class="fs-18">Challenge Analysis</h4>
-      <div class="main-title analytics-challenge-title" *ngIf="!isTeamSelected && challengeListCount > 0">Please select challenge for analysis.</div>
-      <div class="main-title analytics-challenge-title" *ngIf="challengeListCount === 0 && challengeList.length === 0">There are no challenges to analyze. Click <a routerLink='/teams/hosts'>here</a> to create a new challenge.</div>
+      <div class="main-title analytics-challenge-title" *ngIf="!isTeamSelected && challengeListCount > 0">
+        Please select challenge for analysis.
+      </div>
+      <div class="main-title analytics-challenge-title" *ngIf="challengeListCount === 0 && challengeList.length === 0">
+        There are no challenges to analyze. Click <a routerLink="/teams/hosts">here</a> to create a new challenge.
+      </div>
       <div class="analytics-details" *ngIf="isTeamSelected">
         <div class="row">
           <div class="col s12 m4 l2">
             <div class="image-container analytics-image">
-              <img *ngIf="currentChallengeDetails['image']!==null" [src]='currentChallengeDetails["image"]'>
-              <img *ngIf="currentChallengeDetails['image'] == null" src='assets/images/404.png'>
+              <img *ngIf="currentChallengeDetails['image'] !== null" [src]="currentChallengeDetails['image']" />
+              <img *ngIf="currentChallengeDetails['image'] == null" src="assets/images/404.png" />
             </div>
           </div>
           <div class="col m8 l10">
-            <div class="card-content analytics-card-content ">
-              <h3 class="fs-20 rm-mt"><span>{{currentChallengeDetails['title']}}</span>
+            <div class="card-content analytics-card-content">
+              <h3 class="fs-20 rm-mt">
+                <span>{{ currentChallengeDetails['title'] }}</span>
               </h3>
-              <span class="text-light-black">Hosted by: </span> {{currentChallengeDetails['creator']['team_name']}}
+              <span class="text-light-black">Hosted by: </span> {{ currentChallengeDetails['creator']['team_name'] }}
             </div>
           </div>
         </div>
@@ -51,17 +72,21 @@
             Short Description
           </div>
           <p class="no-top-para">
-            {{currentChallengeDetails['short_description']}}
+            {{ currentChallengeDetails['short_description'] }}
           </p>
         </div>
         <div class="analytics-challenge-card fs-12 analytics-challenge-single-line">
-                    <span class="main-title">
-                        Total Participant Teams:
-                    </span>
+          <span class="main-title">
+            Total Participant Teams:
+          </span>
           <span class="show-count">
-                        {{totalChallengeTeams}}
-                    </span>
-          <a class="participant-download-btn waves-effect waves-dark btn ev-btn-dark fw-light fs-12" (click)="downloadChallengeParticipantTeams()">Download</a>
+            {{ totalChallengeTeams }}
+          </span>
+          <a
+            class="participant-download-btn waves-effect waves-dark btn ev-btn-dark fw-light fs-12"
+            (click)="downloadChallengeParticipantTeams()"
+            >Download</a
+          >
         </div>
         <div class="analytics-challenge-card">
           <div class="main-title fs-12">
@@ -69,21 +94,19 @@
           </div>
           <div class="analytics-phases-card" *ngFor="let item of currentPhase">
             <p class="no-top-para">
-              {{item.name}}
+              {{ item.name }}
             </p>
             <div class="text-light-black fs-12">
               Challenge Phase Duration
             </div>
-            <p class="no-top-para">
-              {{item.start_date | date:'medium'}} - {{item.end_date | date:'medium'}}
-            </p>
+            <p class="no-top-para">{{ item.start_date | date: 'medium' }} - {{ item.end_date | date: 'medium' }}</p>
             <div class="row center">
               <div class="col m3">
                 <div class="analytics-heading text-light-black fs-12">
                   Total Submissions
                 </div>
                 <p class="analytics-content no-top-para mb-5 fs-20">
-                  {{totalSubmission[item.id] || 0}}
+                  {{ totalSubmission[item.id] || 0 }}
                 </p>
                 <div class="short-hr-line"></div>
               </div>
@@ -92,7 +115,7 @@
                   Participant Teams
                 </div>
                 <p class="analytics-content no-top-para mb-5 fs-20">
-                  {{totalParticipatedTeams[item.id] || 0}}
+                  {{ totalParticipatedTeams[item.id] || 0 }}
                 </p>
                 <div class="short-hr-line"></div>
               </div>
@@ -101,7 +124,7 @@
                   Latest Submission At
                 </div>
                 <p *ngIf="lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
-                  {{lastSubmissionTime[item.id] | date:'medium'}}
+                  {{ lastSubmissionTime[item.id] | date: 'medium' }}
                 </p>
                 <p *ngIf="!lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5 fs-20">
                   None

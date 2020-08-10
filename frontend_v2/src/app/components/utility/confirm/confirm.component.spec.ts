@@ -10,22 +10,21 @@ describe('ConfirmComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ConfirmComponent ],
-      providers: [ GlobalService ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ConfirmComponent],
+      providers: [GlobalService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ConfirmComponent);
     component = fixture.componentInstance;
     const PARAMS = {
-        title: 'Would you like to remove yourself ?',
-        content: 'Note: This action will remove you from the team.',
-        confirm: 'Yes',
-        deny: 'Cancel',
-        confirmCallback: () => {}
+      title: 'Would you like to remove yourself ?',
+      content: 'Note: This action will remove you from the team.',
+      confirm: 'Yes',
+      deny: 'Cancel',
+      confirmCallback: () => {},
     };
     component.params = PARAMS;
     fixture.detectChanges();

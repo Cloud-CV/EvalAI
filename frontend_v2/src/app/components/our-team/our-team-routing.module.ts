@@ -7,12 +7,12 @@ import { OurTeamComponent } from './our-team.component';
 const routes: Routes = [
   {
     path: '',
-    component: OurTeamComponent
+    component: OurTeamComponent,
   },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class OurTeamRoutingModule { }
+export class OurTeamRoutingModule {}

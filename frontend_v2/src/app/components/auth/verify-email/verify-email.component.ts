@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {AuthService} from '../../../services/auth.service';
-import {ApiService} from '../../../services/api.service';
-import {GlobalService} from '../../../services/global.service';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
+import { ApiService } from '../../../services/api.service';
+import { GlobalService } from '../../../services/global.service';
 
 /**
  * Component Class
@@ -10,10 +10,9 @@ import {GlobalService} from '../../../services/global.service';
 @Component({
   selector: 'app-verify-email',
   templateUrl: './verify-email.component.html',
-  styleUrls: ['./verify-email.component.scss']
+  styleUrls: ['./verify-email.component.scss'],
 })
 export class VerifyEmailComponent implements OnInit {
-
   /**
    * Email verification token local
    */
@@ -37,20 +36,24 @@ export class VerifyEmailComponent implements OnInit {
    * @param route  ActivatedRoute Injection.
    * @param router  GlobalService Injection.
    */
-  constructor(private router: Router, private route: ActivatedRoute,
-              private apiService: ApiService, private globalService: GlobalService,
-              private authService: AuthService) {
-  }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private apiService: ApiService,
+    private globalService: GlobalService,
+    private authService: AuthService
+  ) {}
 
   /**
    * Component on initialized.
    */
   ngOnInit() {
     this.globalService.startLoader('Verifying Email');
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       if (params['token']) {
         this.token = params['token'];
-        this.authService.verifyEmail(this.token,
+        this.authService.verifyEmail(
+          this.token,
           () => {
             this.email_verify_msg = 'Your email has been verified successfully';
             this.globalService.stopLoader();

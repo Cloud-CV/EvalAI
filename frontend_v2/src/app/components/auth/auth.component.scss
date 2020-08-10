@@ -1,4 +1,4 @@
-@import "styles/variables";
+@import 'styles/variables';
 
 .auth-light-link {
   &:hover {
@@ -20,7 +20,7 @@
 }
 
 img.auth-logo {
-  width:90px;
+  width: 90px;
 }
 
 .graphic-cont,
@@ -64,7 +64,7 @@ img.auth-logo {
 }
 
 .social-auth-group {
-  margin-top:20px;
+  margin-top: 20px;
 }
 
 .moon {
@@ -200,6 +200,6 @@ img.auth-logo {
   }
   .auth-cont {
     width: 100%;
-    background-color: rgba(255,255,255,0.9);
+    background-color: rgba(255, 255, 255, 0.9);
   }
 }

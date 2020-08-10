@@ -16,11 +16,10 @@ describe('ChallengephasesComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengephasesComponent, PhasecardComponent ],
-      providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [ChallengephasesComponent, PhasecardComponent],
+      providers: [ChallengeService, ApiService, GlobalService, AuthService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

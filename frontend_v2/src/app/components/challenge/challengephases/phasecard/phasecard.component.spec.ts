@@ -15,11 +15,10 @@ describe('PhasecardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PhasecardComponent ],
-      providers: [ GlobalService, ChallengeService, EndpointsService, ApiService, AuthService ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [PhasecardComponent],
+      providers: [GlobalService, ChallengeService, EndpointsService, ApiService, AuthService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -30,7 +29,7 @@ describe('PhasecardComponent', () => {
       start_date: '2018-03-13T00:00:00Z',
       end_date: '2099-12-31T00:00:00Z',
       max_submissions_per_day: 90,
-      max_submissions: 100
+      max_submissions: 100,
     };
     fixture.detectChanges();
   });

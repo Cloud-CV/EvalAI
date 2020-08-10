@@ -4,18 +4,25 @@
       <div class="row row-lr-margin">
         <div class="col-sm-12 col-xs-12 col-lr-pad">
           <h5 class="fw-light">Discuss</h5>
-          <span class="fs-16">Here you can discuss anything related to the <b>{{challenge.title}}</b>. Get all the answers
-            for your queries, discuss any new idea or get to know the host team and other participants at the discussion
-            pannel.</span> <br> <br>
+          <span class="fs-16"
+            >Here you can discuss anything related to the <b>{{ challenge.title }}</b
+            >. Get all the answers for your queries, discuss any new idea or get to know the host team and other
+            participants at the discussion pannel.</span
+          >
+          <br />
+          <br />
           <div class="row">
             <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad forum-btn">
-              <a class="ev-btn btn-waves-effect waves-dark ev-btn-dark
-              grad-btn-dark fw-light fs-14" href="{{challenge.forum_url}}" target="_blank">Visit Forum</a>
+              <a
+                class="ev-btn btn-waves-effect waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                href="{{ challenge.forum_url }}"
+                target="_blank"
+                >Visit Forum</a
+              >
             </div>
             <div *ngIf="isChallengeHost" class="edit-btn col-xs-6 col-lg-7 col-md-6">
               <a class="pointer fs-16" (click)="editForumURL($event)">
-                &nbsp;<i class="fa fa-pencil" aria-hidden="true">
-                </i>&nbsp;Edit Forum URL
+                &nbsp;<i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;Edit Forum URL
               </a>
             </div>
           </div>

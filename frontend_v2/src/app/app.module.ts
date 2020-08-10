@@ -1,5 +1,5 @@
 import { BrowserModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { GestureConfig } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
@@ -13,7 +13,6 @@ import { GlobalService } from './services/global.service';
 import { ChallengeService } from './services/challenge.service';
 import { EndpointsService } from './services/endpoints.service';
 
-
 // Import Components
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -25,7 +24,7 @@ import { TermsAndConditionsModalComponent } from './components/challenge/challen
 
 // import module
 import { SharedModule } from './shared/shared.module';
-import { environment } from '../environments/environment'
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -33,7 +32,7 @@ import { environment } from '../environments/environment'
     ModalComponent,
     ToastComponent,
     EditphasemodalComponent,
-    TermsAndConditionsModalComponent
+    TermsAndConditionsModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -45,8 +44,8 @@ import { environment } from '../environments/environment'
     FroalaViewModule.forRoot(),
     LoggerModule.forRoot({
       level: !environment.production ? NgxLoggerLevel.TRACE : NgxLoggerLevel.OFF,
-      serverLogLevel: NgxLoggerLevel.ERROR
-    })
+      serverLogLevel: NgxLoggerLevel.ERROR,
+    }),
   ],
   providers: [
     WindowService,
@@ -55,9 +54,9 @@ import { environment } from '../environments/environment'
     GlobalService,
     ChallengeService,
     EndpointsService,
-    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig }
+    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig },
   ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

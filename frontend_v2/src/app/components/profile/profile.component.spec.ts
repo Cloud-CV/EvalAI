@@ -11,11 +11,10 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { WindowService } from '../../services/window.service';
 import { HttpClientModule } from '@angular/common/http';
-import {Router, Routes} from '@angular/router';
-import {NotFoundComponent} from '../not-found/not-found.component';
-import {LoginComponent} from '../auth/login/login.component';
-import {FormsModule} from '@angular/forms';
-
+import { Router, Routes } from '@angular/router';
+import { NotFoundComponent } from '../not-found/not-found.component';
+import { LoginComponent } from '../auth/login/login.component';
+import { FormsModule } from '@angular/forms';
 
 const routes: Routes = [
   {
@@ -24,19 +23,18 @@ const routes: Routes = [
   },
   {
     path: 'auth/login',
-    component: LoginComponent
+    component: LoginComponent,
   },
   {
     path: '404',
-    component: NotFoundComponent
+    component: NotFoundComponent,
   },
   {
     path: '**',
     redirectTo: '/404',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];
-
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;
@@ -45,12 +43,11 @@ describe('ProfileComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent, LoginComponent ],
-      providers: [ GlobalService, AuthService, WindowService, ApiService, EndpointsService],
-      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ProfileComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent, LoginComponent],
+      providers: [GlobalService, AuthService, WindowService, ApiService, EndpointsService],
+      imports: [HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -60,7 +57,7 @@ describe('ProfileComponent', () => {
   });
 
   it('should create', () => {
-      fixture.detectChanges();
-      expect(component).toBeTruthy();
+    fixture.detectChanges();
+    expect(component).toBeTruthy();
   });
 });

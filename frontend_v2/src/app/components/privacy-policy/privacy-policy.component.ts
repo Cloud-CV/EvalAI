@@ -8,10 +8,9 @@ import { GlobalService } from '../../services/global.service';
 @Component({
   selector: 'app-privacy-policy',
   templateUrl: './privacy-policy.component.html',
-  styleUrls: ['./privacy-policy.component.scss']
+  styleUrls: ['./privacy-policy.component.scss'],
 })
 export class PrivacyPolicyComponent implements OnInit {
-
   visible: boolean;
 
   constructor(@Inject(DOCUMENT) private document: Document, private globalService: GlobalService) {
@@ -29,7 +28,7 @@ export class PrivacyPolicyComponent implements OnInit {
     const ELEM_BOTTOM = RECT.bottom;
     const HEADER_HEIGHT = this.document.getElementById('header-static').clientHeight;
     // Only completely visible elements return true:
-    const IS_VISIBLE = (ELEM_TOP >= HEADER_HEIGHT) && (ELEM_BOTTOM <= window.innerHeight);
+    const IS_VISIBLE = ELEM_TOP >= HEADER_HEIGHT && ELEM_BOTTOM <= window.innerHeight;
     // Partially visible elements return true:
     // isVisible = ELEM_TOP < window.innerHeight && ELEM_BOTTOM >= 0;
     return IS_VISIBLE;
@@ -88,27 +87,27 @@ export class PrivacyPolicyComponent implements OnInit {
    * Listener for page scroll event
    */
   @HostListener('window:scroll', [])
-    onWindowScroll(): void {
-      const el = this.document.getElementById('privacy-policy-title');
-      this.visible = el.getBoundingClientRect().top < 0;
+  onWindowScroll(): void {
+    const el = this.document.getElementById('privacy-policy-title');
+    this.visible = el.getBoundingClientRect().top < 0;
 
-      if (!this.document['manuallyScrolling']) {
-        const ALL_TARGETS = this.document.getElementsByClassName('privacy-section-title');
-        const SELF = this;
-        [].some.call(ALL_TARGETS, function (item) {
-          const elem = SELF.document.getElementById(item.id);
-          if (SELF.isScrolledIntoView(elem)) {
-            SELF.highlightNav(item.id + '-nav');
-            SELF.highlightSectionTitle(item.id);
-            const ELEM_NAV = SELF.document.getElementById(item.id + '-nav');
-            if (!SELF.isScrolledIntoView(ELEM_NAV)) {
-              // ELEM_NAV.scrollIntoView();
-            }
-            return true;
+    if (!this.document['manuallyScrolling']) {
+      const ALL_TARGETS = this.document.getElementsByClassName('privacy-section-title');
+      const SELF = this;
+      [].some.call(ALL_TARGETS, function (item) {
+        const elem = SELF.document.getElementById(item.id);
+        if (SELF.isScrolledIntoView(elem)) {
+          SELF.highlightNav(item.id + '-nav');
+          SELF.highlightSectionTitle(item.id);
+          const ELEM_NAV = SELF.document.getElementById(item.id + '-nav');
+          if (!SELF.isScrolledIntoView(ELEM_NAV)) {
+            // ELEM_NAV.scrollIntoView();
           }
-        });
-      }
+          return true;
+        }
+      });
     }
+  }
 
   /**
    * Scrolls the item into view based on the nav item that is clicked
@@ -135,7 +134,7 @@ export class PrivacyPolicyComponent implements OnInit {
 
     window.scrollTo({
       top: offsetPosition,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
     this.highlightSectionTitle(ELEMENT_ID);
   }
@@ -144,6 +143,6 @@ export class PrivacyPolicyComponent implements OnInit {
    * Scrolls to the top of the page
    */
   scrollToTop() {
-    this.document.getElementById('privacy-policy-title').scrollIntoView({behavior: 'smooth'});
+    this.document.getElementById('privacy-policy-title').scrollIntoView({ behavior: 'smooth' });
   }
 }

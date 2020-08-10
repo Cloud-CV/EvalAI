@@ -14,18 +14,18 @@ const routes: Routes = [
     path: '',
     component: AuthComponent,
     children: [
-      {path: '', redirectTo: 'login', pathMatch: 'full'},
-      {path: 'login', component: LoginComponent},
-      {path: 'reset-password', component: ResetPasswordComponent},
-      {path: 'reset-password/confirm/:user_id/:reset_token', component: ResetPasswordConfirmComponent},
-      {path: 'signup', component: SignupComponent},
-      {path: 'verify-email/:token', component: VerifyEmailComponent},
-      {path: '**', redirectTo: 'login'}
-    ]
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
+      { path: 'login', component: LoginComponent },
+      { path: 'reset-password', component: ResetPasswordComponent },
+      { path: 'reset-password/confirm/:user_id/:reset_token', component: ResetPasswordConfirmComponent },
+      { path: 'signup', component: SignupComponent },
+      { path: 'verify-email/:token', component: VerifyEmailComponent },
+      { path: '**', redirectTo: 'login' },
+    ],
   },
 ];
 @NgModule({
-  imports: [ RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class AuthRoutingModule {}

@@ -9,16 +9,8 @@ import { GetInvolvedRoutingModule } from './get-involved-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    GetInvolvedComponent
-  ],
-  imports: [
-    CommonModule,
-    GetInvolvedRoutingModule,
-    SharedModule
-  ],
-  exports: [
-    GetInvolvedComponent
-  ]
+  declarations: [GetInvolvedComponent],
+  imports: [CommonModule, GetInvolvedRoutingModule, SharedModule],
+  exports: [GetInvolvedComponent],
 })
-export class GetInvolvedModule { }
+export class GetInvolvedModule {}

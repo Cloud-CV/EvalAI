@@ -10,10 +10,9 @@ import { EndpointsService } from '../../../services/endpoints.service';
 @Component({
   selector: 'app-challengediscuss',
   templateUrl: './challengediscuss.component.html',
-  styleUrls: ['./challengediscuss.component.scss']
+  styleUrls: ['./challengediscuss.component.scss'],
 })
 export class ChallengediscussComponent implements OnInit {
-
   /**
    * Is user logged in
    */
@@ -44,19 +43,25 @@ export class ChallengediscussComponent implements OnInit {
    */
   apiCall: any;
 
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
-    private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-    private endpointsService: EndpointsService) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService
+  ) {}
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
       this.isLoggedIn = true;
     }
     this.routerPublic = this.router;
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -66,20 +71,19 @@ export class ChallengediscussComponent implements OnInit {
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
       console.log(BODY);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-      ).subscribe(
-        data => {
-          SELF.challenge.forum_url = data.forum_url;
-          SELF.globalService.showToast('success', 'The challenge forum url is successfully updated!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => {}
-      );
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.forum_url = data.forum_url;
+            SELF.globalService.showToast('success', 'The challenge forum url is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
     };
 
     /**
@@ -96,13 +100,12 @@ export class ChallengediscussComponent implements OnInit {
           label: 'forum_url',
           placeholder: 'Forum URL',
           value: this.challenge.forum_url,
-          type: 'text'
-        }
+          type: 'text',
+        },
       ],
       isButtonDisabled: true,
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
-
 }

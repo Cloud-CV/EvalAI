@@ -6,6 +6,12 @@
 <app-loading *ngIf="isLoading"></app-loading>
 <app-confirm *ngIf="confirmParams['isConfirming']" [params]="confirmParams"></app-confirm>
 <app-modal *ngIf="modalParams['isModalVisible']" [params]="modalParams"></app-modal>
-<app-editphasemodal *ngIf="editPhaseModalParams['isEditPhaseModalVisible']" [params]="editPhaseModalParams"></app-editphasemodal>
-<app-terms-and-conditions-modal *ngIf="termsAndConditionsModalParams['isTermsAndConditionsModalVisible']" [params]="termsAndConditionsModalParams"></app-terms-and-conditions-modal>
+<app-editphasemodal
+  *ngIf="editPhaseModalParams['isEditPhaseModalVisible']"
+  [params]="editPhaseModalParams"
+></app-editphasemodal>
+<app-terms-and-conditions-modal
+  *ngIf="termsAndConditionsModalParams['isTermsAndConditionsModalVisible']"
+  [params]="termsAndConditionsModalParams"
+></app-terms-and-conditions-modal>
 <i (click)="scrollUp()" class="fa fa-arrow-up" id="up-arrow"></i>

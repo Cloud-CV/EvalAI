@@ -2,69 +2,69 @@
 @import './variables.scss';
 
 .modal-container {
-    .modal-card {
-        width: 800px;
-        max-height: 600px;
-        padding: 50px 0px;
+  .modal-card {
+    width: 800px;
+    max-height: 600px;
+    padding: 50px 0px;
 
-        .title {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 99;
-            background: #fff;
-            width: 100%;
-            padding: 15px 20px;
-        }
-
-        .form {
-            max-height: 485px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 0px 30px;
-        }
-
-        .buttons {
-            position: fixed;
-            width: 100%;
-            bottom: 0;
-            left: 0;
-            padding-bottom: 10px;
-            padding-top: 10px;
-            background: #fff;
-            z-index: 99;
-        }
-
-        .editor-validation-message {
-            margin-top: 20px;
-        }
-
-        .row-lr-margin {
-            margin-bottom: 20px;
-        }
+    .title {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 99;
+      background: #fff;
+      width: 100%;
+      padding: 15px 20px;
     }
+
+    .form {
+      max-height: 485px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0px 30px;
+    }
+
+    .buttons {
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      padding-bottom: 10px;
+      padding-top: 10px;
+      background: #fff;
+      z-index: 99;
+    }
+
+    .editor-validation-message {
+      margin-top: 20px;
+    }
+
+    .row-lr-margin {
+      margin-bottom: 20px;
+    }
+  }
 }
 
 @include screen-small-medium {
-    .modal-container {
-        .modal-card {
-            width: 720px;
-        }
+  .modal-container {
+    .modal-card {
+      width: 720px;
     }
+  }
 }
 
 @include screen-small {
-    .modal-container {
-        .modal-card {
-            width: 400px;
-        }
+  .modal-container {
+    .modal-card {
+      width: 400px;
     }
+  }
 }
 
 .mt-20 {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .mb-20 {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }

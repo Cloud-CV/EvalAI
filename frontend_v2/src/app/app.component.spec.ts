@@ -19,7 +19,6 @@ import { ModalComponent } from './components/utility/modal/modal.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AppComponent', () => {
-
   let location: Location;
   let router: Router;
   let fixture;
@@ -34,22 +33,11 @@ describe('AppComponent', () => {
         ToastComponent,
         LoadingComponent,
         ConfirmComponent,
-        HomemainComponent
+        HomemainComponent,
       ],
-      imports: [
-        RouterTestingModule,
-        HttpClientModule
-      ],
-      providers: [
-        GlobalService,
-        AuthService,
-        ApiService,
-        ModalComponent,
-        EndpointsService
-      ],
-      schemas: [
-        NO_ERRORS_SCHEMA
-      ]
+      imports: [RouterTestingModule, HttpClientModule],
+      providers: [GlobalService, AuthService, ApiService, ModalComponent, EndpointsService],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     router = TestBed.get(Router);
@@ -57,7 +45,6 @@ describe('AppComponent', () => {
 
     fixture = TestBed.createComponent(AppComponent);
     router.initialNavigation();
-
   }));
 
   // Mocking promis
@@ -66,7 +53,7 @@ describe('AppComponent', () => {
       setTimeout(resolve, 10);
     });
     let done = false;
-    promise.then(() => done = true);
+    promise.then(() => (done = true));
     tick(50);
     expect(done).toBeTruthy();
   }));

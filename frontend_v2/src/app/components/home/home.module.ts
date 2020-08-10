@@ -23,14 +23,9 @@ import { HomeRoutingModule } from './home-routing.module';
     RulesComponent,
     TestimonialsComponent,
     HomemainComponent,
-    FeaturedChallengesComponent
+    FeaturedChallengesComponent,
   ],
-  imports: [
-    CommonModule,
-    HomeRoutingModule,
-    NgxTwitterTimelineModule,
-    SharedModule
-  ],
+  imports: [CommonModule, HomeRoutingModule, NgxTwitterTimelineModule, SharedModule],
   exports: [
     HomeComponent,
     TwitterFeedComponent,
@@ -38,8 +33,8 @@ import { HomeRoutingModule } from './home-routing.module';
     RulesComponent,
     TestimonialsComponent,
     HomemainComponent,
-    FeaturedChallengesComponent
+    FeaturedChallengesComponent,
   ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class HomeModule { }
+export class HomeModule {}

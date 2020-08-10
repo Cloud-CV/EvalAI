@@ -4,7 +4,7 @@ Revamped codebase of EvalAI Frontend
 
 ### For deploying with [Surge](https://surge.sh/):
 
-Surge will automatically generate deployment link whenever a pull request passes Travis CI. 
+Surge will automatically generate deployment link whenever a pull request passes Travis CI.
 
 Suppose pull request number is 123 and it passes Travis CI. The deployment link can be found here: `https://pr-123-evalai.surge.sh`
 
@@ -21,9 +21,11 @@ Compodoc supports [these](https://compodoc.github.io/website/guides/jsdoc-tags.h
 ### Building and Serving the documentation
 
 Run the following command to build and serve the docs:
+
 ```
 npm run doc:buildandserve
 ```
+
 Open http://localhost:8080 in the browser to have a look at the generated docs.
 
 ## Build

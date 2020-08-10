@@ -15,12 +15,11 @@ describe('FeaturedChallengesComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FeaturedChallengesComponent ],
-      imports: [ HttpClientModule, RouterTestingModule ],
-      providers: [ GlobalService, AuthService, EndpointsService, ApiService],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [FeaturedChallengesComponent],
+      imports: [HttpClientModule, RouterTestingModule],
+      providers: [GlobalService, AuthService, EndpointsService, ApiService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

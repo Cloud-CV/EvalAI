@@ -5,7 +5,7 @@ import { EndpointsService } from './endpoints.service';
 describe('EndpointsService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [EndpointsService]
+      providers: [EndpointsService],
     });
   });
 

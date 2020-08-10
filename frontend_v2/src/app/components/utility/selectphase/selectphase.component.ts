@@ -8,10 +8,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-selectphase',
   templateUrl: './selectphase.component.html',
-  styleUrls: ['./selectphase.component.scss']
+  styleUrls: ['./selectphase.component.scss'],
 })
 export class SelectphaseComponent implements OnInit, OnChanges {
-
   /**
    * Phase list
    */
@@ -27,7 +26,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    */
   @Input() phaseSplitSelected: any;
 
-    /**
+  /**
    * Phase selection type (radio button or select box)
    */
   @Input() phaseSelectionType: string;
@@ -35,7 +34,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   /**
    * Phase selection list type (phase or phase split)
    */
-  @Input () phaseSelectionListType: string;
+  @Input() phaseSelectionListType: string;
 
   /**
    * Selected phase name
@@ -72,14 +71,13 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * @param globalService  GlobalService Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private challengeService: ChallengeService,
-              private globalService: GlobalService) { }
+  constructor(private challengeService: ChallengeService, private globalService: GlobalService) {}
 
   /**
    * Component on intialized.
    */
   ngOnInit() {
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
   }
@@ -88,8 +86,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * Component on changes detected in Input.
    * @param change  changes detected
    */
-  ngOnChanges(change) {
-  }
+  ngOnChanges(change) {}
 
   /**
    * Select a particular phase.
@@ -123,5 +120,4 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   getFormattedDate(date) {
     return this.globalService.formatDate12Hour(new Date(Date.parse(date)));
   }
-
 }

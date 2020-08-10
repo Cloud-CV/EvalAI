@@ -10,11 +10,10 @@ describe('TermsAndConditionsModalComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule ],
-      declarations: [ TermsAndConditionsModalComponent ],
-      providers: [ GlobalService ]
-    })
-    .compileComponents();
+      imports: [FormsModule],
+      declarations: [TermsAndConditionsModalComponent],
+      providers: [GlobalService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

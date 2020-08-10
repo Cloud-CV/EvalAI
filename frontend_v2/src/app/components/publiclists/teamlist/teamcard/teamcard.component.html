@@ -1,41 +1,54 @@
-<div class="team-card-container" [class.selected]='isSelected' [class.noexpand] = 'isHost' [class.expand] = '!isHost'>
-<div class="team-card-container-child">
-    <div class="team-content" (click)='selectTeamContentToggle()'>
-      <input type="radio" class="with-gap selectPhase" name="teamSelection" (click)='selectTeamToggle()' *ngIf="isHost || isOnChallengePage" id="{{teamView['team_name']}}">
-      <label id="teamToggleButton" for="{{teamView['team_name']}}"></label>
-      <i class="fa fa-users" aria-hidden="true" *ngIf='!isHost'></i>
+<div class="team-card-container" [class.selected]="isSelected" [class.noexpand]="isHost" [class.expand]="!isHost">
+  <div class="team-card-container-child">
+    <div class="team-content" (click)="selectTeamContentToggle()">
+      <input
+        type="radio"
+        class="with-gap selectPhase"
+        name="teamSelection"
+        (click)="selectTeamToggle()"
+        *ngIf="isHost || isOnChallengePage"
+        id="{{ teamView['team_name'] }}"
+      />
+      <label id="teamToggleButton" for="{{ teamView['team_name'] }}"></label>
+      <i class="fa fa-users" aria-hidden="true" *ngIf="!isHost"></i>
       <div class="team-details">
         <span class="title toptitle">
-        Team:
+          Team:
         </span>
         <span *ngIf="teamView['team_url']">
-          <a class="orange-text" target="_blank" href="{{teamView['team_url']}}">{{teamView['team_name']}}</a>
+          <a class="orange-text" target="_blank" href="{{ teamView['team_url'] }}">{{ teamView['team_name'] }}</a>
         </span>
         <span *ngIf="!teamView['team_url']" class="team-detail">
-        {{teamView['team_name']}}
+          {{ teamView['team_name'] }}
         </span>
-        <br>
+        <br />
         <span class="title">
-        Created by:
+          Created by:
         </span>
         <span class="team-detail">
-        {{teamView['created_by']}}
+          {{ teamView['created_by'] }}
         </span>
       </div>
-      <div class='team-icons'>
-        <a (click)="addMembersToTeam($event)"><i class="fa fa-user-plus list-icon text-highlight w-300 left" aria-hidden="true"></i></a>
-        <a (click)="editTeam($event)"><i class="fa fa fa-pencil list-icon text-highlight w-300 left grey-text" aria-hidden="true"></i></a>
-        <a (click)="deleteTeam($event)"><i class="fa fa-trash list-icon text-highlight w-300 left grey-text" aria-hidden="true"></i></a>
+      <div class="team-icons">
+        <a (click)="addMembersToTeam($event)"
+          ><i class="fa fa-user-plus list-icon text-highlight w-300 left" aria-hidden="true"></i
+        ></a>
+        <a (click)="editTeam($event)"
+          ><i class="fa fa fa-pencil list-icon text-highlight w-300 left grey-text" aria-hidden="true"></i
+        ></a>
+        <a (click)="deleteTeam($event)"
+          ><i class="fa fa-trash list-icon text-highlight w-300 left grey-text" aria-hidden="true"></i
+        ></a>
       </div>
     </div>
-    <div class='team-members'>
+    <div class="team-members">
       <div class="title">
         <h6><b>Team Members:</b></h6>
       </div>
-      <div class="col s12 m6" *ngFor="let member of memberArray; let i=index;" class="member-class">
-        <span class="m1">{{member}}</span>
-        <span class="trash-icon"><a (click)="deleteTeamMember($event, memberIdArray[i])"
-            *ngIf="authState.username == teamView['created_by']">
+      <div class="col s12 m6" *ngFor="let member of memberArray; let i = index" class="member-class">
+        <span class="m1">{{ member }}</span>
+        <span class="trash-icon"
+          ><a (click)="deleteTeamMember($event, memberIdArray[i])" *ngIf="authState.username == teamView['created_by']">
             <i class="fa fa-trash list-icon text-highlight w-300 left grey-text" aria-hidden="true"></i>
           </a>
         </span>

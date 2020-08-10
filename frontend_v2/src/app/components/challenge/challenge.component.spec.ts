@@ -32,7 +32,7 @@ describe('ChallengeComponent', () => {
   let fixture: ComponentFixture<ChallengeComponent>;
   let router, authService, authServiceSpy;
   const fakeActivatedRoute = {
-    id: 1
+    id: 1,
   };
   let challengeService, challengeServiceSpy;
   let globalService, apiService, endpointsService;
@@ -53,7 +53,7 @@ describe('ChallengeComponent', () => {
         ForceloginComponent,
         FooterComponent,
         TeamlistComponent,
-        SelectphaseComponent
+        SelectphaseComponent,
       ],
       providers: [
         ApiService,
@@ -69,10 +69,9 @@ describe('ChallengeComponent', () => {
           },
         },
       ],
-      imports: [ HttpClientModule, RouterTestingModule, FormsModule, MatTableModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      imports: [HttpClientModule, RouterTestingModule, FormsModule, MatTableModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -101,8 +100,8 @@ describe('ChallengeComponent', () => {
     expect(component.isStarred).toBeFalsy();
     expect(component.isChallengeHost).toBeFalsy();
     expect(component.publishChallenge).toEqual({
-      'state': 'Not Published',
-      'icon': 'fa fa-eye-slash red-text'
+      state: 'Not Published',
+      icon: 'fa fa-eye-slash red-text',
     });
     expect(component.isParticipated).toBeFalsy();
     expect(component.isLoggedIn).toBeFalsy();
@@ -140,14 +139,16 @@ describe('ChallengeComponent', () => {
   it('should toggle the publish challenge state from public to private', async(() => {
     component.publishChallenge = {
       state: 'Published',
-      icon: 'fa fa-eye green-text'
+      icon: 'fa fa-eye green-text',
     };
     const expectedSuccessMsg = 'The challenge was successfully made private';
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.next({'results': [{}]});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.togglePublishChallengeState();
     fixture.detectChanges();
@@ -162,14 +163,16 @@ describe('ChallengeComponent', () => {
   it('should toggle the publish challenge state from private to public', async(() => {
     component.publishChallenge = {
       state: 'Not Published',
-      icon: 'fa fa-eye-slash red-text'
+      icon: 'fa fa-eye-slash red-text',
     };
     const expectedSuccessMsg = 'The challenge was successfully made public';
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.next({results: [{}]});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.togglePublishChallengeState();
     fixture.detectChanges();
@@ -183,13 +186,15 @@ describe('ChallengeComponent', () => {
 
   it('should handle the API error for `togglePublishChallengeState` method', async(() => {
     const expectedApiError = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedApiError.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.togglePublishChallengeState();
     fixture.detectChanges();
@@ -205,15 +210,17 @@ describe('ChallengeComponent', () => {
       id: 1,
       title: 'Challenge title',
       creator: 'Host user',
-      description: 'Challenge description'
+      description: 'Challenge description',
     };
     const expectedUpdateTitle = 'Updated challenge title';
     const expectedSuccessMsg = 'The challenge title is  successfully updated!';
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.next({title: expectedUpdateTitle});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ title: expectedUpdateTitle });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editChallengeTitle();
     fixture.detectChanges();
@@ -229,16 +236,18 @@ describe('ChallengeComponent', () => {
       id: 1,
       title: 'Challenge title',
       creator: 'Host user',
-      description: 'Challenge description'
+      description: 'Challenge description',
     };
     const expectedApiError = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedApiError.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editChallengeTitle();
     fixture.detectChanges();
@@ -251,11 +260,13 @@ describe('ChallengeComponent', () => {
 
   it('should show the modal with the form fields and successfully delete the challenge', async(() => {
     const expectedSuccessMsg = 'The Challenge is successfully deleted!';
-    spyOn(apiService, 'postUrl').and.returnValue(new Observable((observer) => {
-      observer.next({results: [{}]});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'postUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.deleteChallenge();
     fixture.detectChanges();
@@ -268,13 +279,15 @@ describe('ChallengeComponent', () => {
 
   it('should handle the API error for `deleteChallenge` method', async(() => {
     const expectedApiError = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'postUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedApiError.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'postUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.deleteChallenge();
     fixture.detectChanges();
@@ -284,5 +297,4 @@ describe('ChallengeComponent', () => {
     expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
   }));
-
 });

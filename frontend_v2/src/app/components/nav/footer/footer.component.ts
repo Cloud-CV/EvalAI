@@ -1,4 +1,4 @@
-import {Component, OnInit, Inject, Input} from '@angular/core';
+import { Component, OnInit, Inject, Input } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { DOCUMENT } from '@angular/common';
@@ -10,10 +10,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
-  styleUrls: ['./footer.component.scss']
+  styleUrls: ['./footer.component.scss'],
 })
 export class FooterComponent implements OnInit {
-
   @Input() isDash = false;
 
   year: any;
@@ -41,8 +40,13 @@ export class FooterComponent implements OnInit {
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
    */
-  constructor(private apiService: ApiService, @Inject(DOCUMENT) private document: Document, private globalService: GlobalService,
-              private router: Router, private route: ActivatedRoute) { }
+  constructor(
+    private apiService: ApiService,
+    @Inject(DOCUMENT) private document: Document,
+    private globalService: GlobalService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   /**
    * Component on intialized.
@@ -76,17 +80,17 @@ export class FooterComponent implements OnInit {
   formSubmit(email: string) {
     // TODO get notified API path
     const API_PATH = '';
-    const BODY = { 'email': email };
+    const BODY = { email: email };
     const SELF = this;
     this.apiService.postUrl(API_PATH, JSON.stringify(BODY)).subscribe(
-      data => {
+      (data) => {
         SELF.globalService.showToast('success', 'Subscription successful!');
       },
-      err => {
+      (err) => {
         console.error(err);
         SELF.globalService.showToast('error', 'Subscription failed!');
       },
-      () => { }
+      () => {}
     );
   }
 
@@ -95,7 +99,6 @@ export class FooterComponent implements OnInit {
    * @param url  destination URL path.
    */
   navigateTo(url) {
-    this.router.navigate([ url ]);
+    this.router.navigate([url]);
   }
-
 }

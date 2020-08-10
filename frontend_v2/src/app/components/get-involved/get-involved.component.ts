@@ -7,15 +7,14 @@ import { GlobalService } from '../../services/global.service';
 @Component({
   selector: 'app-get-involved',
   templateUrl: './get-involved.component.html',
-  styleUrls: ['./get-involved.component.scss']
+  styleUrls: ['./get-involved.component.scss'],
 })
 export class GetInvolvedComponent implements OnInit {
-
   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(public globalService: GlobalService) { }
+  constructor(public globalService: GlobalService) {}
 
   /**
    * Component on initialized.
@@ -23,5 +22,4 @@ export class GetInvolvedComponent implements OnInit {
   ngOnInit() {
     this.globalService.scrollToTop();
   }
-
 }

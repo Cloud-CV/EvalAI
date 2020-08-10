@@ -6,8 +6,7 @@
   </div>
   <div *ngIf="isActive">
     <div *ngIf="!isLoggedIn" class="ev-card-panel ev-md-container card-bt-margin">
-      <app-forcelogin [path]="routerPublic.url">
-      </app-forcelogin>
+      <app-forcelogin [path]="routerPublic.url"> </app-forcelogin>
     </div>
     <div *ngIf="isParticipated" class="ev-card-panel ev-md-container card-bt-margin">
       <p><strong class="fw-semibold content">You have already participated in the challenge with a team!</strong></p>

@@ -9,25 +9,23 @@ import { AuthService } from '../../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterTestingModule } from '@angular/router/testing';
 import { EndpointsService } from '../../../services/endpoints.service';
-import {Router, Routes} from '@angular/router';
-import {ChallengeparticipateComponent} from '../challengeparticipate/challengeparticipate.component';
-import {NotFoundComponent} from '../../not-found/not-found.component';
+import { Router, Routes } from '@angular/router';
+import { ChallengeparticipateComponent } from '../challengeparticipate/challengeparticipate.component';
+import { NotFoundComponent } from '../../not-found/not-found.component';
 
 const routes: Routes = [
-    {path: 'challenge/:id/participate', component: ChallengeparticipateComponent},
-    {path: 'challenge/:id/submit', component: ChallengesubmitComponent},
-    {
-      path: '404',
-      component: NotFoundComponent
-    },
-    {
-      path: '**',
-      redirectTo: '/404',
-      pathMatch: 'full'
-    }
+  { path: 'challenge/:id/participate', component: ChallengeparticipateComponent },
+  { path: 'challenge/:id/submit', component: ChallengesubmitComponent },
+  {
+    path: '404',
+    component: NotFoundComponent,
+  },
+  {
+    path: '**',
+    redirectTo: '/404',
+    pathMatch: 'full',
+  },
 ];
-
-
 
 describe('ChallengesubmitComponent', () => {
   let router: Router;
@@ -36,12 +34,11 @@ describe('ChallengesubmitComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengesubmitComponent, ChallengeparticipateComponent, NotFoundComponent ],
-      providers: [ ChallengeService, GlobalService, AuthService, ApiService, EndpointsService ],
-      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes)],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ChallengesubmitComponent, ChallengeparticipateComponent, NotFoundComponent],
+      providers: [ChallengeService, GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [HttpClientModule, RouterTestingModule.withRoutes(routes)],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

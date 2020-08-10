@@ -15,10 +15,10 @@
     .privacy-nav {
       font-weight: $fw-regular;
     }
-    
-  position: relative;
-  position: -webkit-sticky;
-  position: sticky;
+
+    position: relative;
+    position: -webkit-sticky;
+    position: sticky;
     max-height: 65vh;
     ul {
       list-style-type: none;
@@ -90,8 +90,6 @@
     }
   }
 }
-
-
 
 @include screen-small-medium {
   .privacy-nav-container,

@@ -19,12 +19,11 @@ describe('ChallengeparticipateComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeparticipateComponent, ForceloginComponent, TeamlistComponent ],
-      providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ HttpClientModule, RouterTestingModule, FormsModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ChallengeparticipateComponent, ForceloginComponent, TeamlistComponent],
+      providers: [ChallengeService, ApiService, GlobalService, AuthService, EndpointsService],
+      imports: [HttpClientModule, RouterTestingModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

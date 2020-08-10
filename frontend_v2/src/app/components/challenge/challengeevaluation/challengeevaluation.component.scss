@@ -2,13 +2,13 @@
 @import './mixins.scss';
 
 .ev-pad {
-	padding-left: 15px;
-	padding-right: 10px;
+  padding-left: 15px;
+  padding-right: 10px;
 }
 
 .tnc-pad {
-	padding-left: 10px;
-	padding-right: 15px;
+  padding-left: 10px;
+  padding-right: 15px;
 }
 
 .challenge-card {
@@ -22,11 +22,11 @@
 }
 
 @include screen-small {
-	.ev-pad {
-		padding-right: 15px;
-	}
+  .ev-pad {
+    padding-right: 15px;
+  }
 
-	.tnc-pad {
-		padding-left: 15px;
-	}
+  .tnc-pad {
+    padding-left: 15px;
+  }
 }

@@ -11,7 +11,7 @@ describe('AuthService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [AuthService, GlobalService, ApiService, EndpointsService],
-      imports: [ RouterTestingModule, HttpClientModule ]
+      imports: [RouterTestingModule, HttpClientModule],
     });
   });
 

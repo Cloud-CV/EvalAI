@@ -14,17 +14,11 @@ describe('AuthComponent', () => {
   let fixture: ComponentFixture<AuthComponent>;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AuthComponent, HeaderStaticComponent ],
-      providers: [
-        GlobalService,
-        AuthService,
-        ApiService,
-        EndpointsService
-      ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [AuthComponent, HeaderStaticComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

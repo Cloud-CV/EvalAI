@@ -2,7 +2,7 @@
 @import './mixins.scss';
 
 .home-main-container {
-  display:block;
+  display: block;
   .header-tagline {
     color: #fff;
     font-weight: semibold;
@@ -12,11 +12,11 @@
     color: #efefef;
     font-weight: $fw-light;
     padding: 30px;
-    font-size:$fs-16;
+    font-size: $fs-16;
   }
   .header-body-buttons {
-    padding-top:40px;
-    padding-bottom:30px;
+    padding-top: 40px;
+    padding-bottom: 30px;
     width: 50%;
     margin: 0 auto;
     .btn-left {
@@ -24,7 +24,7 @@
     }
     .btn {
       width: 200px;
-      margin-bottom:20px !important;
+      margin-bottom: 20px !important;
     }
   }
   .top-margin {
@@ -63,17 +63,17 @@
     width: 40%;
     margin: 0 auto;
     margin-top: 50px;
-    position:relative;
+    position: relative;
     img {
-      height:110%;
-      position:absolute;
-      left:30px;
-      top:10px;
-      z-index:0;
+      height: 110%;
+      position: absolute;
+      left: 30px;
+      top: 10px;
+      z-index: 0;
     }
     iframe {
-      z-index:1;
-      position:relative;
+      z-index: 1;
+      position: relative;
     }
   }
 
@@ -84,7 +84,7 @@
     cursor: pointer !important;
     -moz-border-radius: 15px;
     border-radius: 15px;
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -109,9 +109,8 @@
         height: 200px;
       }
       img {
-        width:90%;
-        left:0px;
-
+        width: 90%;
+        left: 0px;
       }
     }
   }

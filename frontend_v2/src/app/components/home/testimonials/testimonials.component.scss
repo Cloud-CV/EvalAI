@@ -6,18 +6,18 @@
   background-size: 100% 100%;
   background-repeat: no-repeat;
   position: relative;
-  margin-top:100px;
-  margin-bottom:100px;
+  margin-top: 100px;
+  margin-bottom: 100px;
   .testimonial-body {
     width: 70%;
     margin-left: 15%;
     padding-top: 400px;
     padding-bottom: 200px;
     span {
-        color: #fff;
-        font-weight: $fw-light;
-        font-style: italic;
-        padding: 15px;
+      color: #fff;
+      font-weight: $fw-light;
+      font-style: italic;
+      padding: 15px;
     }
   }
 
@@ -51,7 +51,6 @@
     height: 50px;
   }
 }
-
 
 @include screen-medium {
   .testimonial-container {

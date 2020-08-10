@@ -9,16 +9,8 @@ import { ChallengeCreateRoutingModule } from './challenge-create-routing.module'
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    ChallengeCreateComponent
-  ],
-  imports: [
-    CommonModule,
-    ChallengeCreateRoutingModule,
-    SharedModule
-  ],
-  exports: [
-    ChallengeCreateComponent
-  ]
+  declarations: [ChallengeCreateComponent],
+  imports: [CommonModule, ChallengeCreateRoutingModule, SharedModule],
+  exports: [ChallengeCreateComponent],
 })
-export class ChallengeCreateModule { }
+export class ChallengeCreateModule {}

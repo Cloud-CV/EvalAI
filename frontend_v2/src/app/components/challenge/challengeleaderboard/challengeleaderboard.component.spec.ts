@@ -18,12 +18,11 @@ describe('ChallengeleaderboardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeleaderboardComponent, SelectphaseComponent ],
-      providers: [ ChallengeService, AuthService, GlobalService, ApiService, EndpointsService ],
-      imports: [ HttpClientModule, RouterTestingModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ChallengeleaderboardComponent, SelectphaseComponent],
+      providers: [ChallengeService, AuthService, GlobalService, ApiService, EndpointsService],
+      imports: [HttpClientModule, RouterTestingModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

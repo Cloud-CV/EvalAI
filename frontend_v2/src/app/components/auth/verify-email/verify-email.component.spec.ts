@@ -15,12 +15,11 @@ describe('VerifyEmailComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ VerifyEmailComponent ],
-      imports: [ HttpClientModule, RouterTestingModule ],
-      providers: [ GlobalService, AuthService, ApiService, EndpointsService ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [VerifyEmailComponent],
+      imports: [HttpClientModule, RouterTestingModule],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

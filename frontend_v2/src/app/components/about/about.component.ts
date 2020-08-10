@@ -7,15 +7,14 @@ import { GlobalService } from '../../services/global.service';
 @Component({
   selector: 'app-about',
   templateUrl: './about.component.html',
-  styleUrls: ['./about.component.scss']
+  styleUrls: ['./about.component.scss'],
 })
 export class AboutComponent implements OnInit {
-
   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService) { }
+  constructor(private globalService: GlobalService) {}
 
   /**
    * Component on Initialization.
@@ -23,5 +22,4 @@ export class AboutComponent implements OnInit {
   ngOnInit() {
     this.globalService.scrollToTop();
   }
-
 }

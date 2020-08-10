@@ -1,7 +1,7 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {GlobalService} from '../../services/global.service';
-import {AuthService} from '../../services/auth.service';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { GlobalService } from '../../services/global.service';
+import { AuthService } from '../../services/auth.service';
 
 /**
  * Component Class
@@ -9,10 +9,9 @@ import {AuthService} from '../../services/auth.service';
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.component.html',
-  styleUrls: ['./auth.component.scss']
+  styleUrls: ['./auth.component.scss'],
 })
 export class AuthComponent implements OnInit {
-
   /**
    * router local instance
    */
@@ -27,9 +26,12 @@ export class AuthComponent implements OnInit {
    * @param globalService  GlobalService Injection.
    * @param authService  AuthServiceInjection
    */
-  constructor(private router: Router, private route: ActivatedRoute, private globalService: GlobalService,
-              public authService: AuthService) {
-  }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private globalService: GlobalService,
+    public authService: AuthService
+  ) {}
 
   /**
    * Component on initialization.
@@ -45,6 +47,6 @@ export class AuthComponent implements OnInit {
    * @param url  URL to navigate to (not in paranthesis)
    */
   navigateTo(url) {
-    this.router.navigate([ url ]);
+    this.router.navigate([url]);
   }
 }

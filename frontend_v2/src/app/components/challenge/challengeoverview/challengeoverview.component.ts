@@ -14,10 +14,9 @@ import { EndpointsService } from '../../../services/endpoints.service';
 @Component({
   selector: 'app-challengeoverview',
   templateUrl: './challengeoverview.component.html',
-  styleUrls: ['./challengeoverview.component.scss']
+  styleUrls: ['./challengeoverview.component.scss'],
 })
 export class ChallengeoverviewComponent implements OnInit {
-
   /**
    * Challenge object
    */
@@ -38,19 +37,23 @@ export class ChallengeoverviewComponent implements OnInit {
    * @param document  Window document Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document,
-              private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService, private logger: NGXLogger) { }
+  constructor(
+    private challengeService: ChallengeService,
+    @Inject(DOCUMENT) private document: Document,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on initialized.
    */
   ngOnInit() {
-    this.challengeService.currentChallenge.subscribe(
-    challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -60,15 +63,14 @@ export class ChallengeoverviewComponent implements OnInit {
 
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-      ).subscribe(
-          data => {
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
             SELF.challenge.description = data.description;
             SELF.globalService.showToast('success', 'The description is successfully updated!', 5);
           },
-          err => {
+          (err) => {
             SELF.globalService.handleApiError(err, true);
             SELF.globalService.showToast('error', err);
           },
@@ -83,7 +85,7 @@ export class ChallengeoverviewComponent implements OnInit {
       editorContent: this.challenge.description,
       confirm: 'Submit',
       deny: 'Cancel',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }

@@ -1,10 +1,10 @@
 <div class="challenge-card">
   <div class="ev-card-panel card-bt-margin">
     <div class="ev-md-container bottom-hr-line">
-      <div (click)="challenge.refreshSubmissionData()" class="pointer
-        update-page" *ngIf="challenge.showUpdate">
-        <span class="text-white">Page is outdated, Click to update&nbsp;
-          <i class="fa fa-refresh text-highlight"></i></span>
+      <div (click)="challenge.refreshSubmissionData()" class="pointer update-page" *ngIf="challenge.showUpdate">
+        <span class="text-white"
+          >Page is outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i
+        ></span>
       </div>
       <div class="row row-lr-margin phase-title">
         <div class="col-sm-12">
@@ -13,28 +13,32 @@
       </div>
       <div class="row row-lr-margin">
         <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
-          <app-selectphase [phases]="filteredPhases"
+          <app-selectphase
+            [phases]="filteredPhases"
             [phaseSelectionListType]="phaseSelectionListType"
             [phaseSelectionType]="phaseSelectionType"
-            [phaseSelected]="phaseSelected()" #phaseselect></app-selectphase>
+            [phaseSelected]="phaseSelected()"
+            #phaseselect
+          ></app-selectphase>
         </div>
       </div>
       <div class="row row-lr-margin">
-        <div class="col-md-1 col-sm-1 col-xs-6 align-left col-lr-pad
-          file-select-box">
+        <div class="col-md-1 col-sm-1 col-xs-6 align-left col-lr-pad file-select-box">
           <mat-form-field>
             <mat-label>File</mat-label>
             <mat-select [(ngModel)]="fileSelected" class="rm-margin">
-              <mat-option *ngFor="let key of fileTypes" value={{key.name}}>{{key.name}}</mat-option>
+              <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">{{ key.name }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
         <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
-          <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark
-            grad-btn-dark fw-light fs-15" (click)='downloadSubmission()'>Download</a>
+          <a
+            class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-15"
+            (click)="downloadSubmission()"
+            >Download</a
+          >
         </div>
-        <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 col-lr-pad"
-             *ngIf="selectedPhase">
+        <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 col-lr-pad" *ngIf="selectedPhase">
           <div class="add-line-height">
             <span>
               <strong class="fw-semibold text-med-black">
@@ -42,12 +46,12 @@
               </strong>
             </span>
             <span class="show-submission-count text-highlight">
-              {{submissionCount || 0}}
+              {{ submissionCount || 0 }}
             </span>
           </div>
         </div>
       </div>
-      <br>
+      <br />
       <div *ngIf="selectedPhase">
         <div class="row row-lr-margin phase-title">
           <div class="col-sm-12">
@@ -56,92 +60,124 @@
         </div>
         <div class="row row-lr-margin">
           <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
-            <app-input [name]="'filterByTeamName'" (input)="filterSubmissions($event.target.value)"
-              [label]="'Team name'" [placeholder]="'Team name'" [type]="'text'" #formFilter>
+            <app-input
+              [name]="'filterByTeamName'"
+              (input)="filterSubmissions($event.target.value)"
+              [label]="'Team name'"
+              [placeholder]="'Team name'"
+              [type]="'text'"
+              #formFilter
+            >
             </app-input>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="ev-card-body exist-team-card" *ngIf="!isPhaseSelected || (paginationDetails.showPagination == false && isPhaseSelected)">
+    <div
+      class="ev-card-body exist-team-card"
+      *ngIf="!isPhaseSelected || (paginationDetails.showPagination == false && isPhaseSelected)"
+    >
       <div class="row row-lr-margin">
         <div class="col-md-12 col-lr-pad">
           <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
-          <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected"
-               class="result-wrn">No results found.</div>
+          <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected" class="result-wrn">
+            No results found.
+          </div>
         </div>
       </div>
     </div>
     <div class="collapsible-table">
-      <table mat-table *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
-             [dataSource]="submissions" multiTemplateDataRows
-             class="mat-elevation-z0 ev-md-container">
-        <ng-container matColumnDef="{{column}}" *ngFor="let column of columnsToDisplay; let i = index">
-          <th class="cell-outside text-dark-black fs-16" mat-header-cell *matHeaderCellDef> {{columnsHeadings[i]}} </th>
-          <td class="cell-outside fw-regular" mat-cell *matCellDef="let element" >
-            <a target="_blank" class="blue-text" [href]="element[column]" *ngIf="element[column] !== null && column !== 'status'">
+      <table
+        mat-table
+        *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
+        [dataSource]="submissions"
+        multiTemplateDataRows
+        class="mat-elevation-z0 ev-md-container"
+      >
+        <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
+          <th class="cell-outside text-dark-black fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
+          <td class="cell-outside fw-regular" mat-cell *matCellDef="let element">
+            <a
+              target="_blank"
+              class="blue-text"
+              [href]="element[column]"
+              *ngIf="element[column] !== null && column !== 'status'"
+            >
               <i class="fa fa-external-link"></i>
               Link
             </a>
-            <span [ngClass]="element[column]" *ngIf="element[column] !== null && column === 'status'" class="fs-12">{{element[column] | uppercase}}</span>
-            <span *ngIf="element[column] === null">{{"None"}}</span>
+            <span [ngClass]="element[column]" *ngIf="element[column] !== null && column === 'status'" class="fs-12">{{
+              element[column] | uppercase
+            }}</span>
+            <span *ngIf="element[column] === null">{{ 'None' }}</span>
           </td>
         </ng-container>
         <ng-container matColumnDef="expandedDetail">
           <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
-            <div class="elements" [class.expanded-row]="element == expandedElement"
-                 [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+            <div
+              class="elements"
+              [class.expanded-row]="element == expandedElement"
+              [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
+            >
               <div class="elements-detail">
                 <div class="element">
                   <span class="element-description-attribution">Team Name</span>
-                  <span class="fw-regular element-description"> {{element.participant_team_name}} </span>
+                  <span class="fw-regular element-description"> {{ element.participant_team_name }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Method Name</span>
-                  <span class="fw-regular element-description"> {{element.method_name}} </span>
+                  <span class="fw-regular element-description"> {{ element.method_name }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Method Description</span>
-                  <span class="fw-regular element-description"> {{element.method_description}} </span>
+                  <span class="fw-regular element-description"> {{ element.method_description }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Project Url</span>
-                  <span class="fw-regular element-description"> {{element.project_url}} </span>
+                  <span class="fw-regular element-description"> {{ element.project_url }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Publication Url</span>
-                  <span class="fw-regular element-description"> {{element.publication_url}} </span>
+                  <span class="fw-regular element-description"> {{ element.publication_url }} </span>
                 </div>
               </div>
 
               <div class="elements-action">
                 <div class="element">
                   <span class="element-description-attribution">Status</span>
-                  <span class="fw-semibold element-description fs-12" [ngClass]="element.status"> {{element.status | uppercase}} </span>
+                  <span class="fw-semibold element-description fs-12" [ngClass]="element.status">
+                    {{ element.status | uppercase }}
+                  </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Execution Time</span>
-                  <span class="fw-regular element-description"> {{element.execution_time}} </span>
+                  <span class="fw-regular element-description"> {{ element.execution_time }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Submitted At</span>
-                  <span class="fw-regular element-description"> {{element.submitted_at | date:'medium'}} </span>
+                  <span class="fw-regular element-description"> {{ element.submitted_at | date: 'medium' }} </span>
                 </div>
                 <div class="element">
-                  <mat-checkbox [checked]="element.is_public" [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']" (change)="changeSubmissionVisibility(element.id, element.is_public)">
+                  <mat-checkbox
+                    [checked]="element.is_public"
+                    [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']"
+                    (change)="changeSubmissionVisibility(element.id, element.is_public)"
+                  >
                     <span class="fs-14">Show on leaderboard</span>
                   </mat-checkbox>
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
-                  <mat-checkbox [checked]="element.is_baseline" [disabled]="element.status !== 'finished'" (change)="changeBaselineStatus(element.id, element.is_baseline)">
+                  <mat-checkbox
+                    [checked]="element.is_baseline"
+                    [disabled]="element.status !== 'finished'"
+                    (change)="changeBaselineStatus(element.id, element.is_baseline)"
+                  >
                     <span class="fs-14">Baseline</span>
                   </mat-checkbox>
                 </div>
                 <div class="element fs-14 pointer">
-                  <a (click)="editSubmission(element)" >
-                    Edit submission detail &nbsp;<i class="fa fa-pencil"></i>
-                  </a>
+                  <a (click)="editSubmission(element)"> Edit submission detail &nbsp;<i class="fa fa-pencil"></i> </a>
                 </div>
               </div>
             </div>
@@ -149,11 +185,13 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-        <tr mat-row *matRowDef="let element; columns: columnsToDisplay;"
-            class="element-row"
-            [class.expanded-row]="expandedElement === element"
-            (click)="expandedElement = expandedElement === element ? null : element">
-        </tr>
+        <tr
+          mat-row
+          *matRowDef="let element; columns: columnsToDisplay"
+          class="element-row"
+          [class.expanded-row]="expandedElement === element"
+          (click)="expandedElement = expandedElement === element ? null : element"
+        ></tr>
         <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
       </table>
     </div>
@@ -161,19 +199,23 @@
     <div class="pagination" *ngIf="paginationDetails.showPagination && submissions.length > 0">
       <div class="row row-lr-margin">
         <div class="col-sm-12 left-align col-lr-pad">
-          <button [ngClass]="paginationDetails.isPrev" class="btn-floating
-            btn-pagination waves-effect waves-light"
-            (click)="loadPaginationData(paginationDetails.previous)">
+          <button
+            [ngClass]="paginationDetails.isPrev"
+            class="btn-floating btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.previous)"
+          >
             <i class="fa fa-chevron-left"></i>
           </button>
           <span class="pagination-title">
             <strong class="text-med-black fw-semibold content">
-              Page {{paginationDetails.currentPage}} of {{paginationDetails.totalPage}}
+              Page {{ paginationDetails.currentPage }} of {{ paginationDetails.totalPage }}
             </strong>
           </span>
-          <button [ngClass]="paginationDetails.isNext" class="btn-floating
-            btn-pagination waves-effect waves-light"
-            (click)="loadPaginationData(paginationDetails.next)">
+          <button
+            [ngClass]="paginationDetails.isNext"
+            class="btn-floating btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.next)"
+          >
             <i class="fa fa-chevron-right"></i>
           </button>
         </div>

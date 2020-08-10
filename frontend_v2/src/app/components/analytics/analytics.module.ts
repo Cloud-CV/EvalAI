@@ -9,17 +9,8 @@ import { HostAnalyticsComponent } from './host-analytics/host-analytics.componen
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    AnalyticsComponent,
-    HostAnalyticsComponent
-  ],
-  imports: [
-    CommonModule,
-    SharedModule
-  ],
-  exports: [
-    AnalyticsComponent,
-    HostAnalyticsComponent
-  ],
+  declarations: [AnalyticsComponent, HostAnalyticsComponent],
+  imports: [CommonModule, SharedModule],
+  exports: [AnalyticsComponent, HostAnalyticsComponent],
 })
-export class AnalyticsModule { }
+export class AnalyticsModule {}

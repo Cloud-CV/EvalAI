@@ -1,4 +1,4 @@
-@import "styles/variables";
+@import 'styles/variables';
 
 .ev-footer {
   position: relative;
@@ -12,7 +12,6 @@
   bottom: 0;
   left: 0;
 }
-
 
 /* media queries */
 
@@ -33,7 +32,7 @@
   .github-buttons {
     li {
       iframe {
-       height: 20px ;
+        height: 20px;
       }
     }
   }

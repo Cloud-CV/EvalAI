@@ -15,11 +15,10 @@ describe('ChallengecardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule, RouterTestingModule ],
-      declarations: [ ChallengecardComponent ],
-      providers: [ GlobalService, ApiService, AuthService, ChallengeService, EndpointsService ]
-    })
-    .compileComponents();
+      imports: [HttpClientModule, RouterTestingModule],
+      declarations: [ChallengecardComponent],
+      providers: [GlobalService, ApiService, AuthService, ChallengeService, EndpointsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -39,13 +38,13 @@ describe('ChallengecardComponent', () => {
       creator: {
         id: 1,
         team_name: 'New Travischester Host Team',
-        created_by: 'host'
+        created_by: 'host',
       },
       published: true,
       enable_forum: true,
       anonymous_leaderboard: false,
       is_active: true,
-      approved_by_admin: true
+      approved_by_admin: true,
     };
     fixture.detectChanges();
   });

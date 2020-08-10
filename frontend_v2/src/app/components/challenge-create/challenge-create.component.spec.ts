@@ -11,9 +11,9 @@ import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientModule } from '@angular/common/http';
-import {Router, Routes} from '@angular/router';
-import {NotFoundComponent} from '../not-found/not-found.component';
-import {FormsModule} from '@angular/forms';
+import { Router, Routes } from '@angular/router';
+import { NotFoundComponent } from '../not-found/not-found.component';
+import { FormsModule } from '@angular/forms';
 
 const routes: Routes = [
   {
@@ -22,13 +22,13 @@ const routes: Routes = [
   },
   {
     path: '404',
-    component: NotFoundComponent
+    component: NotFoundComponent,
   },
   {
     path: '**',
     redirectTo: '/404',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];
 
 describe('ChallengecreateComponent', () => {
@@ -38,12 +38,11 @@ describe('ChallengecreateComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeCreateComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent ],
-      schemas: [ NO_ERRORS_SCHEMA ],
-      imports: [ RouterTestingModule.withRoutes(routes), HttpClientModule, FormsModule],
-      providers: [ GlobalService, AuthService, ApiService, ChallengeService, EndpointsService ]
-    })
-    .compileComponents();
+      declarations: [ChallengeCreateComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+      imports: [RouterTestingModule.withRoutes(routes), HttpClientModule, FormsModule],
+      providers: [GlobalService, AuthService, ApiService, ChallengeService, EndpointsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

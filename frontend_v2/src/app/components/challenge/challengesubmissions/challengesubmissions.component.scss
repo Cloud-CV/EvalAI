@@ -30,7 +30,7 @@
 }
 
 .add-line-height {
-	line-height: 51px;
+  line-height: 51px;
 }
 
 .result-wrn {
@@ -60,10 +60,10 @@
 }
 
 .cbx:checked ~ .cbx-label {
-  background: #4CAF50;
+  background: #4caf50;
 }
 
-.collapsible-table{
+.collapsible-table {
   overflow: auto;
 }
 
@@ -88,7 +88,7 @@ tr.element-row.expanded-row {
   cursor: pointer;
 }
 
- tr.element-row:not(.expanded-row):active {
+tr.element-row:not(.expanded-row):active {
   background: #efefef;
 }
 

@@ -7,12 +7,12 @@ import { ChallengeCreateComponent } from './challenge-create.component';
 const routes: Routes = [
   {
     path: '',
-    component: ChallengeCreateComponent
+    component: ChallengeCreateComponent,
   },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class ChallengeCreateRoutingModule { }
+export class ChallengeCreateRoutingModule {}

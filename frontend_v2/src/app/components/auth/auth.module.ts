@@ -16,7 +16,6 @@ import { AuthService } from '../../services/auth.service';
 import { SharedModule } from '../../shared/shared.module';
 import { AuthRoutingModule } from './auth-routing.module';
 
-
 @NgModule({
   declarations: [
     LoginComponent,
@@ -24,23 +23,17 @@ import { AuthRoutingModule } from './auth-routing.module';
     ResetPasswordConfirmComponent,
     ResetPasswordComponent,
     VerifyEmailComponent,
-    AuthComponent
+    AuthComponent,
   ],
-  imports: [
-    CommonModule,
-    AuthRoutingModule,
-    SharedModule
-  ],
+  imports: [CommonModule, AuthRoutingModule, SharedModule],
   exports: [
     AuthComponent,
     LoginComponent,
     SignupComponent,
     ResetPasswordComponent,
     ResetPasswordConfirmComponent,
-    VerifyEmailComponent
+    VerifyEmailComponent,
   ],
-  providers: [
-    AuthService
-  ]
+  providers: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

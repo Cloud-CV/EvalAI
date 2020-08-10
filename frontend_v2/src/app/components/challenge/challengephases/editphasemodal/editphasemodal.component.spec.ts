@@ -15,12 +15,11 @@ describe('EditphasemodalComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EditphasemodalComponent, InputComponent ],
-      providers: [ GlobalService, ChallengeService, EndpointsService, ApiService, AuthService ],
-      imports: [ HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [EditphasemodalComponent, InputComponent],
+      providers: [GlobalService, ChallengeService, EndpointsService, ApiService, AuthService],
+      imports: [HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

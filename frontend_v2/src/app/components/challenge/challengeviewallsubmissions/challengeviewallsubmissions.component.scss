@@ -30,7 +30,7 @@
 }
 
 .add-line-height {
-	line-height: 51px;
+  line-height: 51px;
 }
 
 .result-wrn {
@@ -38,21 +38,20 @@
   margin-bottom: 20px;
 }
 
-
 .cbx-label {
   margin-left: 55px;
   margin-right: 55px;
 }
 
 .cbx:checked ~ .cbx-label {
-  background: #4CAF50;
+  background: #4caf50;
 }
 
 .collapsible-table {
   overflow: auto;
 
   .table-header {
-    color: rgba(0,0,0,0.87) !important;
+    color: rgba(0, 0, 0, 0.87) !important;
     font-weight: bold;
     text-align: center !important;
   }

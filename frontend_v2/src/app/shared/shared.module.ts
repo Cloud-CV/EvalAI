@@ -21,14 +21,9 @@ import { UtilityModule } from '../components/utility/utility.module';
     EmailValidatorDirective,
     HeaderStaticComponent,
     FooterComponent,
-    NotFoundComponent
+    NotFoundComponent,
   ],
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    UtilityModule,
-  ],
+  imports: [CommonModule, RouterModule, FormsModule, UtilityModule],
   exports: [
     PasswordMismatchValidatorDirective,
     EmailValidatorDirective,
@@ -38,7 +33,7 @@ import { UtilityModule } from '../components/utility/utility.module';
     HeaderStaticComponent,
     FooterComponent,
     UtilityModule,
-    NotFoundComponent
-  ]
+    NotFoundComponent,
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

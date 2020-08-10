@@ -16,18 +16,11 @@ describe('SignupComponent', () => {
   let fixture: ComponentFixture<SignupComponent>;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SignupComponent, InputComponent ],
-      providers: [
-        GlobalService,
-        AuthService,
-        WindowService,
-        ApiService,
-        EndpointsService
-      ],
-      imports: [ RouterTestingModule, HttpClientModule, FormsModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [SignupComponent, InputComponent],
+      providers: [GlobalService, AuthService, WindowService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

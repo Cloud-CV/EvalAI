@@ -13,11 +13,10 @@ describe('ForceloginComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ForceloginComponent ],
-      providers: [ GlobalService, AuthService, ApiService],
-      imports: [ HttpClientModule, RouterTestingModule ]
-    })
-    .compileComponents();
+      declarations: [ForceloginComponent],
+      providers: [GlobalService, AuthService, ApiService],
+      imports: [HttpClientModule, RouterTestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

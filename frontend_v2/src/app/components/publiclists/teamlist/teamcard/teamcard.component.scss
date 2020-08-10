@@ -19,27 +19,27 @@
     i {
       &.selectstate {
         font-size: $fs-18;
-        margin-right:10px;
-        color:$gray-dark;
-        margin-top:15px;
+        margin-right: 10px;
+        color: $gray-dark;
+        margin-top: 15px;
       }
       font-size: $fs-16;
-      vertical-align:top;
-      margin-top:15px;
+      vertical-align: top;
+      margin-top: 15px;
     }
     .title {
       &.toptitle {
         margin-bottom: 10px;
       }
       color: $dark-black;
-      display:inline-block;
+      display: inline-block;
       font-weight: $fw-bolder;
     }
     .team-details {
       display: inline-block;
       margin: 2px 10px 0px 10px;
       max-width: 300px;
-      overflow:hidden;
+      overflow: hidden;
     }
     .team-detail {
       color: rgb(22, 21, 21);
@@ -51,9 +51,9 @@
       float: right;
       margin-top: 10px;
       a {
-      	&.host {
-      		display:none;
-      	}
+        &.host {
+          display: none;
+        }
       }
       i {
         &.no-highlight {
@@ -79,14 +79,15 @@
       margin-bottom: 10px;
       font-weight: $fw-bolder;
     }
-    background:$gray-lighter;
+    background: $gray-lighter;
   }
   .team-members .team-detail {
     color: rgb(22, 21, 21);
     font-weight: 400;
   }
   &.selected {
-    &.expand, &.noexpand {
+    &.expand,
+    &.noexpand {
       .team-members {
         @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
         max-height: 300px;
@@ -139,12 +140,14 @@
   margin-bottom: 13.4px;
 }
 
-.fa-user-plus, .fa-pencil, .fa-trash {
+.fa-user-plus,
+.fa-pencil,
+.fa-trash {
   margin: 0px;
   padding-left: 10px;
 }
 
-.member-class{
+.member-class {
   display: flex;
   margin: 2% 0%;
 }

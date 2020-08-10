@@ -1,10 +1,10 @@
-import { Component, OnInit, Optional, Inject  } from '@angular/core';
+import { Component, OnInit, Optional, Inject } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-submission-meta-attributes-dialogue',
   templateUrl: './submission-meta-attributes-dialogue.component.html',
-  styleUrls: ['./submission-meta-attributes-dialogue.component.scss']
+  styleUrls: ['./submission-meta-attributes-dialogue.component.scss'],
 })
 export class SubmissionMetaAttributesDialogueComponent implements OnInit {
   /**
@@ -12,14 +12,15 @@ export class SubmissionMetaAttributesDialogueComponent implements OnInit {
    */
   metaAttributesData: any;
 
-  constructor(public dialog: MatDialog,
-  public dialogRef: MatDialogRef<SubmissionMetaAttributesDialogueComponent>,
-  @Optional() @Inject(MAT_DIALOG_DATA) public data: any) {
+  constructor(
+    public dialog: MatDialog,
+    public dialogRef: MatDialogRef<SubmissionMetaAttributesDialogueComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
     this.metaAttributesData = data.attribute;
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   closeDialog() {
     this.dialogRef.close({ event: 'close', data: this.metaAttributesData });

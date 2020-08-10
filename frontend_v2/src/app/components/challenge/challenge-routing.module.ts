@@ -20,28 +20,28 @@ const routes: Routes = [
     path: '',
     component: ChallengeComponent,
     children: [
-      {path: '', redirectTo: 'overview', pathMatch: 'full'},
-      {path: 'overview', component: ChallengeoverviewComponent},
-      {path: 'evaluation', component: ChallengeevaluationComponent},
-      {path: 'phases', component: ChallengephasesComponent},
-      {path: 'participate', component: ChallengeparticipateComponent},
-      {path: 'submit', component: ChallengesubmitComponent},
-      {path: 'my-submissions', component: ChallengesubmissionsComponent},
-      {path: 'my-submissions/:phase', component: ChallengesubmissionsComponent},
-      {path: 'mysubmissions/:phase/:submission', component: ChallengesubmissionsComponent},
-      {path: 'view-all-submissions', component: ChallengeviewallsubmissionsComponent},
-      {path: 'leaderboard', component: ChallengeleaderboardComponent},
-      {path: 'leaderboard/:split', component: ChallengeleaderboardComponent},
-      {path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent},
-      {path: 'settings', component: ChallengesettingsComponent},
-      {path: 'manage', component: ChallengemanageComponent},
-      {path: 'discuss', component: ChallengediscussComponent}
-    ]
-  }
+      { path: '', redirectTo: 'overview', pathMatch: 'full' },
+      { path: 'overview', component: ChallengeoverviewComponent },
+      { path: 'evaluation', component: ChallengeevaluationComponent },
+      { path: 'phases', component: ChallengephasesComponent },
+      { path: 'participate', component: ChallengeparticipateComponent },
+      { path: 'submit', component: ChallengesubmitComponent },
+      { path: 'my-submissions', component: ChallengesubmissionsComponent },
+      { path: 'my-submissions/:phase', component: ChallengesubmissionsComponent },
+      { path: 'mysubmissions/:phase/:submission', component: ChallengesubmissionsComponent },
+      { path: 'view-all-submissions', component: ChallengeviewallsubmissionsComponent },
+      { path: 'leaderboard', component: ChallengeleaderboardComponent },
+      { path: 'leaderboard/:split', component: ChallengeleaderboardComponent },
+      { path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent },
+      { path: 'settings', component: ChallengesettingsComponent },
+      { path: 'manage', component: ChallengemanageComponent },
+      { path: 'discuss', component: ChallengediscussComponent },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class ChallengeRoutingModule { }
+export class ChallengeRoutingModule {}

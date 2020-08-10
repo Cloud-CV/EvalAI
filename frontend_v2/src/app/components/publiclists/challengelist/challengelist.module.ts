@@ -20,22 +20,10 @@ import { AnalyticsModule } from '../../analytics/analytics.module';
     ChallengecardComponent,
     TeamcardComponent,
     TeamlistComponent,
-    CardlistComponent
+    CardlistComponent,
   ],
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatTabsModule,
-    SharedModule,
-    AnalyticsModule
-  ],
-  exports: [
-    ChallengelistComponent,
-    ChallengecardComponent,
-    TeamcardComponent,
-    TeamlistComponent,
-    CardlistComponent
-  ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  imports: [CommonModule, RouterModule, MatTabsModule, SharedModule, AnalyticsModule],
+  exports: [ChallengelistComponent, ChallengecardComponent, TeamcardComponent, TeamlistComponent, CardlistComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ChallengelistModule { }
+export class ChallengelistModule {}

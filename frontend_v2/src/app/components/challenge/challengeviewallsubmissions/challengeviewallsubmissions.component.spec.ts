@@ -20,13 +20,11 @@ describe('ChallengeviewallsubmissionsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeviewallsubmissionsComponent ],
-      providers: [ ChallengeService, GlobalService, AuthService, ApiService,
-        EndpointsService, WindowService ],
-      imports: [ HttpClientModule, RouterTestingModule, MatMenuModule, MatIconModule, MatTableModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ChallengeviewallsubmissionsComponent],
+      providers: [ChallengeService, GlobalService, AuthService, ApiService, EndpointsService, WindowService],
+      imports: [HttpClientModule, RouterTestingModule, MatMenuModule, MatIconModule, MatTableModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -17,10 +17,9 @@ import { InputComponent } from '../utility/input/input.component';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss']
+  styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
-
   /**
    * User object
    */
@@ -72,14 +71,16 @@ export class ProfileComponent implements OnInit {
    * @param endpointsService  EndpointsService Injection.
    * @param windowService  WindowService Injection.
    */
-  constructor(private apiService: ApiService,
-              private authService: AuthService,
-              private globalService: GlobalService,
-              private router: Router,
-              private route: ActivatedRoute,
-              private endpointsService: EndpointsService,
-              private windowService: WindowService,
-              private logger: NGXLogger) { }
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService,
+    private globalService: GlobalService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private endpointsService: EndpointsService,
+    private windowService: WindowService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on intialized.
@@ -105,8 +106,8 @@ export class ProfileComponent implements OnInit {
     for (const i in this.user) {
       if (this.user.hasOwnProperty(i)) {
         if (this.user[i] === '' || this.user[i] === undefined || this.user[i] === null) {
-            this.user[i] = '-';
-            countLeft = countLeft + 1;
+          this.user[i] = '-';
+          countLeft = countLeft + 1;
         }
         count = count + 1;
       }
@@ -129,23 +130,22 @@ export class ProfileComponent implements OnInit {
    * Displays a Modal to update user details
    */
   updateUserDetails() {
-    const firstName = (this.user['first_name'] === '-') ? '' : this.user['first_name'];
-    const lastName = (this.user['last_name'] === '-') ? '' : this.user['last_name'];
-    const affiliation = (this.user['affiliation'] === '-') ? '' : this.user['affiliation'];
-    const googleScholarUrl = (this.user['google_scholar_url'] === '-') ? '' : this.user['google_scholar_url'];
-    const githubUrl = (this.user['github_url'] === '-') ? '' : this.user['github_url'];
-    const linkedinUrl = (this.user['linkedin_url'] === '-') ? '' : this.user['linkedin_url'];
+    const firstName = this.user['first_name'] === '-' ? '' : this.user['first_name'];
+    const lastName = this.user['last_name'] === '-' ? '' : this.user['last_name'];
+    const affiliation = this.user['affiliation'] === '-' ? '' : this.user['affiliation'];
+    const googleScholarUrl = this.user['google_scholar_url'] === '-' ? '' : this.user['google_scholar_url'];
+    const githubUrl = this.user['github_url'] === '-' ? '' : this.user['github_url'];
+    const linkedinUrl = this.user['linkedin_url'] === '-' ? '' : this.user['linkedin_url'];
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      SELF.apiService.putUrl(SELF.endpointsService.userDetailsURL(),
-                             BODY).subscribe(
-        data => {
+      SELF.apiService.putUrl(SELF.endpointsService.userDetailsURL(), BODY).subscribe(
+        (data) => {
           // Success Message in data.message
           SELF.globalService.showToast('success', 'User details updated successfully', 5);
           SELF.authService.fetchUserDetails();
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err, true);
         },
         () => this.logger.info('USER-UPDATE-FINISHED')
@@ -163,7 +163,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_first_name',
           placeholder: 'First Name',
           type: 'text',
-          value: firstName
+          value: firstName,
         },
         {
           isRequired: true,
@@ -171,7 +171,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_last_name',
           placeholder: 'Last Name',
           type: 'text',
-          value: lastName
+          value: lastName,
         },
         {
           isRequired: true,
@@ -179,7 +179,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_affiliation',
           placeholder: 'Affiliated To',
           type: 'text',
-          value: affiliation
+          value: affiliation,
         },
         {
           isRequired: false,
@@ -187,7 +187,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_google_scholar_url',
           placeholder: 'Google Scholar Url',
           type: 'url',
-          value: googleScholarUrl
+          value: googleScholarUrl,
         },
         {
           isRequired: false,
@@ -195,7 +195,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_github_url',
           placeholder: 'GitHub Url',
           type: 'url',
-          value: githubUrl
+          value: githubUrl,
         },
         {
           isRequired: false,
@@ -203,13 +203,12 @@ export class ProfileComponent implements OnInit {
           name: 'update_linkedin_url',
           placeholder: 'LinkedIn Url',
           type: 'url',
-           value: linkedinUrl
-         }
+          value: linkedinUrl,
+        },
       ],
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
-
   }
 
   /**
@@ -217,9 +216,11 @@ export class ProfileComponent implements OnInit {
    */
   downloadToken() {
     this.isTokenModalVisible = false;
-    this.windowService.downloadFile({body: JSON.stringify({token: this.globalService.getAuthToken()})},
-                                  'token.json',
-                                  {type: 'text/json'});
+    this.windowService.downloadFile(
+      { body: JSON.stringify({ token: this.globalService.getAuthToken() }) },
+      'token.json',
+      { type: 'text/json' }
+    );
   }
 
   /**
@@ -238,14 +239,13 @@ export class ProfileComponent implements OnInit {
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
       console.log(params);
-      SELF.apiService.postUrl(SELF.endpointsService.changePasswordURL(),
-                             BODY).subscribe(
-        data => {
+      SELF.apiService.postUrl(SELF.endpointsService.changePasswordURL(), BODY).subscribe(
+        (data) => {
           // Success Message in data.message
           SELF.globalService.showToast('success', 'Password updated successfully', 5);
           SELF.authService.fetchUserDetails();
         },
-        err => {
+        (err) => {
           if (err.status === 400 && err.error && err.error.old_password) {
             SELF.globalService.showToast('error', err.error.old_password[0], 5);
           } else if (err.status === 400 && err.error && err.error.new_password2) {
@@ -269,24 +269,24 @@ export class ProfileComponent implements OnInit {
           label: 'old_password',
           name: 'old_password',
           placeholder: 'Old Password*',
-          type: 'password'
+          type: 'password',
         },
         {
           isRequired: true,
           label: 'new_password1',
           name: 'new_password1',
           placeholder: 'New Pasword*',
-          type: 'password'
+          type: 'password',
         },
         {
           isRequired: true,
           label: 'new_password2',
           name: 'new_password2',
           placeholder: 'New Password (Again)*',
-          type: 'password'
-        }
+          type: 'password',
+        },
       ],
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }

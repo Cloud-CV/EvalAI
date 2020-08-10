@@ -17,14 +17,14 @@
     margin-right: 100px;
     margin-top: 20px;
     margin-bottom: 20px;
-    border-bottom:0px;
-    border-top:1px solid $overlay-light;
+    border-bottom: 0px;
+    border-top: 1px solid $overlay-light;
   }
   .get-involved-description {
     color: #4d4d4d;
     font-size: $fs-16;
     margin-top: 30px;
-    margin-bottom:50px;
+    margin-bottom: 50px;
     padding-left: 100px;
     padding-right: 100px;
     line-height: 20px;
@@ -75,7 +75,6 @@
   }
 }
 
-
 @include screen-medium {
   .get-involved-container {
     .get-involved-title {
@@ -92,7 +91,6 @@
 }
 
 @include screen-small {
-
   .get-involved-container {
     hr {
       margin-left: 30px;

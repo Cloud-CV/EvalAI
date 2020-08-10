@@ -12,19 +12,15 @@ describe('HeaderStaticComponent', () => {
   let component: HeaderStaticComponent;
   let fixture: ComponentFixture<HeaderStaticComponent>;
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HeaderStaticComponent ],
-      providers: [ GlobalService,
-        AuthService,
-        ApiService,
-        EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [HeaderStaticComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

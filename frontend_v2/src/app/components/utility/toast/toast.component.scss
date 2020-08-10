@@ -19,7 +19,9 @@
       font-weight: $fw-bolder;
       margin-left: 8px;
     }
-    .fa-info-circle, .fa-warning, .fa-check  {
+    .fa-info-circle,
+    .fa-warning,
+    .fa-check {
       font-size: 28px;
     }
   }
@@ -43,23 +45,23 @@
 .toast-desc {
   word-break: initial;
   &.toast-success {
-           background-color:  $green-med;
-           &:hover {
-                       background-color: $green-med;
-                   }
+    background-color: $green-med;
+    &:hover {
+      background-color: $green-med;
+    }
   }
   &.toast-error {
-          background-color: $med-red;
-           &:hover {
-                       background-color: $med-red;
-                   }
+    background-color: $med-red;
+    &:hover {
+      background-color: $med-red;
+    }
   }
 
   &.toast-info {
-           background-color: $blue;
-            &:hover {
-                       background-color: $blue;
-                   }
+    background-color: $blue;
+    &:hover {
+      background-color: $blue;
+    }
   }
 }
 

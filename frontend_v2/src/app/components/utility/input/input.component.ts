@@ -8,10 +8,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-input',
   templateUrl: './input.component.html',
-  styleUrls: ['./input.component.scss']
+  styleUrls: ['./input.component.scss'],
 })
 export class InputComponent implements OnInit {
-
   /**
    * Placeholder string
    */
@@ -137,7 +136,7 @@ export class InputComponent implements OnInit {
    * @param document  Window document Injection.
    * @param globalService  GlobalService Injection.
    */
-  constructor(@Inject(DOCUMENT) private document: Document, private globalService: GlobalService) {  }
+  constructor(@Inject(DOCUMENT) private document: Document, private globalService: GlobalService) {}
 
   /**
    * Component on intialized
@@ -195,28 +194,28 @@ export class InputComponent implements OnInit {
   validateInput(e) {
     this.isDirty = true;
     this.value = e;
-    e === '' ? this.isEmpty = true : this.isEmpty = false;
+    e === '' ? (this.isEmpty = true) : (this.isEmpty = false);
     if (e === '' && this.isRequired) {
       this.isValid = false;
-      this.isRequired ? this.message = this.requiredMessage : this.message = '';
+      this.isRequired ? (this.message = this.requiredMessage) : (this.message = '');
     }
     if (this.isValidateCustom) {
-       this.isValid = this.validate(e).is_valid;
-       this.isValid ? this.message = '' : this.message = this.validate(e).message;
+      this.isValid = this.validate(e).is_valid;
+      this.isValid ? (this.message = '') : (this.message = this.validate(e).message);
     } else if (this.isEmail) {
-       this.isValid = this.globalService.validateEmail(e);
-       this.isValid ? this.message = '' : this.message = 'Enter a valid email';
+      this.isValid = this.globalService.validateEmail(e);
+      this.isValid ? (this.message = '') : (this.message = 'Enter a valid email');
     } else if (this.type === 'text' || this.type === 'textarea') {
-       this.isValid = this.globalService.validateText(e);
-       this.isValid ? this.message = '' : this.message = 'Enter a valid text';
+      this.isValid = this.globalService.validateText(e);
+      this.isValid ? (this.message = '') : (this.message = 'Enter a valid text');
     } else if (this.type === 'number') {
       this.isValid = this.globalService.validateInteger(e);
-      this.isValid ? this.message = '' : this.message = 'Enter a valid number';
+      this.isValid ? (this.message = '') : (this.message = 'Enter a valid number');
     } else if (this.type === 'datetime') {
       this.isValid = true;
     } else if (this.type === 'password') {
-       this.isValid = this.globalService.validatePassword(e);
-       this.isValid ? this.message = '' : this.message = 'Password minimum 8 characters';
+      this.isValid = this.globalService.validatePassword(e);
+      this.isValid ? (this.message = '') : (this.message = 'Password minimum 8 characters');
     }
     if (this.name === 'bannedEmailIds' || this.name === 'filterByTeamName') {
       this.message = '';
@@ -232,7 +231,7 @@ export class InputComponent implements OnInit {
       this.fileSelected = f.item(0);
       this.placeholder = this.fileSelected['name'];
       this.isValid = true;
-      this.isValid ? this.message = '' : this.message = this.requiredMessage;
+      this.isValid ? (this.message = '') : (this.message = this.requiredMessage);
     }
   }
 
@@ -244,11 +243,11 @@ export class InputComponent implements OnInit {
     this.document.getElementById(id).click();
   }
 
-  showErrorCondition () {
+  showErrorCondition() {
     return (this.isRequired && this.isEmpty) || (!this.isValid && !this.isEmpty);
   }
 
-  toggleErrorMessage () {
+  toggleErrorMessage() {
     return !((this.showErrorCondition() || this.message !== '') && this.isDirty);
   }
 }

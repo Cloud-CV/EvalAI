@@ -17,13 +17,11 @@ describe('ChallengesettingsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengesettingsComponent ],
-      providers: [ ChallengeService, GlobalService, AuthService, ApiService,
-        WindowService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ChallengesettingsComponent],
+      providers: [ChallengeService, GlobalService, AuthService, ApiService, WindowService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

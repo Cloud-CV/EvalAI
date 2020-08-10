@@ -8,10 +8,9 @@ import { ChallengeService } from '../../../services/challenge.service';
 @Component({
   selector: 'app-challengephases',
   templateUrl: './challengephases.component.html',
-  styleUrls: ['./challengephases.component.scss']
+  styleUrls: ['./challengephases.component.scss'],
 })
 export class ChallengephasesComponent implements OnInit {
-
   /**
    * Challenge object
    */
@@ -31,18 +30,16 @@ export class ChallengephasesComponent implements OnInit {
    * @param apiService  Router Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document) { }
+  constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document) {}
 
   /**
    * Component on intialized
    */
   ngOnInit() {
-    this.challengeService.currentChallenge.subscribe(
-    challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
-    this.challengeService.currentPhases.subscribe(
-    phases => {
+    this.challengeService.currentPhases.subscribe((phases) => {
       this.phases = phases;
     });
   }
