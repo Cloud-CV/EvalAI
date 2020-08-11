@@ -116,6 +116,14 @@ export class ModalComponent implements OnInit {
   inputErrorMessage = '';
 
   /**
+   * Quill editor style
+   */
+  quillEditorStyle = {
+    height: '320px',
+    width: '720px',
+  };
+
+  /**
    * Modal form items
    */
   @ViewChildren('formmodal')
