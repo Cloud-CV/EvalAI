@@ -4,7 +4,7 @@
     <h4 class="fw-light">All challenges</h4>
     <mat-tab-group>
       <mat-tab label="Ongoing ({{ ongoingChallenges.length }})">
-        <div *ngIf="ongoingChallenges.length === 0" class="none fw-light">None</div>
+        <div *ngIf="ongoingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
           <div class="col s12 m4 l3" *ngFor="let challenge of ongoingChallenges">
             <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon, challenge.id]">
@@ -16,7 +16,7 @@
 
       <mat-tab class="fs-16" label="Upcoming ({{ upcomingChallenges.length }})">
         <!-- upcoming challenges -->
-        <div *ngIf="upcomingChallenges.length === 0" class="none fw-300">None</div>
+        <div *ngIf="upcomingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
           <div class="col s12 m4 l3" *ngFor="let challenge of upcomingChallenges">
             <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon, challenge.id]">
@@ -28,7 +28,7 @@
 
       <mat-tab label="Past ({{ pastChallenges.length }})">
         <!-- past challenges -->
-        <div *ngIf="pastChallenges.length === 0" class="none fw-light">None</div>
+        <div *ngIf="pastChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
           <div class="col s12 m4 l3" *ngFor="let challenge of pastChallenges">
             <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon, challenge.id]">

@@ -197,7 +197,7 @@ section {
   font-size: $fs-14;
   &:focus {
     outline: none;
-    border: 1px solid $yellow;
+    box-shadow: 0 0 12px #dfdfff;
   }
 }
 
