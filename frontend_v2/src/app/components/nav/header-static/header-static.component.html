@@ -1,24 +1,15 @@
 <div class="main-header padding-lr-header">
   <nav [class.grad-shadow-1]="scrolledState">
     <div class="nav-wrapper">
-      <a (click)="menuExpander()" class="button-collapse main-header-link"
-        ><i class="fa fa-bars"></i
-      ></a>
+      <a (click)="menuExpander()" class="button-collapse main-header-link"><i class="fa fa-bars"></i></a>
       <ul class="hide-on-med-and-down">
         <li>
-          <a
-            class="waves-effect waves-dark main-header-link evalai-logo"
-            routerLink="/"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link evalai-logo" routerLink="/" routerLinkActive="active"
             ><img src="assets/images/evalai-logo-single.png"
           /></a>
         </li>
-        <li *ngIf="!authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/challenges"
-            >All Challenges</a
-          >
+        <li>
+          <a class="waves-effect waves-dark main-header-link" routerLink="/challenges">All Challenges</a>
         </li>
         <!-- show after authenticate user -->
         <li>
@@ -30,20 +21,14 @@
           >
         </li>
         <li>
-          <a
-            class="waves-effect waves-dark main-header-link"
-            href="https://evalai-forum.cloudcv.org/"
-            target="_blank"
+          <a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank"
             >Discuss</a
           >
         </li>
       </ul>
       <ul class="right hide-on-med-and-down">
         <li *ngIf="!authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/auth/signup"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link" routerLink="/auth/signup" routerLinkActive="active"
             >Sign Up</a
           >
         </li>
@@ -63,24 +48,16 @@
             routerLink="/profile"
             routerLinkActive="active"
           >
-            <span class="text-light-black">Hi</span
-            ><strong>{{ " " + user.username }}</strong> &nbsp;
+            <span class="text-light-black">Hi</span><strong>{{ ' ' + user.username }}</strong> &nbsp;
           </a>
         </li>
         <li *ngIf="authService.isAuth">
-          <div
-            class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
-            (click)="logOut()"
-          >
+          <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" (click)="logOut()">
             Logout
           </div>
         </li>
       </ul>
-      <ul
-        class="side-nav expand-menu"
-        (click)="menuExpander()"
-        *ngIf="!isMenuExpanded"
-      >
+      <ul class="side-nav expand-menu" (click)="menuExpander()" *ngIf="!isMenuExpanded">
         <li>
           <div class="userView">
             <div class="background">
@@ -89,66 +66,41 @@
           </div>
         </li>
         <li>
-          <a
-            class="waves-effect waves-dark"
-            routerLink="/"
-            routerLinkActive="active"
-            ><i class="fa fa-home"></i>Home</a
+          <a class="waves-effect waves-dark" routerLink="/" routerLinkActive="active"><i class="fa fa-home"></i>Home</a>
+        </li>
+        <li *ngIf="!authService.isAuth">
+          <a class="waves-effect waves-dark main-header-link" routerLink="/challenges"
+            ><i class="fa fa-globe"></i>All Challenges</a
           >
         </li>
         <li *ngIf="!authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/challenges"
-            ><i class="fa fa-fire"></i>All Challenges</a
-          >
-        </li>
-        <li *ngIf="!authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/auth/signup"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link" routerLink="/auth/signup" routerLinkActive="active"
             ><i class="fa fa-sign-out"></i>Sign Up</a
           >
         </li>
         <li *ngIf="!authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/auth/login"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link" routerLink="/auth/login" routerLinkActive="active"
             ><i class="fa fa-sign-in"></i>Log In</a
           >
         </li>
         <!-- show after authenticate user -->
         <li *ngIf="authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/challenges"
-            routerLinkActive="active"
-            ><i class="fa fa-fire"></i>All Challenges</a
+          <a class="waves-effect waves-dark main-header-link" routerLink="/challenges" routerLinkActive="active"
+            ><i class="fa fa-globe"></i>All Challenges</a
           >
         </li>
         <li *ngIf="authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/teams"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link" routerLink="/teams" routerLinkActive="active"
             ><i class="fa fa-users"></i>Participant Teams</a
           >
         </li>
         <li *ngIf="authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/challenge-create"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link" routerLink="/challenge-create" routerLinkActive="active"
             ><i class="fa fa-paper-plane"></i>Create Challenge</a
           >
         </li>
         <li *ngIf="authService.isAuth">
-          <a
-            class="waves-effect waves-dark main-header-link"
-            routerLink="/profile"
-            routerLinkActive="active"
+          <a class="waves-effect waves-dark main-header-link" routerLink="/profile" routerLinkActive="active"
             ><i class="fa fa-user"></i>Hi {{ user.username }}!</a
           >
         </li>

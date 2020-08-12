@@ -1,180 +1,180 @@
 <app-side-bar *ngIf="authService.isAuth"></app-side-bar>
 <app-header-static></app-header-static>
-<div class="web-container">
-  <div class="challenge-flex" [class.center]="!authService.isAuth">
-    <div class="challenge-content">
-      <div class="mid-container">
-        <div class="challenge-container">
-          <div class="challenge-card">
-            <div class="top-card-container ev-card-panel">
-              <div class="row card-img-row">
-                <div class="col-lg-2 col-md-3 col-sm-12">
-                  <div class="image-container">
-                    <img [src]="challenge['image']" width="100%" />
-                  </div>
-                </div>
-                <div class="col-lg-7 col-md-6">
-                  <div class="card-content">
-                    <h4 class="challenge-title fw-light">
-                      {{ challenge['title'] }}
-                    </h4>
-                    <span class="title-line fw-light fs-16" *ngIf="challenge.creator.team_url != ''"
-                      ><strong class="text-light-black"> Organized by:</strong
-                      ><a class="orange-text" href="{{ challenge['creator']['team_url'] }}" target="_blank">
-                        {{ challenge['creator']['team_name'] }}
-                      </a>
-                    </span>
-                    <span class="title-line fw-light fs-16" *ngIf="challenge.creator.team_url == ''"
-                      ><strong class="text-light-black">Organized by:</strong>
-                      {{ challenge['creator']['team_name'] }}
-                    </span>
-                    <br />
-                    <!-- Start date -->
-                    <span class="fs-16 fw-light">
-                      <strong class="text-light-black">Starts on:</strong>
-                      {{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}
-                    </span>
-                    <br />
-                    <!-- End date -->
-                    <span class="fs-16 fw-light">
-                      <strong class="text-light-black">Ends on:</strong>
-                      {{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}
-                    </span>
-                    <br />
-                    <span class="title-line" *ngIf="isChallengeHost">
-                      <span class="fs-16 fw-light">
-                        <a class="pointer" (click)="togglePublishChallengeState()">
-                          <strong class="text-light-black">{{ publishChallenge.state }} </strong>
-                          <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
-                        </a>
-                      </span>
-                    </span>
-                  </div>
-                </div>
-                <div class="col-lg-3 col-md-3">
-                  <button
-                    class="stars btn-waves-effect grad-rec-btn grad-btn-dark ev-btn-dark fw-light fs-14"
-                    type="submit"
-                    [class.is-clickable]="isLoggedIn"
-                    (click)="starToggle(challenge['id'])"
-                  >
-                    <i class="fa fa-star star"></i> {{ challenge.data }}&nbsp;&nbsp;{{ stars['count'] }}
-                  </button>
+<!-- <div class="web-container"> -->
+<div class="challenge-flex" [class.center]="!authService.isAuth">
+  <div class="challenge-content">
+    <div class="mid-container">
+      <div class="challenge-container">
+        <div class="challenge-card">
+          <div class="top-card-container ev-card-panel">
+            <div class="row card-img-row">
+              <div class="col-lg-2 col-md-3 col-sm-12">
+                <div class="image-container">
+                  <img [src]="challenge['image']" width="100%" />
                 </div>
               </div>
-              <div class="row rm-row-bot card-tab-row">
-                <div class="col-sm-12">
-                  <ul class="inline-list rm-gut">
-                    <li>
-                      <a
-                        [class.selected]="localRouter.url.endsWith('overview')"
-                        [routerLink]="['./overview']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-info"></i> Overview</a
-                      >
-                    </li>
-                    <li>
-                      <a
-                        [class.selected]="localRouter.url.endsWith('evaluation')"
-                        [routerLink]="['./evaluation']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-bar-chart-o"></i>
-                        Evaluation</a
-                      >
-                    </li>
-                    <li>
-                      <a
-                        [class.selected]="localRouter.url.endsWith('phases')"
-                        [routerLink]="['./phases']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-level-up"></i> Phases</a
-                      >
-                    </li>
-                    <li *ngIf="!isParticipated">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('participate')"
-                        [routerLink]="['./participate']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-free-code-camp"></i>
-                        Participate</a
-                      >
-                    </li>
-                    <li *ngIf="isParticipated">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('submit')"
-                        [routerLink]="['./submit']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-upload"></i> Submit</a
-                      >
-                    </li>
-                    <li *ngIf="isParticipated">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('my-submissions')"
-                        [routerLink]="['./my-submissions']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-eye"></i> My Submissions</a
-                      >
-                    </li>
-                    <li *ngIf="isChallengeHost">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('view-all-submissions')"
-                        [routerLink]="['./view-all-submissions']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-list"></i> All Submissions</a
-                      >
-                    </li>
-                    <li>
-                      <a
-                        [class.selected]="localRouter.url.endsWith('leaderboard')"
-                        [routerLink]="['./leaderboard']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-line-chart"></i> Leaderboard</a
-                      >
-                    </li>
-                    <li *ngIf="isForumEnabled && (forumURL || isChallengeHost)">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('discuss')"
-                        [routerLink]="['./discuss']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-comments"></i> Discuss
+              <div class="col-lg-7 col-md-6">
+                <div class="card-content">
+                  <h4 class="challenge-title fw-light">
+                    {{ challenge['title'] }}
+                  </h4>
+                  <span class="title-line fw-light fs-16" *ngIf="challenge.creator.team_url != ''"
+                    ><strong class="text-light-black"> Organized by:</strong
+                    ><a class="orange-text" href="{{ challenge['creator']['team_url'] }}" target="_blank">
+                      {{ challenge['creator']['team_name'] }}
+                    </a>
+                  </span>
+                  <span class="title-line fw-light fs-16" *ngIf="challenge.creator.team_url == ''"
+                    ><strong class="text-light-black">Organized by:</strong>
+                    {{ challenge['creator']['team_name'] }}
+                  </span>
+                  <br />
+                  <!-- Start date -->
+                  <span class="fs-16 fw-light">
+                    <strong class="text-light-black">Starts on:</strong>
+                    {{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}
+                  </span>
+                  <br />
+                  <!-- End date -->
+                  <span class="fs-16 fw-light">
+                    <strong class="text-light-black">Ends on:</strong>
+                    {{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}
+                  </span>
+                  <br />
+                  <span class="title-line" *ngIf="isChallengeHost">
+                    <span class="fs-16 fw-light">
+                      <a class="pointer" (click)="togglePublishChallengeState()">
+                        <strong class="text-light-black">{{ publishChallenge.state }} </strong>
+                        <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
                       </a>
-                    </li>
-                    <li *ngIf="isChallengeHost">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('settings')"
-                        [routerLink]="['./settings']"
-                        class="text-light-black fw-light fs-15"
-                      >
-                        <i class="fa fa-gear"></i> Settings
-                      </a>
-                    </li>
-                    <li *ngIf="isChallengeHost">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('manage')"
-                        [routerLink]="['./manage']"
-                        class="text-light-black fw-semibold fs-15"
-                        ><i class="fa fa-cogs"></i> Manage
-                      </a>
-                    </li>
-                  </ul>
+                    </span>
+                  </span>
                 </div>
+              </div>
+              <div class="col-lg-3 col-md-3">
+                <button
+                  class="stars btn-waves-effect grad-rec-btn grad-btn-dark ev-btn-dark fw-light fs-14"
+                  type="submit"
+                  [class.is-clickable]="isLoggedIn"
+                  (click)="starToggle(challenge['id'])"
+                >
+                  <i class="fa fa-star star"></i> {{ challenge.data }}&nbsp;&nbsp;{{ stars['count'] }}
+                </button>
+              </div>
+            </div>
+            <div class="row rm-row-bot card-tab-row">
+              <div class="col-sm-12">
+                <ul class="inline-list rm-gut">
+                  <li>
+                    <a
+                      [class.selected]="localRouter.url.endsWith('overview')"
+                      [routerLink]="['./overview']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-info"></i> Overview</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      [class.selected]="localRouter.url.endsWith('evaluation')"
+                      [routerLink]="['./evaluation']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-bar-chart-o"></i>
+                      Evaluation</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      [class.selected]="localRouter.url.endsWith('phases')"
+                      [routerLink]="['./phases']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-level-up"></i> Phases</a
+                    >
+                  </li>
+                  <li *ngIf="!isParticipated">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('participate')"
+                      [routerLink]="['./participate']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-free-code-camp"></i>
+                      Participate</a
+                    >
+                  </li>
+                  <li *ngIf="isParticipated">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('submit')"
+                      [routerLink]="['./submit']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-upload"></i> Submit</a
+                    >
+                  </li>
+                  <li *ngIf="isParticipated">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('my-submissions')"
+                      [routerLink]="['./my-submissions']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-eye"></i> My Submissions</a
+                    >
+                  </li>
+                  <li *ngIf="isChallengeHost">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('view-all-submissions')"
+                      [routerLink]="['./view-all-submissions']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-list"></i> All Submissions</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      [class.selected]="localRouter.url.endsWith('leaderboard')"
+                      [routerLink]="['./leaderboard']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-line-chart"></i> Leaderboard</a
+                    >
+                  </li>
+                  <li *ngIf="isForumEnabled && (forumURL || isChallengeHost)">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('discuss')"
+                      [routerLink]="['./discuss']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-comments"></i> Discuss
+                    </a>
+                  </li>
+                  <li *ngIf="isChallengeHost">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('settings')"
+                      [routerLink]="['./settings']"
+                      class="text-light-black fw-light fs-15"
+                    >
+                      <i class="fa fa-gear"></i> Settings
+                    </a>
+                  </li>
+                  <li *ngIf="isChallengeHost">
+                    <a
+                      [class.selected]="localRouter.url.endsWith('manage')"
+                      [routerLink]="['./manage']"
+                      class="text-light-black fw-semibold fs-15"
+                      ><i class="fa fa-cogs"></i> Manage
+                    </a>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
-          <router-outlet></router-outlet>
         </div>
+        <router-outlet></router-outlet>
       </div>
     </div>
-    <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
   </div>
+  <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
 </div>
+<!-- </div> -->
 <app-footer *ngIf="!authService.isAuth"></app-footer>
