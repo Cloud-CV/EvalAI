@@ -118,7 +118,7 @@ export class EditphasemodalComponent implements OnInit {
    */
   quillEditorStyle = {
     height: '320px',
-    width: '720px',
+    width: '712px',
   };
 
   /**
