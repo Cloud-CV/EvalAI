@@ -1,22 +1,20 @@
-<div class="card ev-card-panel ev-challenge-card ev-card-hover">
+<div class="card ev-challenge-card hoverable z-depth-2 margin-bottom-cancel">
   <div class="card-image ev-card-image">
     <img class="bg-img" [src]="challenge['image']" />
-    <span class="ev-card-title fs-14"
-      ><span><img [src]="challenge['image']" /></span>{{ challenge['title'] }}</span
-    >
   </div>
   <div class="card-content">
+    <p class="fs-20 fw-regular truncate">{{ challenge['title'] }}</p>
     <p>
       <strong class="text-light-black fs-12">Organized by</strong> <br />
-      <strong>{{ challenge['creator']['team_name'] }}</strong>
+      <span class="fw-light fs-16">{{ challenge['creator']['team_name'] }}</span>
     </p>
     <p>
       <strong class="text-light-black fs-12">Starts on</strong> <br />
-      <strong>{{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}</strong>
+      <span class="fw-light fs-16">{{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}</span>
     </p>
     <p>
       <strong class="text-light-black fs-12">Ends on</strong> <br />
-      <strong>{{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}</strong>
+      <span class="fw-light fs-16">{{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}</span>
     </p>
     <div class="margin-top-btm" *ngIf="this.routerPublic.url === myChallengesRoute">
       <span *ngIf="challenge['approved_by_admin']">
@@ -33,5 +31,4 @@
       </span>
     </div>
   </div>
-  <div class="btn-card-detail waves-effect waves-dark fw-light fs-14"><strong>View Details </strong> &nbsp;</div>
 </div>
