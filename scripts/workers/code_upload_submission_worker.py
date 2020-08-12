@@ -274,6 +274,46 @@ def install_gpu_drivers(api_instance):
             raise
 
 
+def set_network_policies(api_instance):
+    """Function to set the network policies in the cluster
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for creating network policies
+    """
+        
+    logging.info("Setting Deny all egress")
+
+    namespace = "default"
+    deny_all_body = client.V1NetworkPolicy(
+        api_version="v1",
+        kind="NetworkPolicy",
+        metadata=client.V1ObjectMeta(name="default-deny-egress", namespace="default"),
+        spec=client.V1NetworkPolicySpec(podSelector=client.V1LabelSelector(matchLabels="{}"),
+        policyTypes="Egress")
+    )
+    allow_evalai_body =client.V1NetworkPolicy(
+        api_version="v1",
+        kind="NetworkPolicy",
+        metadata=client.V1ObjectMeta(name="default-deny-egress", namespace="default"),
+        spec=client.V1NetworkPolicySpec(podSelector=client.V1LabelSelector(matchLabels="{}"),
+        egress=client.V1NetworkPolicyPeer(ipBlock=client.V1IPBlock(cidr="evalai_ip_block"))
+        policyTypes="Egress")
+    )
+    try:
+        api_instance.create_namespaced_network_policy(namespace, deny_all_body)
+    except ApiException as e:
+        if e.status == 409:
+        logging.info("Exception when calling NetworkingV1Api->create_namespaced_network_policy: %s\n" % e)
+        else:
+            raise
+    try:
+        api_instance.create_namespaced_network_policy(namespace, allow_evalai_body)
+    except ApiException as e:
+        if e.status == 409:
+        logging.info("Exception when calling NetworkingV1Api->create_namespaced_network_policy: %s\n" % e)
+        else:
+            raise
+
+
 def main():
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
