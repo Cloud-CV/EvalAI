@@ -9,16 +9,8 @@ import { ContactRoutingModule } from './contact-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    ContactComponent
-  ],
-  imports: [
-    CommonModule,
-    ContactRoutingModule,
-    SharedModule
-  ],
-  exports: [
-    ContactComponent
-  ]
+  declarations: [ContactComponent],
+  imports: [CommonModule, ContactRoutingModule, SharedModule],
+  exports: [ContactComponent],
 })
-export class ContactModule { }
+export class ContactModule {}

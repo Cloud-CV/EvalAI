@@ -1,17 +1,24 @@
 <div class="modal-container">
   <div class="modal-card">
     <div class="title">
-      {{title}}
+      {{ title }}
     </div>
     <div class="form">
       <div class="row row-lr-margin">
         <div class="col-lg-6 col-md-6 col-sm-6 col-lr-pad">
           <div class="input-field align-left">
             <div class="fs-16 fw-regular text-med-black">Phase Name</div>
-            <app-input class="mt-20" [isRequired]="true"
-              [editPhaseDetails]="editPhaseDetails" [label]="'name'"
-              [placeholder]="''" [type]="'text'" [icon]="" [value]="name"
-              #formmodal></app-input>
+            <app-input
+              class="mt-20"
+              [isRequired]="true"
+              [editPhaseDetails]="editPhaseDetails"
+              [label]="'name'"
+              [placeholder]="''"
+              [type]="'text'"
+              [icon]=""
+              [value]="name"
+              #formmodal
+            ></app-input>
           </div>
         </div>
       </div>
@@ -20,10 +27,10 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-lr-pad">
           <div class="input-field align-left">
             <div class="fs-16 fw-regular text-med-black">Description</div>
-            <div class="editor-validation-message fs-12"
-              *ngIf="isEditorFieldMessage">{{editorValidationMessage}}</div>
-            <div class="mt-20 mb-20 edit-phase-editor" [froalaEditor]
-              [(froalaModel)]="description"></div>
+            <div class="editor-validation-message fs-12" *ngIf="isEditorFieldMessage">
+              {{ editorValidationMessage }}
+            </div>
+            <div class="mt-20 mb-20 edit-phase-editor" [froalaEditor] [(froalaModel)]="description"></div>
           </div>
         </div>
       </div>
@@ -34,19 +41,35 @@
         <div class="col-lg-4 col-md-4 col-sm-12 col-lr-pad">
           <div class="input-field align-left">
             <span class="text-med-black fw-regular fs-16">Start date and time</span>
-            <app-input class="mt-20" [mindatetime]="todayDateTime"
-              [editPhaseDetails]="editPhaseDetails" [name]="'start_date'"
-              [isRequired]="true" [label]="'start_date'" [placeholder]="''"
-              [type]="'datetime'" [value]="startDate" #formmodal></app-input>
+            <app-input
+              class="mt-20"
+              [mindatetime]="todayDateTime"
+              [editPhaseDetails]="editPhaseDetails"
+              [name]="'start_date'"
+              [isRequired]="true"
+              [label]="'start_date'"
+              [placeholder]="''"
+              [type]="'datetime'"
+              [value]="startDate"
+              #formmodal
+            ></app-input>
           </div>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-12 col-lr-pad">
           <div class="input-field align-left">
             <span class="text-med-black fw-regular fs-16">End date and time</span>
-            <app-input class="mt-20" [mindatetime]="startDate"
-              [editPhaseDetails]="editPhaseDetails" [name]="'end_date'"
-              [isRequired]="true" [label]="'end_date'" [placeholder]="''"
-              [type]="'datetime'" [value]="endDate" #formmodal></app-input>
+            <app-input
+              class="mt-20"
+              [mindatetime]="startDate"
+              [editPhaseDetails]="editPhaseDetails"
+              [name]="'end_date'"
+              [isRequired]="true"
+              [label]="'end_date'"
+              [placeholder]="''"
+              [type]="'datetime'"
+              [value]="endDate"
+              #formmodal
+            ></app-input>
           </div>
         </div>
       </div>
@@ -54,67 +77,100 @@
       <div class="col-lg-4 col-md-4 col-sm-12 col-lr-pad">
         <div class="input-field align-left">
           <span class="text-med-black fw-regular fs-16">Submissions/day</span>
-          <app-input class="mt-20"
+          <app-input
+            class="mt-20"
             [editPhaseDetails]="editPhaseDetails"
-            [name]="'max_submissions_per_day'" [isRequired]="true"
-            [label]="'max_submissions_per_day'" [placeholder]="''"
-            [type]="'number'" [value]="maxSubmissionsPerDay" #formmodal></app-input>
-            <div class="editor-validation-message fs-12"
-              *ngIf="isPerDaySubmissionFieldMessage">{{perDaySubmisionValidationMessage}}</div>
+            [name]="'max_submissions_per_day'"
+            [isRequired]="true"
+            [label]="'max_submissions_per_day'"
+            [placeholder]="''"
+            [type]="'number'"
+            [value]="maxSubmissionsPerDay"
+            #formmodal
+          ></app-input>
+          <div class="editor-validation-message fs-12" *ngIf="isPerDaySubmissionFieldMessage">
+            {{ perDaySubmisionValidationMessage }}
+          </div>
         </div>
       </div>
 
       <div class="col-lg-4 col-md-4 col-sm-12 col-lr-pad">
         <div class="input-field align-left">
           <span class="text-med-black fw-regular fs-16">Submissions/month</span>
-          <app-input class="mt-20" min="challenge_phase.max_submissions_per_day"
+          <app-input
+            class="mt-20"
+            min="challenge_phase.max_submissions_per_day"
             [editPhaseDetails]="editPhaseDetails"
-            [name]="'max_submissions'" [isRequired]="true"
-            [label]="'max_submissions_per_month'" [placeholder]="''"
-            [type]="'number'" [value]="maxSubmissionsPerMonth" #formmodal></app-input>
-            <div class="editor-validation-message fs-12"
-              *ngIf="isPerMonthSubmissionFieldMessage">{{PerMonthSubmissionValidationMessage}}</div>
+            [name]="'max_submissions'"
+            [isRequired]="true"
+            [label]="'max_submissions_per_month'"
+            [placeholder]="''"
+            [type]="'number'"
+            [value]="maxSubmissionsPerMonth"
+            #formmodal
+          ></app-input>
+          <div class="editor-validation-message fs-12" *ngIf="isPerMonthSubmissionFieldMessage">
+            {{ PerMonthSubmissionValidationMessage }}
+          </div>
         </div>
       </div>
 
       <div class="col-lg-4 col-md-4 col-sm-12 col-lr-pad">
         <div class="input-field align-left">
           <span class="text-med-black fw-regular fs-16">Total submissions</span>
-          <app-input class="mt-20"
+          <app-input
+            class="mt-20"
             min="challenge_phase.max_submissions_per_month"
             [editPhaseDetails]="editPhaseDetails"
-            [name]="'max_submissions'" [isRequired]="true"
-            [label]="'max_submissions'" [placeholder]="''" [type]="'number'"
-            [value]="maxSubmissions" #formmodal></app-input>
+            [name]="'max_submissions'"
+            [isRequired]="true"
+            [label]="'max_submissions'"
+            [placeholder]="''"
+            [type]="'number'"
+            [value]="maxSubmissions"
+            #formmodal
+          ></app-input>
         </div>
       </div>
 
       <div class="row row-lr-margin">
         <div class="col-lg-6 col-md-6 col-sm-12 col-lr-pad">
-          <app-input [name]="'test_annotation_file'" [label]="'test_annotation'"
-            [editPhaseDetails]="editPhaseDetails" [placeholder]="''"
-            [type]="'file'" [value]="''" #formmodal></app-input>
+          <app-input
+            [name]="'test_annotation_file'"
+            [label]="'test_annotation'"
+            [editPhaseDetails]="editPhaseDetails"
+            [placeholder]="''"
+            [type]="'file'"
+            [value]="''"
+            #formmodal
+          ></app-input>
         </div>
       </div>
 
       <div class="row row-lr-margin"></div>
     </div>
     <div class="buttons">
-        <div class="col-md-12 col-sm-12 col-lr-pad">
-          <div class="align-left text-med-black fw-regular">
-            <ul class="inline-list">
-              <li>
-                <a appClickstop (click)="denied()" class="dark-link pointer"><strong
-                    class="fw-semibold">{{deny}}</strong></a>
-              </li>
-              <li>
-                <button appClickstop [disabled]="isDisabled"
-                  (click)="formValidate()" class="btn btn-waves-effect
-                  waves-dark grad-btn grad-btn-dark fs-14">{{confirm}}</button>
-              </li>
-            </ul>
-          </div>
+      <div class="col-md-12 col-sm-12 col-lr-pad">
+        <div class="align-left text-med-black fw-regular">
+          <ul class="inline-list">
+            <li>
+              <a appClickstop (click)="denied()" class="dark-link pointer"
+                ><strong class="fw-semibold">{{ deny }}</strong></a
+              >
+            </li>
+            <li>
+              <button
+                appClickstop
+                [disabled]="isDisabled"
+                (click)="formValidate()"
+                class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+              >
+                {{ confirm }}
+              </button>
+            </li>
+          </ul>
         </div>
+      </div>
     </div>
   </div>
 </div>

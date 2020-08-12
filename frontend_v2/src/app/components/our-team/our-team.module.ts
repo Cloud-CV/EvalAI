@@ -9,16 +9,8 @@ import { OurTeamRoutingModule } from './our-team-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    OurTeamComponent
-  ],
-  imports: [
-    CommonModule,
-    OurTeamRoutingModule,
-    SharedModule
-  ],
-  exports: [
-    OurTeamComponent
-  ]
+  declarations: [OurTeamComponent],
+  imports: [CommonModule, OurTeamRoutingModule, SharedModule],
+  exports: [OurTeamComponent],
 })
-export class OurTeamModule { }
+export class OurTeamModule {}

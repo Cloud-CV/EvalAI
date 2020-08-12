@@ -1,21 +1,19 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {AuthService} from '../../services/auth.service';
-import {Router} from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-analytics',
   templateUrl: './analytics.component.html',
-  styleUrls: ['./analytics.component.scss']
+  styleUrls: ['./analytics.component.scss'],
 })
 export class AnalyticsComponent implements OnInit, OnDestroy {
-
   /**
    * Authentication Service subscription
    */
   authServiceSubscription: any;
 
-  constructor(public authService: AuthService, private router: Router) {
-  }
+  constructor(public authService: AuthService, private router: Router) {}
 
   ngOnInit() {
     this.authService.isLoggedIn();
@@ -31,5 +29,4 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
       this.authServiceSubscription.unsubscribe();
     }
   }
-
 }

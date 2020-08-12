@@ -16,7 +16,7 @@
     text-align: center;
   }
   .leaderboard-table-div {
-    text-align:center;
+    text-align: center;
     font-size: $fs-16;
     color: $gray-darker;
     font-weight: $fw-light;
@@ -30,11 +30,11 @@
     overflow-y: scroll;
     max-height: 500px;
     .leaderboard-table {
-      width:100%;
+      width: 100%;
       tr {
-      	&:hover {
-      		background:white;
-      	}
+        &:hover {
+          background: white;
+        }
         &.highlight {
           background: $red-lighter;
         }
@@ -45,10 +45,10 @@
             width: auto;
           }
           div {
-          	font-weight:$fw-light;
-          	&:hover {
-          		font-weight: $fw-regular;
-          	}
+            font-weight: $fw-light;
+            &:hover {
+              font-weight: $fw-regular;
+            }
             &.fat {
               min-width: 180px;
             }
@@ -66,7 +66,8 @@
           }
         }
 
-        td {}
+        td {
+        }
       }
     }
   }
@@ -94,30 +95,30 @@
   border-radius: 40px;
 
   .btn-switch-circle {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: block;
-      height: 10px;
-      width: 10px;
-      background-color: #fff;
-      border-radius: 40px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    height: 10px;
+    width: 10px;
+    background-color: #fff;
+    border-radius: 40px;
   }
 }
 
 .btn-switch--on {
   background-color: #ffaf4b;
-  border: 2px solid #ffaf4b;;
+  border: 2px solid #ffaf4b;
 
   .btn-switch-circle--on {
-      left: auto;
-      right: 0;
+    left: auto;
+    right: 0;
   }
 }
 
 .sort-leaderboard-switch {
-	vertical-align: middle;
-	display: inline-block;
+  vertical-align: middle;
+  display: inline-block;
 }
 
 .spacer {
@@ -140,7 +141,7 @@ mat-slider {
 }
 
 .leaderboard-description {
-  color:  $yellow !important;
+  color: $yellow !important;
   border-radius: 2px !important;
   min-height: 25px !important;
 }

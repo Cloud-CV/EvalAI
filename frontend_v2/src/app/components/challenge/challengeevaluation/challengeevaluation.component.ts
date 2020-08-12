@@ -14,10 +14,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-challengeevaluation',
   templateUrl: './challengeevaluation.component.html',
-  styleUrls: ['./challengeevaluation.component.scss']
+  styleUrls: ['./challengeevaluation.component.scss'],
 })
 export class ChallengeevaluationComponent implements OnInit {
-
   /**
    * Challenge object
    */
@@ -49,9 +48,14 @@ export class ChallengeevaluationComponent implements OnInit {
    * @param document  window document Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document,
-              private endpointsService: EndpointsService, private apiService: ApiService,
-              private globalService: GlobalService, private logger: NGXLogger) { }
+  constructor(
+    private challengeService: ChallengeService,
+    @Inject(DOCUMENT) private document: Document,
+    private endpointsService: EndpointsService,
+    private apiService: ApiService,
+    private globalService: GlobalService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on init function.
@@ -59,12 +63,11 @@ export class ChallengeevaluationComponent implements OnInit {
   ngOnInit() {
     this.evaluationElement = this.document.getElementById('challenge-evaluation');
     this.tncElement = this.document.getElementById('challenge-tnc');
-    this.challengeService.currentChallenge.subscribe(
-    challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
       this.updateView();
     });
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -85,22 +88,21 @@ export class ChallengeevaluationComponent implements OnInit {
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
       console.log(BODY);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-      ).subscribe(
-        data => {
-          SELF.challenge.evaluation_details = data.evaluation_details;
-          console.log(data);
-          this.updateView();
-          SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
-      );
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.evaluation_details = data.evaluation_details;
+            console.log(data);
+            this.updateView();
+            SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
+        );
     };
 
     /**
@@ -113,7 +115,7 @@ export class ChallengeevaluationComponent implements OnInit {
       editorContent: this.challenge.evaluation_details,
       confirm: 'Submit',
       deny: 'Cancel',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
@@ -125,21 +127,20 @@ export class ChallengeevaluationComponent implements OnInit {
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-      ).subscribe(
-        data => {
-          SELF.challenge.terms_and_conditions = data.terms_and_conditions;
-          this.updateView();
-          SELF.globalService.showToast('success', 'The terms and conditions are successfully updated!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => this.logger.info('EDIT-TERMS-AND-CONDITIONS-FINISHED')
-      );
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.terms_and_conditions = data.terms_and_conditions;
+            this.updateView();
+            SELF.globalService.showToast('success', 'The terms and conditions are successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-TERMS-AND-CONDITIONS-FINISHED')
+        );
     };
 
     /**
@@ -152,7 +153,7 @@ export class ChallengeevaluationComponent implements OnInit {
       editorContent: this.challenge.terms_and_conditions,
       confirm: 'Submit',
       deny: 'Cancel',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
@@ -165,18 +166,20 @@ export class ChallengeevaluationComponent implements OnInit {
     SELF.apiCall = (params) => {
       const FORM_DATA: FormData = new FormData();
       FORM_DATA.append('evaluation_script', params['evaluation_script']);
-      SELF.apiService.patchFileUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        FORM_DATA
-      ).subscribe(
-        data => {
-          SELF.globalService.showToast('success', 'The evaluation script is successfully updated!');
-        },
-        err => {
-          SELF.globalService.showToast('error', err);
-        },
-        () => this.logger.info('EDIT-EVALUATION-SCRIPT-FINISHED')
-      );
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.globalService.showToast('success', 'The evaluation script is successfully updated!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-EVALUATION-SCRIPT-FINISHED')
+        );
     };
 
     /**
@@ -193,10 +196,10 @@ export class ChallengeevaluationComponent implements OnInit {
           label: 'evaluation_script',
           placeholder: '',
           type: 'file',
-          value: ''
+          value: '',
         },
       ],
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }

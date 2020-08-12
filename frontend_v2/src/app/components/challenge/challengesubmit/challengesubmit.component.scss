@@ -10,7 +10,7 @@
 }
 
 .guidelines-text-margin {
-  margin-top : 14px;
+  margin-top: 14px;
   margin-bottom: 14px;
 }
 
@@ -18,7 +18,9 @@
   padding-top: 55px;
 }
 
-table, th, td {
+table,
+th,
+td {
   border: none;
   border-collapse: collapse;
   border-spacing: 0;
@@ -40,7 +42,8 @@ tr {
   border-bottom: 1px solid #d0d0d0;
 }
 
-td, th {
+td,
+th {
   padding: 15px 5px;
   display: table-cell;
   vertical-align: middle;
@@ -67,7 +70,7 @@ td, th {
   font-weight: $fw-semibold;
 }
 
-::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle{
+::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
   border-color: black;
 }
 
@@ -75,13 +78,14 @@ td, th {
   border-color: black;
 }
 
-::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle{
+::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {
   border-color: black;
   background-color: black;
 }
 
 // overwrite the checkbox background
-::ng-deep .mat-checkbox-checked .mat-checkbox-background, .mat-checkbox-indeterminate .mat-checkbox-background {
+::ng-deep .mat-checkbox-checked .mat-checkbox-background,
+.mat-checkbox-indeterminate .mat-checkbox-background {
   background-color: black !important;
 }
 

@@ -1,4 +1,4 @@
-import {async, ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ChallengelistComponent } from './challengelist.component';
 import { CardlistComponent } from '../../utility/cardlist/cardlist.component';
 import { ChallengecardComponent } from './challengecard/challengecard.component';
@@ -11,26 +11,25 @@ import { HttpClientModule } from '@angular/common/http';
 import { ForceloginComponent } from '../../utility/forcelogin/forcelogin.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import {Router, Routes} from '@angular/router';
+import { Router, Routes } from '@angular/router';
 
-import {PubliclistsComponent} from '../publiclists.component';
+import { PubliclistsComponent } from '../publiclists.component';
 
-import {By} from '@angular/platform-browser';
+import { By } from '@angular/platform-browser';
 
 const routes: Routes = [
   {
     path: 'challenge',
-    redirectTo: 'challenges/all'
+    redirectTo: 'challenges/all',
   },
-  {path: 'challenges/all', component: ChallengelistComponent},
-  {path: 'challenges/me', component: ChallengelistComponent},
+  { path: 'challenges/all', component: ChallengelistComponent },
+  { path: 'challenges/me', component: ChallengelistComponent },
   {
     path: '**',
     redirectTo: '/challenges/all',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];
-
 
 describe('ChallengelistComponent', () => {
   let component: ChallengelistComponent;
@@ -42,20 +41,17 @@ describe('ChallengelistComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes) ],
-      declarations: [ ChallengelistComponent,
+      imports: [HttpClientModule, RouterTestingModule.withRoutes(routes)],
+      declarations: [
+        ChallengelistComponent,
         CardlistComponent,
         ChallengecardComponent,
         ForceloginComponent,
-        PubliclistsComponent],
-      providers: [ GlobalService,
-        ApiService,
-        AuthService,
-        ChallengeService,
-        EndpointsService ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-      .compileComponents();
+        PubliclistsComponent,
+      ],
+      providers: [GlobalService, ApiService, AuthService, ChallengeService, EndpointsService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -73,5 +69,4 @@ describe('ChallengelistComponent', () => {
 
     expect(component).toBeTruthy();
   });
-
 });
