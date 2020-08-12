@@ -11,16 +11,11 @@
         ></div>
       </div>
     </div>
-    <div class="ev-md-container bottom-hr-line">
+    <div class="ev-md-container">
       <div (click)="refreshLeaderboard()" class="pointer update-page" *ngIf="showLeaderboardUpdate">
         <span class="text-white"
           >Page is outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i
         ></span>
-      </div>
-      <div class="row row-lr-margin phase-title">
-        <div class="col-sm-12">
-          <strong class="fw-semibold content fs-16">Please select from following phases!</strong>
-        </div>
       </div>
       <div class="row row-lr-margin">
         <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
@@ -35,12 +30,12 @@
         </div>
         <div class="leaderboard-precision" *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
           <span class="spacer"></span>
-          <span class="fw-regular"> Leaderboard precision value:</span>
+          <span class="fw-regular">Leaderboard precision</span>
           <div class="rangeslider fa-stack fa-2x">
             <mat-slider
               thumbLabel
               min="0"
-              max="20"
+              max="5"
               step="1"
               thumbLabel
               placeholder="leaderboardPrecisionValue"
