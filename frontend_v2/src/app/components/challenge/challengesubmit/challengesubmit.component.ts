@@ -31,6 +31,11 @@ export class ChallengesubmitComponent implements OnInit {
   isLoggedIn = false;
 
   /**
+   * Is submittion submitted
+   */
+  isSubmitted = false;
+
+  /**
    * Challenge object
    */
   challenge: any;
@@ -458,6 +463,9 @@ export class ChallengesubmitComponent implements OnInit {
   formValidate() {
     if (this.selectedPhaseSubmissions.remainingSubmissions['remaining_submissions_today_count']) {
       this.globalService.formValidate(this.components, this.formSubmit, this);
+      if (this.isSubmitted) {
+        this.router.navigate(['../my-submissions'], { relativeTo: this.route });
+      }
     } else {
       this.globalService.showToast('info', "You have exhausted today's submission limit");
     }
@@ -485,10 +493,10 @@ export class ChallengesubmitComponent implements OnInit {
       self.submissionError = 'Please select phase!';
       return;
     } else if (submissionProjectUrl !== '' && !regex.test(submissionProjectUrl)) {
-      self.submissionError = 'Please provide a valid project url!';
+      self.submissionError = 'Please provide a valid project URL!';
       return;
     } else if (submissionPublicationUrl !== '' && !regex.test(submissionPublicationUrl)) {
-      self.submissionError = 'Please provide a valid publication url!';
+      self.submissionError = 'Please provide a valid publication URL!';
       return;
     }
     if (self.metaAttributesforCurrentSubmission != null) {
@@ -526,6 +534,7 @@ export class ChallengesubmitComponent implements OnInit {
       self.globalService.setFormValueForLabel(self.components, 'project_url', '');
       self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
     });
+    self.isSubmitted = true;
   }
 
   copyTextToClipboard(ref: HTMLElement) {
