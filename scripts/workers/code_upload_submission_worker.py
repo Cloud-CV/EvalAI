@@ -67,7 +67,7 @@ def create_job_object(message, environment_image):
             MESSAGE_BODY_ENV,
         ],
         resources = client.V1ResourceRequirements(
-            limits = {"nvidia.com/gpu": "2"}
+            limits = {"nvidia.com/gpu": "1"}
         )
     )
     # Create and configurate a spec section
