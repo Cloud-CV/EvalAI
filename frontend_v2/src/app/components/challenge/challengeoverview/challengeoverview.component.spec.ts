@@ -17,11 +17,10 @@ describe('ChallengeoverviewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeoverviewComponent ],
-      providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [ChallengeoverviewComponent],
+      providers: [ChallengeService, ApiService, GlobalService, AuthService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -46,11 +45,13 @@ describe('ChallengeoverviewComponent', () => {
   it('should show modal and successfully edit the challenge description', () => {
     const updatedDescription = 'Updated challenge description';
     const expectedSuccessMsg = 'The description is successfully updated!';
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.next({results: [{}]});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editChallengeOverview();
     expect(globalService.showModal).toHaveBeenCalled();
@@ -62,13 +63,15 @@ describe('ChallengeoverviewComponent', () => {
   it('should handle the API error for `editChallengeOverview` method', () => {
     const updatedDescription = 'Updated challenge description';
     const expectedErrorMsg = {
-      error: 'Api error'
+      error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
-      observer.error({error: expectedErrorMsg.error});
-      observer.complete();
-      return {unsubscribe() {}};
-    }));
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
 
     component.editChallengeOverview();
     expect(globalService.showModal).toHaveBeenCalled();

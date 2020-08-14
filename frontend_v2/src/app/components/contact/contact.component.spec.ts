@@ -9,7 +9,7 @@ import { GlobalService } from '../../services/global.service';
 import { AuthService } from '../../services/auth.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { ApiService } from '../../services/api.service';
-import {ActivatedRoute, Router, Routes} from '@angular/router';
+import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from '../../components/nav/footer/footer.component';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -20,17 +20,16 @@ import { OwlDateTimeModule } from 'ng-pick-datetime';
 const routes: Routes = [
   {
     path: 'contact',
-    component: ContactComponent
-  }
+    component: ContactComponent,
+  },
 ];
-
 
 describe('ContactComponent', () => {
   let router: Router;
   let component: ContactComponent;
   let fixture: ComponentFixture<ContactComponent>;
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   let authService: AuthService;
@@ -43,17 +42,16 @@ describe('ContactComponent', () => {
     // Mocking the loadJS function in window service to prevent that.
     const MOCK_SERVICE = new MockWindowService(null);
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule, OwlDateTimeModule ],
-      declarations: [ ContactComponent, HeaderStaticComponent, InputComponent, ToastComponent, FooterComponent ],
+      imports: [HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule, OwlDateTimeModule],
+      declarations: [ContactComponent, HeaderStaticComponent, InputComponent, ToastComponent, FooterComponent],
       providers: [
         GlobalService,
         AuthService,
         ApiService,
-        {provide: WindowService, useValue: MOCK_SERVICE },
-        EndpointsService
-      ]
-    })
-    .compileComponents();
+        { provide: WindowService, useValue: MOCK_SERVICE },
+        EndpointsService,
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

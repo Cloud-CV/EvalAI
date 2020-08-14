@@ -17,7 +17,7 @@ export class GlobalService {
     deny: 'Cancel',
     title: 'Are you sure?',
     confirmCallback: null,
-    denyCallback: null
+    denyCallback: null,
   };
 
   /**
@@ -31,7 +31,7 @@ export class GlobalService {
     title: 'Update Fields',
     confirmCallback: null,
     denyCallback: null,
-    form: []
+    form: [],
   };
 
   /**
@@ -44,7 +44,7 @@ export class GlobalService {
     deny: 'Cancel',
     title: 'Edit Challenge Phase Details',
     confirmCallback: null,
-    denyCallback: null
+    denyCallback: null,
   };
 
   /**
@@ -62,7 +62,7 @@ export class GlobalService {
     deny: 'Cancel',
     title: 'Terms and Conditions',
     confirmCallback: null,
-    denyCallback: null
+    denyCallback: null,
   };
 
   private scrolledStateSource = new BehaviorSubject(this.scrolledStateDefault);
@@ -84,7 +84,7 @@ export class GlobalService {
   /**
    * constructor
    */
-  constructor() { }
+  constructor() {}
 
   /**
    * Update Scrolled State.
@@ -148,7 +148,7 @@ export class GlobalService {
     const TEMP = {
       type: type,
       message: message,
-      duration: duration
+      duration: duration,
     };
     this.toast.emit(TEMP);
   }
@@ -171,7 +171,7 @@ export class GlobalService {
   showConfirm(params) {
     if (!this.isConfirming) {
       this.isConfirming = true;
-      const TEMP = { isConfirming: true};
+      const TEMP = { isConfirming: true };
       this.confirmSource.next(Object.assign({}, params, TEMP));
     }
   }
@@ -182,7 +182,7 @@ export class GlobalService {
   hideConfirm() {
     if (this.isConfirming) {
       this.isConfirming = false;
-      const TEMP = { isConfirming: false};
+      const TEMP = { isConfirming: false };
       this.confirmSource.next(Object.assign({}, this.modalDefault, TEMP));
     }
   }
@@ -194,7 +194,7 @@ export class GlobalService {
   showModal(params) {
     if (!this.isModalVisible) {
       this.isModalVisible = true;
-      const TEMP = { isModalVisible: true};
+      const TEMP = { isModalVisible: true };
       this.modalSource.next(Object.assign({}, params, TEMP));
     }
   }
@@ -206,7 +206,7 @@ export class GlobalService {
   showEditPhaseModal(params) {
     if (!this.isEditPhaseModalVisible) {
       this.isEditPhaseModalVisible = true;
-      const TEMP = { isEditPhaseModalVisible: true};
+      const TEMP = { isEditPhaseModalVisible: true };
       this.editPhasemodalSource.next(Object.assign({}, params, TEMP));
     }
   }
@@ -218,7 +218,7 @@ export class GlobalService {
   showTermsAndConditionsModal(params) {
     if (!this.isTermsAndConditionsModalVisible) {
       this.isTermsAndConditionsModalVisible = true;
-      const TEMP = { isTermsAndConditionsModalVisible: true};
+      const TEMP = { isTermsAndConditionsModalVisible: true };
       this.termsAndConditionsSource.next(Object.assign({}, params, TEMP));
     }
   }
@@ -229,7 +229,7 @@ export class GlobalService {
   hideModal() {
     if (this.isModalVisible) {
       this.isModalVisible = false;
-      const TEMP = { isModalVisible: false};
+      const TEMP = { isModalVisible: false };
       this.modalSource.next(Object.assign({}, this.modalDefault, TEMP));
     }
   }
@@ -240,7 +240,7 @@ export class GlobalService {
   hideEditPhaseModal() {
     if (this.isEditPhaseModalVisible) {
       this.isEditPhaseModalVisible = false;
-      const TEMP = { isEditPhaseModalVisible: false};
+      const TEMP = { isEditPhaseModalVisible: false };
       this.editPhasemodalSource.next(Object.assign({}, this.editPhaseModalDefault, TEMP));
     }
   }
@@ -251,7 +251,7 @@ export class GlobalService {
   hideTermsAndConditionsModal() {
     if (this.isTermsAndConditionsModalVisible) {
       this.isTermsAndConditionsModalVisible = false;
-      const TEMP = { isTermsAndConditionsModalVisible: false};
+      const TEMP = { isTermsAndConditionsModalVisible: false };
       this.termsAndConditionsSource.next(Object.assign({}, this.termsAndConditionsModalDefault, TEMP));
     }
   }
@@ -286,7 +286,7 @@ export class GlobalService {
       }
     });
     if (!requiredFieldMissing) {
-       callback(self);
+      callback(self);
     }
   }
 
@@ -391,8 +391,10 @@ export class GlobalService {
    */
   checkTokenValidity(err, toast = true) {
     if (err.error !== null && typeof err.error === 'object' && err.error['detail']) {
-      if (err.error['detail'].indexOf('Invalid token') !== -1 ||
-          err.error['detail'].indexOf('Token has expired') !== -1) {
+      if (
+        err.error['detail'].indexOf('Invalid token') !== -1 ||
+        err.error['detail'].indexOf('Token has expired') !== -1
+      ) {
         this.triggerLogout();
         this.showToast('error', 'Token Invalid! Please Login again.', 5);
       }
@@ -521,10 +523,14 @@ export class GlobalService {
    * @returns boolean indicating valid/invalid email
    */
   validateEmail(email) {
-    const RE = new RegExp (['^(([^<>()[\\]\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\.,;:\\s@\"]+)*)',
-                        '|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.',
-                        '[0-9]{1,3}\])|(([a-zA-Z\\-0-9]+\\.)+',
-                        '[a-zA-Z]{2,}))$'].join(''));
+    const RE = new RegExp(
+      [
+        '^(([^<>()[\\]\\.,;:\\s@"]+(\\.[^<>()\\[\\]\\.,;:\\s@"]+)*)',
+        '|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.',
+        '[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+',
+        '[a-zA-Z]{2,}))$',
+      ].join('')
+    );
     return RE.test(email);
   }
 

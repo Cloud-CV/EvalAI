@@ -10,10 +10,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-homemain',
   templateUrl: './homemain.component.html',
-  styleUrls: ['./homemain.component.scss']
+  styleUrls: ['./homemain.component.scss'],
 })
 export class HomemainComponent implements OnInit {
-
   /**
    * Is user logged in
    */
@@ -27,9 +26,13 @@ export class HomemainComponent implements OnInit {
    * @param apiService  ApiService Injection.
    * @param authService  AuthService Injection.
    */
-  constructor(private router: Router, private route: ActivatedRoute,
-              private apiService: ApiService, private globalService: GlobalService,
-              private authService: AuthService) { }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private apiService: ApiService,
+    private globalService: GlobalService,
+    private authService: AuthService
+  ) {}
 
   /**
    * Component on initialized

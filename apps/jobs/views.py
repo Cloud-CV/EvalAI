@@ -17,6 +17,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
+from django.db.models import Count
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -75,6 +76,8 @@ from .utils import (
     get_submission_model,
     handle_submission_rerun,
     is_url_valid,
+    reorder_submissions_comparator,
+    reorder_submissions_comparator_to_key
 )
 
 logger = logging.getLogger(__name__)
@@ -165,8 +168,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
+        # rerank in progress submissions in ascending order of submitted_at
+        reordered_submissions = sorted(filtered_submissions.qs,
+                                       key=reorder_submissions_comparator_to_key(
+                                           reorder_submissions_comparator
+                                       ))
         paginator, result_page = paginated_queryset(
-            filtered_submissions.qs, request
+            reordered_submissions, request
         )
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
@@ -2078,6 +2086,42 @@ def get_github_badge_data(
         else:
             data["message"] = f"{challenge_obj.title}"
     return Response(data, status=http_status_code)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
+    """
+        API for fetching count of submissions by status for a challenge phase
+
+        Arguments:
+            request {HttpRequest} -- request object
+            challenge_phase_pk {int} -- challenge phase pk
+
+        Returns:
+            Response object -- Response object with appropriate response code (200/400/404)
+    """
+    # check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    challenge = challenge_phase.challenge
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase,
+    ).values('status').annotate(count=Count("id"))
+
+    response_data = {
+        "status": submissions
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
