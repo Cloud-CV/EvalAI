@@ -208,6 +208,9 @@ export class InputComponent implements OnInit {
     } else if (this.type === 'text' || this.type === 'textarea') {
       this.isValid = this.globalService.validateText(e);
       this.isValid ? (this.message = '') : (this.message = 'Enter a valid text');
+    } else if (this.type === 'url') {
+      this.isValid = this.globalService.validateText(e);
+      this.isValid ? (this.message = '') : (this.message = 'Enter a valid URL');
     } else if (this.type === 'number') {
       this.isValid = this.globalService.validateInteger(e);
       this.isValid ? (this.message = '') : (this.message = 'Enter a valid number');
