@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {GlobalService} from '../../../services/global.service';
+import { GlobalService } from '../../../services/global.service';
 
 /**
  * Component Class
@@ -7,19 +7,16 @@ import {GlobalService} from '../../../services/global.service';
 @Component({
   selector: 'app-loading',
   templateUrl: './loading.component.html',
-  styleUrls: ['./loading.component.scss']
+  styleUrls: ['./loading.component.scss'],
 })
 export class LoadingComponent implements OnInit {
-
   /**
    * Constructor.
    */
-  constructor(public globalService: GlobalService) { }
+  constructor(public globalService: GlobalService) {}
 
   /**
    * Component on intialized
    */
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

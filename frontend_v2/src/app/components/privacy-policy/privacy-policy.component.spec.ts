@@ -12,7 +12,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
-
 describe('PrivacyPolicyComponent', () => {
   let component: PrivacyPolicyComponent;
   let fixture: ComponentFixture<PrivacyPolicyComponent>;
@@ -21,21 +20,15 @@ describe('PrivacyPolicyComponent', () => {
   let ALL_TARGET;
 
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PrivacyPolicyComponent, HeaderStaticComponent, FooterComponent ],
-      providers: [
-        GlobalService,
-        AuthService,
-        ApiService,
-        EndpointsService
-      ],
-      imports: [ HttpClientModule, RouterTestingModule ]
-    })
-    .compileComponents();
+      declarations: [PrivacyPolicyComponent, HeaderStaticComponent, FooterComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [HttpClientModule, RouterTestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -63,7 +56,6 @@ describe('PrivacyPolicyComponent', () => {
   });
 
   it('should have equal number of section-title elements as nav elements', () => {
-
     expect(ALL_NAV.length).toBeGreaterThan(0);
     expect(ALL_TARGET.length).toBeGreaterThan(0);
     expect(ALL_TARGET.length).toBe(ALL_NAV.length);
@@ -87,5 +79,4 @@ describe('PrivacyPolicyComponent', () => {
       expect(component.highlightSectionTitle).toHaveBeenCalled();
     });
   });
-
 });

@@ -12,25 +12,17 @@ import { ApiService } from '../../../services/api.service';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
-
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LoginComponent, InputComponent ],
-      providers: [
-        GlobalService,
-        AuthService,
-        WindowService,
-        ApiService,
-        EndpointsService
-      ],
-      imports: [ RouterTestingModule, HttpClientModule, FormsModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [LoginComponent, InputComponent],
+      providers: [GlobalService, AuthService, WindowService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

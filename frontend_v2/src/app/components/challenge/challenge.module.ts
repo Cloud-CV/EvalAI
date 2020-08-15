@@ -10,7 +10,8 @@ import {
   MatCheckboxModule,
   MatRadioModule,
   MatDialogModule,
-  MatSliderModule } from '@angular/material';
+  MatSliderModule,
+} from '@angular/material';
 
 // import components
 import { ChallengeevaluationComponent } from './challengeevaluation/challengeevaluation.component';
@@ -48,7 +49,7 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     PhasecardComponent,
     ChallengemanageComponent,
     SubmissionMetaAttributesDialogueComponent,
-    ChallengediscussComponent
+    ChallengediscussComponent,
   ],
   imports: [
     CommonModule,
@@ -64,7 +65,7 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     MatMenuModule,
     MatRadioModule,
     MatDialogModule,
-    MatSliderModule
+    MatSliderModule,
   ],
   exports: [
     ChallengeComponent,
@@ -79,9 +80,7 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     ChallengeviewallsubmissionsComponent,
     PhasecardComponent,
   ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
-  entryComponents: [
-    SubmissionMetaAttributesDialogueComponent
-  ]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  entryComponents: [SubmissionMetaAttributesDialogueComponent],
 })
-export class ChallengeModule { }
+export class ChallengeModule {}
