@@ -16,7 +16,7 @@
     },
     "vm": {
         "EnvironmentConfig": {
-            "API": "https://evalapi.example.com/api/"
+            "API": "https://BACKEND_DOMAIN/api/"
         }
     }
 }

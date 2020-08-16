@@ -63,6 +63,8 @@ services:
       args:
         NODE_ENV: vm
         DOMAIN_NAME: ${DOMAIN_NAME}
+        FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
+        BACKEND_DOMAIN: ${BACKEND_DOMAIN}
     depends_on:
       - django
     ports:
@@ -80,6 +82,8 @@ services:
     restart: unless-stopped
     environment: 
       DOMAIN_NAME: ${DOMAIN_NAME}
+      FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
+      BACKEND_DOMAIN: ${BACKEND_DOMAIN}
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
