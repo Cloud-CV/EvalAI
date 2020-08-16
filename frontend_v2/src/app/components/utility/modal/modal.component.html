@@ -11,7 +11,9 @@
         <div class="editor-validation-message fs-12" *ngIf="isEditorRequired && isInputMessage">
           {{ editorValidationMessage }}
         </div>
-        <div *ngIf="isEditorRequired" class="edit-global-modal" [froalaEditor] [(froalaModel)]="editorContent"></div>
+        <div *ngIf="isEditorRequired" class="edit-global-modal">
+          <quill-editor [styles]="quillEditorStyle" [(ngModel)]="editorContent"></quill-editor>
+        </div>
         <div class="form modal-inputs">
           <div *ngFor="let item of form">
             <app-input

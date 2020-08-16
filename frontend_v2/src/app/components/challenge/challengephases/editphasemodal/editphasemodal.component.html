@@ -30,7 +30,9 @@
             <div class="editor-validation-message fs-12" *ngIf="isEditorFieldMessage">
               {{ editorValidationMessage }}
             </div>
-            <div class="mt-20 mb-20 edit-phase-editor" [froalaEditor] [(froalaModel)]="description"></div>
+            <div class="mt-20 mb-20 edit-phase-editor">
+              <quill-editor [styles]="quillEditorStyle" [(ngModel)]="description"></quill-editor>
+            </div>
           </div>
         </div>
       </div>

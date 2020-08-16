@@ -1,8 +1,13 @@
 import { WindowService } from './window.service';
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { NGXLogger } from 'ngx-logger';
 
 @Injectable()
 export class MockWindowService extends WindowService {
+  constructor(@Inject(DOCUMENT) document: Document, private logger: NGXLogger) {
+    super(document);
+  }
   /**
    * Mocked Load Javascript function.
    * @param url  Name of script.
@@ -11,6 +16,6 @@ export class MockWindowService extends WindowService {
    * @param env  `This` variable of the environment
    */
   loadJS(url, implementationCode, location, env) {
-    console.log('LoadJS mocked..');
+    this.logger.info('LoadJS mocked..');
   }
 }

@@ -207,7 +207,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       if (!status) {
         this.globalService.storeData(this.globalService.redirectStorageKey, { path: this.routerPublic.url });
         let redirectToPath = '';
-        console.log(this.router.url.split('/'));
         if (this.router.url.split('/').length === 4) {
           redirectToPath = '../participate';
         } else if (this.router.url.split('/').length === 5) {

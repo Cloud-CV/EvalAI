@@ -6,6 +6,9 @@
 @import './font.scss';
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700');
 @import './theming.scss';
+@import '~quill/dist/quill.core.css';
+@import '~quill/dist/quill.bubble.css';
+@import '~quill/dist/quill.snow.css';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -2147,7 +2150,7 @@ tr {
     background: white;
   }
 
-  #page-wrap {
+  .page-wrap {
     width: 1440px !important;
     margin: auto !important;
     position: relative !important;

@@ -1,5 +1,11 @@
 <!-- The <router-outlet> tells the router where to display routed views. -->
-<div id="page-wrap">
+<div
+  [ngClass]="
+    currentRoutePath == '/' || currentRoutePath == '/auth/login' || currentRoutePath == '/auth/signup'
+      ? ''
+      : 'page-wrap'
+  "
+>
   <router-outlet></router-outlet>
 </div>
 <app-toast></app-toast>
