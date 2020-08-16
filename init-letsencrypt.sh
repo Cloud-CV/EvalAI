@@ -4,7 +4,7 @@ read -p "Enter your domain name (example.com) : " DOMAIN
 read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND
 read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND
 
-domains=(DOMAIN FRONTEND BACKEND)
+domains=($DOMAIN $FRONTEND $BACKEND)
 
 touch .env
 
