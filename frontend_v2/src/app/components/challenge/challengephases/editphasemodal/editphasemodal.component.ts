@@ -114,6 +114,14 @@ export class EditphasemodalComponent implements OnInit {
   editPhaseDetails = true;
 
   /**
+   * Quill editor style
+   */
+  quillEditorStyle = {
+    height: '320px',
+    width: '712px',
+  };
+
+  /**
    * Modal form items
    */
   @ViewChildren('formmodal')

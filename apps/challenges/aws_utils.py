@@ -34,6 +34,7 @@ aws_keys = {
 
 
 COMMON_SETTINGS_DICT = {
+    "AUTH_TOKEN": os.environ.get("AUTH_TOKEN"),
     "AWS_DEFAULT_REGION": aws_keys["AWS_REGION"],
     "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
     "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -47,6 +48,12 @@ COMMON_SETTINGS_DICT = {
     ),
     "WORKER_IMAGE": os.environ.get(
         "WORKER_IMAGE",
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], ENV
+        ),
+    ),
+    "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
+        "CODE_UPLOAD_WORKER_IMAGE",
         "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
             aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
@@ -207,6 +214,53 @@ task_definition = """
 }}
 """
 
+task_definition_code_upload_worker = """
+{{
+    "family":"{queue_name}",
+    "executionRoleArn":"{EXECUTION_ROLE_ARN}",
+    "networkMode":"awsvpc",
+    "containerDefinitions":[
+        {{
+            "name": "{container_name}",
+            "image": "{CODE_UPLOAD_WORKER_IMAGE}",
+            "essential": True,
+            "environment": [
+                {{
+                  "name": "QUEUE_NAME",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "EVALAI_API_SERVER",
+                  "value": "{DJANGO_SERVER}"
+                }},
+
+                {{
+                    "name": "AUTH_TOKEN",
+                    "value": "{AUTH_TOKEN}"
+                }},
+
+            ],
+            "workingDirectory": "/code",
+            "readonlyRootFilesystem": False,
+            "logConfiguration": {{
+                "logDriver": "awslogs",
+                "options": {{
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
+                }},
+            }},
+        }}
+    ],
+    "requiresCompatibilities":[
+        "FARGATE"
+    ],
+    "cpu": "{CPU}",
+    "memory": "{MEMORY}",
+}}
+"""
+
 service_definition = """
 {{
     "cluster":"{CLUSTER}",
@@ -288,13 +342,22 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
     if execution_role_arn:
-        definition = task_definition.format(
-            queue_name=queue_name,
-            container_name=container_name,
-            ENV=ENV,
-            challenge_pk=challenge.pk,
-            **COMMON_SETTINGS_DICT,
-        )
+        if challenge.is_docker_based:
+            definition = task_definition_code_upload_worker.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                **COMMON_SETTINGS_DICT,
+            )
+        else:
+            definition = task_definition.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                **COMMON_SETTINGS_DICT,
+            )
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
@@ -883,6 +946,10 @@ def create_eks_nodegroup(challenge, cluster_name):
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
+    # starting the code-upload-worker
+    client = get_boto3_client("ecs", aws_keys)
+    client_token = client_token_generator(challenge_obj.pk)
+    create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
 @app.task

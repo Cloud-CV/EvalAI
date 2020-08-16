@@ -205,6 +205,21 @@
   }
 }
 
+::ng-deep .owl-dt-timer-content .owl-dt-timer-input {
+  margin: 0.2rem;
+}
+
+::ng-deep .owl-dt-popup-container .owl-dt-calendar {
+  height: 23.6em;
+}
+::ng-deep .owl-dt-inline-container .owl-dt-calendar {
+  height: 23.6em;
+}
+
+::ng-deep .owl-dt-timer {
+  padding: 0px;
+}
+
 /* media queries for rocket container */
 @media only screen and (max-width: $screen-sm-md) {
   .input-group {

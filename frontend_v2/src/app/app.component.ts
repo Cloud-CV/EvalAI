@@ -2,7 +2,7 @@ import { mergeMap, map, filter } from 'rxjs/operators';
 import { Component, OnInit, OnDestroy, HostListener, Inject } from '@angular/core';
 import { GlobalService } from './services/global.service';
 import { AuthService } from './services/auth.service';
-import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute, Event } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 
@@ -26,6 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
   globalEditPhaseModalSubscription: any;
   globalTermsAndConditionsModalSubscription: any;
   globalServiceSubscriptionScrollTop: any;
+  currentRoutePath: any;
 
   /**
    * Constructor.
@@ -68,6 +69,11 @@ export class AppComponent implements OnInit, OnDestroy {
    * Component when initialized. Subscribes to observables
    */
   ngOnInit() {
+    this.router.events.subscribe((event: Event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentRoutePath = event.url; // current url path
+      }
+    });
     const SELF = this;
     this.globalServiceSubscription = this.globalService.currentScrolledState.subscribe((scrolledState) => {
       this.scrolledState = scrolledState;

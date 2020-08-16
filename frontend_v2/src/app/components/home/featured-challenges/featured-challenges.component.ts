@@ -68,7 +68,6 @@ export class FeaturedChallengesComponent implements OnInit {
         } else {
           SELF.show_featured_challenges = true;
           SELF.featured_callenges = data.results.slice(0, 3);
-          console.log(SELF.featured_callenges);
         }
       },
       (err) => {
