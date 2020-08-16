@@ -6,7 +6,7 @@ import urllib
 import yaml
 
 
-from worker_utils import EvalAI_Interface
+from .worker_utils import EvalAI_Interface
 
 from kubernetes import client
 
