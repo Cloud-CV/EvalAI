@@ -62,9 +62,9 @@ services:
       dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
-        DOMAIN_NAME: ${DOMAIN_NAME}
-        FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
-        BACKEND_DOMAIN: ${BACKEND_DOMAIN}
+        DOMAIN: ${DOMAIN}
+        FRONTEND: ${FRONTEND}
+        BACKEND: ${BACKEND}
     depends_on:
       - django
     ports:
@@ -81,11 +81,10 @@ services:
     image: certbot/certbot
     restart: unless-stopped
     environment: 
-      DOMAIN_NAME: ${DOMAIN_NAME}
-      FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
-      BACKEND_DOMAIN: ${BACKEND_DOMAIN}
+      DOMAIN: ${DOMAIN}
+      FRONTEND: ${FRONTEND}
+      BACKEND: ${BACKEND}
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    

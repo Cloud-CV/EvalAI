@@ -1,16 +1,16 @@
 #!/bin/bash
 
-read -p "Enter your domain name (example.com) : " DOMAIN_NAME
-read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
-read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
+read -p "Enter your domain name (example.com) : " DOMAIN
+read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND
+read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND
 
-domains=(DOMAIN_NAME FRONTEND_DOMAIN BACKEND_DOMAIN)
+domains=(DOMAIN FRONTEND BACKEND)
 
 touch .env
 
-echo "DOMAIN_NAME=$DOMAIN_NAME" > .env
-echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" >> .env
-echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
+echo "DOMAIN=$DOMAIN" > .env
+echo "FRONTEND=$FRONTEND" >> .env
+echo "BACKEND=$BACKEND" >> .env
 
 rsa_key_size=4096
 data_path="./certbot"
