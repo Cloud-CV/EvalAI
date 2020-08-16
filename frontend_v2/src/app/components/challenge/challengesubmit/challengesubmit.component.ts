@@ -453,6 +453,11 @@ export class ChallengesubmitComponent implements OnInit {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
         SELF.clearMetaAttributeValues();
+        SELF.submissionError = '';
+        SELF.components['_results'].forEach((element) => {
+          element.value = '';
+          element.message = '';
+        });
       }
     };
   }
