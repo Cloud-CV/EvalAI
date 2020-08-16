@@ -1,10 +1,10 @@
-import {Component, OnDestroy, OnInit, ViewChildren, QueryList, AfterViewInit} from '@angular/core';
-import {ApiService} from '../../services/api.service';
-import {EndpointsService} from '../../services/endpoints.service';
-import {AuthService} from '../../services/auth.service';
-import {GlobalService} from '../../services/global.service';
-import {BehaviorSubject} from 'rxjs';
-import {Router} from '@angular/router';
+import { Component, OnDestroy, OnInit, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { ApiService } from '../../services/api.service';
+import { EndpointsService } from '../../services/endpoints.service';
+import { AuthService } from '../../services/auth.service';
+import { GlobalService } from '../../services/global.service';
+import { BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
 import { InputComponent } from '../../components/utility/input/input.component';
 
 /**
@@ -13,18 +13,17 @@ import { InputComponent } from '../../components/utility/input/input.component';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
-
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   challengeCreateRoute = '/challenge-create';
   authRoute = '/auth/login';
   public user = {};
   public challengeList = [];
 
- /**
- * Subscribe Form
- */
+  /**
+   * Subscribe Form
+   */
 
   SUBSCRIBE_FORM: any = {};
   subscribeForm = 'formgroup';
@@ -32,10 +31,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren('formgroup')
   components: QueryList<InputComponent>;
 
-
   authServiceSubscription: any;
-  constructor(private apiService: ApiService, private endpointService: EndpointsService, private authService: AuthService,
-              private globalService: GlobalService, private router: Router) { }
+  constructor(
+    private apiService: ApiService,
+    private endpointService: EndpointsService,
+    private authService: AuthService,
+    private globalService: GlobalService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.init();
@@ -59,13 +62,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getChallenge() {
     this.apiService.getUrl(this.endpointService.featuredChallengesURL()).subscribe(
-      response => {
+      (response) => {
         this.challengeList = response.results;
       },
-      err => { this.globalService.handleApiError(err); },
+      (err) => {
+        this.globalService.handleApiError(err);
+      },
       () => {}
     );
-
   }
 
   hostChallenge() {
@@ -93,16 +97,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       email: self.globalService.formValueForLabel(self.SUBSCRIBE_FORM[self.subscribeForm], 'email'),
     });
     self.apiService.postUrl(self.endpointService.subscribeURL(), SUBSCRIBE_BODY).subscribe(
-      response => {
+      (response) => {
         // Success Message in response.message
         setTimeout(() => self.globalService.showToast('success', response.message, 5), 1000);
       },
       // Show Form Error on Failure
-      err => {
+      (err) => {
         if (err.error.message) {
           setTimeout(() => self.globalService.showToast('error', err.error.message, 5), 1000);
         } else {
-        self.globalService.handleApiError(err);
+          self.globalService.handleApiError(err);
         }
       },
       () => {}

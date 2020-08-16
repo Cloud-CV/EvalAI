@@ -2,7 +2,15 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { RouterModule } from '@angular/router';
-import { MatChipsModule, MatTableModule, MatMenuModule, MatSelectModule, MatIconModule, MatDividerModule, MatCheckboxModule } from '@angular/material';
+import {
+  MatChipsModule,
+  MatTableModule,
+  MatMenuModule,
+  MatSelectModule,
+  MatIconModule,
+  MatDividerModule,
+  MatCheckboxModule,
+} from '@angular/material';
 import { FormsModule } from '@angular/forms';
 
 // import components
@@ -13,7 +21,6 @@ import { LoadingComponent } from './loading/loading.component';
 import { SelectphaseComponent } from './selectphase/selectphase.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
 
-
 @NgModule({
   declarations: [
     ForceloginComponent,
@@ -22,7 +29,6 @@ import { SideBarComponent } from './side-bar/side-bar.component';
     ConfirmComponent,
     LoadingComponent,
     SelectphaseComponent,
-
   ],
   imports: [
     CommonModule,
@@ -36,7 +42,7 @@ import { SideBarComponent } from './side-bar/side-bar.component';
     MatDividerModule,
     MatMenuModule,
     MatIconModule,
-    MatCheckboxModule
+    MatCheckboxModule,
   ],
 
   exports: [
@@ -48,6 +54,6 @@ import { SideBarComponent } from './side-bar/side-bar.component';
     ConfirmComponent,
     LoadingComponent,
     SelectphaseComponent,
-  ]
+  ],
 })
-export class UtilityModule { }
+export class UtilityModule {}

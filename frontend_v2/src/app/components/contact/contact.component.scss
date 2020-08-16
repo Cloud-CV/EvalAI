@@ -1,7 +1,6 @@
 @import './styles/variables.scss';
 @import './styles/mixins.scss';
 
-
 /* contact container */
 
 .contact-container {
@@ -17,11 +16,10 @@
   box-sizing: border-box;
 }
 
-
 /* media queries */
 
-@media only screen and (max-width: $screen-sm-md){
-  .contact-title {	
+@media only screen and (max-width: $screen-sm-md) {
+  .contact-title {
     margin-top: 10px;
   }
   .contact-container {

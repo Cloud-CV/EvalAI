@@ -16,12 +16,11 @@ describe('SelectphaseComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SelectphaseComponent ],
-      providers: [ GlobalService, ChallengeService, ApiService, AuthService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [SelectphaseComponent],
+      providers: [GlobalService, ChallengeService, ApiService, AuthService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

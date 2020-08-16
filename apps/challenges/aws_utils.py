@@ -882,7 +882,7 @@ def create_eks_nodegroup(challenge, cluster_name):
         return response
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
-    construct_and_send_eks_cluster_creation_mail(challenge)
+    construct_and_send_eks_cluster_creation_mail(challenge_obj)
 
 
 @app.task

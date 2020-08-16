@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class MockWindowService extends WindowService {
-
   /**
    * Mocked Load Javascript function.
    * @param url  Name of script.

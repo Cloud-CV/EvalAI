@@ -10,10 +10,9 @@ import { AuthService } from '../../../../services/auth.service';
 @Component({
   selector: 'app-teamcard',
   templateUrl: './teamcard.component.html',
-  styleUrls: ['./teamcard.component.scss']
+  styleUrls: ['./teamcard.component.scss'],
 })
 export class TeamcardComponent implements OnInit, OnChanges {
-
   /**
    * Authentication Service subscription
    */
@@ -106,11 +105,13 @@ export class TeamcardComponent implements OnInit, OnChanges {
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
    */
-  constructor(private globalService: GlobalService,
-              private apiService: ApiService,
-              public authService: AuthService,
-              private router: Router,
-              private route: ActivatedRoute) { }
+  constructor(
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    public authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   /**
    * Component on initialized.
@@ -173,12 +174,12 @@ export class TeamcardComponent implements OnInit, OnChanges {
     this.deleteTeamCard.emit(this.team['id']);
   }
 
-    /**
+  /**
    * Fires delete member event.
    */
   deleteTeamMember(e, participantId) {
     e.stopPropagation();
-    this.deleteMemberCard.emit({teamId: this.team['id'], participantId: participantId});
+    this.deleteMemberCard.emit({ teamId: this.team['id'], participantId: participantId });
   }
 
   /**
@@ -218,5 +219,4 @@ export class TeamcardComponent implements OnInit, OnChanges {
     this.teamView['members'] = this.memberArray;
     this.teamView['member_ids'] = this.memberIdArray;
   }
-
 }

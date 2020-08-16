@@ -33,11 +33,13 @@ def download_file_and_publish_submission_message(
     request = HttpRequest()
     request.method = request_method
     request.user = user
+    file_download_temp_dir_path = ""
     try:
         downloaded_file = get_file_from_url(request_data["file_url"])
         file_path = os.path.join(
             downloaded_file["temp_dir_path"], downloaded_file["name"]
         )
+        file_download_temp_dir_path = downloaded_file["temp_dir_path"]
 
         with open(file_path, "rb") as f:
             input_file = SimpleUploadedFile(
@@ -74,8 +76,10 @@ def download_file_and_publish_submission_message(
                 }
             )
             logger.info("Message published to submission worker successfully!")
-            shutil.rmtree(downloaded_file["temp_dir_path"])
+        shutil.rmtree(file_download_temp_dir_path)
     except Exception as e:
+        if len(file_download_temp_dir_path) > 0:
+            shutil.rmtree(file_download_temp_dir_path)
         logger.exception(
             "Exception while downloading and sending submission for evaluation {}".format(
                 e
