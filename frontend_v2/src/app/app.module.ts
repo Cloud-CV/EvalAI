@@ -3,7 +3,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { GestureConfig } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
-import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
+import { QuillModule } from 'ngx-quill';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // Import services
@@ -40,8 +40,21 @@ import { environment } from '../environments/environment';
     AppRoutingModule,
     SharedModule,
     HttpClientModule,
-    FroalaEditorModule.forRoot(),
-    FroalaViewModule.forRoot(),
+    QuillModule.forRoot({
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          ['blockquote', 'code-block'],
+          [{ header: 1 }, { header: 2 }], // custom button values
+          [{ list: 'ordered' }, { list: 'bullet' }], // superscript/subscript
+          [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+          [{ direction: 'rtl' }],
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          [{ align: [] }],
+          ['link'],
+        ],
+      },
+    }),
     LoggerModule.forRoot({
       level: !environment.production ? NgxLoggerLevel.TRACE : NgxLoggerLevel.OFF,
       serverLogLevel: NgxLoggerLevel.ERROR,

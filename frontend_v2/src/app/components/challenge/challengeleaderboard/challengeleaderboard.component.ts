@@ -2,6 +2,7 @@ import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from 
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSliderChange } from '@angular/material';
+import { NGXLogger } from 'ngx-logger';
 
 // import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
@@ -210,7 +211,8 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     private globalService: GlobalService,
     private apiService: ApiService,
     private endpointsService: EndpointsService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private logger: NGXLogger
   ) {}
 
   /**
@@ -589,7 +591,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
         SELF.globalService.handleApiError(err, true);
         SELF.globalService.showToast('error', err);
       },
-      () => console.log('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
+      () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
     );
   }
 }
