@@ -164,7 +164,7 @@
               </thead>
               <tbody>
                 <tr *ngFor="let key of leaderboard" class="content">
-                  <td>{{ initial_ranking[key.submission__participant_team__team_name] }}</td>
+                  <td>{{ initial_ranking[key.id] }}</td>
                   <td class="fw-regular">
                     {{ key.submission__participant_team__team_name }}
                     <b><span *ngIf="key.submission__is_public === false" class="orange-text">*</span></b>

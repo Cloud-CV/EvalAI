@@ -334,7 +334,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   updateLeaderboardResults(leaderboardApi, self) {
     const leaderboard = leaderboardApi.slice();
     for (let i = 0; i < leaderboard.length; i++) {
-      self.initial_ranking[leaderboard[i].submission__participant_team__team_name] = i + 1;
+      self.initial_ranking[leaderboard[i].id] = i + 1;
       const DATE_NOW = new Date();
       const SUBMISSION_TIME = new Date(Date.parse(leaderboard[i].submission__submitted_at));
       const DURATION = self.globalService.getDateDifferenceString(DATE_NOW, SUBMISSION_TIME);
@@ -384,7 +384,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     if (this.sortColumn === 'date') {
       return Date.parse(key.submission__submitted_at);
     } else if (this.sortColumn === 'rank') {
-      return this.initial_ranking[key.submission__participant_team__team_name];
+      return this.initial_ranking[key.id];
     } else if (this.sortColumn === 'number') {
       return parseFloat(key.result[this.columnIndexSort]);
     } else if (this.sortColumn === 'string') {
