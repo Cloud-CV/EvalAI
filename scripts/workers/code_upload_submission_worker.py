@@ -66,6 +66,9 @@ def create_job_object(message, environment_image):
             EVALAI_API_SERVER_ENV,
             MESSAGE_BODY_ENV,
         ],
+        resources=client.V1ResourceRequirements(
+            limits={"nvidia.com/gpu": "1"}
+        )
     )
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
