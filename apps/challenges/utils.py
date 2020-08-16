@@ -6,6 +6,7 @@ import string
 import uuid
 
 from botocore.exceptions import ClientError
+from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
@@ -108,18 +109,46 @@ def get_aws_credentials_for_challenge(challenge_pk):
         }
     else:
         aws_keys = {
-            "AWS_ACCOUNT_ID": os.environ.get(
-                "AWS_ACCOUNT_ID", "aws_account_id"
-            ),
-            "AWS_ACCESS_KEY_ID": os.environ.get(
-                "AWS_ACCESS_KEY_ID", "aws_access_key_id"
-            ),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get(
-                "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"
-            ),
-            "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            "AWS_ACCOUNT_ID": settings.AWS_ACCOUNT_ID,
+            "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+            "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
+            "AWS_REGION": settings.AWS_REGION,
+            "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
         }
     return aws_keys
+
+
+def generate_presigned_url(file_key_on_s3, challenge_pk):
+    """
+    Function to get the presigned url to upload a file to s3
+    Arguments:
+        file_key_on_s3 {string} -- The S3 key for the file to be uploaded
+        challenge_pk {int} -- challenge pk for which credentails are to be fetched
+    Returns:
+        response_data {dict} -- Dict containing the presigned_url or the error if request failed
+    """
+    if settings.DEBUG or settings.TEST:
+        return
+
+    try:
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+
+        s3 = get_boto3_client("s3", aws_keys)
+        response = s3.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+                "Key": file_key_on_s3,
+            },
+            ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
+            HttpMethod="PUT",
+        )
+        response_data = {"presigned_url": response}
+        return response_data
+    except Exception as e:
+        logger.exception(e)
+        response_data = {"error": "Could not fetch presigned url."}
+        return response_data
 
 
 def get_or_create_ecr_repository(name, aws_keys):

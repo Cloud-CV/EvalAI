@@ -2,6 +2,8 @@ import botocore
 import datetime
 import json
 import logging
+import os
+import uuid
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -11,7 +13,9 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 
+from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
 from django.db.models import Count
 from django.utils import timezone
@@ -26,10 +30,10 @@ from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
-    paginated_queryset,
     StandardResultSetPagination,
-    get_or_create_sqs_queue_object,
     get_boto3_client,
+    get_or_create_sqs_queue_object,
+    paginated_queryset,
 )
 from challenges.models import (
     ChallengePhase,
@@ -39,6 +43,7 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import (
+    generate_presigned_url,
     get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
@@ -2116,4 +2121,248 @@ def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
     response_data = {
         "status": submissions
     }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_file_presigned_url(request, challenge_phase_pk):
+    """
+    API to generate a presigned url to upload a submission file
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+    Returns:
+         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+    """
+    if settings.DEBUG or settings.TEST:
+        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        return Response(response_data)
+
+    # Check if the challenge phase exists or not
+    try:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if challenge phase is active
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is a challenge host or a participant
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        # Check if challenge phase is public and accepting solutions
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        # if allowed email ids list exist, check if the user exist in that list or not
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    # Fetch the number of submissions under progress.
+    submissions_in_progress_status = [
+        Submission.SUBMITTED,
+        Submission.SUBMITTING,
+        Submission.RUNNING,
+    ]
+    submissions_in_progress = Submission.objects.filter(
+        participant_team=participant_team_id,
+        challenge_phase=challenge_phase,
+        status__in=submissions_in_progress_status,
+    ).count()
+
+    if (
+        submissions_in_progress
+        >= challenge_phase.max_concurrent_submissions_allowed
+    ):
+        message = "You have {} submissions that are being processed. \
+                   Please wait for them to finish and then try again."
+        response_data = {"error": message.format(submissions_in_progress)}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    file_ext = os.path.splitext(request.data["file_name"])[-1]
+    random_file_name = uuid.uuid4()
+    # This file shall be replaced with the one uploaded through the presigned url from the CLI
+    input_file = SimpleUploadedFile(
+        "{}{}".format(random_file_name, file_ext),
+        b"file_content",
+        content_type="text/plain",
+    )
+    submission_data = request.data.copy()
+    submission_data["input_file"] = input_file
+    serializer = SubmissionSerializer(
+        data=submission_data,
+        context={
+            "participant_team": participant_team,
+            "challenge_phase": challenge_phase,
+            "request": request,
+        },
+    )
+    if serializer.is_valid():
+        serializer.save()
+        submission = serializer.instance
+
+        file_key_on_s3 = "{}/{}".format(
+            settings.MEDIAFILES_LOCATION, submission.input_file.name
+        )
+        response = generate_presigned_url(file_key_on_s3, challenge.pk)
+        if response.get("error"):
+            response_data = response
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {
+            "presigned_url": response.get("presigned_url"),
+            "submission_pk": submission.pk,
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    response_data = {"error": serializer.errors}
+    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def send_submission_message(request, challenge_phase_pk, submission_pk):
+    """
+    API to send a submisison message to the challenge specific SQS queue
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+        submission_pk {int} -- Submission primary key
+    Returns:
+         Response Object -- An object containing an empty dict and having a HTTP_200_0k status
+    """
+    try:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        get_submission_model(submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    submission_message = {
+        "submission_pk": submission_pk,
+        "phase_pk": challenge_phase_pk,
+        "challenge_pk": challenge.pk,
+    }
+
+    publish_submission_message(submission_message)
+    response_data = {}
     return Response(response_data, status=status.HTTP_200_OK)
