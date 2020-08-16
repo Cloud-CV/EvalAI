@@ -36,8 +36,8 @@ if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/
 fi
 
 echo "### Creating dummy certificate for $domains ..."
-path="/etc/letsencrypt/live/certificates"
-mkdir -p "$data_path/conf/live/certificates"
+path="/etc/letsencrypt/live/$domains"
+mkdir -p "$data_path/conf/live/$domains"
 sudo docker-compose -f docker-compose-vm.yml run --rm --entrypoint "\
   openssl req -x509 -nodes -newkey rsa:1024 -days 1\
     -keyout '$path/privkey.pem' \
@@ -50,9 +50,9 @@ sudo docker-compose -f docker-compose-vm.yml up --force-recreate -d nodejs
 
 echo "### Deleting dummy certificate for $domains ..."
 sudo docker-compose -f docker-compose-vm.yml run --rm --entrypoint "\
-  rm -Rf /etc/letsencrypt/live/certificates && \
-  rm -Rf /etc/letsencrypt/archive/certificates && \
-  rm -Rf /etc/letsencrypt/renewal/certificates.conf" certbot
+  rm -Rf /etc/letsencrypt/live/$domains && \
+  rm -Rf /etc/letsencrypt/archive/$domains && \
+  rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
 
 
 echo "### Requesting Lets Encrypt certificate for $domains ..."
