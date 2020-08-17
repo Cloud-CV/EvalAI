@@ -50,11 +50,11 @@ read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
 if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 
     # Normal HTTP
-    read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND
-    read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND
+    read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
+    read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
 
-    echo "FRONTEND=$FRONTEND" >> .env
-    echo "BACKEND=$BACKEND" >> .env
+    echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" >> .env
+    echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
 
     DOCKER_COMPOSE_FILE="docker-compose-vm-http.yml"
 
