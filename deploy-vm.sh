@@ -50,11 +50,9 @@ read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
 if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 
     # Normal HTTP
-    read -p "Enter your domain name (example.com) : " DOMAIN
     read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND
     read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND
 
-    echo "DOMAIN=$DOMAIN" > .env
     echo "FRONTEND=$FRONTEND" >> .env
     echo "BACKEND=$BACKEND" >> .env
 
