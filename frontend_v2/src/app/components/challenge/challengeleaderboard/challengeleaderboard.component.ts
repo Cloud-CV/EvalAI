@@ -539,6 +539,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
 
     SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
       (data) => {
+        SELF.showLeaderboardByLatest = !SELF.showLeaderboardByLatest;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
         SELF.refreshLeaderboard();
       },
