@@ -2,6 +2,7 @@ FROM node:8.11.2 as node
 
 ARG NODE_ENV
 ARG BACKEND
+ARG TYPE
 WORKDIR /code
 
 # Add dependencies
@@ -21,7 +22,8 @@ RUN bower install --allow-root
 ADD frontend /code/frontend
 
 # Update Backend URL with args
-RUN sed -i "s/BACKEND/${BACKEND}/g" frontend/src/js/config.json
+RUN sed -i "s/BACKEND_DOMAIN/${BACKEND}/g" frontend/src/js/config.json
+RUN sed -i "s/https/${TYPE}/g" frontend/src/js/config.json
 
 RUN gulp ${NODE_ENV}
 
@@ -31,8 +33,9 @@ ARG NODE_ENV
 ARG DOMAIN
 ARG FRONTEND
 ARG BACKEND
+ARG NGINX_FILE_NAME
 
-COPY docker/vm/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
+COPY docker/vm/nodejs/${NGINX_FILE_NAME}.conf /etc/nginx/conf.d/default.conf
 
 # Update Frontend, Backend, Domain in nginx configs
 RUN sed -i "s/DOMAIN/${DOMAIN}/g" /etc/nginx/conf.d/default.conf

@@ -6,8 +6,6 @@ read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND
 
 domains=($FRONTEND $BACKEND)
 
-touch .env
-
 echo "DOMAIN=$DOMAIN" > .env
 echo "FRONTEND=$FRONTEND" >> .env
 echo "BACKEND=$BACKEND" >> .env

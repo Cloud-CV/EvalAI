@@ -65,6 +65,8 @@ services:
         DOMAIN: ${DOMAIN}
         FRONTEND: ${FRONTEND}
         BACKEND: ${BACKEND}
+        TYPE: http
+        NGINX_FILE_NAME: nginx_vm_http
     depends_on:
       - django
     ports:

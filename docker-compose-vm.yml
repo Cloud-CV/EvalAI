@@ -65,6 +65,8 @@ services:
         DOMAIN: ${DOMAIN}
         FRONTEND: ${FRONTEND}
         BACKEND: ${BACKEND}
+        TYPE: https
+        NGINX_FILE_NAME: nginx_vm
     depends_on:
       - django
     ports:
@@ -81,9 +83,12 @@ services:
     image: certbot/certbot
     restart: unless-stopped
     environment: 
+      NODE_ENV: vm
       DOMAIN: ${DOMAIN}
       FRONTEND: ${FRONTEND}
       BACKEND: ${BACKEND}
+      TYPE: https
+      NGINX_FILE_NAME: nginx_vm
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
