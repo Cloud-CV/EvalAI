@@ -43,16 +43,39 @@ if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; the
 
 fi
 
-echo "### Initiating letsencrypt with certbot"
-chmod +x init-letsencrypt.sh
-./init-letsencrypt.sh
+DOCKER_COMPOSE_FILE=""
+read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
+if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
+
+    # Normal HTTP
+    read -p "Enter your domain name (example.com) : " DOMAIN
+    read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND
+    read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND
+
+    touch .env
+    echo "DOMAIN=$DOMAIN" > .env
+    echo "FRONTEND=$FRONTEND" >> .env
+    echo "BACKEND=$BACKEND" >> .env
+
+    DOCKER_COMPOSE_FILE="docker-compose-vm-http.yml"
+
+else
+
+    # HTTPs
+    echo "### Initiating letsencrypt with certbot"
+    chmod +x init-letsencrypt.sh
+    ./init-letsencrypt.sh
+
+    DOCKER_COMPOSE_FILE="docker-compose-vm.yml"
+    
+fi
 
 # Pull images & run containers 
-sudo docker-compose -f docker-compose-vm.yml up -d --build
+sudo docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build
 
 # Restore database
 sudo mkdir backups
-DOCKER_DB_NAME="$(sudo docker-compose -f docker-compose-vm.yml ps -q db)"
+DOCKER_DB_NAME="$(sudo docker-compose -f ${DOCKER_COMPOSE_FILE} ps -q db)"
 LOCAL_DUMP_PATH=$(ls -t backups/* | head -1)
 
 if [ -n "${DUMP_FILE}" ]
