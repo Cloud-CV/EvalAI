@@ -53,7 +53,7 @@ if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
     read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
     read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
 
-    echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" >> .env
+    echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" > .env
     echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
 
     DOCKER_COMPOSE_FILE="docker-compose-vm-http.yml"
