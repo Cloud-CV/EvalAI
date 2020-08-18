@@ -19,10 +19,18 @@ import { EndpointsService } from '../../../services/endpoints.service';
 })
 export class ChallengesubmitComponent implements OnInit {
   /**
-   * Url error Message
+   * Input error Message
    */
   inputErrorMessage = '';
+
+  /**
+   * Is input valid
+   */
   validFileUrl = false;
+
+  /**
+   * Is file url input
+   */
   isSubmissionUsingUrl: any;
 
   /**
@@ -594,15 +602,23 @@ export class ChallengesubmitComponent implements OnInit {
 
   validateInput(inputValue) {
     const regex = new RegExp(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/);
-    const validExtensions = ['json', 'zip', 'csv'];
+    const validExtensions = ['json', 'zip', 'txt', 'tsv', 'gz', 'csv', 'h5', 'npy'];
     if (this.isSubmissionUsingUrl) {
-      const extension = inputValue.split('.').pop();
-      if (regex.test(inputValue) && validExtensions.includes(extension)) {
+      if (regex.test(inputValue)) {
         this.inputErrorMessage = '';
         this.validFileUrl = true;
       } else {
-        this.inputErrorMessage = 'Please enter a valid Submission URL!';
+        this.inputErrorMessage = 'Please enter a valid URL!';
         this.validFileUrl = false;
+      }
+    } else {
+      const extension = inputValue.split('.').pop();
+      if (!validExtensions.includes(extension)) {
+        this.inputErrorMessage = 'Please enter a valid File!';
+        this.validFileUrl = false;
+      } else if (validExtensions.includes(extension)) {
+        this.inputErrorMessage = '';
+        this.validFileUrl = true;
       }
     }
   }
