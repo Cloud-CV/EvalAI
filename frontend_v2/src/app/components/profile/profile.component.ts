@@ -238,7 +238,6 @@ export class ProfileComponent implements OnInit {
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      console.log(params);
       SELF.apiService.postUrl(SELF.endpointsService.changePasswordURL(), BODY).subscribe(
         (data) => {
           // Success Message in data.message

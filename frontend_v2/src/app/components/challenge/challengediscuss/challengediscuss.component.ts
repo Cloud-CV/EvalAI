@@ -70,7 +70,6 @@ export class ChallengediscussComponent implements OnInit {
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      console.log(BODY);
       SELF.apiService
         .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
         .subscribe(
