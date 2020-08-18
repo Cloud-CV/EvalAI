@@ -688,13 +688,7 @@ def get_or_create_sqs_queue(queue_name):
 
 
 def load_challenge_and_return_max_submissions(q_params):
-    try:
-        challenge = Challenge.objects.get(**q_params)
-    except Challenge.DoesNotExist:
-        logger.exception(
-            "{} Challenge with pk {} doesn't exist".format(WORKER_LOGS_PREFIX, q_params["pk"])
-        )
-        raise
+    challenge = Challenge.objects.get(**q_params)
     load_challenge(challenge)
     maximum_concurrent_submissions = (
         challenge.max_concurrent_submission_evaluation
@@ -725,19 +719,31 @@ def main():
                     "{} Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file.".format(WORKER_LOGS_PREFIX)
                 )
                 sys.exit(1)
-            (
-                maximum_concurrent_submissions,
-                challenge,
-            ) = load_challenge_and_return_max_submissions(q_params)
+            try:
+                (
+                    maximum_concurrent_submissions,
+                    challenge,
+                ) = load_challenge_and_return_max_submissions(q_params)
+            except Challenge.DoesNotExist:
+                logger.exception(
+                    "{} Challenge with params {} doesn't exist".format(WORKER_LOGS_PREFIX, q_params)
+                )
+                sys.exit(1)
         else:
             challenges = Challenge.objects.filter(**q_params)
             for challenge in challenges:
                 load_challenge(challenge)
     else:
-        (
-            maximum_concurrent_submissions,
-            challenge,
-        ) = load_challenge_and_return_max_submissions(q_params)
+        try:
+            (
+                maximum_concurrent_submissions,
+                challenge,
+            ) = load_challenge_and_return_max_submissions(q_params)
+        except:
+            logger.exception(
+                "{} Challenge with params {} doesn't exist".format(WORKER_LOGS_PREFIX, q_params)
+            )
+            sys.exit(1)
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
