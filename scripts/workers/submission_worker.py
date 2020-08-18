@@ -739,7 +739,7 @@ def main():
                 maximum_concurrent_submissions,
                 challenge,
             ) = load_challenge_and_return_max_submissions(q_params)
-        except:
+        except Challenge.DoesNotExist:
             logger.exception(
                 "{} Challenge with params {} doesn't exist".format(WORKER_LOGS_PREFIX, q_params)
             )
