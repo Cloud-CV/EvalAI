@@ -61,23 +61,23 @@ services:
         awslogs-group: nodejs_staging
         awslogs-create-group: "true"
 
-  nodejs_v2:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend-v2:${COMMIT_ID}
-    build:
-      context: ./
-      dockerfile: docker/prod/nodejs_v2/Dockerfile
-      args:
-        NODE_ENV: staging
-    ports:
-      - "9999:80"
-    volumes:
-      - /code/node_modules
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-1
-        awslogs-group: nodejs_staging_v2
-        awslogs-create-group: "true"
+  # nodejs_v2:
+  #   image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend-v2:${COMMIT_ID}
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/prod/nodejs_v2/Dockerfile
+  #     args:
+  #       NODE_ENV: staging
+  #   ports:
+  #     - "9999:80"
+  #   volumes:
+  #     - /code/node_modules
+  #   logging:
+  #     driver: awslogs
+  #     options:
+  #       awslogs-region: us-east-1
+  #       awslogs-group: nodejs_staging_v2
+  #       awslogs-create-group: "true"
 
   remote-worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-remote-worker:${COMMIT_ID}
