@@ -16,6 +16,7 @@ from os.path import basename, isfile, join
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.core import serializers
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
@@ -125,6 +126,7 @@ from .utils import (
     get_aws_credentials_for_submission,
     get_file_content,
     get_missing_keys_from_dict,
+    get_challenge_template_data,
 )
 
 logger = logging.getLogger(__name__)
@@ -919,6 +921,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    is_test_annotation_missing = False
     for data in challenge_phases_data:
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
@@ -938,6 +941,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
+        else:
+            is_test_annotation_missing = True
 
         if data.get("is_submission_public") and data.get(
             "is_restricted_to_select_one_submission"
@@ -1337,9 +1342,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             pk=uploaded_zip_file.pk
         )
         if zip_config:
+            emails = challenge_host_team.get_all_challenge_host_email()
             if not challenge.is_docker_based:
                 # Add the Challenge Host as a test participant.
-                emails = challenge_host_team.get_all_challenge_host_email()
                 team_name = "Host_{}_Team".format(random.randint(1, 100000))
                 participant_host_team = ParticipantTeam(
                     team_name=team_name,
@@ -1377,13 +1382,28 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 }
                 send_slack_notification(message=message)
 
-            response = start_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            logging.info("Total worker start count is {} and failures are: {}".format(count, failures))
-            if count:
-                logging.info("{} workers started successfully".format(count))
+            if not is_test_annotation_missing:
+                print('not missing start worker')
+                response = start_workers([zip_config.challenge])
+                count, failures = response["count"], response["failures"]
+                logging.info("Total worker start count is {} and failures are: {}".format(count, failures))
+                print(count, failures)
+                if count:
+                    logging.info("{} workers started successfully".format(count))
+                else:
+                    logging.error("Failure when starting workers {}".format(failures))
             else:
-                logging.error("Failure when starting workers {}".format(failures))
+                template_data = get_challenge_template_data(zip_config.challenge)
+                template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+                    "MISSING_ANNOTATIONS_EMAIL"
+                )
+                for email in emails:
+                    send_email(
+                        sender=settings.CLOUDCV_TEAM_EMAIL,
+                        recipient=email,
+                        template_id=template_id,
+                        template_data=template_data,
+                    )
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"

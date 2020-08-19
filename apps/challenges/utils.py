@@ -326,3 +326,25 @@ def get_unique_alpha_numeric_key(length):
             for i in range(length)
         ]
     )
+
+
+def get_challenge_template_data(challenge):
+    """
+        Returns a dict for sendgrid email template data
+        Arguments:
+            challenge {Class Object} -- Challenge model object
+        Returns:
+            template_data {dict} -- a dict for sendgrid email template data
+    """
+    challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
+        settings.HOSTNAME, challenge.id
+    )
+    challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
+        settings.HOSTNAME, challenge.id
+    )
+    template_data = {
+        "CHALLENGE_NAME": challenge.title,
+        "CHALLENGE_URL": challenge_url,
+        "CHALLENGE_MANAGE_URL": challenge_manage_url,
+    }
+    return template_data
