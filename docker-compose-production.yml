@@ -76,4 +76,4 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/code-upload-worker/Dockerfile
-    command: ["python", "-m", "scripts.workers.rl_submission_worker"]
+    command: ["python", "-m", "scripts.workers.code_upload_submission_worker"]
