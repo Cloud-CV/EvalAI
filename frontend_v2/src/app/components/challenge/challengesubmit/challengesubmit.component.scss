@@ -97,6 +97,19 @@ th {
 ::ng-deep .mat-checkbox .mat-checkbox-frame {
   border-color: black;
 }
+.input-message {
+  position: relative;
+  top: 2px;
+  left: 0;
+  text-align: left;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: $fw-light;
+  color: $yellow;
+  &.hidden {
+    opacity: 0;
+  }
+}
 
 @include screen-small {
   .remaining-submission-clock {

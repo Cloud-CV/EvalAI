@@ -85,9 +85,6 @@ export class ChallengeCreateComponent implements OnInit {
     this.challengeService.currentHostTeam.subscribe((hostTeam) => {
       this.hostTeam = hostTeam;
       if (!hostTeam) {
-        setTimeout(() => {
-          this.globalService.showToast('info', 'Please select a host team');
-        }, 1000);
         this.router.navigate([this.hostTeamsRoute]);
       }
     });
