@@ -347,7 +347,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             try:
                 token = Token.objects.get(user=challenge.creator.created_by)
             except Token.DoesNotExist:
-                token = Token.objects.get(user=challenge.creator.created_by)
+                token = Token.objects.create(user=challenge.creator.created_by)
                 token.save()
             definition = task_definition_code_upload_worker.format(
                 queue_name=queue_name,
