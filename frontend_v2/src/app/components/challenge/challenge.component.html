@@ -154,15 +154,7 @@
                         [routerLink]="['./settings']"
                         class="text-light-black fw-light fs-15"
                       >
-                        <i class="fa fa-gear"></i> Settings
-                      </a>
-                    </li>
-                    <li *ngIf="isChallengeHost">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('manage')"
-                        [routerLink]="['./manage']"
-                        class="text-light-black fw-light fs-15"
-                        ><i class="fa fa-cogs"></i> Manage
+                        <i class="fa fa-cogs"></i> Settings
                       </a>
                     </li>
                   </ul>
