@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
+from rest_framework.authtoken.models import Token
 
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
@@ -34,7 +35,6 @@ aws_keys = {
 
 
 COMMON_SETTINGS_DICT = {
-    "AUTH_TOKEN": os.environ.get("AUTH_TOKEN"),
     "AWS_DEFAULT_REGION": aws_keys["AWS_REGION"],
     "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
     "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -236,7 +236,7 @@ task_definition_code_upload_worker = """
 
                 {{
                     "name": "AUTH_TOKEN",
-                    "value": "{AUTH_TOKEN}"
+                    "value": "{auth_token}"
                 }},
 
             ],
@@ -343,11 +343,18 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
 
     if execution_role_arn:
         if challenge.is_docker_based:
+            # host auth token used by Code-upload-worker
+            try:
+                token = Token.objects.get(user=challenge.creator.created_by)
+            except Token.DoesNotExist:
+                token = Token.objects.get(user=challenge.creator.created_by)
+                token.save()
             definition = task_definition_code_upload_worker.format(
                 queue_name=queue_name,
                 container_name=container_name,
                 ENV=ENV,
                 challenge_pk=challenge.pk,
+                auth_token=token,
                 **COMMON_SETTINGS_DICT,
             )
         else:
@@ -569,16 +576,16 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if settings.DEBUG:
-        failures = []
-        for challenge in queryset:
-            failures.append(
-                {
-                    "message": "Workers cannot be started on AWS ECS service in development environment",
-                    "challenge_pk": challenge.pk,
-                }
-            )
-        return {"count": 0, "failures": failures}
+    # if settings.DEBUG:
+    #     failures = []
+    #     for challenge in queryset:
+    #         failures.append(
+    #             {
+    #                 "message": "Workers cannot be started on AWS ECS service in development environment",
+    #                 "challenge_pk": challenge.pk,
+    #             }
+    #         )
+    #     return {"count": 0, "failures": failures}
 
     client = get_boto3_client("ecs", aws_keys)
     count = 0
@@ -1029,6 +1036,7 @@ def create_eks_cluster(challenge):
                 cluster_endpoint=cluster_ep,
                 cluster_ssl=cluster_cert,
             )
+            
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
