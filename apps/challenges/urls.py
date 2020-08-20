@@ -186,4 +186,9 @@ urlpatterns = [
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
     ),
+    url(
+        r"challenge/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/create_or_update_github_challenge/",
+        views.create_or_update_github_challenge,
+        name="create_or_update_github_challenge",
+    )
 ]
