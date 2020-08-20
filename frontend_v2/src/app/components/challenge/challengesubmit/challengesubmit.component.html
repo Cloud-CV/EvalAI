@@ -207,14 +207,16 @@
                   <div class="col-md-10 col-sm-10 col-lr-pad submit-upload-file">
                     <div [hidden]="isSubmissionUsingUrl">
                       <app-input
-                        (change)="validateInput($event.target.value)"
+                        (input)="validateInput($event.target.value)"
                         [label]="'input_file'"
-                        [accept]="'.json, .zip, .txt, .tsv, .gz'"
+                        [accept]="'.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy'"
                         [placeholder]="''"
                         [type]="'file'"
                         [value]="''"
+                        [message]="inputErrorMessage"
                         #formsubmit
                       ></app-input>
+                      <div class="input-message" #textValue [class.hidden]="validFileUrl">{{ inputErrorMessage }}</div>
                     </div>
                     <div [hidden]="!isSubmissionUsingUrl">
                       <app-input
@@ -259,8 +261,9 @@
                   <div class="align-left col-sm-10 col-lr-pad">
                     <app-input
                       [label]="'project_url'"
-                      [type]="'text'"
+                      [type]="'URL'"
                       [placeholder]="'Project URL (Optional)'"
+                      [message]="' '"
                       #formsubmit
                     ></app-input>
                   </div>
@@ -269,8 +272,9 @@
                   <div class="align-left col-sm-10 col-lr-pad">
                     <app-input
                       [label]="'publication_url'"
-                      [type]="'text'"
+                      [type]="'URL'"
                       [placeholder]="'Publication URL (Optional)'"
+                      [message]="' '"
                       #formsubmit
                     ></app-input>
                   </div>

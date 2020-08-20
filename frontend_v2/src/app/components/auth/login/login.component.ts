@@ -37,6 +37,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
   signupRoute = '/auth/signup';
 
   /**
+   * All challenges common route path
+   */
+  allChallengesRoutePathCommon = '/challenges/all';
+
+  /**
+   * Is user Logged in
+   */
+  isLoggedIn: any = false;
+
+  /**
    * Constructor.
    * @param document  window document injection
    * @param windowService
@@ -62,6 +72,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
    * Constructor on initialization
    */
   ngOnInit() {
+    if (this.authService.isLoggedIn()) {
+      this.isLoggedIn = true;
+    }
     this.authService.resetForm();
   }
 

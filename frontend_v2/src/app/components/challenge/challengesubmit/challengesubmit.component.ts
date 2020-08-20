@@ -19,16 +19,29 @@ import { EndpointsService } from '../../../services/endpoints.service';
 })
 export class ChallengesubmitComponent implements OnInit {
   /**
-   * Url error Message
+   * Input error Message
    */
   inputErrorMessage = '';
+
+  /**
+   * Is input valid
+   */
   validFileUrl = false;
+
+  /**
+   * Is file url input
+   */
   isSubmissionUsingUrl: any;
 
   /**
    * Is user logged in
    */
   isLoggedIn = false;
+
+  /**
+   * Is submittion submitted
+   */
+  isSubmitted = false;
 
   /**
    * Challenge object
@@ -448,6 +461,11 @@ export class ChallengesubmitComponent implements OnInit {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
         SELF.clearMetaAttributeValues();
+        SELF.submissionError = '';
+        SELF.components['_results'].forEach((element) => {
+          element.value = '';
+          element.message = '';
+        });
       }
     };
   }
@@ -458,6 +476,9 @@ export class ChallengesubmitComponent implements OnInit {
   formValidate() {
     if (this.selectedPhaseSubmissions.remainingSubmissions['remaining_submissions_today_count']) {
       this.globalService.formValidate(this.components, this.formSubmit, this);
+      if (this.isSubmitted) {
+        this.router.navigate(['../my-submissions'], { relativeTo: this.route });
+      }
     } else {
       this.globalService.showToast('info', "You have exhausted today's submission limit");
     }
@@ -485,10 +506,10 @@ export class ChallengesubmitComponent implements OnInit {
       self.submissionError = 'Please select phase!';
       return;
     } else if (submissionProjectUrl !== '' && !regex.test(submissionProjectUrl)) {
-      self.submissionError = 'Please provide a valid project url!';
+      self.submissionError = 'Please provide a valid project URL!';
       return;
     } else if (submissionPublicationUrl !== '' && !regex.test(submissionPublicationUrl)) {
-      self.submissionError = 'Please provide a valid publication url!';
+      self.submissionError = 'Please provide a valid publication URL!';
       return;
     }
     if (self.metaAttributesforCurrentSubmission != null) {
@@ -526,6 +547,7 @@ export class ChallengesubmitComponent implements OnInit {
       self.globalService.setFormValueForLabel(self.components, 'project_url', '');
       self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
     });
+    self.isSubmitted = true;
   }
 
   copyTextToClipboard(ref: HTMLElement) {
@@ -580,15 +602,23 @@ export class ChallengesubmitComponent implements OnInit {
 
   validateInput(inputValue) {
     const regex = new RegExp(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/);
-    const validExtensions = ['json', 'zip', 'csv'];
+    const validExtensions = ['json', 'zip', 'txt', 'tsv', 'gz', 'csv', 'h5', 'npy'];
     if (this.isSubmissionUsingUrl) {
-      const extension = inputValue.split('.').pop();
-      if (regex.test(inputValue) && validExtensions.includes(extension)) {
+      if (regex.test(inputValue)) {
         this.inputErrorMessage = '';
         this.validFileUrl = true;
       } else {
-        this.inputErrorMessage = 'Please enter a valid Submission URL!';
+        this.inputErrorMessage = 'Please enter a valid URL!';
         this.validFileUrl = false;
+      }
+    } else {
+      const extension = inputValue.split('.').pop();
+      if (!validExtensions.includes(extension)) {
+        this.inputErrorMessage = 'Please enter a valid File!';
+        this.validFileUrl = false;
+      } else if (validExtensions.includes(extension)) {
+        this.inputErrorMessage = '';
+        this.validFileUrl = true;
       }
     }
   }

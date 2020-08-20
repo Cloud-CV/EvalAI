@@ -2,6 +2,7 @@
 @import './styles/mixins.scss';
 
 .privacy-container {
+  width: 100%;
   * {
     transition: all 0.2s ease;
   }
@@ -45,22 +46,12 @@
     }
   }
   .privacy-content {
-    margin-top: 30px;
-    padding-right: 50px;
+    margin-top: 20px;
+    margin-left: 1%;
+    margin-right: 1%;
     a {
       color: $blue-lighter !important;
       font-weight: $fw-regular;
-    }
-    .scroll-to-top {
-      position: fixed;
-      top: 80%;
-      right: 4%;
-      height: 50px;
-      cursor: pointer;
-      z-index: 4 !important;
-      &:hover {
-        height: 55px;
-      }
     }
     .privacy-title {
       margin-top: 10px;

@@ -1,4 +1,9 @@
-<div class="col s12 m6 offset-m3 left">
+<div class="col s12 m6 offset-m3" *ngIf="isLoggedIn">
+  You are already logged In! <br />
+  please see the challenges
+  <a [routerLink]="allChallengesRoutePathCommon" class="light-link" routerLinkActive="active-auth">here!</a>
+</div>
+<div class="col s12 m6 offset-m3 left" *ngIf="!isLoggedIn">
   <ul class="left">
     <li class="ev-horiz-list">
       <a [routerLink]="loginRoute" class="dark-link" routerLinkActive="active-auth" (click)="authService.resetForm()"
@@ -12,7 +17,7 @@
     </li>
   </ul>
 </div>
-<div class="col s12 m6 offset-m3">
+<div class="col s12 m6 offset-m3" *ngIf="!isLoggedIn">
   <!-- login form -->
   <form name="loginForm" #loginForm="ngForm" (ngSubmit)="userLogin(loginForm.valid)" id="log-in" novalidate>
     <!-- username -->
