@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class EndpointsService {
-
   /**
    * Categories of API paths
    */
@@ -14,7 +13,7 @@ export class EndpointsService {
   auth = 'auth/';
   analytics = 'analytics/';
 
-  constructor() { }
+  constructor() {}
 
   /**
    * Login URL
@@ -104,7 +103,7 @@ export class EndpointsService {
   participantTeamURL(teamId) {
     return `${this.participants}participant_team/${teamId}`;
   }
-/**
+  /**
    * Edit Host Team Name
    */
   hostTeamURL(teamId) {
@@ -140,7 +139,6 @@ export class EndpointsService {
   allChallengesURL(time) {
     return `${this.challenges}${this.challenge}${time}`;
   }
-
 
   /**
    * All host teams

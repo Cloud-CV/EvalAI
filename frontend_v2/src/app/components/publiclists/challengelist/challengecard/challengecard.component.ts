@@ -11,10 +11,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-challengecard',
   templateUrl: './challengecard.component.html',
-  styleUrls: ['./challengecard.component.scss']
+  styleUrls: ['./challengecard.component.scss'],
 })
 export class ChallengecardComponent implements OnInit {
-
   /**
    * Challenge object
    */
@@ -63,7 +62,7 @@ export class ChallengecardComponent implements OnInit {
   /**
    * Challenge stars
    */
-  stars = { 'count': 0, 'is_starred': false};
+  stars = { count: 0, is_starred: false };
 
   /**
    * Challenge stars
@@ -84,12 +83,14 @@ export class ChallengecardComponent implements OnInit {
    * @param apiService  ApiService Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private globalService: GlobalService,
-              private apiService: ApiService,
-              private authService: AuthService,
-              private challengeService: ChallengeService,
-              private router: Router,
-              private route: ActivatedRoute) { }
+  constructor(
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private authService: AuthService,
+    private challengeService: ChallengeService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   /**
    * Component on initialized.
@@ -114,7 +115,6 @@ export class ChallengecardComponent implements OnInit {
     this.startDate = this.globalService.formatDate12Hour(START_DATE);
     this.endDate = this.globalService.formatDate12Hour(END_DATE);
     this.fetchStars();
-
   }
 
   /**
@@ -125,8 +125,8 @@ export class ChallengecardComponent implements OnInit {
    */
   checkType(start, end, now) {
     if (now > end) {
-        this.isPast = true;
-        this.timeRemaining = 'This challenge has ended.';
+      this.isPast = true;
+      this.timeRemaining = 'This challenge has ended.';
     } else if (now > start && now < end) {
       this.isOngoing = true;
       this.timeRemaining = this.globalService.getDateDifferenceString(now, end) + ' for the challenge to end.';
@@ -150,9 +150,13 @@ export class ChallengecardComponent implements OnInit {
    */
   starToggle() {
     if (this.isLoggedIn) {
-      this.challengeService.starToggle(this.challenge['id'], (data, self) => {
-        self.stars = data;
-      }, this);
+      this.challengeService.starToggle(
+        this.challenge['id'],
+        (data, self) => {
+          self.stars = data;
+        },
+        this
+      );
     }
   }
 

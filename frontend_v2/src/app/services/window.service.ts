@@ -5,7 +5,7 @@ import { DOCUMENT } from '@angular/common';
  * Returns window object
  */
 function _window(): any {
-   return window;
+  return window;
 }
 
 /**
@@ -13,18 +13,17 @@ function _window(): any {
  */
 @Injectable()
 export class WindowService {
-
   /**
    * constructor
    * @param document  injected document
    */
-  constructor(@Inject(DOCUMENT) private document: Document) { }
+  constructor(@Inject(DOCUMENT) private document: Document) {}
 
   /**
    * object wrapper for the _window function
    */
   nativeWindow(): any {
-      return _window();
+    return _window();
   }
 
   /**

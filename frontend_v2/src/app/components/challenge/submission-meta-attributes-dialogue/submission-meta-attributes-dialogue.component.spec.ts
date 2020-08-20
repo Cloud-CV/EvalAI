@@ -8,9 +8,8 @@ describe('SubmissionMetaAttributesDialogueComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SubmissionMetaAttributesDialogueComponent ]
-    })
-    .compileComponents();
+      declarations: [SubmissionMetaAttributesDialogueComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

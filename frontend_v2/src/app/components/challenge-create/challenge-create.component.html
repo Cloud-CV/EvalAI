@@ -3,8 +3,7 @@
 <div class="web-container">
   <div class="challenge-create-flex">
     <div class="challenge-create-content">
-
-      <section class="ev-md-container text-center ">
+      <section class="ev-md-container text-center">
         <div class="row">
           <div class="col s12 m9 offset-m3">
             <div class="zip-file-title">Please upload zip file to create a challenge!</div>
@@ -12,18 +11,30 @@
               <form name="ChallengeCreateForm" #ChallengeCreateForm="ngForm" (ngSubmit)="challengeCreate()" novalidate>
                 <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                   <span>Upload File</span>
-                  <input name="input_file" (change)="handleUpload($event)" accept=".json, .zip, .txt" type="file" class="text-dark-black dark-autofill w-400" [(ngModel)]="ChallengeCreateForm['input_file']">
+                  <input
+                    name="input_file"
+                    (change)="handleUpload($event)"
+                    accept=".json, .zip, .txt"
+                    type="file"
+                    class="text-dark-black dark-autofill w-400"
+                    [(ngModel)]="ChallengeCreateForm['input_file']"
+                  />
                 </div>
 
                 <div class="file-path-wrapper">
-                  <input disabled class="file-path validate" name="file_path" type="text">
-                  <div *ngIf="isFormError" class="wrn-msg text-highlight fs-12"> Please Upload File </div>
+                  <input disabled class="file-path validate" name="file_path" type="text" />
+                  <div *ngIf="isFormError" class="wrn-msg text-highlight fs-12">Please Upload File</div>
                 </div>
 
                 <div class="align-left reg-control">
-                  <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                  <button
+                    class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                    type="submit"
+                    value="Submit"
+                  >
+                    Submit
+                  </button>
                 </div>
-
               </form>
             </div>
           </div>
@@ -32,20 +43,24 @@
           <div class="col s12 m9 offset-m3">
             <i class="fa fa-info-circle"></i>
             To know how to create a challenge using zip file configuration, please see our documentation
-            <a href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration" class="highlight-link" target="_blank">here.</a>.
+            <a
+              href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration"
+              class="highlight-link"
+              target="_blank"
+              >here.</a
+            >.
           </div>
         </div>
         <div *ngIf="isSyntaxErrorInYamlFile" class="row">
-          <hr class="hr-line">
+          <hr class="hr-line" />
           <div class="col s12 m9 offset-m3">
             <div class="syntax-wrn-msg text-highlight">
-              The YAML file in the challenge configuration contains the following error - <br>
-              {{syntaxErrorInYamlFile}}
+              The YAML file in the challenge configuration contains the following error - <br />
+              {{ syntaxErrorInYamlFile }}
             </div>
           </div>
         </div>
       </section>
-
     </div>
     <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
   </div>
