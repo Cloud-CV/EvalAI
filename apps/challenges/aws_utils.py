@@ -1036,7 +1036,6 @@ def create_eks_cluster(challenge):
                 cluster_endpoint=cluster_ep,
                 cluster_ssl=cluster_cert,
             )
-            
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
