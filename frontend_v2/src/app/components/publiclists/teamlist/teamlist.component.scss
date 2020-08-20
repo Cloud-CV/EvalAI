@@ -191,13 +191,13 @@ section {
   outline: none !important;
   border-bottom: none;
   border-radius: 4px;
-  box-shadow: 0 0 12px #dedede;
+  box-shadow: 0px 0px 10px #dedede;
   height: 20px;
   padding: 10px;
   font-size: $fs-14;
   &:focus {
     outline: none;
-    border: 1px solid $yellow;
+    box-shadow: 0px 0px 10px $yellow-light;
   }
 }
 

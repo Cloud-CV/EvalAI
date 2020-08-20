@@ -246,7 +246,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.deleteMembersPath = 'hosts/challenge_host_team/<team_id>/challenge_host/';
       this.fetchMyTeams(this.fetchTeamsPath);
       this.teamCreateTitle = 'Create a New Team';
-      this.teamSelectTitle = 'Select a Challenge Host Team';
+      this.teamSelectTitle = 'Please Select a Challenge Host Team!';
       this.teamCreateButton = 'Create Host Team';
     } else {
       if (this.router.url !== this.participantTeamRoutePath) {
