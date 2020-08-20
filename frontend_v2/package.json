@@ -40,7 +40,7 @@
     "moment": "^2.24.0",
     "ng-pick-datetime": "^7.0.0",
     "ngx-logger": "^4.1.9",
-    "ngx-quill": "^7.1.0",
+    "ngx-quill": "^6.3.1",
     "ngx-textarea-autosize": "^2.0.3",
     "ngx-twitter-timeline": "^0.1.5",
     "normalize.css": "^8.0.0",
