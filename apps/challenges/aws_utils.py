@@ -343,7 +343,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
 
     if execution_role_arn:
         if challenge.is_docker_based:
-            # host auth token used by Code-upload-worker
+            # challenge host auth token to be used by code-upload-worker
             try:
                 token = Token.objects.get(user=challenge.creator.created_by)
             except Token.DoesNotExist:
