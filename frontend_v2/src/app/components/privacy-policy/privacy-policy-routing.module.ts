@@ -6,7 +6,7 @@ import { PrivacyPolicyComponent } from './privacy-policy.component';
 
 const routes: Routes = [
   {
-    path: 'privacy-policy',
+    path: '',
     component: PrivacyPolicyComponent,
   },
 ];
