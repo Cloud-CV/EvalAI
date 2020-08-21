@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { GlobalService } from '../../../services/global.service';
   templateUrl: './challengesettings.component.html',
   styleUrls: ['./challengesettings.component.scss'],
 })
-export class ChallengesettingsComponent implements OnInit {
+export class ChallengesettingsComponent implements OnInit, OnDestroy {
   /**
    * Challenge object
    */

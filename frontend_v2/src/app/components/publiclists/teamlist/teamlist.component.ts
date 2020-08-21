@@ -446,8 +446,8 @@ export class TeamlistComponent implements OnInit, OnDestroy {
         );
       };
       const PARAMS = {
-        title: 'Change Team Name',
-        content: 'Enter new team name',
+        title: 'Edit Team Name',
+        content: '',
         confirm: 'Confirm',
         deny: 'Cancel',
         form: [
@@ -501,14 +501,14 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       };
       const PARAMS = {
         title: 'Add other members to this Team',
-        content: 'Enter the email address of the person',
+        content: '',
         confirm: 'ADD',
         deny: 'Cancel',
         form: [
           {
             isRequired: true,
             label: 'email',
-            placeholder: 'Email',
+            placeholder: 'Enter the email address',
             type: 'email',
           },
         ],
