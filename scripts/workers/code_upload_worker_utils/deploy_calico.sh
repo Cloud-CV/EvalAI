@@ -20,6 +20,7 @@ echo "### iam-authenticator Installed"
 
 #configure kubeconfig
 mkdir ~/.kube
+cp code/scripts/workers/code_upload_utils/config .kube/config
 echo "### Kube config Configured"
 
 #install kubectl
