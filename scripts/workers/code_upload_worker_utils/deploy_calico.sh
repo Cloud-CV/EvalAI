@@ -19,8 +19,8 @@ echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
 echo "### iam-authenticator Installed"
 
 #configure kubeconfig
-mkdir ~/.kube
-cp code/scripts/workers/code_upload_utils/config .kube/config
+mkdir $HOME.kube
+cp code/scripts/workers/code_upload_utils/config $HOME.kube/config
 echo "### Kube config Configured"
 
 #install kubectl
