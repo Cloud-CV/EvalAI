@@ -18,7 +18,7 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
-from models import ChallengeEvaluationCluster
+
 logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
@@ -367,6 +367,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
 
     if execution_role_arn:
         if challenge.is_docker_based:
+            from .models import ChallengeEvaluationCluster
             # Cluster detail to be used by code-upload-worker
             cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
             cluster_name = cluster_details.name
