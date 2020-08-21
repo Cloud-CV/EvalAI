@@ -28,26 +28,34 @@
           >
           </app-selectphase>
         </div>
-        <div class="leaderboard-precision" *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
-          <span class="spacer"></span>
-          <span class="fw-regular">Leaderboard precision</span>
-          <div class="rangeslider fa-stack fa-2x">
-            <mat-slider
-              thumbLabel
-              min="0"
-              max="5"
-              step="1"
-              thumbLabel
-              placeholder="leaderboardPrecisionValue"
-              [(ngModel)]="leaderboardPrecisionValue"
-              (change)="updateLeaderboardDecimalPrecision($event)"
-            >
-            </mat-slider>
+      </div>
+      <br />
+      <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
+        <div class="row row-lr-margin">
+          <div class="col-sm-12 col-xs-12 col-lr-pad" class="leaderboard-precison">
+            <span class="fw-semibold">
+              Leaderboard precision value: &nbsp; <mat-chip>{{ leaderboardPrecisionValue }}</mat-chip></span
+            ><br />
+            <span class="fw-light"
+              >Changing the precision value will show the results with that precision value to the participants.
+            </span>
           </div>
+        </div>
+        <div class="rangeslider fa-stack fa-2x">
+          <mat-slider
+            thumbLabel
+            min="0"
+            max="5"
+            step="1"
+            thumbLabel
+            placeholder="leaderboardPrecisionValue"
+            [(ngModel)]="leaderboardPrecisionValue"
+            (change)="updateLeaderboardDecimalPrecision($event)"
+          >
+          </mat-slider>
         </div>
       </div>
     </div>
-
     <div class="ev-card-body exist-team-card">
       <div class="row row-lr-margin">
         <div class="horizontal-scroll">
@@ -57,17 +65,26 @@
             </div>
             <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="result-wrn content">
               <mat-chip-list> <mat-chip>B</mat-chip> - Baseline submission </mat-chip-list>
-              <mat-chip-list class="leaderboard-description-span">
-                <b><span class="leaderboard-description">*</span></b> - Private submission
+              <mat-chip-list class="leaderboard-description-span private">
+                <mat-chip>P</mat-chip> - Private submission
               </mat-chip-list>
-              <mat-checkbox
-                class="pull-right sort-leaderboard-switch"
-                *ngIf="isChallengeHost"
-                (change)="showLeaderboardByLatestOrBest()"
-                [(ngModel)]="showLeaderboardByLatest"
-              >
-                <label class="w-400 complete-leaderboard-text"> {{ sortLeaderboardTextOption }}</label>
-              </mat-checkbox>
+              <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
+                <div
+                  (click)="showLeaderboardByLatestOrBest()"
+                  class="btn-switch sort-leaderboard-switch"
+                  [ngClass]="{ 'btn-switch--on': showLeaderboardByLatest }"
+                  [(ngModel)]="showLeaderboardByLatest"
+                  ngDefaultControl
+                >
+                  <div
+                    class="btn-switch-circle"
+                    [ngClass]="{ 'btn-switch--on': showLeaderboardByLatest }"
+                    [(ngModel)]="showLeaderboardByLatest"
+                    ngDefaultControl
+                  ></div>
+                </div>
+                <span class="w-400"> {{ sortLeaderboardTextOption }}</span>
+              </mat-chip-list>
               <mat-checkbox
                 class="pull-right complete-leaderboard"
                 *ngIf="isChallengeHost && showLeaderboardToggle"
@@ -167,7 +184,11 @@
                   <td>{{ initial_ranking[key.id] }}</td>
                   <td class="fw-regular">
                     {{ key.submission__participant_team__team_name }}
-                    <b><span *ngIf="key.submission__is_public === false" class="orange-text">*</span></b>
+                    <span *ngIf="key.submission__is_public === false" class="private">
+                      <mat-chip-list>
+                        <mat-chip>P</mat-chip>
+                      </mat-chip-list>
+                    </span>
                     <span *ngIf="key.submission__is_baseline">
                       <mat-chip-list>
                         <mat-chip>B</mat-chip>
