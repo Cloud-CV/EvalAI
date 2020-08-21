@@ -1,10 +1,9 @@
 #!/bin/bash
 
-read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
-read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
-
-echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" > .env
-echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
+if [ ! -f .env ]
+then
+  export $(cat .env | xargs)
+fi
 
 domains=($FRONTEND_DOMAIN $BACKEND_DOMAIN)
 

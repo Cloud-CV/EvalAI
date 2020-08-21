@@ -16,7 +16,7 @@
     },
     "vm": {
         "EnvironmentConfig": {
-            "API": "https://BACKEND_DOMAIN/api/"
+            "API": "TYPE://BACKEND_DOMAIN/api/"
         }
     }
 }

@@ -44,18 +44,19 @@ if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; the
 fi
 
 touch .env
+
+read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
+echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" > .env
+
+read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
+echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
+
 DOCKER_COMPOSE_FILE=""
 
 read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
 if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 
     # Normal HTTP
-    read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
-    read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
-
-    echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" > .env
-    echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
-
     DOCKER_COMPOSE_FILE="docker-compose-vm-http.yml"
 
 else

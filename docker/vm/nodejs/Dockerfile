@@ -23,7 +23,7 @@ ADD frontend /code/frontend
 
 # Update Backend URL with args
 RUN sed -i "s/BACKEND_DOMAIN/${BACKEND_DOMAIN}/g" frontend/src/js/config.json
-RUN sed -i "s/https/${TYPE}/g" frontend/src/js/config.json
+RUN sed -i "s/TYPE/${TYPE}/g" frontend/src/js/config.json
 
 RUN gulp ${NODE_ENV}
 
