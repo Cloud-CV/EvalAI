@@ -2,7 +2,7 @@
 
 if [ ! -f .env ]
 then
-  export $(cat .env | xargs)
+  export $(cat .env | sed 's/#.*//g' | xargs)
 fi
 
 domains=($FRONTEND_DOMAIN $BACKEND_DOMAIN)
