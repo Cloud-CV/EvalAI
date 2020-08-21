@@ -23,22 +23,20 @@
         </div>
       </div>
       <div class="row row-lr-margin">
-        <div class="col-md-1 col-sm-1 col-xs-6 align-left col-lr-pad file-select-box">
+        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
           <mat-form-field>
-            <mat-label>File</mat-label>
+            <mat-label>File type</mat-label>
             <mat-select [(ngModel)]="fileSelected" class="rm-margin">
               <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">{{ key.name }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
-        <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
-          <a
-            class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-15"
-            (click)="downloadSubmission()"
-            >Download</a
-          >
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-lg-3 col-md-4 col-sm-1 col-xs-6 align-left">
+          <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download</a>
         </div>
-        <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 col-lr-pad" *ngIf="selectedPhase">
+        <div class="col-lg-9 col-md-8 col-sm-12 col-xs-12 col-lr-pad" *ngIf="selectedPhase">
           <div class="add-line-height">
             <span>
               <strong class="fw-semibold text-med-black">

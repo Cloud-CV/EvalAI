@@ -539,6 +539,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
 
     SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
       (data) => {
+        SELF.showLeaderboardByLatest = !SELF.showLeaderboardByLatest;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
         SELF.refreshLeaderboard();
       },
@@ -584,12 +585,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
     });
     SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
-      (data) => {
-        SELF.globalService.showToast('success', 'The leaderboard decimal precision value is successfully updated!', 5);
-      },
+      (data) => {},
       (err) => {
         SELF.globalService.handleApiError(err, true);
-        SELF.globalService.showToast('error', err);
       },
       () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
     );

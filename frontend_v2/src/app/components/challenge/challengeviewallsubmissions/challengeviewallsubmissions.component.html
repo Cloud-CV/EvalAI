@@ -29,11 +29,7 @@
           </mat-form-field>
         </div>
         <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
-          <a
-            class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
-            (click)="downloadSubmission()"
-            >Download
-          </a>
+          <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download </a>
         </div>
         <div *ngIf="selectedPhase">
           <div class="row">
@@ -121,7 +117,7 @@
               <div class="elements-detail">
                 <div class="element">
                   <p>
-                    <strong class="text-light-black fw-semibold fs-12">Team Members</strong> <br />
+                    <strong class="text-light-black fw-semibold fs-12">Team Members</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
                       class="fw-semibold fs-14"
@@ -134,7 +130,7 @@
                 </div>
                 <div class="element">
                   <p>
-                    <strong class="text-light-black fw-semibold fs-12">Team Members Email Id</strong> <br />
+                    <strong class="text-light-black fw-semibold fs-12">Team Members Email Id</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
                       class="fw-semibold fs-14"
@@ -145,12 +141,11 @@
                   </p>
                 </div>
                 <div class="row rm-margin">
-                  <div class="col-sm-3 col-md-3 col-lg-4 no-pad-lr element">
+                  <div class="col-sm-3 col-md-3 col-lg-3 no-pad-lr element">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12"
-                        >Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i
-                      ></strong>
-                      <br />
+                        >Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
+                      >&nbsp;
                       <a
                         target="_blank"
                         class="blue-text fs-12"
@@ -164,12 +159,11 @@
                       </strong>
                     </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-5">
+                  <div class="col-sm-4 col-md-4 col-lg-4">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12"
-                        >Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i
-                      ></strong>
-                      <br />
+                        >Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
+                      >&nbsp;
                       <a
                         target="_blank"
                         class="blue-text fs-12"
@@ -183,12 +177,11 @@
                       </strong>
                     </p>
                   </div>
-                  <div class="col-sm-5 col-md-5 col-lg-3">
+                  <div class="col-sm-6 col-md-5 col-lg-5">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12"
-                        >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i
-                      ></strong>
-                      <br />
+                        >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
+                      >&nbsp;
                       <a
                         target="_blank"
                         class="blue-text fs-12"
@@ -207,17 +200,17 @@
 
               <div class="elements-action">
                 <div class="row rm-margin">
-                  <div class="col-sm-6 sol-md-6 col-lg-6 no-pad-lr">
+                  <div class="col-sm-6 sol-md-6 col-lg-4 no-pad-lr">
                     <p>
-                      <strong class="text-light-black fw-semibold fs-12">Status</strong> <br />
+                      <strong class="text-light-black fw-semibold fs-12">Status</strong> &nbsp;
                       <strong class="fw-semibold fs-14" [ngClass]="element.status" class="fs-12">
                         {{ element.status | uppercase }}
                       </strong>
                     </p>
                   </div>
-                  <div class="col-sm-6 sol-md-6 col-lg-6 no-pad-lr">
+                  <div class="col-sm-6 sol-md-6 col-lg-8 no-pad-lr">
                     <p>
-                      <strong class="text-light-black fw-semibold fs-12">Submission Number</strong> <br />
+                      <strong class="text-light-black fw-semibold fs-12">Submission Number</strong> &nbsp;
                       <strong class="fw-semibold fs-14">
                         {{ element.submission_number }}
                       </strong>
@@ -226,7 +219,7 @@
                 </div>
                 <div class="element">
                   <p>
-                    <strong class="text-light-black fw-semibold fs-12">Submitted At</strong> <br />
+                    <strong class="text-light-black fw-semibold fs-12">Submitted At</strong> &nbsp;
                     <strong class="fw-semibold fs-14">
                       {{ element.created_at | date: 'medium' }}
                     </strong>

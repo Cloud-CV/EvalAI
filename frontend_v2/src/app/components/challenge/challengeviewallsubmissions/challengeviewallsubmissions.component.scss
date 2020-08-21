@@ -2,6 +2,7 @@
 @import './mixins.scss';
 
 .ev-md-container {
+  padding-bottom: 0px;
   .phase-title {
     margin-bottom: 20px;
   }
@@ -94,18 +95,17 @@ tr.element-row.expanded-row {
 }
 
 .elements-detail {
+  width: 55%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-
   border-right-style: solid;
   border-right-width: 1px;
   border-right-color: lightgrey;
-
-  padding-right: 80px;
 }
 
 .elements-action {
+  width: 40%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
