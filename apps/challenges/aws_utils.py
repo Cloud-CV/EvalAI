@@ -226,6 +226,22 @@ task_definition_code_upload_worker = """
             "essential": True,
             "environment": [
                 {{
+                  "name": "AWS_DEFAULT_REGION",
+                  "value": "{AWS_DEFAULT_REGION}"
+                }},
+                {{
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "value": "{AWS_ACCESS_KEY_ID}"
+                }},
+                {{
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "CLUSTER_NAME",
+                  "value": "{CLUSTER_NAME}"
+                }},
+                {{
                   "name": "QUEUE_NAME",
                   "value": "{queue_name}"
                 }},

@@ -6,9 +6,9 @@ unzip awscliv2.zip
 sudo ./aws/install
 echo "### AWS CLI Installed"
 
-# aws configure 
-# $access_key
-# $secret_access
+aws configure set aws_access_key_id access_key
+aws configure set aws_secret_access secret_key
+
 
 
 #install iam-authenticator
