@@ -239,7 +239,7 @@ task_definition_code_upload_worker = """
                 }},
                 {{
                   "name": "CLUSTER_NAME",
-                  "value": "{CLUSTER_NAME}"
+                  "value": "{cluster_name}"
                 }},
                 {{
                   "name": "QUEUE_NAME",
@@ -356,6 +356,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     """
     container_name = "worker_{}".format(queue_name)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
+    cluster_name = "{0}-cluster".format(challenge.title.replace(" ", "-"))
 
     if execution_role_arn:
         if challenge.is_docker_based:
@@ -371,6 +372,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 ENV=ENV,
                 challenge_pk=challenge.pk,
                 auth_token=token,
+                cluster_name=cluster_name,
                 **COMMON_SETTINGS_DICT,
             )
         else:
