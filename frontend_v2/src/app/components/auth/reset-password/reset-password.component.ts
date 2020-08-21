@@ -1,16 +1,15 @@
-import {Component, OnInit} from '@angular/core';
-import {AuthService} from '../../../services/auth.service';
-import {ApiService} from '../../../services/api.service';
-import {EndpointsService} from '../../../services/endpoints.service';
-import {GlobalService} from '../../../services/global.service';
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../../../services/auth.service';
+import { ApiService } from '../../../services/api.service';
+import { EndpointsService } from '../../../services/endpoints.service';
+import { GlobalService } from '../../../services/global.service';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss']
+  styleUrls: ['./reset-password.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
-
   isemailFocused = false;
 
   /**
@@ -35,9 +34,12 @@ export class ResetPasswordComponent implements OnInit {
    * @param apiService
    * @param endpointService
    */
-  constructor(public authService: AuthService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointService: EndpointsService) {
-  }
+  constructor(
+    public authService: AuthService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointService: EndpointsService
+  ) {}
 
   ngOnInit() {
     this.authService.resetForm();
@@ -49,13 +51,13 @@ export class ResetPasswordComponent implements OnInit {
       this.globalService.startLoader('Sending Mail');
 
       const RESET_BODY = JSON.stringify({
-        email: this.authService.getUser['email']
+        email: this.authService.getUser['email'],
       });
 
       const API_PATH = this.endpointService.resetPasswordURL();
 
       this.apiService.postUrl(API_PATH, RESET_BODY).subscribe(
-        response => {
+        (response) => {
           this.authService.isMail = false;
           this.authService.getUser['error'] = false;
           this.authService.isFormError = false;
@@ -64,7 +66,7 @@ export class ResetPasswordComponent implements OnInit {
           this.globalService.stopLoader();
         },
 
-        err => {
+        (err) => {
           this.authService.isFormError = true;
           this.authService.FormError = 'Something went wrong. Please try again';
           this.globalService.stopLoader();

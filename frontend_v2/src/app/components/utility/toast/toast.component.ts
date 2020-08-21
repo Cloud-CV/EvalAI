@@ -8,10 +8,9 @@ import { GlobalService } from '../../../services/global.service';
 @Component({
   selector: 'app-toast',
   templateUrl: './toast.component.html',
-  styleUrls: ['./toast.component.scss']
+  styleUrls: ['./toast.component.scss'],
 })
 export class ToastComponent implements OnInit, OnDestroy {
-
   /**
    * Type of toast
    */
@@ -32,14 +31,13 @@ export class ToastComponent implements OnInit, OnDestroy {
    * @param document  Window document Injection.
    * @param globalService  GlobalService Injection.
    */
-  constructor(@Inject(DOCUMENT) private document: Document,
-              private globalService: GlobalService) { }
+  constructor(@Inject(DOCUMENT) private document: Document, private globalService: GlobalService) {}
 
   /**
    * Component on initialized.
    */
   ngOnInit() {
-    this.globalServiceSubscription = this.globalService.toast.subscribe(temp => {
+    this.globalServiceSubscription = this.globalService.toast.subscribe((temp) => {
       this.type = temp.type || 'success';
       this.message = temp.message || 'Success';
       if (this.message.length >= 40) {
