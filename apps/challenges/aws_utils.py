@@ -369,10 +369,15 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
         if challenge.is_docker_based:
             from .models import ChallengeEvaluationCluster
             # Cluster detail to be used by code-upload-worker
-            cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
-            cluster_name = cluster_details.name
-            cluster_endpoint = cluster_details.cluster_endpoint
-            cluster_certificate = cluster_details.cluster_ssl
+            try:
+                cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                cluster_name = cluster_details.name
+                cluster_endpoint = cluster_details.cluster_endpoint
+                cluster_certificate = cluster_details.cluster_ssl
+            except exception as e:
+                logger.exception(e)
+                return e.response
+
             # challenge host auth token to be used by code-upload-worker
             try:
                 token = Token.objects.get(user=challenge.creator.created_by)
