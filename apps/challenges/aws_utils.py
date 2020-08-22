@@ -377,7 +377,6 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             except exception as e:
                 logger.exception(e)
                 return e.response
-
             # challenge host auth token to be used by code-upload-worker
             try:
                 token = Token.objects.get(user=challenge.creator.created_by)
