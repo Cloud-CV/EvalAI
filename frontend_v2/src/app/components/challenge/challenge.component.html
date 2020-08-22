@@ -139,6 +139,15 @@
                         <i class="fa fa-line-chart"></i> Leaderboard</a
                       >
                     </li>
+                    <li *ngIf="isChallengeHost">
+                      <a
+                        [class.selected]="localRouter.url.endsWith('analytics')"
+                        [routerLink]="['./analytics']"
+                        class="text-light-black fw-light fs-15"
+                      >
+                        <i class="fa fa-bar-chart"></i> Analytics
+                      </a>
+                    </li>
                     <li *ngIf="isForumEnabled && (forumURL || isChallengeHost)">
                       <a
                         [class.selected]="localRouter.url.endsWith('discuss')"
