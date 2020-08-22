@@ -2,12 +2,12 @@
 @import './mixins.scss';
 
 .twitter-feed-container {
-	width:100%;
-	a {
-		color: $blue-light;
-		font-size:$fs-24;
-	}
-	.hidden {
-		display:none;
-	}
+  width: 100%;
+  a {
+    color: $blue-light;
+    font-size: $fs-24;
+  }
+  .hidden {
+    display: none;
+  }
 }

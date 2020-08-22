@@ -22,12 +22,11 @@ describe('OurTeamComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ OurTeamComponent, FooterComponent, HeaderStaticComponent ],
-      imports: [ HttpClientModule, RouterTestingModule ],
-      providers: [ GlobalService, AuthService, EndpointsService, ApiService],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [OurTeamComponent, FooterComponent, HeaderStaticComponent],
+      imports: [HttpClientModule, RouterTestingModule],
+      providers: [GlobalService, AuthService, EndpointsService, ApiService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -53,5 +52,4 @@ describe('OurTeamComponent', () => {
     const expectedTeamUrl = 'web/team/';
     expect(apiServiceSpy).toHaveBeenCalledWith(expectedTeamUrl);
   });
-
 });

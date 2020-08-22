@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
+from rest_framework.authtoken.models import Token
 
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
@@ -49,6 +50,12 @@ COMMON_SETTINGS_DICT = {
         "WORKER_IMAGE",
         "{}.dkr.ecr.{}.amazonaws.com/evalai-{}-worker:latest".format(
             aws_keys["AWS_ACCOUNT_ID"], aws_keys["AWS_REGION"], ENV
+        ),
+    ),
+    "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
+        "CODE_UPLOAD_WORKER_IMAGE",
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
     ),
     "CPU": os.environ.get("CPU", 1024),
@@ -207,6 +214,53 @@ task_definition = """
 }}
 """
 
+task_definition_code_upload_worker = """
+{{
+    "family":"{queue_name}",
+    "executionRoleArn":"{EXECUTION_ROLE_ARN}",
+    "networkMode":"awsvpc",
+    "containerDefinitions":[
+        {{
+            "name": "{container_name}",
+            "image": "{CODE_UPLOAD_WORKER_IMAGE}",
+            "essential": True,
+            "environment": [
+                {{
+                  "name": "QUEUE_NAME",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "EVALAI_API_SERVER",
+                  "value": "{DJANGO_SERVER}"
+                }},
+
+                {{
+                    "name": "AUTH_TOKEN",
+                    "value": "{auth_token}"
+                }},
+
+            ],
+            "workingDirectory": "/code",
+            "readonlyRootFilesystem": False,
+            "logConfiguration": {{
+                "logDriver": "awslogs",
+                "options": {{
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
+                }},
+            }},
+        }}
+    ],
+    "requiresCompatibilities":[
+        "FARGATE"
+    ],
+    "cpu": "{CPU}",
+    "memory": "{MEMORY}",
+}}
+"""
+
 service_definition = """
 {{
     "cluster":"{CLUSTER}",
@@ -288,13 +342,29 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
     if execution_role_arn:
-        definition = task_definition.format(
-            queue_name=queue_name,
-            container_name=container_name,
-            ENV=ENV,
-            challenge_pk=challenge.pk,
-            **COMMON_SETTINGS_DICT,
-        )
+        if challenge.is_docker_based:
+            # challenge host auth token to be used by code-upload-worker
+            try:
+                token = Token.objects.get(user=challenge.creator.created_by)
+            except Token.DoesNotExist:
+                token = Token.objects.create(user=challenge.creator.created_by)
+                token.save()
+            definition = task_definition_code_upload_worker.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                auth_token=token,
+                **COMMON_SETTINGS_DICT,
+            )
+        else:
+            definition = task_definition.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                **COMMON_SETTINGS_DICT,
+            )
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
@@ -882,7 +952,11 @@ def create_eks_nodegroup(challenge, cluster_name):
         return response
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
-    construct_and_send_eks_cluster_creation_mail(challenge)
+    construct_and_send_eks_cluster_creation_mail(challenge_obj)
+    # starting the code-upload-worker
+    client = get_boto3_client("ecs", aws_keys)
+    client_token = client_token_generator(challenge_obj.pk)
+    create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
 @app.task
@@ -970,18 +1044,25 @@ def create_eks_cluster(challenge):
             return
 
 
-def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
+def challenge_approval_callback(sender, instance, field_name, **kwargs):
+    """ This is to check if a challenge has been approved or disapproved since last time.
+
+    On approval of a challenge, it launches a worker on Fargate.
+    On disapproval, it scales down the workers to 0, and deletes the challenge's service on Fargate.
+
+    Arguments:
+        sender -- The model which initated this callback (Challenge)
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model (a challenge object)
+        field_name {str} -- The name of the field to check for a change (approved_by_admin)
+
+    """
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     challenge = instance
     challenge._original_approved_by_admin = curr
-    if (
-        curr and not prev
-    ):  # Checking if the challenge has been approved by admin since last time.
-        if (
-            not challenge.is_docker_based
-            and challenge.remote_evaluation is False
-        ):
+
+    if not challenge.is_docker_based and challenge.remote_evaluation is False:
+        if curr and not prev:
             response = start_workers([challenge])
             count, failures = response["count"], response["failures"]
             if count != 1:
@@ -992,3 +1073,13 @@ def challenge_workers_start_notifier(sender, instance, field_name, **kwargs):
                 )
             else:
                 construct_and_send_worker_start_mail(challenge)
+
+        if prev and not curr:
+            response = delete_workers([challenge])
+            count, failures = response["count"], response["failures"]
+            if count != 1:
+                logger.error(
+                    "Worker for challenge {} couldn't be deleted! Error: {}".format(
+                        challenge.id, failures[0]["message"]
+                    )
+                )

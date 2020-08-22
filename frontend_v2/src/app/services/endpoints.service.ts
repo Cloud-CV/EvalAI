@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class EndpointsService {
-
   /**
    * Categories of API paths
    */
@@ -14,7 +13,7 @@ export class EndpointsService {
   auth = 'auth/';
   analytics = 'analytics/';
 
-  constructor() { }
+  constructor() {}
 
   /**
    * Login URL
@@ -104,7 +103,7 @@ export class EndpointsService {
   participantTeamURL(teamId) {
     return `${this.participants}participant_team/${teamId}`;
   }
-/**
+  /**
    * Edit Host Team Name
    */
   hostTeamURL(teamId) {
@@ -140,7 +139,6 @@ export class EndpointsService {
   allChallengesURL(time) {
     return `${this.challenges}${this.challenge}${time}`;
   }
-
 
   /**
    * All host teams
@@ -379,5 +377,22 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   downloadParticipantsAnalyticsURL(challengeId) {
     return `${this.analytics}challenges/${challengeId}/download_all_participants/`;
+  }
+
+  /**
+   * Manage worker
+   * @param challengeId challenge id
+   * @param action worker action
+   */
+  manageWorkerURL(challengeId, action) {
+    return `${this.challenges}${challengeId}/manage_worker/${action}/`;
+  }
+
+  /**
+   * Manage worker
+   * @param challengeId challenge id
+   */
+  getLogsURL(challengeId) {
+    return `${this.challenges}${challengeId}/get_worker_logs/`;
   }
 }

@@ -1,8 +1,8 @@
-import {Component, OnInit, Inject, OnDestroy} from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { GlobalService } from '../../services/global.service';
-import {AuthService} from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 
 /**
  * Component Class
@@ -10,7 +10,7 @@ import {AuthService} from '../../services/auth.service';
 @Component({
   selector: 'app-publiclists',
   templateUrl: './publiclists.component.html',
-  styleUrls: ['./publiclists.component.scss']
+  styleUrls: ['./publiclists.component.scss'],
 })
 export class PubliclistsComponent {
   /**
@@ -21,7 +21,11 @@ export class PubliclistsComponent {
    * @param authService
    * @param globalService  GlobalService Injection.
    */
-  constructor(private router: Router, private route: ActivatedRoute, @Inject(DOCUMENT) private document: Document,
-              public  authService: AuthService, private globalService: GlobalService) { }
-
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    @Inject(DOCUMENT) private document: Document,
+    public authService: AuthService,
+    private globalService: GlobalService
+  ) {}
 }

@@ -207,12 +207,27 @@ def get_slug(param):
     return slug
 
 
-def get_queue_name(param):
-    queue_name = param.replace(" ", "-").lower()
+def get_queue_name(param, challenge_pk):
+    """
+        Generate unique SQS queue name of max length 80 for a challenge
+
+        Arguments:
+            param {string} -- challenge title
+            challenge_pk {int} -- challenge primary key
+
+        Returns:
+            {string} -- unique queue name
+    """
+    # The max-length for queue-name is 80 in SQS
+    max_len = 80
+    max_challenge_title_len = 50
+
+    queue_name = param.replace(" ", "-").lower()[:max_challenge_title_len]
     queue_name = re.sub(r"\W+", "-", queue_name)
-    queue_name = "{}-{}".format(queue_name, uuid.uuid4())[
-        :80
-    ]  # The max-length for queue-name is 80 in SQS
+
+    queue_name = "{}-{}-{}".format(queue_name, challenge_pk, uuid.uuid4())[
+        :max_len
+    ]
     return queue_name
 
 

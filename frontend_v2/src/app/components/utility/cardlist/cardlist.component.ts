@@ -6,10 +6,9 @@ import { Component, OnInit, Input } from '@angular/core';
 @Component({
   selector: 'app-cardlist',
   templateUrl: './cardlist.component.html',
-  styleUrls: ['./cardlist.component.scss']
+  styleUrls: ['./cardlist.component.scss'],
 })
 export class CardlistComponent implements OnInit {
-
   /**
    * Type of card (team/challenge)
    */
@@ -58,7 +57,7 @@ export class CardlistComponent implements OnInit {
   /**
    * Constructor.
    */
-  constructor() { }
+  constructor() {}
 
   /**
    * Component on intialized.
@@ -71,5 +70,4 @@ export class CardlistComponent implements OnInit {
       });
     }
   }
-
 }

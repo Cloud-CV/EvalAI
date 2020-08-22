@@ -1,4 +1,4 @@
-@import "styles/variables";
+@import 'styles/variables';
 
 .challenge-create-flex {
   display: flex;
@@ -41,7 +41,7 @@
   color: black;
   text-align: center;
   height: 1.5em;
-  opacity: .5;
+  opacity: 0.5;
   &:before {
     content: '';
     background: linear-gradient(to right, transparent, #818078, transparent);
@@ -55,7 +55,7 @@
     content: '';
     position: relative;
     display: inline-block;
-    padding: 0 .5em;
+    padding: 0 0.5em;
     line-height: 1.5em;
     color: #818078;
     background-color: #fcfcfa;

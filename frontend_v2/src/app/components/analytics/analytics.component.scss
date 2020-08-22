@@ -1,4 +1,4 @@
-@import "styles/variables";
+@import 'styles/variables';
 
 .analytics-content {
   margin-left: 2%;
@@ -7,7 +7,6 @@
 .web-container {
   width: calc(100vw - 223px);
   float: right;
-  padding-top: 70px;
   overflow-x: hidden;
   &.center {
     float: none;
