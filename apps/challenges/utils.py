@@ -10,7 +10,12 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
-from base.utils import get_model_object, get_boto3_client, mock_if_non_prod_aws
+from base.utils import (
+    get_model_object,
+    get_boto3_client,
+    mock_if_non_prod_aws,
+    send_email
+)
 
 from .models import (
     Challenge,
@@ -348,3 +353,20 @@ def get_challenge_template_data(challenge):
         "CHALLENGE_MANAGE_URL": challenge_manage_url,
     }
     return template_data
+
+
+def send_multiple_emails(emails, template_id, template_data):
+    """
+        Sends email to list of users using provided template
+        Arguments:
+            emails {list} -- recepient email ids
+            template_id {string} -- sendgrid template id
+            template_data {dict} -- sendgrid email template data
+    """
+    for email in emails:
+        send_email(
+            sender=settings.CLOUDCV_TEAM_EMAIL,
+            recipient=email,
+            template_id=template_id,
+            template_data=template_data,
+        )

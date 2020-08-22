@@ -127,6 +127,7 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     get_challenge_template_data,
+    send_multiple_emails
 )
 
 logger = logging.getLogger(__name__)
@@ -1381,29 +1382,28 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     ],
                 }
                 send_slack_notification(message=message)
-
+            
+            template_data = get_challenge_template_data(zip_config.challenge)
             if not is_test_annotation_missing:
-                print('not missing start worker')
-                response = start_workers([zip_config.challenge])
-                count, failures = response["count"], response["failures"]
-                logging.info("Total worker start count is {} and failures are: {}".format(count, failures))
-                print(count, failures)
-                if count:
-                    logging.info("{} workers started successfully".format(count))
-                else:
-                    logging.error("Failure when starting workers {}".format(failures))
+                try:
+                    response = start_workers([zip_config.challenge])
+                    count, failures = response["count"], response["failures"]
+                    logging.info("Total worker start count is {} and failures are: {}".format(count, failures))
+                    if count:
+                        logging.info("{} workers started successfully".format(count))
+                        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+                            "WORKER_START_EMAIL"
+                        )
+                        send_multiple_emails(emails, template_id, template_data)
+                except Exception as e:
+                    logger.exception(
+                        "Failed to start workers for challenge {}".format(zip_config.challenge.pk)
+                        )
             else:
-                template_data = get_challenge_template_data(zip_config.challenge)
                 template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
                     "MISSING_ANNOTATIONS_EMAIL"
                 )
-                for email in emails:
-                    send_email(
-                        sender=settings.CLOUDCV_TEAM_EMAIL,
-                        recipient=email,
-                        template_id=template_id,
-                        template_data=template_data,
-                    )
+                send_multiple_emails(emails, template_id, template_data)
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"
