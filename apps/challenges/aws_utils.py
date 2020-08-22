@@ -374,7 +374,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 cluster_name = cluster_details.name
                 cluster_endpoint = cluster_details.cluster_endpoint
                 cluster_certificate = cluster_details.cluster_ssl
-            except exception as e:
+            except ClientError as e:
                 logger.exception(e)
                 return e.response
             # challenge host auth token to be used by code-upload-worker
