@@ -4,11 +4,6 @@
 .challenge-leaderboard-container {
   padding: 20px;
   overflow: auto;
-  .phase-select-div {
-    overflow: auto;
-    position: relative;
-    display: block;
-  }
   .leaderboard-empty {
     padding: 30px;
     display: block;
@@ -161,6 +156,17 @@ mat-slider {
 .complete-leaderboard-text {
   font-size: $fs-16;
   color: $gray-darker;
+}
+
+.ev-md-container {
+  padding-bottom: 0px;
+  .phase-select-box {
+    margin-bottom: 0px;
+  }
+}
+
+.ev-card-body {
+  padding-top: 0px;
 }
 
 @media only screen and (max-width: $screen-sm) {

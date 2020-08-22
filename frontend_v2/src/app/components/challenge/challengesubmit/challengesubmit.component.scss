@@ -83,20 +83,6 @@ th {
   background-color: black;
 }
 
-// overwrite the checkbox background
-::ng-deep .mat-checkbox-checked .mat-checkbox-background,
-.mat-checkbox-indeterminate .mat-checkbox-background {
-  background-color: black !important;
-}
-
-// overwrite the ripple overlay on hover and click
-::ng-deep .mat-checkbox:not(.mat-checkbox-disabled) .mat-checkbox-ripple .mat-ripple-element {
-  background-color: black !important;
-}
-
-::ng-deep .mat-checkbox .mat-checkbox-frame {
-  border-color: black;
-}
 .input-message {
   position: relative;
   top: 2px;
