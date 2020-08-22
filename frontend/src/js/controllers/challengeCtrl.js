@@ -2454,8 +2454,7 @@
 
         vm.closeChallengeBanner = function() {
             vm.showChallengeSubmissionBanner = false;
-        }
-
+        };
 
     }
 
