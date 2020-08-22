@@ -16,7 +16,6 @@ from os.path import basename, isfile, join
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from django.core import serializers
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
@@ -1382,7 +1381,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     ],
                 }
                 send_slack_notification(message=message)
-            
+
             template_data = get_challenge_template_data(zip_config.challenge)
             if not is_test_annotation_missing:
                 try:
@@ -1395,10 +1394,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             "WORKER_START_EMAIL"
                         )
                         send_multiple_emails(emails, template_id, template_data)
-                except Exception as e:
+                except Exception:
                     logger.exception(
                         "Failed to start workers for challenge {}".format(zip_config.challenge.pk)
-                        )
+                    )
             else:
                 template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
                     "MISSING_ANNOTATIONS_EMAIL"
