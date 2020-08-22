@@ -27,9 +27,9 @@ sys.path.append(APPS_DIR)
 SECRET_KEY = os.environ.get("SECRET_KEY", "random_secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = eval(os.environ.get("DEBUG", True))
 
-TEST = False
+TEST = eval(os.environ.get("TEST", False))
 
 ALLOWED_HOSTS = []
 

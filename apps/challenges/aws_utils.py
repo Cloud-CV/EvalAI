@@ -47,8 +47,8 @@ COMMON_SETTINGS_DICT = {
     ),
     "WORKER_IMAGE": os.environ.get(
         "WORKER_IMAGE",
-        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
-            aws_keys["AWS_ACCOUNT_ID"], ENV
+        "{}.dkr.ecr.{}.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], aws_keys["AWS_REGION"], ENV
         ),
     ),
     "CPU": os.environ.get("CPU", 1024),

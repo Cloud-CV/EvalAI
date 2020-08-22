@@ -1,0 +1,138 @@
+version: "3"
+services:
+  django:
+    hostname: django
+    env_file:
+      - docker/vm/docker_vm.env
+    environment: 
+      - HOSTNAME=${HOSTNAME}
+      - RDS_DB_NAME=${RDS_DB_NAME}
+      - RDS_HOSTNAME=${RDS_HOSTNAME}
+      - RDS_USERNAME=${RDS_USERNAME}
+      - RDS_PASSWORD=${RDS_PASSWORD}
+      - RDS_PORT=5432
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - SENTRY_URL=${SENTRY_URL}
+    build:
+      context: ./
+      dockerfile: docker/vm/django/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+
+  worker:
+    env_file:
+      - docker/vm/docker_vm.env
+    environment: 
+      - HOSTNAME=${HOSTNAME}
+      - RDS_DB_NAME=${RDS_DB_NAME}
+      - RDS_HOSTNAME=${RDS_HOSTNAME}
+      - RDS_USERNAME=${RDS_USERNAME}
+      - RDS_PASSWORD=${RDS_PASSWORD}
+      - RDS_PORT=5432
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - SENTRY_URL=${SENTRY_URL}
+    build:
+      context: ./
+      dockerfile: docker/vm/worker/Dockerfile
+    depends_on:
+      - django
+    volumes:
+      - .:/code
+
+  # required: auth token
+  # remote-worker:
+  #   env_file:
+  #     - docker/vm/docker_vm.env
+  #   environment: 
+  #     - HOSTNAME=${HOSTNAME}
+  #     - RDS_DB_NAME=${RDS_DB_NAME}
+  #     - RDS_HOSTNAME=${RDS_HOSTNAME}
+  #     - RDS_USERNAME=${RDS_USERNAME}
+  #     - RDS_PASSWORD=${RDS_PASSWORD}
+  #     - RDS_PORT=5432
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+  #     - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+  #     - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  #     - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+  #     - DOMAIN_NAME=${DOMAIN_NAME}
+  #     - SENTRY_URL=${SENTRY_URL}
+  #     - AUTH_TOKEN=${AUTH_TOKEN}
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/vm/worker/Dockerfile
+  #   command: ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.remote_submission_worker"]
+  #   depends_on:
+  #     - django
+  #   volumes:
+  #     - .:/code
+
+  celery:
+    env_file:
+      - docker/vm/docker_vm.env
+    environment: 
+      - HOSTNAME=${HOSTNAME}
+      - RDS_DB_NAME=${RDS_DB_NAME}
+      - RDS_HOSTNAME=${RDS_HOSTNAME}
+      - RDS_USERNAME=${RDS_USERNAME}
+      - RDS_PASSWORD=${RDS_PASSWORD}
+      - RDS_PORT=5432
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - SENTRY_URL=${SENTRY_URL}
+    build:
+      context: ./
+      dockerfile: docker/vm/celery/Dockerfile
+    depends_on:
+      - django
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: celery_vm
+        awslogs-create-group: "true"
+
+  nodejs:
+    build:
+      context: ./
+      dockerfile: docker/vm/nodejs/Dockerfile
+      args:
+        NODE_ENV: vm
+        DOMAIN_NAME: ${DOMAIN_NAME}
+    depends_on:
+      - django
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /code/node_modules
+      - /code/bower_components
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    environment: 
+      DOMAIN_NAME: ${DOMAIN_NAME}
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'" 

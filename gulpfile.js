@@ -205,6 +205,22 @@ function configStaging() {
 }
 
 /*
+config for vm machines
+*/
+function configVm() {
+    return gulp.src('frontend/src/js/config.sample.js')
+        .pipe(replace('moduleName', 'evalai-config'))
+        .pipe(replace('constantName', Object.keys(configJson.vm)))
+        .pipe(replace('configKey', Object.keys(configJson.vm.EnvironmentConfig)))
+        .pipe(replace('configValue', configJson.vm.EnvironmentConfig.API))
+        .pipe(rename({
+            basename: 'config'
+        }))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp.dest('frontend/dist/js/'));
+}
+
+/*
 config for dev server
 */
 function configDev() {
@@ -305,6 +321,11 @@ gulp.task('production', gulp.series(clean, function(done) {
     production = true;
     done();
 }, parallelTasks, configProd, injectpaths, lint));
+
+gulp.task('vm', gulp.series(clean ,function(done) {
+    production = true;
+    done();
+}, parallelTasks, configVm, injectpaths, lint));
 
 gulp.task('staging', gulp.series(clean, function(done) {
     production = true;

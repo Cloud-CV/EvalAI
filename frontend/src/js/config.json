@@ -13,5 +13,10 @@
         "EnvironmentConfig": {
             "API": "https://evalapi.cloudcv.org/api/"
         }
+    },
+    "vm": {
+        "EnvironmentConfig": {
+            "API": "https://evalapi.example.com/api/"
+        }
     }
 }
