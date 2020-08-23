@@ -68,6 +68,11 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   isParticipated: any;
 
   /**
+   * Participated team name
+   */
+  participatedTeamName = '';
+
+  /**
    * Is user a challenge host
    */
   isChallengeHost = false;
@@ -230,6 +235,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
+    this.fetchParticipated_team(this.challenge['id']);
   }
 
   /**
@@ -586,5 +592,23 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Get participated team name API
+   * @param challengeId Challenge Id
+  */
+  fetchParticipated_team(challengeId) {
+    const SELF = this;
+    const API_PATH = SELF.endpointsService.getParticipatedTeamNameURL(challengeId);
+    this.apiService.getUrl(API_PATH, true, false).subscribe(
+      data => {
+        SELF.participatedTeamName = data['team_name'];
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
   }
 }
