@@ -37,7 +37,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * Ongoing challenges list
    */
-  ongoingChallenges = [];
+  ongoingChallenges: any;
 
   /**
    * Past challeges list
@@ -84,7 +84,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * List of filtered ongoing challenges
    */
-  filteredOngoingChallenges = [];
+  filteredOngoingChallenges: any;
 
   /**
    * List of filtered upcoming challenges
