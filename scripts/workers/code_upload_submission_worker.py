@@ -366,8 +366,8 @@ def main():
                         phase_pk,
                     )
                 else:
-                    if (challenge_prioritize and challenge_phase_prioritize) or not(
-                            challenge_prioritize and challenge_phase_prioritize):
+                    if (challenge_prioritize and challenge_phase_prioritize) or (
+                            not challenge_prioritize and not challenge_phase_prioritize):
 
                         logger.info(
                             "Processing message body: {0}".format(message_body)
