@@ -64,6 +64,7 @@ class Challenge(TimeStampedModel):
     )
     is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
+    challenge_prioritize = models.BooleanField(default=False)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
     leaderboard_description = models.TextField(null=True, blank=True)
     anonymous_leaderboard = models.BooleanField(default=False)
@@ -225,6 +226,7 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey("Challenge")
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
+    challenge_phase_prioritize = models.BooleanField(default=False)
     test_annotation = models.FileField(
         upload_to=RandomFileName("test_annotations"), null=True, blank=True
     )

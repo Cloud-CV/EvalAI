@@ -316,6 +316,15 @@ def main():
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
+    challenge_prioritize = challenge.get(
+                            "challenge_prioritize"
+                        )
+    challenge_phase = evalai.get_challenge_phase_by_pk(
+                            challenge_pk, phase_pk
+                        )
+    challenge_phase_prioritize = challenge_phase.get(
+                            "challenge_phase_prioritize"
+                        )
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
@@ -355,15 +364,16 @@ def main():
                         phase_pk,
                     )
                 else:
-                    logger.info(
-                        "Processing message body: {0}".format(message_body)
-                    )
-                    challenge_phase = evalai.get_challenge_phase_by_pk(
-                        challenge_pk, phase_pk
-                    )
-                    process_submission_callback(
-                        api_instance, message_body, challenge_phase, evalai
-                    )
+                    if (challenge_prioritize and challenge_phase_prioritize) 
+                        or 
+                        not(challenge_prioritize and challenge_phase_prioritize):
+
+                        logger.info(
+                            "Processing message body: {0}".format(message_body)
+                        )
+                        process_submission_callback(
+                            api_instance, message_body, challenge_phase, evalai
+                        )
 
         if killer.kill_now:
             break
