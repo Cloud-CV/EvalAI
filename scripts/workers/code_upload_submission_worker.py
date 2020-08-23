@@ -317,14 +317,14 @@ def main():
     )
     install_gpu_drivers(api_instance)
     challenge_prioritize = challenge.get(
-                            "challenge_prioritize"
-                        )
+        "challenge_prioritize"
+    )
     challenge_phase = evalai.get_challenge_phase_by_pk(
-                            challenge_pk, phase_pk
-                        )
+        challenge_pk, phase_pk
+    )
     challenge_phase_prioritize = challenge_phase.get(
-                            "challenge_phase_prioritize"
-                        )
+        "challenge_phase_prioritize"
+    )
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
@@ -345,7 +345,8 @@ def main():
                     or submission.get("status") == "failed"
                     or submission.get("status") == "cancelled"
                 ):
-                    # Fetch the last job name from the list as it is the latest running job
+                    # Fetch the last job name from the list as it is the latest
+                    # running job
                     job_name = submission.get("job_name")[-1]
                     delete_job(api_instance, job_name)
                     message_receipt_handle = message.get("receipt_handle")
@@ -364,9 +365,9 @@ def main():
                         phase_pk,
                     )
                 else:
-                    if (challenge_prioritize and challenge_phase_prioritize) 
-                        or 
-                        not(challenge_prioritize and challenge_phase_prioritize):
+                    if (challenge_prioritize and challenge_phase_prioritize)
+                    or
+                    not(challenge_prioritize and challenge_phase_prioritize):
 
                         logger.info(
                             "Processing message body: {0}".format(message_body)
