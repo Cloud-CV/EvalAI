@@ -5,10 +5,11 @@
         <div class="col-sm-12 col-xs-12 col-lr-pad">
           <h5 class="fw-light">Challenges Analytics</h5>
         </div>
-        <div
-          class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light"
-          [innerHTML]="currentChallengeDetails['short_description']"
-        ></div>
+        <div class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light">
+          Here you get the complete analysis of <b>{{ currentChallengeDetails['title'] }}</b
+          >. This includes getting total number submissions, total number of participated teams, number of phases,
+          number of submissions in each phases etc.
+        </div>
       </div>
     </div>
     <div class="ev-md-container">
@@ -49,6 +50,8 @@
             <h5 class="no-top-para fw-light phase-detail">
               {{ item.name }}
             </h5>
+            <div [innerHTML]="currentChallengeDetails['short_description']"></div>
+            <br />
             <div class="text-light-black fw-semibold phase-duration phase-detail">
               Challenge Phase Duration
             </div>

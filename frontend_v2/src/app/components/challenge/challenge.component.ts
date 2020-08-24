@@ -111,6 +111,7 @@ export class ChallengeComponent implements OnInit {
    * Component on initialized
    */
   ngOnInit() {
+    this.globalService.startLoader('');
     const SELF = this;
     if (this.authService.isLoggedIn()) {
       this.isLoggedIn = true;
@@ -157,6 +158,7 @@ export class ChallengeComponent implements OnInit {
       this.publishChallenge.state = publishChallenge.state;
       this.publishChallenge.icon = publishChallenge.icon;
     });
+    this.globalService.stopLoader();
   }
 
   /**

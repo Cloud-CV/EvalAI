@@ -5,7 +5,7 @@
       <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
         <h5 class="fw-light">Submission Guidelines</h5>
         <div *ngIf="isChallengeHost">
-          <div class="content">
+          <div class="fw-light">
             <p class="fs-16">
               <strong>Note: </strong>Your submissions won't be visible on leaderboard for
               <strong class="blue-text"> Public Challenge Phases </strong> since you are a challenge host for this
@@ -13,7 +13,7 @@
             </p>
           </div>
         </div>
-        <div [innerHTML]="submissionGuidelines" class="submission-guidelines content fs-16"></div>
+        <div [innerHTML]="submissionGuidelines" class="submission-guidelines fw-light fs-16"></div>
       </div>
 
       <div *ngIf="isChallengeHost" class="col-md-1 col-sm-1 col-xs-2 col-lr-pad">
