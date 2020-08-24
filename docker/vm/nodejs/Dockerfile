@@ -19,12 +19,12 @@ RUN npm link gulp
 RUN npm cache clean -f
 RUN npm install
 RUN bower install --allow-root
-ADD frontend /code/frontend
 
 # Update Backend URL with args
-RUN sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" code/frontend/src/js/config.json
-RUN sed -i "s/TYPE/${TYPE}/g" code/frontend/src/js/config.json
+RUN sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" frontend/src/js/config.json
+RUN sed -i "s/TYPE/${TYPE}/g" frontend/src/js/config.json
 
+ADD frontend /code/frontend
 RUN gulp ${NODE_ENV}
 
 FROM nginx:1.13-alpine
