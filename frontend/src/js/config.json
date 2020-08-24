@@ -16,7 +16,7 @@
     },
     "vm": {
         "EnvironmentConfig": {
-            "API": "TYPE://DOMAIN_NAME/api"
+            "API": "TYPE://DOMAIN_NAME/api/"
         }
     }
 }
