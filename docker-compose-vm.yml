@@ -62,8 +62,7 @@ services:
       dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
-        FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
-        BACKEND_DOMAIN: ${BACKEND_DOMAIN}
+        DOMAIN_NAME: ${DOMAIN_NAME}
         TYPE: https
         NGINX_FILE_NAME: nginx_vm
     depends_on:
@@ -83,8 +82,7 @@ services:
     restart: unless-stopped
     environment: 
       NODE_ENV: vm
-      FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
-      BACKEND_DOMAIN: ${BACKEND_DOMAIN}
+      DOMAIN_NAME: ${DOMAIN_NAME}
       TYPE: https
       NGINX_FILE_NAME: nginx_vm
     volumes:

@@ -62,8 +62,7 @@ services:
       dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
-        FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
-        BACKEND_DOMAIN: ${BACKEND_DOMAIN}
+        DOMAIN_NAME: ${DOMAIN_NAME}
         TYPE: http
         NGINX_FILE_NAME: nginx_vm_http
     depends_on:

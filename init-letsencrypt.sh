@@ -2,7 +2,7 @@
 
 export $(cat .env | sed 's/#.*//g' | xargs)
 
-domains=($FRONTEND_DOMAIN)
+domains=($DOMAIN_NAME)
 
 rsa_key_size=4096
 data_path="./certbot"
