@@ -47,11 +47,7 @@ touch .env
 
 read -p "Enter domain name (evalai.example.com) : " DOMAIN_NAME
 
-FRONTEND_DOMAIN=$DOMAIN_NAME
-echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" > .env
-
-BACKEND_DOMAIN="${DOMAIN_NAME}/api"
-echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
+echo "DOMAIN_NAME=$DOMAIN_NAME" > .env
 
 DOCKER_COMPOSE_FILE=""
 
