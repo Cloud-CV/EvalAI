@@ -45,10 +45,12 @@ fi
 
 touch .env
 
-read -p "Enter Nodejs (frontend) domain (evalai.example.com) : " FRONTEND_DOMAIN
+read -p "Enter domain name (evalai.example.com) : " DOMAIN_NAME
+
+FRONTEND_DOMAIN=DOMAIN_NAME
 echo "FRONTEND_DOMAIN=$FRONTEND_DOMAIN" > .env
 
-read -p "Enter Django (backend) domain (evalapi.example.com) : " BACKEND_DOMAIN
+BACKEND_DOMAIN="${DOMAIN_NAME}/api"
 echo "BACKEND_DOMAIN=$BACKEND_DOMAIN" >> .env
 
 DOCKER_COMPOSE_FILE=""
