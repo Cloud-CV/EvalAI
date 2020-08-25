@@ -3,9 +3,9 @@ from .common import *  # noqa: ignore=F405
 import os
 import raven
 
-DEBUG = eval(os.environ.get("DEBUG", False))
+DEBUG = eval(os.environ.get("DEBUG", 'False'))
 
-TEST = eval(os.environ.get("TEST", False))
+TEST = eval(os.environ.get("TEST", 'False'))
 
 DOMAIN_NAME = os.environ.get("DOMAIN_NAME")
 
@@ -39,11 +39,12 @@ DATABASES = {
     }
 }
 
-DATADOG_APP_NAME = "EvalAI"
-DATADOG_APP_KEY = os.environ.get("DATADOG_APP_KEY")
-DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
 
-MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
+# DATADOG_APP_NAME = "EvalAI"
+# DATADOG_APP_KEY = os.environ.get("DATADOG_APP_KEY")
+# DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
+
+# MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
 
 INSTALLED_APPS += ("storages", "raven.contrib.django.raven_compat")  # noqa
 
@@ -69,8 +70,8 @@ MEDIA_URL = "http://%s.s3.amazonaws.com/%s/" % (
 DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
 
 # Setup Email Backend related settings
-DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
 EMAIL_BACKEND = "django_ses.SESBackend"
+DEFAULT_FROM_EMAIL = "yashdusing145@gmail.com"
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
@@ -80,10 +81,16 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
 # Hide API Docs on production environment
 REST_FRAMEWORK_DOCS = {"HIDE_DOCS": True}
 
-# Port number for the python-memcached cache backend.
-CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
-    "MEMCACHED_LOCATION"
-)  # noqa: ignore=F405
+# # Port number for the python-memcached cache backend.
+# CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
+#     "MEMCACHED_LOCATION"
+# )  # noqa: ignore=F405
+
+CACHES = {
+    "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
+    "throttling": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+}
+
 
 RAVEN_CONFIG = {
     "dsn": os.environ.get("SENTRY_URL"),

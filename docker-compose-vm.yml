@@ -1,23 +1,11 @@
 version: "3"
 services:
   django:
+    image: yashdusing/evalai-aws-backend:latest
     hostname: django
     env_file:
       - docker/vm/docker_vm.env
-    environment: 
-      - HOSTNAME=${HOSTNAME}
-      - RDS_DB_NAME=${RDS_DB_NAME}
-      - RDS_HOSTNAME=${RDS_HOSTNAME}
-      - RDS_USERNAME=${RDS_USERNAME}
-      - RDS_PASSWORD=${RDS_PASSWORD}
-      - RDS_PORT=5432
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
-      - DOMAIN_NAME=${DOMAIN_NAME}
-      - SENTRY_URL=${SENTRY_URL}
+      - .env
     build:
       context: ./
       dockerfile: docker/vm/django/Dockerfile
@@ -27,22 +15,10 @@ services:
       - .:/code
 
   worker:
+    image: yashdusing/evalai-aws-worker:latest
     env_file:
       - docker/vm/docker_vm.env
-    environment: 
-      - HOSTNAME=${HOSTNAME}
-      - RDS_DB_NAME=${RDS_DB_NAME}
-      - RDS_HOSTNAME=${RDS_HOSTNAME}
-      - RDS_USERNAME=${RDS_USERNAME}
-      - RDS_PASSWORD=${RDS_PASSWORD}
-      - RDS_PORT=5432
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
-      - DOMAIN_NAME=${DOMAIN_NAME}
-      - SENTRY_URL=${SENTRY_URL}
+      - .env
     build:
       context: ./
       dockerfile: docker/vm/worker/Dockerfile
@@ -53,23 +29,10 @@ services:
 
   # required: auth token
   # remote-worker:
+  #   image: yashdusing/evalai-aws-remote-worker:latest
   #   env_file:
   #     - docker/vm/docker_vm.env
-  #   environment: 
-  #     - HOSTNAME=${HOSTNAME}
-  #     - RDS_DB_NAME=${RDS_DB_NAME}
-  #     - RDS_HOSTNAME=${RDS_HOSTNAME}
-  #     - RDS_USERNAME=${RDS_USERNAME}
-  #     - RDS_PASSWORD=${RDS_PASSWORD}
-  #     - RDS_PORT=5432
-  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-  #     - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-  #     - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-  #     - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
-  #     - DOMAIN_NAME=${DOMAIN_NAME}
-  #     - SENTRY_URL=${SENTRY_URL}
-  #     - AUTH_TOKEN=${AUTH_TOKEN}
+  #     - .env
   #   build:
   #     context: ./
   #     dockerfile: docker/vm/worker/Dockerfile
@@ -80,22 +43,10 @@ services:
   #     - .:/code
 
   celery:
+    image: yashdusing/evalai-aws-celery:latest
     env_file:
       - docker/vm/docker_vm.env
-    environment: 
-      - HOSTNAME=${HOSTNAME}
-      - RDS_DB_NAME=${RDS_DB_NAME}
-      - RDS_HOSTNAME=${RDS_HOSTNAME}
-      - RDS_USERNAME=${RDS_USERNAME}
-      - RDS_PASSWORD=${RDS_PASSWORD}
-      - RDS_PORT=5432
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
-      - DOMAIN_NAME=${DOMAIN_NAME}
-      - SENTRY_URL=${SENTRY_URL}
+      - .env
     build:
       context: ./
       dockerfile: docker/vm/celery/Dockerfile

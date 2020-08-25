@@ -44,6 +44,8 @@ if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; the
 
 fi
 
+./read-aws-vars.sh
+
 echo "### Initiating letsencrypt with certbot"
 ./init-letsencrypt.sh
 

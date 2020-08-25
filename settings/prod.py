@@ -3,7 +3,9 @@ from .common import *  # noqa: ignore=F405
 import os
 import raven
 
-DEBUG = False
+DEBUG = eval(os.environ.get("DEBUG", 'False'))
+
+TEST = eval(os.environ.get("TEST", 'False'))
 
 ALLOWED_HOSTS = [
     "*.evalai.cloudcv.org",

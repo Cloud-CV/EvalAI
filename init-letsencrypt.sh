@@ -1,48 +1,6 @@
 #!/bin/bash
 
-read -p "Skip reading variable (not for first time usage)? (y/N) " skip_input
-  if [ "$skip_input" != "Y" ] && [ "$skip_input" != "y" ]; then
-    touch .env
-
-    read -p "Enter AWS Access key ID : " AWS_ACCESS_KEY_ID
-    echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" > .env
-
-    read -p "Enter AWS Account ID : " AWS_ACCOUNT_ID
-    echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> .env
-
-    read -p "Enter AWS Default Region (eg: us-east-1) : " AWS_DEFAULT_REGION
-    echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> .env
-
-    read -p "Enter AWS secret access key : " AWS_SECRET_ACCESS_KEY
-    echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
-
-    read -p "Enter Hostname : " HOSTNAME
-    echo "HOSTNAME=$HOSTNAME" >> .env
-
-    read -p "Enter RDS Hostname : " RDS_HOSTNAME
-    echo "RDS_HOSTNAME=$RDS_HOSTNAME" >> .env
-
-    read -p "Enter RDS DB Name : " RDS_DB_NAME
-    echo "RDS_DB_NAME=$RDS_DB_NAME" >> .env
-
-    read -p "Enter RDS Username : " RDS_USERNAME
-    echo "RDS_USERNAME=$RDS_USERNAME" >> .env
-
-    read -p "Enter RDS Password : " RDS_PASSWORD
-    echo "RDS_PASSWORD=$RDS_PASSWORD" >> .env
-
-    read -p "Enter Sentry DSN URL : " SENTRY_URL
-    echo "SENTRY_URL=$SENTRY_URL" >> .env
-
-    read -p "Enter AWS S3 Bucket Name: " AWS_STORAGE_BUCKET_NAME
-    echo "AWS_STORAGE_BUCKET_NAME=$AWS_STORAGE_BUCKET_NAME" >> .env
-
-    read -p "Enter your domain name (example.com) : " DOMAIN_NAME
-    echo "DOMAIN_NAME=$DOMAIN_NAME" >> .env
-
-  fi
-
-read -p "Enter your domain name (example.com) : " DOMAIN_NAME
+export $(cat .env | sed 's/#.*//g' | xargs)
 
 domains=($DOMAIN_NAME evalai.$DOMAIN_NAME evalapi.$DOMAIN_NAME)
 
