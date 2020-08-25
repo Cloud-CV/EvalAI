@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-if ! [[ $(sudo which docker) && $(sudo docker --version) ]]; then   #[ -x "$(command -v docker)" ];
+if ! [[ $(sudo which docker) && $(sudo docker --version) ]]; then
     # Install requirements (docker)
     echo "### Removing existing docker libs"
     sudo apt-get remove docker docker-engine docker.io containerd runc -y
@@ -32,7 +32,7 @@ if ! [[ $(sudo which docker) && $(sudo docker --version) ]]; then   #[ -x "$(com
 
 fi
 
-if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; then   #[ -x "$(command -v docker)" ];
+if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; then
 
     echo "### Installing docker-compose"
     sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
