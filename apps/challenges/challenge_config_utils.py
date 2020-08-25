@@ -20,7 +20,7 @@ from .serializers import (
 from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
-    read_file_data_as_content_file
+    read_file_data_as_content_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,7 @@ def write_file(output_path, mode, file_content):
 def extract_zip_file(file_path, mode, output_path):
     zip_ref = zipfile.ZipFile(file_path, mode)
     zip_ref.extractall(output_path)
+    logger.info("Zip file extracted to {}".format(output_path))
     zip_ref.close()
     return zip_ref
 
@@ -52,10 +53,12 @@ def get_yaml_files_from_challenge_config(zip_ref):
     extracted_folder_name = None
     for name in zip_ref.namelist():
         if (name.endswith(".yaml") or name.endswith(".yml")) and (
-                not name.startswith("__MACOSX")
+            not name.startswith("__MACOSX")
         ):
             yaml_file_name = name
-            extracted_folder_name = yaml_file_name.split(basename(yaml_file_name))[0]
+            extracted_folder_name = yaml_file_name.split(
+                basename(yaml_file_name)
+            )[0]
             yaml_file_count += 1
 
     if not yaml_file_count:
@@ -94,7 +97,9 @@ def get_yaml_read_error(exc):
     return error_description, line_number, column_number
 
 
-def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+def is_challenge_config_yaml_html_field_valid(
+    yaml_file_data, key, base_location
+):
     """
         Arguments:
             yaml_file_data {dict} -- challenge config yaml dict
@@ -110,15 +115,14 @@ def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location
     field_value = None
     if value:
         is_valid = True
-        file_path = join(base_location, value)
-        if file_path.endswith(".html") and isfile(file_path):
-            field_value = get_file_content(file_path, "rb").decode("utf-8")
     else:
         message = "ERROR: There is no key for {} in YAML file".format(key)
     return is_valid, message, field_value
 
 
-def is_challenge_phase_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+def is_challenge_phase_config_yaml_html_field_valid(
+    yaml_file_data, key, base_location
+):
     """
         Arguments:
             yaml_file_data {dict} -- challenge config yaml dict
@@ -138,7 +142,9 @@ def is_challenge_phase_config_yaml_html_field_valid(yaml_file_data, key, base_lo
         if file_path.endswith(".html") and isfile(file_path):
             field_value = get_file_content(file_path, "rb").decode("utf-8")
     else:
-        message = " ERROR: There is no key for {} in phase {}.".format(key, yaml_file_data["name"])
+        message = " ERROR: There is no key for {} in phase {}.".format(
+            key, yaml_file_data["name"]
+        )
     return is_valid, message, field_value
 
 
@@ -163,8 +169,7 @@ def download_and_write_file(url, stream, output_path, mode):
                 is_success = True
         except IOError:
             message = (
-                "Unable to process the uploaded zip file. "
-                "Please try again!"
+                "Unable to process the uploaded zip file. " "Please try again!"
             )
     except requests.exceptions.RequestException:
         message = (
@@ -174,7 +179,9 @@ def download_and_write_file(url, stream, output_path, mode):
     return is_success, message
 
 
-def is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids, dataset_split_ids, phase_split):
+def is_challenge_phase_split_mapping_valid(
+    phase_ids, leaderboard_ids, dataset_split_ids, phase_split
+):
     """
         Arguments:
             phase_ids {array} -- list of phase ids
@@ -198,7 +205,17 @@ def is_challenge_phase_split_mapping_valid(phase_ids, leaderboard_ids, dataset_s
     return False
 
 
-def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION, unique_folder_name, zip_ref):
+def get_value_from_field(data, base_location, field_name):
+    file_path = join(base_location, data.get(field_name))
+    field_value = None
+    if file_path.endswith(".html") and isfile(file_path):
+        field_value = get_file_content(file_path, "rb").decode("utf-8")
+    return field_value
+
+
+def validate_challenge_config_util(
+    request, challenge_host_team, BASE_LOCATION, unique_folder_name, zip_ref
+):
     """
     Function to validate a challenge config
 
@@ -271,41 +288,51 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
     files["challenge_image_file"] = challenge_image_file
 
     # Check for challenge description file
-    challenge_config_location = join(BASE_LOCATION, unique_folder_name, extracted_folder_name)
-    is_valid, message, field_value = is_challenge_config_yaml_html_field_valid(
+    challenge_config_location = join(
+        BASE_LOCATION, unique_folder_name, extracted_folder_name
+    )
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
         yaml_file_data, "description", challenge_config_location
     )
     if not is_valid:
         error_messages.append(message)
     else:
-        yaml_file_data["description"] = field_value
+        yaml_file_data["description"] = get_value_from_field(
+            yaml_file_data, challenge_config_location, "description"
+        )
 
     # Check for evaluation details file
-    is_valid, message, field_value = is_challenge_config_yaml_html_field_valid(
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
         yaml_file_data, "evaluation_details", challenge_config_location
     )
     if not is_valid:
         error_messages.append(message)
     else:
-        yaml_file_data["evaluation_details"] = field_value
+        yaml_file_data["evaluation_details"] = get_value_from_field(
+            yaml_file_data, challenge_config_location, "evaluation_details"
+        )
 
     # Check for terms and conditions file
-    is_valid, message, field_value = is_challenge_config_yaml_html_field_valid(
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
         yaml_file_data, "terms_and_conditions", challenge_config_location
     )
     if not is_valid:
         error_messages.append(message)
     else:
-        yaml_file_data["terms_and_conditions"] = field_value
+        yaml_file_data["terms_and_conditions"] = get_value_from_field(
+            yaml_file_data, challenge_config_location, "terms_and_conditions"
+        )
 
     # Check for submission guidelines file
-    is_valid, message, field_value = is_challenge_config_yaml_html_field_valid(
+    is_valid, message = is_challenge_config_yaml_html_field_valid(
         yaml_file_data, "submission_guidelines", challenge_config_location
     )
     if not is_valid:
         error_messages.append(message)
     else:
-        yaml_file_data["submission_guidelines"] = field_value
+        yaml_file_data["submission_guidelines"] = get_value_from_field(
+            yaml_file_data, challenge_config_location, "submission_guidelines"
+        )
 
     # Check for evaluation script path
     evaluation_script = yaml_file_data.get("evaluation_script")
@@ -318,7 +345,9 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
             challenge_evaluation_script_file = read_file_data_as_content_file(
                 evaluation_script_path, "rb", evaluation_script_path
             )
-            files["challenge_evaluation_script_file"] = challenge_evaluation_script_file
+            files[
+                "challenge_evaluation_script_file"
+            ] = challenge_evaluation_script_file
         else:
             message = "ERROR: No evaluation script is present in the zip file. Please add it and then try again!"
             error_messages.append(message)
@@ -334,10 +363,13 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
                 "challenge_host_team": challenge_host_team,
                 "image": challenge_image_file,
                 "evaluation_script": challenge_evaluation_script_file,
+                "github_repository": request.data["GITHUB_REPOSITORY"],
             },
         )
         if not serializer.is_valid():
-            message = "ERROR: Challenge metadata has following schema errors:\n {}".format(str(serializer.errors))
+            message = "ERROR: Challenge metadata has following schema errors:\n {}".format(
+                str(serializer.errors)
+            )
             error_messages.append(message)
             return error_messages, yaml_file_data, files
 
@@ -361,7 +393,9 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
 
         if not error:
             for data in leaderboard:
-                serializer = LeaderboardSerializer(data=data)
+                serializer = LeaderboardSerializer(
+                    data=data, context={"config_id": data["id"]}
+                )
                 if not serializer.is_valid():
                     serializer_error = str(serializer.errors)
                     message = "ERROR: Leaderboard {} has following schema errors:\n {}".format(
@@ -393,7 +427,9 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
                 challenge_test_annotation_file = read_file_data_as_content_file(
                     test_annotation_file_path, "rb", test_annotation_file_path
                 )
-                files["challenge_test_annotation_files"].append(challenge_test_annotation_file)
+                files["challenge_test_annotation_files"].append(
+                    challenge_test_annotation_file
+                )
             else:
                 message = (
                     "ERROR: No test annotation file found in zip file"
@@ -408,13 +444,15 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
                 "max_submissions", None
             )
 
-        is_valid, message, value = is_challenge_phase_config_yaml_html_field_valid(
+        is_valid, message = is_challenge_phase_config_yaml_html_field_valid(
             data, "description", challenge_config_location
         )
         if not is_valid:
             error_messages.append(message)
         else:
-            data["description"] = value
+            data["description"] = get_value_from_field(
+                data, challenge_config_location, "description"
+            )
 
         if data.get("is_submission_public") and data.get(
             "is_restricted_to_select_one_submission"
@@ -448,19 +486,21 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
                         ):
                             options = attribute.get("options")
                             if not options or not len(options):
-                                message = "Please include at least one option in attribute for challenge_phase {}".format(
+                                message = "ERROR: Please include at least one option in attribute for challenge phase {}".format(
                                     data["id"]
                                 )
                                 error_messages.append(message)
                     else:
                         message = (
                             "ERROR: Please ensure that the submission meta attribute types for attribute in "
-                            "challenge phase {} are from among the following: boolean, text, radio or checkbox.".format(data["id"])
+                            "challenge phase {} are from among the following: boolean, text, radio or checkbox.".format(
+                                data["id"]
+                            )
                         )
                         error_messages.append(message)
                 else:
                     missing_keys_string = ", ".join(missing_keys)
-                    message = "Please enter the following to the submission meta attribute in phase {}: {}.".format(
+                    message = "ERROR: Please enter the following to the submission meta attribute in challenge phase {}: {}".format(
                         data["id"], missing_keys_string
                     )
                     error_messages.append(message)
@@ -470,11 +510,16 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
                 context={
                     "exclude_fields": ["challenge"],
                     "test_annotation": challenge_test_annotation_file,
+                    "config_id": data["id"],
                 },
             )
         else:
             serializer = ChallengePhaseCreateSerializer(
-                data=data, context={"exclude_fields": ["challenge"]},
+                data=data,
+                context={
+                    "exclude_fields": ["challenge"],
+                    "config_id": data["id"],
+                },
             )
         if not serializer.is_valid():
             serializer_error = str(serializer.errors)
@@ -498,7 +543,9 @@ def validate_challenge_config_method(request, challenge_host_team, BASE_LOCATION
                 error_messages.append(message)
 
         for split in dataset_splits:
-            serializer = DatasetSplitSerializer(data=split)
+            serializer = DatasetSplitSerializer(
+                data=split, context={"config_id": split["id"]}
+            )
             if not serializer.is_valid():
                 serializer_error = str(serializer.errors)
                 message = "ERROR: Dataset split {} has following schema errors:\n {}".format(

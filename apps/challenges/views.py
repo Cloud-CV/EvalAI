@@ -62,7 +62,7 @@ from challenges.utils import (
 from challenges.challenge_config_utils import (
     download_and_write_file,
     extract_zip_file,
-    validate_challenge_config_method,
+    validate_challenge_config_util,
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -1073,7 +1073,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
             leaderboard_ids = {}
             for data in yaml_file_data_of_leaderboard:
-                serializer = LeaderboardSerializer(data=data)
+                serializer = LeaderboardSerializer(
+                    data=data, context={"config_id": data["id"]}
+                )
                 if serializer.is_valid():
                     serializer.save()
                     leaderboard_ids[str(data["id"])] = serializer.instance.pk
@@ -1131,12 +1133,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         context={
                             "challenge": challenge,
                             "test_annotation": challenge_test_annotation_file,
+                            "config_id": data["id"],
                         },
                     )
                 else:
                     # This is when the host wants to upload the annotation file later through CLI
                     serializer = ChallengePhaseCreateSerializer(
-                        data=data, context={"challenge": challenge},
+                        data=data,
+                        context={
+                            "challenge": challenge,
+                            "config_id": data["id"],
+                        },
                     )
                 if serializer.is_valid():
                     serializer.save()
@@ -1150,7 +1157,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
             dataset_split_ids = {}
             for data in yaml_file_data_of_dataset_split:
-                serializer = DatasetSplitSerializer(data=data)
+                serializer = DatasetSplitSerializer(
+                    data=data, context={"config_id": data["id"]}
+                )
                 if serializer.is_valid():
                     serializer.save()
                     dataset_split_ids[str(data["id"])] = serializer.instance.pk
@@ -2343,22 +2352,26 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def validate_challenge_config(request, challenge_host_team_pk):
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
-    response_data = {}
-    serializer = ChallengeConfigSerializer(
-        data=request.data, context={"request": request}
-    )
-    if serializer.is_valid():
-        uploaded_zip_file_path = serializer.data["zip_configuration"]
-    else:
-        response_data["error"] = serializer.errors
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # All files download and extract location.
+    response_data = {}
+
     BASE_LOCATION = tempfile.mkdtemp()
     unique_folder_name = get_unique_alpha_numeric_key(10)
     CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
         BASE_LOCATION, "{}.zip".format(unique_folder_name)
     )
+
+    challenge_config_serializer = ChallengeConfigSerializer(
+        data=request.data, context={"request": request}
+    )
+    if challenge_config_serializer.is_valid():
+        uploaded_zip_file_path = challenge_config_serializer.data[
+            "zip_configuration"
+        ]
+    else:
+        response_data["error"] = challenge_config_serializer.errors
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     is_success, error_description = download_and_write_file(
         uploaded_zip_file_path, True, CHALLENGE_ZIP_DOWNLOAD_LOCATION, "wb"
     )
@@ -2370,14 +2383,16 @@ def validate_challenge_config(request, challenge_host_team_pk):
     # Extract zip file
     try:
         zip_ref = extract_zip_file(
-            CHALLENGE_ZIP_DOWNLOAD_LOCATION, "r", BASE_LOCATION
+            CHALLENGE_ZIP_DOWNLOAD_LOCATION,
+            "r",
+            join(BASE_LOCATION, unique_folder_name),
         )
     except zipfile.BadZipfile:
         message = "The zip file contents cannot be extracted. Please check the format!"
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    error_messages, yaml_file_data, files = validate_challenge_config_method(
+    error_messages, yaml_file_data, files = validate_challenge_config_util(
         request,
         challenge_host_team,
         BASE_LOCATION,
@@ -2391,7 +2406,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         response_data["error"] = "\n".join(error_messages)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
-        message = "Challenge config validation success"
+        message = "The challenge config has been validated successfully"
         response_data = {"Success": message}
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -2550,10 +2565,9 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_or_update_github_challenge(request, challenge_host_team_pk):
-    data = request.data
 
     challenge_queryset = Challenge.objects.filter(
-        github_repository=data["GITHUB_REPOSITORY"]
+        github_repository=request.data["GITHUB_REPOSITORY"]
     )
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
@@ -2569,6 +2583,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         data=request.data, context={"request": request}
     )
     if challenge_config_serializer.is_valid():
+        uploaded_zip_file = challenge_config_serializer.save()
         uploaded_zip_file_path = challenge_config_serializer.data[
             "zip_configuration"
         ]
@@ -2587,16 +2602,18 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
     # Extract zip file
     try:
         zip_ref = extract_zip_file(
-            CHALLENGE_ZIP_DOWNLOAD_LOCATION, "r", BASE_LOCATION
+            CHALLENGE_ZIP_DOWNLOAD_LOCATION,
+            "r",
+            join(BASE_LOCATION, unique_folder_name),
         )
     except zipfile.BadZipfile:
         message = "The zip file contents cannot be extracted. Please check the format!"
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    error_messages, yaml_file_data, files = validate_challenge_config_method(
+    error_messages, yaml_file_data, files = validate_challenge_config_util(
         request,
-        validate_challenge_config_method,
+        challenge_host_team,
         BASE_LOCATION,
         unique_folder_name,
         zip_ref,
@@ -2606,11 +2623,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         if not challenge_queryset:
             try:
                 with transaction.atomic():
-                    uploaded_zip_file = challenge_config_serializer.save()
-
-                    yaml_file_data["github_repository"] = data[
-                        "GITHUB_REPOSITORY"
-                    ]
                     serializer = ZipChallengeSerializer(
                         data=yaml_file_data,
                         context={
@@ -2620,9 +2632,13 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "evaluation_script": files[
                                 "challenge_evaluation_script_file"
                             ],
+                            "github_repository": request.data[
+                                "GITHUB_REPOSITORY"
+                            ],
                         },
                     )
-                    serializer.save()
+                    if serializer.is_valid():
+                        serializer.save()
                     challenge = serializer.instance
                     queue_name = get_queue_name(challenge.title, challenge.pk)
                     challenge.queue = queue_name
@@ -2634,8 +2650,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ]
                     leaderboard_ids = {}
                     for data in yaml_file_data_of_leaderboard:
-                        serializer = LeaderboardSerializer(data=data)
-                        serializer.save()
+                        serializer = LeaderboardSerializer(
+                            data=data, context={"config_id": data["id"]}
+                        )
+                        if serializer.is_valid():
+                            serializer.save()
                         leaderboard_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -2659,14 +2678,20 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 context={
                                     "challenge": challenge,
                                     "test_annotation": challenge_test_annotation_file,
+                                    "config_id": data["id"],
                                 },
                             )
                         else:
                             # This is when the host wants to upload the annotation file later
                             serializer = ChallengePhaseCreateSerializer(
-                                data=data, context={"challenge": challenge},
+                                data=data,
+                                context={
+                                    "challenge": challenge,
+                                    "config_id": data["id"],
+                                },
                             )
-                        serializer.save()
+                        if serializer.is_valid():
+                            serializer.save()
                         challenge_phase_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -2677,8 +2702,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ]
                     dataset_split_ids = {}
                     for data in yaml_file_data_of_dataset_split:
-                        serializer = DatasetSplitSerializer(data=data)
-                        serializer.save()
+                        serializer = DatasetSplitSerializer(
+                            data=data, context={"config_id": data["id"]}
+                        )
+                        if serializer.is_valid():
+                            serializer.save()
                         dataset_split_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -2707,9 +2735,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         }
 
                         serializer = ZipChallengePhaseSplitSerializer(
-                            data=data
+                            data=data,
                         )
-                        serializer.save()
+                        if serializer.is_valid():
+                            serializer.save()
 
                 zip_config = ChallengeConfiguration.objects.get(
                     pk=uploaded_zip_file.pk
@@ -2760,7 +2789,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         send_slack_notification(message=message)
 
                     response_data = {
-                        "success": "Challenge {} has been created successfully and"
+                        "Success": "Challenge {} has been created successfully and"
                         " sent for review to EvalAI Admin.".format(
                             challenge.title
                         )
@@ -2793,13 +2822,14 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
             # Updating ChallengeConfiguration object
             challenge_configuration = ChallengeConfiguration.objects.filter(
                 challenge=challenge.pk
-            ).first()  # Do I need to change the challenge configuration as well for updates?
+            ).first()
             serializer = ChallengeConfigSerializer(
                 challenge_configuration,
                 data=request.data,
                 context={"request": request},
             )
-            serializer.save()
+            if serializer.is_valid():
+                serializer.save()
 
             # Updating Challenge object
             serializer = ZipChallengeSerializer(
@@ -2814,11 +2844,33 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ],
                 },
             )
-            serializer.save()
+            if serializer.is_valid():
+                serializer.save()
             challenge = serializer.instance
 
             # Updating Leaderboard object
+            leaderboard_ids = {}
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
+            for data in yaml_file_data_of_leaderboard:
+                challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
+                    challenge_phase__challenge__pk=challenge.pk,
+                    leaderboard__config_id=data["config_id"],
+                )
+                if challenge_phase_split_qs:
+                    challenge_phase_split = challenge_phase_split_qs.first()
+                    leaderboard = challenge_phase_split.leaderboard
+                    serializer = LeaderboardSerializer(
+                        leaderboard,
+                        data=data,
+                        context={"config_id": data["id"]},
+                    )
+                else:
+                    serializer = LeaderboardSerializer(
+                        data=data, context={"config_id": data["id"]}
+                    )
+                if serializer.is_valid():
+                    serializer.save()
+                    leaderboard_ids[str(data["id"])] = serializer.instance.pk
 
             # Updating ChallengePhase objects
             challenge_phase_ids = {}
@@ -2827,7 +2879,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phases_data, files["challenge_test_annotation_files"]
             ):
                 challenge_phase = ChallengePhase.objects.filter(
-                    challenge__pk=challenge.pk, codename=data["codename"]
+                    challenge__pk=challenge.pk, config_id=data["id"]
                 ).first()
                 if challenge_test_annotation_file:
                     serializer = ChallengePhaseCreateSerializer(
@@ -2836,16 +2888,23 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         context={
                             "challenge": challenge,
                             "test_annotation": challenge_test_annotation_file,
+                            "config_id": data["config_id"],
                         },
                     )
                 else:
                     serializer = ChallengePhaseCreateSerializer(
                         challenge_phase,
                         data=data,
-                        context={"challenge": challenge},
+                        context={
+                            "challenge": challenge,
+                            "config_id": data["config_id"],
+                        },
                     )
-                serializer.save()
-                challenge_phase_ids[str(data["id"])] = serializer.instance.pk
+                if serializer.is_valid():
+                    serializer.save()
+                    challenge_phase_ids[
+                        str(data["id"])
+                    ] = serializer.instance.pk
 
             # Updating DatasetSplit objects
             yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
@@ -2853,19 +2912,23 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
             for data in yaml_file_data_of_dataset_split:
                 challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                     challenge_phase__challenge__pk=challenge.pk,
-                    dataset_split__codename=data["codename"],
+                    dataset_split__config_id=data["id"],
                 )
                 if challenge_phase_split_qs:
                     challenge_phase_split = challenge_phase_split_qs.first()
                     dataset_split = challenge_phase_split.dataset_split
                     serializer = DatasetSplitSerializer(
-                        dataset_split, data=data
+                        dataset_split,
+                        data=data,
+                        context={"config_id": data["id"]},
                     )
-                    serializer.save()
                 else:
-                    serializer = DatasetSplitSerializer(data=data)
+                    serializer = DatasetSplitSerializer(
+                        data=data, context={"config_id": data["id"]}
+                    )
+                if serializer.is_valid():
                     serializer.save()
-                dataset_split_ids[str(data["id"])] = serializer.instance.pk
+                    dataset_split_ids[str(data["id"])] = serializer.instance.pk
 
             # Update ChallengePhaseSplit objects
             challenge_phase_splits_data = yaml_file_data[
@@ -2895,12 +2958,19 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 if challenge_phase_split_qs:
                     challenge_phase_split = challenge_phase_split_qs.first()
                     serializer = ZipChallengePhaseSplitSerializer(
-                        challenge_phase_split, data=data
+                        challenge_phase_split, data=data,
                     )
                 else:
                     serializer = ZipChallengePhaseSplitSerializer(data=data)
-                serializer.save()
+                if serializer.is_valid():
+                    serializer.save()
 
+            response_data = {
+                "Success": "The challenge {} has been updated successfully".format(
+                    challenge.title
+                )
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
     else:
         shutil.rmtree(BASE_LOCATION)
         logger.info("Challenge config validation failed. Zip folder removed")
