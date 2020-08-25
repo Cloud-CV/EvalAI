@@ -391,7 +391,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 auth_token=token,
                 cluster_name=cluster_name,
                 cluster_endpoint=cluster_endpoint,
-                certificate=cluster_certificate,
+                cluster_certificate=cluster_certificate,
                 **COMMON_SETTINGS_DICT,
             )
         else:
