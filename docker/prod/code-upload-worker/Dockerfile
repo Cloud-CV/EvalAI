@@ -11,4 +11,4 @@ RUN pip install -r code_upload_worker.txt
 
 ADD . /code
 
-CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.code_upload_submission_worker"]
+CMD ["./code/scripts/workers/code_upload_worker_utils/deploy_calico.sh", "--", "python", "-m", "scripts.workers.code_upload_submission_worker"]
