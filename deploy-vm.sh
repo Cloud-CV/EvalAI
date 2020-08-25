@@ -64,7 +64,7 @@ else
     chmod +x init-letsencrypt.sh
     ./init-letsencrypt.sh
 
-    DOCKER_COMPOSE_FILE="docker-compose-vm.yml"
+    DOCKER_COMPOSE_FILE="docker-compose-vm-https.yml"
     
 fi
 

@@ -64,7 +64,7 @@ services:
         NODE_ENV: vm
         DOMAIN_NAME: ${DOMAIN_NAME}
         TYPE: https
-        NGINX_FILE_NAME: nginx_vm
+        NGINX_FILE_NAME: nginx_vm_https
     depends_on:
       - django
     ports:
@@ -84,7 +84,7 @@ services:
       NODE_ENV: vm
       DOMAIN_NAME: ${DOMAIN_NAME}
       TYPE: https
-      NGINX_FILE_NAME: nginx_vm
+      NGINX_FILE_NAME: nginx_vm_https
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
