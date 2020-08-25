@@ -22,14 +22,13 @@ RUN bower install --allow-root
 ADD frontend /code/frontend
 
 # Update Backend URL with args
-RUN sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" /code/frontend/src/js/config.json
-RUN sed -i "s/TYPE/${TYPE}/g" /code/frontend/src/js/config.json
+RUN sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" frontend/src/js/config.json
+RUN sed -i "s/TYPE/${TYPE}/g" frontend/src/js/config.json
 
 RUN gulp ${NODE_ENV}
 
 FROM nginx:1.13-alpine
 # Adding NODE_ENV here as well since this is a multistage build
-ARG NODE_ENV
 ARG DOMAIN_NAME
 ARG NGINX_FILE_NAME
 
