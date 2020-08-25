@@ -3,11 +3,11 @@
 
 if ! [[ $(sudo which docker) && $(sudo docker --version) ]]; then
     # Install requirements (docker)
-    echo "### Removing existing docker libs"
+    echo "Removing existing docker libs"
     sudo apt-get remove docker docker-engine docker.io containerd runc -y
     sudo apt-get update -y
 
-    echo "### Installing docker requirements"
+    echo "Installing docker requirements"
     sudo apt-get install \
         apt-transport-https \
         ca-certificates \
@@ -24,21 +24,21 @@ if ! [[ $(sudo which docker) && $(sudo docker --version) ]]; then
 
     sudo apt-get update -y
 
-    echo "### Installing docker"
+    echo "Installing docker"
     sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 
-    echo "### Finished installing docker. Check docker version"
+    echo "Finished installing docker. Check docker version"
     sudo docker --version
 
 fi
 
 if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; then
 
-    echo "### Installing docker-compose"
+    echo "Installing docker-compose"
     sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
 
-    echo "### Finished installing docker-compose. Check docker-compose version"
+    echo "Finished installing docker-compose. Check docker-compose version"
     sudo docker-compose --version 
 
 fi
@@ -60,7 +60,7 @@ if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 else
 
     # HTTPs
-    echo "### Initiating letsencrypt with certbot"
+    echo "Initiating letsencrypt with certbot"
     chmod +x init-letsencrypt.sh
     ./init-letsencrypt.sh
 
