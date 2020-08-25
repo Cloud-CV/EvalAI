@@ -7,10 +7,9 @@ import { DOCUMENT } from '@angular/common';
 @Component({
   selector: 'app-testimonials',
   templateUrl: './testimonials.component.html',
-  styleUrls: ['./testimonials.component.scss']
+  styleUrls: ['./testimonials.component.scss'],
 })
 export class TestimonialsComponent implements OnInit {
-
   /**
    * Selected testimonial index
    */
@@ -19,16 +18,18 @@ export class TestimonialsComponent implements OnInit {
   /**
    * Placeholder text Lorem Ipsum
    */
-  ipsum: any = 'Lorem ipsum dolor sit amet,\
+  ipsum: any =
+    'Lorem ipsum dolor sit amet,\
   consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
   /**
    * Sample testimonials till the API comes up
    */
   testimonials = [
-    {'text': '1-' + this.ipsum, 'author': 'Lorem'},
-    {'text': '2-' + this.ipsum, 'author': 'Octopus'},
-    {'text': '3-' + this.ipsum, 'author': 'Penguin'}];
+    { text: '1-' + this.ipsum, author: 'Lorem' },
+    { text: '2-' + this.ipsum, author: 'Octopus' },
+    { text: '3-' + this.ipsum, author: 'Penguin' },
+  ];
 
   /**
    * Selected testimonial text
@@ -44,13 +45,12 @@ export class TestimonialsComponent implements OnInit {
    * Component constructor
    * @param document  Window document Injection.
    */
-  constructor(@Inject(DOCUMENT) private document: Document) { }
+  constructor(@Inject(DOCUMENT) private document: Document) {}
 
   /**
    * Component on initialized
    */
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   /**
    * Right arrow clicked
@@ -97,15 +97,15 @@ export class TestimonialsComponent implements OnInit {
    */
   flyLeftRecursive = (element, temp) => {
     const x = temp - 1;
-    if (x > - 100) {
-      (function(scope) {
-        setTimeout(function() {
+    if (x > -100) {
+      (function (scope) {
+        setTimeout(function () {
           element.style.marginLeft = x + '%';
           scope.flyLeftRecursive(element, x);
         }, 5);
       })(this);
     }
-  }
+  };
 
   /**
    * Fly right animation
@@ -113,14 +113,14 @@ export class TestimonialsComponent implements OnInit {
   flyRightRecursive = (element, temp) => {
     const x = temp + 1;
     if (x < 100) {
-      (function(scope) {
-        setTimeout(function() {
+      (function (scope) {
+        setTimeout(function () {
           element.style.marginLeft = x + '%';
           scope.flyRightRecursive(element, x);
         }, 5);
       })(this);
     }
-  }
+  };
 
   /**
    * Fly out animation
@@ -134,12 +134,12 @@ export class TestimonialsComponent implements OnInit {
     this.flyRightRecursive(element, temp);
     }
     */
-    setTimeout(function() {
+    setTimeout(function () {
       scope.testimonialbody = scope.testimonials[scope.selected]['text'];
       scope.testimonialauthor = scope.testimonials[scope.selected]['author'];
       element.style.marginLeft = '15%';
     }, 1000);
-  }
+  };
 
   /**
    * Disappear animation
@@ -147,14 +147,14 @@ export class TestimonialsComponent implements OnInit {
   disappearAppearRecursive = (element, temp) => {
     const x = temp - 0.01;
     if (x >= 0) {
-      (function(scope) {
-        setTimeout(function() {
+      (function (scope) {
+        setTimeout(function () {
           element.style.opacity = x + '';
           scope.disappearAppearRecursive(element, x);
         }, 5);
       })(this);
     }
-  }
+  };
 
   /**
    * Disappear animation wrapper
@@ -162,10 +162,10 @@ export class TestimonialsComponent implements OnInit {
   disappearAppear = (element, scope) => {
     const temp = 1.0;
     this.disappearAppearRecursive(element, temp);
-    setTimeout(function() {
+    setTimeout(function () {
       element.style.opacity = '1';
     }, 1000);
-  }
+  };
 
   // Testimonial animation END ----------------------------------
 }

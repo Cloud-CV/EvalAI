@@ -11,16 +11,15 @@ describe('FooterComponent', () => {
   let component: FooterComponent;
   let fixture: ComponentFixture<FooterComponent>;
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FooterComponent ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      providers: [ GlobalService, ApiService]
-    })
-    .compileComponents();
+      declarations: [FooterComponent],
+      imports: [RouterTestingModule, HttpClientModule],
+      providers: [GlobalService, ApiService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

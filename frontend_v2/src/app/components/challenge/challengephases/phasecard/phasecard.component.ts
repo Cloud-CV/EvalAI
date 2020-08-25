@@ -10,10 +10,9 @@ import { EndpointsService } from '../../../../services/endpoints.service';
 @Component({
   selector: 'app-phasecard',
   templateUrl: './phasecard.component.html',
-  styleUrls: ['./phasecard.component.scss']
+  styleUrls: ['./phasecard.component.scss'],
 })
 export class PhasecardComponent implements OnInit {
-
   /**
    * Phase object input
    */
@@ -48,8 +47,12 @@ export class PhasecardComponent implements OnInit {
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService, private challengeService: ChallengeService,
-              private apiService: ApiService, private endpointsService: EndpointsService) { }
+  constructor(
+    private globalService: GlobalService,
+    private challengeService: ChallengeService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService
+  ) {}
 
   /**
    * Component on initialized.
@@ -57,11 +60,11 @@ export class PhasecardComponent implements OnInit {
   ngOnInit() {
     this.updateViewElements();
 
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
 
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -85,20 +88,22 @@ export class PhasecardComponent implements OnInit {
           FORM_DATA.append(key, params[key]);
         }
       }
-      SELF.apiService.patchFileUrl(
-        SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.phase['id']),
-        FORM_DATA
-      ).subscribe(
-        data => {
-          SELF.phase = data;
-          SELF.updateViewElements();
-          SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
-        },
-        err => {
-          SELF.globalService.showToast('error', err);
-        },
-        () => {}
-      );
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.phase['id']),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.phase = data;
+            SELF.updateViewElements();
+            SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
     };
 
     const PARAMS = {
@@ -113,9 +118,8 @@ export class PhasecardComponent implements OnInit {
       maxSubmissions: SELF.phase['max_submissions'],
       confirm: 'Submit',
       deny: 'Cancel',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showEditPhaseModal(PARAMS);
   }
-
 }

@@ -1,29 +1,29 @@
 @import './variables.scss';
 
 .modal-container {
-    .modal-card {
-        min-width: 240px;
-        max-width: 80%;
-        width: 80%;
-        max-height: 80%;
-        padding: 0px;
+  .modal-card {
+    min-width: 240px;
+    max-width: 80%;
+    width: 80%;
+    max-height: 80%;
+    padding: 0px;
 
-        .terms-content {
-            margin-bottom: 15px;
-        }
-
-        .content {
-            padding: 0px;
-        }
+    .terms-content {
+      margin-bottom: 15px;
     }
+
+    .content {
+      padding: 0px;
+    }
+  }
 }
 
 ul.inline-list {
-    margin-top: 15px;
+  margin-top: 15px;
 }
 
 .ev-card-body {
-    .modal-title {
-        margin-bottom: 30px;
-    }
+  .modal-title {
+    margin-bottom: 30px;
+  }
 }

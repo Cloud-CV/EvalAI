@@ -19,7 +19,9 @@
       font-weight: $fw-bolder;
       margin-left: 8px;
     }
-    .fa-info-circle, .fa-warning, .fa-check  {
+    .fa-info-circle,
+    .fa-warning,
+    .fa-check {
       font-size: 28px;
     }
   }
@@ -27,8 +29,8 @@
     visibility: visible;
     -webkit-animation: fadein 0.5s, shake 1s 0.5s, shake 1s 0.5s; //stay 5s 1s, shrink 0.5s 2s, fadeout 0.5s 2.5s;
     animation: fadein 0.5s, shake 1s 0.5s, shake 1s 0.5s; //stay 5s 1s, shrink 0.5s 4s, fadeout 0.5s 4.5s;
-    min-width: 300px;
-    transition: min-width 0.5s;
+    width: 350px;
+    transition: width 0.5s;
     transition-delay: 1.5s;
     .toast-desc {
       visibility: visible;
@@ -43,23 +45,23 @@
 .toast-desc {
   word-break: initial;
   &.toast-success {
-           background-color:  $green-med
-           &:hover {
-                       background-color: $green-med
-                   }
+    background-color: $green-med;
+    &:hover {
+      background-color: $green-med;
+    }
   }
   &.toast-error {
-          background-color: $med-red;
-           &:hover {
-                       background-color: $med-red;
-                   }
+    background-color: $med-red;
+    &:hover {
+      background-color: $med-red;
+    }
   }
 
   &.toast-info {
-           background-color: $blue;
-            &:hover {
-                       background-color: $blue;
-                   }
+    background-color: $blue;
+    &:hover {
+      background-color: $blue;
+    }
   }
 }
 

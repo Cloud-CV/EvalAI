@@ -1,9 +1,9 @@
 import { BrowserModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { GestureConfig } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
-import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
+import { QuillModule } from 'ngx-quill';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // Import services
@@ -12,7 +12,6 @@ import { ApiService } from './services/api.service';
 import { GlobalService } from './services/global.service';
 import { ChallengeService } from './services/challenge.service';
 import { EndpointsService } from './services/endpoints.service';
-
 
 // Import Components
 import { AppComponent } from './app.component';
@@ -25,7 +24,7 @@ import { TermsAndConditionsModalComponent } from './components/challenge/challen
 
 // import module
 import { SharedModule } from './shared/shared.module';
-import { environment } from '../environments/environment'
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -33,7 +32,7 @@ import { environment } from '../environments/environment'
     ModalComponent,
     ToastComponent,
     EditphasemodalComponent,
-    TermsAndConditionsModalComponent
+    TermsAndConditionsModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -41,12 +40,25 @@ import { environment } from '../environments/environment'
     AppRoutingModule,
     SharedModule,
     HttpClientModule,
-    FroalaEditorModule.forRoot(),
-    FroalaViewModule.forRoot(),
+    QuillModule.forRoot({
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          ['blockquote', 'code-block'],
+          [{ header: 1 }, { header: 2 }], // custom button values
+          [{ list: 'ordered' }, { list: 'bullet' }], // superscript/subscript
+          [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+          [{ direction: 'rtl' }],
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          [{ align: [] }],
+          ['link'],
+        ],
+      },
+    }),
     LoggerModule.forRoot({
       level: !environment.production ? NgxLoggerLevel.TRACE : NgxLoggerLevel.OFF,
-      serverLogLevel: NgxLoggerLevel.ERROR
-    })
+      serverLogLevel: NgxLoggerLevel.ERROR,
+    }),
   ],
   providers: [
     WindowService,
@@ -55,9 +67,9 @@ import { environment } from '../environments/environment'
     GlobalService,
     ChallengeService,
     EndpointsService,
-    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig }
+    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig },
   ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

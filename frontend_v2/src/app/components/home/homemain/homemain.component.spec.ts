@@ -15,12 +15,11 @@ describe('HomemainComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HomemainComponent ],
-      providers: [ GlobalService, AuthService, ApiService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [HomemainComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
