@@ -37,7 +37,11 @@ echo "### Container Insights Installed"
 kubectl apply -f https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/release-1.6/config/v1.6/calico.yaml
 echo "### Calico Installed"
 
+#Apply network policies
+cat code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s|{{CIDR}}|$CIDR|;" | kubectl apply -f -
+
 #Running Submission Worker
 chmod +x scripts/workers/code_upload_submission_worker.py
 python scripts/workers/code_upload_submission_worker.py
 echo "### Worker Started"
+
