@@ -325,10 +325,9 @@ def main():
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
+            total_prioritised submission = get_prioritised_submissions_count(phase_pk)
             if submission:
-                challenge_prioritize = challenge.get(
-                    "challenge_prioritize"
-                )
+
                 challenge_phase = evalai.get_challenge_phase_by_pk(
                     challenge_pk, phase_pk
                 )
@@ -366,15 +365,23 @@ def main():
                         phase_pk,
                     )
                 else:
-                    if (challenge_prioritize and challenge_phase_prioritize) or (
-                            not challenge_prioritize and not challenge_phase_prioritize):
-
+                    if total_prioritised:
+                        if challenge_phase_prioritize:
+                            logger.info(
+                                "Processing message body: {0}".format(message_body)
+                            )
+                            process_submission_callback(
+                                api_instance, message_body, challenge_phase, evalai
+                            )
+                    else:
                         logger.info(
-                            "Processing message body: {0}".format(message_body)
-                        )
-                        process_submission_callback(
-                            api_instance, message_body, challenge_phase, evalai
-                        )
+                                "Processing message body: {0}".format(message_body)
+                            )
+                            process_submission_callback(
+                                api_instance, message_body, challenge_phase, evalai
+                            )
+
+
 
         if killer.kill_now:
             break

@@ -2808,3 +2808,49 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     response_data = {"presigned_url": response.get("presigned_url")}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
+    """
+    API to get total no of prioritised submissions in a challenge queue
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+    Returns:
+         Response Object -- An object containing the Number of submissions or an error message if some failure occurs
+    """
+    if settings.DEBUG or settings.TEST:
+        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        return Response(response_data)
+    # Check if the challenge phase exists or not
+    try:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(
+        request.user, challenge_phase.challenge.pk
+    ):
+        response_data = {
+            "error": "Sorry, you are not authorized for uploading an annotation file."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    
+    challenge_phases = challenge_phase.objects.filter(challenge=challenge_pk and prioritised=True)
+    Total_prioritised_submission = 0
+    for challenge_phase in challenge_phases:
+        Total_prioritised_submission = Total_prioritised_submission + submission.objects.filter(challenge_phase=challenge_phase.pk)
+
+    response_data = {"prioritised_submissions": Total_prioritised_submission}
+    if response.get("error"):
+        response_data = response
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+    

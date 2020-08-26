@@ -14,6 +14,7 @@ URLS = {
     "update_submission_data": "/api/jobs/challenge/{}/update_submission/",
     "get_aws_eks_bearer_token": "/api/jobs/challenge/{}/eks_bearer_token/",
     "get_aws_eks_cluster_details": "/api/challenges/{}/evaluation_cluster/",
+    "get_prioritised_submissions_count": "/api/phases/{}/get_prioritised_submissions",
 }
 
 
@@ -110,3 +111,8 @@ class EvalAI_Interface:
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")
         return response
+
+    def get_prioritised_submissions_count(self, challenge_phase_pk):
+        url = URLS.get("get_prioritised_submissions_count").format(challenge_phase_pk)
+        url= self.return_url_per_environment(url)
+        response = self.make_request(url, "GET")
