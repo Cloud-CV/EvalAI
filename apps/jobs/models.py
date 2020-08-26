@@ -17,6 +17,7 @@ from base.utils import RandomFileName
 from challenges.models import ChallengePhase
 from jobs.constants import submission_status_to_exclude
 from participants.models import ParticipantTeam
+from challenges.aws_utils import export_cloudwatch_logs
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,14 @@ def save_file(sender, instance, created, **kwargs):
         instance.input_file = getattr(instance, "_input_file")
         instance.save()
 
+@receiver(signals.post_save, sender="jobs.Submission")
+def export_container_logs(sender, instance, created, **kwargs):
+    field_name = "status"
+
+    if not created and is_model_field_changed(instance, field_name):
+        if (instance.approved_by_admin == "FINISHED"):
+            serialized_obj = serializers.serialize("json", [instance])
+            export_cloudwatch_logs.delay(serialized_obj)
 
 class Submission(TimeStampedModel):
 

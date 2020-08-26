@@ -15,6 +15,7 @@ from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
     construct_and_send_eks_cluster_creation_mail,
 )
+from challenges.utils import get_challenge_model
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
@@ -1120,3 +1121,40 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                         challenge.id, failures[0]["message"]
                     )
                 )
+
+@app.task
+def export_cloudwatch_logs(submission):
+    """ 
+    This is to export cloudwatch logs of Agent and environment for a submission into S3 bucket.
+    """
+
+    for obj in serializers.deserialize("json", submission):
+        submission_obj = obj.object
+
+    try:
+        challenge = get_challenge_model(submission.challenge_phase.challenge.id)
+    except Challenge.DoesNotExist:
+        logger.exception("challenge does not exist")
+        
+    if challenge.is_docker_based:
+        client = get_boto3_client("logs", aws_keys)
+        taskName = "{0}-task".format(challenge.title.replace(" ", "-"))
+        cluster_name = "{0}-cluster".format(challenge.title.replace(" ", "-"))
+        log_group_name = "/aws/containerinsights/{0}/application".format(cluster_name)
+        log_stream_prefix = "submission-{0}".format(submission_obj.id)
+        destination_prefix = "submission-{0}".format(submission_obj.id)
+
+        try:
+            response = client.create_export_task(
+                taskName=taskName,
+                logGroupName=log_group_name,
+                logStreamNamePrefix=log_stream_prefix,
+                fromTime=submission_obj.started_at,
+                to=submission_obj.completed_at,
+                destination=settings.AWS_STORAGE_BUCKET_NAME,
+                destinationPrefix=destination_prefix
+            )
+
+        except ClientError as e:
+            logger.exception(e)
+            return response
