@@ -45,6 +45,11 @@ export class ChallengelistComponent implements OnInit {
   pastChallenges = [];
 
   /**
+   * Unapproved challeges list
+   */
+  unapprovedChallengeList = [];
+
+  /**
    * API common path
    */
   apiPathCommon = 'challenges/challenge/';
@@ -210,6 +215,7 @@ export class ChallengelistComponent implements OnInit {
       this.fetchChallenges();
     } else if (this.router.url === this.myChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.fetchMyTeams();
+      // this.fetchUnapprovedChallengesFromApi();
     } else if (this.router.url === this.myParticipatedChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.fetchMyParticipatedChallenges();
     }
@@ -327,6 +333,10 @@ export class ChallengelistComponent implements OnInit {
           const TEAMS = data['results'].map((item) => item['id']);
           SELF.allTeams = SELF.allTeams.concat(TEAMS);
           SELF.allTeams = SELF.allTeams.filter((v, i, a) => a.indexOf(v) === i);
+          SELF.allTeams.forEach((team) => {
+            SELF.fetchUnapprovedChallengesFromApi(team);
+          });
+          console.log('UNAPPROVED', SELF.unapprovedChallengeList);
           SELF.fetchChallenges();
         }
       },
@@ -405,6 +415,28 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  fetchUnapprovedChallengesFromApi(id) {
+    const path = 'challenges/challenge_host_team/' + id + '/challenge';
+    const SELF = this;
+    SELF.apiService.getUrl(path, true, false).subscribe(
+      (data) => {
+        const datas = data['results'];
+        if (datas) {
+          datas.forEach((challenge) => {
+            console.log('CHALLENGE', challenge['approved_by_admin']);
+            if (challenge['approved_by_admin'] === false) {
+              SELF.unapprovedChallengeList.push(challenge);
+            }
+          });
+        }
       },
       (err) => {
         SELF.globalService.handleApiError(err);
