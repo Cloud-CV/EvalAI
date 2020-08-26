@@ -9,7 +9,6 @@ cache:
   directories:
     - "$HOME/.cache/pip"
 before_install:
-  - sudo apt-get install libxss1
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
