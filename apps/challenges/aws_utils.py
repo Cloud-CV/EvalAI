@@ -247,7 +247,7 @@ task_definition_code_upload_worker = """
                 }},
                 {{
                   "name": "CERTIFICATE",
-                  "value": "{cluster_certificate}"
+                  "value": "{certificate}"
                 }},
                 {{
                   "name": "QUEUE_NAME",
