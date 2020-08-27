@@ -62,6 +62,7 @@ COMMON_SETTINGS_DICT = {
     "MEMORY": os.environ.get("MEMORY", 2048),
     "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
+    "EVALAI_API_SERVER": os.environ.get("EVALAI_API_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
     "EMAIL_HOST": settings.EMAIL_HOST,
     "EMAIL_HOST_PASSWORD": settings.EMAIL_HOST_PASSWORD,
@@ -255,7 +256,7 @@ task_definition_code_upload_worker = """
                 }},
                 {{
                   "name": "EVALAI_API_SERVER",
-                  "value": "{DJANGO_SERVER}"
+                  "value": "{EVALAI_API_SERVER}"
                 }},
 
                 {{
