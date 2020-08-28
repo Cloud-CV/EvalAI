@@ -114,5 +114,6 @@ class EvalAI_Interface:
 
     def get_prioritised_submissions_count(self, challenge_phase_pk):
         url = URLS.get("get_prioritised_submissions_count").format(challenge_phase_pk)
-        url= self.return_url_per_environment(url)
+        url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")
+        return response

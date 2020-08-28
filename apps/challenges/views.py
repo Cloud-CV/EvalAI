@@ -2824,7 +2824,7 @@ def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the Number of submissions or an error message if some failure occurs
     """
-   
+
     # Check if the challenge phase exists or not
     try:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -2849,6 +2849,3 @@ def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
 
     response_data = {"prioritised_submissions": Total_prioritised_submission}
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-    

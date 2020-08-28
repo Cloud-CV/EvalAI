@@ -377,10 +377,9 @@ def main():
                         logger.info(
                                 "Processing message body: {0}".format(message_body)
                             )
-                            process_submission_callback(
-                                api_instance, message_body, challenge_phase, evalai
-                            )
-
+                        process_submission_callback(
+                            api_instance, message_body, challenge_phase, evalai
+                        )
 
 
         if killer.kill_now:
