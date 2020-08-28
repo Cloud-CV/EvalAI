@@ -375,7 +375,7 @@ def main():
                             )
                     else:
                         logger.info(
-                                "Processing message body: {0}".format(message_body)
+                            "Processing message body: {0}".format(message_body)
                         )
                         process_submission_callback(
                             api_instance, message_body, challenge_phase, evalai
