@@ -76,6 +76,7 @@ export class AuthService {
     this.globalService.deleteData(this.globalService.authStorageKey);
     this.authStateChange(temp);
     this.router.navigate([routePath]);
+    this.globalService.showToast('info', 'Successfully logged out!');
   }
 
   /**
