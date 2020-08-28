@@ -2824,9 +2824,7 @@ def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the Number of submissions or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
-        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
-        return Response(response_data)
+   
     # Check if the challenge phase exists or not
     try:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -2838,19 +2836,19 @@ def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
         request.user, challenge_phase.challenge.pk
     ):
         response_data = {
-            "error": "Sorry, you are not authorized for uploading an annotation file."
+            "error": "Sorry, you are not authorized to perform this operation."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
-    challenge_phases = challenge_phase.objects.filter(challenge=challenge_pk and prioritised=True)
+
+    challenge_pk = challenge_phase.challenge.id
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk).filter(challenge_phase_prioritize=True)
     Total_prioritised_submission = 0
     for challenge_phase in challenge_phases:
-        Total_prioritised_submission = Total_prioritised_submission + submission.objects.filter(challenge_phase=challenge_phase.pk)
+        submission_count = Submission.objects.filter(challenge_phase=challenge_phase.pk).count()
+        Total_prioritised_submission = Total_prioritised_submission + submission_count
 
     response_data = {"prioritised_submissions": Total_prioritised_submission}
-    if response.get("error"):
-        response_data = response
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return Response(response_data, status=status.HTTP_200_OK)
+
 
     

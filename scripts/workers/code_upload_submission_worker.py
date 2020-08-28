@@ -325,7 +325,7 @@ def main():
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
-            total_prioritised submission = get_prioritised_submissions_count(phase_pk)
+            total_prioritised_submission = evalai.get_prioritised_submissions_count(phase_pk)
             if submission:
 
                 challenge_phase = evalai.get_challenge_phase_by_pk(
