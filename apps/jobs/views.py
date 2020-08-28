@@ -716,10 +716,11 @@ def get_submission_by_pk(request, submission_id):
                 serializer.save()
                 response_data = serializer.data
                 return Response(response_data, status=status.HTTP_200_OK)
-        response_data = {
-            "error": "Sorry, you are not authorized to access this submission."
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    response_data = {
+        "error": "Sorry, you are not authorized to access this submission."
+    }
+    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @swagger_auto_schema(
