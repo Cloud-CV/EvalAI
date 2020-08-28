@@ -2361,10 +2361,12 @@ def validate_challenge_config(request, challenge_host_team_pk):
         BASE_LOCATION, "{}.zip".format(unique_folder_name)
     )
 
+    data = request.data
     challenge_config_serializer = ChallengeConfigSerializer(
-        data=request.data, context={"request": request}
+        data=data, context={"request": request}
     )
     if challenge_config_serializer.is_valid():
+        challenge_config_serializer.save()
         uploaded_zip_file_path = challenge_config_serializer.data[
             "zip_configuration"
         ]
@@ -2565,7 +2567,6 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_or_update_github_challenge(request, challenge_host_team_pk):
-
     challenge_queryset = Challenge.objects.filter(
         github_repository=request.data["GITHUB_REPOSITORY"]
     )
@@ -2579,8 +2580,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         BASE_LOCATION, "{}.zip".format(unique_folder_name)
     )
 
+    data = request.data
     challenge_config_serializer = ChallengeConfigSerializer(
-        data=request.data, context={"request": request}
+        data=data, context={"request": request}
     )
     if challenge_config_serializer.is_valid():
         uploaded_zip_file = challenge_config_serializer.save()

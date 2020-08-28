@@ -112,12 +112,11 @@ def is_challenge_config_yaml_html_field_valid(
     value = yaml_file_data.get(key)
     message = ""
     is_valid = False
-    field_value = None
     if value:
         is_valid = True
     else:
         message = "ERROR: There is no key for {} in YAML file".format(key)
-    return is_valid, message, field_value
+    return is_valid, message
 
 
 def is_challenge_phase_config_yaml_html_field_valid(
@@ -135,7 +134,6 @@ def is_challenge_phase_config_yaml_html_field_valid(
     value = yaml_file_data.get(key)
     message = ""
     is_valid = False
-    field_value = None
     if value:
         is_valid = True
         file_path = join(base_location, value)
@@ -145,7 +143,7 @@ def is_challenge_phase_config_yaml_html_field_valid(
         message = " ERROR: There is no key for {} in phase {}.".format(
             key, yaml_file_data["name"]
         )
-    return is_valid, message, field_value
+    return is_valid, message
 
 
 def download_and_write_file(url, stream, output_path, mode):
