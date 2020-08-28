@@ -336,7 +336,6 @@ export class ChallengelistComponent implements OnInit {
           SELF.allTeams.forEach((team) => {
             SELF.fetchUnapprovedChallengesFromApi(team);
           });
-          console.log('UNAPPROVED', SELF.unapprovedChallengeList);
           SELF.fetchChallenges();
         }
       },
