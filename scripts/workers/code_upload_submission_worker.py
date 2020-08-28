@@ -365,7 +365,7 @@ def main():
                         phase_pk,
                     )
                 else:
-                    if total_prioritised:
+                    if total_prioritised_submission:
                         if challenge_phase_prioritize:
                             logger.info(
                                 "Processing message body: {0}".format(message_body)
@@ -376,11 +376,10 @@ def main():
                     else:
                         logger.info(
                                 "Processing message body: {0}".format(message_body)
-                            )
+                        )
                         process_submission_callback(
                             api_instance, message_body, challenge_phase, evalai
                         )
-
 
         if killer.kill_now:
             break
