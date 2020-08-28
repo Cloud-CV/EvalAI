@@ -3382,6 +3382,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
+                "ignore_submission": False,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
