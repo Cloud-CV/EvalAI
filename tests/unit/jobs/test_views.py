@@ -659,6 +659,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission.is_public,
                 "is_flagged": self.submission.is_flagged,
+                "ignore_submission": False,
                 "when_made_public": self.submission.when_made_public,
                 "is_baseline": self.submission.is_baseline,
                 "job_name": self.submission.job_name,
@@ -1365,6 +1366,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1414,6 +1416,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.private_submission.is_public,
             "is_flagged": self.private_submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.private_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1481,6 +1484,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1565,6 +1569,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.host_participant_team_submission.is_public,
             "is_flagged": self.host_participant_team_submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.host_participant_team_submission.when_made_public.isoformat(),
                 "Z",
@@ -1643,6 +1648,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1687,6 +1693,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),

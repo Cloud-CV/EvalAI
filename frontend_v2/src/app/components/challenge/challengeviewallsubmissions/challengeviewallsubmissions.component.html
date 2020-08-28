@@ -245,6 +245,11 @@
                   </mat-checkbox>
                   <a class="fa fa-refresh pointer" (click)="reRunSubmission(element.id)"> Re-run submission </a>
                 </div>
+                <div class="element" *ngIf="isChallengeHost">
+                  <a class="pointer" (click)="deleteChallengeSubmission(element)">
+                      <i class="fa fa-trash red-text fs-14" aria-hidden="true">&nbsp;Delete Submission</i>
+                  </a>
+                </div>
               </div>
             </div>
           </td>

@@ -158,6 +158,7 @@ def get_challenge_phase_submission_count_by_team(
         challenge_phase=challenge_phase,
         challenge_phase__challenge=challenge,
         participant_team=participant_team,
+        ignore_submission=False,
     )
     participant_team_submissions = submissions.count()
 
