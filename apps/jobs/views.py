@@ -689,39 +689,37 @@ def get_submission_by_pk(request, submission_id):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     host_team = submission.challenge_phase.challenge.creator
-    if request.method == "GET":
-        if (
-            request.user.id == submission.created_by.id
-            or ChallengeHost.objects.filter(
-                user=request.user.id, team_name__pk=host_team.pk
-            ).exists()
-        ):
+    if (
+        request.user.id == submission.created_by.id
+        or ChallengeHost.objects.filter(
+            user=request.user.id, team_name__pk=host_team.pk
+        ).exists()
+    ):
+        if request.method == "GET":
             serializer = SubmissionSerializer(
                 submission, context={"request": request}
             )
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
 
+        elif request.method == "DELETE":
+            serializer = SubmissionSerializer(
+                submission,
+                data=request.data,
+                context={
+                    "ignore_submission": True,
+                    "request": request,
+                },
+                partial=True,
+            )
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_200_OK)
         response_data = {
             "error": "Sorry, you are not authorized to access this submission."
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-    elif request.method == "DELETE":
-        serializer = SubmissionSerializer(
-            submission,
-            data=request.data,
-            context={
-                "ignore_submission": True,
-                "request": request,
-            },
-            partial=True,
-        )
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
