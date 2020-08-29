@@ -5,13 +5,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./backups:/backups
+      - ./../../backups:/backups
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
     restart: always
     volumes:
-      - ./backups:/backups
+      - ./../../backups:/backups
     links:
       - db:db
     depends_on:
@@ -45,7 +45,7 @@ services:
       - db
       - sqs
     volumes:
-      - .:/code
+      - ./../..:/code
 
   worker:
     image: yashdusing/evalai_worker:latest
@@ -54,7 +54,7 @@ services:
     depends_on:
       - django
     volumes:
-      - .:/code
+      - ./../..:/code
 
   nodejs:
     build:
@@ -73,8 +73,8 @@ services:
     volumes:
       - /code/node_modules
       - /code/bower_components
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./../../certbot/conf:/etc/letsencrypt
+      - ./../../certbot/www:/var/www/certbot
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
@@ -86,6 +86,6 @@ services:
       TYPE: https
       NGINX_FILE_NAME: nginx_vm_https
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./../../certbot/conf:/etc/letsencrypt
+      - ./../../certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
