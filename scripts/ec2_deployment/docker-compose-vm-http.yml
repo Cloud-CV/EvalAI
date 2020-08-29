@@ -5,13 +5,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./backups:/backups
+      - ./../../backups:/backups
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
     restart: always
     volumes:
-      - ./backups:/backups
+      - ./../../backups:/backups
     links:
       - db:db
     depends_on:
@@ -37,7 +37,7 @@ services:
   django:
     hostname: django
     env_file:
-      - docker/dev/docker.env
+      - ./../../docker/dev/docker.env
     image: yashdusing/evalai_django:latest
     ports:
       - "8000:8000"
@@ -45,20 +45,20 @@ services:
       - db
       - sqs
     volumes:
-      - .:/code
+      - ./../..:/code
 
   worker:
     image: yashdusing/evalai_worker:latest
     env_file:
-      - docker/dev/docker.env
+      - ./../../docker/dev/docker.env
     depends_on:
       - django
     volumes:
-      - .:/code
+      - ./../..:/code
 
   nodejs:
     build:
-      context: ./
+      context: ./../..
       dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
