@@ -55,7 +55,7 @@ read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
 if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 
     # Normal HTTP
-    DOCKER_COMPOSE_FILE="docker-compose-vm-http.yml"
+    DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-http.yml"
 
 else
 
@@ -64,7 +64,7 @@ else
     chmod +x init-letsencrypt.sh
     ./init-letsencrypt.sh
 
-    DOCKER_COMPOSE_FILE="docker-compose-vm-https.yml"
+    DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-https.yml"
     
 fi
 
