@@ -61,8 +61,7 @@ else
 
     # HTTPs
     echo "Initiating letsencrypt with certbot"
-    chmod +x init-letsencrypt.sh
-    ./init-letsencrypt.sh
+    ./scripts/ec2_deployment/init-letsencrypt.sh
 
     DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-https.yml"
     
