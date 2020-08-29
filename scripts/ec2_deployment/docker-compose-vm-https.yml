@@ -37,7 +37,7 @@ services:
   django:
     hostname: django
     env_file:
-      - docker/dev/docker.env
+      - ./../../docker/dev/docker.env
     image: yashdusing/evalai_django:latest
     ports:
       - "8000:8000"
@@ -50,7 +50,7 @@ services:
   worker:
     image: yashdusing/evalai_worker:latest
     env_file:
-      - docker/dev/docker.env
+      - ./../../docker/dev/docker.env
     depends_on:
       - django
     volumes:
@@ -58,7 +58,7 @@ services:
 
   nodejs:
     build:
-      context: ./
+      context: ./../..
       dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
