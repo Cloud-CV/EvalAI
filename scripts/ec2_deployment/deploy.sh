@@ -52,14 +52,13 @@ echo "DOMAIN_NAME=$DOMAIN_NAME" > .env
 DOCKER_COMPOSE_FILE=""
 
 read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
+
 if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 
-    # Normal HTTP
     DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-http.yml"
 
 else
 
-    # HTTPs
     echo "Initiating letsencrypt with certbot"
     ./scripts/ec2_deployment/init-letsencrypt.sh
 
