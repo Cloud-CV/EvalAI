@@ -10,9 +10,7 @@ TEST = eval(os.environ.get("TEST", 'False'))
 DOMAIN_NAME = os.environ.get("DOMAIN_NAME")
 
 ALLOWED_HOSTS = [
-    f"*.evalai.{DOMAIN_NAME}",
-    f"evalai.{DOMAIN_NAME}",
-    f"evalapi.{DOMAIN_NAME}",
+    f"{DOMAIN_NAME}",
 ]
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
@@ -23,9 +21,7 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
-    f"evalai.{DOMAIN_NAME}",
-    f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com",
-    f"staging.evalai.{DOMAIN_NAME}",
+    f"{DOMAIN_NAME}",
 )
 
 DATABASES = {
