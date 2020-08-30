@@ -419,8 +419,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     SELF.globalService.showModal(PARAMS);
   }
 
-  // API call to manage the worker from UI.
-  // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
+  /**
+   * API call to manage the worker from UI.
+   * Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
+   */
   manageWorker(action) {
     const SELF = this;
     const API_PATH = SELF.endpointsService.manageWorkerURL(SELF.challenge['id'], action);

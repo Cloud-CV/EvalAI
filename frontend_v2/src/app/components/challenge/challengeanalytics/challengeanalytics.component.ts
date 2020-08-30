@@ -17,14 +17,42 @@ export class ChallengeanalyticsComponent implements OnInit {
   /**
    * Challenge object
    */
-  currentChallengeDetails: any;
+  challenge: any;
+
+  /**
+   * Challenge Id
+   */
   challengeId = null;
+
+  /**
+   * Current challenge phase
+   */
   currentPhase = [];
+
+  /**
+   * Total submissions
+   */
   totalSubmission = {};
+
+  /**
+   * Total participated teams
+   */
   totalParticipatedTeams = {};
+
+  /**
+   * Last submission time
+   */
   lastSubmissionTime = {};
+
+  /**
+   * Total challenge teams
+   */
   totalChallengeTeams = [];
-  routePath = '/auth/login';
+
+  /**
+   * Lohin route path
+   */
+  loginRoutePath = '/auth/login';
 
   constructor(
     private apiService: ApiService,
@@ -37,10 +65,9 @@ export class ChallengeanalyticsComponent implements OnInit {
 
   ngOnInit() {
     this.challengeService.currentChallenge.subscribe((challenge) => {
-      this.currentChallengeDetails = challenge;
-      this.challengeId = this.currentChallengeDetails['id'];
+      this.challenge = challenge;
+      this.challengeId = this.challenge['id'];
     });
-    console.log(this.currentChallengeDetails, this.challengeId);
     this.showChallengeAnalysis();
   }
 
@@ -53,7 +80,7 @@ export class ChallengeanalyticsComponent implements OnInit {
     } else if (err.status === 401) {
       this.globalService.showToast('error', 'Timeout, Please login again to continue!');
       this.globalService.resetStorage();
-      this.router.navigate([this.routePath]);
+      this.router.navigate([this.loginRoutePath]);
     }
   }
 

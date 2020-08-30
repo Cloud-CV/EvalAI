@@ -6,7 +6,7 @@
           <h5 class="fw-light">Challenges Analytics</h5>
         </div>
         <div class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light">
-          Here you get the complete analysis of <b>{{ currentChallengeDetails['title'] }}</b
+          Here you get the complete analysis of <b>{{ challenge['title'] }}</b
           >. This includes getting total number submissions, total number of participated teams, number of phases,
           number of submissions in each phases etc.
         </div>
@@ -17,17 +17,17 @@
         <div class="row">
           <div class="col s12 m4 l4">
             <div class="image-container analytics-image">
-              <img *ngIf="currentChallengeDetails['image'] !== null" [src]="currentChallengeDetails['image']" />
-              <img *ngIf="currentChallengeDetails['image'] == null" src="assets/images/404.png" />
+              <img *ngIf="challenge['image'] !== null" [src]="challenge['image']" />
+              <img *ngIf="challenge['image'] == null" src="assets/images/404.png" />
             </div>
           </div>
           <div class="col m8 l8">
             <div class="card-content analytics-card-content">
               <h5 class="fw-light">
-                {{ currentChallengeDetails['title'] }}
+                {{ challenge['title'] }}
               </h5>
               <span class="text-light-black fs-16 fw-light">Hosted by: </span>
-              {{ currentChallengeDetails['creator']['team_name'] }} <br />
+              {{ challenge['creator']['team_name'] }} <br />
               <span class="main-title fs-16 fw-light">
                 Total Participant Teams:
               </span>
@@ -50,7 +50,7 @@
             <h5 class="no-top-para fw-light phase-detail">
               {{ item.name }}
             </h5>
-            <div [innerHTML]="currentChallengeDetails['short_description']"></div>
+            <div [innerHTML]="challenge['short_description']"></div>
             <br />
             <div class="text-light-black fw-semibold phase-duration phase-detail">
               Challenge Phase Duration
