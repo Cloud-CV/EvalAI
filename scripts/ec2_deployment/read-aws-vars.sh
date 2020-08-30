@@ -76,4 +76,7 @@ if [ "$skip_input" != "Y" ] && [ "$skip_input" != "y" ]; then
     HOSTNAME="evalai.${DOMAIN_NAME}"
     echo "HOSTNAME=$HOSTNAME" >> .env
 
+    DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-aws.yml"
+    echo "DOCKER_COMPOSE_FILE=$DOCKER_COMPOSE_FILE" >> .env
+
 fi

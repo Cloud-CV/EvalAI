@@ -27,6 +27,8 @@ FROM nginx:1.13-alpine
 # Adding NODE_ENV here as well since this is a multistage build
 ARG NODE_ENV
 ARG DOMAIN_NAME
-COPY docker/vm/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
+ARG NGINX_FILE_NAME
+
+COPY docker/vm/nodejs/${NGINX_FILE_NAME}.conf /etc/nginx/conf.d/default.conf
 RUN sed -i "s/example.com/${DOMAIN_NAME}/g" /etc/nginx/conf.d/default.conf
 COPY --from=node /code /code

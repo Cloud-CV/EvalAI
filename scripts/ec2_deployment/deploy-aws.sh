@@ -44,10 +44,10 @@ if ! [[ $(sudo which docker-compose) && $(sudo docker-compose --version) ]]; the
 
 fi
 
-./read-aws-vars.sh
+./scripts/ec2_deployment/read-aws-vars.sh
 
 echo "### Initiating letsencrypt with certbot"
-./init-letsencrypt.sh
+./scripts/ec2_deployment/init-letsencrypt.sh
 
 # Pull images & run containers 
-sudo docker-compose -f docker-compose-vm.yml up -d --build
+sudo docker-compose -f scripts/ec2_deployment/docker-compose-aws.yml up -d --build
