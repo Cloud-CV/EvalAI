@@ -4,13 +4,8 @@ export $(cat .env | sed 's/#.*//g' | xargs)
 
 domains=($DOMAIN_NAME)
 
-DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-https.yml"
-
 rsa_key_size=4096
 data_path="./certbot"
-
-# Adding a valid address is strongly recommended
-read -p "Enter your Email ID : " email
 
 staging=1 # Set to 1 if you're testing your setup to avoid hitting request limits
 
@@ -75,4 +70,3 @@ sudo docker-compose -f ${DOCKER_COMPOSE_FILE} run --rm --entrypoint "\
 
 echo "Reloading nginx ..."
 sudo docker-compose -f ${DOCKER_COMPOSE_FILE} exec nodejs nginx -s reload
-

@@ -46,8 +46,16 @@ fi
 touch .env
 
 read -p "Enter domain name (evalai.example.com) : " DOMAIN_NAME
-
 echo "DOMAIN_NAME=$DOMAIN_NAME" > .env
+
+read -p "Enter your Email ID : " email
+echo "email=$email" >> .env
+
+DJANGO_SERVER="${DOMAIN_NAME}"
+echo "DJANGO_SERVER=$DJANGO_SERVER" >> .env
+
+HOSTNAME="${DOMAIN_NAME}"
+echo "HOSTNAME=$HOSTNAME" >> .env
 
 DOCKER_COMPOSE_FILE=""
 
@@ -56,14 +64,16 @@ read -p "Do you want to enable automatic HTTPs with certbot ? (y/N) " decision
 if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
 
     DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-http.yml"
+    echo "DOCKER_COMPOSE_FILE=$DOCKER_COMPOSE_FILE" >> .env
 
 else
+
+    DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-https.yml"
+    echo "DOCKER_COMPOSE_FILE=$DOCKER_COMPOSE_FILE" >> .env
 
     echo "Initiating letsencrypt with certbot"
     ./scripts/ec2_deployment/init-letsencrypt.sh
 
-    DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-vm-https.yml"
-    
 fi
 
 # Pull images & run containers 
