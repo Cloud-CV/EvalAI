@@ -70,10 +70,10 @@ if [ "$skip_input" != "Y" ] && [ "$skip_input" != "y" ]; then
     read -p "Enter Worker Image (yashdusing/evalai-aws-worker:latest) : " WORKER_IMAGE
     echo "WORKER_IMAGE=$WORKER_IMAGE" >> .env
 
-    DJANGO_SERVER="evalapi.${DOMAIN_NAME}"
+    DJANGO_SERVER="${DOMAIN_NAME}"
     echo "DJANGO_SERVER=$DJANGO_SERVER" >> .env
 
-    HOSTNAME="evalai.${DOMAIN_NAME}"
+    HOSTNAME="${DOMAIN_NAME}"
     echo "HOSTNAME=$HOSTNAME" >> .env
 
     DOCKER_COMPOSE_FILE="scripts/ec2_deployment/docker-compose-aws.yml"
