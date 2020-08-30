@@ -265,6 +265,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
+   * Get participated team name
+   * @param challenge  challenge id
+  */
+  getParticipatedTeamNameURL(challenge) {
+    return `${this.challenges}${this.challenge}${challenge}/participant_team/team_name`;
+  }
+
+  /**
    * Get all Challenge Submission
    * @param challenge  challenge id
    * @param phase  phase id
@@ -309,6 +317,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   challengeSubmissionUpdateURL(challenge, phase, submission) {
     return `${this.challengeSubmissionURL(challenge, phase)}${submission}`;
+  }
+
+  /**
+   * Disable Challenge Submission
+   * @param submission  submission id
+   */
+  disableChallengeSubmissionURL(submission) {
+    return `${this.jobs}submission/${submission}`;
   }
 
   /**
