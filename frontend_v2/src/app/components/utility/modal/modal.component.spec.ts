@@ -17,12 +17,11 @@ describe('ModalComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ModalComponent, InputComponent ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      providers: [ GlobalService, ChallengeService, EndpointsService, AuthService, ApiService ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [ModalComponent, InputComponent],
+      imports: [RouterTestingModule, HttpClientModule],
+      providers: [GlobalService, ChallengeService, EndpointsService, AuthService, ApiService],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

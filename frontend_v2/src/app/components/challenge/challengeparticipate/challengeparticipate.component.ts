@@ -3,6 +3,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { GlobalService } from '../../../services/global.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 
 /**
  * Component Class
@@ -10,10 +11,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-challengeparticipate',
   templateUrl: './challengeparticipate.component.html',
-  styleUrls: ['./challengeparticipate.component.scss']
+  styleUrls: ['./challengeparticipate.component.scss'],
 })
 export class ChallengeparticipateComponent implements OnInit {
-
   /**
    * Is user logged in
    */
@@ -47,8 +47,14 @@ export class ChallengeparticipateComponent implements OnInit {
    * @param globalService  GlobalService Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
-              private challengeService: ChallengeService, private globalService: GlobalService) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    private globalService: GlobalService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on initialized
@@ -58,11 +64,11 @@ export class ChallengeparticipateComponent implements OnInit {
       this.isLoggedIn = true;
     }
     this.routerPublic = this.router;
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
       this.isActive = this.challenge['is_active'];
     });
-    this.challengeService.currentParticipationStatus.subscribe(status => {
+    this.challengeService.currentParticipationStatus.subscribe((status) => {
       this.isParticipated = status;
       if (status) {
         const REDIRECT = this.globalService.getData(this.globalService.redirectStorageKey);
@@ -70,11 +76,10 @@ export class ChallengeparticipateComponent implements OnInit {
           this.globalService.deleteData(this.globalService.redirectStorageKey);
           this.router.navigate([REDIRECT['path']]);
         } else {
-          console.log('navigating to /submit', status);
-          this.router.navigate(['../submit'], {relativeTo: this.route});
+          this.logger.info('navigating to /submit', status);
+          this.router.navigate(['../submit'], { relativeTo: this.route });
         }
       }
     });
   }
-
 }

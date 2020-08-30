@@ -81,9 +81,12 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
+    # Model to store submitted submission files by the user
     input_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}")
     )
+    # Model to store large submission file (> 400 MB's) URLs submitted by the user
+    input_file_url = models.URLField(max_length=1000, null=True, blank=True)
     stdout_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
         null=True,

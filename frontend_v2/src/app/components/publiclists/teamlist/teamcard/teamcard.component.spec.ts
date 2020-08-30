@@ -16,18 +16,17 @@ describe('TeamcardComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TeamcardComponent ],
-      providers: [ GlobalService, ApiService, AuthService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ],
-      schemas: [ NO_ERRORS_SCHEMA ]
-    })
-    .compileComponents();
+      declarations: [TeamcardComponent],
+      providers: [GlobalService, ApiService, AuthService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TeamcardComponent);
     component = fixture.componentInstance;
-    component.team = {members: []};
+    component.team = { members: [] };
     component.selected = false;
     component.isOnChallengePage = false;
     component.deleteTeamCard = new EventEmitter<any>();

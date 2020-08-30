@@ -24,6 +24,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
             challenge_phase = context.get("challenge_phase").pk
             kwargs["data"]["challenge_phase"] = challenge_phase
+        if context and context.get("request").method == "DELETE":
+            ignore_submission = context.get("ignore_submission")
+            kwargs["data"]["ignore_submission"] = ignore_submission
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
@@ -49,6 +52,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "publication_url",
             "is_public",
             "is_flagged",
+            "ignore_submission",
             "submission_result_file",
             "when_made_public",
             "is_baseline",

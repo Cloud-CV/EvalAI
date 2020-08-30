@@ -66,6 +66,9 @@ def create_job_object(message, environment_image):
             EVALAI_API_SERVER_ENV,
             MESSAGE_BODY_ENV,
         ],
+        resources=client.V1ResourceRequirements(
+            limits={"nvidia.com/gpu": "1"}
+        )
     )
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
@@ -164,9 +167,26 @@ def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     return api_instance
 
 
-def get_core_v1_api_object(cluster_name, challenge, evalai):
+def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
+    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.host = cluster_endpoint
+    configuration.verify_ssl = False
+    configuration.api_key["authorization"] = aws_eks_api[
+        "aws_eks_bearer_token"
+    ]
+    configuration.api_key_prefix["authorization"] = "Bearer"
+    api_instance = client.ApiClient(configuration)
+    return api_instance
+
+
+def get_core_v1_api_object(cluster_name, cluster_endpoint, challenge, evalai):
+    # TODO: Add SSL verification
+    configuration = client.Configuration()
+    aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
+    configuration.host = cluster_endpoint
+    configuration.verify_ssl = False
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -290,7 +310,7 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
-    api_instance = get_api_object(
+    api_instance = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)

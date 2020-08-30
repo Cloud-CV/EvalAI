@@ -1,9 +1,12 @@
 import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { EndpointsService } from '../../../services/endpoints.service';
 
 /**
@@ -12,20 +15,33 @@ import { EndpointsService } from '../../../services/endpoints.service';
 @Component({
   selector: 'app-challengesubmit',
   templateUrl: './challengesubmit.component.html',
-  styleUrls: ['./challengesubmit.component.scss']
+  styleUrls: ['./challengesubmit.component.scss'],
 })
 export class ChallengesubmitComponent implements OnInit {
- /**
-  * Url error Message
-  */
-inputErrorMessage = '';
-validFileUrl = false;
-isSubmissionUsingUrl: any;
+  /**
+   * Input error Message
+   */
+  inputErrorMessage = '';
+
+  /**
+   * Is input valid
+   */
+  validFileUrl = false;
+
+  /**
+   * Is file url input
+   */
+  isSubmissionUsingUrl: any;
 
   /**
    * Is user logged in
    */
   isLoggedIn = false;
+
+  /**
+   * Is submittion submitted
+   */
+  isSubmitted = false;
 
   /**
    * Challenge object
@@ -61,6 +77,16 @@ isSubmissionUsingUrl: any;
    * Guidelines text
    */
   submissionGuidelines = '';
+
+  /**
+   * Stores the attributes format and phase ID for all the phases of a challenge.
+   */
+  submissionMetaAttributes = [];
+
+  /**
+   * Stores the attributes while making a submission for a selected phase.
+   */
+  metaAttributesforCurrentSubmission = null;
 
   /**
    * Form fields name
@@ -122,7 +148,7 @@ isSubmissionUsingUrl: any;
     maxExceeded: false,
     remainingSubmissions: {},
     maxExceededMessage: '',
-    clockMessage: ''
+    clockMessage: '',
   };
 
   /**
@@ -179,9 +205,16 @@ isSubmissionUsingUrl: any;
    * @param apiService  ApiService Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
-              private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on intialization.
@@ -191,7 +224,7 @@ isSubmissionUsingUrl: any;
       this.isLoggedIn = true;
     }
     this.routerPublic = this.router;
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
       this.isActive = this.challenge['is_active'];
       this.submissionGuidelines = this.challenge['submission_guidelines'];
@@ -199,28 +232,27 @@ isSubmissionUsingUrl: any;
         this.cliVersion = this.challenge.cli_version;
       }
     });
-    this.challengeService.currentParticipationStatus.subscribe(status => {
+    this.challengeService.currentParticipationStatus.subscribe((status) => {
       this.isParticipated = status;
       if (!status) {
-        this.router.navigate(['../participate'], {relativeTo: this.route});
+        this.router.navigate(['../participate'], { relativeTo: this.route });
       }
     });
-    this.challengeService.currentPhases.subscribe(
-      phases => {
-        this.phases = phases;
-        this.filteredPhases = this.phases.filter(phase => phase['is_active'] === true);
-        for (let j = 0; j < this.phases.length; j++) {
-          if (phases[j].is_public === false) {
-            this.phases[j].showPrivate = true;
-          }
+    this.challengeService.currentPhases.subscribe((phases) => {
+      this.phases = phases;
+      this.filteredPhases = this.phases.filter((phase) => phase['is_active'] === true);
+      for (let j = 0; j < this.phases.length; j++) {
+        if (phases[j].is_public === false) {
+          this.phases[j].showPrivate = true;
         }
+      }
     });
 
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
 
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
 
@@ -260,10 +292,10 @@ isSubmissionUsingUrl: any;
 
     // Used when the challenge is docker based
     SELF.phaseRemainingSubmissionsCountdown[eachPhase.id] = {
-        'days': SELF.days,
-        'hours': SELF.hours,
-        'minutes': SELF.minutes,
-        'seconds': SELF.seconds
+      days: SELF.days,
+      hours: SELF.hours,
+      minutes: SELF.minutes,
+      seconds: SELF.seconds,
     };
     if (SELF.remainingTime === 0) {
       SELF.selectedPhaseSubmissions.showSubmissionDetails = true;
@@ -283,7 +315,7 @@ isSubmissionUsingUrl: any;
       const API_PATH = this.endpointsService.challengeSubmissionsRemainingURL(challenge);
       const SELF = this;
       this.apiService.getUrl(API_PATH).subscribe(
-        data => {
+        (data) => {
           SELF.phaseRemainingSubmissions = data;
           const details = SELF.phaseRemainingSubmissions.phases;
           for (let i = 0; i < details.length; i++) {
@@ -295,16 +327,16 @@ isSubmissionUsingUrl: any;
               const eachPhase = details[i];
               SELF.phaseRemainingSubmissionsFlags[details[i].id] = 'showClock';
               setInterval(function () {
-                  SELF.countDownTimer(SELF, eachPhase);
+                SELF.countDownTimer(SELF, eachPhase);
               }, 1000);
               SELF.countDownTimer(SELF, eachPhase);
             }
           }
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err);
         },
-        () => console.log('Remaining submissions fetched for docker based challenge')
+        () => this.logger.info('Remaining submissions fetched for docker based challenge')
       );
     }
   }
@@ -323,7 +355,7 @@ isSubmissionUsingUrl: any;
     SELF.selectedPhaseSubmissions.showSubmissionDetails = false;
     SELF.selectedPhaseSubmissions.maxExceeded = false;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         let phaseDetails, eachPhase;
         for (let i = 0; i < data.phases.length; i++) {
           if (data.phases[i].id === phase) {
@@ -347,13 +379,75 @@ isSubmissionUsingUrl: any;
           SELF.countDownTimer(SELF, eachPhase);
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Remaining submissions fetched for challenge-phase', challenge, phase);
+        this.logger.info('Remaining submissions fetched for challenge-phase', challenge, phase);
       }
     );
+  }
+
+  /**
+   * Store Meta Attributes for a particular challenge phase.
+   */
+  storeMetadata(data) {
+    for (let i = 0; i < data.count; i++) {
+      if (data.results[i].submission_meta_attributes) {
+        const attributes = data.results[i].submission_meta_attributes;
+        attributes.forEach(function (attribute) {
+          if (attribute['type'] === 'checkbox') {
+            attribute['values'] = [];
+          } else {
+            attribute['value'] = null;
+          }
+        });
+        data = { phaseId: data.results[i].id, attributes: attributes };
+        this.submissionMetaAttributes.push(data);
+      } else {
+        const detail = { phaseId: data.results[i].id, attributes: null };
+        this.submissionMetaAttributes.push(detail);
+      }
+    }
+  }
+
+  /**
+   * Fetch Meta Attributes for a particular challenge phase.
+   * @param challenge  challenge id
+   * @param phase  phase id
+   */
+  getMetaDataDetails(challenge, phaseId) {
+    const API_PATH = this.endpointsService.challengePhaseURL(challenge);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        SELF.storeMetadata(data);
+        // Loads attributes of a phase into this.submissionMetaAttributes
+        this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
+          return element['phaseId'] === phaseId;
+        }).attributes;
+        this.metaAttributesforCurrentSubmission = [];
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  /**
+   * Clear the data of metaAttributesforCurrentSubmission
+   */
+  clearMetaAttributeValues() {
+    if (this.metaAttributesforCurrentSubmission != null) {
+      this.metaAttributesforCurrentSubmission.forEach(function (attribute) {
+        if (attribute.type === 'checkbox') {
+          attribute.values = [];
+        } else {
+          attribute.value = null;
+        }
+      });
+    }
   }
 
   /**
@@ -364,7 +458,14 @@ isSubmissionUsingUrl: any;
     return (phase) => {
       SELF.selectedPhase = phase;
       if (SELF.challenge['id'] && phase['id']) {
+        SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
+        SELF.clearMetaAttributeValues();
+        SELF.submissionError = '';
+        SELF.components['_results'].forEach((element) => {
+          element.value = '';
+          element.message = '';
+        });
       }
     };
   }
@@ -375,8 +476,11 @@ isSubmissionUsingUrl: any;
   formValidate() {
     if (this.selectedPhaseSubmissions.remainingSubmissions['remaining_submissions_today_count']) {
       this.globalService.formValidate(this.components, this.formSubmit, this);
+      if (this.isSubmitted) {
+        this.router.navigate(['../my-submissions'], { relativeTo: this.route });
+      }
     } else {
-      this.globalService.showToast('info', 'You have exhausted today\'s submission limit');
+      this.globalService.showToast('info', "You have exhausted today's submission limit");
     }
   }
 
@@ -386,6 +490,7 @@ isSubmissionUsingUrl: any;
    */
   formSubmit(self) {
     self.submissionError = '';
+    let metaValue = true;
     const submissionFile = self.globalService.formItemForLabel(self.components, 'input_file').fileValue;
     const submissionProjectUrl = self.globalService.formValueForLabel(self.components, 'project_url');
     const submissionPublicationUrl = self.globalService.formValueForLabel(self.components, 'publication_url');
@@ -394,17 +499,28 @@ isSubmissionUsingUrl: any;
     if (!self.isSubmissionUsingUrl && (submissionFile === null || submissionFile === '')) {
       self.submissionError = 'Please upload file!';
       return;
-    } else if (self.isSubmissionUsingUrl && (submissionFileUrl !== '' && !self.validFileUrl)) {
+    } else if (self.isSubmissionUsingUrl && submissionFileUrl !== '' && !self.validFileUrl) {
       self.submissionError = 'Please enter a valid Submission URL!';
       return;
     } else if (self.selectedPhase['id'] === undefined) {
       self.submissionError = 'Please select phase!';
       return;
     } else if (submissionProjectUrl !== '' && !regex.test(submissionProjectUrl)) {
-      self.submissionError = 'Please provide a valid project url!';
+      self.submissionError = 'Please provide a valid project URL!';
       return;
     } else if (submissionPublicationUrl !== '' && !regex.test(submissionPublicationUrl)) {
-      self.submissionError = 'Please provide a valid publication url!';
+      self.submissionError = 'Please provide a valid publication URL!';
+      return;
+    }
+    if (self.metaAttributesforCurrentSubmission != null) {
+      self.metaAttributesforCurrentSubmission.forEach((attribute) => {
+        if (attribute.value === null || attribute.value === undefined) {
+          metaValue = false;
+        }
+      });
+    }
+    if (metaValue !== true) {
+      self.submissionError = 'Please provide input for meta attributes!';
       return;
     }
 
@@ -419,22 +535,19 @@ isSubmissionUsingUrl: any;
     FORM_DATA.append('method_description', self.globalService.formValueForLabel(self.components, 'method_description'));
     FORM_DATA.append('project_url', self.globalService.formValueForLabel(self.components, 'project_url'));
     FORM_DATA.append('publication_url', self.globalService.formValueForLabel(self.components, 'publication_url'));
-    self.challengeService.challengeSubmission(
-      self.challenge['id'],
-      self.selectedPhase['id'],
-      FORM_DATA,
-      () => {
-        if (!self.isSubmissionUsingUrl) {
-          self.globalService.setFormValueForLabel(self.components, 'input_file', null);
-        } else if (self.validFileUrl && self.isSubmissionUsingUrl) {
-          self.globalService.setFormValueForLabel(self.components, 'file_url', '');
-          }
-        self.globalService.setFormValueForLabel(self.components, 'method_name', '');
-        self.globalService.setFormValueForLabel(self.components, 'method_description', '');
-        self.globalService.setFormValueForLabel(self.components, 'project_url', '');
-        self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
+    FORM_DATA.append('submission_metadata', JSON.stringify(self.metaAttributesforCurrentSubmission));
+    self.challengeService.challengeSubmission(self.challenge['id'], self.selectedPhase['id'], FORM_DATA, () => {
+      if (!self.isSubmissionUsingUrl) {
+        self.globalService.setFormValueForLabel(self.components, 'input_file', null);
+      } else if (self.validFileUrl && self.isSubmissionUsingUrl) {
+        self.globalService.setFormValueForLabel(self.components, 'file_url', '');
       }
-    );
+      self.globalService.setFormValueForLabel(self.components, 'method_name', '');
+      self.globalService.setFormValueForLabel(self.components, 'method_description', '');
+      self.globalService.setFormValueForLabel(self.components, 'project_url', '');
+      self.globalService.setFormValueForLabel(self.components, 'publication_url', '');
+    });
+    self.isSubmitted = true;
   }
 
   copyTextToClipboard(ref: HTMLElement) {
@@ -460,20 +573,19 @@ isSubmissionUsingUrl: any;
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-      ).subscribe(
-        data => {
-          SELF.submissionGuidelines = data.submission_guidelines;
-          SELF.globalService.showToast('success', 'The submission guidelines is successfully updated!', 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => {}
-      );
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.submissionGuidelines = data.submission_guidelines;
+            SELF.globalService.showToast('success', 'The submission guidelines is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
     };
 
     const PARAMS = {
@@ -483,23 +595,41 @@ isSubmissionUsingUrl: any;
       editorContent: this.challenge.submission_guidelines,
       confirm: 'Submit',
       deny: 'Cancel',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
   }
 
   validateInput(inputValue) {
     const regex = new RegExp(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/);
-    const validExtensions = ['json', 'zip', 'csv'];
+    const validExtensions = ['json', 'zip', 'txt', 'tsv', 'gz', 'csv', 'h5', 'npy'];
     if (this.isSubmissionUsingUrl) {
-      const extension = inputValue.split('.').pop();
-      if (regex.test(inputValue) && validExtensions.includes(extension)) {
+      if (regex.test(inputValue)) {
         this.inputErrorMessage = '';
         this.validFileUrl = true;
       } else {
-        this.inputErrorMessage = 'Please enter a valid Submission URL!';
+        this.inputErrorMessage = 'Please enter a valid URL!';
         this.validFileUrl = false;
       }
+    } else {
+      const extension = inputValue.split('.').pop();
+      if (!validExtensions.includes(extension)) {
+        this.inputErrorMessage = 'Please enter a valid File!';
+        this.validFileUrl = false;
+      } else if (validExtensions.includes(extension)) {
+        this.inputErrorMessage = '';
+        this.validFileUrl = true;
+      }
+    }
+  }
+
+  // unchecking checked options
+  toggleSelection(attribute, value) {
+    const idx = attribute.values.indexOf(value);
+    if (idx > -1) {
+      attribute.values.splice(idx, 1);
+    } else {
+      attribute.values.push(value);
     }
   }
 }

@@ -8,6 +8,10 @@
   }
 }
 
+.ev-btn {
+  padding: 8px 20px;
+}
+
 .show-submission-count {
   background: #252833;
   text-align: center;
@@ -26,7 +30,7 @@
 }
 
 .add-line-height {
-	line-height: 51px;
+  line-height: 51px;
 }
 
 .result-wrn {
@@ -56,10 +60,10 @@
 }
 
 .cbx:checked ~ .cbx-label {
-  background: #4CAF50;
+  background: #4caf50;
 }
 
-.collapsible-table{
+.collapsible-table {
   overflow: auto;
 }
 
@@ -72,15 +76,20 @@ tr.detail-row {
   padding: 8px;
 }
 
-tr.element-row:not(.expanded-row):hover {	
-  td {	
-    color: #efefef;	
-  }	
-  background: #252833;	
-}	
+tr.element-row:not(.expanded-row):hover {
+  cursor: pointer;
+  td {
+    font-weight: $fw-semibold;
+  }
+  background: $grad-light-black;
+}
 
- tr.element-row:not(.expanded-row):active {	
-  background: #efefef;	
+tr.element-row.expanded-row {
+  cursor: pointer;
+}
+
+tr.element-row:not(.expanded-row):active {
+  background: #efefef;
 }
 
 .expanded-row {

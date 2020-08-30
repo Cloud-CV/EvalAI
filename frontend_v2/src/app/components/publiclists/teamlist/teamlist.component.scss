@@ -1,4 +1,4 @@
-@import "../../../../styles/variables";
+@import '../../../../styles/variables';
 
 .exist-team-card {
   ul {
@@ -168,12 +168,47 @@ section {
   font-size: 12px;
 }
 
-.fa-chevron-left, .fa-chevron-right {
+.fa-chevron-left,
+.fa-chevron-right {
   font-size: 12px;
+}
+
+.team-name-filter {
+  width: 100%;
+  margin: 8px -10px;
+}
+
+.filter-team {
+  margin: 30px 0px 0px 0px;
+}
+
+.filter-card {
+  height: 60px;
+}
+
+.filter-card input {
+  width: 47%;
+  outline: none !important;
+  border-bottom: none;
+  border-radius: 4px;
+  box-shadow: 0px 0px 10px #dedede;
+  height: 20px;
+  padding: 10px;
+  font-size: $fs-14;
+  &:focus {
+    outline: none;
+    box-shadow: 0px 0px 10px $yellow-light;
+  }
 }
 
 @media only screen and (max-width: 992px) and (min-width: 601px) {
   .team-heading {
     margin-top: 30px;
+  }
+}
+
+@media only screen and (max-width: $small-screen) {
+  .filter-card input {
+    width: 100%;
   }
 }

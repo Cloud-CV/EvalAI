@@ -1,6 +1,5 @@
 version: "3"
 services:
-
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${COMMIT_ID}
     env_file:
@@ -87,3 +86,11 @@ services:
     command: ["python", "-m", "scripts.workers.remote_submission_worker"]
     env_file:
       - docker/prod/docker_remote_worker.env
+
+  code-upload-worker:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-code-upload-worker:${COMMIT_ID}
+    env_file:
+      - docker/prod/docker_code_upload_worker.env
+    build:
+      context: ./
+      dockerfile: docker/prod/code-upload-worker/Dockerfile

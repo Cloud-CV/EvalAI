@@ -1,12 +1,14 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
 import { InputComponent } from '../../components/utility/input/input.component';
 import { WindowService } from '../../services/window.service';
 import { ApiService } from '../../services/api.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { GlobalService } from '../../services/global.service';
-import { Router, ActivatedRoute} from '@angular/router';
 
 /**
  * Component Class
@@ -14,10 +16,9 @@ import { Router, ActivatedRoute} from '@angular/router';
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.component.html',
-  styleUrls: ['./contact.component.scss']
+  styleUrls: ['./contact.component.scss'],
 })
 export class ContactComponent implements OnInit, AfterViewInit {
-
   /**
    * All forms in contact component
    */
@@ -48,13 +49,16 @@ export class ContactComponent implements OnInit, AfterViewInit {
    * @param apiService  ApiService Injection.
    * @param endpointsService  EndpointsService Injection.
    */
-  constructor(@Inject(DOCUMENT) private document: Document,
-              private windowService: WindowService,
-              private globalService: GlobalService,
-              private apiService: ApiService,
-              private route: ActivatedRoute,
-              private router: Router,
-              private endpointsService: EndpointsService) { }
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private windowService: WindowService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private endpointsService: EndpointsService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on initialized.
@@ -89,19 +93,18 @@ export class ContactComponent implements OnInit, AfterViewInit {
     const CONTACT_BODY = JSON.stringify({
       name: self.globalService.formValueForLabel(self.ALL_FORMS[self.contactForm], 'name'),
       email: self.globalService.formValueForLabel(self.ALL_FORMS[self.contactForm], 'email'),
-      message: self.globalService.formValueForLabel(self.ALL_FORMS[self.contactForm], 'message')
+      message: self.globalService.formValueForLabel(self.ALL_FORMS[self.contactForm], 'message'),
     });
     self.apiService.postUrl(self.endpointsService.contactURL(), CONTACT_BODY).subscribe(
-      data => {
+      (data) => {
         // Success Message in data.message
         setTimeout(() => self.globalService.showToast('success', data.message, 5), 1000);
         self.router.navigate(['/']);
       },
-      err => {
+      (err) => {
         self.globalService.handleFormError(self.components, err, false);
       },
-      () => console.log('CONTACT-FORM-SUBMITTED')
+      () => this.logger.info('CONTACT-FORM-SUBMITTED')
     );
   }
-
 }

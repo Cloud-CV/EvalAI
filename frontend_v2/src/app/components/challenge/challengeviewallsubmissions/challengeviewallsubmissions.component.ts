@@ -1,14 +1,17 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Router, ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { WindowService } from '../../../services/window.service';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { environment } from '../../../../environments/environment.staging';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 
 /**
  * Component Class
@@ -19,14 +22,13 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   styleUrls: ['./challengeviewallsubmissions.component.scss'],
   animations: [
     trigger('detailExpand', [
-      state('collapsed', style({height: '0px', minHeight: '0'})),
-      state('expanded', style({height: '*'})),
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
       transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
     ]),
   ],
 })
 export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewInit {
-
   /**
    * Phase select card components
    */
@@ -101,7 +103,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   /**
    * Download file types
    */
-  fileTypes = [{ 'name': 'csv' }];
+  fileTypes = [{ name: 'csv' }];
 
   /**
    * Selected file type
@@ -142,7 +144,14 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   apiCall: any;
 
-  columnsToDisplay = ['participant_team', 'created_by', 'status', 'execution_time', 'submitted_file', 'submission_result_file'];
+  columnsToDisplay = [
+    'participant_team',
+    'created_by',
+    'status',
+    'execution_time',
+    'submitted_file',
+    'submission_result_file',
+  ];
   columnsHeadings = ['Team Name', 'Created By', 'Status', 'Execution Time', 'Submitted File', 'Result File'];
 
   expandedElement: null;
@@ -157,9 +166,17 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    * @param endpointsService  EndpointsService Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
-              private challengeService: ChallengeService, private globalService: GlobalService,
-              private apiService: ApiService, private windowService: WindowService, private endpointsService: EndpointsService) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private windowService: WindowService,
+    private endpointsService: EndpointsService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component after view initialized.
@@ -176,13 +193,13 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       this.isLoggedIn = true;
     }
     this.routerPublic = this.router;
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
-    this.challengeService.currentParticipationStatus.subscribe(status => {
+    this.challengeService.currentParticipationStatus.subscribe((status) => {
       this.isParticipated = status;
       if (!status) {
-        this.globalService.storeData(this.globalService.redirectStorageKey, {path: this.routerPublic.url});
+        this.globalService.storeData(this.globalService.redirectStorageKey, { path: this.routerPublic.url });
         let redirectToPath = '';
         if (this.router.url.split('/').length === 4) {
           redirectToPath = '../participate';
@@ -191,21 +208,20 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         } else if (this.router.url.split('/').length === 6) {
           redirectToPath = '../../../participate';
         }
-        this.router.navigate([redirectToPath], {relativeTo: this.route});
+        this.router.navigate([redirectToPath], { relativeTo: this.route });
       }
     });
-    this.challengeService.currentPhases.subscribe(
-      phases => {
-        this.phases = phases;
-        for (let i = 0; i < this.phases.length; i++) {
-          if (this.phases[i].is_public === false) {
-              this.phases[i].showPrivate = true;
-          }
+    this.challengeService.currentPhases.subscribe((phases) => {
+      this.phases = phases;
+      for (let i = 0; i < this.phases.length; i++) {
+        if (this.phases[i].is_public === false) {
+          this.phases[i].showPrivate = true;
         }
-        this.filteredPhases = this.phases;
+      }
+      this.filteredPhases = this.phases;
     });
 
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -238,23 +254,23 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       API_PATH = SELF.endpointsService.allChallengeSubmissionURL(challenge, phase);
     } else {
       API_PATH = SELF.endpointsService.allChallengeSubmissionWithFilterQueryUrl(
-        challenge, phase, SELF.filterSubmissionsQuery
+        challenge,
+        phase,
+        SELF.filterSubmissionsQuery
       );
     }
     SELF.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         SELF.submissions = data['results'];
         for (let i = 0; i < SELF.submissions.length; i++) {
           // Update view for submission visibility setting
-          SELF.submissions[i].submissionVisibilityIcon =
-            (SELF.submissions[i].is_public) ? 'visibility' : 'visibility_off';
-          SELF.submissions[i].submissionVisibilityText =
-            (SELF.submissions[i].is_public) ? 'Public' : 'Private';
+          SELF.submissions[i].submissionVisibilityIcon = SELF.submissions[i].is_public
+            ? 'visibility'
+            : 'visibility_off';
+          SELF.submissions[i].submissionVisibilityText = SELF.submissions[i].is_public ? 'Public' : 'Private';
           // Update view for flag submission setting
-          SELF.submissions[i].submissionFlagIcon =
-            (SELF.submissions[i].is_flagged) ? 'flag' : 'outlined_flag';
-          SELF.submissions[i].submissionFlagText =
-            (SELF.submissions[i].is_flagged) ? 'Flagged' : 'UnFlagged';
+          SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
+          SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
         }
         SELF.paginationDetails.next = data.next;
         SELF.paginationDetails.previous = data.previous;
@@ -282,11 +298,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
           SELF.paginationDetails.isPrev = '';
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Fetched submissions', challenge, phase);
+        this.logger.info('Fetched submissions', challenge, phase);
       }
     );
   }
@@ -307,19 +323,21 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   downloadSubmission() {
     if (this.challenge['id'] && this.selectedPhase && this.fileSelected) {
       const API_PATH = this.endpointsService.challengeSubmissionDownloadURL(
-        this.challenge['id'], this.selectedPhase['id'], this.fileSelected
+        this.challenge['id'],
+        this.selectedPhase['id'],
+        this.fileSelected
       );
       const SELF = this;
       if (SELF.fieldsToGetExport.length === 0 || SELF.fieldsToGetExport === undefined) {
         SELF.apiService.getUrl(API_PATH, false).subscribe(
-          data => {
+          (data) => {
             SELF.windowService.downloadFile(data, 'all_submissions.csv');
           },
-          err => {
+          (err) => {
             SELF.globalService.handleApiError(err);
           },
           () => {
-            console.log('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
+            this.logger.info('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
           }
         );
       }
@@ -341,7 +359,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       const API_PATH = url.split(environment.api_endpoint)[1];
 
       SELF.apiService.getUrl(API_PATH, true).subscribe(
-        data => {
+        (data) => {
           SELF.submissions = data['results'];
           SELF.paginationDetails.next = data.next;
           SELF.paginationDetails.previous = data.previous;
@@ -360,11 +378,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.isPrev = '';
           }
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err);
         },
         () => {
-          console.log('Fetched pagination submissions');
+          this.logger.info('Fetched pagination submissions');
         }
       );
     }
@@ -382,7 +400,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       }
     }
   }
-
 
   /**
    * Update submission flag.
@@ -407,18 +424,20 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     this.updateSubmissionVisibility(submission.id);
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && submission.id) {
       const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(
-        this.challenge['id'], this.selectedPhase['id'], submission.id
+        this.challenge['id'],
+        this.selectedPhase['id'],
+        submission.id
       );
       const SELF = this;
-      const BODY = JSON.stringify({is_public: is_public});
+      const BODY = JSON.stringify({ is_public: is_public });
       this.apiService.patchUrl(API_PATH, BODY).subscribe(
         () => {
-          submission.submissionVisibilityIcon = (is_public) ? 'visibility' : 'visibility_off';
-          submission.submissionVisibilityText = (is_public) ? 'Public' : 'Private';
-          const toastMessage = (is_public) ? 'The submission is made public' : 'The submission is made private';
+          submission.submissionVisibilityIcon = is_public ? 'visibility' : 'visibility_off';
+          submission.submissionVisibilityText = is_public ? 'Public' : 'Private';
+          const toastMessage = is_public ? 'The submission is made public' : 'The submission is made private';
           SELF.globalService.showToast('success', toastMessage);
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err);
         },
         () => {}
@@ -437,18 +456,19 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.updateSubmissionFlag(submission.id);
     if (SELF.challenge['id'] && SELF.selectedPhase && SELF.selectedPhase['id'] && submission.id) {
       const API_PATH = SELF.endpointsService.challengeSubmissionUpdateURL(
-        SELF.challenge['id'], SELF.selectedPhase['id'], submission.id
+        SELF.challenge['id'],
+        SELF.selectedPhase['id'],
+        submission.id
       );
-      const BODY = JSON.stringify({is_flagged: is_flagged});
+      const BODY = JSON.stringify({ is_flagged: is_flagged });
       SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
         () => {
-          submission.submissionFlagIcon = (is_flagged) ? 'flag' : 'outlined_flag';
-          submission.submissionFlagText = (is_flagged) ? 'Flagged' : 'Unflagged';
-          const toastMessage =
-            (is_flagged) ? 'Submission flagged successfully!' : 'Submission unflagged successfully!';
+          submission.submissionFlagIcon = is_flagged ? 'flag' : 'outlined_flag';
+          submission.submissionFlagText = is_flagged ? 'Flagged' : 'Unflagged';
+          const toastMessage = is_flagged ? 'Submission flagged successfully!' : 'Submission unflagged successfully!';
           SELF.globalService.showToast('success', toastMessage);
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err);
         },
         () => {}
@@ -463,7 +483,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   confirmSubmissionFlagChange(submission, is_flagged) {
     const SELF = this;
-    const submissionFlagState = (is_flagged) ? 'Unflag' : 'Flag';
+    const submissionFlagState = is_flagged ? 'Unflag' : 'Flag';
 
     SELF.apiCall = () => {
       SELF.toggleSubmissionFlag(submission, is_flagged);
@@ -471,9 +491,9 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
 
     const PARAMS = {
       title: submissionFlagState + ' this submission ?',
-      confirm: 'Yes, I\'m sure',
+      confirm: "Yes, I'm sure",
       deny: 'No',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
   }
@@ -487,16 +507,16 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         if (data['participant_team_submission_count']) {
           SELF.submissionCount = data['participant_team_submission_count'];
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Fetched submission counts', challenge, phase);
+        this.logger.info('Fetched submission counts', challenge, phase);
       }
     );
   }
@@ -508,7 +528,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   confirmSubmissionVisibility(submission, submissionVisibility) {
     const SELF = this;
-    const submissionVisibilityState = (submissionVisibility) ? 'private' : 'public';
+    const submissionVisibilityState = submissionVisibility ? 'private' : 'public';
 
     SELF.apiCall = () => {
       SELF.changeSubmissionVisibility(submission, submissionVisibility);
@@ -516,9 +536,9 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
 
     const PARAMS = {
       title: 'Make this submission ' + submissionVisibilityState + '?',
-      confirm: 'Yes, I\'m sure',
+      confirm: "Yes, I'm sure",
       deny: 'No',
-      confirmCallback: SELF.apiCall
+      confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
   }
@@ -533,10 +553,10 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiCall = () => {
       const BODY = {};
       SELF.apiService.postUrl(API_PATH, BODY).subscribe(
-        data => {
+        (data) => {
           SELF.globalService.showToast('success', data.success, 5);
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err);
         },
         () => {}
@@ -544,10 +564,40 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     };
     const PARAMS = {
       title: 'Re-run this submission?',
-      confirm: 'Yes, I\'m sure',
+      confirm: "Yes, I'm sure",
+      deny: 'No',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showConfirm(PARAMS);
+  }
+
+  /**
+   * Delete Submission.
+   * @param submission  Submission being deleted
+  */
+  deleteChallengeSubmission(submission) {
+    const SELF = this;
+    SELF.apiCall = () => {
+      SELF.apiService.deleteUrl(
+        SELF.endpointsService.disableChallengeSubmissionURL(submission.id)).subscribe(
+        () => {
+          SELF.globalService.showToast('success', 'Submission Deleted successfully', 5);
+          SELF.fetchSubmissions(SELF.challenge.id, SELF.selectedPhase.id);
+        },
+        err => {
+          SELF.globalService.handleApiError(err, true);
+        },
+        () => {}
+      );
+    };
+    const PARAMS = {
+      title: 'Delete Submission',
+      content: 'I understand consequences, delete the submission',
+      isButtonDisabled: true,
+      confirm: 'Yes',
       deny: 'No',
       confirmCallback: SELF.apiCall
     };
-    SELF.globalService.showConfirm(PARAMS);
+    SELF.globalService.showModal(PARAMS);
   }
 }

@@ -1,17 +1,20 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { NGXLogger } from 'ngx-logger';
+
+// import service
 import { ApiService } from './api.service';
 import { GlobalService } from './global.service';
-import { BehaviorSubject } from 'rxjs';
 import { AuthService } from './auth.service';
 import { EndpointsService } from './endpoints.service';
 
 @Injectable()
 export class ChallengeService {
-  private defaultChallenge: any = { 'creator': {}};
-  private defaultStars: any = { 'count': 0, 'is_starred': false};
+  private defaultChallenge: any = { creator: {} };
+  private defaultStars: any = { count: 0, is_starred: false };
   private defaultPublishChallenge: any = {
-    'state': 'Not Published',
-    'icon': 'fa fa-eye-slash red-text'
+    state: 'Not Published',
+    icon: 'fa fa-eye-slash red-text',
   };
   private isLoggedIn = false;
   private challengeSource = new BehaviorSubject(this.defaultChallenge);
@@ -39,8 +42,13 @@ export class ChallengeService {
    * @param apiService  ApiService Injection.
    * @param authService  AuthService Injection.
    */
-  constructor(private apiService: ApiService, private globalService: GlobalService,
-              private authService: AuthService, private endpointsService: EndpointsService) { }
+  constructor(
+    private apiService: ApiService,
+    private globalService: GlobalService,
+    private authService: AuthService,
+    private endpointsService: EndpointsService,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Update current Challenge.
@@ -137,13 +145,13 @@ export class ChallengeService {
     SELF.fetchPhaseSplits(id);
     SELF.changeChallengeHostStatus(false);
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         if (data['id'] === parseInt(id, 10)) {
           SELF.changeCurrentChallenge(data);
         }
         const challengePublish = {
           state: '',
-          icon: ''
+          icon: '',
         };
         if (data['published']) {
           challengePublish.state = 'Published';
@@ -154,12 +162,13 @@ export class ChallengeService {
         }
         this.changeChallengePublish(challengePublish);
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Challenge', id, 'fetched!');
-    });
+        this.logger.info('Challenge', id, 'fetched!');
+      }
+    );
   }
 
   /**
@@ -170,18 +179,18 @@ export class ChallengeService {
     const API_PATH = this.endpointsService.challengeStarsURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         if (callback) {
           callback(data);
         } else {
           SELF.changeCurrentStars(data);
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err, false);
       },
       () => {
-        console.log('Stars', id, 'fetched!');
+        this.logger.info('Stars', id, 'fetched!');
       }
     );
   }
@@ -197,18 +206,18 @@ export class ChallengeService {
     const SELF = this;
     const BODY = JSON.stringify({});
     this.apiService.postUrl(API_PATH, BODY).subscribe(
-      data => {
+      (data) => {
         if (callback) {
           callback(data, self);
         } else {
           SELF.changeCurrentStars(data);
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err, false);
       },
       () => {
-        console.log('Stars', id, 'fetched!');
+        this.logger.info('Stars', id, 'fetched!');
       }
     );
   }
@@ -224,7 +233,7 @@ export class ChallengeService {
     const API_PATH = this.endpointsService.challengeParticipantTeamsURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         let teams = [];
         let participated = false;
         if (data['is_challenge_host']) {
@@ -245,14 +254,14 @@ export class ChallengeService {
           SELF.changeParticipationStatus(false);
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Participant Teams fetched');
-    });
+        this.logger.info('Participant Teams fetched');
+      }
+    );
   }
-
 
   /**
    * Fetch Phases
@@ -262,19 +271,20 @@ export class ChallengeService {
     const API_PATH = this.endpointsService.challengePhaseURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         let phases = [];
         if (data['results']) {
           phases = data['results'];
           this.changeCurrentPhases(phases);
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Phases fetched');
-    });
+        this.logger.info('Phases fetched');
+      }
+    );
   }
 
   /**
@@ -285,19 +295,20 @@ export class ChallengeService {
     const API_PATH = this.endpointsService.challengePhaseSplitURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         let phaseSplits = [];
         if (data && data.length > 0) {
           phaseSplits = data;
           this.changeCurrentPhaseSplit(phaseSplits);
         }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Phase Splits fetched');
-    });
+        this.logger.info('Phase Splits fetched');
+      }
+    );
   }
 
   /**
@@ -310,15 +321,16 @@ export class ChallengeService {
     const SELF = this;
     const BODY = JSON.stringify({});
     this.apiService.postUrl(API_PATH, BODY).subscribe(
-      data => {
+      (data) => {
         SELF.fetchParticipantTeams(id);
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {
-        console.log('Challenge participated');
-    });
+        this.logger.info('Challenge participated');
+      }
+    );
   }
 
   /**
@@ -332,17 +344,18 @@ export class ChallengeService {
     const API_PATH = this.endpointsService.challengeSubmissionURL(challenge, phase);
     const SELF = this;
     this.apiService.postFileUrl(API_PATH, formData).subscribe(
-      data => {
+      (data) => {
         SELF.globalService.showToast('success', 'Submission successful!');
         callback();
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
         callback();
       },
       () => {
-        console.log('Submission Uploaded');
-    });
+        this.logger.info('Submission Uploaded');
+      }
+    );
   }
 
   /**
@@ -353,8 +366,6 @@ export class ChallengeService {
    */
   challengeCreate(hostTeam, formData, callback = () => {}) {
     const API_PATH = this.endpointsService.challengeCreateURL(hostTeam);
-    return  this.apiService.postFileUrl(API_PATH, formData);
+    return this.apiService.postFileUrl(API_PATH, formData);
   }
-
-
 }

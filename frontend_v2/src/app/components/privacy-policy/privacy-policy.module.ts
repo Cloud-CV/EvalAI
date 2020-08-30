@@ -9,17 +9,9 @@ import { PrivacyPolicyRoutingModule } from './privacy-policy-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  declarations: [
-    PrivacyPolicyComponent
-  ],
-  imports: [
-    CommonModule,
-    PrivacyPolicyRoutingModule,
-    SharedModule
-  ],
-  exports: [
-    PrivacyPolicyComponent
-  ],
-  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+  declarations: [PrivacyPolicyComponent],
+  imports: [CommonModule, PrivacyPolicyRoutingModule, SharedModule],
+  exports: [PrivacyPolicyComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class PrivacyPolicyModule { }
+export class PrivacyPolicyModule {}

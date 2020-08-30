@@ -181,4 +181,9 @@ urlpatterns = [
         views.manage_worker,
         name="manage_worker",
     ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
+        views.get_annotation_file_presigned_url,
+        name="get_annotation_file_presigned_url",
+    ),
 ]

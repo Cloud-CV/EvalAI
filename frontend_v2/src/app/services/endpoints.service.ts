@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class EndpointsService {
-
   /**
    * Categories of API paths
    */
@@ -14,7 +13,7 @@ export class EndpointsService {
   auth = 'auth/';
   analytics = 'analytics/';
 
-  constructor() { }
+  constructor() {}
 
   /**
    * Login URL
@@ -91,16 +90,32 @@ export class EndpointsService {
   }
 
   /**
+   * Participant Teams Filter
+   * @param teamName  team name
+   */
+  FilteredParticipantTeamURL(teamName) {
+    return `${this.participants}participant_team?team_name=${teamName}`;
+  }
+
+  /**
    * Edit Participant Team Name
    */
   participantTeamURL(teamId) {
     return `${this.participants}participant_team/${teamId}`;
   }
-/**
+  /**
    * Edit Host Team Name
    */
   hostTeamURL(teamId) {
     return `${this.hosts}challenge_host_team/${teamId}`;
+  }
+
+  /**
+   * Host Teams Filter
+   * @param teamName  team name
+   */
+  FilteredHostTeamURL(teamName) {
+    return `${this.hosts}challenge_host_team?team_name=${teamName}`;
   }
 
   /**
@@ -124,7 +139,6 @@ export class EndpointsService {
   allChallengesURL(time) {
     return `${this.challenges}${this.challenge}${time}`;
   }
-
 
   /**
    * All host teams
@@ -251,6 +265,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
+   * Get participated team name
+   * @param challenge  challenge id
+  */
+  getParticipatedTeamNameURL(challenge) {
+    return `${this.challenges}${this.challenge}${challenge}/participant_team/team_name`;
+  }
+
+  /**
    * Get all Challenge Submission
    * @param challenge  challenge id
    * @param phase  phase id
@@ -295,6 +317,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   challengeSubmissionUpdateURL(challenge, phase, submission) {
     return `${this.challengeSubmissionURL(challenge, phase)}${submission}`;
+  }
+
+  /**
+   * Disable Challenge Submission
+   * @param submission  submission id
+   */
+  disableChallengeSubmissionURL(submission) {
+    return `${this.jobs}submission/${submission}`;
   }
 
   /**
@@ -363,5 +393,22 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   downloadParticipantsAnalyticsURL(challengeId) {
     return `${this.analytics}challenges/${challengeId}/download_all_participants/`;
+  }
+
+  /**
+   * Manage worker
+   * @param challengeId challenge id
+   * @param action worker action
+   */
+  manageWorkerURL(challengeId, action) {
+    return `${this.challenges}${challengeId}/manage_worker/${action}/`;
+  }
+
+  /**
+   * Manage worker
+   * @param challengeId challenge id
+   */
+  getLogsURL(challengeId) {
+    return `${this.challenges}${challengeId}/get_worker_logs/`;
   }
 }

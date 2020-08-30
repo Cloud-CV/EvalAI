@@ -4,18 +4,35 @@
       <div class="row row-lr-margin">
         <div class="col-md-12 col-sm-12">
           <div class="ev-card-body">
-            <div class="modal-title align-center content"><strong class="fw-semibold">{{title}}</strong></div>
+            <div class="modal-title align-center content">
+              <strong class="fw-semibold">{{ title }}</strong>
+            </div>
             <div class="terms-content content" [innerHTML]="content"></div>
             <form name="acceptTermsAndConditionsForm">
-              <input type="checkbox" class="filled-in fs-14" [(ngModel)]="termsAndConditions" name="terms_and_conditions" id="terms_and_conditions">
-              <label for="terms_and_conditions">{{label}}</label>
+              <input
+                type="checkbox"
+                class="filled-in fs-14"
+                [(ngModel)]="termsAndConditions"
+                name="terms_and_conditions"
+                id="terms_and_conditions"
+              />
+              <label for="terms_and_conditions">{{ label }}</label>
               <div style="text-align: left !important;">
                 <ul class="inline-list pointer">
                   <li class="rm-margin">
-                    <a appClickstop (click)="denied()" class="dark-link pointer"><strong class="fw-semibold">{{deny}}</strong></a>
+                    <a appClickstop (click)="denied()" class="dark-link pointer"
+                      ><strong class="fw-semibold">{{ deny }}</strong></a
+                    >
                   </li>
                   <li>
-                    <button [disabled]="!termsAndConditions" appClickstop (click)="confirmed()" class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14">{{confirm}}</button>
+                    <button
+                      [disabled]="!termsAndConditions"
+                      appClickstop
+                      (click)="confirmed()"
+                      class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                    >
+                      {{ confirm }}
+                    </button>
                   </li>
                 </ul>
               </div>
