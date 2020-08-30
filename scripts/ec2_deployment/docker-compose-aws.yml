@@ -8,7 +8,7 @@ services:
       - ./../../.env
     build:
       context: ./../../
-      dockerfile: ./../../docker/vm/django/Dockerfile
+      dockerfile: docker/vm/django/Dockerfile
     ports:
       - "8000:8000"
     volumes:
@@ -27,7 +27,7 @@ services:
       - ./../../.env
     build:
       context: ./../../
-      dockerfile: ./../../docker/vm/worker/Dockerfile
+      dockerfile: docker/vm/worker/Dockerfile
     depends_on:
       - django
     volumes:
@@ -55,7 +55,7 @@ services:
       - ./../../.env
     build:
       context: ./../../
-      dockerfile: ./../../docker/vm/celery/Dockerfile
+      dockerfile: docker/vm/celery/Dockerfile
     depends_on:
       - django
     logging:
@@ -68,7 +68,7 @@ services:
   nodejs:
     build:
       context: ./../../
-      dockerfile: ./../../docker/vm/nodejs/Dockerfile
+      dockerfile: docker/vm/nodejs/Dockerfile
       args:
         NODE_ENV: vm
         DOMAIN_NAME: ${DOMAIN_NAME}
