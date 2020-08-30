@@ -1,7 +1,7 @@
 version: "3"
 services:
   django:
-    image: yashdusing/evalai-aws-backend:latest
+    image: evalai/evalai-aws-backend:latest
     hostname: django
     env_file:
       - ./../../docker/vm/docker_vm.env
@@ -21,7 +21,7 @@ services:
         awslogs-create-group: "true"
 
   worker:
-    image: yashdusing/evalai-aws-worker:latest
+    image: evalai/evalai-aws-worker:latest
     env_file:
       - ./../../docker/vm/docker_vm.env
       - ./../../.env
@@ -35,7 +35,7 @@ services:
 
   # required: auth token
   # remote-worker:
-  #   image: yashdusing/evalai-aws-remote-worker:latest
+  #   image: evalai/evalai-aws-remote-worker:latest
   #   env_file:
   #     - ./../../docker/vm/docker_vm.env
   #     - ./../../.env
@@ -49,7 +49,7 @@ services:
   #     - ./../..:/code
 
   celery:
-    image: yashdusing/evalai-aws-celery:latest
+    image: evalai/evalai-aws-celery:latest
     env_file:
       - ./../../docker/vm/docker_vm.env
       - ./../../.env

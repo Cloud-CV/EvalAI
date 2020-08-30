@@ -67,8 +67,12 @@ if [ "$skip_input" != "Y" ] && [ "$skip_input" != "y" ]; then
     read -p "Enter Subnet Security Group ID : " SUBNET_SECURITY_GROUP
     echo "SUBNET_SECURITY_GROUP=$SUBNET_SECURITY_GROUP" >> .env
 
-    read -p "Enter Worker Image (yashdusing/evalai-aws-worker:latest) : " WORKER_IMAGE
+    read -p "Enter Worker Image (evalai/evalai-aws-worker:latest) : " WORKER_IMAGE
     echo "WORKER_IMAGE=$WORKER_IMAGE" >> .env
+
+    # Adding a valid address is strongly recommended
+    read -p "Enter your Email ID : " email
+    echo "email=$email" >> .env
 
     DJANGO_SERVER="${DOMAIN_NAME}"
     echo "DJANGO_SERVER=$DJANGO_SERVER" >> .env

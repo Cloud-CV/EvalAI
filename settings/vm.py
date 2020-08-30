@@ -67,7 +67,7 @@ DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
 
 # Setup Email Backend related settings
 EMAIL_BACKEND = "django_ses.SESBackend"
-DEFAULT_FROM_EMAIL = "yashdusing145@gmail.com"
+DEFAULT_FROM_EMAIL = os.environ.get("email")
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
