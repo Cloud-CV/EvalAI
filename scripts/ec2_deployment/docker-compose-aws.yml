@@ -13,12 +13,12 @@ services:
       - "8000:8000"
     volumes:
       - ./../..:/code
-    # logging:
-    #   driver: awslogs
-    #   options:
-    #     awslogs-region: ${AWS_DEFAULT_REGION}
-    #     awslogs-group: django_aws
-    #     awslogs-create-group: "true"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: django_aws
+        awslogs-create-group: "true"
 
   worker:
     image: yashdusing/evalai-aws-worker:latest
@@ -58,12 +58,12 @@ services:
       dockerfile: docker/vm/celery/Dockerfile
     depends_on:
       - django
-    # logging:
-    #   driver: awslogs
-    #   options:
-    #     awslogs-region: ${AWS_DEFAULT_REGION}
-    #     awslogs-group: celery_aws
-    #     awslogs-create-group: "true"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: celery_aws
+        awslogs-create-group: "true"
 
   nodejs:
     build:
@@ -85,12 +85,12 @@ services:
       - ./../../certbot/conf:/etc/letsencrypt
       - ./../../certbot/www:/var/www/certbot
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-    # logging:
-    #   driver: awslogs
-    #   options:
-    #     awslogs-region: ${AWS_DEFAULT_REGION}
-    #     awslogs-group: nodejs_aws
-    #     awslogs-create-group: "true"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: nodejs_aws
+        awslogs-create-group: "true"
 
   certbot:
     image: certbot/certbot
