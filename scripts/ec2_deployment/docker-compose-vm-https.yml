@@ -35,10 +35,13 @@ services:
       - 9324:9324
 
   django:
+    image: evalai/evalai_django:latest
     hostname: django
     env_file:
       - ./../../docker/dev/docker.env
-    image: yashdusing/evalai_django:latest
+    build:
+      context: ./
+      dockerfile: docker/dev/django/Dockerfile
     ports:
       - "8000:8000"
     depends_on:
@@ -48,9 +51,12 @@ services:
       - ./../..:/code
 
   worker:
-    image: yashdusing/evalai_worker:latest
+    image: evalai/evalai_worker:latest
     env_file:
       - ./../../docker/dev/docker.env
+    build:
+      context: ./
+      dockerfile: docker/dev/worker/Dockerfile
     depends_on:
       - django
     volumes:
