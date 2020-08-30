@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSliderChange } from '@angular/material';
@@ -23,7 +23,7 @@ import { EndpointsService } from '../../../services/endpoints.service';
   templateUrl: './challengeleaderboard.component.html',
   styleUrls: ['./challengeleaderboard.component.scss'],
 })
-export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
+export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Phase select card components
    */
@@ -475,7 +475,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     );
   }
 
-  // function for toggeling between public leaderboard and complete leaderboard [public/private]
+  /**
+   * function for toggeling between public leaderboard and complete leaderboard [public/private]
+   */
   toggleLeaderboard(getAllEntries) {
     this.getAllEntries = getAllEntries;
     if (getAllEntries) {
@@ -559,7 +561,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     return dialogRef.afterClosed();
   }
 
-  // Show dialogue box for viewing metadata
+  /**
+   *  Show dialogue box for viewing metadata
+   */
   showMetaAttributesDialog(attributes) {
     const SELF = this;
     if (attributes !== false) {
@@ -575,7 +579,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     SELF.openDialog(SELF.metaAttributesData);
   }
 
-  // Update leaderboard decimal precision value
+  /**
+   *  Update leaderboard decimal precision value
+   */
   updateLeaderboardDecimalPrecision(event: MatSliderChange) {
     const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
     const SELF = this;
@@ -591,5 +597,12 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       },
       () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
     );
+  }
+
+  /**
+   *  Clear the polling interval
+   */
+  ngOnDestroy() {
+    clearInterval(this.pollingInterval);
   }
 }
