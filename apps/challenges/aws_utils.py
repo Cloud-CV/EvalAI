@@ -59,6 +59,7 @@ COMMON_SETTINGS_DICT = {
         ),
     ),
     "CPU": os.environ.get("CPU", 1024),
+    "CIDR": os.environ.get("CIDR"),
     "MEMORY": os.environ.get("MEMORY", 2048),
     "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
@@ -249,6 +250,10 @@ task_definition_code_upload_worker = """
                 {{
                   "name": "CERTIFICATE",
                   "value": "{certificate}"
+                }},
+                {{
+                  "name": "CIDR",
+                  "value": "{CIDR}"
                 }},
                 {{
                   "name": "QUEUE_NAME",
