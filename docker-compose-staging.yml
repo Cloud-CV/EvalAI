@@ -94,4 +94,3 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/code-upload-worker/Dockerfile
-    command: ["python", "-m", "scripts.workers.code_upload_submission_worker"]

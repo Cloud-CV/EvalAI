@@ -1439,7 +1439,7 @@ def get_all_submissions_of_challenge(
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
         submissions = Submission.objects.filter(
-            challenge_phase=challenge_phase
+            challenge_phase=challenge_phase, ignore_submission=False
         ).order_by("-submitted_at")
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submissions

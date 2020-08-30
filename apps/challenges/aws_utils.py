@@ -62,6 +62,7 @@ COMMON_SETTINGS_DICT = {
     "MEMORY": os.environ.get("MEMORY", 2048),
     "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
+    "EVALAI_API_SERVER": os.environ.get("EVALAI_API_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
     "EMAIL_HOST": settings.EMAIL_HOST,
     "EMAIL_HOST_PASSWORD": settings.EMAIL_HOST_PASSWORD,
@@ -226,12 +227,36 @@ task_definition_code_upload_worker = """
             "essential": True,
             "environment": [
                 {{
+                  "name": "AWS_DEFAULT_REGION",
+                  "value": "{AWS_DEFAULT_REGION}"
+                }},
+                {{
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "value": "{AWS_ACCESS_KEY_ID}"
+                }},
+                {{
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "CLUSTER_NAME",
+                  "value": "{cluster_name}"
+                }},
+                {{
+                  "name": "CLUSTER_ENDPOINT",
+                  "value": "{cluster_endpoint}"
+                }},
+                {{
+                  "name": "CERTIFICATE",
+                  "value": "{certificate}"
+                }},
+                {{
                   "name": "QUEUE_NAME",
                   "value": "{queue_name}"
                 }},
                 {{
                   "name": "EVALAI_API_SERVER",
-                  "value": "{DJANGO_SERVER}"
+                  "value": "{EVALAI_API_SERVER}"
                 }},
 
                 {{
@@ -343,6 +368,16 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
 
     if execution_role_arn:
         if challenge.is_docker_based:
+            from .models import ChallengeEvaluationCluster
+            # Cluster detail to be used by code-upload-worker
+            try:
+                cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                cluster_name = cluster_details.name
+                cluster_endpoint = cluster_details.cluster_endpoint
+                cluster_certificate = cluster_details.cluster_ssl
+            except ClientError as e:
+                logger.exception(e)
+                return e.response
             # challenge host auth token to be used by code-upload-worker
             try:
                 token = Token.objects.get(user=challenge.creator.created_by)
@@ -355,6 +390,9 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 ENV=ENV,
                 challenge_pk=challenge.pk,
                 auth_token=token,
+                cluster_name=cluster_name,
+                cluster_endpoint=cluster_endpoint,
+                certificate=cluster_certificate,
                 **COMMON_SETTINGS_DICT,
             )
         else:
