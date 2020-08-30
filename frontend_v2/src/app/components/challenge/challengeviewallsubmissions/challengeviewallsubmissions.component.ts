@@ -570,4 +570,34 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     };
     SELF.globalService.showConfirm(PARAMS);
   }
+
+  /**
+   * Delete Submission.
+   * @param submission  Submission being deleted
+  */
+  deleteChallengeSubmission(submission) {
+    const SELF = this;
+    SELF.apiCall = () => {
+      SELF.apiService.deleteUrl(
+        SELF.endpointsService.disableChallengeSubmissionURL(submission.id)).subscribe(
+        () => {
+          SELF.globalService.showToast('success', 'Submission Deleted successfully', 5);
+          SELF.fetchSubmissions(SELF.challenge.id, SELF.selectedPhase.id);
+        },
+        err => {
+          SELF.globalService.handleApiError(err, true);
+        },
+        () => {}
+      );
+    };
+    const PARAMS = {
+      title: 'Delete Submission',
+      content: 'I understand consequences, delete the submission',
+      isButtonDisabled: true,
+      confirm: 'Yes',
+      deny: 'No',
+      confirmCallback: SELF.apiCall
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
 }
