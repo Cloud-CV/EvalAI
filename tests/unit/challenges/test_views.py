@@ -3802,6 +3802,7 @@ class GetOrUpdateDatasetSplitTest(BaseAPITestClass):
             "id": self.dataset_split.pk,
             "name": self.dataset_split.name,
             "codename": self.dataset_split.codename,
+            "config_id": None,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
