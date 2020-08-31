@@ -2429,6 +2429,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "config_id": None
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -3714,6 +3715,7 @@ class GetOrUpdateLeaderboardTest(BaseAPITestClass):
         expected = {
             "id": self.leaderboard.pk,
             "schema": self.leaderboard.schema,
+            "config_id": None,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
@@ -4150,6 +4152,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "config_id": None,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4178,6 +4181,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "config_id": None,
             },
         ]
         response = self.client.get(self.url, {})

@@ -136,9 +136,6 @@ def is_challenge_phase_config_yaml_html_field_valid(
     is_valid = False
     if value:
         is_valid = True
-        file_path = join(base_location, value)
-        if file_path.endswith(".html") and isfile(file_path):
-            field_value = get_file_content(file_path, "rb").decode("utf-8")
     else:
         message = " ERROR: There is no key for {} in phase {}.".format(
             key, yaml_file_data["name"]
