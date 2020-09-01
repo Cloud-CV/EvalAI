@@ -40,7 +40,7 @@ echo "### Calico Installed"
 #Apply network policies
 cat code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s|{{CIDR}}|$CIDR|;" | kubectl apply -f -
 
-#Set ssl-certificate
+# set ssl-certificate
 echo $CERTIFICATE > scripts/workers/certificate.txt
 
 #Running Submission Worker
