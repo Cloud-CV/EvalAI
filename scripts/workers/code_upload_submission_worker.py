@@ -154,11 +154,11 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
 
 
 def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
-    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
-    configuration.verify_ssl = False
+    configuration.verify_ssl = True
+    configuration.ssl_ca_cert = '.certificate.txt'
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -172,7 +172,8 @@ def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
-    configuration.verify_ssl = False
+    configuration.verify_ssl = True
+    configuration.ssl_ca_cert = '.certificate.txt'
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -186,7 +187,8 @@ def get_core_v1_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
-    configuration.verify_ssl = False
+    configuration.verify_ssl = True
+    configuration.ssl_ca_cert = '.certificate.txt'
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
