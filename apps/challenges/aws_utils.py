@@ -374,9 +374,12 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     if execution_role_arn:
         if challenge.is_docker_based:
             from .models import ChallengeEvaluationCluster
+
             # Cluster detail to be used by code-upload-worker
             try:
-                cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                cluster_details = ChallengeEvaluationCluster.objects.get(
+                    challenge=challenge
+                )
                 cluster_name = cluster_details.name
                 cluster_endpoint = cluster_details.cluster_endpoint
                 cluster_certificate = cluster_details.cluster_ssl
@@ -956,6 +959,9 @@ def get_logs_from_cloudwatch(
             for event in response["events"]:
                 logs.append(event["message"])
         except Exception as e:
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                return logs
+
             logger.exception(e)
             return [
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
