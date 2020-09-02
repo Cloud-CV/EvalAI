@@ -429,7 +429,6 @@ export class ChallengelistComponent implements OnInit {
         const datas = data['results'];
         if (datas) {
           datas.forEach((challenge) => {
-            console.log('CHALLENGE', challenge['approved_by_admin']);
             if (challenge['approved_by_admin'] === false) {
               SELF.unapprovedChallengeList.push(challenge);
             }
