@@ -215,7 +215,6 @@ export class ChallengelistComponent implements OnInit {
       this.fetchChallenges();
     } else if (this.router.url === this.myChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.fetchMyTeams();
-      // this.fetchUnapprovedChallengesFromApi();
     } else if (this.router.url === this.myParticipatedChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.fetchMyParticipatedChallenges();
     }
