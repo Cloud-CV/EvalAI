@@ -634,7 +634,12 @@ def start_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers == 0) or (challenge.workers is None):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=1
             )
@@ -683,7 +688,12 @@ def stop_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
@@ -832,7 +842,12 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client,
                 challenge=challenge,
