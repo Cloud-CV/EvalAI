@@ -795,7 +795,12 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.workers is not None:
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
