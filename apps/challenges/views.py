@@ -2814,9 +2814,9 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
+def get_prioritized_submissions_from_queue(request, challenge_phase_pk):
     """
-    API to get total no of prioritised submissions in a challenge queue
+    API to get total no of prioritized submissions from a challenge queue
 
     Arguments:
         request {HttpRequest} -- The request object
@@ -2842,10 +2842,10 @@ def get_prioritised_submissions_in_challenge_queue(request, challenge_phase_pk):
 
     challenge_pk = challenge_phase.challenge.id
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk).filter(challenge_phase_prioritize=True)
-    Total_prioritised_submission = 0
+    prioritized_submission_count = 0
     for challenge_phase in challenge_phases:
         submission_count = Submission.objects.filter(challenge_phase=challenge_phase.pk).count()
-        Total_prioritised_submission = Total_prioritised_submission + submission_count
+        prioritized_submission_count = prioritized_submission_count + submission_count
 
-    response_data = {"prioritised_submissions": Total_prioritised_submission}
+    response_data = {"prioritised_submissions": prioritized_submission_count}
     return Response(response_data, status=status.HTTP_200_OK)

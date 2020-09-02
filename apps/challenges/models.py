@@ -225,7 +225,7 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey("Challenge")
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
-    challenge_phase_prioritize = models.BooleanField(default=False)
+    is_evaluation_prioritized = models.BooleanField(default=False)
     test_annotation = models.FileField(
         upload_to=RandomFileName("test_annotations"), null=True, blank=True
     )
