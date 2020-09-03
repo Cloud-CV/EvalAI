@@ -374,9 +374,12 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     if execution_role_arn:
         if challenge.is_docker_based:
             from .models import ChallengeEvaluationCluster
+
             # Cluster detail to be used by code-upload-worker
             try:
-                cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                cluster_details = ChallengeEvaluationCluster.objects.get(
+                    challenge=challenge
+                )
                 cluster_name = cluster_details.name
                 cluster_endpoint = cluster_details.cluster_endpoint
                 cluster_certificate = cluster_details.cluster_ssl
@@ -811,6 +814,8 @@ def delete_workers(queryset):
                 )
                 continue
             count += 1
+            log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+            delete_log_group(log_group_name)
         else:
             response = "Please select challenges with active workers only."
             failures.append(
@@ -976,11 +981,25 @@ def get_logs_from_cloudwatch(
             for event in response["events"]:
                 logs.append(event["message"])
         except Exception as e:
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                return logs
+
             logger.exception(e)
             return [
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
             ]
     return logs
+
+
+def delete_log_group(log_group_name):
+    if settings.DEBUG:
+        pass
+    else:
+        try:
+            client = get_boto3_client("logs", aws_keys)
+            client.delete_log_group(logGroupName=log_group_name)
+        except Exception as e:
+            logger.exception(e)
 
 
 @app.task
