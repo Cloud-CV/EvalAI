@@ -320,6 +320,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
+   * Disable Challenge Submission
+   * @param submission  submission id
+   */
+  disableChallengeSubmissionURL(submission) {
+    return `${this.jobs}submission/${submission}`;
+  }
+
+  /**
    * Challenge Submissions Remaining
    * @param challenge  challenge id
    */
