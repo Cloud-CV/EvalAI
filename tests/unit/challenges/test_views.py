@@ -1916,7 +1916,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                     self.challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
-                "is_public": self.challenge_phase.is_public,
+                "is_public": self.challenge_phase.is_public,            
                 "is_active": True,
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
@@ -1927,6 +1927,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_submission_prioritized": False,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1951,6 +1952,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_submission_prioritized": False,
             },
         ]
 
@@ -1983,6 +1985,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_submission_prioritized": False,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2015,6 +2018,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 ).replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
                 "is_public": self.challenge_phase.is_public,
+                "is_evaluation_prioritized": False,
                 "is_active": True,
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
@@ -2049,6 +2053,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "is_submission_prioritized": False,
             },
         ]
 
@@ -2295,6 +2300,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             "codename": "Phase Code Name 2",
             "is_restricted_to_select_one_submission": True,
             "is_partial_submission_evaluation_enabled": False,
+            "is_evaluation_prioritized": False,
         }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
@@ -2395,6 +2401,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "is_evaluation_prioritized": False,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2487,6 +2494,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "is_submission_prioritized": False,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2574,6 +2582,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             ).replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
+            "is_evaluation_prioritized": False,
             "is_active": True,
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
@@ -2584,6 +2593,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "is_submission_prioritized": False,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -3382,7 +3392,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
-                "ignore_submission": False,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
@@ -4081,6 +4090,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "is_submission_prioritized": False,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
