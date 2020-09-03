@@ -1918,7 +1918,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                     self.challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
-                "is_public": self.challenge_phase.is_public,            
+                "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
