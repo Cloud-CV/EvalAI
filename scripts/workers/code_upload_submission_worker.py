@@ -142,7 +142,7 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
         submission_data = {
             "submission_status": "running",
             "submission": body["submission_pk"],
-            "job_name": response.metadata.name,
+            "job_name": response.metadata.generate_name,
         }
         evalai.update_submission_status(submission_data, body["challenge_pk"])
     except Exception as e:
