@@ -799,6 +799,8 @@ def delete_workers(queryset):
                 )
                 continue
             count += 1
+            log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+            delete_log_group(log_group_name)
         else:
             response = "Please select challenges with active workers only."
             failures.append(
@@ -967,6 +969,17 @@ def get_logs_from_cloudwatch(
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
             ]
     return logs
+
+
+def delete_log_group(log_group_name):
+    if settings.DEBUG:
+        pass
+    else:
+        try:
+            client = get_boto3_client("logs", aws_keys)
+            client.delete_log_group(logGroupName=log_group_name)
+        except Exception as e:
+            logger.exception(e)
 
 
 @app.task
