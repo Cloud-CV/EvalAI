@@ -961,6 +961,9 @@ def get_logs_from_cloudwatch(
             for event in response["events"]:
                 logs.append(event["message"])
         except Exception as e:
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                return logs
+
             logger.exception(e)
             return [
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
