@@ -1918,18 +1918,18 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                     self.challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
-                "is_public": self.challenge_phase.is_public,
-                "is_active": True,
-                "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "is_public": self.challenge_phase.is_public,
+                "is_active": True,
                 "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
+                "codename": "Phase Code Name",
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "is_submission_prioritized": False,
+                "is_evaluation_prioritized": False,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1943,18 +1943,18 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                     self.private_challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.private_challenge_phase.challenge.pk,
-                "is_public": self.private_challenge_phase.is_public,
-                "is_active": True,
-                "codename": self.private_challenge_phase.codename,
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "is_public": self.private_challenge_phase.is_public,
+                "is_active": True,
                 "max_concurrent_submissions_allowed": self.private_challenge_phase.max_concurrent_submissions_allowed,
+                "codename": self.private_challenge_phase.codename,
                 "slug": self.private_challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "is_submission_prioritized": False,
+                "is_evaluation_prioritized": False,
             },
         ]
 
@@ -1987,7 +1987,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "is_submission_prioritized": False,
+                "is_evaluation_prioritized": False,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2055,7 +2055,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-                "is_submission_prioritized": False,
+                "is_evaluation_prioritized": False,
             },
         ]
 
@@ -2496,7 +2496,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "is_submission_prioritized": False,
+            "is_evaluation_prioritized": False,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2595,7 +2595,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "is_submission_prioritized": False,
+            "is_evaluation_prioritized": False,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -3398,6 +3398,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
                 "submission_metadata": None,
+                "is_evaluation_prioritized": False,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
@@ -4092,7 +4093,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "is_submission_prioritized": False,
+            "is_evaluation_prioritized": False,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
