@@ -355,7 +355,7 @@ def get_challenge_template_data(challenge):
     return template_data
 
 
-def send_multiple_emails(emails, template_id, template_data):
+def send_emails(emails, template_id, template_data):
     """
         Sends email to list of users using provided template
         Arguments:

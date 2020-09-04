@@ -126,7 +126,7 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     get_challenge_template_data,
-    send_multiple_emails
+    send_emails
 )
 
 logger = logging.getLogger(__name__)
@@ -1393,7 +1393,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
                             "WORKER_START_EMAIL"
                         )
-                        send_multiple_emails(emails, template_id, template_data)
+                        send_emails(emails, template_id, template_data)
                 except Exception:
                     logger.exception(
                         "Failed to start workers for challenge {}".format(zip_config.challenge.pk)
@@ -1402,7 +1402,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
                     "MISSING_ANNOTATIONS_EMAIL"
                 )
-                send_multiple_emails(emails, template_id, template_data)
+                send_emails(emails, template_id, template_data)
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"
