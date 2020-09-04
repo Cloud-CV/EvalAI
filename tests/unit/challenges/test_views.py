@@ -3398,11 +3398,14 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
                 "submission_metadata": None,
+                "ignore_submission": False,
             }
         ]
+        print(expected)
         self.challenge5.participant_teams.add(self.participant_team6)
         self.challenge5.save()
         response = self.client.get(self.url, {})
+        print(response.data["results"])
         self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
