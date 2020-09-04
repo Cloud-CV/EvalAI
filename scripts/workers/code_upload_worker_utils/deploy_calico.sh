@@ -38,7 +38,7 @@ kubectl apply -f https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/releas
 echo "### Calico Installed"
 
 #Apply network policies
-cat code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s|{{CIDR}}|$CIDR|;" | kubectl apply -f -
+cat scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s|{{CIDR}}|$CIDR|;" | kubectl apply -f -
 
 # set ssl-certificate
 echo $CERTIFICATE > scripts/workers/certificate.txt
