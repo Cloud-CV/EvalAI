@@ -3398,7 +3398,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
                 "submission_metadata": None,
-                "is_evaluation_prioritized": False,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
