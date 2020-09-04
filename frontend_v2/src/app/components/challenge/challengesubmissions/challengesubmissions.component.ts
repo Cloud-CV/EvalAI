@@ -151,8 +151,8 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   apiCall: any;
 
-  columnsToDisplay = ['status', 'stderr_file', 'stdout_file', 'submission_result_file'];
-  columnsHeadings = ['Status', 'Stderr File', 'Stdout File', 'Submission Result File'];
+  columnsToDisplay = ['s_no', 'status', 'stderr_file', 'stdout_file', 'submission_result_file'];
+  columnsHeadings = ['S.No.', 'Status', 'Stderr File', 'Stdout File', 'Submission Result File'];
 
   expandedElement: null;
 
@@ -274,6 +274,11 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.submissions = data['results'];
+        let index = 0;
+        SELF.submissions.forEach((submission) => {
+          submission['s_no'] = index + 1;
+          index += 1;
+        });
         SELF.paginationDetails.next = data.next;
         SELF.paginationDetails.previous = data.previous;
         SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
@@ -597,15 +602,15 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   /**
    * Get participated team name API
    * @param challengeId Challenge Id
-  */
+   */
   fetchParticipated_team(challengeId) {
     const SELF = this;
     const API_PATH = SELF.endpointsService.getParticipatedTeamNameURL(challengeId);
     this.apiService.getUrl(API_PATH, true, false).subscribe(
-      data => {
+      (data) => {
         SELF.participatedTeamName = data['team_name'];
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}
