@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import signal
-import urllib
+import urllib.request
 import yaml
 
 
@@ -281,7 +281,7 @@ def install_gpu_drivers(api_instance):
     logging.info("Installing Nvidia-GPU Drivers ...")
     link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
     logging.info("Using daemonset file: %s", link)
-    nvidia_manifest = urllib.urlopen(link)
+    nvidia_manifest = urllib.request.urlopen(link)
     daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
     ext_client = client.ExtensionsV1beta1Api(api_instance)
     try:

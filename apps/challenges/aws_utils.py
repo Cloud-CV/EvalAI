@@ -1145,23 +1145,25 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
 
     if not challenge.is_docker_based and challenge.remote_evaluation is False:
         if curr and not prev:
-            response = start_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if count != 1:
-                logger.error(
-                    "Worker for challenge {} couldn't start! Error: {}".format(
-                        challenge.id, failures[0]["message"]
+            if not challenge.workers:
+                response = start_workers([challenge])
+                count, failures = response["count"], response["failures"]
+                if not count:
+                    logger.error(
+                        "Worker for challenge {} couldn't start! Error: {}".format(
+                            challenge.id, failures[0]["message"]
+                        )
                     )
-                )
-            else:
-                construct_and_send_worker_start_mail(challenge)
+                else:
+                    construct_and_send_worker_start_mail(challenge)
 
         if prev and not curr:
-            response = delete_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if count != 1:
-                logger.error(
-                    "Worker for challenge {} couldn't be deleted! Error: {}".format(
-                        challenge.id, failures[0]["message"]
+            if challenge.workers:
+                response = delete_workers([challenge])
+                count, failures = response["count"], response["failures"]
+                if not count:
+                    logger.error(
+                        "Worker for challenge {} couldn't be deleted! Error: {}".format(
+                            challenge.id, failures[0]["message"]
+                        )
                     )
-                )
