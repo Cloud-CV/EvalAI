@@ -1439,7 +1439,7 @@ def get_all_submissions_of_challenge(
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
         submissions = Submission.objects.filter(
-            challenge_phase=challenge_phase
+            challenge_phase=challenge_phase, ignore_submission=False
         ).order_by("-submitted_at")
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submissions
@@ -2684,7 +2684,7 @@ def get_worker_logs(request, challenge_pk):
     # This is to specify the time window for fetching logs: 15 minutes before from current time.
     timeframe = 15
     current_time = int(round(time.time() * 1000))
-    start_time = current_time - timeframe * 900000
+    start_time = current_time - (timeframe * 60000)
     end_time = current_time
 
     logs = get_logs_from_cloudwatch(

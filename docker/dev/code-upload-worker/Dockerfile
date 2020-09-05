@@ -5,11 +5,14 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /code
 WORKDIR /code
 
+RUN apt-get update && apt-get install unzip
+
 ADD requirements/* /code/
 
 RUN pip install -r code_upload_worker.txt
 
 ADD . /code
 
-CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.code_upload_submission_worker"]
+RUN chmod +x scripts/workers/code_upload_worker_utils/deploy_calico.sh
 
+CMD ["scripts/workers/code_upload_worker_utils/deploy_calico.sh"]
