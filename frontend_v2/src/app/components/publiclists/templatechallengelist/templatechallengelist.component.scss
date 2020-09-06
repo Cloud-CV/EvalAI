@@ -1,0 +1,82 @@
+@import 'styles/variables';
+
+.dashboard-flex {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.dashboard-content {
+  flex: 1;
+  min-height: 100vh;
+}
+
+.web-container {
+  width: calc(100vw - 223px);
+  float: right;
+  padding-top: 70px;
+  overflow-x: hidden;
+  &.center {
+    float: none;
+    margin: 0 auto;
+    text-align: left;
+    overflow: hidden;
+  }
+}
+
+@media only screen and (max-width: $med-screen) {
+  .web-container {
+    width: 100%;
+  }
+}
+
+
+a.btn-card-detail:focus {
+  color: black;
+  display: block;
+  height: 40px;
+  box-sizing: border-box;
+  border-bottom: 2px solid black;
+  background-color: white;
+}
+
+.none {
+  margin: 1%;
+}
+
+::ng-deep .mat-tab-label .mat-tab-label-content {
+  color: #4d4d4d;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+@import 'styles/variables';
+
+.ev-challenge-card {
+  min-height: 415px;
+}
+
+.bg-img {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+}
+
+.margin-top-btm {
+  margin-top: 10px;
+  margin-bottom: 25px;
+}
+
+.card {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+p {
+  word-wrap: break-word;
+}
+
+.card-content {
+  height: 275px;
+  overflow: hidden;
+}
