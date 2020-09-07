@@ -94,7 +94,7 @@ export class TemplateChallengeCreateComponent implements OnInit {
 	createTemplateChallenge(){
 		if (this.challengeData != null) {
 			const FORM_DATA: FormData = new FormData();
-			this.challengeData['is_template_challenge'] = true;
+			this.challengeData['is_challenge_template'] = true;
 			this.challengeData['template_id'] = this.id
 			this.challengeData.challenge_phases = JSON.stringify(this.challenge_phases);
 			//FORM_DATA.append('data', JSON.stringify(this.challengeData));
@@ -102,7 +102,6 @@ export class TemplateChallengeCreateComponent implements OnInit {
 				FORM_DATA.append(key, this.challengeData[key]);
 			}
 			this.globalService.startLoader('Creating Challenge');
-			console.log(this.hostTeam);
 			this.challengeService.challengeCreate(this.hostTeam['id'], FORM_DATA).subscribe(
 		        (data) => {
 		          this.globalService.stopLoader();
@@ -119,6 +118,5 @@ export class TemplateChallengeCreateComponent implements OnInit {
 		else {
 			this.globalService.showToast('error', 'Please fill all the given challenge details');
 		}
-		console.log(this.challengeData);
 	}
 }

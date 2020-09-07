@@ -685,18 +685,18 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    if request.data.get("is_template_challenge"):
-        is_template_challenge = True
+    if request.data.get("is_challenge_template"):
+        is_challenge_template = True
     else:
-        is_template_challenge = False
+        is_challenge_template = False
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
 
-    if is_template_challenge:
+    if is_challenge_template:
         template_id = int(request.data.get("template_id"))
         try:
-            template = ChallengeTemplate.objects.get(
+            challenge_template = ChallengeTemplate.objects.get(
                 id=template_id, is_active=True
             )
         except ChallengeTemplate.DoesNotExist:
@@ -707,8 +707,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        template_url = template.template_file.url
-        template_url = "http://localhost:8000" + template_url
+        template_zip_s3_url = challenge_template.template_file.url
+
+        if settings.DEBUG:
+            template_zip_s3_url = "http://localhost:8000" + template_zip_s3_url
+        else:
+            template_zip_s3_url = "evalapi.cloudcv.org" + template_zip_s3_url
 
         unique_folder_name = get_unique_alpha_numeric_key(10)
         challenge_template_download_location = join(
@@ -716,11 +720,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
 
         try:
-            response = requests.get(template_url, stream=True)
+            response = requests.get(template_zip_s3_url, stream=True)
         except Exception as e:
             logger.error(
                 "Failed to fetch file from {}, error {}".format(
-                    template_url, e
+                    template_zip_s3_url, e
                 )
             )
             response_data = {
@@ -732,7 +736,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             with open(challenge_template_download_location, "wb") as f:
                 f.write(response.content)
 
-        zip_file = open(challenge_template_download_location, "rb")
+        try:
+            zip_file = open(challenge_template_download_location, "rb")
+        except Exception as e:
+            message = (
+            "A server error occured while processing zip file. "
+            "Please try again!"
+            )
+            response_data = {"error": message}
+            logger.exception(message)
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         challenge_zip_file = SimpleUploadedFile(
             zip_file.name, zip_file.read(), content_type="application/zip"
         )
@@ -744,8 +758,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             data=challenge_data_from_hosts, context={"request": request}
         )
     else:
+        data = request.data.copy()
         serializer = ChallengeConfigSerializer(
-            data=request.data, context={"request": request}
+            data=data, context={"request": request}
         )
 
     if serializer.is_valid():
@@ -1114,7 +1129,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
-    if is_template_challenge:
+    if is_challenge_template:
         yaml_file_data["title"] = challenge_data_from_hosts.get("title")
         yaml_file_data["description"] = challenge_data_from_hosts.get(
             "description"
@@ -1123,24 +1138,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         yaml_file_data["end_date"] = challenge_data_from_hosts.get("end_date")
 
         # Mapping the challenge phase data to that in yaml_file_data
-        challenge_phases_data = yaml_file_data["challenge_phases"]
-        challenge_phases_data_from_hosts = challenge_data_from_hosts.get(
+        challenge_phases = yaml_file_data["challenge_phases"]
+        challenge_phases_from_hosts = challenge_data_from_hosts.get(
             "challenge_phases"
         )
+        challenge_phases_from_hosts = json.loads(challenge_phases_from_hosts)
 
-        challenge_phases_data_from_hosts = json.loads(challenge_phases_data_from_hosts)
-
-        for i in range(len(challenge_phases_data)):
-            challenge_phases_data[i][
+        for challenge_phase_data, challenge_phase_data_from_hosts in zip(challenge_phases, challenge_phases_from_hosts):
+            challenge_phase_data[
                 "name"
-            ] = challenge_phases_data_from_hosts[i].get("name")
-            challenge_phases_data[i][
+            ] = challenge_phase_data_from_hosts.get("name")
+            challenge_phase_data[
                 "start_date"
-            ] = challenge_phases_data_from_hosts[i].get("start_date")
-            challenge_phases_data[i][
+            ] = challenge_phase_data_from_hosts.get("start_date")
+            challenge_phase_data[
                 "end_date"
-            ] = challenge_phases_data_from_hosts[i].get("end_date")
-    logger.info(yaml_file_data)
+            ] = challenge_phase_data_from_hosts.get("end_date")
+
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(

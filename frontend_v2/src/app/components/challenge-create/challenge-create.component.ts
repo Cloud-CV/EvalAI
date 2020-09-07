@@ -96,7 +96,6 @@ export class ChallengeCreateComponent implements OnInit {
       FORM_DATA.append('status', 'submitting');
       FORM_DATA.append('zip_configuration', this.ChallengeCreateForm['input_file']);
       this.globalService.startLoader('Creating Challenge');
-      console.log("HJFBEHJFBEBFDHJEBFHJ");
       this.challengeService.challengeCreate(this.hostTeam['id'], FORM_DATA).subscribe(
         (data) => {
           this.globalService.stopLoader();

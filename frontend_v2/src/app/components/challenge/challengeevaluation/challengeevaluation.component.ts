@@ -92,7 +92,6 @@ export class ChallengeevaluationComponent implements OnInit {
         .subscribe(
           (data) => {
             SELF.challenge.evaluation_details = data.evaluation_details;
-            console.log(data);
             this.updateView();
             SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
           },
