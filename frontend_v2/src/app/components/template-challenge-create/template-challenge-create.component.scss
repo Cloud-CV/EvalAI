@@ -1,16 +1,5 @@
 @import 'styles/variables';
 
-.dashboard-flex {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.dashboard-content {
-  flex: 1;
-  min-height: 100vh;
-}
-
 .web-container {
   width: calc(100vw - 223px);
   float: right;
@@ -30,55 +19,14 @@
   }
 }
 
-
-a.btn-card-detail:focus {
-  color: black;
-  display: block;
-  height: 40px;
-  box-sizing: border-box;
-  border-bottom: 2px solid black;
-  background-color: white;
-}
-
-.none {
-  margin: 1%;
-}
-
-::ng-deep .mat-tab-label .mat-tab-label-content {
-  color: #4d4d4d;
-  font-weight: 500;
-  font-size: 18px;
-}
-
 @import 'styles/variables';
 
 .ev-challenge-card {
   min-height: 415px;
 }
 
-.bg-img {
-  width: 100%;
-  height: 100%;
-  margin: auto;
-}
-
-.margin-top-btm {
-  margin-top: 10px;
-  margin-bottom: 25px;
-}
-
-.card {
-  margin-left: 0;
-  margin-right: 0;
-}
-
 p {
   word-wrap: break-word;
-}
-
-.card-content {
-  height: 275px;
-  overflow: hidden;
 }
 
 @import 'styles/variables';
@@ -156,145 +104,6 @@ p {
 @import './variables.scss';
 @import './mixins.scss';
 
-.ev-submission-card-body {
-  padding: 10px 30px;
-}
-
 .row .row-lr-margin {
   margin-bottom: 20px;
-}
-
-.guidelines-text-margin {
-  margin-top: 14px;
-  margin-bottom: 14px;
-}
-
-.remaining-submission-clock {
-  padding-top: 55px;
-}
-
-table,
-th,
-td {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-
-table {
-  width: 100%;
-}
-
-table.centered {
-  text-align: center;
-}
-
-thead {
-  border-bottom: 1px solid #d0d0d0;
-}
-
-tr {
-  border-bottom: 1px solid #d0d0d0;
-}
-
-td,
-th {
-  padding: 15px 5px;
-  display: table-cell;
-  vertical-align: middle;
-  border-radius: 2px;
-}
-
-.exist-team-card {
-  .col-lr-pad {
-    padding-left: 16px;
-    padding-right: 36px;
-  }
-  ul {
-    padding-left: 40px;
-  }
-}
-
-.remaining-submission-clock {
-  padding-top: 55px;
-}
-
-.meta-label {
-  margin-right: 10px;
-  color: black;
-  font-weight: $fw-semibold;
-}
-
-::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
-  border-color: black;
-}
-
-::ng-deep .mat-radio-outer-circle {
-  border-color: black;
-}
-
-::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {
-  border-color: black;
-  background-color: black;
-}
-
-// overwrite the checkbox background
-::ng-deep .mat-checkbox-checked .mat-checkbox-background,
-.mat-checkbox-indeterminate .mat-checkbox-background {
-  background-color: black !important;
-}
-
-// overwrite the ripple overlay on hover and click
-::ng-deep .mat-checkbox:not(.mat-checkbox-disabled) .mat-checkbox-ripple .mat-ripple-element {
-  background-color: black !important;
-}
-
-::ng-deep .mat-checkbox .mat-checkbox-frame {
-  border-color: black;
-}
-.input-message {
-  position: relative;
-  top: 2px;
-  left: 0;
-  text-align: left;
-  margin-top: 10px;
-  font-size: 12px;
-  font-weight: $fw-light;
-  color: $yellow;
-  &.hidden {
-    opacity: 0;
-  }
-}
-
-@include screen-small {
-  .remaining-submission-clock {
-    padding-top: 0px;
-  }
-}
-#radio_button_url {
-  margin-left: 40px;
-  margin-top: -30px;
-}
-#radio_button_file {
-  margin-left: 40px;
-  margin-top: -30px;
-}
-#Submission_option_hidden {
-  display: none;
-}
-#form_hidden {
-  display: none;
-}
-#uploadbutton {
-  display: none;
-}
-#url_field {
-  display: none;
-}
-#submission_option_style {
-  margin-left: 8px;
-}
-
-mat-form-field {
-  margin-right: 12px;
 }
