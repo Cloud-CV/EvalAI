@@ -738,14 +738,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
         try:
             zip_file = open(challenge_template_download_location, "rb")
-        except Exception as e:
+        except Exception:
             message = (
-            "A server error occured while processing zip file. "
-            "Please try again!"
+                "A server error occured while processing zip file. "
+                "Please try again!"
             )
             response_data = {"error": message}
             logger.exception(message)
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
         challenge_zip_file = SimpleUploadedFile(
             zip_file.name, zip_file.read(), content_type="application/zip"
@@ -1134,7 +1136,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         yaml_file_data["description"] = challenge_data_from_hosts.get(
             "description"
         )
-        yaml_file_data["start_date"] = challenge_data_from_hosts.get("start_date")
+        yaml_file_data["start_date"] = challenge_data_from_hosts.get(
+            "start_date"
+        )
         yaml_file_data["end_date"] = challenge_data_from_hosts.get("end_date")
 
         # Mapping the challenge phase data to that in yaml_file_data
@@ -1144,10 +1148,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         challenge_phases_from_hosts = json.loads(challenge_phases_from_hosts)
 
-        for challenge_phase_data, challenge_phase_data_from_hosts in zip(challenge_phases, challenge_phases_from_hosts):
-            challenge_phase_data[
+        for challenge_phase_data, challenge_phase_data_from_hosts in zip(
+            challenge_phases, challenge_phases_from_hosts
+        ):
+            challenge_phase_data["name"] = challenge_phase_data_from_hosts.get(
                 "name"
-            ] = challenge_phase_data_from_hosts.get("name")
+            )
             challenge_phase_data[
                 "start_date"
             ] = challenge_phase_data_from_hosts.get("start_date")
@@ -1363,7 +1369,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 "error": "Error in creating challenge. Please check the yaml configuration!"
             }
-            import traceback; traceback.print_exc()
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
             try:
@@ -2856,7 +2861,9 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
          Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
     if settings.DEBUG or settings.TEST:
-        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        response_data = {
+            "error": "Sorry, this feature is not available in development or test environment."
+        }
         return Response(response_data)
     # Check if the challenge phase exists or not
     try:
@@ -2920,6 +2927,8 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 def get_all_challenge_templates(request):
     q_params = {"is_active": True}
     challenges = ChallengeTemplate.objects.filter(**q_params).order_by("-pk")
-    serializer = ChallengeTemplateSerializer(challenges, many=True, context={'request': request})
+    serializer = ChallengeTemplateSerializer(
+        challenges, many=True, context={"request": request}
+    )
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)

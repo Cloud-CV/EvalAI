@@ -360,8 +360,9 @@ class ChallengePhaseSplit(TimeStampedModel):
 
 
 class ChallengeTemplate(TimeStampedModel):
-    """Model to store challenge templates
- 
+    """
+    Model to store challenge templates
+
     Arguments:
         TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
                                             `modified_at` fields.
