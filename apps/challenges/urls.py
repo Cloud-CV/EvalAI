@@ -186,4 +186,9 @@ urlpatterns = [
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
     ),
+    url(
+        r"^get_all_challenge_templates/$",
+        views.get_all_challenge_templates,
+        name="get_all_challenge_templates",
+    ),
 ]

@@ -169,6 +169,8 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   createChallengeRoutePath = '/challenge-create';
 
+  createTemplateChallengeRoutePath = '/template-challenge-create';
+
   /**
    * Filter query as participant team name
    */
@@ -199,6 +201,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       "Participants will submit a file reporting each image pair's matching socre, " +
       'and then their performance will be measured by our system.   ',
   ];
+
+  templateSub = null;
+  isTemplateChallenge = false;
+  templateId = null;
+  templatePhases = null;
 
   /**
    * Constructor.
@@ -238,7 +245,17 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       }
     });
 
-    if (this.router.url === this.hostTeamRoutePath) {
+    this.templateSub = this.route
+      .queryParams
+      .subscribe(params => {
+        this.isTemplateChallenge = params['template'] || false;
+        if(this.isTemplateChallenge){
+          this.templateId = params['templateId'];
+          this.templatePhases = params['templatePhases'];
+        }
+      });
+
+    if (this.router.url === this.hostTeamRoutePath || this.isTemplateChallenge) {
       this.isHost = true;
       this.fetchTeamsPath = 'hosts/challenge_host_team';
       this.createTeamsPath = 'hosts/create_challenge_host_team';
@@ -262,12 +279,17 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.teamSelectTitle = 'My Existing Participant Teams';
       this.teamCreateButton = 'Create Participant Team';
     }
+
+    if(this.isTemplateChallenge == true){
+      //this.isOnChallengePage = false;
+    }
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     if (this.authServiceSubscription) {
       this.authServiceSubscription.unsubscribe();
     }
+    this.templateSub.unsubscribe();
   }
 
   /**
@@ -579,6 +601,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   createChallenge() {
     this.challengeService.changeCurrentHostTeam(this.selectedTeam);
     this.router.navigate([this.createChallengeRoutePath]);
+  }
+
+  createTemplateChallenge() {
+    this.challengeService.changeCurrentHostTeam(this.selectedTeam);
+    this.router.navigate([this.createTemplateChallengeRoutePath, this.templateId, this.templatePhases]);
   }
 
   /**

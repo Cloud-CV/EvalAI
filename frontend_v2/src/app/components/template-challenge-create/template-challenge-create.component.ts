@@ -19,7 +19,7 @@ export class TemplateChallengeCreateComponent implements OnInit {
 
 	 isLoggedIn = false;
 
-	 hostTeam = 2; // Initialize this using the 
+	 hostTeam = null; // Initialize this using the 
 
 	 id = null;
 	 phases = null;
@@ -30,8 +30,10 @@ export class TemplateChallengeCreateComponent implements OnInit {
 	 	'end_date': null,
 	 	'description': null,
 	 	'evaluation_script': null,
-	 	'challenge_phases': []
+	 	'challenge_phases': null
 	 }
+
+	 challenge_phases = []
 
 	 challengePhaseData = {
 	 	'name': null,
@@ -40,7 +42,9 @@ export class TemplateChallengeCreateComponent implements OnInit {
 	 }
 
 	 hostedChallengesRoute = '/challenges/me';
+	 hostTeamsRoute = '/teams/hosts';
 
+	 currentDateTime: Date;
 
 	constructor(
     public authService: AuthService,
@@ -66,28 +70,40 @@ export class TemplateChallengeCreateComponent implements OnInit {
 	      	this.phases = params['phases'];
 	      }
 
-	      if (params['hostTeam']){
-	      	this.hostTeam = params['hostTeam'];
-	      }
-
+	      this.challengeService.currentHostTeam.subscribe((hostTeam) => {
+	      	this.hostTeam = hostTeam;
+		    if (!this.hostTeam) {
+		    	this.router.navigate([this.hostTeamsRoute], { queryParams: { template: true, templateId: this.id, templatePhases: this.phases } });
+			}
+		  });
 	    });
 
 	    for(var i = 0; i<this.phases; i++){
 	    	this.challengePhaseData['id'] = i+1;
-	    	this.challengeData['challenge_phases'].push(Object.assign({}, this.challengePhaseData));
+	    	this.challenge_phases.push(Object.assign({}, this.challengePhaseData));
 	    };
+
+	    this.currentDateTime = new Date();
 	}
 
-	
+	ngOnDestroy() {
+	    this.hostTeam = null;
+	}
+
 
 	createTemplateChallenge(){
 		if (this.challengeData != null) {
 			const FORM_DATA: FormData = new FormData();
 			this.challengeData['is_template_challenge'] = true;
 			this.challengeData['template_id'] = this.id
-			FORM_DATA.append('data', JSON.stringify(this.challengeData));
+			this.challengeData.challenge_phases = JSON.stringify(this.challenge_phases);
+			//FORM_DATA.append('data', JSON.stringify(this.challengeData));
+			for(let key in this.challengeData){
+				FORM_DATA.append(key, this.challengeData[key]);
+			}
 			this.globalService.startLoader('Creating Challenge');
-			this.challengeService.challengeCreate(this.hostTeam, FORM_DATA).subscribe(
+			console.log(this.hostTeam);
+			this.challengeService.challengeCreate(this.hostTeam['id'], FORM_DATA).subscribe(
 		        (data) => {
 		          this.globalService.stopLoader();
 		          this.globalService.showToast('success', 'Challenge created and successfuly sent to EvalAI admin for approval.');
@@ -103,5 +119,6 @@ export class TemplateChallengeCreateComponent implements OnInit {
 		else {
 			this.globalService.showToast('error', 'Please fill all the given challenge details');
 		}
+		console.log(this.challengeData);
 	}
 }

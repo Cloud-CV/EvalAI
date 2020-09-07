@@ -60,12 +60,15 @@ export class TemplatechallengelistComponent implements OnInit {
 
     this.apiService.getUrl(this.templateChallengesFetchPath, true, false).subscribe(
       (data) => {
-        this.challengeTemplates = data['results'];
+        for(var i = 0; i<data.length; i++){
+          this.challengeTemplates.push(data[i]);
+        }
       },
       (err)=> {
         this.globalService.showToast('error', 'Sorry, something went wrong when fetching the templates. Please try again later.');
-      }
-    )
+      },
+      () => {}
+    );
     
     /*
     this.challengeTemplates = [

@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 import os
 import random
@@ -95,6 +96,7 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     ChallengeConfiguration,
     StarChallenge,
     UserInvitation,
@@ -106,6 +108,7 @@ from .serializers import (
     ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSplitSerializer,
+    ChallengeTemplateSerializer,
     ChallengeSerializer,
     DatasetSplitSerializer,
     LeaderboardSerializer,
@@ -682,9 +685,69 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    serializer = ChallengeConfigSerializer(
-        data=request.data, context={"request": request}
-    )
+    if request.data.get("is_template_challenge"):
+        is_template_challenge = True
+    else:
+        is_template_challenge = False
+
+    # All files download and extract location.
+    BASE_LOCATION = tempfile.mkdtemp()
+
+    if is_template_challenge:
+        template_id = int(request.data.get("template_id"))
+        try:
+            template = ChallengeTemplate.objects.get(
+                id=template_id, is_active=True
+            )
+        except ChallengeTemplate.DoesNotExist:
+            response_data = {
+                "error": "Sorry, a server error occured while creating the challenge. Please try again!"
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        template_url = template.template_file.url
+        template_url = "http://localhost:8000" + template_url
+
+        unique_folder_name = get_unique_alpha_numeric_key(10)
+        challenge_template_download_location = join(
+            BASE_LOCATION, "{}.zip".format(unique_folder_name)
+        )
+
+        try:
+            response = requests.get(template_url, stream=True)
+        except Exception as e:
+            logger.error(
+                "Failed to fetch file from {}, error {}".format(
+                    template_url, e
+                )
+            )
+            response_data = {
+                "error": "Sorry, there was an error in the server"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if response and response.status_code == 200:
+            with open(challenge_template_download_location, "wb") as f:
+                f.write(response.content)
+
+        zip_file = open(challenge_template_download_location, "rb")
+        challenge_zip_file = SimpleUploadedFile(
+            zip_file.name, zip_file.read(), content_type="application/zip"
+        )
+
+        # Copy request data so that we can mutate it to add template
+        challenge_data_from_hosts = request.data.copy()
+        challenge_data_from_hosts["zip_configuration"] = challenge_zip_file
+        serializer = ChallengeConfigSerializer(
+            data=challenge_data_from_hosts, context={"request": request}
+        )
+    else:
+        serializer = ChallengeConfigSerializer(
+            data=request.data, context={"request": request}
+        )
+
     if serializer.is_valid():
         uploaded_zip_file = serializer.save()
         uploaded_zip_file_path = serializer.data["zip_configuration"]
@@ -692,8 +755,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = serializer.errors
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # All files download and extract location.
-    BASE_LOCATION = tempfile.mkdtemp()
     try:
         response = requests.get(uploaded_zip_file_path, stream=True)
         unique_folder_name = get_unique_alpha_numeric_key(10)
@@ -1053,6 +1114,33 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
+    if is_template_challenge:
+        yaml_file_data["title"] = challenge_data_from_hosts.get("title")
+        yaml_file_data["description"] = challenge_data_from_hosts.get(
+            "description"
+        )
+        yaml_file_data["start_date"] = challenge_data_from_hosts.get("start_date")
+        yaml_file_data["end_date"] = challenge_data_from_hosts.get("end_date")
+
+        # Mapping the challenge phase data to that in yaml_file_data
+        challenge_phases_data = yaml_file_data["challenge_phases"]
+        challenge_phases_data_from_hosts = challenge_data_from_hosts.get(
+            "challenge_phases"
+        )
+
+        challenge_phases_data_from_hosts = json.loads(challenge_phases_data_from_hosts)
+
+        for i in range(len(challenge_phases_data)):
+            challenge_phases_data[i][
+                "name"
+            ] = challenge_phases_data_from_hosts[i].get("name")
+            challenge_phases_data[i][
+                "start_date"
+            ] = challenge_phases_data_from_hosts[i].get("start_date")
+            challenge_phases_data[i][
+                "end_date"
+            ] = challenge_phases_data_from_hosts[i].get("end_date")
+    logger.info(yaml_file_data)
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(
@@ -1261,6 +1349,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 "error": "Error in creating challenge. Please check the yaml configuration!"
             }
+            import traceback; traceback.print_exc()
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
             try:
@@ -2807,4 +2896,16 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     response_data = {"presigned_url": response.get("presigned_url")}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_challenge_templates(request):
+    q_params = {"is_active": True}
+    challenges = ChallengeTemplate.objects.filter(**q_params).order_by("-pk")
+    serializer = ChallengeTemplateSerializer(challenges, many=True, context={'request': request})
+    response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
