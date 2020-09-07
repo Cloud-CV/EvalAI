@@ -109,8 +109,9 @@ export class TemplateChallengeCreateComponent implements OnInit {
 		          this.router.navigate([this.hostedChallengesRoute]);
 		        },
 		        (err) => {
+		        	console.log(err.error);
 		          this.globalService.stopLoader();
-		          this.globalService.showToast('error', "Sorry, something went wrong when creating the challenge. Please try again later.");
+		          this.globalService.showToast('error', "Sorry, something went wrong when creating the challenge. Please try again later: " + JSON.stringify(err.error) );
 		        },
 		        () => {}
 		      );
