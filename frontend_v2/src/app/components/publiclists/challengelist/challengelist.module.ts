@@ -12,7 +12,6 @@ import { CardlistComponent } from '../../utility/cardlist/cardlist.component';
 
 // import module
 import { SharedModule } from '../../../shared/shared.module';
-import { AnalyticsModule } from '../../analytics/analytics.module';
 
 @NgModule({
   declarations: [
@@ -22,7 +21,7 @@ import { AnalyticsModule } from '../../analytics/analytics.module';
     TeamlistComponent,
     CardlistComponent,
   ],
-  imports: [CommonModule, RouterModule, MatTabsModule, SharedModule, AnalyticsModule],
+  imports: [CommonModule, RouterModule, MatTabsModule, SharedModule],
   exports: [ChallengelistComponent, ChallengecardComponent, TeamcardComponent, TeamlistComponent, CardlistComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

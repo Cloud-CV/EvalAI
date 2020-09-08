@@ -1,0 +1,29 @@
+.analytics-image {
+  img {
+    width: 100%;
+  }
+}
+
+.analytics-card-content {
+  h3 {
+    margin-bottom: 2px;
+  }
+}
+
+.ev-btn {
+  padding: 8px 20px 8px 20px;
+  border-radius: 20px;
+}
+
+.analytics-challenge-card {
+  .analytics-phases-card {
+    padding-bottom: 2%;
+  }
+}
+
+/*media queries*/
+@media screen and (min-width: 993px) {
+  .analytics-card-content {
+    padding-top: 10px;
+  }
+}

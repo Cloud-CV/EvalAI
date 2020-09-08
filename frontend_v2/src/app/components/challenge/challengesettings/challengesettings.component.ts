@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
@@ -14,11 +14,21 @@ import { GlobalService } from '../../../services/global.service';
   templateUrl: './challengesettings.component.html',
   styleUrls: ['./challengesettings.component.scss'],
 })
-export class ChallengesettingsComponent implements OnInit {
+export class ChallengesettingsComponent implements OnInit, OnDestroy {
   /**
    * Challenge object
    */
   challenge: any;
+
+  /**
+   * store worker logs
+   */
+  workerLogs = [];
+
+  /**
+   * An interval for fetching the leaderboard data in every 5 seconds
+   */
+  pollingInterval: any;
 
   /**
    * Is challenge host
@@ -84,6 +94,8 @@ export class ChallengesettingsComponent implements OnInit {
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
+    this.fetchWorkerLogs();
+    this.startLoadingLogs();
   }
 
   updateView() {
@@ -405,5 +417,58 @@ export class ChallengesettingsComponent implements OnInit {
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * API call to manage the worker from UI.
+   * Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
+   */
+  manageWorker(action) {
+    const SELF = this;
+    const API_PATH = SELF.endpointsService.manageWorkerURL(SELF.challenge['id'], action);
+    const BODY = JSON.stringify('');
+    SELF.apiService.putUrl(API_PATH, BODY).subscribe(
+      (data) => {
+        if (data[action] === 'Success') {
+          SELF.globalService.showToast('success', 'Worker(s) ' + action + 'ed succesfully.', 5);
+        } else {
+          SELF.globalService.showToast('error', data['error'], 5);
+        }
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err, true);
+      },
+      () => {}
+    );
+  }
+
+  // Get the logs from worker if submissions are failing.
+  fetchWorkerLogs() {
+    const API_PATH = this.endpointsService.getLogsURL(this.challenge['id']);
+    const SELF = this;
+    SELF.apiService.getUrl(API_PATH, true, false).subscribe(
+      (data) => {
+        SELF.workerLogs = [];
+        for (let i = 0; i < data.logs.length; i++) {
+          SELF.workerLogs.push(data.logs[i]);
+        }
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  // Get the logs from worker if submissions are failing at an interval of 5sec.
+  startLoadingLogs() {
+    const SELF = this;
+    SELF.pollingInterval = setInterval(function () {
+      SELF.fetchWorkerLogs();
+    }, 5000);
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.pollingInterval);
   }
 }

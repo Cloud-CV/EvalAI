@@ -253,12 +253,6 @@ mat-label {
   }
 }
 
-.file-select-box {
-  .mat-form-field-infix {
-    width: 61px !important;
-  }
-}
-
 .all-submissions-file {
   .mat-form-field-infix {
     width: 144px !important;
@@ -1359,7 +1353,7 @@ code {
         color: $med-black;
         padding: 10px;
         font-size: $fs-18;
-        font-weight: $fw-bolder;
+        font-weight: 300;
       }
       .content {
         padding: 10px;

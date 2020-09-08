@@ -41,10 +41,6 @@ const routes: Routes = [
     loadChildren: './components/contact/contact.module#ContactModule',
   },
   {
-    path: 'analytics',
-    loadChildren: './components/analytics/analytics.module#AnalyticsModule',
-  },
-  {
     path: 'get-involved',
     loadChildren: './components/get-involved/get-involved.module#GetInvolvedModule',
   },

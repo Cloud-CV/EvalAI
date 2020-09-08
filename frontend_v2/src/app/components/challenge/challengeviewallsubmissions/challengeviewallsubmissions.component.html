@@ -20,7 +20,7 @@
       <div class="row row-lr-margin">
         <div class="col-md-2 col-sm-2 col-xs-6 align-left col-lr-pad all-submissions-file">
           <mat-form-field>
-            <mat-label>File</mat-label>
+            <mat-label>File type</mat-label>
             <mat-select [(ngModel)]="fileSelected" class="rm-margin">
               <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">
                 {{ key.name }}
@@ -87,11 +87,13 @@
                 column !== 'status' &&
                 element[column] !== null &&
                 column !== 'submitted_file' &&
-                column !== 'submission_result_file'
+                column !== 'submission_result_file' &&
+                column !== 'execution_time'
               "
             >
               {{ element[column] }}</span
             >
+            <span *ngIf="column == 'execution_time'"> {{ element[column] }} sec </span>
             <a
               target="_blank"
               class="blue-text"
@@ -236,6 +238,14 @@
                   </mat-checkbox>
                 </div>
                 <div class="element">
+                  <a
+                    class="text-light-black fw-semibold fs-14 fa fa-refresh pointer"
+                    (click)="reRunSubmission(element.id)"
+                  >
+                    Re-run submission
+                  </a>
+                </div>
+                <div class="element">
                   <mat-checkbox
                     class="element-icon fw-semibold"
                     [checked]="element.is_flagged"
@@ -243,7 +253,6 @@
                   >
                     {{ element.submissionFlagText }}
                   </mat-checkbox>
-                  <a class="fa fa-refresh pointer" (click)="reRunSubmission(element.id)"> Re-run submission </a>
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
                   <a class="pointer" (click)="deleteChallengeSubmission(element)">

@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="row row-lr-margin">
-        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+        <div class="col-sm-6 col-xs-12 col-lg-8 col-lr-pad phase-select-box">
           <app-selectphase
             [phases]="filteredPhases"
             [phaseSelectionListType]="phaseSelectionListType"
@@ -24,22 +24,7 @@
             #phaseselect
           ></app-selectphase>
         </div>
-      </div>
-      <div class="row row-lr-margin">
-        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
-          <mat-form-field>
-            <mat-label>File type</mat-label>
-            <mat-select [(ngModel)]="fileSelected" class="rm-margin">
-              <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">{{ key.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-      <div class="row row-lr-margin">
-        <div class="col-lg-3 col-md-4 col-sm-1 col-xs-6 align-left">
-          <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download</a>
-        </div>
-        <div class="col-lg-9 col-md-8 col-sm-12 col-xs-12 col-lr-pad" *ngIf="selectedPhase">
+        <div class="col-lg-4 col-md-8 col-sm-12 col-xs-12 col-lr-pad" *ngIf="selectedPhase">
           <div class="add-line-height">
             <span>
               <strong class="fw-semibold text-med-black">
@@ -52,7 +37,20 @@
           </div>
         </div>
       </div>
-      <br />
+      <div class="row row-lr-margin">
+        <div class="col-md-2 col-sm-2 col-xs-6 align-left col-lr-pad all-submissions-file">
+          <mat-form-field>
+            <mat-label>File type</mat-label>
+            <mat-select [(ngModel)]="fileSelected" class="rm-margin">
+              <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">{{ key.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
+          <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download</a>
+        </div>
+      </div>
+      <div class="row row-lr-margin"></div>
       <div *ngIf="selectedPhase">
         <div class="row row-lr-margin phase-title">
           <div class="col-sm-12">
@@ -153,7 +151,7 @@
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Execution Time</span>
-                  <span class="fw-regular element-description"> {{ element.execution_time }} </span>
+                  <span class="fw-regular element-description"> {{ element.execution_time }} sec</span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Submitted At</span>

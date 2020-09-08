@@ -1,24 +1,22 @@
 <div class="challenge-card">
-  <div class="bottom-card-container ev-card-panel">
-    <div class="row">
-      <div class="col s12 m11 l11">
-        <h5 class="fw-light">Challenge Overview</h5>
-      </div>
-      <div *ngIf="isChallengeHost" class="col-sm-1">
-        <h5>
-          <a class="pointer fs-16" (click)="editChallengeOverview()">
-            <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;edit
-          </a>
-        </h5>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-sm-12 fw-light">
-        <div
-          *ngIf="challenge && challenge['description']"
-          [innerHTML]="challenge['description']"
-          class="challenge-description content fs-16"
-        ></div>
+  <div class="ev-card-panel card-bt-margin">
+    <div class="ev-md-container ev-panel-title">
+      <div class="row row-lr-margin">
+        <div class="col s12 m11 l11">
+          <h5 class="fw-light">Challenge Overview</h5>
+          <div
+            *ngIf="challenge && challenge['description']"
+            [innerHTML]="challenge['description']"
+            class="challenge-description fs-16 fw-light"
+          ></div>
+        </div>
+        <div *ngIf="isChallengeHost" class="col-sm-1">
+          <h5>
+            <a class="pointer fs-16" (click)="editChallengeOverview()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;edit
+            </a>
+          </h5>
+        </div>
       </div>
     </div>
   </div>

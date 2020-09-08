@@ -30,9 +30,9 @@ import { ChallengeComponent } from './challenge.component';
 import { ChallengeRoutingModule } from './challenge-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 import { ChallengelistModule } from '../publiclists/challengelist/challengelist.module';
-import { ChallengemanageComponent } from './challengemanage/challengemanage.component';
 import { SubmissionMetaAttributesDialogueComponent } from './submission-meta-attributes-dialogue/submission-meta-attributes-dialogue.component';
 import { ChallengediscussComponent } from './challengediscuss/challengediscuss.component';
+import { ChallengeanalyticsComponent } from './challengeanalytics/challengeanalytics.component';
 
 @NgModule({
   declarations: [
@@ -47,9 +47,9 @@ import { ChallengediscussComponent } from './challengediscuss/challengediscuss.c
     ChallengesubmissionsComponent,
     ChallengeviewallsubmissionsComponent,
     PhasecardComponent,
-    ChallengemanageComponent,
     SubmissionMetaAttributesDialogueComponent,
     ChallengediscussComponent,
+    ChallengeanalyticsComponent,
   ],
   imports: [
     CommonModule,

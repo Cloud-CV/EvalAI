@@ -5,7 +5,7 @@
       <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
         <h5 class="fw-light">Submission Guidelines</h5>
         <div *ngIf="isChallengeHost">
-          <div class="content">
+          <div class="fw-light">
             <p class="fs-16">
               <strong>Note: </strong>Your submissions won't be visible on leaderboard for
               <strong class="blue-text"> Public Challenge Phases </strong> since you are a challenge host for this
@@ -13,7 +13,7 @@
             </p>
           </div>
         </div>
-        <div [innerHTML]="submissionGuidelines" class="submission-guidelines content fs-16"></div>
+        <div [innerHTML]="submissionGuidelines" class="submission-guidelines fw-light fs-16"></div>
       </div>
 
       <div *ngIf="isChallengeHost" class="col-md-1 col-sm-1 col-xs-2 col-lr-pad">
@@ -392,11 +392,7 @@
       <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails" class="col-md-5 col-sm-5 col-xs-12">
         <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
           <div class="row row-lr-margin">
-            <span class="color-black">
-              <strong class="fw-semibold fs-16">
-                Today's remaining Submissions:
-              </strong>
-            </span>
+            <span class="text-med-black fw-semibold fs-16">Today's remaining Submissions:</span>
             <span class="color-black">
               <strong class="fw-light fs-16">
                 {{ selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_today_count }}
@@ -404,10 +400,8 @@
             </span>
           </div>
           <div class="row row-lr-margin">
-            <span class="color-black">
-              <strong class="fw-semibold fs-16">
-                Monthly remaining submissions:
-              </strong>
+            <span class="text-med-black fw-semibold fs-16">
+              Monthly remaining submissions:
             </span>
             <span class="color-black">
               <strong class="fw-light fs-16">
@@ -416,10 +410,8 @@
             </span>
           </div>
           <div class="row row-lr-margin">
-            <span class="color-black">
-              <strong class="fw-semibold fs-16">
-                Total remaining submissions:
-              </strong>
+            <span class="text-med-black fw-semibold fs-16">
+              Total remaining submissions:
             </span>
             <span class="color-black">
               <strong class="fw-light fs-16">
