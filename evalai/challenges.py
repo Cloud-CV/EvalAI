@@ -2,7 +2,7 @@ import click
 
 from click import style
 
-from evalai.utils.common import Date
+from evalai.utils.common import Date, upload_file_using_presigned_url
 from evalai.utils.challenges import (
     display_all_challenge_list,
     display_future_challenge_list,
@@ -207,31 +207,49 @@ def participate(ctx, team):
 
 @phase.command()
 @click.pass_obj
+@click.option("--large", is_flag=True)
+@click.option("--annotation", is_flag=True)
 @click.option(
-    "--file", type=click.File("rb"), help="File path to the submission file"
+    "--file", type=click.File("rb"), required=True, help="File path to the submission or annotation file"
 )
-def submit(ctx, file):
+def submit(ctx, file, annotation, large):
     """
-    Make submission to a challenge.
+    For uploading submission files to evalai:
+        - Invoked by running 'evalai challenge CHALLENGE phase PHASE submit --file FILE'
+        - For large files, add a '--large' option at the end of the command
+
+    For uploading test annotation files to evalai:
+        - Invoked by running "evalai challenge CHALLENGE phase PHASE submit --file FILE --annotation"
+
+    Arguments:
+        ctx (class click.Context) --  The context object which holds state of the invocation
+        file (str) -- the path of the file to be uploaded
+        annotations (boolean) -- flag to denote if file is a test annotation file
+        large (boolean) -- flag to denote if submission file is large (if large, presigned urls are used for uploads)
+    Returns:
+        None
     """
-    """
-    Invoked by running `evalai challenge CHALLENGE phase PHASE submit FILE`
-    """
-    submission_metadata = {}
-    if click.confirm("Do you want to include the Submission Details?"):
-        submission_metadata["method_name"] = click.prompt(
-            style("Method Name", fg="yellow"), type=str, default=""
-        )
-        submission_metadata["method_description"] = click.prompt(
-            style("Method Description", fg="yellow"), type=str, default=""
-        )
-        submission_metadata["project_url"] = click.prompt(
-            style("Project URL", fg="yellow"), type=str, default=""
-        )
-        submission_metadata["publication_url"] = click.prompt(
-            style("Publication URL", fg="yellow"), type=str, default=""
-        )
-    make_submission(ctx.challenge_id, ctx.phase_id, file, submission_metadata)
+    if annotation:
+        upload_file_using_presigned_url(ctx.phase_id, file, "annotation")
+    else:
+        submission_metadata = {}
+        if click.confirm("Do you want to include the Submission Details?"):
+            submission_metadata["method_name"] = click.prompt(
+                style("Method Name", fg="yellow"), type=str, default=""
+            )
+            submission_metadata["method_description"] = click.prompt(
+                style("Method Description", fg="yellow"), type=str, default=""
+            )
+            submission_metadata["project_url"] = click.prompt(
+                style("Project URL", fg="yellow"), type=str, default=""
+            )
+            submission_metadata["publication_url"] = click.prompt(
+                style("Publication URL", fg="yellow"), type=str, default=""
+            )
+        if large:
+            upload_file_using_presigned_url(ctx.phase_id, file, "submission", submission_metadata)
+        else:
+            make_submission(ctx.challenge_id, ctx.phase_id, file, submission_metadata)
 
 
 challenge.add_command(phase)

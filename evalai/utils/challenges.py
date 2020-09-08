@@ -11,9 +11,9 @@ from termcolor import colored
 from evalai.utils.auth import get_request_header, get_host_url
 from evalai.utils.common import (
     clean_data,
-    validate_token,
     convert_UTC_date_to_local,
     validate_date_format,
+    validate_token,
 )
 from evalai.utils.config import EVALAI_ERROR_CODES
 from evalai.utils.urls import URLS

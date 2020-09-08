@@ -9,9 +9,9 @@ from evalai.utils.auth import get_request_header, get_host_url
 from evalai.utils.config import EVALAI_ERROR_CODES
 from evalai.utils.urls import URLS
 from evalai.utils.common import (
+    convert_UTC_date_to_local,
     validate_token,
     validate_date_format,
-    convert_UTC_date_to_local,
 )
 
 
@@ -34,6 +34,7 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
         response = requests.post(
             url, headers=headers, files=input_file, data=data
         )
+        file.close()
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if response.status_code in EVALAI_ERROR_CODES:
