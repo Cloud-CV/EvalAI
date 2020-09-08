@@ -2,6 +2,7 @@ import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
+import { EndpointsService } from '../../../services/endpoints.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 
@@ -183,12 +184,14 @@ export class ChallengelistComponent implements OnInit {
    * @param globalService  GlobalService Injection.
    * @param authService  AuthService Injection.
    * @param apiService  ApiService Injection.
+   * @param endpointsService  EndpointsService Injection.
    * @param document
    */
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
     private globalService: GlobalService,
+    private endpointsService: EndpointsService,
     private router: Router,
     @Inject(DOCUMENT) private document,
     private route: ActivatedRoute
@@ -422,7 +425,7 @@ export class ChallengelistComponent implements OnInit {
   }
 
   fetchUnapprovedChallengesFromApi(id) {
-    const path = 'challenges/challenge_host_team/' + id + '/challenge';
+    const path = this.endpointsService.allUnapprovedChallengesURL(id);
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
       (data) => {

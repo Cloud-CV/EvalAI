@@ -52,16 +52,6 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   selectedPhase: any = null;
 
   /**
-   * Is phase selected
-   */
-  isPhaseSelected = false;
-
-  /**
-   * Is phase selected
-   */
-  isPhaseSplitSelected = false;
-
-  /**
    * Selected split name
    */
   splitName = '';
@@ -106,7 +96,6 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseName = phase.name;
     this.phaseVisibility = phase.showPrivate;
     this.phaseSelected(phase);
-    this.isPhaseSelected = true;
   }
 
   /**
@@ -123,7 +112,6 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
     this.phaseSplitSelected(phaseSplit);
-    this.isPhaseSplitSelected = true;
   }
 
   /**

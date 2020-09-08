@@ -14,7 +14,7 @@
     <section *ngIf="isLoggedIn && !isParticipated">
       <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel participate-card">
-          <div class="col s12 m6 l6" (selectTeamCard)="selectTeamWrapper()($event)">
+          <div class="col s12 m6 l6">
             <div class="row">
               <h5 class="w-300">My Participant Teams</h5>
             </div>
@@ -33,6 +33,8 @@
                           name="teamSelection"
                           (click)="selectTeamToggle(team)"
                           id="{{ team.team_name }}"
+                          value="{{ team.team_name }}"
+                          [checked]="team === selectedTeam"
                         />
                         <label id="teamToggleButton" for="{{ team.team_name }}"></label>
                         <div class="team-details">
