@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Self } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
@@ -374,6 +374,7 @@ export class ChallengesettingsComponent implements OnInit {
         )
         .subscribe(
           (data) => {
+            SELF.challenge.image = data.image;
             SELF.globalService.showToast('success', 'The Challenge image successfully updated!', 5);
           },
           (err) => {
