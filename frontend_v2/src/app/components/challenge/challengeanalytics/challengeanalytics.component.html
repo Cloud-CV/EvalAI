@@ -1,0 +1,96 @@
+<div class="challenge-card">
+  <div class="ev-card-panel card-bt-margin">
+    <div class="ev-md-container ev-panel-title">
+      <div class="row row-lr-margin">
+        <div class="col-sm-12 col-xs-12 col-lr-pad">
+          <h5 class="fw-light">Challenges Analytics</h5>
+        </div>
+        <div class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light">
+          Here you get the complete analysis of <b>{{ challenge['title'] }}</b> challenge. This includes getting the
+          number of submissions, number of participating teams, number of phases, number of submissions in each phase,
+          etc.
+        </div>
+      </div>
+    </div>
+    <div class="ev-md-container">
+      <div class="analytics-details">
+        <div class="row">
+          <div class="col s12 m4 l4">
+            <div class="image-container analytics-image">
+              <img *ngIf="challenge['image'] !== null" [src]="challenge['image']" />
+              <img *ngIf="challenge['image'] == null" src="assets/images/404.png" />
+            </div>
+          </div>
+          <div class="col m8 l8">
+            <div class="card-content analytics-card-content">
+              <h5 class="fw-light">
+                {{ challenge['title'] }}
+              </h5>
+              <span class="text-light-black fs-16 fw-light">Hosted by: </span>
+              {{ challenge['creator']['team_name'] }} <br />
+              <span class="main-title fs-16 fw-light">
+                Total Participant Teams:
+              </span>
+              <span class="show-count fs-16 fw-light">
+                {{ totalChallengeTeams }}
+              </span>
+              <br />
+              <a
+                class="ev-btn btn-waves-effect waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                (click)="downloadChallengeParticipantTeams()"
+                >Download</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fw-light fs-16">
+        <div class="analytics-challenge-card">
+          <div class="analytics-phases-card" *ngFor="let item of currentPhase">
+            <h5 class="no-top-para fw-light phase-detail">
+              {{ item.name }}
+            </h5>
+            <div [innerHTML]="challenge['short_description']"></div>
+            <br />
+            <div class="text-light-black fw-semibold phase-duration phase-detail">
+              Challenge Phase Duration
+            </div>
+            <p class="no-top-para phase-detail">
+              {{ item.start_date | date: 'medium' }} - {{ item.end_date | date: 'medium' }}
+            </p>
+            <br />
+            <div class="row center">
+              <div class="col m3">
+                <div class="text-light-black fw-semibold">
+                  Total Submissions
+                </div>
+                <p class="analytics-content no-top-para mb-5">
+                  {{ totalSubmission[item.id] || 0 }}
+                </p>
+              </div>
+              <div class="col m3">
+                <div class="text-light-black fw-semibold">
+                  Participant Teams
+                </div>
+                <p class="analytics-content no-top-para mb-5">
+                  {{ totalParticipatedTeams[item.id] || 0 }}
+                </p>
+              </div>
+              <div class="col m3">
+                <div class="text-light-black fw-semibold">
+                  Latest Submission At
+                </div>
+                <p *ngIf="lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
+                  {{ lastSubmissionTime[item.id] | date: 'medium' }}
+                </p>
+                <p *ngIf="!lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
+                  None
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
