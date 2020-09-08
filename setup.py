@@ -40,7 +40,7 @@ tests_require = [
 setup(
     name=PROJECT,
     cmdclass={"test": PyTest},
-    version="1.3.1",
+    version="1.3.2",
     description="Use EvalAI through command line interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
