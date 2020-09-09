@@ -95,6 +95,7 @@
             >
               {{ element[column] }}</span
             >
+            <span *ngIf="column == 'execution_time'"> {{ element[column] }} sec </span>
             <a
               target="_blank"
               class="blue-text"
@@ -254,7 +255,7 @@
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
                   <a class="pointer" (click)="deleteChallengeSubmission(element)">
-                      <i class="fa fa-trash red-text fs-14" aria-hidden="true">&nbsp;Delete Submission</i>
+                    <i class="fa fa-trash red-text fs-14" aria-hidden="true">&nbsp;Delete Submission</i>
                   </a>
                 </div>
               </div>
