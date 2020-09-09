@@ -200,6 +200,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
+    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
@@ -268,6 +269,7 @@ class ChallengePhase(TimeStampedModel):
     is_partial_submission_evaluation_enabled = models.BooleanField(
         default=False
     )
+    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     class Meta:
@@ -323,6 +325,7 @@ signals.post_save.connect(
 class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
+    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):

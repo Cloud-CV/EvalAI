@@ -43,6 +43,7 @@ from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
     get_queue_name,
+    get_slug,
     get_url_from_hostname,
     paginated_queryset,
     send_email,
@@ -2567,10 +2568,23 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_or_update_github_challenge(request, challenge_host_team_pk):
+    try:
+        challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {"error": "ChallengeHostTeam does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     challenge_queryset = Challenge.objects.filter(
         github_repository=request.data["GITHUB_REPOSITORY"]
     )
-    challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
+    if challenge_queryset:
+        challenge = challenge_queryset[0]
+        if not is_user_a_host_of_challenge(request.user, challenge.pk):
+            response_data = {
+                "error": "Sorry, you are not a host for this challenge. Please check your user access token"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     response_data = {}
 
@@ -2670,7 +2684,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ):
                         data["slug"] = "{}-{}-{}".format(
                             challenge.title.split(" ")[0].lower(),
-                            data["codename"].replace(" ", "-").lower(),
+                            get_slug(data["codename"]),
                             challenge.pk,
                         )[:198]
 
@@ -2819,8 +2833,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     )
 
         else:
-            challenge = challenge_queryset[0]
-
             # Updating ChallengeConfiguration object
             challenge_configuration = ChallengeConfiguration.objects.filter(
                 challenge=challenge.pk
