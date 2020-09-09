@@ -1,56 +1,54 @@
 <div class="bottom-card-container ev-card-panel ev-md-container phase-card">
   <div class="row row-lr-margin">
     <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
-      <div class="row row-lr-margin">
-        <div class="col-sm-11 col-md-11 col-lg-11 col-lr-pad">
-          <h5 class="fw-light text-med-black">
+      <div class="row">
+        <span class="col-sm-11 col-md-11 col-lg-11 col-lr-pad">
+          <h5 class="fw-light">
             {{ phase['name'] }}
           </h5>
-        </div>
-        <div *ngIf="isChallengeHost" class="col-sm-1 col-md-1 col-lg-1 col-lr-pad">
+        </span>
+        <span *ngIf="isChallengeHost" class="col-sm-1 col-md-1 col-lg-1 col-lr-pad">
           <a class="pointer" (click)="editChallengePhase()">
             <i class="fa fa-pencil fs-16" aria-hidden="true"> </i>&nbsp;edit
           </a>
-        </div>
+        </span>
       </div>
-      <div class="row row-lr-margin">
+      <div class="row">
         <div class="col-sm-12 col-lr-pad">
+          <div class="col-md-8 col-lg-8 no-pad-lr element">
+            <p>
+              <strong class="text-light-black fw-light fs-16">Starts on</strong> <br />
+              <strong class="fw-light fs-14 phase-value">{{ startDate }} {{ phase['start_zone'] }}</strong>
+            </p>
+          </div>
+          <div class="col-lg-4 col-lg-4 no-pad-lr element">
+            <p>
+              <strong class="text-light-black fw-light fs-16">Ends on</strong> <br />
+              <strong class="fw-light fs-14 phase-value">{{ endDate }} {{ phase['end_zone'] }}</strong>
+            </p>
+          </div>
+          <div [innerHTML]="phase['description']" class="phase-description content"></div>
+
           <div class="row rm-margin">
-            <div class="col-md-8 col-lg-8 no-pad-lr element">
+            <div class="col-lg-4 no-pad-lr element">
               <p>
-                <strong class="text-light-black fw-light fs-16">Starts on</strong> <br />
-                <strong class="fw-light fs-14 phase-value">{{ startDate }} {{ phase['start_zone'] }}</strong>
+                <strong class="text-light-black fw-light fs-16">Max number of submissions/day</strong> <br />
+                <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions_per_day'] }}</strong>
               </p>
             </div>
-            <div class="col-lg-4 col-lg-4 no-pad-lr element">
+
+            <div class="col-lg-4 no-pad-lr element">
               <p>
-                <strong class="text-light-black fw-light fs-16">Ends on</strong> <br />
-                <strong class="fw-light fs-14 phase-value">{{ endDate }} {{ phase['end_zone'] }}</strong>
+                <strong class="text-light-black fw-light fs-16">Max number of submissions/month</strong> <br />
+                <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions_per_month'] }}</strong>
               </p>
             </div>
-            <div [innerHTML]="phase['description']" class="phase-description content"></div>
 
-            <div class="row rm-margin">
-              <div class="col-lg-4 no-pad-lr element">
-                <p>
-                  <strong class="text-light-black fw-light fs-16">Max number of submissions/day</strong> <br />
-                  <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions_per_day'] }}</strong>
-                </p>
-              </div>
-
-              <div class="col-lg-4 no-pad-lr element">
-                <p>
-                  <strong class="text-light-black fw-light fs-16">Max number of submissions/month</strong> <br />
-                  <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions_per_month'] }}</strong>
-                </p>
-              </div>
-
-              <div class="col-lg-4 no-pad-lr element">
-                <p>
-                  <strong class="text-light-black fw-light fs-16">Max total submissions</strong> <br />
-                  <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions'] }}</strong>
-                </p>
-              </div>
+            <div class="col-lg-4 no-pad-lr element">
+              <p>
+                <strong class="text-light-black fw-light fs-16">Max total submissions</strong> <br />
+                <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions'] }}</strong>
+              </p>
             </div>
           </div>
         </div>
