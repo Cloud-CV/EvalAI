@@ -384,9 +384,12 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     if execution_role_arn:
         if challenge.is_docker_based:
             from .models import ChallengeEvaluationCluster
+
             # Cluster detail to be used by code-upload-worker
             try:
-                cluster_details = ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                cluster_details = ChallengeEvaluationCluster.objects.get(
+                    challenge=challenge
+                )
                 cluster_name = cluster_details.name
                 cluster_endpoint = cluster_details.cluster_endpoint
                 cluster_certificate = cluster_details.cluster_ssl
@@ -644,7 +647,12 @@ def start_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers == 0) or (challenge.workers is None):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=1
             )
@@ -693,7 +701,12 @@ def stop_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
@@ -795,7 +808,12 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.workers is not None:
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -806,6 +824,8 @@ def delete_workers(queryset):
                 )
                 continue
             count += 1
+            log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+            delete_log_group(log_group_name)
         else:
             response = "Please select challenges with active workers only."
             failures.append(
@@ -842,7 +862,12 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client,
                 challenge=challenge,
@@ -966,11 +991,25 @@ def get_logs_from_cloudwatch(
             for event in response["events"]:
                 logs.append(event["message"])
         except Exception as e:
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                return logs
+
             logger.exception(e)
             return [
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
             ]
     return logs
+
+
+def delete_log_group(log_group_name):
+    if settings.DEBUG:
+        pass
+    else:
+        try:
+            client = get_boto3_client("logs", aws_keys)
+            client.delete_log_group(logGroupName=log_group_name)
+        except Exception as e:
+            logger.exception(e)
 
 
 @app.task
@@ -1116,23 +1155,25 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
 
     if not challenge.is_docker_based and challenge.remote_evaluation is False:
         if curr and not prev:
-            response = start_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if count != 1:
-                logger.error(
-                    "Worker for challenge {} couldn't start! Error: {}".format(
-                        challenge.id, failures[0]["message"]
+            if not challenge.workers:
+                response = start_workers([challenge])
+                count, failures = response["count"], response["failures"]
+                if not count:
+                    logger.error(
+                        "Worker for challenge {} couldn't start! Error: {}".format(
+                            challenge.id, failures[0]["message"]
+                        )
                     )
-                )
-            else:
-                construct_and_send_worker_start_mail(challenge)
+                else:
+                    construct_and_send_worker_start_mail(challenge)
 
         if prev and not curr:
-            response = delete_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if count != 1:
-                logger.error(
-                    "Worker for challenge {} couldn't be deleted! Error: {}".format(
-                        challenge.id, failures[0]["message"]
+            if challenge.workers:
+                response = delete_workers([challenge])
+                count, failures = response["count"], response["failures"]
+                if not count:
+                    logger.error(
+                        "Worker for challenge {} couldn't be deleted! Error: {}".format(
+                            challenge.id, failures[0]["message"]
+                        )
                     )
-                )

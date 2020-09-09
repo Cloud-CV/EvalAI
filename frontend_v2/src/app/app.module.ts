@@ -51,7 +51,7 @@ import { environment } from '../environments/environment';
           [{ direction: 'rtl' }],
           [{ header: [1, 2, 3, 4, 5, 6, false] }],
           [{ align: [] }],
-          ['link'],
+          ['link', 'image'],
         ],
       },
     }),
