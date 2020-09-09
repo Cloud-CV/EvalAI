@@ -235,9 +235,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
-            serializer = ChallengeSerializer(
-                challenge, context={"request": request}
-            )
+            serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
