@@ -16,37 +16,64 @@ import { DOCUMENT } from '@angular/common';
   styleUrls: ['./template-challenge-create.component.scss'],
 })
 export class TemplateChallengeCreateComponent implements OnInit {
+  /**
+   * Is the user logged in?
+   */
+  isLoggedIn = false;
 
-	 isLoggedIn = false;
+  /**
+   * Selected Host team object
+   */
+  hostTeam = null;
 
-	 hostTeam = null; // Initialize this using the 
+  /**
+   * Challenge template id
+   */
+  id = null;
 
-	 id = null;
-	 phases = null;
+  /**
+   * Number of phases
+   */
+  phases = null;
 
-	 challengeData = {
-	 	'title': null,
-	 	'start_date': null,
-	 	'end_date': null,
-	 	'description': null,
-	 	'evaluation_script': null,
-	 	'challenge_phases': null
-	 }
+  /**
+   * Challenge values loaded by host
+   */
+  challengeData = {
+  	'title': null,
+  	'start_date': null,
+  	'end_date': null,
+  	'description': null,
+  	'evaluation_script': null,
+  	'challenge_phases': null
+  }
 
-	 challenge_phases = []
+  /**
+   * Challenge phase data loaded by hosts
+   */
+  challenge_phases = []
 
-	 challengePhaseData = {
-	 	'name': null,
-	 	'start_date': null,
-	 	'end_date': null
-	 }
+  /**
+   * Challenge phase data model used to fill challenge_phases above
+   */
+  challengePhaseData = {
+  	'name': null,
+  	'start_date': null,
+  	'end_date': null
+  }
 
-	 hostedChallengesRoute = '/challenges/me';
-	 hostTeamsRoute = '/teams/hosts';
+  /**
+   * Route for hosted challenges
+   */
+  hostedChallengesRoute = '/challenges/me';
 
-	 currentDateTime: Date;
+  /**
+   * Route path for host teams
+   */
+  hostTeamsRoute = '/teams/hosts';
 
-	constructor(
+
+  constructor(
     public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
@@ -56,7 +83,7 @@ export class TemplateChallengeCreateComponent implements OnInit {
     private apiService: ApiService
   ) {}
 
-	ngOnInit() {
+  ngOnInit() {
 		if (this.authService.isLoggedIn()) {
 	      this.isLoggedIn = true;
 	    }
@@ -79,11 +106,9 @@ export class TemplateChallengeCreateComponent implements OnInit {
 	    });
 
 	    for(var i = 0; i<this.phases; i++){
-	    	this.challengePhaseData['id'] = i+1;
+	    	this.challengePhaseData['id'] = i + 1;
 	    	this.challenge_phases.push(Object.assign({}, this.challengePhaseData));
 	    };
-
-	    this.currentDateTime = new Date();
 	}
 
 	ngOnDestroy() {
@@ -97,9 +122,8 @@ export class TemplateChallengeCreateComponent implements OnInit {
 			this.challengeData['is_challenge_template'] = true;
 			this.challengeData['template_id'] = this.id
 			this.challengeData.challenge_phases = JSON.stringify(this.challenge_phases);
-			//FORM_DATA.append('data', JSON.stringify(this.challengeData));
 			for(let key in this.challengeData){
-				FORM_DATA.append(key, this.challengeData[key]);
+        FORM_DATA.append(key, this.challengeData[key]);
 			}
 			this.globalService.startLoader('Creating Challenge');
 			this.challengeService.challengeCreate(this.hostTeam['id'], FORM_DATA).subscribe(
@@ -109,7 +133,7 @@ export class TemplateChallengeCreateComponent implements OnInit {
 		          this.router.navigate([this.hostedChallengesRoute]);
 		        },
 		        (err) => {
-		        	console.log(err.error);
+              console.log(err.error);
 		          this.globalService.stopLoader();
 		          this.globalService.showToast('error', "Sorry, something went wrong when creating the challenge. Please try again later: " + JSON.stringify(err.error) );
 		        },

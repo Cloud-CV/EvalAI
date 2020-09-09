@@ -9,6 +9,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+API_HOST_URL = "http://localhost:8000"
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",

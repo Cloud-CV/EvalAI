@@ -109,7 +109,7 @@ class ChallengeTemplateSerializer(serializers.ModelSerializer):
             "title",
             "image",
             "dataset",
-            "eval_criteria",
+            "eval_metrics",
             "phases",
             "splits",
         )

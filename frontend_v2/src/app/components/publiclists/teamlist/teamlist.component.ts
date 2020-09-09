@@ -202,9 +202,24 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       'and then their performance will be measured by our system.   ',
   ];
 
-  templateSub = null;
+  /**
+   * Team list route's query parameter subscription
+   */
+  teamListRouteQueryParamSub = null;
+
+  /**
+   * Is the team being selected for a template based challenge or not
+   */
   isTemplateChallenge = false;
+
+  /**
+   * Id of the challenge template selected
+   */
   templateId = null;
+
+  /**
+   * Number of phases in the challenge template
+   */
   templatePhases = null;
 
   /**
@@ -245,7 +260,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.templateSub = this.route
+    this.teamListRouteQueryParamSub = this.route
       .queryParams
       .subscribe(params => {
         this.isTemplateChallenge = params['template'] || false;
@@ -279,17 +294,13 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.teamSelectTitle = 'My Existing Participant Teams';
       this.teamCreateButton = 'Create Participant Team';
     }
-
-    if(this.isTemplateChallenge == true){
-      //this.isOnChallengePage = false;
-    }
   }
 
   ngOnDestroy() {
     if (this.authServiceSubscription) {
       this.authServiceSubscription.unsubscribe();
     }
-    this.templateSub.unsubscribe();
+    this.teamListRouteQueryParamSub.unsubscribe();
   }
 
   /**
@@ -603,7 +614,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     this.router.navigate([this.createChallengeRoutePath]);
   }
 
-  createTemplateChallenge() {
+  createChallengeFromTemplate() {
     this.challengeService.changeCurrentHostTeam(this.selectedTeam);
     this.router.navigate([this.createTemplateChallengeRoutePath, this.templateId, this.templatePhases]);
   }

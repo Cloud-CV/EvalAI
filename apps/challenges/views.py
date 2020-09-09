@@ -707,12 +707,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        template_zip_s3_url = challenge_template.template_file.url
-
-        if settings.DEBUG:
-            template_zip_s3_url = "http://localhost:8000" + template_zip_s3_url
-        else:
-            template_zip_s3_url = "evalapi.cloudcv.org" + template_zip_s3_url
+        template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
 
         unique_folder_name = get_unique_alpha_numeric_key(10)
         challenge_template_download_location = join(
@@ -732,7 +727,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        if response and response.status_code == 200:
+        if response and response.status_code == status.HTTP_200_OK:
             with open(challenge_template_download_location, "wb") as f:
                 f.write(response.content)
 
@@ -1131,15 +1126,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
+    challenge_fields = [
+        "title",
+        "description",
+        "start_date",
+        "start_date",
+        "end_date",
+    ]
+    challenge_phase_fields = ["name", "start_date", "end_date"]
     if is_challenge_template:
-        yaml_file_data["title"] = challenge_data_from_hosts.get("title")
-        yaml_file_data["description"] = challenge_data_from_hosts.get(
-            "description"
-        )
-        yaml_file_data["start_date"] = challenge_data_from_hosts.get(
-            "start_date"
-        )
-        yaml_file_data["end_date"] = challenge_data_from_hosts.get("end_date")
+        for field in challenge_fields:
+            yaml_file_data[field] = challenge_data_from_hosts.get(field)
 
         # Mapping the challenge phase data to that in yaml_file_data
         challenge_phases = yaml_file_data["challenge_phases"]
@@ -1151,15 +1148,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         for challenge_phase_data, challenge_phase_data_from_hosts in zip(
             challenge_phases, challenge_phases_from_hosts
         ):
-            challenge_phase_data["name"] = challenge_phase_data_from_hosts.get(
-                "name"
-            )
-            challenge_phase_data[
-                "start_date"
-            ] = challenge_phase_data_from_hosts.get("start_date")
-            challenge_phase_data[
-                "end_date"
-            ] = challenge_phase_data_from_hosts.get("end_date")
+            for field in challenge_phase_fields:
+                challenge_phase_data[
+                    field
+                ] = challenge_phase_data_from_hosts.get(field)
 
     try:
         with transaction.atomic():

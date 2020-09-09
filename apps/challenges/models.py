@@ -369,9 +369,8 @@ class ChallengeTemplate(TimeStampedModel):
     """
 
     title = models.CharField(max_length=500)
-    template_file = models.FileField(
-        upload_to=RandomFileName("templates")
-    )  # Stores the challenge config zip file
+    # Stores the challenge config zip file
+    template_file = models.FileField(upload_to=RandomFileName("templates"))
     is_active = models.BooleanField(default=False, db_index=True)
     image = models.ImageField(
         upload_to=RandomFileName("templates/preview-images/"),
@@ -380,7 +379,8 @@ class ChallengeTemplate(TimeStampedModel):
         verbose_name="Template Preview Image",
     )
     dataset = models.CharField(max_length=200, default="")
-    eval_criteria = ArrayField(
+    # The metrics on which the submissions are evaluated
+    eval_metrics = ArrayField(
         models.CharField(max_length=200, blank=True),
         default=["Accuracy"],
         blank=True,

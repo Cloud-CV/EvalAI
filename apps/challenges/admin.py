@@ -277,7 +277,7 @@ class ChallengeTemplate(ImportExportTimeStampedAdmin):
         "title",
         "image",
         "dataset",
-        "eval_criteria",
+        "eval_metrics",
         "phases",
         "splits",
     )
@@ -286,14 +286,14 @@ class ChallengeTemplate(ImportExportTimeStampedAdmin):
         "dataset",
         "phases",
         "splits",
-        "eval_criteria",
+        "eval_metrics",
     )
     search_fields = (
         "title",
         "dataset",
         "phases",
         "splits",
-        "eval_criteria",
+        "eval_metrics",
     )
 
 

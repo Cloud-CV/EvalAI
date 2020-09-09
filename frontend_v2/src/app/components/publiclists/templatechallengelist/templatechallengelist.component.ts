@@ -14,20 +14,30 @@ import { DOCUMENT } from '@angular/common';
   templateUrl: './templatechallengelist.component.html',
   styleUrls: ['./templatechallengelist.component.scss'],
 })
-export class TemplatechallengelistComponent implements OnInit {
+export class TemplateChallengeListComponent implements OnInit {
 
-	 isLoggedIn = false;
+  /**
+   * Is the user logged in?
+   */
+  isLoggedIn = false;
 
-   challengeTemplates = [];
+  /**
+   * All the challenge templates are stored here
+   */
+  challengeTemplates = [];
 
-   selected_template_id = null;
+  /**
+   * Path to create a template based challenge
+   */
+  templateChallengeCreatePath = '/template-challenge-create';
 
-   templateChallengeCreatePath = '/template-challenge-create';
+  /**
+   * Path to fetch all challenge templates
+   */
+  templateChallengesFetchPath = 'challenges/get_all_challenge_templates/'
 
-   templateChallengesFetchPath = 'challenges/get_all_challenge_templates/'
 
-
-	constructor(
+  constructor(
     public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
@@ -36,21 +46,20 @@ export class TemplatechallengelistComponent implements OnInit {
     private apiService: ApiService
   ) {}
 
-	ngOnInit() {
-		if (this.authService.isLoggedIn()) {
-	      this.isLoggedIn = true;
-	    }
-
+  ngOnInit() {
+    if (this.authService.isLoggedIn()) {
+      this.isLoggedIn = true;
+    }
     this.fetchChallengeTemplates();
-	}
+  }
 
   /*
-     Template is of form: //(You can use a dummy dict while developing.)
+     Template is of form:
      {
         "title": <title of the challenge template>,
         "image": <preview image of the challenge template>,
         "dataset": <string discribing the dataset>,
-        "eval_criteria": <an array or list of strings which are the leaderboard metrics>,
+        "eval_metrics": <an array or list of strings which are the leaderboard metrics>,
         "phases": <number of challenge phases>,
         "splits": <number of dataset splits>,
         "id": <id_of_challenge_template>
@@ -69,19 +78,5 @@ export class TemplatechallengelistComponent implements OnInit {
       },
       () => {}
     );
-    
-    /*
-    this.challengeTemplates = [
-      {
-        'title': 'sample',
-        'dataset': 'sample',
-        'eval_criteria': ['criterai1'],
-        'phases': 2,
-        'splits': 2,
-        'image': "https://staging-evalai.s3.amazonaws.com/media/logos/fe6779bc-746e-4759-836d-01d25e5cd4f1.jpg",
-        'id': 1
-      }
-    ]
-    */
   }
 }

@@ -37,9 +37,9 @@
           <div class="row row-lr-margin">
             <div class="align-left col-sm-10 col-lr-pad">
               <span class="text-med-black fw-regular fs-16">Start date and time</span>
-              <input type="datetime-local" [(ngModel)]="challengeData['start_date']" min="currentDateTime" value="2022-08-01T15:30:30"/>
+              <input type="datetime-local" [(ngModel)]="challengeData['start_date']"/>
               <span class="text-med-black fw-regular fs-16">End date and time</span>
-              <input type="datetime-local" [(ngModel)]="challengeData['end_date']" min="currentDateTime"/>
+              <input type="datetime-local" [(ngModel)]="challengeData['end_date']"/>
             </div>
           </div>
           <div class="row row-lr-margin">
@@ -55,9 +55,9 @@
                     />
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 <span class="text-med-black fw-regular fs-16">Start date and time</span>
-                <input type="datetime-local" [(ngModel)]="phase['start_date']" min="currentDateTime"/>
+                <input type="datetime-local" [(ngModel)]="phase['start_date']"/>
                 <span class="text-med-black fw-regular fs-16">End date and time</span>
-                <input type="datetime-local" [(ngModel)]="phase['end_date']" min="currentDateTime"/>
+                <input type="datetime-local" [(ngModel)]="phase['end_date']"/>
             	</div>
             </div>
           </div>

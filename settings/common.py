@@ -33,6 +33,7 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
+API_HOST_URL = ""
 
 # Application definition
 

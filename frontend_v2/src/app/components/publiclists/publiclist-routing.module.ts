@@ -5,7 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ChallengelistComponent } from './challengelist/challengelist.component';
 import { PubliclistsComponent } from './publiclists.component';
 import { TeamlistComponent } from './teamlist/teamlist.component';
-import { TemplatechallengelistComponent } from './templatechallengelist/templatechallengelist.component';
+import { TemplateChallengeListComponent } from './templatechallengelist/templatechallengelist.component';
 
 const routes: Routes = [
   {
@@ -16,7 +16,7 @@ const routes: Routes = [
       { path: 'all', component: ChallengelistComponent },
       { path: 'me', component: ChallengelistComponent },
       { path: 'participated', component: ChallengelistComponent },
-      { path: 'templates', component: TemplatechallengelistComponent }
+      { path: 'templates', component: TemplateChallengeListComponent }
     ],
   },
 ];

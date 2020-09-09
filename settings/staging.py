@@ -2,6 +2,8 @@ from .prod import *  # noqa: ignore=F405
 
 ALLOWED_HOSTS = ["staging-evalai.cloudcv.org"]
 
+API_HOST_URL = "https://staging-evalai.cloudcv.org"
+
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
