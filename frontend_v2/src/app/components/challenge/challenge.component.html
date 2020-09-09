@@ -139,6 +139,15 @@
                         <i class="fa fa-line-chart"></i> Leaderboard</a
                       >
                     </li>
+                    <li *ngIf="isChallengeHost">
+                      <a
+                        [class.selected]="localRouter.url.endsWith('analytics')"
+                        [routerLink]="['./analytics']"
+                        class="text-light-black fw-light fs-15"
+                      >
+                        <i class="fa fa-bar-chart"></i> Analytics
+                      </a>
+                    </li>
                     <li *ngIf="isForumEnabled && (forumURL || isChallengeHost)">
                       <a
                         [class.selected]="localRouter.url.endsWith('discuss')"
@@ -154,15 +163,7 @@
                         [routerLink]="['./settings']"
                         class="text-light-black fw-light fs-15"
                       >
-                        <i class="fa fa-gear"></i> Settings
-                      </a>
-                    </li>
-                    <li *ngIf="isChallengeHost">
-                      <a
-                        [class.selected]="localRouter.url.endsWith('manage')"
-                        [routerLink]="['./manage']"
-                        class="text-light-black fw-light fs-15"
-                        ><i class="fa fa-cogs"></i> Manage
+                        <i class="fa fa-cogs"></i> Settings
                       </a>
                     </li>
                   </ul>

@@ -1,19 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChallengemanageComponent } from './challengemanage.component';
+import { ChallengeanalyticsComponent } from './challengeanalytics.component';
 
-describe('ChallengemanageComponent', () => {
-  let component: ChallengemanageComponent;
-  let fixture: ComponentFixture<ChallengemanageComponent>;
+describe('ChallengeanalyticsComponent', () => {
+  let component: ChallengeanalyticsComponent;
+  let fixture: ComponentFixture<ChallengeanalyticsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ChallengemanageComponent],
+      declarations: [ChallengeanalyticsComponent],
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ChallengemanageComponent);
+    fixture = TestBed.createComponent(ChallengeanalyticsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

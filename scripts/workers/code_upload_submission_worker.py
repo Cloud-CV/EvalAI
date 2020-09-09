@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import signal
-import urllib
+import urllib.request
 import yaml
 
 
@@ -142,7 +142,7 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
         submission_data = {
             "submission_status": "running",
             "submission": body["submission_pk"],
-            "job_name": response.metadata.name,
+            "job_name": response.metadata.generate_name,
         }
         evalai.update_submission_status(submission_data, body["challenge_pk"])
     except Exception as e:
@@ -154,11 +154,11 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
 
 
 def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
-    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
-    configuration.verify_ssl = False
+    configuration.verify_ssl = True
+    configuration.ssl_ca_cert = '.certificate.txt'
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -172,7 +172,8 @@ def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
-    configuration.verify_ssl = False
+    configuration.verify_ssl = True
+    configuration.ssl_ca_cert = '.certificate.txt'
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -186,7 +187,8 @@ def get_core_v1_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
-    configuration.verify_ssl = False
+    configuration.verify_ssl = True
+    configuration.ssl_ca_cert = '.certificate.txt'
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -279,7 +281,7 @@ def install_gpu_drivers(api_instance):
     logging.info("Installing Nvidia-GPU Drivers ...")
     link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
     logging.info("Using daemonset file: %s", link)
-    nvidia_manifest = urllib.urlopen(link)
+    nvidia_manifest = urllib.request.urlopen(link)
     daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
     ext_client = client.ExtensionsV1beta1Api(api_instance)
     try:
