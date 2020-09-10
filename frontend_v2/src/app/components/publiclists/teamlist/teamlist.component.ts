@@ -175,32 +175,6 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   filterTeamsQuery = '';
 
   /**
-   * Content for terms and conditions
-   */
-  termsAndConditionContent = [
-    'Participants can train their models with the released training set' +
-      ', also with other training images as long as they are disjoint with the test set' +
-      '(see <a class="blue-text" href="https://arxiv.org/pdf/1804.09691.pdf" target="_blank">arXiv paper</a>)',
-
-    'We provide the evaluation codes, along with the released validation dataset, ' +
-      'for participants to validate their algorithms on validation set during the <strong>validation phase</strong>.' +
-      'The usage instruction is described in "readme.txt" released along with the train/validation data. ',
-
-    'For <strong>testing phase</strong> of <strong>identification</strong> track, ' +
-      'we will release the test set where gallery set is fully labelled with idenitities, ' +
-      'and probe images with only pseudo labels (not related to identities). ' +
-      "Participants will submit a file reporting each probe image's " +
-      'feature distance to the top-20 matching gallery identities and the corresponding identity indexes ' +
-      '(see "submission format" on the "Overview" page), and then their performance will be measured by our system.   ',
-
-    'For <strong>testing phase</strong> of <strong>verification</strong> track, ' +
-      'we will release the images with only pseudo labels and the constructed image pairs, ' +
-      'without indicating they are positive or negative. ' +
-      "Participants will submit a file reporting each image pair's matching socre, " +
-      'and then their performance will be measured by our system.   ',
-  ];
-
-  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.
@@ -579,32 +553,6 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   createChallenge() {
     this.challengeService.changeCurrentHostTeam(this.selectedTeam);
     this.router.navigate([this.createChallengeRoutePath]);
-  }
-
-  /**
-   * Participate in the challenge using selected team.
-   */
-  participateInChallenge() {
-    const confirmCallback = () => {
-      this.challengeService.participateInChallenge(this.challenge['id'], this.selectedTeam['id']);
-    };
-
-    let content = '' + '<ol>';
-    this.termsAndConditionContent.forEach((item) => {
-      content += `<li>${item}</li>`;
-    });
-    content += '</ol>';
-
-    const PARAMS = {
-      title: 'Terms and Conditions',
-      content: content,
-      confirm: 'Participate',
-      deny: 'Cancel',
-      label: 'I accept terms and conditions',
-      confirmCallback: confirmCallback,
-      denyCallback: null,
-    };
-    this.globalService.showTermsAndConditionsModal(PARAMS);
   }
 
   /**
