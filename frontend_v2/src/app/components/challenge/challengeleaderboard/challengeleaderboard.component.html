@@ -17,8 +17,8 @@
           >Page is outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i
         ></span>
       </div>
-      <div class="row row-lr-margin phase-select-box">
-        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+      <div class="row">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box col-lr-margin">
           <app-selectphase
             [phases]="filteredPhaseSplits"
             [phaseSelectionType]="phaseSelectionType"
@@ -28,31 +28,33 @@
           >
           </app-selectphase>
         </div>
-      </div>
-      <br />
-      <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
-        <div class="row row-lr-margin">
-          <div class="col-sm-12 col-xs-12 col-lr-pad" class="leaderboard-precison">
-            <span class="fw-semibold">
-              Leaderboard precision value: &nbsp; <mat-chip>{{ leaderboardPrecisionValue }}</mat-chip></span
-            ><br />
-            <span class="fw-light"
-              >Changing the precision value will show the results with that precision value to the participants.
-            </span>
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
+          <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
+            <div class="col-sm-12 col-xs-12 col-lr-pad" class="leaderboard-precison">
+              <span class="fw-semibold"> Leaderboard precision value:</span><br />
+              <span class="fw-light"
+                >Changing the precision value will show the results with that precision value to the participants.
+              </span>
+            </div>
+            <div class="rangeslider fa-stack fa-2x">
+              <button
+                [disabled]="minusDisabled"
+                class="btn-floating btn-pagination waves-effect waves-light"
+                (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue - 1)"
+              >
+                <i class="fa fa-minus"></i>
+              </button>
+              &nbsp;<mat-chip class="btn">{{ leaderboardPrecisionValue }}</mat-chip
+              >&nbsp;
+              <button
+                [disabled]="plusDisabled"
+                class="btn-floating btn-pagination waves-effect waves-light"
+                (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue + 1)"
+              >
+                <i class="fa fa-plus"></i>
+              </button>
+            </div>
           </div>
-        </div>
-        <div class="rangeslider fa-stack fa-2x">
-          <mat-slider
-            thumbLabel
-            min="0"
-            max="5"
-            step="1"
-            thumbLabel
-            placeholder="leaderboardPrecisionValue"
-            [(ngModel)]="leaderboardPrecisionValue"
-            (change)="updateLeaderboardDecimalPrecision($event)"
-          >
-          </mat-slider>
         </div>
       </div>
     </div>

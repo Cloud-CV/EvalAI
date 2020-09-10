@@ -9,13 +9,15 @@
       <div class="row row-lr-margin phase-title">
         <div class="col-sm-12">
           <h5 class="fw-light">My Submissions</h5>
-        </div> <br> <br>
+        </div>
+        <br />
+        <br />
         <div class="col-sm-12">
-          <span class="fw-300">My Participated Team:&nbsp;&nbsp;{{participatedTeamName}}</span>
+          <span class="fw-300">My Participated Team:&nbsp;&nbsp;{{ participatedTeamName }}</span>
         </div>
       </div>
       <div class="row row-lr-margin">
-        <div class="col-sm-6 col-xs-12 col-lg-8 col-lr-pad phase-select-box">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
           <app-selectphase
             [phases]="filteredPhases"
             [phaseSelectionListType]="phaseSelectionListType"
@@ -24,8 +26,45 @@
             #phaseselect
           ></app-selectphase>
         </div>
-        <div class="col-lg-4 col-md-8 col-sm-12 col-xs-12 col-lr-pad" *ngIf="selectedPhase">
-          <div class="add-line-height">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad">
+          <div class="col-md-2 col-sm-2 col-xs-6 col-lg-6 col-lr-pad download-submissions">
+            <mat-form-field>
+              <mat-label>File</mat-label>
+              <mat-select [(ngModel)]="fileSelected" class="rm-margin">
+                <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">
+                  {{ key.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="col-md-2 col-sm-2 col-xs-6 col-lg-6 col-lr-pad download-submissions">
+            <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download </a>
+          </div>
+        </div>
+      </div>
+      <div class="filter-team">
+        <div class="row row-lr-margin" *ngIf="selectedPhase">
+          <div class="col-sm-6 col-xs-12 col-lg-6">
+            <div class="row row-lr-margin">
+              <div class="col-sm-12">
+                <strong class="fw-semibold content fs-15">Filter Submissions by Team name</strong>
+              </div>
+            </div>
+            <div class="row row-lr-margin">
+              <div class="col-sm-10 col-xs-10 col-lg-10 col-lr-pad phase-select-box">
+                <app-input
+                  [name]="'filterByTeamName'"
+                  (input)="filterSubmissions($event.target.value)"
+                  [label]="'Team name'"
+                  [placeholder]="'Team name'"
+                  [type]="'text'"
+                  #formFilter
+                >
+                </app-input>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad">
             <span>
               <strong class="fw-semibold text-med-black">
                 Total Submissions Done:
@@ -37,42 +76,8 @@
           </div>
         </div>
       </div>
-      <div class="row row-lr-margin">
-        <div class="col-md-2 col-sm-2 col-xs-6 align-left col-lr-pad all-submissions-file">
-          <mat-form-field>
-            <mat-label>File type</mat-label>
-            <mat-select [(ngModel)]="fileSelected" class="rm-margin">
-              <mat-option *ngFor="let key of fileTypes" value="{{ key.name }}">{{ key.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
-          <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download</a>
-        </div>
-      </div>
-      <div class="row row-lr-margin"></div>
-      <div *ngIf="selectedPhase">
-        <div class="row row-lr-margin phase-title">
-          <div class="col-sm-12">
-            <strong class="fw-semibold content fs-15">Filter Submissions by Team name</strong>
-          </div>
-        </div>
-        <div class="row row-lr-margin">
-          <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
-            <app-input
-              [name]="'filterByTeamName'"
-              (input)="filterSubmissions($event.target.value)"
-              [label]="'Team name'"
-              [placeholder]="'Team name'"
-              [type]="'text'"
-              #formFilter
-            >
-            </app-input>
-          </div>
-        </div>
-      </div>
+      <!-- <br> -->
     </div>
-
     <div
       class="ev-card-body exist-team-card"
       *ngIf="!isPhaseSelected || (paginationDetails.showPagination == false && isPhaseSelected)"
@@ -86,7 +91,7 @@
         </div>
       </div>
     </div>
-    <div class="collapsible-table">
+    <div class="ev-card-body collapsible-table">
       <table
         mat-table
         *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
@@ -97,11 +102,12 @@
         <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
           <th class="cell-outside text-dark-black fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
           <td class="cell-outside fw-regular" mat-cell *matCellDef="let element">
+            <span *ngIf="column === 's_no'" class="{{ element[column] }} fs-12"> {{ element[column] }}</span>
             <a
               target="_blank"
               class="blue-text"
               [href]="element[column]"
-              *ngIf="element[column] !== null && column !== 'status'"
+              *ngIf="element[column] !== null && column !== 'status' && column !== 's_no'"
             >
               <i class="fa fa-external-link"></i>
               Link

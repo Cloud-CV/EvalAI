@@ -126,11 +126,17 @@ mat-slider {
   padding-right: 0px;
 }
 
-.leaderboard-precison {
-  margin-left: 8px;
+.rangeslider {
   mat-chip {
-    background: green !important;
+    background: #22857b !important;
   }
+  .btn {
+    margin-right: 0px;
+  }
+}
+
+.ev-md-container {
+  padding-bottom: 0px;
 }
 
 .complete-leaderboard {

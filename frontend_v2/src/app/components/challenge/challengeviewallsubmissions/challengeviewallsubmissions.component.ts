@@ -145,6 +145,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   apiCall: any;
 
   columnsToDisplay = [
+    's_no',
     'participant_team',
     'created_by',
     'status',
@@ -152,7 +153,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     'submitted_file',
     'submission_result_file',
   ];
-  columnsHeadings = ['Team Name', 'Created By', 'Status', 'Execution Time', 'Submitted File', 'Result File'];
+  columnsHeadings = ['S.No.', 'Team Name', 'Created By', 'Status', 'Execution Time', 'Submitted File', 'Result File'];
 
   expandedElement: null;
 
@@ -262,6 +263,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.submissions = data['results'];
+        let index = 0;
+        SELF.submissions.forEach((submission) => {
+          submission['s_no'] = index + 1;
+          index += 1;
+        });
         for (let i = 0; i < SELF.submissions.length; i++) {
           // Update view for submission visibility setting
           SELF.submissions[i].submissionVisibilityIcon = SELF.submissions[i].is_public
