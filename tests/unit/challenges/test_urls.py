@@ -131,7 +131,7 @@ class TestChallengeUrls(BaseAPITestClass):
             url,
             "/api/challenges/challenge/"
             + str(self.challenge.pk)
-            + "/participant_team/team_name",
+            + "/participant_team/team_detail",
         )
 
         url = reverse_lazy(

@@ -250,7 +250,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def team_name_for_challenge(request, challenge_pk):
+def participant_team_detail_for_challenge(request, challenge_pk):
     """
     API to return the participated team name in the challenge.
     """

@@ -574,7 +574,7 @@
 
 
         // get names of the team that has participated in the current challenge
-        parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/team_name';
+        parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/team_detail';
         parameters.method = 'GET';
         parameters.data={};
         parameters.callback = {
