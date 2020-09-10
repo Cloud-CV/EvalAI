@@ -211,6 +211,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_restricted_to_select_one_submission",
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
+                    "config_id",
                 ]
             ),
         )
@@ -290,6 +291,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_restricted_to_select_one_submission",
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
+                    "config_id",
                 ]
             ),
         )
@@ -365,6 +367,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "is_restricted_to_select_one_submission",
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
+                    "config_id",
                 ]
             ),
         )
