@@ -168,7 +168,10 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    * Route path for create challenge
    */
   createChallengeRoutePath = '/challenge-create';
-
+  
+  /**
+   * Route path for create template challenge page
+   */
   createTemplateChallengeRoutePath = '/template-challenge-create';
 
   /**
@@ -223,6 +226,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   templatePhases = null;
 
   /**
+
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.
@@ -617,32 +621,6 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   createChallengeFromTemplate() {
     this.challengeService.changeCurrentHostTeam(this.selectedTeam);
     this.router.navigate([this.createTemplateChallengeRoutePath, this.templateId, this.templatePhases]);
-  }
-
-  /**
-   * Participate in the challenge using selected team.
-   */
-  participateInChallenge() {
-    const confirmCallback = () => {
-      this.challengeService.participateInChallenge(this.challenge['id'], this.selectedTeam['id']);
-    };
-
-    let content = '' + '<ol>';
-    this.termsAndConditionContent.forEach((item) => {
-      content += `<li>${item}</li>`;
-    });
-    content += '</ol>';
-
-    const PARAMS = {
-      title: 'Terms and Conditions',
-      content: content,
-      confirm: 'Participate',
-      deny: 'Cancel',
-      label: 'I accept terms and conditions',
-      confirmCallback: confirmCallback,
-      denyCallback: null,
-    };
-    this.globalService.showTermsAndConditionsModal(PARAMS);
   }
 
   /**

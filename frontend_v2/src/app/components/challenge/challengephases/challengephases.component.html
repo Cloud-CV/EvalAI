@@ -1,3 +1,11 @@
+<div class="challenge-card" *ngIf="phases.length == 0">
+  <div class="ev-pad">
+    <div class="ev-md-container ev-card-panel fs-16 fw-light">
+      All the phases of this challenge are private.
+    </div>
+  </div>
+</div>
+
 <div class="challenge-card">
   <app-phasecard *ngFor="let item of phases" [phase]="item"> </app-phasecard>
 </div>
