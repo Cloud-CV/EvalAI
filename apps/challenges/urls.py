@@ -14,6 +14,11 @@ urlpatterns = [
         name="get_challenge_detail",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/participant_team/team_detail$",
+        views.participant_team_detail_for_challenge,
+        name="participant_team_detail_for_challenge",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/participant_team/(?P<participant_team_pk>[0-9]+)$",
         views.add_participant_team_to_challenge,
         name="add_participant_team_to_challenge",
@@ -180,10 +185,5 @@ urlpatterns = [
         r"^(?P<challenge_pk>[0-9]+)/manage_worker/(?P<action>[\w-]+)/$",
         views.manage_worker,
         name="manage_worker",
-    ),
-    url(
-        r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
-        views.get_annotation_file_presigned_url,
-        name="get_annotation_file_presigned_url",
     ),
 ]
