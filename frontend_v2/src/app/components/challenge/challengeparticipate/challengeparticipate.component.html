@@ -11,8 +11,142 @@
     <div *ngIf="isParticipated" class="ev-card-panel ev-md-container card-bt-margin">
       <p><strong class="fw-semibold content">You have already participated in the challenge with a team!</strong></p>
     </div>
-    <div *ngIf="isLoggedIn">
-      <app-teamlist></app-teamlist>
-    </div>
+    <section *ngIf="isLoggedIn && !isParticipated">
+      <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel participate-card">
+          <div class="col s12 m6 l6">
+            <div class="row">
+              <h5 class="w-300">My Participant Teams</h5>
+            </div>
+            <div class="row">
+              <div *ngIf="allTeams.length === 0" class="page-msg">
+                No team exists for now. Start by creating a new team!
+              </div>
+              <ul>
+                <li *ngFor="let team of filteredTeams">
+                  <div class="row margin-0">
+                    <div class="col s12 m12 l8">
+                      <div class="card-panel margin-0">
+                        <input
+                          type="radio"
+                          class="with-gap selectPhase"
+                          name="teamSelection"
+                          (click)="selectTeamToggle(team)"
+                          id="{{ team.team_name }}"
+                          value="{{ team.team_name }}"
+                          [checked]="team === selectedTeam"
+                        />
+                        <label id="teamToggleButton" for="{{ team.team_name }}"></label>
+                        <div class="team-details">
+                          <span class="fw-semibold">
+                            Team:
+                          </span>
+                          <span *ngIf="team.team_url">
+                            <a class="orange-text" target="_blank" href="{{ team.team_url }}">{{ team.team_name }}</a>
+                          </span>
+                          <span *ngIf="!team.team_url" class="team-detail">
+                            {{ team.team_name }}
+                          </span>
+                          <br />
+                          <span class="fw-semibold">
+                            Created by:
+                          </span>
+                          <span class="team-detail">
+                            {{ team.created_by }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+              <div class="row">
+                <div class="col s12">
+                  <button
+                    [disabled]="selectedTeam == null"
+                    class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14"
+                    (click)="participateInChallenge()"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+              <section class="pagination" *ngIf="allTeams.length !== 0">
+                <div class="row rm-gut">
+                  <div class="col s12 m6 pagination">
+                    <a
+                      [class.disabled]="seeMore <= 1"
+                      class="btn-floating btn-pagination waves-effect waves-light"
+                      (click)="seeLessClicked()"
+                    >
+                      <i class="fa fa-chevron-left"></i>
+                    </a>
+                    <span class="pagination-title">
+                      <strong class="text-med-black">
+                        Page {{ seeMore | number }} of {{ allTeams.length / windowSize | number: '1.0-0' }}
+                      </strong></span
+                    >
+                    <a
+                      [class.disabled]="seeMore * windowSize >= allTeams.length"
+                      class="btn-floating btn-pagination waves-effect waves-light"
+                      (click)="seeMoreClicked()"
+                    >
+                      <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+          <div class="col s12 m6">
+            <div class="row">
+              <h5 class="w-300">Create New Team</h5>
+            </div>
+            <form name="createTeamForm" #createTeamForm="ngForm" (ngSubmit)="createTeamSubmit(createTeamForm.valid)">
+              <div class="input-field align-left">
+                <input
+                  id="name"
+                  type="text"
+                  class="validate text-dark-black dark-autofill w-400"
+                  name="team_name"
+                  (focusin)="isnameFocused = true"
+                  (focusout)="isnameFocused = create_team['team_name'] !== ''"
+                  #teamName="ngModel"
+                  [(ngModel)]="create_team['team_name']"
+                  required
+                />
+                <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                <label for="name" [class.active]="isnameFocused" data-error="wrong" data-success="right"
+                  >Team Name*</label
+                >
+                <div class="wrn-msg text-highlight" *ngIf="create_team['team_name'] === '' && isTeamNameRequired">
+                  Team name is required
+                </div>
+              </div>
+              <div class="input-field align-left">
+                <input
+                  id="url"
+                  type="text"
+                  class="validate text-dark-black dark-autofill w-400"
+                  name="team_url"
+                  (focusin)="isurlFocused = true"
+                  (focusout)="isurlFocused = create_team['team_url'] !== ''"
+                  [(ngModel)]="create_team['team_url']"
+                />
+                <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
+                <label for="url" [class.active]="isurlFocused" data-error="wrong" data-success="right"
+                  >Team URL (Optional)</label
+                >
+              </div>
+              <div class="align-left reg-control">
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">
+                  Create Participant Team
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
