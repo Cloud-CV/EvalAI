@@ -122,7 +122,7 @@ class TestChallengeUrls(BaseAPITestClass):
         )
 
         url = reverse_lazy(
-            "challenges:get_team_name_for_challenge",
+            "challenges:participant_team_detail_for_challenge",
             kwargs={
                 "challenge_pk": self.challenge.pk,
             },

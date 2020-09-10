@@ -55,6 +55,7 @@ from challenges.utils import (
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    get_participant_model,
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
@@ -263,11 +264,7 @@ def participant_team_detail_for_challenge(request, challenge_pk):
     """
     if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(request.user, challenge_pk)
-        try:
-            participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
-        except ParticipantTeam.DoesNotExist:
-            response_data = {"error": "ParticipantTeam does not exist"}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        participant_team = get_participant_model(participant_team_pk)
         serializer = ParticipantTeamDetailSerializer(participant_team)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)

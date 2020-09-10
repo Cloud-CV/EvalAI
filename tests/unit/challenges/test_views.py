@@ -199,7 +199,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
 
     def test_team_name_for_challenge(self):
-        self.url = reverse_lazy('challenges:get_team_name_for_challenge',
+        self.url = reverse_lazy('challenges:participant_team_detail_for_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk})
 
         expected = "Participant Team for Challenge"
@@ -208,7 +208,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.data['team_name'], expected)
 
     def test_team_name_for_challenge_with_participant_team_does_not_exist(self):
-        self.url = reverse_lazy('challenges:get_team_name_for_challenge',
+        self.url = reverse_lazy('challenges:participant_team_detail_for_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk + 2})
         expected = {"error": "You are not a participant!"}
         response = self.client.get(self.url, {})
