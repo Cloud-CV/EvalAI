@@ -12,7 +12,7 @@
         <div class="form">
         	<div class="row row-lr-margin">
         		<div class="align-left col-sm-10 col-lr-pad">
-        			<span><strong>Challenge Title</strong></span><br />
+        			<span class="fw-regular fs-16 text-med-black">Challenge Title</span>
         			<input
                       type="text"
                       [(ngModel)]="challengeData['title']"
@@ -24,7 +24,7 @@
         	</div>
         	<div class="row row-lr-margin">
         		<div class="align-left col-sm-10 col-lr-pad">
-        			<span><strong>Challenge Descripiton</strong></span><br />
+        			<span class="fs-16 fw-regular text-med-black">Challenge Descripiton</span>
         			<input
                       type="text"
                       [(ngModel)]="challengeData['description']"
@@ -37,7 +37,7 @@
           <div class="row row-lr-margin">
             <div class="align-left col-sm-10 col-lr-pad">
               <span class="text-med-black fw-regular fs-16">Start date and time</span>
-              <input type="datetime-local" [(ngModel)]="challengeData['start_date']"/>
+              <input type="datetime-local" [(ngModel)]="challengeData['start_date']"/><br />
               <span class="text-med-black fw-regular fs-16">End date and time</span>
               <input type="datetime-local" [(ngModel)]="challengeData['end_date']"/>
             </div>
@@ -46,7 +46,7 @@
             <span class="fs-18 fw-light">Challenge Phases</span>
           	<div class="row row-lr-margin" *ngFor="let phase of challenge_phases">
               <div class="align-left col-sm-10 col-lr-pad">
-                <span><strong>Name - Phase {{phase['id']}}</strong></span><br />
+                <span class="text-med-black fw-regular fs-16">Name for Phase {{phase['id']}}</span>
                 <input
                       type="text"
                       [(ngModel)]="phase['name']"
@@ -55,7 +55,7 @@
                     />
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 <span class="text-med-black fw-regular fs-16">Start date and time</span>
-                <input type="datetime-local" [(ngModel)]="phase['start_date']"/>
+                <input type="datetime-local" [(ngModel)]="phase['start_date']"/><br />
                 <span class="text-med-black fw-regular fs-16">End date and time</span>
                 <input type="datetime-local" [(ngModel)]="phase['end_date']"/>
             	</div>
