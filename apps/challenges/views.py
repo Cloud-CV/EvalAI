@@ -55,6 +55,7 @@ from challenges.utils import (
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    get_participant_model,
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
@@ -83,6 +84,7 @@ from jobs.serializers import (
     ChallengeSubmissionManagementSerializer,
 )
 from participants.models import Participant, ParticipantTeam
+from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
@@ -246,6 +248,30 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
     elif request.method == "DELETE":
         challenge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def participant_team_detail_for_challenge(request, challenge_pk):
+    """
+        Returns the participated team detail in the challenge
+        Arguments:
+            challenge_pk {int} -- Challenge primary key
+        Returns:
+            {dict} -- Participant team detail that has participated in the challenge
+    """
+    if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(request.user, challenge_pk)
+        participant_team = get_participant_model(participant_team_pk)
+        serializer = ParticipantTeamDetailSerializer(participant_team)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        message = ("You are not a participant!")
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["POST"])

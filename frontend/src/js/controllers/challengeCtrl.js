@@ -163,7 +163,21 @@
             $anchorScroll.yOffset = 90;
         };
 
-        vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
+        // get names of the team that has participated in the current challenge
+        vm.getTeamName = function(challengeId) {
+            parameters.url = 'challenges/' + challengeId + '/participant_team/team_detail';
+            parameters.method = 'GET';
+            parameters.data={};
+            parameters.callback = {
+                onSuccess: function(response) {
+                     var details = response.data;
+                    vm.participated_team_name = details["team_name"];
+                },
+            };
+            utilities.sendRequest(parameters);
+        };
+
+            vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
             if (isDockerBased && isParticipated == true) {
                 parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions/';
@@ -242,6 +256,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -337,6 +352,7 @@
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
+                                                        vm.getTeamName(vm.challengeId);
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
@@ -2434,7 +2450,6 @@
                 $mdDialog.hide();
             }
         };
-
 
     }
 

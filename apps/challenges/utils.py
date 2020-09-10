@@ -18,6 +18,7 @@ from .models import (
     Leaderboard,
     DatasetSplit,
     ChallengePhaseSplit,
+    ParticipantTeam,
 )
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,8 @@ get_leaderboard_model = get_model_object(Leaderboard)
 get_dataset_split_model = get_model_object(DatasetSplit)
 
 get_challenge_phase_split_model = get_model_object(ChallengePhaseSplit)
+
+get_participant_model = get_model_object(ParticipantTeam)
 
 
 def get_missing_keys_from_dict(dictionary, keys):

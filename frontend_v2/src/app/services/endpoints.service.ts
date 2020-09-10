@@ -277,7 +277,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    * @param challenge  challenge id
    */
   getParticipatedTeamNameURL(challenge) {
-    return `${this.challenges}${this.challenge}${challenge}/participant_team/team_name`;
+    return `${this.challenges}${challenge}/participant_team/team_detail`;
   }
 
   /**
