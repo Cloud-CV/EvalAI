@@ -132,6 +132,10 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, max_length=2048, default=""
     )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
+    # Identifier for the github repository of a challenge in format: account_name/repository_name
+    github_repository = models.CharField(
+        max_length=1000, null=True, blank=True, default=""
+    )
 
     class Meta:
         app_label = "challenges"
@@ -196,6 +200,8 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
+    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -263,6 +269,8 @@ class ChallengePhase(TimeStampedModel):
     is_partial_submission_evaluation_enabled = models.BooleanField(
         default=False
     )
+    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    config_id = models.IntegerField(default=None, blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
@@ -317,6 +325,8 @@ signals.post_save.connect(
 class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
+    # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
+    config_id = models.IntegerField(default=None, blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.id)
