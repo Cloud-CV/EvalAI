@@ -141,6 +141,14 @@ export class EndpointsService {
   }
 
   /**
+   * Fetch all unapproved challenges for a team
+   * @param teamId  team Id
+   */
+  allUnapprovedChallengesURL(teamId) {
+    return `${this.challenges}challenge_host_team/${teamId}/challenge`;
+  }
+
+  /**
    * All host teams
    */
   allHostTeamsURL() {
@@ -267,7 +275,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   /**
    * Get participated team name
    * @param challenge  challenge id
-  */
+   */
   getParticipatedTeamNameURL(challenge) {
     return `${this.challenges}${this.challenge}${challenge}/participant_team/team_name`;
   }

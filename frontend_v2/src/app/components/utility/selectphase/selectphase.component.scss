@@ -1,3 +1,11 @@
+:host li {
+  margin: 20px 0px 50px 0px;
+}
+
+.hide-label {
+  display: none;
+}
+
 ::ng-deep .mat-select-panel mat-option.mat-option {
   height: unset;
 }

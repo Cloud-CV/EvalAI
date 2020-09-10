@@ -63,6 +63,9 @@
         margin: 0px 10px 0px 10px;
       }
     }
+    label {
+      margin: 5px 0px 5px 5px;
+    }
   }
   .team-members {
     text-align: left;
@@ -93,11 +96,18 @@
         max-height: 300px;
         transition: all 0.5s ease;
         padding: 20px 15px 15px 40px;
+        margin-bottom: 15px;
       }
     }
     &.noexpand {
       .team-content {
+        margin-bottom: 0px;
         @include box-shadow(0px, 0px, 10px, 0px, $overlay-light);
+      }
+    }
+    &.expand {
+      .team-content {
+        margin-bottom: 0px;
       }
     }
   }

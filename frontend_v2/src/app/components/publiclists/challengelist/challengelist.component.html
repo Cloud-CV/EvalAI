@@ -85,6 +85,19 @@
           </div>
         </div>
       </mat-tab>
+      <!-- Unapproved challenges -->
+      <mat-tab class="unapproved" label="Unapproved ({{ unapprovedChallengeList.length }})">
+        <div *ngIf="!unapprovedChallengeList.length">
+          <p class="fw-light fs-16">No unapproved challenges found.</p>
+        </div>
+        <div class="row pd-lr-20" *ngIf="unapprovedChallengeList.length">
+          <div class="col s12 m3" *ngFor="let challenge of unapprovedChallengeList">
+            <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon, challenge['id']]">
+              <app-challengecard [challenge]="challenge"></app-challengecard>
+            </a>
+          </div>
+        </div>
+      </mat-tab>
     </mat-tab-group>
   </div>
   <!-- my participated challenges  -->

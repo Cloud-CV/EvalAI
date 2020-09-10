@@ -70,7 +70,7 @@
               <mat-chip-list class="leaderboard-description-span private">
                 <mat-chip>P</mat-chip> - Private submission
               </mat-chip-list>
-              <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
+              <!-- <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
                 <div
                   (click)="showLeaderboardByLatestOrBest()"
                   class="btn-switch sort-leaderboard-switch"
@@ -86,7 +86,7 @@
                   ></div>
                 </div>
                 <span class="w-400"> {{ sortLeaderboardTextOption }}</span>
-              </mat-chip-list>
+              </mat-chip-list> -->
               <mat-checkbox
                 class="pull-right complete-leaderboard"
                 *ngIf="isChallengeHost && showLeaderboardToggle"

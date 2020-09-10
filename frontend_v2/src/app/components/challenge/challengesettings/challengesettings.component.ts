@@ -386,6 +386,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         )
         .subscribe(
           (data) => {
+            SELF.challenge.image = data.image;
             SELF.globalService.showToast('success', 'The Challenge image successfully updated!', 5);
           },
           (err) => {
