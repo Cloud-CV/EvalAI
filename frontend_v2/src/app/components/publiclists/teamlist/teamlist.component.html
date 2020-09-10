@@ -67,10 +67,28 @@
               <div class="align-right reg-control">
                 <button
                   class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
-                  *ngIf="selectedTeam !== null && isHost == true"
+                  *ngIf="selectedTeam !== null && isHost == true && !isTemplateChallenge"
                   type="submit"
                   value="Submit"
                   (click)="createChallenge()"
+                >
+                  Next
+                </button>
+                <button
+                  class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                  *ngIf="selectedTeam !== null && isOnChallengePage == true && !isTemplateChallenge"
+                  type="submit"
+                  value="Submit"
+                  (click)="participateInChallenge()"
+                >
+                  Next
+                </button>
+                <button
+                  class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                  *ngIf="selectedTeam != null && isTemplateChallenge"
+                  type="submit"
+                  value="Submit"
+                  (click)="createChallengeFromTemplate()"
                 >
                   Next
                 </button>

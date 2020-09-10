@@ -369,6 +369,46 @@ class ChallengePhaseSplit(TimeStampedModel):
         db_table = "challenge_phase_split"
 
 
+class ChallengeTemplate(TimeStampedModel):
+    """
+    Model to store challenge templates
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    title = models.CharField(max_length=500)
+    # Stores the challenge config zip file
+    template_file = models.FileField(upload_to=RandomFileName("templates"))
+    is_active = models.BooleanField(default=False, db_index=True)
+    image = models.ImageField(
+        upload_to=RandomFileName("templates/preview-images/"),
+        null=True,
+        blank=True,
+        verbose_name="Template Preview Image",
+    )
+    dataset = models.CharField(max_length=200, default="")
+    # The metrics on which the submissions are evaluated
+    eval_metrics = ArrayField(
+        models.CharField(max_length=200, blank=True),
+        default=["Accuracy"],
+        blank=True,
+    )
+    phases = models.IntegerField(null=True, blank=True, default=None)
+    splits = models.IntegerField(null=True, blank=True, default=None)
+    slug = models.CharField(max_length=500, default="")
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_templates"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        """Returns the title of challenge template"""
+        return self.title
+
+
 class LeaderboardData(TimeStampedModel):
 
     challenge_phase_split = models.ForeignKey("ChallengePhaseSplit")

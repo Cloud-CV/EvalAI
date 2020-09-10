@@ -168,6 +168,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    * Route path for create challenge
    */
   createChallengeRoutePath = '/challenge-create';
+  
+  /**
+   * Route path for create template challenge page
+   */
+  createTemplateChallengeRoutePath = '/template-challenge-create';
 
   /**
    * Filter query as participant team name
@@ -175,6 +180,53 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   filterTeamsQuery = '';
 
   /**
+   * Content for terms and conditions
+   */
+  termsAndConditionContent = [
+    'Participants can train their models with the released training set' +
+      ', also with other training images as long as they are disjoint with the test set' +
+      '(see <a class="blue-text" href="https://arxiv.org/pdf/1804.09691.pdf" target="_blank">arXiv paper</a>)',
+
+    'We provide the evaluation codes, along with the released validation dataset, ' +
+      'for participants to validate their algorithms on validation set during the <strong>validation phase</strong>.' +
+      'The usage instruction is described in "readme.txt" released along with the train/validation data. ',
+
+    'For <strong>testing phase</strong> of <strong>identification</strong> track, ' +
+      'we will release the test set where gallery set is fully labelled with idenitities, ' +
+      'and probe images with only pseudo labels (not related to identities). ' +
+      "Participants will submit a file reporting each probe image's " +
+      'feature distance to the top-20 matching gallery identities and the corresponding identity indexes ' +
+      '(see "submission format" on the "Overview" page), and then their performance will be measured by our system.   ',
+
+    'For <strong>testing phase</strong> of <strong>verification</strong> track, ' +
+      'we will release the images with only pseudo labels and the constructed image pairs, ' +
+      'without indicating they are positive or negative. ' +
+      "Participants will submit a file reporting each image pair's matching socre, " +
+      'and then their performance will be measured by our system.   ',
+  ];
+
+  /**
+   * Team list route's query parameter subscription
+   */
+  teamListRouteQueryParamSub = null;
+
+  /**
+   * Is the team being selected for a template based challenge or not
+   */
+  isTemplateChallenge = false;
+
+  /**
+   * Id of the challenge template selected
+   */
+  templateId = null;
+
+  /**
+   * Number of phases in the challenge template
+   */
+  templatePhases = null;
+
+  /**
+
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.
@@ -212,7 +264,17 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       }
     });
 
-    if (this.router.url === this.hostTeamRoutePath) {
+    this.teamListRouteQueryParamSub = this.route
+      .queryParams
+      .subscribe(params => {
+        this.isTemplateChallenge = params['template'] || false;
+        if(this.isTemplateChallenge){
+          this.templateId = params['templateId'];
+          this.templatePhases = params['templatePhases'];
+        }
+      });
+
+    if (this.router.url === this.hostTeamRoutePath || this.isTemplateChallenge) {
       this.isHost = true;
       this.fetchTeamsPath = 'hosts/challenge_host_team';
       this.createTeamsPath = 'hosts/create_challenge_host_team';
@@ -238,10 +300,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     if (this.authServiceSubscription) {
       this.authServiceSubscription.unsubscribe();
     }
+    this.teamListRouteQueryParamSub.unsubscribe();
   }
 
   /**
@@ -553,6 +616,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   createChallenge() {
     this.challengeService.changeCurrentHostTeam(this.selectedTeam);
     this.router.navigate([this.createChallengeRoutePath]);
+  }
+
+  createChallengeFromTemplate() {
+    this.challengeService.changeCurrentHostTeam(this.selectedTeam);
+    this.router.navigate([this.createTemplateChallengeRoutePath, this.templateId, this.templatePhases]);
   }
 
   /**

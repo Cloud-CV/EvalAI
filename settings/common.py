@@ -33,6 +33,7 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
+API_HOST_URL = os.environ.get("API_HOST_URL", "http://localhost:8000")
 
 # Application definition
 

@@ -1,0 +1,34 @@
+<section class="ev-sm-container ev-view challenge-container noScroll">
+  <h4 class="fw-light">All Challenge Templates</h4>
+      <div class="row pd-lr-20">
+        <div *ngIf="challengeTemplates.length === 0" class="none fw-light fs-16">No templates found.</div>
+        <div class="col s12 m4 l3" *ngFor="let template of challengeTemplates">
+          <a class="ev-card-hover" [routerLink]="[templateChallengeCreatePath, template['id'], template['phases']]">
+            <div class="card ev-challenge-card hoverable z-depth-2 margin-bottom-cancel">
+              <div class="card-image ev-card-image">
+                <img class="bg-img" [src]="template['image']">
+              </div>
+              <div class="card-content">
+                <p class="fs-20 fw-regular truncate">{{template['title']}}</p>
+                <p>
+                  <strong class="text-light-black fs-12">Dataset</strong> <br />
+                  <span class="fw-semi-bold fs-14">{{template['dataset']}}</span>
+                </p>
+                <p>
+                  <strong class="text-light-black fs-12">Phases</strong> <br />
+                  <span class="fw-semi-bold fs-14">{{template['phases']}}</span>
+                </p>
+                <p>
+                  <strong class="text-light-black fs-12">Dataset Splits</strong> <br />
+                  <span class="fw-semi-bold fs-14">{{template['splits']}}</span>
+                </p>
+                <p>
+                  <strong class="text-light-black fs-12">Evaluation metrics</strong> <br />
+                  <span class="fw-semi-bold fs-14">{{template['eval_metrics']}}</span>
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+</section>

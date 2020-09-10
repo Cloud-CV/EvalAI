@@ -9,13 +9,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0067_add_submission_meta_attribute_field_to_challenge_phase'),
+        (
+            "challenges",
+            "0067_add_submission_meta_attribute_field_to_challenge_phase",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='challengephase',
-            name='test_annotation',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('test_annotations')),
+            model_name="challengephase",
+            name="test_annotation",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName("test_annotations"),
+            ),
         ),
     ]
