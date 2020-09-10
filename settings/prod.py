@@ -11,8 +11,6 @@ ALLOWED_HOSTS = [
     "evalapi.cloudcv.org",
 ]
 
-API_HOST_URL = "https://evalapi.cloudcv.org"
-
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
