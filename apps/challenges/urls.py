@@ -197,7 +197,6 @@ urlpatterns = [
         name="create_or_update_github_challenge",
     ),
     url(
-
         r"^get_all_challenge_templates/$",
         views.get_all_challenge_templates,
         name="get_all_challenge_templates",
