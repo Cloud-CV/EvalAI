@@ -55,6 +55,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "banned_email_ids",
         "workers",
         "task_def_arn",
+        "github_repository",
     )
     list_filter = (
         ChallengeFilter,
@@ -66,7 +67,12 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "start_date",
         "end_date",
     )
-    search_fields = ("title", "creator__team_name", "slug")
+    search_fields = (
+        "title",
+        "creator__team_name",
+        "slug",
+        "github_repository",
+    )
     actions = [
         "start_selected_workers",
         "stop_selected_workers",

@@ -116,9 +116,17 @@ class ChallengeTemplateSerializer(serializers.ModelSerializer):
 
 
 class DatasetSplitSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super(DatasetSplitSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            config_id = context.get("config_id")
+            if config_id:
+                kwargs["data"]["config_id"] = config_id
+
     class Meta:
         model = DatasetSplit
-        fields = ("id", "name", "codename")
+        fields = ("id", "name", "codename", "config_id")
 
 
 class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
@@ -168,9 +176,17 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     Serialize the Leaderboard Model.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(LeaderboardSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            config_id = context.get("config_id")
+            if config_id:
+                kwargs["data"]["config_id"] = config_id
+
     class Meta:
         model = Leaderboard
-        fields = ("id", "schema")
+        fields = ("id", "schema", "config_id")
 
 
 class ZipChallengeSerializer(ChallengeSerializer):
@@ -189,6 +205,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             evaluation_script = context.get("evaluation_script")
             if evaluation_script:
                 kwargs["data"]["evaluation_script"] = evaluation_script
+            github_repository = context.get("github_repository")
+            if github_repository:
+                kwargs["data"]["github_repository"] = github_repository
 
     class Meta:
         model = Challenge
@@ -220,6 +239,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "slug",
             "max_docker_image_size",
             "cli_version",
+            "github_repository",
         )
 
 
@@ -276,6 +296,9 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
                 exclude_fields = set(exclude_fields)
                 for field in existing.intersection(exclude_fields):
                     self.fields.pop(field)
+            config_id = context.get("config_id")
+            if config_id:
+                kwargs["data"]["config_id"] = config_id
 
     class Meta:
         model = ChallengePhase
@@ -301,6 +324,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_restricted_to_select_one_submission",
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
+            "config_id",
         )
 
 
