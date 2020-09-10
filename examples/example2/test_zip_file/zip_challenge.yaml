@@ -1,0 +1,39 @@
+title: Challenge Title
+short_description: Short description of the challenge (preferably 140 characters)
+description: description.html
+evaluation_details: evaluation_details.html
+terms_and_conditions: terms_and_conditions.html
+image : logo.png
+submission_guidelines: submission_guidelines.html
+evaluation_script: evaluation_script.zip
+start_date: 2017-06-09 20:00:00
+end_date: 2017-06-19 20:00:00
+
+leaderboard:
+  - id: 1
+    schema: {"labels": ["yes/no", "number", "others", "overall"], "default_order_by": "overall"}
+
+challenge_phases:
+  - id: 1
+    name: Challenge Name of the challenge phase
+    description: challenge_phase_description.html
+    leaderboard_public: True
+    is_public: True
+    start_date: 2017-06-09 20:00:00
+    end_date: 2017-06-19 20:00:00
+    test_annotation_file: test_annotation.txt
+    codename: Challenge phase codename
+    max_submissions_per_day: 100
+    max_submissions: 1000
+    max_submissions_per_month: 345
+
+dataset_splits:
+  - id: 1
+    name: Name of the dataset split
+    codename: codename of dataset split
+
+challenge_phase_splits:
+  - challenge_phase_id: 1
+    leaderboard_id: 1
+    dataset_split_id: 1
+    visibility: 3

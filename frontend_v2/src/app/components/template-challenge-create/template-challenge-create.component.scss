@@ -1,5 +1,36 @@
 @import 'styles/variables';
 
+.web-container {
+  width: calc(100vw - 223px);
+  float: right;
+  padding-top: 70px;
+  overflow-x: hidden;
+  &.center {
+    float: none;
+    margin: 0 auto;
+    text-align: left;
+    overflow: hidden;
+  }
+}
+
+@media only screen and (max-width: $med-screen) {
+  .web-container {
+    width: 100%;
+  }
+}
+
+@import 'styles/variables';
+
+.ev-challenge-card {
+  min-height: 415px;
+}
+
+p {
+  word-wrap: break-word;
+}
+
+@import 'styles/variables';
+
 .challenge-create-flex {
   display: flex;
   flex-direction: column;
@@ -22,17 +53,6 @@
     text-align: left;
     overflow: hidden;
   }
-}
-
-.use-template {
-  margin-left: 45%;
-  margin-top: 20px;
-  font-size: 16px;
-}
-
-.center-element {
-  margin-left: 50%;
-  margin-top: 50px;
 }
 
 .zip-file-title {
@@ -79,4 +99,11 @@
   .web-container {
     width: 100%;
   }
+}
+
+@import './variables.scss';
+@import './mixins.scss';
+
+.row .row-lr-margin {
+  margin-bottom: 20px;
 }

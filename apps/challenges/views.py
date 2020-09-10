@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 import os
 import random
@@ -92,6 +93,7 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     ChallengeConfiguration,
     StarChallenge,
     UserInvitation,
@@ -103,6 +105,7 @@ from .serializers import (
     ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
     ChallengePhaseSplitSerializer,
+    ChallengeTemplateSerializer,
     ChallengeSerializer,
     DatasetSplitSerializer,
     LeaderboardSerializer,
@@ -703,9 +706,81 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    serializer = ChallengeConfigSerializer(
-        data=request.data, context={"request": request}
-    )
+    if request.data.get("is_challenge_template"):
+        is_challenge_template = True
+    else:
+        is_challenge_template = False
+
+    # All files download and extract location.
+    BASE_LOCATION = tempfile.mkdtemp()
+
+    if is_challenge_template:
+        template_id = int(request.data.get("template_id"))
+        try:
+            challenge_template = ChallengeTemplate.objects.get(
+                id=template_id, is_active=True
+            )
+        except ChallengeTemplate.DoesNotExist:
+            response_data = {
+                "error": "Sorry, a server error occured while creating the challenge. Please try again!"
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
+
+        unique_folder_name = get_unique_alpha_numeric_key(10)
+        challenge_template_download_location = join(
+            BASE_LOCATION, "{}.zip".format(unique_folder_name)
+        )
+
+        try:
+            response = requests.get(template_zip_s3_url, stream=True)
+        except Exception as e:
+            logger.error(
+                "Failed to fetch file from {}, error {}".format(
+                    template_zip_s3_url, e
+                )
+            )
+            response_data = {
+                "error": "Sorry, there was an error in the server"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if response and response.status_code == status.HTTP_200_OK:
+            with open(challenge_template_download_location, "wb") as f:
+                f.write(response.content)
+
+        try:
+            zip_file = open(challenge_template_download_location, "rb")
+        except Exception:
+            message = (
+                "A server error occured while processing zip file. "
+                "Please try again!"
+            )
+            response_data = {"error": message}
+            logger.exception(message)
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        challenge_zip_file = SimpleUploadedFile(
+            zip_file.name, zip_file.read(), content_type="application/zip"
+        )
+
+        # Copy request data so that we can mutate it to add template
+        challenge_data_from_hosts = request.data.copy()
+        challenge_data_from_hosts["zip_configuration"] = challenge_zip_file
+        serializer = ChallengeConfigSerializer(
+            data=challenge_data_from_hosts, context={"request": request}
+        )
+    else:
+        data = request.data.copy()
+        serializer = ChallengeConfigSerializer(
+            data=data, context={"request": request}
+        )
+
     if serializer.is_valid():
         uploaded_zip_file = serializer.save()
         uploaded_zip_file_path = serializer.data["zip_configuration"]
@@ -713,8 +788,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = serializer.errors
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # All files download and extract location.
-    BASE_LOCATION = tempfile.mkdtemp()
     try:
         response = requests.get(uploaded_zip_file_path, stream=True)
         unique_folder_name = get_unique_alpha_numeric_key(10)
@@ -1073,6 +1146,33 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge_fields = [
+        "title",
+        "description",
+        "start_date",
+        "start_date",
+        "end_date",
+    ]
+    challenge_phase_fields = ["name", "start_date", "end_date"]
+    if is_challenge_template:
+        for field in challenge_fields:
+            yaml_file_data[field] = challenge_data_from_hosts.get(field)
+
+        # Mapping the challenge phase data to that in yaml_file_data
+        challenge_phases = yaml_file_data["challenge_phases"]
+        challenge_phases_from_hosts = challenge_data_from_hosts.get(
+            "challenge_phases"
+        )
+        challenge_phases_from_hosts = json.loads(challenge_phases_from_hosts)
+
+        for challenge_phase_data, challenge_phase_data_from_hosts in zip(
+            challenge_phases, challenge_phases_from_hosts
+        ):
+            for field in challenge_phase_fields:
+                challenge_phase_data[
+                    field
+                ] = challenge_phase_data_from_hosts.get(field)
 
     try:
         with transaction.atomic():
@@ -3016,3 +3116,17 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         logger.info("Challenge config validation failed. Zip folder removed")
         response_data["error"] = "\n".join(error_messages)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_challenge_templates(request):
+    q_params = {"is_active": True}
+    challenges = ChallengeTemplate.objects.filter(**q_params).order_by("-pk")
+    serializer = ChallengeTemplateSerializer(
+        challenges, many=True, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)

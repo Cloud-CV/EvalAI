@@ -1,0 +1,42 @@
+@import 'styles/variables';
+
+@media only screen and (max-width: $med-screen) {
+  .web-container {
+    width: 100%;
+  }
+}
+
+.none {
+  margin: 1%;
+}
+
+@import 'styles/variables';
+
+.ev-challenge-card {
+  min-height: 415px;
+}
+
+.bg-img {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+}
+
+.margin-top-btm {
+  margin-top: 10px;
+  margin-bottom: 25px;
+}
+
+.card {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+p {
+  word-wrap: break-word;
+}
+
+.card-content {
+  height: 275px;
+  overflow: hidden;
+}

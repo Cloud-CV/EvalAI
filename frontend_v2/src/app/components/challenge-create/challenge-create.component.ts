@@ -54,6 +54,11 @@ export class ChallengeCreateComponent implements OnInit {
   hostTeamsRoute = '/teams/hosts';
 
   /**
+   * Route path for listing all challenge templates
+   */
+  challengeTemplatesListRoute = '/challenges/templates';
+
+  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.

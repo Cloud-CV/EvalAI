@@ -9,6 +9,7 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
     StarChallenge,
@@ -94,6 +95,23 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_restricted_to_select_one_submission",
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
+        )
+
+
+class ChallengeTemplateSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super(ChallengeTemplateSerializer, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = ChallengeTemplate
+        fields = (
+            "id",
+            "title",
+            "image",
+            "dataset",
+            "eval_metrics",
+            "phases",
+            "splits",
         )
 
 

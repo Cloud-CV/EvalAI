@@ -65,6 +65,10 @@ const routes: Routes = [
     loadChildren: './components/permission-denied/permission-denied.module#PermissionDeniedModule',
   },
   {
+    path: 'template-challenge-create/:id/:phases',
+    loadChildren: './components/template-challenge-create/template-challenge-create.module#TemplateChallengeCreateModule',
+  },
+  {
     path: '404',
     component: NotFoundComponent,
   },

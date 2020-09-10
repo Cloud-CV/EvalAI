@@ -10,11 +10,12 @@ import { PubliclistRoutingModule, TeamlistsRoutingModule } from './publiclist-ro
 // import Module
 import { ChallengelistModule } from './challengelist/challengelist.module';
 import { SharedModule } from '../../shared/shared.module';
+import { TemplateChallengeListModule } from './templatechallengelist/templatechallengelist.module'
 
 @NgModule({
   declarations: [PubliclistsComponent],
   imports: [CommonModule, PubliclistRoutingModule, ChallengelistModule, SharedModule],
-  exports: [ChallengelistModule, PubliclistsComponent],
+  exports: [ChallengelistModule, PubliclistsComponent, TemplateChallengeListModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PubliclistModule {}
