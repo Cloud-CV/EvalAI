@@ -94,6 +94,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_restricted_to_select_one_submission",
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
+            "is_evaluation_prioritized",
         )
 
 

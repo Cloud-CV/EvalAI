@@ -316,6 +316,7 @@ def main():
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
+
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
@@ -324,7 +325,15 @@ def main():
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
+            total_prioritised_submission = evalai.get_prioritised_submissions_count(phase_pk)
             if submission:
+
+                challenge_phase = evalai.get_challenge_phase_by_pk(
+                    challenge_pk, phase_pk
+                )
+                challenge_phase_prioritize = challenge_phase.get(
+                    "challenge_phase_prioritize"
+                )
                 api_instance = get_api_object(
                     cluster_name, cluster_endpoint, challenge, evalai
                 )
@@ -336,7 +345,8 @@ def main():
                     or submission.get("status") == "failed"
                     or submission.get("status") == "cancelled"
                 ):
-                    # Fetch the last job name from the list as it is the latest running job
+                    # Fetch the last job name from the list as it is the latest
+                    # running job
                     job_name = submission.get("job_name")[-1]
                     delete_job(api_instance, job_name)
                     message_receipt_handle = message.get("receipt_handle")
@@ -355,15 +365,21 @@ def main():
                         phase_pk,
                     )
                 else:
-                    logger.info(
-                        "Processing message body: {0}".format(message_body)
-                    )
-                    challenge_phase = evalai.get_challenge_phase_by_pk(
-                        challenge_pk, phase_pk
-                    )
-                    process_submission_callback(
-                        api_instance, message_body, challenge_phase, evalai
-                    )
+                    if total_prioritised_submission:
+                        if challenge_phase_prioritize:
+                            logger.info(
+                                "Processing message body: {0}".format(message_body)
+                            )
+                            process_submission_callback(
+                                api_instance, message_body, challenge_phase, evalai
+                            )
+                    else:
+                        logger.info(
+                            "Processing message body: {0}".format(message_body)
+                        )
+                        process_submission_callback(
+                            api_instance, message_body, challenge_phase, evalai
+                        )
 
         if killer.kill_now:
             break

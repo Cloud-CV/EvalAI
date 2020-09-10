@@ -186,4 +186,9 @@ urlpatterns = [
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
     ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_prioritized_submissions/$",
+        views.get_prioritized_submissions_from_queue,
+        name="get_prioritized_submissions_from_queue",
+    ),
 ]
