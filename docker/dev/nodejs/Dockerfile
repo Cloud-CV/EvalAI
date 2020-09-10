@@ -23,6 +23,7 @@ RUN npm cache clean -f
 RUN npm install
 RUN npm install -g karma-cli
 RUN bower install --allow-root
+RUN apt-get install -y libxss1
 
 CMD ["gulp", "dev:runserver"]
 

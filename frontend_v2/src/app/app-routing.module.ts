@@ -9,8 +9,8 @@ const routes: Routes = [
     path: '',
     loadChildren: './components/home/home.module#HomeModule',
     data: {
-      'title': 'EvalAI - Welcome'
-    }
+      title: 'EvalAI - Welcome',
+    },
   },
   {
     path: 'about',
@@ -22,7 +22,7 @@ const routes: Routes = [
   },
   {
     path: 'challenge',
-    redirectTo: 'challenges'
+    redirectTo: 'challenges',
   },
   {
     path: 'challenge/:id',
@@ -39,10 +39,6 @@ const routes: Routes = [
   {
     path: 'contact',
     loadChildren: './components/contact/contact.module#ContactModule',
-  },
-  {
-    path: 'analytics',
-    loadChildren: './components/analytics/analytics.module#AnalyticsModule',
   },
   {
     path: 'get-involved',
@@ -66,21 +62,21 @@ const routes: Routes = [
   },
   {
     path: 'permission-denied',
-    loadChildren: './components/permission-denied/permission-denied.module#PermissionDeniedModule'
+    loadChildren: './components/permission-denied/permission-denied.module#PermissionDeniedModule',
   },
   {
     path: '404',
-    component: NotFoundComponent
+    component: NotFoundComponent,
   },
   {
     path: '**',
     redirectTo: '/404',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];
 
 @NgModule({
-  imports: [ RouterModule.forRoot(routes) ],
-  exports: [ RouterModule ]
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
 })
 export class AppRoutingModule {}

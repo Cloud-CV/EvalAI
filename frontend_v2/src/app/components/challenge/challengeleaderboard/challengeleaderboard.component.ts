@@ -1,7 +1,8 @@
-import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSliderChange } from '@angular/material';
+import { NGXLogger } from 'ngx-logger';
 
 // import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
@@ -20,10 +21,9 @@ import { EndpointsService } from '../../../services/endpoints.service';
 @Component({
   selector: 'app-challengeleaderboard',
   templateUrl: './challengeleaderboard.component.html',
-  styleUrls: ['./challengeleaderboard.component.scss']
+  styleUrls: ['./challengeleaderboard.component.scss'],
 })
-export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
-
+export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Phase select card components
    */
@@ -186,6 +186,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   pollingInterval: any;
 
   /**
+   * If leaderboard precision value is equal to 0
+   */
+  minusDisabled = false;
+
+  /**
+   * If leaderboard precision value is equal to 5
+   */
+  plusDisabled = false;
+
+  /**
    * Challenge phase visibility
    */
   challengePhaseVisibility = {
@@ -203,9 +213,17 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    * @param apiService  Router Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute,
-              private challengeService: ChallengeService, private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService, public dialog: MatDialog) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService,
+    public dialog: MatDialog,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component after view initialized.
@@ -222,20 +240,18 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
       this.isLoggedIn = true;
     }
     this.routerPublic = this.router;
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
-    this.challengeService.currentPhases.subscribe(
-      phases => {
-        this.phases = phases;
-        this.filterPhases();
+    this.challengeService.currentPhases.subscribe((phases) => {
+      this.phases = phases;
+      this.filterPhases();
     });
-    this.challengeService.currentPhaseSplit.subscribe(
-      phaseSplits => {
-        this.phaseSplits = phaseSplits;
-        this.filterPhases();
+    this.challengeService.currentPhaseSplit.subscribe((phaseSplits) => {
+      this.phaseSplits = phaseSplits;
+      this.filterPhases();
     });
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
   }
@@ -262,7 +278,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    * Called after filtering phases to check URL for phase-split-id and highlighted-leaderboard-entry
    */
   checkUrlParams() {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       if (params['split']) {
         this.selectedPhaseSplitId = params['split'];
         this.selectPhaseSplitId(this.selectedPhaseSplitId, this);
@@ -307,11 +323,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     const SELF = this;
     return (phaseSplit) => {
       if (SELF.router.url.endsWith('leaderboard')) {
-        SELF.router.navigate([phaseSplit['id']], {relativeTo: this.route});
+        SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
       } else if (SELF.router.url.split('/').length === 5) {
-        SELF.router.navigate(['../' + phaseSplit['id']], {relativeTo: this.route});
+        SELF.router.navigate(['../' + phaseSplit['id']], { relativeTo: this.route });
       } else if (SELF.router.url.split('/').length === 6) {
-        SELF.router.navigate(['../../' + phaseSplit['id']], {relativeTo: this.route});
+        SELF.router.navigate(['../../' + phaseSplit['id']], { relativeTo: this.route });
       }
       SELF.selectedPhaseSplit = phaseSplit;
       if (SELF.selectedPhaseSplit) {
@@ -320,7 +336,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
       }
     };
-
   }
 
   /**
@@ -331,16 +346,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   updateLeaderboardResults(leaderboardApi, self) {
     const leaderboard = leaderboardApi.slice();
     for (let i = 0; i < leaderboard.length; i++) {
-      self.initial_ranking[leaderboard[i].submission__participant_team__team_name] = i + 1;
+      self.initial_ranking[leaderboard[i].id] = i + 1;
       const DATE_NOW = new Date();
       const SUBMISSION_TIME = new Date(Date.parse(leaderboard[i].submission__submitted_at));
       const DURATION = self.globalService.getDateDifferenceString(DATE_NOW, SUBMISSION_TIME);
       leaderboard[i]['submission__submitted_at_formatted'] = DURATION + ' ago';
-      this.showSubmissionMetaAttributesOnLeaderboard =  !(leaderboard[i].submission__submission_metadata == null);
+      this.showSubmissionMetaAttributesOnLeaderboard = !(leaderboard[i].submission__submission_metadata == null);
     }
     self.leaderboard = leaderboard.slice();
     self.sortLeaderboard();
-    self.route.params.subscribe(params => {
+    self.route.params.subscribe((params) => {
       if (params['entry']) {
         self.entryHighlighted = params['entry'];
         self.leaderboard.map((item) => {
@@ -381,7 +396,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     if (this.sortColumn === 'date') {
       return Date.parse(key.submission__submitted_at);
     } else if (this.sortColumn === 'rank') {
-      return this.initial_ranking[key.submission__participant_team__team_name];
+      return this.initial_ranking[key.id];
     } else if (this.sortColumn === 'number') {
       return parseFloat(key.result[this.columnIndexSort]);
     } else if (this.sortColumn === 'string') {
@@ -394,7 +409,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    * Sort the rank and participant team leaderboard column
    * @param sortColumn sort column ('rank' or 'string')
    */
-  sortNonMetricsColumn (sortColumn) {
+  sortNonMetricsColumn(sortColumn) {
     const SELF = this;
     if (SELF.sortColumn === sortColumn) {
       SELF.reverseSort = !SELF.reverseSort;
@@ -409,7 +424,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    * To sort by the metrics column
    * @param index Schema labels index
    */
-  sortMetricsColumn (index) {
+  sortMetricsColumn(index) {
     const SELF = this;
     if (SELF.sortColumn === 'number' && SELF.columnIndexSort === index) {
       SELF.reverseSort = !SELF.reverseSort;
@@ -428,18 +443,18 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   fetchLeaderboard(phaseSplitId) {
     const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
     const SELF = this;
-    SELF.showPrivateIds.forEach(id => {
-      (id === phaseSplitId) ? ( SELF.showLeaderboardToggle = false) : (SELF.showLeaderboardToggle = true);
+    SELF.showPrivateIds.forEach((id) => {
+      id === phaseSplitId ? (SELF.showLeaderboardToggle = false) : (SELF.showLeaderboardToggle = true);
     });
     clearInterval(SELF.pollingInterval);
     SELF.leaderboard = [];
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(phaseSplitId);
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}
@@ -457,20 +472,22 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     SELF.leaderboard = [];
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         this.challengePhaseSplitId = data.results[0].challenge_phase_split;
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(phaseSplitId);
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}
     );
   }
 
-  // function for toggeling between public leaderboard and complete leaderboard [public/private]
+  /**
+   * function for toggeling between public leaderboard and complete leaderboard [public/private]
+   */
   toggleLeaderboard(getAllEntries) {
     this.getAllEntries = getAllEntries;
     if (getAllEntries) {
@@ -490,14 +507,14 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
     const SELF = this;
     clearInterval(SELF.pollingInterval);
-    SELF.pollingInterval = setInterval(function() {
+    SELF.pollingInterval = setInterval(function () {
       SELF.apiService.getUrl(API_PATH, true, false).subscribe(
-        data => {
+        (data) => {
           if (SELF.leaderboard.length !== data['results'].length) {
             SELF.showLeaderboardUpdate = true;
           }
         },
-        err => {
+        (err) => {
           SELF.globalService.handleApiError(err);
         },
         () => {}
@@ -514,11 +531,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     SELF.leaderboard = [];
     SELF.showLeaderboardUpdate = false;
     SELF.apiService.getUrl(API_PATH).subscribe(
-      data => {
+      (data) => {
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(SELF.selectedPhaseSplit['id']);
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}
@@ -529,18 +546,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
     const SELF = this;
     const BODY = JSON.stringify({
-      'show_leaderboard_by_latest_submission': !SELF.showLeaderboardByLatest
+      show_leaderboard_by_latest_submission: !SELF.showLeaderboardByLatest,
     });
 
-    SELF.apiService.patchUrl(
-      API_PATH,
-      BODY
-    ).subscribe(
-      data => {
+    SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
+      (data) => {
+        SELF.showLeaderboardByLatest = !SELF.showLeaderboardByLatest;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
         SELF.refreshLeaderboard();
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}
@@ -550,50 +565,58 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
   openDialog(metaAttribute) {
     const dialogueData = {
       width: '30%',
-      data: { attribute: metaAttribute }
+      data: { attribute: metaAttribute },
     };
     const dialogRef = this.dialog.open(SubmissionMetaAttributesDialogueComponent, dialogueData);
     return dialogRef.afterClosed();
   }
 
-  // Show dialogue box for viewing metadata
+  /**
+   *  Show dialogue box for viewing metadata
+   */
   showMetaAttributesDialog(attributes) {
     const SELF = this;
     if (attributes !== false) {
       SELF.metaAttributesData = [];
       attributes.forEach(function (attribute) {
         if (attribute.type !== 'checkbox') {
-          SELF.metaAttributesData.push({ 'name': attribute.name, 'value': attribute.value });
+          SELF.metaAttributesData.push({ name: attribute.name, value: attribute.value });
         } else {
-          SELF.metaAttributesData.push({ 'name': attribute.name, 'values': attribute.values });
+          SELF.metaAttributesData.push({ name: attribute.name, values: attribute.values });
         }
       });
     }
     SELF.openDialog(SELF.metaAttributesData);
   }
 
-  // Update leaderboard decimal precision value
-  updateLeaderboardDecimalPrecision(event: MatSliderChange) {
+  /**
+   * Update leaderboard decimal precision value
+   * @param updatedLeaderboardPrecisionValue new leaderboard precision value
+   */
+  updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue) {
     const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
     const SELF = this;
-    SELF.leaderboardPrecisionValue = event.value;
+    SELF.leaderboardPrecisionValue = updatedLeaderboardPrecisionValue;
     SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
     const BODY = JSON.stringify({
-      'leaderboard_decimal_precision': SELF.leaderboardPrecisionValue
+      leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
     });
-    SELF.apiService.patchUrl(
-      API_PATH,
-      BODY
-    ).subscribe(
-      data => {
-        SELF.globalService.showToast('success', 'The leaderboard decimal precision value is successfully updated!', 5);
+    SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
+      (data) => {
+        this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
+        this.plusDisabled = SELF.leaderboardPrecisionValue === 5 ? true : false;
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err, true);
-        SELF.globalService.showToast('error', err);
       },
-      () => console.log('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
+      () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
     );
+  }
 
+  /**
+   *  Clear the polling interval
+   */
+  ngOnDestroy() {
+    clearInterval(this.pollingInterval);
   }
 }

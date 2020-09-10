@@ -4,11 +4,6 @@
 .challenge-leaderboard-container {
   padding: 20px;
   overflow: auto;
-  .phase-select-div {
-    overflow: auto;
-    position: relative;
-    display: block;
-  }
   .leaderboard-empty {
     padding: 30px;
     display: block;
@@ -16,7 +11,7 @@
     text-align: center;
   }
   .leaderboard-table-div {
-    text-align:center;
+    text-align: center;
     font-size: $fs-16;
     color: $gray-darker;
     font-weight: $fw-light;
@@ -30,11 +25,11 @@
     overflow-y: scroll;
     max-height: 500px;
     .leaderboard-table {
-      width:100%;
+      width: 100%;
       tr {
-      	&:hover {
-      		background:white;
-      	}
+        &:hover {
+          background: white;
+        }
         &.highlight {
           background: $red-lighter;
         }
@@ -45,10 +40,10 @@
             width: auto;
           }
           div {
-          	font-weight:$fw-light;
-          	&:hover {
-          		font-weight: $fw-regular;
-          	}
+            font-weight: $fw-light;
+            &:hover {
+              font-weight: $fw-regular;
+            }
             &.fat {
               min-width: 180px;
             }
@@ -66,7 +61,8 @@
           }
         }
 
-        td {}
+        td {
+        }
       }
     }
   }
@@ -94,34 +90,30 @@
   border-radius: 40px;
 
   .btn-switch-circle {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: block;
-      height: 10px;
-      width: 10px;
-      background-color: #fff;
-      border-radius: 40px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    height: 10px;
+    width: 10px;
+    background-color: #fff;
+    border-radius: 40px;
   }
 }
 
 .btn-switch--on {
   background-color: #ffaf4b;
-  border: 2px solid #ffaf4b;;
+  border: 2px solid #ffaf4b;
 
   .btn-switch-circle--on {
-      left: auto;
-      right: 0;
+    left: auto;
+    right: 0;
   }
 }
 
 .sort-leaderboard-switch {
-	vertical-align: middle;
-	display: inline-block;
-}
-
-.spacer {
-  margin-left: 14%;
+  vertical-align: middle;
+  display: inline-block;
 }
 
 .rangeslider {
@@ -130,9 +122,21 @@
 }
 
 mat-slider {
-  width: 55%;
-  margin-left: 25%;
+  width: 50%;
   padding-right: 0px;
+}
+
+.rangeslider {
+  mat-chip {
+    background: #22857b !important;
+  }
+  .btn {
+    margin-right: 0px;
+  }
+}
+
+.ev-md-container {
+  padding-bottom: 0px;
 }
 
 .complete-leaderboard {
@@ -140,7 +144,7 @@ mat-slider {
 }
 
 .leaderboard-description {
-  color:  $yellow !important;
+  color: $yellow !important;
   border-radius: 2px !important;
   min-height: 25px !important;
 }
@@ -149,31 +153,30 @@ mat-slider {
   margin-left: 2%;
 }
 
+.private {
+  mat-chip {
+    background: rgb(146, 79, 146) !important;
+  }
+}
+
 .complete-leaderboard-text {
   font-size: $fs-16;
   color: $gray-darker;
 }
 
-/*media queries*/
-
-@media only screen and (max-width: $screen-md) {
-  .spacer {
-    margin-left: 20%;
-  }
-
-  mat-slider {
-    width: 45%;
-    margin-left: 40%;
+.ev-md-container {
+  padding-bottom: 0px;
+  .phase-select-box {
+    margin-bottom: 0px;
   }
 }
 
-@media only screen and (max-width: $screen-sm) {
-  .spacer {
-    margin-left: 10%;
-    margin-top: 10px;
-  }
+.ev-card-body {
+  padding-top: 0px;
+}
 
+@media only screen and (max-width: $screen-sm) {
   mat-slider {
-    margin-left: 20%;
+    width: 100%;
   }
 }

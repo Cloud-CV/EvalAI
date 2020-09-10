@@ -1,9 +1,10 @@
-import {Component, HostListener, Inject, OnInit} from '@angular/core';
+import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
+import { EndpointsService } from '../../../services/endpoints.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import {DOCUMENT} from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -11,10 +12,9 @@ import {DOCUMENT} from '@angular/common';
 @Component({
   selector: 'app-challengelist',
   templateUrl: './challengelist.component.html',
-  styleUrls: ['./challengelist.component.scss']
+  styleUrls: ['./challengelist.component.scss'],
 })
 export class ChallengelistComponent implements OnInit {
-
   /**
    * Filter toggle flag
    */
@@ -38,12 +38,17 @@ export class ChallengelistComponent implements OnInit {
   /**
    * Ongoing challenges list
    */
-  ongoingChallenges = [];
+  ongoingChallenges: any;
 
   /**
    * Past challeges list
    */
   pastChallenges = [];
+
+  /**
+   * Unapproved challeges list
+   */
+  unapprovedChallengeList = [];
 
   /**
    * API common path
@@ -66,15 +71,15 @@ export class ChallengelistComponent implements OnInit {
   apiPathMapping = {
     isUpcomingChecked: this.apiPathCommon + 'future',
     isOngoingChecked: this.apiPathCommon + 'present',
-    isPastChecked: this.apiPathCommon + 'past'
+    isPastChecked: this.apiPathCommon + 'past',
   };
 
   /**
    * API path mapping
    */
   newApiPathMapping = {
-    isOngoingChecked: this.newApiPathCommon  + 'participated/' + 'present/',
-    isPastChecked: this.newApiPathCommon  + 'participated/' + 'past/'
+    isOngoingChecked: this.newApiPathCommon + 'participated/' + 'present/',
+    isPastChecked: this.newApiPathCommon + 'participated/' + 'past/',
   };
 
   /**
@@ -85,7 +90,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * List of filtered ongoing challenges
    */
-  filteredOngoingChallenges = [];
+  filteredOngoingChallenges: any;
 
   /**
    * List of filtered upcoming challenges
@@ -155,7 +160,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * My participated challenges common route path
    */
-  myParticipatedChallengesRoutePathCommon ='/challenges/participated';
+  myParticipatedChallengesRoutePathCommon = '/challenges/participated';
 
   /**
    * Host teams common route path
@@ -179,14 +184,18 @@ export class ChallengelistComponent implements OnInit {
    * @param globalService  GlobalService Injection.
    * @param authService  AuthService Injection.
    * @param apiService  ApiService Injection.
+   * @param endpointsService  EndpointsService Injection.
    * @param document
    */
-  constructor(private apiService: ApiService,
-              private authService: AuthService,
-              private globalService: GlobalService,
-              private router: Router,
-              @Inject(DOCUMENT) private document,
-              private route: ActivatedRoute) { }
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService,
+    private globalService: GlobalService,
+    private endpointsService: EndpointsService,
+    private router: Router,
+    @Inject(DOCUMENT) private document,
+    private route: ActivatedRoute
+  ) {}
 
   /**
    * Component on intialized.
@@ -200,8 +209,7 @@ export class ChallengelistComponent implements OnInit {
       this.isLoggedIn = authState.isLoggedIn;
       if (!authState.isLoggedIn && this.router.url === this.myChallengesRoutePathCommon) {
         this.router.navigate([`${this.authRoutePathCommon}login`]);
-      }
-      else if (!authState.isLoggedIn && this.router.url === this.myParticipatedChallengesRoutePathCommon) {
+      } else if (!authState.isLoggedIn && this.router.url === this.myParticipatedChallengesRoutePathCommon) {
         this.router.navigate([`${this.authRoutePathCommon}login`]);
       }
     });
@@ -218,13 +226,12 @@ export class ChallengelistComponent implements OnInit {
     this.routerPublic = this.router;
   }
 
-
   /**
    * Listener for page scroll event
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const RECT =  this.document.getElementById('ongoing-challenges').getBoundingClientRect();
+    const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
     this.isScrollbtnVisible = RECT.top < 0;
   }
 
@@ -292,7 +299,7 @@ export class ChallengelistComponent implements OnInit {
       this.seeMore = 1;
     }
     this.filterChallengesByTeams();
-    this.filteredChallengesView = this.filteredChallenges.slice(0, (this.seeMore * this.windowSize));
+    this.filteredChallengesView = this.filteredChallenges.slice(0, this.seeMore * this.windowSize);
   }
 
   /**
@@ -300,10 +307,18 @@ export class ChallengelistComponent implements OnInit {
    */
   filterChallengesByTeams() {
     if (this.router.url === this.myChallengesRoutePathCommon && this.authService.isLoggedIn()) {
-      this.filteredChallenges = this.filteredChallenges.filter((v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1);
-      this.filteredOngoingChallenges = this.filteredOngoingChallenges.filter((v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1);
-      this.filteredUpcomingChallenges = this.filteredUpcomingChallenges.filter((v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1);
-      this.filteredPastChallenges = this.filteredPastChallenges.filter((v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1);
+      this.filteredChallenges = this.filteredChallenges.filter(
+        (v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1
+      );
+      this.filteredOngoingChallenges = this.filteredOngoingChallenges.filter(
+        (v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1
+      );
+      this.filteredUpcomingChallenges = this.filteredUpcomingChallenges.filter(
+        (v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1
+      );
+      this.filteredPastChallenges = this.filteredPastChallenges.filter(
+        (v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1
+      );
     }
   }
 
@@ -315,15 +330,18 @@ export class ChallengelistComponent implements OnInit {
     const SELF = this;
     SELF.filteredChallenges = [];
     this.apiService.getUrl(path, true, false).subscribe(
-      data => {
+      (data) => {
         if (data['results']) {
           const TEAMS = data['results'].map((item) => item['id']);
           SELF.allTeams = SELF.allTeams.concat(TEAMS);
           SELF.allTeams = SELF.allTeams.filter((v, i, a) => a.indexOf(v) === i);
+          SELF.allTeams.forEach((team) => {
+            SELF.fetchUnapprovedChallengesFromApi(team);
+          });
           SELF.fetchChallenges();
         }
       },
-      err => {
+      (err) => {
         if (err.status === 403) {
           this.router.navigate(['permission-denied']);
         }
@@ -360,7 +378,7 @@ export class ChallengelistComponent implements OnInit {
   fetchChallengesFromApi(path, callback = null) {
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
-      data => {
+      (data) => {
         if (path.endsWith('future')) {
           SELF.upcomingChallenges = data['results'];
         } else if (path.endsWith('present')) {
@@ -374,7 +392,7 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredPastChallenges = SELF.pastChallenges;
         this.updateChallengesView(true);
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}
@@ -389,7 +407,7 @@ export class ChallengelistComponent implements OnInit {
   fetchParticipatedChallengesFromApi(path, callback = null) {
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
-      data => {
+      (data) => {
         if (path.endsWith('present/')) {
           SELF.ongoingChallenges = data['results'];
         } else if (path.endsWith('past/')) {
@@ -399,7 +417,28 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
       },
-      err => {
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  fetchUnapprovedChallengesFromApi(id) {
+    const path = this.endpointsService.allUnapprovedChallengesURL(id);
+    const SELF = this;
+    SELF.apiService.getUrl(path, true, false).subscribe(
+      (data) => {
+        const datas = data['results'];
+        if (datas) {
+          datas.forEach((challenge) => {
+            if (challenge['approved_by_admin'] === false) {
+              SELF.unapprovedChallengeList.push(challenge);
+            }
+          });
+        }
+      },
+      (err) => {
         SELF.globalService.handleApiError(err);
       },
       () => {}

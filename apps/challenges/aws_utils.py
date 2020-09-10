@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
+from rest_framework.authtoken.models import Token
 
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
@@ -51,10 +52,18 @@ COMMON_SETTINGS_DICT = {
             aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
     ),
+    "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
+        "CODE_UPLOAD_WORKER_IMAGE",
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], ENV
+        ),
+    ),
     "CPU": os.environ.get("CPU", 1024),
+    "CIDR": os.environ.get("CIDR"),
     "MEMORY": os.environ.get("MEMORY", 2048),
     "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
+    "EVALAI_API_SERVER": os.environ.get("EVALAI_API_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
     "EMAIL_HOST": settings.EMAIL_HOST,
     "EMAIL_HOST_PASSWORD": settings.EMAIL_HOST_PASSWORD,
@@ -207,6 +216,81 @@ task_definition = """
 }}
 """
 
+task_definition_code_upload_worker = """
+{{
+    "family":"{queue_name}",
+    "executionRoleArn":"{EXECUTION_ROLE_ARN}",
+    "networkMode":"awsvpc",
+    "containerDefinitions":[
+        {{
+            "name": "{container_name}",
+            "image": "{CODE_UPLOAD_WORKER_IMAGE}",
+            "essential": True,
+            "environment": [
+                {{
+                  "name": "AWS_DEFAULT_REGION",
+                  "value": "{AWS_DEFAULT_REGION}"
+                }},
+                {{
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "value": "{AWS_ACCESS_KEY_ID}"
+                }},
+                {{
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "CLUSTER_NAME",
+                  "value": "{cluster_name}"
+                }},
+                {{
+                  "name": "CLUSTER_ENDPOINT",
+                  "value": "{cluster_endpoint}"
+                }},
+                {{
+                  "name": "CERTIFICATE",
+                  "value": "{certificate}"
+                }},
+                {{
+                  "name": "CIDR",
+                  "value": "{CIDR}"
+                }},
+                {{
+                  "name": "QUEUE_NAME",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "EVALAI_API_SERVER",
+                  "value": "{EVALAI_API_SERVER}"
+                }},
+
+                {{
+                    "name": "AUTH_TOKEN",
+                    "value": "{auth_token}"
+                }},
+
+            ],
+            "workingDirectory": "/code",
+            "readonlyRootFilesystem": False,
+            "logConfiguration": {{
+                "logDriver": "awslogs",
+                "options": {{
+                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
+                }},
+            }},
+        }}
+    ],
+    "requiresCompatibilities":[
+        "FARGATE"
+    ],
+    "cpu": "{CPU}",
+    "memory": "{MEMORY}",
+}}
+"""
+
 service_definition = """
 {{
     "cluster":"{CLUSTER}",
@@ -288,13 +372,45 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
     if execution_role_arn:
-        definition = task_definition.format(
-            queue_name=queue_name,
-            container_name=container_name,
-            ENV=ENV,
-            challenge_pk=challenge.pk,
-            **COMMON_SETTINGS_DICT,
-        )
+        if challenge.is_docker_based:
+            from .models import ChallengeEvaluationCluster
+
+            # Cluster detail to be used by code-upload-worker
+            try:
+                cluster_details = ChallengeEvaluationCluster.objects.get(
+                    challenge=challenge
+                )
+                cluster_name = cluster_details.name
+                cluster_endpoint = cluster_details.cluster_endpoint
+                cluster_certificate = cluster_details.cluster_ssl
+            except ClientError as e:
+                logger.exception(e)
+                return e.response
+            # challenge host auth token to be used by code-upload-worker
+            try:
+                token = Token.objects.get(user=challenge.creator.created_by)
+            except Token.DoesNotExist:
+                token = Token.objects.create(user=challenge.creator.created_by)
+                token.save()
+            definition = task_definition_code_upload_worker.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                auth_token=token,
+                cluster_name=cluster_name,
+                cluster_endpoint=cluster_endpoint,
+                certificate=cluster_certificate,
+                **COMMON_SETTINGS_DICT,
+            )
+        else:
+            definition = task_definition.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                **COMMON_SETTINGS_DICT,
+            )
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
@@ -521,7 +637,12 @@ def start_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers == 0) or (challenge.workers is None):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=1
             )
@@ -570,7 +691,12 @@ def stop_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
@@ -672,7 +798,12 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.workers is not None:
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -683,6 +814,8 @@ def delete_workers(queryset):
                 )
                 continue
             count += 1
+            log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+            delete_log_group(log_group_name)
         else:
             response = "Please select challenges with active workers only."
             failures.append(
@@ -719,7 +852,12 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client,
                 challenge=challenge,
@@ -843,11 +981,25 @@ def get_logs_from_cloudwatch(
             for event in response["events"]:
                 logs.append(event["message"])
         except Exception as e:
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
+                return logs
+
             logger.exception(e)
             return [
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
             ]
     return logs
+
+
+def delete_log_group(log_group_name):
+    if settings.DEBUG:
+        pass
+    else:
+        try:
+            client = get_boto3_client("logs", aws_keys)
+            client.delete_log_group(logGroupName=log_group_name)
+        except Exception as e:
+            logger.exception(e)
 
 
 @app.task
@@ -882,7 +1034,11 @@ def create_eks_nodegroup(challenge, cluster_name):
         return response
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
-    construct_and_send_eks_cluster_creation_mail(challenge)
+    construct_and_send_eks_cluster_creation_mail(challenge_obj)
+    # starting the code-upload-worker
+    client = get_boto3_client("ecs", aws_keys)
+    client_token = client_token_generator(challenge_obj.pk)
+    create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
 @app.task
@@ -989,23 +1145,25 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
 
     if not challenge.is_docker_based and challenge.remote_evaluation is False:
         if curr and not prev:
-            response = start_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if count != 1:
-                logger.error(
-                    "Worker for challenge {} couldn't start! Error: {}".format(
-                        challenge.id, failures[0]["message"]
+            if not challenge.workers:
+                response = start_workers([challenge])
+                count, failures = response["count"], response["failures"]
+                if not count:
+                    logger.error(
+                        "Worker for challenge {} couldn't start! Error: {}".format(
+                            challenge.id, failures[0]["message"]
+                        )
                     )
-                )
-            else:
-                construct_and_send_worker_start_mail(challenge)
+                else:
+                    construct_and_send_worker_start_mail(challenge)
 
         if prev and not curr:
-            response = delete_workers([challenge])
-            count, failures = response["count"], response["failures"]
-            if count != 1:
-                logger.error(
-                    "Worker for challenge {} couldn't be deleted! Error: {}".format(
-                        challenge.id, failures[0]["message"]
+            if challenge.workers:
+                response = delete_workers([challenge])
+                count, failures = response["count"], response["failures"]
+                if not count:
+                    logger.error(
+                        "Worker for challenge {} couldn't be deleted! Error: {}".format(
+                            challenge.id, failures[0]["message"]
+                        )
                     )
-                )

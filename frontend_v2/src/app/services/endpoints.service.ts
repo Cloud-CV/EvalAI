@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class EndpointsService {
-
   /**
    * Categories of API paths
    */
@@ -14,7 +13,7 @@ export class EndpointsService {
   auth = 'auth/';
   analytics = 'analytics/';
 
-  constructor() { }
+  constructor() {}
 
   /**
    * Login URL
@@ -104,7 +103,7 @@ export class EndpointsService {
   participantTeamURL(teamId) {
     return `${this.participants}participant_team/${teamId}`;
   }
-/**
+  /**
    * Edit Host Team Name
    */
   hostTeamURL(teamId) {
@@ -141,6 +140,13 @@ export class EndpointsService {
     return `${this.challenges}${this.challenge}${time}`;
   }
 
+  /**
+   * Fetch all unapproved challenges for a team
+   * @param teamId  team Id
+   */
+  allUnapprovedChallengesURL(teamId) {
+    return `${this.challenges}challenge_host_team/${teamId}/challenge`;
+  }
 
   /**
    * All host teams
@@ -267,6 +273,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
+   * Get participated team name
+   * @param challenge  challenge id
+   */
+  getParticipatedTeamNameURL(challenge) {
+    return `${this.challenges}${this.challenge}${challenge}/participant_team/team_name`;
+  }
+
+  /**
    * Get all Challenge Submission
    * @param challenge  challenge id
    * @param phase  phase id
@@ -311,6 +325,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   challengeSubmissionUpdateURL(challenge, phase, submission) {
     return `${this.challengeSubmissionURL(challenge, phase)}${submission}`;
+  }
+
+  /**
+   * Disable Challenge Submission
+   * @param submission  submission id
+   */
+  disableChallengeSubmissionURL(submission) {
+    return `${this.jobs}submission/${submission}`;
   }
 
   /**

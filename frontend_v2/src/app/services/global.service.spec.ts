@@ -5,7 +5,7 @@ import { GlobalService } from './global.service';
 describe('GlobalService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [GlobalService]
+      providers: [GlobalService],
     });
   });
 
