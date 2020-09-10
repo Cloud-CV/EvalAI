@@ -242,6 +242,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.getTeamName();
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -337,6 +338,7 @@
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
+                                                        vm.getTeamName();
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
@@ -571,20 +573,6 @@
                 }
             }
         };
-
-
-        // get names of the team that has participated in the current challenge
-        parameters.url = 'challenges/' + vm.challengeId + '/participant_team/team_detail';
-        parameters.method = 'GET';
-        parameters.data={};
-        parameters.callback = {
-            onSuccess: function(response) {
-                var details = response.data;
-                vm.participated_team_name = details["team_name"];
-            },
-        };
-        utilities.sendRequest(parameters);
-
 
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
@@ -2449,6 +2437,19 @@
             }
         };
 
+        vm.getTeamName = function() {
+        // get names of the team that has participated in the current challenge
+        parameters.url = 'challenges/' + vm.challengeId + '/participant_team/team_detail';
+        parameters.method = 'GET';
+        parameters.data={};
+        parameters.callback = {
+            onSuccess: function(response) {
+                 var details = response.data;
+                vm.participated_team_name = details["team_name"];
+            },
+        };
+            utilities.sendRequest(parameters);
+        };
 
     }
 
