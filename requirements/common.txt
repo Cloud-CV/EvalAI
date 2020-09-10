@@ -1,6 +1,7 @@
 asgi-redis==1.4.3
 boto3==1.13.16
 botocore==1.16.16
+vine==1.3.0
 celery[sqs]==4.3.0
 commonmark==0.5.4
 django==1.11.23
