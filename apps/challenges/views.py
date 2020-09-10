@@ -255,7 +255,11 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail_for_challenge(request, challenge_pk):
     """
-    API to return the participated team name in the challenge.
+        Returns the participated team detail in the challenge
+        Arguments:
+            challenge_pk {int} -- Challenge primary key
+        Returns:
+            {dict} -- Participant team detail that has participated in the challenge
     """
     if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(request.user, challenge_pk)
