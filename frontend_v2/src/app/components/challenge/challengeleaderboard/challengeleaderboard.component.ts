@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, Self } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSliderChange } from '@angular/material';
@@ -23,7 +23,7 @@ import { EndpointsService } from '../../../services/endpoints.service';
   templateUrl: './challengeleaderboard.component.html',
   styleUrls: ['./challengeleaderboard.component.scss'],
 })
-export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
+export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Phase select card components
    */
@@ -184,6 +184,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
    * An interval for fetching the leaderboard data in every 5 seconds
    */
   pollingInterval: any;
+
+  /**
+   * If leaderboard precision value is equal to 0
+   */
+  minusDisabled = false;
+
+  /**
+   * If leaderboard precision value is equal to 5
+   */
+  plusDisabled = false;
 
   /**
    * Challenge phase visibility
@@ -475,7 +485,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     );
   }
 
-  // function for toggeling between public leaderboard and complete leaderboard [public/private]
+  /**
+   * function for toggeling between public leaderboard and complete leaderboard [public/private]
+   */
   toggleLeaderboard(getAllEntries) {
     this.getAllEntries = getAllEntries;
     if (getAllEntries) {
@@ -559,7 +571,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     return dialogRef.afterClosed();
   }
 
-  // Show dialogue box for viewing metadata
+  /**
+   *  Show dialogue box for viewing metadata
+   */
   showMetaAttributesDialog(attributes) {
     const SELF = this;
     if (attributes !== false) {
@@ -575,21 +589,34 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit {
     SELF.openDialog(SELF.metaAttributesData);
   }
 
-  // Update leaderboard decimal precision value
-  updateLeaderboardDecimalPrecision(event: MatSliderChange) {
+  /**
+   * Update leaderboard decimal precision value
+   * @param updatedLeaderboardPrecisionValue new leaderboard precision value
+   */
+  updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue) {
     const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
     const SELF = this;
-    SELF.leaderboardPrecisionValue = event.value;
+    SELF.leaderboardPrecisionValue = updatedLeaderboardPrecisionValue;
     SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
     const BODY = JSON.stringify({
       leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
     });
     SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
-      (data) => {},
+      (data) => {
+        this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
+        this.plusDisabled = SELF.leaderboardPrecisionValue === 5 ? true : false;
+      },
       (err) => {
         SELF.globalService.handleApiError(err, true);
       },
       () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
     );
+  }
+
+  /**
+   *  Clear the polling interval
+   */
+  ngOnDestroy() {
+    clearInterval(this.pollingInterval);
   }
 }
