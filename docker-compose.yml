@@ -37,15 +37,16 @@ services:
     volumes:
       - .:/code
 
-  code-upload-worker:
-    hostname: rl-worker
-    env_file:
-      - docker/dev/docker_code_upload_worker.env
-    build:
-      context: ./
-      dockerfile: docker/dev/code-upload-worker/Dockerfile
-    depends_on:
-      - django
+  # Since we don't use code-upload-worker in dev setup, hence commenting this code
+  # code-upload-worker:
+  #   hostname: rl-worker
+  #   env_file:
+  #     - docker/dev/docker_code_upload_worker.env
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/dev/code-upload-worker/Dockerfile
+  #   depends_on:
+  #     - django
 
   nodejs:
     hostname: nodejs
