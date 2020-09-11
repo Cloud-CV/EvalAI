@@ -728,7 +728,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
+        if settings.DEBUG or settings.TEST:
+            template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
+        else:
+            template_zip_s3_url = challenge_template.template_file.url
 
         unique_folder_name = get_unique_alpha_numeric_key(10)
         challenge_template_download_location = join(
