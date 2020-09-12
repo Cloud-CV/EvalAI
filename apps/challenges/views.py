@@ -921,7 +921,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    is_test_annotation_missing = False
     for data in challenge_phases_data:
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
@@ -942,7 +941,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
         else:
-            is_test_annotation_missing = True
+            message = (
+                "There is no key for test annotation file for"
+                " challenge phase {} in yaml file. Please add it"
+                " and then try again!".format(data["name"])
+            )
+            response_data = {"error": message}
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
         if data.get("is_submission_public") and data.get(
             "is_restricted_to_select_one_submission"
@@ -1383,7 +1390,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 send_slack_notification(message=message)
 
             template_data = get_challenge_template_data(zip_config.challenge)
-            if not is_test_annotation_missing:
+            if not challenge.is_docker_based:
                 try:
                     response = start_workers([zip_config.challenge])
                     count, failures = response["count"], response["failures"]
@@ -1398,11 +1405,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     logger.exception(
                         "Failed to start workers for challenge {}".format(zip_config.challenge.pk)
                     )
-            else:
-                template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-                    "MISSING_ANNOTATIONS_EMAIL"
-                )
-                send_emails(emails, template_id, template_data)
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"
