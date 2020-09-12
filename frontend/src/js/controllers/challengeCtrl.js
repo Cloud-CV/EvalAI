@@ -2102,6 +2102,13 @@
 
         vm.editEvalScript = function(editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
+                if (vm.editEvaluationScript === undefined || vm.editEvaluationScript === null
+                     || vm.editEvaluationScript === "") {
+                    var error = "Please upload a valid evaluation script!";
+                    $mdDialog.hide();
+                    $rootScope.notify("error", error);
+                    return;
+                }
                 var formData = new FormData();
                 formData.append("evaluation_script", vm.editEvaluationScript);
                 var challengeHostList = utilities.getData("challengeCreator");

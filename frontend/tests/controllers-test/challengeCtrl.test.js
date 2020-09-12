@@ -2091,6 +2091,7 @@ describe('Unit tests for challenge controller', function () {
 
         it('valid `edit evaluation script` form & successfull edit', function () {
             var editEvaluationScriptForm = true;
+            vm.editEvaluationScript = "evaluation_script.zip";
             success = true;
             vm.page.evaluation_details = "evaluation details";
             vm.editEvalScript(editEvaluationScriptForm);
@@ -2099,8 +2100,18 @@ describe('Unit tests for challenge controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("success", "The evaluation script is successfully updated!");
         });
 
+        it('invalid `edit evaluation script` form & frontend error', function () {
+            var editEvaluationScriptForm = true;
+            success = true;
+            vm.page.evaluation_details = "evaluation details";
+            vm.editEvalScript(editEvaluationScriptForm);
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Please upload a valid evaluation script!");
+        });
+
         it('valid `edit evaluation script` form & backend error', function () {
             var editEvaluationScriptForm = true;
+            vm.editEvaluationScript = "evaluation_script.zip";
             success = false;
             vm.tempEvaluationCriteria = "temp evaluation details";
             vm.page.evaluation_details = "evaluation details";
