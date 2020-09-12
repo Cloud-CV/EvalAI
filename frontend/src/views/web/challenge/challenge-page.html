@@ -1,3 +1,16 @@
+<section class="ev-sm-container  ev-view challenge-container"
+         ng-if="challenge.isChallengeHost && !challenge.approved_by_admin">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-banner">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 l12">Thank you for successfully creating a challenge on EvalAI.
+                The challenge is ready to accept submissions from host the team. Please note that the submissions from the host team won't be visible on leaderboard until you mark them as baseline submission.
+                In order for the challenge to accept submissions from the public, it requires approval from the EvalAI Team. We have already received a notification for challenge approval and will review the challenge soon (in 24 hours).
+                If you have any questions, please feel free to reach out to us at 
+                <a href="mailto:team@cloudcv.org" class="blue-text">team@cloudcv.org</a>
+            </div>
+        </div>
+    </div>
+</section>
 <section class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 challenge-title-container ">
         <div class="row">
