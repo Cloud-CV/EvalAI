@@ -717,7 +717,7 @@ def main():
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    q_params = {"approved_by_admin": True}
+    q_params = {}
     q_params["start_date__lt"] = timezone.now()
     q_params["end_date__gt"] = timezone.now()
 

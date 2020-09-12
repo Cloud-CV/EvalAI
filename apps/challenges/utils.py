@@ -10,7 +10,12 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
-from base.utils import get_model_object, get_boto3_client, mock_if_non_prod_aws
+from base.utils import (
+    get_model_object,
+    get_boto3_client,
+    mock_if_non_prod_aws,
+    send_email
+)
 
 from .models import (
     Challenge,
@@ -326,3 +331,42 @@ def get_unique_alpha_numeric_key(length):
             for i in range(length)
         ]
     )
+
+
+def get_challenge_template_data(challenge):
+    """
+        Returns a dict for sendgrid email template data
+        Arguments:
+            challenge {Class Object} -- Challenge model object
+        Returns:
+            template_data {dict} -- a dict for sendgrid email template data
+    """
+    challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
+        settings.HOSTNAME, challenge.id
+    )
+    challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
+        settings.HOSTNAME, challenge.id
+    )
+    template_data = {
+        "CHALLENGE_NAME": challenge.title,
+        "CHALLENGE_URL": challenge_url,
+        "CHALLENGE_MANAGE_URL": challenge_manage_url,
+    }
+    return template_data
+
+
+def send_emails(emails, template_id, template_data):
+    """
+        Sends email to list of users using provided template
+        Arguments:
+            emails {list} -- recepient email ids
+            template_id {string} -- sendgrid template id
+            template_data {dict} -- sendgrid email template data
+    """
+    for email in emails:
+        send_email(
+            sender=settings.CLOUDCV_TEAM_EMAIL,
+            recipient=email,
+            template_id=template_id,
+            template_data=template_data,
+        )
