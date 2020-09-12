@@ -2105,13 +2105,13 @@ describe('Unit tests for challenge controller', function () {
             success = true;
             vm.page.evaluation_details = "evaluation details";
             vm.editEvalScript(editEvaluationScriptForm);
-            expect(utilities.getData).toHaveBeenCalledWith("challengeCreator");
             expect($mdDialog.hide).toHaveBeenCalled();
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Please upload a valid evaluation script!");
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Please upload a valid evaluation script!");
         });
 
         it('valid `edit evaluation script` form & backend error', function () {
             var editEvaluationScriptForm = true;
+            vm.editEvaluationScript = "evaluation_script.zip";
             success = false;
             vm.tempEvaluationCriteria = "temp evaluation details";
             vm.page.evaluation_details = "evaluation details";
