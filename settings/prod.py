@@ -20,6 +20,7 @@ CORS_ORIGIN_WHITELIST = (
     "evalai.cloudcv.org",
     "evalai.s3.amazonaws.com",
     "staging.evalai.cloudcv.org",
+    "evalai-v2.cloudcv.org:9999",
 )
 
 DATABASES = {

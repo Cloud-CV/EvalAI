@@ -7,6 +7,6 @@
  * Environment URL for production
  */
 export const environment = {
-  production: true,
-  api_endpoint: 'https://staging-evalai.cloudcv.org/api/',
+    production: true,
+    api_endpoint: 'https://evalapi.cloudcv.org/api/'
 };
