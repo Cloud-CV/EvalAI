@@ -37,17 +37,6 @@ services:
     volumes:
       - .:/code
 
-  # Since we don't use code-upload-worker in dev setup, hence commenting this code
-  # code-upload-worker:
-  #   hostname: rl-worker
-  #   env_file:
-  #     - docker/dev/docker_code_upload_worker.env
-  #   build:
-  #     context: ./
-  #     dockerfile: docker/dev/code-upload-worker/Dockerfile
-  #   depends_on:
-  #     - django
-
   nodejs:
     hostname: nodejs
     build:
@@ -75,17 +64,3 @@ services:
     volumes:
     - ./frontend_v2:/code
     - /code/node_modules
-    
-  # TODO: Add alternative for AWS SQS Celery (https://docs.celeryproject.org/en/stable/getting-started/brokers/sqs.html) in dev setup.
-  # celery:
-  #   hostname: celery
-  #   env_file:
-  #     - docker/dev/docker.env
-  #   build:
-  #     context: ./
-  #     dockerfile: docker/dev/celery/Dockerfile
-  #   depends_on:
-  #     - django
-  #   volumes:
-  #     - .:/code
-  
