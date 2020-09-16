@@ -132,8 +132,8 @@
                             ng-click="challenge.scrollToSpecificEntryLeaderboard('leaderboardrank-' + challenge.initial_ranking[key.id])"
                             ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
                             class="fs-16" id="leaderboardrank-{{challenge.initial_ranking[key.id]}}">
-                            <td>{{challenge.initial_ranking[key.id]}}</td>
-                            <td><a ng-if="key.submission__participant_team__team_url" class="orange-text"
+                            <td ng-style="challenge.boldenLeaderboardFieldColumn('rank')">{{challenge.initial_ranking[key.id]}}</td>
+                            <td ng-style="challenge.boldenLeaderboardFieldColumn('string')"><a ng-if="key.submission__participant_team__team_url" class="orange-text"
                                     target="_blank"
                                     href="{{key.submission__participant_team__team_url}}">{{key.submission__participant_team__team_name}}</a><span
                                     ng-if="!key.submission__participant_team__team_url">{{key.submission__participant_team__team_name}}</span>
@@ -143,14 +143,14 @@
                                     id="baseline-badge" class="new badge orange-background baseline-tag" data-badge-caption="B"
                                     ng-if="key.submission__is_baseline"></span>
                             </td>
-                            <td ng-repeat="(i, score) in key.result track by $index">
+                            <td ng-style="challenge.boldenLeaderboardFieldColumn('number')" ng-repeat="(i, score) in key.result track by $index"> <!--this is the correct spot for bold letters-->
                                 {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
                                 <span class="new badge orange-background fs-16 w-300 partial-evaluation"
                                       data-badge-caption="E" ng-if="score === '#'"></span>
                                 <span ng-if="key.error != nil"> ±
                                     {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                             </td>
-                            <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
+                            <td ng-style="challenge.boldenLeaderboardFieldColumn('date')">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                             </td>
                             <td ng-if="challenge.showSubmissionMetaAttributesOnLeaderboard">
                                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="key.submission__submission_metadata == undefined || key.submission__submission_metadata == null;" type="submit" value="view" ng-click="challenge.showMetaAttributesDialog($event, key.submission__submission_metadata);">View</button>
