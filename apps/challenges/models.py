@@ -136,6 +136,10 @@ class Challenge(TimeStampedModel):
     github_repository = models.CharField(
         max_length=1000, null=True, blank=True, default=""
     )
+    # The number of vCPU for a Fargate worker for the challenge.
+    worker_cpu_cores = models.IntegerField(null=True, blank=True, default=None)
+    # Memory size of a Fargate worker for the challenge.
+    worker_memory = models.IntegerField(null=True, blank=True, default=None)
 
     class Meta:
         app_label = "challenges"
