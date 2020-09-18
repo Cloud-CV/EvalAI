@@ -33,12 +33,14 @@ def start_workers_for_active_challenges():
 		workers = challenge["workers"]
 		challenge_start_date = parser.parse(challenge["start_date"])
 		current_date = utc.localize(datetime.now())
+		is_docker_based = challenge["is_docker_based"]
 
 		print('Start submission worker for challenge id {}'.format(challenge_id))
-		if workers is None and challenge_start_date <= current_date:
-			response = start_worker(challenge_id)
-			if not response.ok:
-				print('ERROR: Start worker for challenge id {} failed!'.format(challenge_id))
+		if not is_docker_based:
+			if workers is None and challenge_start_date <= current_date:
+				response = start_worker(challenge_id)
+				if not response.ok:
+					print('ERROR: Start worker for challenge id {} failed!'.format(challenge_id))
 
 if __name__ == '__main__':
 	start_workers_for_active_challenges()
