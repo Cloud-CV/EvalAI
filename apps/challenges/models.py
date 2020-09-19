@@ -140,6 +140,8 @@ class Challenge(TimeStampedModel):
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=None)
     # Memory size of a Fargate worker for the challenge.
     worker_memory = models.IntegerField(null=True, blank=True, default=None)
+    # Enable/Disable emails notifications for the challenge
+    inform_hosts = models.BooleanField(default=True)
 
     class Meta:
         app_label = "challenges"
