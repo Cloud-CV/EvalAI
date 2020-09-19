@@ -48,7 +48,7 @@ def start_or_stop_workers_for_active_challenges():
                 response = start_worker(challenge_id)
                 if not response.ok:
                     print('ERROR: Start worker failed for challenge id {}!'.format(challenge_id))
-            if workers is not None and challenge_end_date <= current_date
+            if workers is not None and challenge_end_date <= current_date:
                 response = stop_worker(challenge_id)
                 if not response.ok:
                     print('ERROR: Stop worker failed for challenge id {}!'.format(challenge_id))
