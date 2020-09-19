@@ -137,9 +137,9 @@ class Challenge(TimeStampedModel):
         max_length=1000, null=True, blank=True, default=""
     )
     # The number of vCPU for a Fargate worker for the challenge.
-    worker_cpu_cores = models.IntegerField(null=True, blank=True, default=None)
+    worker_cpu_cores = models.IntegerField(null=True, blank=True, default=256)
     # Memory size of a Fargate worker for the challenge.
-    worker_memory = models.IntegerField(null=True, blank=True, default=None)
+    worker_memory = models.IntegerField(null=True, blank=True, default=512)
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
 
