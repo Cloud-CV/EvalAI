@@ -951,14 +951,16 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 "WORKER_RESTART_EMAIL"
             )
 
-            emails = challenge.creator.get_all_challenge_host_email()
-            for email in emails:
-                send_email(
-                    sender=settings.CLOUDCV_TEAM_EMAIL,
-                    recipient=email,
-                    template_id=template_id,
-                    template_data=template_data,
-                )
+            # Send email notification only when inform_hosts is true
+            if challenge.inform_hosts:
+                emails = challenge.creator.get_all_challenge_host_email()
+                for email in emails:
+                    send_email(
+                        sender=settings.CLOUDCV_TEAM_EMAIL,
+                        recipient=email,
+                        template_id=template_id,
+                        template_data=template_data,
+                    )
 
 
 def get_logs_from_cloudwatch(
