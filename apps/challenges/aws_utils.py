@@ -367,8 +367,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
     """
     container_name = "worker_{}".format(queue_name)
-    worker_cpu_cores = get_challenge_worker_cpu_cores(challenge)
-    worker_memory = get_challenge_worker_memory(challenge)
+    worker_cpu_cores = challenge.worker_cpu_cores
+    worker_memory = challenge.worker_memory
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
     if execution_role_arn:
@@ -1173,15 +1173,3 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                             challenge.id, failures[0]["message"]
                         )
                     )
-
-
-def get_challenge_worker_cpu_cores(challenge):
-    if challenge.worker_cpu_cores:
-        return challenge.worker_cpu_cores
-    return os.environ.get("CPU", 1024)
-
-
-def get_challenge_worker_memory(challenge):
-    if challenge.worker_memory:
-        return challenge.worker_memory
-    return os.environ.get("MEMORY", 2048)
