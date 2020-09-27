@@ -23,6 +23,8 @@ Contents:
    evaluation_scripts
    approve_challenge
    participate
+   deploy_vm
+   deploy_aws
    pull_request
    contribution
    architecture
