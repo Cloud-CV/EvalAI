@@ -1615,6 +1615,10 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.clearSubmissionErrorMessage = function() {
+            vm.subErrors.msg = "";
+        };
+
         vm.showRemainingSubmissions = function(phaseID) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
