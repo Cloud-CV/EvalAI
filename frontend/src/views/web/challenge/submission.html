@@ -174,7 +174,7 @@
                                     ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date"
                                     type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}"
                                     value="{{item.id}}" ng-model="challenge.phaseId"
-                                    ng-click="challenge.showRemainingSubmissions(item.id); challenge.loadPhaseAttributes(item.id); challenge.clearMetaAttributeValues();">
+                                    ng-click="challenge.showRemainingSubmissions(item.id); challenge.loadPhaseAttributes(item.id); challenge.clearMetaAttributeValues(); challenge.clearSubmissionErrorMessage();">
                                 <label for="{{item.id}}"></label>
                                 <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong
                                         class="text-med-black">Phase: </strong>{{item.name}}
