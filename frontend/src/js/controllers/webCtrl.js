@@ -8,7 +8,7 @@
         .module('evalai')
         .controller('WebCtrl', WebCtrl);
 
-    WebCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
+    WebCtrl.$inject = ['utilities', '$rootScope'];
 
     function WebCtrl(utilities, $rootScope) {
         var vm = this;

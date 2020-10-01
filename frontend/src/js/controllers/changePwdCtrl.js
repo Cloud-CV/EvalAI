@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChangePwdCtrl', ChangePwdCtrl);
 
-    ChangePwdCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChangePwdCtrl.$inject = ['utilities', '$state', '$rootScope'];
 
-    function ChangePwdCtrl(utilities, $state, $http, $rootScope) {
+    function ChangePwdCtrl(utilities, $state, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};

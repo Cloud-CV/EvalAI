@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('SubmissionFilesCtrl', SubmissionFilesCtrl);
 
-    SubmissionFilesCtrl.$inject = ['utilities', 'loaderService', '$scope', '$rootScope', '$state', '$http', '$stateParams'];
+    SubmissionFilesCtrl.$inject = ['utilities', 'loaderService', '$scope', '$rootScope', '$state', '$stateParams'];
 
-    function SubmissionFilesCtrl(utilities, loaderService, $scope, $rootScope, $state, $http, $stateParams) {
+    function SubmissionFilesCtrl(utilities, loaderService, $scope, $rootScope, $state, $stateParams) {
 
         var vm = this;
         vm.bucket = $stateParams.bucket;

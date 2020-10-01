@@ -7,7 +7,7 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope'];
 
     function AuthCtrl(utilities, $state, $rootScope) {
         var vm = this;
