@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('updateProfileCtrl', updateProfileCtrl);
 
-    updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    updateProfileCtrl.$inject = ['utilities', '$state', '$rootScope'];
 
-    function updateProfileCtrl(utilities, $state, $http, $rootScope) {
+    function updateProfileCtrl(utilities, $state, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
