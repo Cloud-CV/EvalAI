@@ -121,7 +121,7 @@ function dynHeaderController(utilities) {
 
     };
 
-};
+}
 //Landing Footer directive
 (function() {
     'use strict';
