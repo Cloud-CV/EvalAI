@@ -47,49 +47,11 @@
             templateUrl: 'dist/views/web/partials/main-header.html',
             transclude: true,
             restrict: 'EA',
-            controller: controller,
-            controllerAs: 'header'
+            controller: dynHeaderController,
+            controllerAs: 'header',
+            bindToController: true
         };
         return directive;
-
-        function controller($scope, $element, $attrs, $http, utilities) {
-            var vm = this;
-
-            vm.user = {};
-
-            // get token
-            var userKey = utilities.getData('userKey');
-
-            if (userKey) {
-                var parameters = {};
-                parameters.url = 'auth/user/';
-                parameters.method = 'GET';
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var data = response.data;
-                        if (status == 200) {
-                            vm.user.name = data.username;
-                        }
-                    },
-                    onError: function(response) {
-
-                        var status = response.status;
-                        if (status == 401) {
-                            utilities.resetStorage();
-                        }
-                    }
-                };
-
-                utilities.sendRequest(parameters);
-            }
-            vm.profileDropdown = function() {
-                angular.element(".dropdown-button").dropdown();
-
-            };
-
-        }
 
         function link(scope) {
             function headerComp() {
@@ -120,6 +82,46 @@
         }
     }
 })();
+dynHeaderController.$inject = ["utilities"];
+
+function dynHeaderController(utilities) {
+    var vm = this;
+
+    vm.user = {};
+
+    // get token
+    var userKey = utilities.getData('userKey');
+
+    if (userKey) {
+        var parameters = {};
+        parameters.url = 'auth/user/';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function (response) {
+                var status = response.status;
+                var data = response.data;
+                if (status == 200) {
+                    vm.user.name = data.username;
+                }
+            },
+            onError: function (response) {
+
+                var status = response.status;
+                if (status == 401) {
+                    utilities.resetStorage();
+                }
+            }
+        };
+
+        utilities.sendRequest(parameters);
+    }
+    vm.profileDropdown = function () {
+        angular.element(".dropdown-button").dropdown();
+
+    };
+
+}
 //Landing Footer directive
 (function() {
     'use strict';
@@ -130,18 +132,18 @@
             templateUrl: 'dist/views/web/partials/footer.html',
             transclude: true,
             restrict: 'EA',
-            controller: controller
+            controller: landingFooterController
         };
         return directive;
-        
-        function controller($scope) {
-            $scope.year = new Date().getFullYear();
-            var js = document.createElement("script");
-            js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
-            document.getElementsByTagName("head")[0].appendChild(js);
-       }
     }
 })();
+landingFooterController.$inject = ["$scope"];
+function landingFooterController($scope) {
+    $scope.year = new Date().getFullYear();
+    var js = document.createElement("script");
+    js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
+    document.getElementsByTagName("head")[0].appendChild(js);
+}
 //Dashboard Footer directive
 (function() {
     'use strict';
@@ -153,18 +155,18 @@
             templateUrl: 'dist/views/web/partials/dashboard-footer.html',
             transclude: true,
             restrict: 'EA',
-            controller: controller
+            controller: dashboardFooterController
         };
         return directive;
-
-        function controller($scope) {
-            $scope.year = new Date().getFullYear();
-           var js = document.createElement("script");
-            js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
-            document.getElementsByTagName("head")[0].appendChild(js);
-       }
     }
 })();
+dashboardFooterController.$inject = ["$scope"];
+function dashboardFooterController($scope) {
+    $scope.year = new Date().getFullYear();
+    var js = document.createElement("script");
+    js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
+    document.getElementsByTagName("head")[0].appendChild(js);
+}
 // loader directive
 (function() {
     'use strict';
