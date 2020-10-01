@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('contactUsCtrl', contactUsCtrl);
 
-    contactUsCtrl.$inject = ['utilities', 'loaderService', '$state', '$http', '$rootScope'];
+    contactUsCtrl.$inject = ['utilities', 'loaderService', '$state', '$rootScope'];
 
-    function contactUsCtrl(utilities, loaderService, $state, $http, $rootScope) {
+    function contactUsCtrl(utilities, loaderService, $state, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
