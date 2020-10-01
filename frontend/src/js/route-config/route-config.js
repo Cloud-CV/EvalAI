@@ -443,7 +443,7 @@
             title: 'Leaderboard'
         };
 
-        var challenge_invitation = {
+        var challengeInvitation = {
             name: "challenge-invitation",
             url: "/accept-invitation/:invitationKey",
             controller: "ChallengeInviteCtrl",
@@ -522,7 +522,7 @@
         $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
-        $stateProvider.state(challenge_invitation);
+        $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);
 
         $stateProvider.state(manage);
