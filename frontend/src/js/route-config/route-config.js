@@ -2,12 +2,15 @@
  * Config for the router
  */
 
-(function() {
+(function () {
+    'use strict';
     angular
         .module('evalai')
         .config(configure);
 
     var baseUrl = "dist/views";
+
+    configure.$inject = ['$stateProvider', '$urlRouterProvider', '$locationProvider', '$urlMatcherFactoryProvider'];
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
 
@@ -537,12 +540,16 @@
 })();
 
 // define run block here
-(function() {
+(function () {
+    
+    'use strict';
 
     angular
         .module('evalai')
         .run(runFunc);
 
+    runFunc.$inject = ['$rootScope', '$state', 'utilities', '$window', '$location', 'toaster'];
+    
     function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
