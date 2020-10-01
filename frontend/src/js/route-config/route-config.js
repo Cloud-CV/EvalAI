@@ -443,14 +443,14 @@
             title: 'Leaderboard'
         };
 
-        // var challengeInvitation = {
-        //     name: "challenge-invitation",
-        //     url: "/accept-invitation/:invitationKey",
-        //     controller: "ChallengeInviteCtrl",
-        //     controllerAs: "challenge_invitation",
-        //     templateUrl: baseUrl + "/web/challenge-invite.html",
-        //     title: "Accept challenge invitation"
-        // };
+        var challengeInvitation = {
+            name: "challenge-invitation",
+            url: "/accept-invitation/:invitationKey",
+            controller: "ChallengeInviteCtrl",
+            controllerAs: "challenge_invitation",
+            templateUrl: baseUrl + "/web/challenge-invite.html",
+            title: "Accept challenge invitation"
+        };
 
         var get_submission_related_files = {
             name: "get-submission-related-files",
@@ -522,7 +522,7 @@
         $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
-        // $stateProvider.state(challengeInvitation);
+        $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);
 
         $stateProvider.state(manage);
