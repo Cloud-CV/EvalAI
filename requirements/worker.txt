@@ -2,6 +2,6 @@ matplotlib==2.2.3
 networkx==2.1
 pandas==0.25.3
 pycocotools==2.0.0
-scipy==1.1.0
+scipy==1.5.2
 sklearn==0.0
 tqdm==4.25.0
