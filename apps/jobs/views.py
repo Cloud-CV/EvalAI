@@ -271,6 +271,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if not request.FILES:
+            if request.data.get("file_url") is None:
+                response_data = {"error": "The file URL is missing!"}
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
             if not is_url_valid(request.data["file_url"]):
                 response_data = {"error": "The file URL does not exists!"}
                 return Response(
