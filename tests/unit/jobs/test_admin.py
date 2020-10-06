@@ -155,11 +155,6 @@ class SubmissionAdminTest(BaseAPITestClass):
         Submission.objects.filter(is_public=False).update(
             is_public=True
         )
-        f = open('test.txt', 'w')
-        f.write(str(Submission.objects.filter(is_public=False).count()) + "\n")
-        f.write(str(Submission.objects.filter(is_public=True).count()) + "\n")
         queryset = Submission.objects.filter(is_public=True)
-        f.write(str(queryset.count()) + "\n")
-        f.write(str(Submission.objects.filter(is_public=False)))
         self.app_admin.make_submission_private(request, queryset)
         self.assertEqual(Submission.objects.filter(is_public=False).count(), 1)
