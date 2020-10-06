@@ -531,8 +531,6 @@
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
                     formData.append("submission_metadata", JSON.stringify(vm.metaAttributesforCurrentSubmission));
-                    console.log("is public : " + vm.isPublicSubmission);
-                    console.log("is public =null : " + vm.isPublicSubmission === null)
                     if (vm.isPublicSubmission !== null) {
                         formData.append("is_public", vm.isPublicSubmission);
                     }
