@@ -531,6 +531,28 @@ class BaseAPITestClass(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_challenge_submission_when_file_url_is_none(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        expected = {"error": "The file URL is missing!"}
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting"},
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
     def setUp(self):
