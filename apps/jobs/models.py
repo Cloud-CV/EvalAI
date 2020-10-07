@@ -247,11 +247,6 @@ class Submission(TimeStampedModel):
                         "error": "The maximum number of submission for today has been reached"
                     }
                 )
-
-            self.is_public = (
-                True if self.challenge_phase.is_submission_public else False
-            )
-
             self.status = Submission.SUBMITTED
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
