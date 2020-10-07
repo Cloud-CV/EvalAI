@@ -141,6 +141,7 @@ class SubmissionAdminTest(BaseAPITestClass):
 
     def test_make_submission_public(self):
 
+        # make all submissions private before test
         Submission.objects.filter(is_public=self.submission.is_public).update(
             is_public=False
         )
@@ -150,6 +151,10 @@ class SubmissionAdminTest(BaseAPITestClass):
 
     def test_make_submission_private(self):
 
+        # make all submissions public before test
+        Submission.objects.filter(is_public=False).update(
+            is_public=True
+        )
         queryset = Submission.objects.filter(is_public=True)
-        self.app_admin.make_submission_public(request, queryset)
+        self.app_admin.make_submission_private(request, queryset)
         self.assertEqual(Submission.objects.filter(is_public=False).count(), 1)

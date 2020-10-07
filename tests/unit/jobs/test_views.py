@@ -1504,7 +1504,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "is_public": self.submission.is_public,
+            "is_public": self.data["is_public"],
             "is_flagged": self.submission.is_flagged,
             "ignore_submission": False,
             "when_made_public": "{0}{1}".format(

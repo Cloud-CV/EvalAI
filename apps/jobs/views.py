@@ -300,6 +300,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "submission_meta_attributes"
             ] = submission_meta_attributes
 
+        if request.data.get("is_public") is None:
+            request.data["is_public"] = (
+                True if challenge_phase.is_submission_public else False
+            )
+
         serializer = SubmissionSerializer(
             data=request.data,
             context={

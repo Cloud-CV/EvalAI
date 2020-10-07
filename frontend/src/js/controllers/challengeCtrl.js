@@ -23,6 +23,7 @@
         vm.methodDesc = "";
         vm.projectUrl = "";
         vm.publicationUrl = "";
+        vm.isPublicSubmission = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -530,6 +531,9 @@
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
                     formData.append("submission_metadata", JSON.stringify(vm.metaAttributesforCurrentSubmission));
+                    if (vm.isPublicSubmission !== null) {
+                        formData.append("is_public", vm.isPublicSubmission);
+                    }
 
                     parameters.data = formData;
 
@@ -555,6 +559,7 @@
                             vm.methodDesc = "";
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
+                            vm.isPublicSubmission = null;
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
@@ -571,6 +576,7 @@
                             vm.methodDesc = null;
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
+                            vm.isPublicSubmission = null;
                             if (status == 404) {
                                 vm.subErrors.msg = "Please select phase!";
                             } else {

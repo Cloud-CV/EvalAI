@@ -243,6 +243,28 @@
                             </div>
                             <span
                                 ng-show="challenge.isSubmissionUsingUrl == true || challenge.isSubmissionUsingUrl == false">
+
+                                <p class="fs-14 w-400">Select submission visibility:</p>
+                                <li>
+                                    <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicubmission"
+                                        value="isPublicubmission" ng-click="challenge.isPublicSubmission = true">
+                                    <label for="isPublicubmission"></label>
+                                    <div class="show-member-title pointer">
+                                        <strong class="fs-16 w-300">Public
+                                        </strong>
+                                    </div>
+                                    <div class="clearfix"></div>
+
+                                    <input type="radio" name="submissionVisibility" class="with-gap selectPhase"
+                                        id="isPrivateSubmission" value="isPrivateSubmission"
+                                        ng-click="challenge.isPublicSubmission = false">
+                                    <label for="isPrivateSubmission"></label>
+                                    <div class="show-member-title pointer">
+                                        <strong class="fs-16 w-300">Private </strong>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </li>
+
                                 <div class="row">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="methodName" name="methodName"
@@ -269,13 +291,12 @@
                                 </div>
                                 <div class="row">
                                     <div class="input-field align-left col s10">
-                                        <input type="text" id="publicationUrl" name="publicationUrl"
-                                            ng-model="challenge.publicationUrl">
+                                        <input type="text" id="methodName" name="methodName"
+                                            ng-model="challenge.methodName">
                                         <span class="form-icon"><i class="fa fa-text"></i></span>
-                                        <label for="publicationUrl">Publication URL (Optional)</label>
+                                        <label for="methodName">Method name (Optional)</label>
                                     </div>
                                 </div>
-
                                 <div class="dynamicform">
                                     <div ng-if="challenge.metaAttributesforCurrentSubmission != null" ng-repeat="attribute in challenge.metaAttributesforCurrentSubmission">
                                        <div class="row">
