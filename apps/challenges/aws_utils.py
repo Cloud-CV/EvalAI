@@ -17,9 +17,9 @@ from .challenge_notification_util import (
 )
 
 from base.utils import get_boto3_client, send_email
+from challenges.utils import get_aws_credentials_for_challenge
 from evalai.celery import app
 
-from .utils import get_aws_credentials_for_challenge
 
 logger = logging.getLogger(__name__)
 
