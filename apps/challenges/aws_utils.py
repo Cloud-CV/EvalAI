@@ -19,6 +19,8 @@ from .challenge_notification_util import (
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
 
+from .utils import get_aws_credentials_for_challenge
+
 logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
@@ -1063,7 +1065,10 @@ def create_eks_cluster(challenge):
         challenge_obj = obj.object
     cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
     if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
-        client = get_boto3_client("eks", aws_keys)
+        challenge_aws_keys = get_aws_credentials_for_challenge(
+            challenge_obj.pk
+        )
+        client = get_boto3_client("eks", challenge_aws_keys)
         try:
             response = client.create_cluster(
                 name=cluster_name,
