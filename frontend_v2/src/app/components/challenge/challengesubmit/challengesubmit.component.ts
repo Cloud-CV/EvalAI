@@ -514,9 +514,17 @@ export class ChallengesubmitComponent implements OnInit {
     }
     if (self.metaAttributesforCurrentSubmission != null) {
       self.metaAttributesforCurrentSubmission.forEach((attribute) => {
-        if (attribute.value === null || attribute.value === undefined) {
-          metaValue = false;
-        }
+        if (attribute.required == true) {
+          if (attribute.type == "checkbox") {
+              if (attribute.values.length === 0) {
+                metaValue = false;
+              }
+          } else {
+              if (attribute.value === null || attribute.value === undefined) {
+                metaValue = false;
+              }
+          }
+      }
       });
     }
     if (metaValue !== true) {
