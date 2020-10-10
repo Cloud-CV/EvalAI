@@ -304,7 +304,7 @@
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
                                                         <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
-                                                        <input type="text" ng-model= "attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required != undefined">
+                                                        <input type="text" ng-model= "attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
                                                     </div>
                                                 </div>
@@ -333,12 +333,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div ng-if="attribute.type=='boolean'">
+                                            <div ng-if="attribute.type == 'boolean'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
                                                         <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
                                                         <div class="">
-                                                            <md-radio-group ng-model="attribute.value" ng-required="attribute.required != undefined">
+                                                            <md-radio-group ng-model="attribute.value">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
                                                                 <md-radio-button  ng-value="'False'">False</md-radio-button>
                                                             </md-radio-group>
