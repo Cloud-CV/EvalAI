@@ -314,7 +314,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                         participant_team=participant_team,
                         challenge_phase=challenge_phase,
                     )
-                    print(submissions_already_public.count())
                     # Make the existing public submission private before making the new submission public
                     if (submissions_already_public.count() == 1):
                         # Case when the phase is restricted to make only one submission as public
