@@ -731,7 +731,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
 
         if settings.DEBUG or settings.TEST:
-            template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
+            template_zip_s3_url = settings.EVALAI_API_SERVER + challenge_template.template_file.url
         else:
             template_zip_s3_url = challenge_template.template_file.url
 
