@@ -8,5 +8,5 @@
  */
 export const environment = {
     production: true,
-    api_endpoint: 'https://evalapi.cloudcv.org/api/'
+    api_endpoint: 'https://evalai.cloudcv.org/api/'
 };

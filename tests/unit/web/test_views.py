@@ -217,7 +217,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_if_user_is_authenticated_and_superuser(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password"
         )
@@ -225,7 +225,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(response)
 
     def test_notification_email_data_page(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )
@@ -237,7 +237,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(response)
 
     def test_notification_email_without_challenge_image(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )
@@ -249,7 +249,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(response)
 
     def test_notification_email_with_challenge_image(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )
@@ -266,7 +266,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertEqual(request.status_code, 200)
 
     def test_notification_with_put_request(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )

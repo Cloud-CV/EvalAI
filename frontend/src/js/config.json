@@ -6,12 +6,12 @@
     },
     "staging": {
         "EnvironmentConfig": {
-            "API": "https://staging-evalai.cloudcv.org/api/"
+            "API": "https://evalai-staging.cloudcv.org/api/"
         }
     },
     "production": {
         "EnvironmentConfig": {
-            "API": "https://evalapi.cloudcv.org/api/"
+            "API": "https://evalai.cloudcv.org/api/"
         }
     }
 }
