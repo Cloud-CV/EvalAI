@@ -14,7 +14,7 @@ AUTH_TOKEN_DIR = expanduser("~/.evalai/")
 
 AUTH_TOKEN_PATH = os.path.join(AUTH_TOKEN_DIR, AUTH_TOKEN_FILE_NAME)
 
-API_HOST_URL = os.environ.get("EVALAI_API_URL", "https://evalapi.cloudcv.org")
+API_HOST_URL = os.environ.get("EVALAI_API_URL", "https://evalai.cloudcv.org")
 
 EVALAI_ERROR_CODES = [400, 401, 406]
 
@@ -28,4 +28,6 @@ EVALAI_HOST_URLS = [
 
 ENVIRONMENT = os.environ.get("EVALAI_CLI_ENVIRONMENT", "PRODUCTION")
 
-LOCAL_DOCKER_REGISTRY_URI = os.environ.get("EVALAI_LOCAL_DOCKER_REGISTRY_URI", "localhost:5000")
+LOCAL_DOCKER_REGISTRY_URI = os.environ.get(
+    "EVALAI_LOCAL_DOCKER_REGISTRY_URI", "localhost:5000"
+)
