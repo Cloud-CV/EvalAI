@@ -670,7 +670,7 @@
         };
 
         vm.isCurrentSubmissionMetaAttributeValid = function() {
-            let isMetaAttributeValid = true;
+            var isMetaAttributeValid = true;
             if (vm.metaAttributesforCurrentSubmission !== null) {
                 vm.metaAttributesforCurrentSubmission.forEach(function(attribute) {
                     if (attribute.required == true) {
