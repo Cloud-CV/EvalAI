@@ -307,7 +307,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         else:
             request.data["is_public"] = json.loads(request.data["is_public"])
             if request.data.get("is_public") and challenge_phase.is_restricted_to_select_one_submission:
-                # handle corner case for restrict one public lb submission
+                # Handle corner case for restrict one public lb submission
                 submissions_already_public = Submission.objects.filter(
                     is_public=True,
                     participant_team=participant_team,
