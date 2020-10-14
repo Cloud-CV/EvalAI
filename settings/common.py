@@ -33,7 +33,7 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
-API_HOST_URL = os.environ.get("API_HOST_URL", "http://localhost:8000")
+EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER", "http://localhost:8000")
 
 # Application definition
 

@@ -304,6 +304,30 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             request.data["is_public"] = (
                 True if challenge_phase.is_submission_public else False
             )
+        else:
+            request.data["is_public"] = json.loads(request.data["is_public"])
+            if request.data.get("is_public") and challenge_phase.is_restricted_to_select_one_submission:
+                # Handle corner case for restrict one public lb submission
+                submissions_already_public = Submission.objects.filter(
+                    is_public=True,
+                    participant_team=participant_team,
+                    challenge_phase=challenge_phase,
+                )
+                # Make the existing public submission private before making the new submission public
+                if submissions_already_public.count() == 1:
+                    # Case when the phase is restricted to make only one submission as public
+                    submission_serializer = SubmissionSerializer(
+                        submissions_already_public[0],
+                        data={"is_public": False},
+                        context={
+                            "participant_team": participant_team,
+                            "challenge_phase": challenge_phase,
+                            "request": request,
+                        },
+                        partial=True,
+                    )
+                    if submission_serializer.is_valid():
+                        submission_serializer.save()
 
         serializer = SubmissionSerializer(
             data=request.data,
