@@ -1,4 +1,5 @@
 /* Styles for Submission page */
+@import './variables.scss';
 
 .remaining-submission-clock {
 	padding-top: 55px;
@@ -89,4 +90,8 @@ md-radio-button .md-on {
 [type="checkbox"] + label:before, [type="checkbox"]:not(.filled-in) + label:after {
     width: 16px;
     height: 16px;
+}
+
+.color-orange {
+	color: $highlight;
 }
