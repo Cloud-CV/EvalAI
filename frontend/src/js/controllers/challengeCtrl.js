@@ -498,10 +498,6 @@
                 if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
                     vm.subErrors.msg = "Please upload file or enter submission URL!";
                 } else {
-                    if (vm.isCurrentSubmissionMetaAttributeValid() !== true) {
-                        vm.subErrors.msg = "Please provide input for meta attributes!";
-                        return false;
-                    }
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
                     vm.loaderContainer = angular.element('.exist-team-card');
@@ -623,12 +619,8 @@
                     if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null){
                         var attributes = details.results[k].submission_meta_attributes;
                         attributes.forEach(function(attribute){
-                            if (attribute["type"] == "checkbox") {
-                                attribute["values"] = [];
-                            }
-                            else {
-                                attribute["value"] = null;
-                            }
+                            if (attribute["type"] == "checkbox") attribute["values"] = [];
+                            else attribute["value"] = null;
                         });
                         data = {"phaseId":details.results[k].id, "attributes": attributes};
                         vm.submissionMetaAttributes.push(data);
@@ -667,26 +659,6 @@
                     }
                 });
             }
-        };
-
-        vm.isCurrentSubmissionMetaAttributeValid = function() {
-            let isMetaAttributeValid = true;
-            if (vm.metaAttributesforCurrentSubmission !== null) {
-                vm.metaAttributesforCurrentSubmission.forEach(function(attribute) {
-                    if (attribute.required == true) {
-                        if (attribute.type == "checkbox") {
-                            if (attribute.values.length === 0) {
-                                isMetaAttributeValid = false;
-                            }
-                        } else {
-                            if (attribute.value === null || attribute.value === undefined) {
-                                isMetaAttributeValid = false;
-                            }
-                        }
-                    }
-                });
-            }
-            return isMetaAttributeValid;
         };
 
         vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.

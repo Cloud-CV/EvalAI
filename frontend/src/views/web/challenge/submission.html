@@ -303,8 +303,8 @@
                                            <div ng-if="attribute.type == 'text'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
-                                                        <input type="text" ng-model= "attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
+                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
+                                                        <input type="text" ng-model= "attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required != undefined">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
                                                     </div>
                                                 </div>
@@ -312,7 +312,7 @@
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
+                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
                                                         <md-radio-group ng-model="attribute.value">
                                                             <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
                                                                 <span class="fs-16">{{option}}</span>
@@ -324,7 +324,7 @@
                                             <div ng-if="attribute.type =='checkbox'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
+                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
                                                         <div ng-repeat="option in attribute.options">
                                                             <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
                                                             <label for="{{option}}"></label>
@@ -333,12 +333,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div ng-if="attribute.type == 'boolean'">
+                                            <div ng-if="attribute.type=='boolean'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
+                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
                                                         <div class="">
-                                                            <md-radio-group ng-model="attribute.value">
+                                                            <md-radio-group ng-model="attribute.value" ng-required="attribute.required != undefined">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
                                                                 <md-radio-button  ng-value="'False'">False</md-radio-button>
                                                             </md-radio-group>
