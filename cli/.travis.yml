@@ -1,0 +1,26 @@
+language: python
+sudo: false
+python:
+  - "3.6"
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls flake8 pytest
+script:
+  - flake8 ./
+  - python setup.py test
+after_success:
+  - coveralls --rcfile=.coveragerc
+  - ./deploy-staging.sh
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+    slack: cloudcv:gy3CGQGNXLwXOqVyzXGZfdea
+deploy:
+  provider: pypi
+  user: cloudcv
+  password:
+    secure: geiU/sJ+dCXd+IfCzik5jdZpkZZK+8OiDnPlAmR5RdjI1GXmeMa5wHwlmrUqtWpK0s2aqDYNL9FSSInTT2r8Dc2i1n9AjUHAjxJfEdXyOzJpAQ7q0LbdebfI+WEJW2R5+8qo9nz5+7vQQ/IDkuu8OP3cKEfGNawZp2T+okalvgJ01qNmZn/xd7jEbc+fH7ncPu/qK/fi70JMDuX+m0zUhXvnyue8rGTqZDltmUbWEO+qAhG3q/MxspRZaRtHFvV765fQpfrYj3Vov7kgSNFkPtkEtojjC3CdETpR6TpLipsDXOTAT0pQ8ucEBiGb8JZ7xdprEgMm7w9/jWs6Z//XH3pf+c2LyqqvnPOVC90cRiBXpL3nJQDFUO1UZFUEAvxHv0IrtVk81tz98jPyJf3Qaqu0SCDLgxPG3h5WKo3AIsuPwwMlWGtToP11x2xdJSs3N9U6wGOjtGgfzk3aVdK4jx+Ai7xtI5Bk9o/tLmNxzWSqG87RVraOJrAx/ztdoEk5jfqM//7kVw7G8/aih8nTrVlC3/l3CT751SEemWvBKJvCMJFYo2cDJqQ5nKIrJHfY2uBCroDYhJg1zX1o92sesyyleNRuKFCHclsZxcK4m81EaVy2Bb1mrtIyMHLWbST9BWUBpj/EiSLX+J/2aHV4q3j6hkK/tgYEjKg/7Z8ysw8=
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
