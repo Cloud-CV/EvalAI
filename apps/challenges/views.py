@@ -1390,7 +1390,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 send_slack_notification(message=message)
 
             template_data = get_challenge_template_data(zip_config.challenge)
-            if not challenge.is_docker_based and challenge.inform_hosts:
+            if not challenge.is_docker_based and challenge.inform_hosts and not challenge.remote_evaluation:
                 try:
                     response = start_workers([zip_config.challenge])
                     count, failures = response["count"], response["failures"]

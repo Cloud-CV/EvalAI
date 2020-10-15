@@ -62,6 +62,7 @@
         vm.termsAndConditions = false;
         vm.team = {};
         vm.isSubmissionUsingUrl = null;
+        vm.isRemoteChallenge = false;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -257,6 +258,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.isRemoteChallenge = details.remote_evaluation
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
