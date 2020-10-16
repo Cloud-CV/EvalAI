@@ -65,6 +65,8 @@
         vm.isRemoteChallenge = false;
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
+        vm.defaultSubmissionMetaAttributes = [];
+        vm.currentPhaseMetaAttributesVisibility = [];
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -653,6 +655,24 @@
                             "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
                         });
                     }
+                    if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
+                        var attributes = details.results[k].default_submission_meta_attributes;
+                        var defaultMetaAttributes = {};
+                        attributes.forEach(function(attribute) {
+                            var attributeName = attribute["name"];
+                            var visibility = attribute["visible"];
+                            defaultMetaAttributes[attributeName] = visibility;
+                        });
+                        vm.defaultSubmissionMetaAttributes.push({
+                            "phaseId": details.results[k].id,
+                            "defaultAttributes": defaultMetaAttributes
+                        });
+                    } else {
+                        vm.defaultSubmissionMetaAttributes.push({
+                            "phaseId":details.results[k].id,
+                            "defaultAttributes": {}
+                        });
+                    }
                 }
                 utilities.hideLoader();
             },
@@ -673,6 +693,10 @@
             vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function(element) {
                 return element["phaseId"] == phaseId;
             }).allowedSubmissionFileTypes;
+            // load default meta attributes visibility for current phase
+            vm.currentPhaseMetaAttributesVisibility = vm.defaultSubmissionMetaAttributes.find(function(element) {
+                return element["phaseId"] == phaseId;
+            }).defaultAttributes;
             vm.subErrors.msg = "";
         };
 
@@ -1031,6 +1055,7 @@
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
+                    vm.loadPhaseAttributes(phaseId);
                     break;
                 }
             }
