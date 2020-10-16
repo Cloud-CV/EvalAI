@@ -94,8 +94,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
-    this.fetchWorkerLogs();
-    this.startLoadingLogs();
+    if (!this.challenge["remote_evaluation"]) {
+      this.fetchWorkerLogs();
+      this.startLoadingLogs();
+    }
   }
 
   updateView() {
