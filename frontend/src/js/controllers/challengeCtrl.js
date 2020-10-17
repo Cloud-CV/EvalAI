@@ -66,7 +66,7 @@
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
-        vm.currentPhaseMetaAttributesVisibility = [];
+        vm.currentPhaseMetaAttributesVisibility = {};
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -657,12 +657,7 @@
                     }
                     if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
                         var attributes = details.results[k].default_submission_meta_attributes;
-                        var defaultMetaAttributes = {};
-                        attributes.forEach(function(attribute) {
-                            var attributeName = attribute["name"];
-                            var visibility = attribute["visible"];
-                            defaultMetaAttributes[attributeName] = visibility;
-                        });
+                        var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
                         vm.defaultSubmissionMetaAttributes.push({
                             "phaseId": details.results[k].id,
                             "defaultAttributes": defaultMetaAttributes
@@ -698,6 +693,18 @@
                 return element["phaseId"] == phaseId;
             }).defaultAttributes;
             vm.subErrors.msg = "";
+        };
+
+        vm.getDefaultMetaAttributesDict = function(defaultMetaAttributes) {
+            var defaultMetaAttributesDict = {};
+            if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
+                defaultMetaAttributes.forEach(function(attribute) {
+                    var attributeName = attribute["name"];
+                    var visibility = attribute["visible"];
+                    defaultMetaAttributesDict[attributeName] = visibility;
+                });
+            }
+            return defaultMetaAttributesDict;
         };
 
         vm.clearMetaAttributeValues = function(){
@@ -1055,7 +1062,12 @@
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
-                    vm.loadPhaseAttributes(phaseId);
+
+                    var attributes = all_phases[i].default_submission_meta_attributes;
+                    var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
+                    vm.currentPhaseMetaAttributesVisibility = defaultMetaAttributes;
+                    console.log(all_phases[i].id);
+                    console.log(vm.currentPhaseMetaAttributesVisibility);
                     break;
                 }
             }
