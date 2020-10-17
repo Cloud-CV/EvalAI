@@ -311,7 +311,7 @@
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <p class="fs-14 w-400">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></p>
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
                                                         <div class="input-field">
                                                             <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
@@ -325,12 +325,12 @@
                                             <div ng-if="attribute.type == 'checkbox'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <p class="fs-14 w-400">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></p>
+                                                        <label class="label-checkbox" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
                                                         <div class="input-field">
-                                                            <div ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                            <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
                                                                 <label for="{{option}}"></label>
-                                                                <span  class="fs-16 w-300 submission-options">{{option}}</span>
+                                                                <span  class="fs-16 w-300">{{option}}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -339,9 +339,9 @@
                                             <div ng-if="attribute.type == 'boolean'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <p class="fs-14 w-400">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></p>
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
                                                         <div class="input-field">
-                                                            <md-radio-group ng-model="attribute.value">
+                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
                                                                 <md-radio-button  ng-value="'False'">False</md-radio-button>
                                                             </md-radio-group>
