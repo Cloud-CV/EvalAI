@@ -110,6 +110,13 @@ EvalAI supports all kinds of HTML tags which means you can add images, videos, t
 
 Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
 
+### Step 6: (Optional) Set host submission as baseline submission
+
+Head to your challenge for which you want to make a submission the baseline submission. Click on the 'My Submissions' tab and select the phase to see the submissions for that phase.
+Click on the submission which you want to set as the baseline submission, further details about the submission will appear. Click on the baseline checkbox to set the submission as 
+baseline.
+
+
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://evalai.cloudcv.org/team) has notified about this. [EvalAI team](https://evalai.cloudcv.org/team) will review and will approve the challenge.
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
