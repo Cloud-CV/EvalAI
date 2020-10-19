@@ -2,6 +2,8 @@
 
 The submissions of the challenge hosts don't appear until they are made as a baseline, to make a submission baseline follow the steps below.
 
+Let's assume that we are hosting a challenge with the name `Random Number Generator Challenge`.
+
 ### Step 1 : Head to your challenge page and click on My Submissions tab.
 
 <img src = "_static/img/challenge_page.png"> <br />
