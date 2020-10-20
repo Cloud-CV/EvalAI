@@ -1,6 +1,6 @@
 ## Approve a challenge (for forked version)
 
-**Note:** If you are hosting the challenge on [evalai.cloudcv.org](https://evalai.cloudcv.org), then you cannot approve your challenge. It will be approved by [EvalAI team](https://evalai.cloudcv.org/team). You can skip this section.
+**Note:** If you are hosting the challenge on [eval.ai](https://eval.ai), then you cannot approve your challenge. It will be approved by [EvalAI team](https://eval.ai/team). You can skip this section.
 
 Once a challenge config has been uploaded, the challenge has to be approved by the EvalAI Admin (i.e. you if you are setting up EvalAI yourself on your server) to make it available to everyone. Please follow the following steps to approve a challenge (if you are ):
 
