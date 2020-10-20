@@ -6,8 +6,7 @@ import raven
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "*.evalai.cloudcv.org",
-    "evalai.cloudcv.org",
+    "eval.ai",
 ]
 
 # Database
