@@ -16,8 +16,8 @@ A group of challenge hosts who organizes a challenge. They are identified by a u
 
 A challenge phase represents a distinct stage of the challenge. Over a period of time, challenge organizers have started to use the challenge phase as a way to:
 
-1.  Decide when to evaluate submissions on a subset of the test-set or when to evaluate on the whole test-set (for e.g, [VQA Challenge 2019](https://evalai.cloudcv.org/web/challenges/challenge-page/163/overview))
-2.  Use different challenge phases as different tracks of the same challenge (for e.g., [CARLA Autonomous Driving Challenge](https://evalai.cloudcv.org/web/challenges/challenge-page/246/phases))
+1.  Decide when to evaluate submissions on a subset of the test-set or when to evaluate on the whole test-set (for e.g, [VQA Challenge 2019](https://eval.ai/web/challenges/challenge-page/163/overview))
+2.  Use different challenge phases as different tracks of the same challenge (for e.g., [CARLA Autonomous Driving Challenge](https://eval.ai/web/challenges/challenge-page/246/phases))
 
 ### Challenge phase split
 

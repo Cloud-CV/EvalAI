@@ -31,4 +31,4 @@ Certain large-scale challenges need special compute capabilities for evaluation.
 We warm-up the worker nodes at start-up by importing the challenge code and pre-loading the dataset in memory. We also split the dataset into small chunks that are simultaneously evaluated on multiple cores. These simple tricks result in faster evaluation and reduces the evaluation time by an order of magnitude in some cases.
 
 [evalai-cli]: http://evalai-cli.cloudcv.org
-[evalai]: http://evalai.cloudcv.org
+[evalai]: http://eval.ai

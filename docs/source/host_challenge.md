@@ -16,12 +16,12 @@ EvalAI supports hosting challenges with different configurations. Challenge orga
 
 We have hosted challenges from different domains such as:
 
-- Machine learning ([2019 SIOP Machine Learning Competition](https://evalai.cloudcv.org/web/challenges/challenge-page/160/leaderboard/481))
-- Deep learning ([Visual Dialog Challenge 2019 ](https://evalai.cloudcv.org/web/challenges/challenge-page/161/leaderboard/483))
-- Computer vision ([Vision and Language Navigation](https://evalai.cloudcv.org/web/challenges/challenge-page/97/leaderboard/270))
-- Natural language processing ([VQA Challenge 2019](https://evalai.cloudcv.org/web/challenges/challenge-page/163/leaderboard/498))
-- Healthcare ([fastMRI Image Reconstruction ](https://evalai.cloudcv.org/web/challenges/challenge-page/153/leaderboard/447))
-- Self-driving cars ([CARLA Autonomous Driving Challenge](https://evalai.cloudcv.org/web/challenges/challenge-page/246/leaderboard/817))
+- Machine learning ([2019 SIOP Machine Learning Competition](https://eval.ai/web/challenges/challenge-page/160/leaderboard/481))
+- Deep learning ([Visual Dialog Challenge 2019 ](https://eval.ai/web/challenges/challenge-page/161/leaderboard/483))
+- Computer vision ([Vision and Language Navigation](https://eval.ai/web/challenges/challenge-page/97/leaderboard/270))
+- Natural language processing ([VQA Challenge 2019](https://eval.ai/web/challenges/challenge-page/163/leaderboard/498))
+- Healthcare ([fastMRI Image Reconstruction ](https://eval.ai/web/challenges/challenge-page/153/leaderboard/447))
+- Self-driving cars ([CARLA Autonomous Driving Challenge](https://eval.ai/web/challenges/challenge-page/246/leaderboard/817))
 
 We categorize the challenges in two categories:
 
@@ -29,7 +29,7 @@ We categorize the challenges in two categories:
 
    Some of the popular prediction upload based challenges that we have hosted are shown below:
 
-   <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="_static/img/prediction-upload-challenges.png"></a><br />
+   <a href="https://eval.ai/web/challenges/list" target="_blank"><img src="_static/img/prediction-upload-challenges.png"></a><br />
 
    If you are interested in hosting prediction upload based challenges, then [click here](host_challenge.html#host-prediction-upload-based-challenge).
 
@@ -39,7 +39,7 @@ We categorize the challenges in two categories:
 
    Some of the popular code upload based challenges that we have hosted are shown below:
 
-   <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
+   <a href="https://eval.ai/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
 
    If you are interested in hosting code upload based challenges, then [click here](host_challenge.html#host-prediction-upload-based-challenge).
 
@@ -69,9 +69,9 @@ EvalAI supports all kinds of HTML tags which means you can add images, videos, t
 
 ### Step 5: Upload configuration on EvalAI
 
-Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
 
-**Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://evalai.cloudcv.org/team) has notified about this. [EvalAI team](https://evalai.cloudcv.org/team) will review and will approve the challenge.
+**Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
@@ -108,14 +108,14 @@ EvalAI supports all kinds of HTML tags which means you can add images, videos, t
 
 ### Step 5: Upload configuration on EvalAI
 
-Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
 
-**Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://evalai.cloudcv.org/team) has notified about this. [EvalAI team](https://evalai.cloudcv.org/team) will review and will approve the challenge.
+**Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 [evalai-starters]: https://github.com/cloud-CV/evalai-starters
 [evalai-cli]: http://evalai-cli.cloudcv.org
-[evalai]: http://evalai.cloudcv.org
+[evalai]: http://eval.ai
 [docker-compose]: https://docs.docker.com/compose/install/
 [docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/

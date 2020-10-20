@@ -1,12 +1,12 @@
 # Participate in a challenge
 
-You have to create an account on [EvalAI](http://evalai.cloudcv.org) and a participant team in order to participate in a challenge.
+You have to create an account on [EvalAI](http://eval.ai) and a participant team in order to participate in a challenge.
 
 If you are already familiar with the flow of EvalAI, you may want to skip this section else please follow the following steps to participate in a challenge (VQA Challenge 2017 in this example):
 
-### 1. Visit evalai.cloudcv.org
+### 1. Visit eval.ai
 
-Open [EvalAI website](https://evalai.cloudcv.org/).
+Open [EvalAI website](https://eval.ai/).
 
 <img src="_static/img/1.png"/>
 
