@@ -258,7 +258,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
-                vm.isRemoteChallenge = details.remote_evaluation
+                vm.isRemoteChallenge = details.remote_evaluation;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
