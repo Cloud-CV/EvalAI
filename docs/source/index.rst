@@ -41,5 +41,5 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _EvalAI: http://evalai.cloudcv.org/
+.. _EvalAI: http://eval.ai/
 .. _EvalAI-CLI: http://evalai-cli.cloudcv.org/
