@@ -42,4 +42,4 @@ Indices and tables
 * :ref:`search`
 
 .. _EvalAI: http://eval.ai/
-.. _EvalAI-CLI: http://evalai-cli.cloudcv.org/
+.. _EvalAI-CLI: https://cli.eval.ai/
