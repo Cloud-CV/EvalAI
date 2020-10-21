@@ -115,7 +115,7 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 [evalai-starters]: https://github.com/cloud-CV/evalai-starters
-[evalai-cli]: http://evalai-cli.cloudcv.org
+[evalai-cli]: https://cli.eval.ai/
 [evalai]: http://eval.ai
 [docker-compose]: https://docs.docker.com/compose/install/
 [docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
