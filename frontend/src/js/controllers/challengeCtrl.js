@@ -1066,8 +1066,6 @@
                     var attributes = all_phases[i].default_submission_meta_attributes;
                     var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
                     vm.currentPhaseMetaAttributesVisibility = defaultMetaAttributes;
-                    console.log(all_phases[i].id);
-                    console.log(vm.currentPhaseMetaAttributesVisibility);
                     break;
                 }
             }
