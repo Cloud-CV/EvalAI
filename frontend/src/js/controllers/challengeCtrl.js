@@ -700,8 +700,8 @@
             if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
                 defaultMetaAttributes.forEach(function(attribute) {
                     var attributeName = attribute["name"];
-                    var visibility = attribute["visible"];
-                    defaultMetaAttributesDict[attributeName] = visibility;
+                    var is_visible = attribute["is_visible"];
+                    defaultMetaAttributesDict[attributeName] = is_visible;
                 });
             }
             return defaultMetaAttributesDict;

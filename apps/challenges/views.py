@@ -1004,7 +1004,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
         if data.get("default_submission_meta_attributes"):
             for attribute in data["default_submission_meta_attributes"]:
-                keys = ["name", "visible"]
+                keys = ["name", "is_visible"]
                 missing_keys = get_missing_keys_from_dict(attribute, keys)
 
                 if len(missing_keys) == 0:
