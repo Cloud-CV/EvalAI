@@ -30,7 +30,7 @@ Once you have installed [docker] and [docker-compose], please follow these steps
 
 If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
-[evalai-cli]: http://evalai-cli.cloudcv.org
+[evalai-cli]: https://cli.eval.ai/
 [evalai]: http://eval.ai
 [docker-compose]: https://docs.docker.com/compose/install/
 [docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
