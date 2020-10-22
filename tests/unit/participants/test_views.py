@@ -809,6 +809,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "slug": self.challenge1.slug,
                         "max_docker_image_size": self.challenge1.max_docker_image_size,
                         "cli_version": self.challenge1.cli_version,
+                        "remote_evaluation": self.challenge1.remote_evaluation,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -873,6 +874,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "slug": self.challenge1.slug,
                 "max_docker_image_size": self.challenge1.max_docker_image_size,
                 "cli_version": self.challenge1.cli_version,
+                "remote_evaluation": self.challenge1.remote_evaluation,
             }
         ]
 

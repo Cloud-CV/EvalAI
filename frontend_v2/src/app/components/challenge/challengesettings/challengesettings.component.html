@@ -99,7 +99,7 @@
         </div>
       </div>
     </div>
-    <div class="row settings-section">
+    <div class="row settings-section" *ngIf="!challenge['remote_evaluation']">
       <div class="row margin-bottom-cancel">
         <div class="col s12">
           <h5 class="w-300">Submission worker actions</h5>
