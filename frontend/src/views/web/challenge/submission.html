@@ -291,54 +291,57 @@
                                 </div>
                                 <div class="row">
                                     <div class="input-field align-left col s10">
-                                        <input type="text" id="methodName" name="methodName"
-                                            ng-model="challenge.methodName">
+                                        <input type="text" id="publicationUrl" name="publicationUrl"
+                                            ng-model="challenge.publicationUrl">
                                         <span class="form-icon"><i class="fa fa-text"></i></span>
-                                        <label for="methodName">Method name (Optional)</label>
+                                        <label for="publicationUrl">Publication URL (Optional)</label>
                                     </div>
                                 </div>
                                 <div class="dynamicform">
                                     <div ng-if="challenge.metaAttributesforCurrentSubmission != null" ng-repeat="attribute in challenge.metaAttributesforCurrentSubmission">
-                                       <div class="row">
                                            <div ng-if="attribute.type == 'text'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
-                                                        <input type="text" ng-model= "attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
+                                                        <input type="text" ng-model="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
+                                                        <label for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
-                                                    <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
-                                                        <md-radio-group ng-model="attribute.value">
-                                                            <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
-                                                                <span class="fs-16">{{option}}</span>
-                                                            </md-radio-button>
-                                                        </md-radio-group>
+                                                    <div class="align-left col s10">
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <div class="input-field">
+                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                                <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
+                                                                    <span class="fs-16">{{option}}</span>
+                                                                </md-radio-button>
+                                                            </md-radio-group>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div ng-if="attribute.type =='checkbox'">
+                                            <div ng-if="attribute.type == 'checkbox'">
                                                 <div class="row">
-                                                    <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
-                                                        <div ng-repeat="option in attribute.options">
-                                                            <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
-                                                            <label for="{{option}}"></label>
-                                                            <span  class="fs-16 w-300 submission-options">{{option}}</span>
+                                                    <div class="align-left col s10">
+                                                        <label class="label-checkbox" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <div class="input-field">
+                                                            <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                                <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
+                                                                <label for="{{option}}"></label>
+                                                                <span  class="fs-16 w-300">{{option}}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div ng-if="attribute.type == 'boolean'">
                                                 <div class="row">
-                                                    <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}} <span ng-if="attribute.required === true" class="color-orange">*</span></span><br>
-                                                        <div class="">
-                                                            <md-radio-group ng-model="attribute.value">
+                                                    <div class="align-left col s10">
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <div class="input-field">
+                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
                                                                 <md-radio-button  ng-value="'False'">False</md-radio-button>
                                                             </md-radio-group>
@@ -346,7 +349,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                       </div>
                                     </div>
                                 </div>
 
