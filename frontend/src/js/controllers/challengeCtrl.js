@@ -63,6 +63,8 @@
         vm.team = {};
         vm.isSubmissionUsingUrl = null;
         vm.isRemoteChallenge = false;
+        vm.allowedSubmissionFileTypes = [];
+        vm.currentPhaseAllowedSubmissionFileTypes = '';
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -639,6 +641,14 @@
                         var data = {"phaseId":details.results[k].id, "attributes": null};
                         vm.submissionMetaAttributes.push(data);
                     }
+                    if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
+                        var data = {"phaseId": details.results[k].id, "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types};
+                        vm.allowedSubmissionFileTypes.push(data);
+                    } else {
+                        // Handle case for missing values
+                        var data = {"phaseId": details.results[k].id, "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"};
+                        vm.allowedSubmissionFileTypes.push(data);
+                    }
                 }
                 utilities.hideLoader();
             },
@@ -656,6 +666,9 @@
             vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
+            vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function(element) {
+                return element["phaseId"] == phaseId;
+            }).allowedSubmissionFileTypes;
         };
 
         vm.clearMetaAttributeValues = function(){
