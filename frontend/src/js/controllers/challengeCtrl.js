@@ -63,6 +63,8 @@
         vm.team = {};
         vm.isSubmissionUsingUrl = null;
         vm.isRemoteChallenge = false;
+        vm.allowedSubmissionFileTypes = [];
+        vm.currentPhaseAllowedSubmissionFileTypes = '';
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -518,14 +520,14 @@
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
                         var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
-                        var validExtensions = ["json", "zip", "csv"];
+                        var validExtensions = vm.currentPhaseAllowedSubmissionFileTypes;
                         var isUrlValid = urlRegex.test(vm.fileUrl);
                         var extension = vm.fileUrl.split(".").pop();
                         if (isUrlValid && validExtensions.includes(extension)) {
                             formData.append("file_url", vm.fileUrl);
                         } else {
                             vm.stopLoader();
-                            vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
+                            vm.subErrors.msg = "Please enter a valid URL which ends in " + validExtensions + " file extension!";
                             return false;
                         }
                     } else {
@@ -639,6 +641,18 @@
                         var data = {"phaseId":details.results[k].id, "attributes": null};
                         vm.submissionMetaAttributes.push(data);
                     }
+                    if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
+                        vm.allowedSubmissionFileTypes.push({
+                            "phaseId": details.results[k].id,
+                            "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types
+                        });
+                    } else {
+                        // Handle case for missing values
+                        vm.allowedSubmissionFileTypes.push({
+                            "phaseId": details.results[k].id,
+                            "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+                        });
+                    }
                 }
                 utilities.hideLoader();
             },
@@ -656,6 +670,10 @@
             vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
+            vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function(element) {
+                return element["phaseId"] == phaseId;
+            }).allowedSubmissionFileTypes;
+            vm.subErrors.msg = "";
         };
 
         vm.clearMetaAttributeValues = function(){
