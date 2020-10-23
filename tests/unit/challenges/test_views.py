@@ -1977,6 +1977,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2001,6 +2002,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
         ]
 
@@ -2033,6 +2035,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2075,6 +2078,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2099,6 +2103,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
         ]
 
@@ -2445,6 +2450,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2479,7 +2485,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
-            "config_id": None
+            "config_id": None,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -2538,6 +2545,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2635,6 +2643,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -4134,6 +4143,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4205,6 +4215,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
                 "config_id": None,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4234,6 +4245,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "submission_meta_attributes": None,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
                 "config_id": None,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             },
         ]
         response = self.client.get(self.url, {})

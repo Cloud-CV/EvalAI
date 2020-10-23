@@ -96,6 +96,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_restricted_to_select_one_submission",
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
+            "allowed_submission_file_types",
         )
 
 
@@ -326,6 +327,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
             "config_id",
+            "allowed_submission_file_types",
         )
 
 
