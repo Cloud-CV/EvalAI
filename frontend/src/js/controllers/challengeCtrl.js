@@ -506,14 +506,6 @@
                         vm.subErrors.msg = "Please provide input for meta attributes!";
                         return false;
                     }
-                    if (vm.fileUrl !== null && vm.fileUrl !== "" && vm.fileUrl !== undefined) {
-                        var fileUrlSplit = vm.fileUrl.split(".");
-                        var extension = fileUrlSplit[fileUrlSplit.length - 1];
-                        if (!vm.currentPhaseAllowedSubmissionFileTypes.includes(extension)) {
-                            vm.subErrors.msg = "Please upload file with " + vm.currentPhaseAllowedSubmissionFileTypes + " extensions only!";
-                            return false;
-                        }
-                    }
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
                     vm.loaderContainer = angular.element('.exist-team-card');
@@ -528,14 +520,14 @@
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
                         var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
-                        var validExtensions = ["json", "zip", "csv"];
+                        var validExtensions = vm.currentPhaseAllowedSubmissionFileTypes;
                         var isUrlValid = urlRegex.test(vm.fileUrl);
                         var extension = vm.fileUrl.split(".").pop();
                         if (isUrlValid && validExtensions.includes(extension)) {
                             formData.append("file_url", vm.fileUrl);
                         } else {
                             vm.stopLoader();
-                            vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
+                            vm.subErrors.msg = "Please enter a valid URL which ends in " + validExtensions + " file extension!";
                             return false;
                         }
                     } else {
@@ -650,12 +642,16 @@
                         vm.submissionMetaAttributes.push(data);
                     }
                     if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
-                        var data = {"phaseId": details.results[k].id, "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types};
-                        vm.allowedSubmissionFileTypes.push(data);
+                        vm.allowedSubmissionFileTypes.push({
+                            "phaseId": details.results[k].id,
+                            "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types
+                        });
                     } else {
                         // Handle case for missing values
-                        var data = {"phaseId": details.results[k].id, "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"};
-                        vm.allowedSubmissionFileTypes.push(data);
+                        vm.allowedSubmissionFileTypes.push({
+                            "phaseId": details.results[k].id,
+                            "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+                        });
                     }
                 }
                 utilities.hideLoader();
