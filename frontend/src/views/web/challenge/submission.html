@@ -227,7 +227,7 @@
                                         <span>Upload file</span>
                                         <input type="file" ngf-select ng-model="challenge.input_file"
                                             name="challenge.input_file"
-                                            accept=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy, .npz">
+                                            accept="{{challenge.currentPhaseAllowedSubmissionFileTypes}}">
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path validate" type="text" readonly>
