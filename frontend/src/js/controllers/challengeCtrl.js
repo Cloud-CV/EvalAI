@@ -506,6 +506,14 @@
                         vm.subErrors.msg = "Please provide input for meta attributes!";
                         return false;
                     }
+                    if (vm.fileUrl !== null && vm.fileUrl !== "" && vm.fileUrl !== undefined) {
+                        var fileUrlSplit = vm.fileUrl.split(".");
+                        var extension = fileUrlSplit[fileUrlSplit.length - 1];
+                        if (!vm.currentPhaseAllowedSubmissionFileTypes.includes(extension)) {
+                            vm.subErrors.msg = "Please upload file with " + vm.currentPhaseAllowedSubmissionFileTypes + " extensions only!";
+                            return false;
+                        }
+                    }
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
                     vm.loaderContainer = angular.element('.exist-team-card');
@@ -669,6 +677,7 @@
             vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function(element) {
                 return element["phaseId"] == phaseId;
             }).allowedSubmissionFileTypes;
+            vm.subErrors.msg = "";
         };
 
         vm.clearMetaAttributeValues = function(){
