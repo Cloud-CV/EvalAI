@@ -33,7 +33,7 @@
       }
       color: $dark-black;
       display: inline-block;
-      font-weight: $fw-bolder;
+      font-weight: $fw-regular;
     }
     .team-details {
       display: inline-block;
@@ -43,7 +43,7 @@
     }
     .team-detail {
       color: rgb(22, 21, 21);
-      font-weight: 400;
+      font-weight: $fw-light;
     }
     .team-icons {
       display: inline-block;
@@ -76,17 +76,17 @@
     overflow: hidden;
     border-radius: 0px 0px 5px 5px;
     max-height: 0;
-    transition: all 0.5s ease;
+    transition: all 0.1s ease-in-out;
     .title {
       color: black;
       margin-bottom: 10px;
-      font-weight: $fw-bolder;
+      font-weight: $fw-regular;
     }
     background: $gray-lighter;
   }
   .team-members .team-detail {
     color: rgb(22, 21, 21);
-    font-weight: 400;
+    font-weight: $fw-light;
   }
   &.selected {
     &.expand,
@@ -94,7 +94,7 @@
       .team-members {
         @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
         max-height: 300px;
-        transition: all 0.5s ease;
+        transition: all 0.1s ease-in-out;
         padding: 20px 15px 15px 40px;
         margin-bottom: 15px;
       }

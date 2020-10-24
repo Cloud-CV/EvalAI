@@ -1,10 +1,11 @@
 <section class="ev-sm-container ev-view">
+  <div class="row">
   <div *ngIf="!(allTeams.length == 0 && filterTeamsQuery == '')" class="filter-card">
     <div class="filter-team">
-      <strong class="fw-semibiold content fs-14">Filter Team by Team name</strong>
+      <strong class="fw-semibiold content fs-15">Filter team by name</strong>
     </div>
     <div class="row row-lr-margin">
-      <div class="col-sm-6 col-xs-12 col-lr-pad team-name-filter">
+      <div class="col-sm-6 col-xs-12 team-name-filter">
         <input
           type="text"
           label="Team name"
@@ -15,7 +16,7 @@
       </div>
     </div>
   </div>
-  <br />
+</div>
   <div class="row">
     <div class="col s12 m6">
       <div class="ev-card-panel ev-z-depth-5">

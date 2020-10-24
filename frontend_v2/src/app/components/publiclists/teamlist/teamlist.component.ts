@@ -282,7 +282,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.deleteMembersPath = 'hosts/challenge_host_team/<team_id>/challenge_host/';
       this.fetchMyTeams(this.fetchTeamsPath);
       this.teamCreateTitle = 'Create a New Team';
-      this.teamSelectTitle = 'Please Select a Challenge Host Team!';
+      this.teamSelectTitle = 'Please Select a Challenge Host Team';
       this.teamCreateButton = 'Create Host Team';
     } else {
       if (this.router.url !== this.participantTeamRoutePath) {
@@ -443,7 +443,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       };
       const PARAMS = {
         title: 'Would you like to remove yourself ?',
-        content: 'Note: This action will remove you from the team.',
+        content: 'Note: This action will remove you from the team',
         confirm: 'Yes',
         deny: 'Cancel',
         confirmCallback: SELF.apiCall,
@@ -483,7 +483,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
         );
       };
       const PARAMS = {
-        title: 'Edit Team Name',
+        title: 'Edit team details',
         content: '',
         confirm: 'Confirm',
         deny: 'Cancel',
@@ -537,7 +537,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
         );
       };
       const PARAMS = {
-        title: 'Add other members to this Team',
+        title: 'Invite members to the team',
         content: '',
         confirm: 'ADD',
         deny: 'Cancel',
@@ -646,7 +646,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       };
       const PARAMS = {
         title: 'Would you like to remove this member ?',
-        content: 'Note: This action will remove this member from the team.',
+        content: 'Note: This action will remove this member from the team',
         confirm: 'Yes',
         deny: 'Cancel',
         confirmCallback: SELF.apiCall,

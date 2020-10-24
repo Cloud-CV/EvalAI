@@ -160,10 +160,6 @@ span.link-team-user {
   margin: 10px 0px;
 }
 
-section {
-  margin: 0px 15px;
-}
-
 .input-field label {
   font-size: 12px;
 }
@@ -175,11 +171,10 @@ section {
 
 .team-name-filter {
   width: 100%;
-  margin: 8px -10px;
 }
 
 .filter-team {
-  margin: 30px 0px 0px 0px;
+  margin: 30px 0px 10px 10px;
 }
 
 .filter-card {
@@ -192,13 +187,10 @@ section {
   border-bottom: none;
   border-radius: 4px;
   box-shadow: 0px 0px 10px #dedede;
-  height: 20px;
+  height: 30px;
   padding: 10px;
-  font-size: $fs-14;
-  &:focus {
-    outline: none;
-    box-shadow: 0px 0px 10px $yellow-light;
-  }
+  font-size: $fs-15;
+  font-weight: $fw-light;
 }
 
 @media only screen and (max-width: 992px) and (min-width: 601px) {

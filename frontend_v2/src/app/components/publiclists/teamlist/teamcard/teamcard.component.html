@@ -43,10 +43,10 @@
     </div>
     <div class="team-members">
       <div class="title">
-        <h6><b>Team Members:</b></h6>
+        <h6 class="fw-regular">Team Members</h6>
       </div>
       <div class="col s12 m6" *ngFor="let member of memberArray; let i = index" class="member-class">
-        <span class="m1">{{ member }}</span>
+        <span class="m1 fw-light">{{ member }}</span>
         <span class="trash-icon"
           ><a (click)="deleteTeamMember($event, memberIdArray[i])" *ngIf="authState.username == teamView['created_by']">
             <i class="fa fa-trash list-icon text-highlight w-300 left grey-text" aria-hidden="true"></i>

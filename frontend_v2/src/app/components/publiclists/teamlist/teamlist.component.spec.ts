@@ -17,8 +17,8 @@ import { FormsModule } from '@angular/forms';
 import { NotFoundComponent } from '../../not-found/not-found.component';
 
 const routes: Routes = [
-  { path: 'teams/participants', component: TeamlistComponent },
-  { path: 'teams/hosts', component: TeamlistComponent },
+  { path: '/teams/participants', component: TeamlistComponent },
+  { path: '/teams/hosts', component: TeamlistComponent },
   {
     path: 'challenge-create',
     redirectTo: '/teams/hosts',
