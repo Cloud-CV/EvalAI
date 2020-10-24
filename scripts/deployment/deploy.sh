@@ -41,6 +41,7 @@ case $opt in
             export COMMIT_ID=${COMMIT_ID} && \
             eval $(aws ecr get-login --no-include-email) && \
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env && \
+            docker-compose -f docker-compose-${env}.yml rm -s -v -f \
             docker-compose -f docker-compose-${env}.yml pull && \
             docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery "
             ;;
