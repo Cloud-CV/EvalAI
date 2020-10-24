@@ -27,9 +27,10 @@ body {
 .content {
   line-height: 24px;
   letter-spacing: 0.1px;
-  font-size: 15px;
-  color: rgba(0, 0, 0, 0.87);
+  font-size: 16px;
+  color: $overlay-darker;
   flex: 1;
+  padding-top: 10px;
 }
 
 .display-flex {
@@ -425,7 +426,7 @@ mat-chip {
 }
 
 .ev-md-container {
-  padding: 30px 40px 40px 40px;
+  padding: 20px 30px 30px 30px;
 }
 
 .bottom-card-container {
@@ -1345,7 +1346,7 @@ code {
     z-index: 999;
     transform: translate(-50%, -50%);
     font-size: $fs-16;
-    color: $gray-darker;
+    color: $overlay-darker;
     padding: 30px;
     .modal-wrapper {
       height: 100%;
@@ -1353,7 +1354,7 @@ code {
         color: $med-black;
         padding: 10px;
         font-size: $fs-18;
-        font-weight: 300;
+        font-weight: $fw-light;
       }
       .content {
         padding: 10px;
@@ -2190,4 +2191,8 @@ tr {
 
 .pd-lr-20 {
   padding: 0 20px 0 20px;
+}
+
+strong {
+  font-weight: 400;
 }

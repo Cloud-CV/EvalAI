@@ -21,7 +21,7 @@ describe('ConfirmComponent', () => {
     component = fixture.componentInstance;
     const PARAMS = {
       title: 'Would you like to remove yourself ?',
-      content: 'Note: This action will remove you from the team.',
+      content: 'Note: This action will remove you from the team',
       confirm: 'Yes',
       deny: 'Cancel',
       confirmCallback: () => {},
