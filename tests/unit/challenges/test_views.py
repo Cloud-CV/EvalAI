@@ -2492,7 +2492,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "submission_meta_attributes": None,
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             "config_id": None,
-            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types
+            "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
         }
         self.client.force_authenticate(user=self.user)

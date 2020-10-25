@@ -378,7 +378,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                     "config_id",
-                    "allowed_submission_file_types"
+                    "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                 ]
             ),
