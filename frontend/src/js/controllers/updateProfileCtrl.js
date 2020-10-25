@@ -55,7 +55,9 @@
         utilities.sendRequest(parameters);
 
         vm.isURLValid = function(url) {
-            console.log(url.length);
+            if (url === undefined || url === null) {
+                return true;
+            }
             return (url.length <= 200);
         }
 
