@@ -181,7 +181,7 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
         )
         upload_id = response['UploadId']
         presigned_urls = []
-        for part_number in range(num_parts):
+        for part_number in range(1, num_parts + 1):
             presigned_url = s3.generate_presigned_url(
                 ClientMethod="upload_part",
                 Params={
@@ -192,7 +192,10 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
                 },
                 ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
             )
-            presigned_urls.append(presigned_url)
+            presigned_urls.append({
+                "partNumber": part_number,
+                "url": presigned_url
+            })
         response_data = {
             "presigned_urls": presigned_urls,
             "upload_id": upload_id
