@@ -2346,7 +2346,7 @@ def submission_file_upload_complete(request, challenge_phase_pk, submission_pk):
     if settings.DEBUG or settings.TEST:
         response_data = {"error": "Sorry, this feature is not available in development or test environment."}
         return Response(response_data)
-    
+
     # Check if the challenge phase exists or not
     try:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -2420,7 +2420,7 @@ def submission_file_upload_complete(request, challenge_phase_pk, submission_pk):
     if request.data.get("parts") is None:
         response_data = {"error": "Uploaded file Parts metadata is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
+
     if request.data.get("upload_id") is None:
         response_data = {"error": "Uploaded file UploadId is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

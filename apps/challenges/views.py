@@ -2680,7 +2680,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
             "error": "Sorry, you are not authorized for uploading an annotation file."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
+
     # Set default num of chunks to 1 if num of chunks is not specified
     num_file_chunks = 1
     if request.data.get("num_file_chunks"):
@@ -2766,7 +2766,7 @@ def annotation_file_upload_complete(request, challenge_phase_pk):
     if request.data.get("parts") is None:
         response_data = {"error": "Uploaded file Parts metadata is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
+
     if request.data.get("upload_id") is None:
         response_data = {"error": "Uploaded file UploadId is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
