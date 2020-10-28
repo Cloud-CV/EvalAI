@@ -51,6 +51,7 @@ from base.utils import (
     send_slack_notification,
 )
 from challenges.utils import (
+    complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
     get_challenge_model,
     get_challenge_phase_model,
@@ -2683,14 +2684,14 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     # Set default num of chunks to 1 if num of chunks is not specified
     num_file_chunks = 1
     if request.data.get("num_file_chunks"):
-        num_file_chunks = request.data["num_file_chunks"]
+        num_file_chunks = int(request.data["num_file_chunks"])
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     random_file_name = uuid.uuid4()
 
     if challenge_phase.test_annotation:
         file_key_on_s3 = "{}/{}".format(
-            settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
+            "media", challenge_phase.test_annotation.name
         )
     else:
         # This file shall be replaced with the one uploaded through the presigned url from the CLI
@@ -2728,7 +2729,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -2761,21 +2762,16 @@ def annotation_file_upload_complete(request, challenge_phase_pk):
             "error": "Sorry, you are not authorized for uploading an annotation file."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Set default num of chunks to 1 if num of chunks is not specified
-    num_file_chunks = 1
-    if request.data.get("num_file_chunks"):
-        num_file_chunks = request.data["num_file_chunks"]
 
-    if request.data.get("parts"):
+    if request.data.get("parts") is None:
         response_data = {"error": "Uploaded file Parts metadata is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.data.get("upload_id"):
+    if request.data.get("upload_id") is None:
         response_data = {"error": "Uploaded file UploadId is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    file_parts = request.data["parts"]
+    file_parts = json.loads(request.data["parts"])
     upload_id = request.data["upload_id"]
     file_key_on_s3 = "{}/{}".format(
         settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
@@ -2789,8 +2785,8 @@ def annotation_file_upload_complete(request, challenge_phase_pk):
             response_data = response
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         response_data = {
-            "upload_id": response.get("upload_id"),
-            "submission_pk": submission.pk,
+            "upload_id": upload_id,
+            "challenge_phase_pk": challenge_phase.pk,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
     except Submission.DoesNotExist:

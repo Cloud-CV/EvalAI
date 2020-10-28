@@ -179,7 +179,8 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
             Key=file_key_on_s3
         )
-        upload_id = response['UploadId']
+
+        upload_id = response["UploadId"]
         presigned_urls = []
         for part_number in range(1, num_parts + 1):
             presigned_url = s3.generate_presigned_url(
@@ -188,7 +189,7 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
                     "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
                     "Key": file_key_on_s3,
                     "UploadId": upload_id,
-                    "PartNumer": part_number
+                    "PartNumber": part_number
                 },
                 ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
             )
@@ -229,15 +230,11 @@ def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challeng
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
             Key=file_key_on_s3,
             MultipartUpload={
-                'Parts': parts
+                "Parts": parts
             },
             UploadId=upload_id
         )
-        response_data = {
-            "success": True,
-            "data": response
-        }
-        return response_data
+        return response
     except Exception as e:
         logger.exception(e)
         response_data = {"error": "Could not fetch presigned urls."}

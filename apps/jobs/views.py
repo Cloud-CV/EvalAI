@@ -2305,7 +2305,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     # Set default num of chunks to 1 if num of chunks is not specified
     num_file_chunks = 1
     if request.data.get("num_file_chunks"):
-        num_file_chunks = request.data["num_file_chunks"]
+        num_file_chunks = int(request.data["num_file_chunks"])
 
     if serializer.is_valid():
         serializer.save()
@@ -2417,15 +2417,15 @@ def submission_file_upload_complete(request, challenge_phase_pk, submission_pk):
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    if request.data.get("parts"):
+    if request.data.get("parts") is None:
         response_data = {"error": "Uploaded file Parts metadata is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.data.get("upload_id"):
+    if request.data.get("upload_id") is None:
         response_data = {"error": "Uploaded file UploadId is missing"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    file_parts = request.data["parts"]
+    file_parts = json.loads(request.data["parts"])
     upload_id = request.data["upload_id"]
     try:
         submission = get_submission_model(submission_pk)
@@ -2439,7 +2439,7 @@ def submission_file_upload_complete(request, challenge_phase_pk, submission_pk):
             response_data = response
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         response_data = {
-            "upload_id": response.get("upload_id"),
+            "upload_id": upload_id,
             "submission_pk": submission.pk,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
