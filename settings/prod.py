@@ -6,9 +6,7 @@ import raven
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "*.evalai.cloudcv.org",
-    "evalai.cloudcv.org",
-    "evalapi.cloudcv.org",
+    "eval.ai",
 ]
 
 # Database
@@ -19,7 +17,6 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     "evalai.cloudcv.org",
     "evalai.s3.amazonaws.com",
-    "staging.evalai.cloudcv.org",
     "evalai-v2.cloudcv.org:9999",
 )
 

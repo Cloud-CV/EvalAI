@@ -110,13 +110,11 @@
                                 <td>{{key.submitted_at | date:'medium'}}</td>
 
                                 <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
-                                    <input ng-checked="key.is_public" ng-if="key.status == 'finished'
-                                     && !challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
+                                    <input ng-checked="key.is_public" ng-if="!challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                         ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                         id="isPublic{{ key.id }}"
                                         ng-change="challenge.changeSubmissionVisibility(key.id, challenge.submissionVisibility[key.id])" />
-                                    <input ng-checked="key.is_public" ng-if="key.status == 'finished'
-                                     && challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
+                                    <input ng-checked="key.is_public" ng-if="challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                         ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                         id="isPublicSubmission{{ key.id }}"
                                         ng-change="challenge.showVisibilityDialog(key.id, challenge.submissionVisibility[key.id])" />
@@ -124,7 +122,6 @@
                                            for="isPublic{{ key.id }}"></label>
                                     <label ng-if="challenge.isCurrentPhaseRestrictedToSelectOneSubmission"
                                            for="isPublicSubmission{{ key.id }}"></label>
-                                    <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                 </td>
                                 <td ng-if="challenge.isChallengeHost" class="center">
                                     <input ng-checked="key.is_baseline" ng-if="key.status == 'finished' || key.status == 'partially_evaluated'"

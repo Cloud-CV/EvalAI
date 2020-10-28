@@ -445,6 +445,7 @@ def create_submission(
         submission_result_file=ContentFile(submission_result),
         submission_metadata_file=None,
         is_baseline=True,
+        is_public=challenge_phase.is_submission_public,
     )
     submission.status = status
     submission.save()

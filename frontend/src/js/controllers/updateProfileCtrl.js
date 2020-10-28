@@ -54,12 +54,34 @@
 
         utilities.sendRequest(parameters);
 
+        vm.isURLValid = function(url) {
+            if (url === undefined || url === null) {
+                return true;
+            }
+            return (url.length <= 200);
+        }
+
         // function to update Profile
         vm.updateProfile = function(resetconfirmFormValid) {
             if (resetconfirmFormValid) {
                 vm.user.github_url = vm.user.github_url === null ? "" : vm.user.github_url;
                 vm.user.google_scholar_url = vm.user.google_scholar_url === null ? "" : vm.user.google_scholar_url;
                 vm.user.linkedin_url = vm.user.linkedin_url === null ? "" : vm.user.linkedin_url;
+
+                if (!vm.isURLValid(vm.user.github_url)) {
+                    vm.isFormError = true;
+                    vm.FormError = "Github URL length should not be greater than 200!"
+                    return;
+                } else if (!vm.isURLValid(vm.user.google_scholar_url)) {
+                    vm.isFormError = true;
+                    vm.FormError = "Google Scholar URL length should not be greater than 200!"
+                    return;
+                } else if (!vm.isURLValid(vm.user.linkedin_url)) {
+                    vm.isFormError = true;
+                    vm.FormError = "LinkedIn URL length should not be greater than 200!"
+                    return;
+                }
+
                 vm.startLoader("Updating Your Profile");
                 var parameters = {};
                 parameters.url = 'auth/user/';

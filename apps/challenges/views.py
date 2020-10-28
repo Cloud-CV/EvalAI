@@ -731,7 +731,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
 
         if settings.DEBUG or settings.TEST:
-            template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
+            template_zip_s3_url = settings.EVALAI_API_SERVER + challenge_template.template_file.url
         else:
             template_zip_s3_url = challenge_template.template_file.url
 
@@ -1390,7 +1390,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 send_slack_notification(message=message)
 
             template_data = get_challenge_template_data(zip_config.challenge)
-            if not challenge.is_docker_based and challenge.inform_hosts:
+            if not challenge.is_docker_based and challenge.inform_hosts and not challenge.remote_evaluation:
                 try:
                     response = start_workers([zip_config.challenge])
                     count, failures = response["count"], response["failures"]
@@ -2264,7 +2264,6 @@ def invite_users_to_challenge(request, challenge_pk):
                 invalid_emails.append(email)
 
         sender_email = settings.CLOUDCV_TEAM_EMAIL
-        # TODO: Update this URL after shifting django backend from evalapi.cloudcv.org to evalai.cloudcv.org/api
         hostname = get_url_from_hostname(settings.HOSTNAME)
         url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
         template_data = {"title": challenge.title, "url": url}

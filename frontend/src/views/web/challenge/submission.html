@@ -62,7 +62,7 @@
                         </button>
                     </li>
                     <li>For more commands, please refer to <a class="highlight-link"
-                            href="https://evalai-cli.cloudcv.org/" target="_blank">evalai-cli documentation.</a>
+                            href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
                     </li>
                 </ol>
             </div>
@@ -227,7 +227,7 @@
                                         <span>Upload file</span>
                                         <input type="file" ngf-select ng-model="challenge.input_file"
                                             name="challenge.input_file"
-                                            accept=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy">
+                                            accept="{{challenge.currentPhaseAllowedSubmissionFileTypes}}">
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path validate" type="text" readonly>
@@ -243,6 +243,28 @@
                             </div>
                             <span
                                 ng-show="challenge.isSubmissionUsingUrl == true || challenge.isSubmissionUsingUrl == false">
+
+                                <p class="fs-14 w-400">Select submission visibility:</p>
+                                <li>
+                                    <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicubmission"
+                                        value="isPublicubmission" ng-click="challenge.isPublicSubmission = true">
+                                    <label for="isPublicubmission"></label>
+                                    <div class="show-member-title pointer">
+                                        <strong class="fs-16 w-300">Public
+                                        </strong>
+                                    </div>
+                                    <div class="clearfix"></div>
+
+                                    <input type="radio" name="submissionVisibility" class="with-gap selectPhase"
+                                        id="isPrivateSubmission" value="isPrivateSubmission"
+                                        ng-click="challenge.isPublicSubmission = false">
+                                    <label for="isPrivateSubmission"></label>
+                                    <div class="show-member-title pointer">
+                                        <strong class="fs-16 w-300">Private </strong>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </li>
+
                                 <div class="row">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="methodName" name="methodName"
@@ -275,49 +297,51 @@
                                         <label for="publicationUrl">Publication URL (Optional)</label>
                                     </div>
                                 </div>
-
                                 <div class="dynamicform">
                                     <div ng-if="challenge.metaAttributesforCurrentSubmission != null" ng-repeat="attribute in challenge.metaAttributesforCurrentSubmission">
-                                       <div class="row">
                                            <div ng-if="attribute.type == 'text'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
-                                                        <input type="text" ng-model= "attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required != undefined">
+                                                        <input type="text" ng-model="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
+                                                        <label for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
-                                                    <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
-                                                        <md-radio-group ng-model="attribute.value">
-                                                            <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
-                                                                <span class="fs-16">{{option}}</span>
-                                                            </md-radio-button>
-                                                        </md-radio-group>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div ng-if="attribute.type =='checkbox'">
-                                                <div class="row">
-                                                    <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
-                                                        <div ng-repeat="option in attribute.options">
-                                                            <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
-                                                            <label for="{{option}}"></label>
-                                                            <span  class="fs-16 w-300 submission-options">{{option}}</span>
+                                                    <div class="align-left col s10">
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <div class="input-field">
+                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                                <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
+                                                                    <span class="fs-16">{{option}}</span>
+                                                                </md-radio-button>
+                                                            </md-radio-group>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div ng-if="attribute.type=='boolean'">
+                                            <div ng-if="attribute.type == 'checkbox'">
                                                 <div class="row">
-                                                    <div class="input-field align-left col s10">
-                                                        <span><strong>{{attribute.name}}</strong> - {{attribute.description}}</span><br>
-                                                        <div class="">
-                                                            <md-radio-group ng-model="attribute.value" ng-required="attribute.required != undefined">
+                                                    <div class="align-left col s10">
+                                                        <label class="label-checkbox" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <div class="input-field">
+                                                            <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                                <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
+                                                                <label for="{{option}}"></label>
+                                                                <span  class="fs-16 w-300">{{option}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div ng-if="attribute.type == 'boolean'">
+                                                <div class="row">
+                                                    <div class="align-left col s10">
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <div class="input-field">
+                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
                                                                 <md-radio-button  ng-value="'False'">False</md-radio-button>
                                                             </md-radio-group>
@@ -325,7 +349,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                       </div>
                                     </div>
                                 </div>
 
