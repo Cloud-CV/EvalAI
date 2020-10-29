@@ -2733,7 +2733,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def annotation_file_upload_complete(request, challenge_phase_pk):
+def finish_annotation_file_upload(request, challenge_phase_pk):
     """
     API to complete multipart upload for a test annotation file
 

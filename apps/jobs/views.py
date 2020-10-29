@@ -2335,7 +2335,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def submission_file_upload_complete(request, challenge_phase_pk, submission_pk):
+def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     """
     API to complete multipart upload of presigned url submission
 

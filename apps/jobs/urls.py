@@ -101,8 +101,8 @@ urlpatterns = [
         name="get_submission_file_presigned_url",
     ),
     url(
-        r"^phases/(?P<challenge_phase_pk>[0-9]+)/submission_file_upload_complete/(?P<submission_pk>[0-9]+)/$",
-        views.submission_file_upload_complete,
-        name="submission_file_upload_complete",
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_submission_file_upload/(?P<submission_pk>[0-9]+)/$",
+        views.finish_submission_file_upload,
+        name="finish_submission_file_upload",
     )
 ]

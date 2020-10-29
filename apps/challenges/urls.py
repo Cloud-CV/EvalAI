@@ -202,8 +202,8 @@ urlpatterns = [
         name="get_all_challenge_templates",
     ),
     url(
-        r"^phases/(?P<challenge_phase_pk>[0-9]+)/annotation_file_upload_complete/$",
-        views.annotation_file_upload_complete,
-        name="annotation_file_upload_complete",
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_annotation_file_upload/$",
+        views.finish_annotation_file_upload,
+        name="finish_annotation_file_upload",
     )
 ]
