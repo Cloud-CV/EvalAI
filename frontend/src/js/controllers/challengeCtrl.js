@@ -96,7 +96,7 @@
                     $scope.isHighlight = elementId.split("leaderboardrank-")[1];
                 }
             }, 500);
-        }
+        };
 
 
         // API call to manage the worker from UI.
