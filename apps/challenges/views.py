@@ -1002,6 +1002,31 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                     )
 
+        if data.get("default_submission_meta_attributes"):
+            for attribute in data["default_submission_meta_attributes"]:
+                keys = ["name", "is_visible"]
+                missing_keys = get_missing_keys_from_dict(attribute, keys)
+
+                if len(missing_keys) == 0:
+                    valid_attributes = ["method_name", "method_description", "project_url", "publication_url"]
+                    if not attribute["name"] in valid_attributes:
+                        message = "Default meta attribute: {} in phase: {} does not exist!".format(
+                            attribute["name"], data["id"]
+                        )
+                        response_data = {"error": message}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                else:
+                    missing_keys_string = ", ".join(missing_keys)
+                    message = "Please enter the following to the default submission meta attribute in phase {}: {}.".format(
+                        data["id"], missing_keys_string
+                    )
+                    response_data = {"error": message}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+
     # Check for challenge image in yaml file.
     image = yaml_file_data.get("image")
     if image and (
