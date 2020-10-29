@@ -656,8 +656,8 @@
                         });
                     }
                     if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
-                        var attributes = details.results[k].default_submission_meta_attributes;
-                        var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
+                        var meta_attributes = details.results[k].default_submission_meta_attributes;
+                        var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(meta_attributes);
                         vm.defaultSubmissionMetaAttributes.push({
                             "phaseId": details.results[k].id,
                             "defaultAttributes": defaultMetaAttributes

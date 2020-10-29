@@ -59,7 +59,7 @@
                 return true;
             }
             return (url.length <= 200);
-        }
+        };
 
         // function to update Profile
         vm.updateProfile = function(resetconfirmFormValid) {
@@ -70,15 +70,15 @@
 
                 if (!vm.isURLValid(vm.user.github_url)) {
                     vm.isFormError = true;
-                    vm.FormError = "Github URL length should not be greater than 200!"
+                    vm.FormError = "Github URL length should not be greater than 200!";
                     return;
                 } else if (!vm.isURLValid(vm.user.google_scholar_url)) {
                     vm.isFormError = true;
-                    vm.FormError = "Google Scholar URL length should not be greater than 200!"
+                    vm.FormError = "Google Scholar URL length should not be greater than 200!";
                     return;
                 } else if (!vm.isURLValid(vm.user.linkedin_url)) {
                     vm.isFormError = true;
-                    vm.FormError = "LinkedIn URL length should not be greater than 200!"
+                    vm.FormError = "LinkedIn URL length should not be greater than 200!";
                     return;
                 }
 
