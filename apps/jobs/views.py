@@ -2307,6 +2307,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     if request.data.get("num_file_chunks"):
         num_file_chunks = int(request.data["num_file_chunks"])
 
+    response = {}
     if serializer.is_valid():
         serializer.save()
         submission = serializer.instance
@@ -2317,13 +2318,15 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         response = generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge.pk, num_file_chunks)
         if response.get("error"):
             response_data = response
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        response_data = {
-            "presigned_urls": response.get("presigned_urls"),
-            "upload_id": response.get("upload_id"),
-            "submission_pk": submission.pk,
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                "presigned_urls": response.get("presigned_urls"),
+                "upload_id": response.get("upload_id"),
+                "submission_pk": submission.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+        return response
     response_data = {"error": serializer.errors}
     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2427,25 +2430,28 @@ def submission_file_upload_complete(request, challenge_phase_pk, submission_pk):
 
     file_parts = json.loads(request.data["parts"])
     upload_id = request.data["upload_id"]
+    response = {}
     try:
         submission = get_submission_model(submission_pk)
         file_key_on_s3 = "{}/{}".format(
             settings.MEDIAFILES_LOCATION, submission.input_file.name
         )
-        response = complete_s3_multipart_file_upload(
+        data = complete_s3_multipart_file_upload(
             file_parts, upload_id, file_key_on_s3, challenge.pk
         )
-        if response.get("error"):
-            response_data = response
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        response_data = {
-            "upload_id": upload_id,
-            "submission_pk": submission.pk,
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        if data.get("error"):
+            response_data = data
+            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                "upload_id": upload_id,
+                "submission_pk": submission.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
     except Submission.DoesNotExist:
         response_data = {"error": "Submission does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return response
 
 
 @api_view(["POST"])

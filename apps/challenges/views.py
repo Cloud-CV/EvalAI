@@ -2749,11 +2749,7 @@ def annotation_file_upload_complete(request, challenge_phase_pk):
         }
         return Response(response_data)
     # Check if the challenge phase exists or not
-    try:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     if not is_user_a_host_of_challenge(
         request.user, challenge_phase.challenge.pk
@@ -2764,11 +2760,11 @@ def annotation_file_upload_complete(request, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.data.get("parts") is None:
-        response_data = {"error": "Uploaded file Parts metadata is missing"}
+        response_data = {"error": "Uploaded file parts metadata is missing!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.data.get("upload_id") is None:
-        response_data = {"error": "Uploaded file UploadId is missing"}
+        response_data = {"error": "Uploaded file upload Id is missing!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     file_parts = json.loads(request.data["parts"])
@@ -2777,21 +2773,24 @@ def annotation_file_upload_complete(request, challenge_phase_pk):
         settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
     )
 
+    response = {}
     try:
-        response = complete_s3_multipart_file_upload(
+        data = complete_s3_multipart_file_upload(
             file_parts, upload_id, file_key_on_s3, challenge_phase.challenge.pk
         )
-        if response.get("error"):
-            response_data = response
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        response_data = {
-            "upload_id": upload_id,
-            "challenge_phase_pk": challenge_phase.pk,
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    except Submission.DoesNotExist:
-        response_data = {"error": "Submission does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        if data.get("error"):
+            response_data = data
+            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                "upload_id": upload_id,
+                "challenge_phase_pk": challenge_phase.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+    except Exception:
+        response_data = {"error": "Error occurred while uploading annotations!"}
+        response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return response
 
 
 @api_view(["POST"])

@@ -170,7 +170,7 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
     """
     if settings.DEBUG or settings.TEST:
         return
-
+    response_data = {}
     try:
         aws_keys = get_aws_credentials_for_challenge(challenge_pk)
 
@@ -201,11 +201,10 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
             "presigned_urls": presigned_urls,
             "upload_id": upload_id
         }
-        return response_data
     except Exception as e:
         logger.exception(e)
         response_data = {"error": "Could not fetch presigned urls."}
-        return response_data
+    return response_data
 
 
 def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challenge_pk):
@@ -221,12 +220,12 @@ def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challeng
     """
     if settings.DEBUG or settings.TEST:
         return
-
+    response_data = {}
     try:
         aws_keys = get_aws_credentials_for_challenge(challenge_pk)
 
         s3 = get_boto3_client("s3", aws_keys)
-        response = s3.complete_multipart_upload(
+        response_data = s3.complete_multipart_upload(
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
             Key=file_key_on_s3,
             MultipartUpload={
@@ -234,11 +233,10 @@ def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challeng
             },
             UploadId=upload_id
         )
-        return response
     except Exception as e:
         logger.exception(e)
         response_data = {"error": "Could not fetch presigned urls."}
-        return response_data
+    return response_data
 
 
 def get_or_create_ecr_repository(name, aws_keys):
