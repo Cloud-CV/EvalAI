@@ -265,7 +265,7 @@
                                     <div class="clearfix"></div>
                                 </li>
 
-                                <div class="row">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="methodName" name="methodName"
                                             ng-model="challenge.methodName">
@@ -273,7 +273,7 @@
                                         <label for="methodName">Method name (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] != false">
                                     <div class="input-field align-left col s10">
                                         <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
                                             ng-model="challenge.methodDesc"></textarea>
@@ -281,7 +281,7 @@
                                         <label for="methodDesc">Method description (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="projectUrl" name="projectUrl"
                                             ng-model="challenge.projectUrl">
@@ -289,7 +289,7 @@
                                         <label for="projectUrl">Project URL (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="publicationUrl" name="publicationUrl"
                                             ng-model="challenge.publicationUrl">

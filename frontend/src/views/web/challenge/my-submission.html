@@ -53,11 +53,11 @@
                     <table class="highlight all-submission-table" class="fs-16 w-300">
                         <thead>
                             <th class="fs-18 w-300" data-field="submission_id">#</th>
-                            <th class="fs-18 w-300" data-field="method-name">Method</th>
-                            <th class="fs-18 w-300" data-field="method-description">Method description</th>
-                            <th class="fs-18 w-300" data-field="project-url">Project URL</th>
-                            <th class="fs-18 w-300" data-field="publication-url">Publication URL </th>
-                            <th class="align-center fs-18 w-300" data-field="status">Status</th>
+                            <th class="fs-18 w-300" data-field="method-name" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">Method</th>
+                            <th class="fs-18 w-300" data-field="method-description" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] != false">Method description</th>
+                            <th class="fs-18 w-300" data-field="project-url" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">Project URL</th>
+                            <th class="fs-18 w-300" data-field="publication-url" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">Publication URL </th>
+                            <th class="fs-18 w-300" data-field="status">Status</th>
                             <th class="fs-18 w-300" data-field="status">Execution time (sec.)</th>
                             <th class="fs-18 w-300" data-field="file">Submitted file</th>
                             <th class="fs-18 w-300" data-field="file">Result file</th>
@@ -74,17 +74,17 @@
                         <tbody>
                             <tr ng-repeat="key in challenge.submissionResult.results" class="result-val fs-16 w-300">
                                 <td>{{$index+1}}</td>
-                                <td ng-if="key.method_name != ''">{{key.method_name}}</td>
-                                <td ng-if="key.method_name == ''"> None </td>
+                                <td ng-if="key.method_name != '' && challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">{{key.method_name}}</td>
+                                <td ng-if="key.method_name == '' && challenge.currentPhaseMetaAttributesVisibility['method_name'] != false"> None </td>
 
-                                <td ng-if="key.method_description != ''">{{key.method_description}}</td>
-                                <td ng-if="key.method_description == ''"> None </td>
+                                <td ng-if="key.method_description != '' && challenge.currentPhaseMetaAttributesVisibility['method_description'] != false">{{key.method_description}}</td>
+                                <td ng-if="key.method_description == '' && challenge.currentPhaseMetaAttributesVisibility['method_description'] != false"> None </td>
 
-                                <td ng-if="key.project_url != ''">{{key.project_url}}</td>
-                                <td ng-if="key.project_url == ''"> None </td>
+                                <td ng-if="key.project_url != '' && challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">{{key.project_url}}</td>
+                                <td ng-if="key.project_url == ''" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false"> None </td>
 
-                                <td ng-if="key.publication_url != ''">{{key.publication_url}}</td>
-                                <td ng-if="key.publication_url == ''"> None </td>
+                                <td ng-if="key.publication_url != '' && challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">{{key.publication_url}}</td>
+                                <td ng-if="key.publication_url == '' && challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false"> None </td>
 
                                 <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
                                 <td class="align-center">

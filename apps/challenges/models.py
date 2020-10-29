@@ -277,6 +277,8 @@ class ChallengePhase(TimeStampedModel):
     )
     # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
+    # Store the default metadata for a submission meta attributes of a challenge phase.
+    default_submission_meta_attributes = JSONField(default=None, blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
