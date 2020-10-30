@@ -2194,11 +2194,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         return Response(response_data)
 
     # Check if the challenge phase exists or not
-    try:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     challenge = challenge_phase.challenge
 
@@ -2351,11 +2347,7 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         return Response(response_data)
 
     # Check if the challenge phase exists or not
-    try:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     challenge = challenge_phase.challenge
 
