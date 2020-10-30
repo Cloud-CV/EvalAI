@@ -43,7 +43,8 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import (
-    generate_presigned_url,
+    complete_s3_multipart_file_upload,
+    generate_presigned_url_for_multipart_upload,
     get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
@@ -2193,11 +2194,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         return Response(response_data)
 
     # Check if the challenge phase exists or not
-    try:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     challenge = challenge_phase.challenge
 
@@ -2301,6 +2298,12 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
             "request": request,
         },
     )
+    # Set default num of chunks to 1 if num of chunks is not specified
+    num_file_chunks = 1
+    if request.data.get("num_file_chunks"):
+        num_file_chunks = int(request.data["num_file_chunks"])
+
+    response = {}
     if serializer.is_valid():
         serializer.save()
         submission = serializer.instance
@@ -2308,17 +2311,139 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         file_key_on_s3 = "{}/{}".format(
             settings.MEDIAFILES_LOCATION, submission.input_file.name
         )
-        response = generate_presigned_url(file_key_on_s3, challenge.pk)
+        response = generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge.pk, num_file_chunks)
         if response.get("error"):
             response_data = response
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        response_data = {
-            "presigned_url": response.get("presigned_url"),
-            "submission_pk": submission.pk,
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                "presigned_urls": response.get("presigned_urls"),
+                "upload_id": response.get("upload_id"),
+                "submission_pk": submission.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+        return response
     response_data = {"error": serializer.errors}
     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
+    """
+    API to complete multipart upload of presigned url submission
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+        submission_pk {int} -- Submission primary key
+    Returns:
+         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+    """
+    if settings.DEBUG or settings.TEST:
+        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        return Response(response_data)
+
+    # Check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if challenge phase is active
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is a challenge host or a participant
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        # Check if challenge phase is public and accepting solutions
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        # if allowed email ids list exist, check if the user exist in that list or not
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if request.data.get("parts") is None:
+        response_data = {"error": "Uploaded file Parts metadata is missing"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.data.get("upload_id") is None:
+        response_data = {"error": "Uploaded file UploadId is missing"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    file_parts = json.loads(request.data["parts"])
+    upload_id = request.data["upload_id"]
+    response = {}
+    try:
+        submission = get_submission_model(submission_pk)
+        file_key_on_s3 = "{}/{}".format(
+            settings.MEDIAFILES_LOCATION, submission.input_file.name
+        )
+        data = complete_s3_multipart_file_upload(
+            file_parts, upload_id, file_key_on_s3, challenge.pk
+        )
+        if data.get("error"):
+            response_data = data
+            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                "upload_id": upload_id,
+                "submission_pk": submission.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return response
 
 
 @api_view(["POST"])
