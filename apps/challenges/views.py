@@ -2667,11 +2667,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         }
         return Response(response_data)
     # Check if the challenge phase exists or not
-    try:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     if not is_user_a_host_of_challenge(
         request.user, challenge_phase.challenge.pk
@@ -2691,7 +2687,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 
     if challenge_phase.test_annotation:
         file_key_on_s3 = "{}/{}".format(
-            "media", challenge_phase.test_annotation.name
+            settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
         )
     else:
         # This file shall be replaced with the one uploaded through the presigned url from the CLI
