@@ -201,4 +201,9 @@ urlpatterns = [
         views.get_all_challenge_templates,
         name="get_all_challenge_templates",
     ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_annotation_file_upload/$",
+        views.finish_annotation_file_upload,
+        name="finish_annotation_file_upload",
+    )
 ]

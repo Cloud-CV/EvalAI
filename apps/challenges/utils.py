@@ -159,6 +159,86 @@ def generate_presigned_url(file_key_on_s3, challenge_pk):
         return response_data
 
 
+def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, num_parts):
+    """
+    Function to get the presigned urls to upload a file to s3 in chunks
+    Arguments:
+        file_key_on_s3 {string} -- The S3 key for the file to be uploaded
+        challenge_pk {int} -- challenge pk for which credentails are to be fetched
+    Returns:
+        response_data {dict} -- Dict containing the presigned_urls or the error if request failed
+    """
+    if settings.DEBUG or settings.TEST:
+        return
+    response_data = {}
+    try:
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+
+        s3 = get_boto3_client("s3", aws_keys)
+        response = s3.create_multipart_upload(
+            Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
+            Key=file_key_on_s3
+        )
+
+        upload_id = response["UploadId"]
+        presigned_urls = []
+        for part_number in range(1, num_parts + 1):
+            presigned_url = s3.generate_presigned_url(
+                ClientMethod="upload_part",
+                Params={
+                    "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+                    "Key": file_key_on_s3,
+                    "UploadId": upload_id,
+                    "PartNumber": part_number
+                },
+                ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
+            )
+            presigned_urls.append({
+                "partNumber": part_number,
+                "url": presigned_url
+            })
+        response_data = {
+            "presigned_urls": presigned_urls,
+            "upload_id": upload_id
+        }
+    except Exception as e:
+        logger.exception(e)
+        response_data = {"error": "Could not fetch presigned urls."}
+    return response_data
+
+
+def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challenge_pk):
+    """
+    Function to complete the multipart upload of s3 files using presigned urls
+    Arguments:
+        parts {List} -- List of S3 ETag and PartNumber for each uploaded chunk
+        upload_id {string} -- Unique upload id for multipart file upload
+        file_key_on_s3 {string} -- The S3 key for the file to be uploaded
+        challenge_pk {int} -- challenge pk for which credentails are to be fetched
+    Returns:
+        response_data {dict} -- Dict containing the presigned_urls or the error if request failed
+    """
+    if settings.DEBUG or settings.TEST:
+        return
+    response_data = {}
+    try:
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+
+        s3 = get_boto3_client("s3", aws_keys)
+        response_data = s3.complete_multipart_upload(
+            Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
+            Key=file_key_on_s3,
+            MultipartUpload={
+                "Parts": parts
+            },
+            UploadId=upload_id
+        )
+    except Exception as e:
+        logger.exception(e)
+        response_data = {"error": "Could not fetch presigned urls."}
+    return response_data
+
+
 def get_or_create_ecr_repository(name, aws_keys):
     """Get or create AWS ECR Repository
 
