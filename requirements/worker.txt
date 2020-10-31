@@ -5,7 +5,7 @@ pycocotools==2.0.0
 scipy==1.5.2
 sklearn==0.0
 tqdm==4.25.0
-cffi 
-service_identity 
+cffi==1.14.2 
+service_identity==18.1.0 
 cython==0.29 
 numpy==1.14.5
