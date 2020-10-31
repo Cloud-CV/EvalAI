@@ -2552,6 +2552,8 @@ def get_submission_download_presigned_url(request, challenge_phase_pk, submissio
 
     Arguments:
         request {object} -- Request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+        submission_pk {int} -- Submission primary key
 
     Returns:
         Response object -- Response object with appropriate response code (200/400/403/404)
