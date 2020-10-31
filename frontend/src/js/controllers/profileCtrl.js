@@ -49,7 +49,11 @@
                 if (status == 200) {
                     for (var i in result) {
                         if (result[i] === "" || result[i] === undefined || result[i] === null) {
-                            result[i] = "-";
+                            if (i === "linkedin_url" || i === "github_url" || i === "google_scholar_url") {
+                                result[i] = "";
+                            } else {
+                                result[i] = "-";
+                            }
                             vm.countLeft = vm.countLeft + 1;
                         }
                         count = count + 1;
