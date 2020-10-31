@@ -2541,3 +2541,102 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     publish_submission_message(submission_message)
     response_data = {}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_download_presigned_url(request, challenge_phase_pk, submission_pk):
+    """Returns S3 signed URL for a submission file residing on S3 bucket
+
+    Arguments:
+        request {object} -- Request object
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+    if settings.DEBUG:
+        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        return Response(response_data)
+
+    submission = get_submission_model(submission_pk)
+
+    # Check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    challenge = challenge_phase.challenge
+    challenge_pk = challenge.pk
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if challenge phase is active
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is a challenge host or a participant
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        # Check if challenge phase is public and accepting solutions
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        # if allowed email ids list exist, check if the user exist in that list or not
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    response = {}
+    if is_user_part_of_participant_team(
+        request.user, participant_team
+    ) or is_user_a_host_of_challenge(request.user, challenge_pk):
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+        s3 = get_boto3_client("s3", aws_keys)
+
+        file_key_on_s3 = "{}/{}".format(
+            settings.MEDIAFILES_LOCATION, submission.input_file.name
+        )
+
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={
+                "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+                "Key": file_key_on_s3
+            }
+        )
+        response_data = {"presigned_url": url}
+        response = Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": "You are not authorized to access this file."
+        }
+        response = Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    return response
