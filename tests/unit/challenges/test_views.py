@@ -18,7 +18,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
-import mock
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -4393,7 +4392,6 @@ class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
 class PresignedURLAnnotationTest(BaseChallengePhaseClass):
     def setUp(self):
         super(PresignedURLAnnotationTest, self).setUp()
-
 
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_get_annotation_presigned_url(self, mock_get_aws_creds):

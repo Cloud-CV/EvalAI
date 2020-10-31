@@ -2539,7 +2539,6 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(PresignedURLSubmissionTest, self).setUp()
 
-
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_get_submission_presigned_url(self, mock_get_aws_creds):
         self.url = reverse_lazy(
@@ -2576,7 +2575,6 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         self.assertEqual(len(response.data["presigned_urls"]), len(expected["presigned_urls"]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
     def test_finish_submission_file_upload(self, mock_get_aws_creds):
         # Create a submission using multipart upload
@@ -2608,9 +2606,8 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             "submission_pk": response.data["submission_pk"]
         }
 
-
         # Upload submission in parts to mocked S3 bucket
-        submission = Submission.objects.get(pk = expected["submission_pk"])
+        submission = Submission.objects.get(pk=expected["submission_pk"])
         parts = []
 
         presigned_url_object = response.data["presigned_urls"][0]
