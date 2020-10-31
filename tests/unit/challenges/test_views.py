@@ -4493,8 +4493,6 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
                 "upload_id": expected["upload_id"]
             }
         )
-        with open("cmp_1.txt", "w") as f:
-            f.write(json.dumps(response.data))
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

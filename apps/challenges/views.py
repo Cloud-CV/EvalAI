@@ -2707,9 +2707,6 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     if request.data.get("num_file_chunks"):
         num_file_chunks = int(request.data["num_file_chunks"])
 
-    with open("Data.txt", "w") as f:
-        f.write(json.dumps(request.data))
-
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     random_file_name = uuid.uuid4()
 
