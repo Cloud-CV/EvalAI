@@ -2672,7 +2672,7 @@ def manage_worker(request, challenge_pk, action):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -2686,7 +2686,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {
             "error": "Sorry, this feature is not available in development or test environment."
         }
@@ -2706,6 +2706,9 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     num_file_chunks = 1
     if request.data.get("num_file_chunks"):
         num_file_chunks = int(request.data["num_file_chunks"])
+
+    with open("Data.txt", "w") as f:
+        f.write(json.dumps(request.data))
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     random_file_name = uuid.uuid4()
@@ -2764,7 +2767,7 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {
             "error": "Sorry, this feature is not available in development or test environment."
         }

@@ -7,7 +7,7 @@ import requests
 import shutil
 
 from datetime import timedelta
-from moto import mock_ecs, mock_s3
+from moto import mock_s3
 
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -2555,8 +2555,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
                     "partNumber": 1,
                     "url": "https://test-bucket.s3.amazonaws.com/media/submission_files/"
                 }
-            ],
-            "submission_pk": Submission.objects.count() + 1
+            ]
         }
 
         self.client.force_authenticate(user=self.challenge_host.user)
@@ -2621,7 +2620,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         response = requests.put(url, data=file_data)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         etag = response.headers['ETag']
         parts.append({"ETag": etag, "PartNumber": part})
