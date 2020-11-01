@@ -1,8 +1,7 @@
 FROM evalai_django
 
 RUN apt-get update && \
-  apt-get install --no-install-recommends -q -y default-jdk && \
-  rm -rf /var/lib/apt/lists/*
+  apt-get install -q -y default-jdk
 
 
 RUN pip install -r worker.txt
