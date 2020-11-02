@@ -72,12 +72,10 @@ def check_container_status():
     Check container status and send slack notification
     """
     # Containers to check status for
-    containers = ["evalai_django_1", "evalai_nodejs_1", "evalai_celery_1", "evalai_nodejs_v2_1"]
     container_status_map = get_container_status()
 
     failed_containers = []
-    for container in containers:
-        is_running = container_status_map.get(container)
+    for container, is_running in container_status_map.items():
         if not is_running:
             failed_containers.append(container)
 
