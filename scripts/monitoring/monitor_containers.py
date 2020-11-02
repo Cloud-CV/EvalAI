@@ -81,7 +81,8 @@ def check_container_status():
         if not is_running:
             failed_containers.append(container)
 
-    notify(failed_containers)
+    if len(failed_containers) > 0:
+        notify(failed_containers)
 
 
 if __name__ == "__main__":
