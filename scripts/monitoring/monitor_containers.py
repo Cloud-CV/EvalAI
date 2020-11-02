@@ -27,7 +27,7 @@ def is_container_running(container):
     try:
         container_state = container.attrs['State']
         is_running = container_state['Status'] == RUNNING
-    except:
+    except Exception:
         pass
     return is_running
 
