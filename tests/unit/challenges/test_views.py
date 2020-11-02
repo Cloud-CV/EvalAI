@@ -1,11 +1,15 @@
+import boto3
 import csv
 import io
 import json
+import mock
 import os
+import requests
 import responses
 import shutil
 
 from datetime import timedelta
+from moto import mock_s3
 from os.path import join
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,7 +18,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
-import mock
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -4383,3 +4386,111 @@ class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
         self.assertTrue("AccessKeyId" in federated_user["Credentials"])
         self.assertTrue("SecretAccessKey" in federated_user["Credentials"])
         self.assertTrue("SessionToken" in federated_user["Credentials"])
+
+
+@mock_s3
+class PresignedURLAnnotationTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(PresignedURLAnnotationTest, self).setUp()
+
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_annotation_presigned_url(self, mock_get_aws_creds):
+        self.url = reverse_lazy(
+            "challenges:get_annotation_file_presigned_url",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+
+        expected = {
+            "presigned_urls": [
+                {
+                    "partNumber": 1,
+                    "url": "https://test-bucket.s3.amazonaws.com/media/annotation_files/"
+                }
+            ]
+        }
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1"
+        }
+        client = boto3.client('s3')
+        client.create_bucket(Bucket="test-bucket")
+
+        num_file_chunks = 1
+        response = self.client.post(
+            self.url,
+            data={"num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+        )
+        self.assertEqual(len(response.data["presigned_urls"]), len(expected["presigned_urls"]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @override_settings(MEDIA_ROOT="/tmp/evalai")
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_finish_annotation_file_upload(self, mock_get_aws_creds):
+        # Create a annotation using multipart upload
+        self.url = reverse_lazy(
+            "challenges:get_annotation_file_presigned_url",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk
+            }
+        )
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1"
+        }
+        client = boto3.client('s3')
+        client.create_bucket(Bucket="test-bucket")
+
+        num_file_chunks = 1
+        response = self.client.post(
+            self.url,
+            data={"num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+        )
+
+        expected = {
+            "upload_id": response.data["upload_id"],
+            "challenge_phase_pk": self.challenge_phase.pk
+        }
+
+        # Upload submission in parts to mocked S3 bucket
+        parts = []
+
+        presigned_url_object = response.data["presigned_urls"][0]
+        part = presigned_url_object["partNumber"]
+        url = presigned_url_object["url"]
+        file_data = self.challenge_phase.test_annotation.read()
+
+        response = requests.put(url, data=file_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        etag = response.headers['ETag']
+        parts.append({"ETag": etag, "PartNumber": part})
+
+        # Finish multipart upload
+        self.url = reverse_lazy(
+            "challenges:finish_annotation_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk
+            },
+        )
+
+        response = self.client.post(
+            self.url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": expected["upload_id"]
+            }
+        )
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

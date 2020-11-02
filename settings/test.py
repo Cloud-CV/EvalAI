@@ -28,3 +28,5 @@ CACHES = {
 }
 
 TEST = True
+
+MEDIAFILES_LOCATION = "media"

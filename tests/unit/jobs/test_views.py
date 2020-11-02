@@ -1,9 +1,13 @@
+import boto3
 import collections
 import json
+import mock
 import os
+import requests
 import shutil
 
 from datetime import timedelta
+from moto import mock_s3
 
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -2528,3 +2532,112 @@ class UpdateSubmissionTest(BaseAPITestClass):
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+@mock_s3
+class PresignedURLSubmissionTest(BaseAPITestClass):
+    def setUp(self):
+        super(PresignedURLSubmissionTest, self).setUp()
+
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_submission_presigned_url(self, mock_get_aws_creds):
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+            },
+        )
+
+        expected = {
+            "presigned_urls": [
+                {
+                    "partNumber": 1,
+                    "url": "https://test-bucket.s3.amazonaws.com/media/submission_files/"
+                }
+            ]
+        }
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1"
+        }
+        client = boto3.client('s3')
+        client.create_bucket(Bucket="test-bucket")
+
+        num_file_chunks = 1
+        response = self.client.post(
+            self.url,
+            data={"status": "submitting", "num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+        )
+        self.assertEqual(len(response.data["presigned_urls"]), len(expected["presigned_urls"]))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_finish_submission_file_upload(self, mock_get_aws_creds):
+        # Create a submission using multipart upload
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk
+            }
+        )
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1"
+        }
+        client = boto3.client('s3')
+        client.create_bucket(Bucket="test-bucket")
+
+        num_file_chunks = 1
+        response = self.client.post(
+            self.url,
+            data={"status": "submitting", "num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+        )
+
+        expected = {
+            "upload_id": response.data["upload_id"],
+            "submission_pk": response.data["submission_pk"]
+        }
+
+        # Upload submission in parts to mocked S3 bucket
+        submission = Submission.objects.get(pk=expected["submission_pk"])
+        parts = []
+
+        presigned_url_object = response.data["presigned_urls"][0]
+        part = presigned_url_object["partNumber"]
+        url = presigned_url_object["url"]
+        file_data = submission.input_file.read()
+
+        response = requests.put(url, data=file_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        etag = response.headers['ETag']
+        parts.append({"ETag": etag, "PartNumber": part})
+
+        # Finish multipart upload
+        self.url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": expected["submission_pk"]
+            },
+        )
+
+        response = self.client.post(
+            self.url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": expected["upload_id"]
+            }
+        )
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

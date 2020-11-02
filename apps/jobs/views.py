@@ -2189,7 +2189,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {"error": "Sorry, this feature is not available in development or test environment."}
         return Response(response_data)
 
@@ -2342,7 +2342,7 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     Returns:
          Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {"error": "Sorry, this feature is not available in development or test environment."}
         return Response(response_data)
 
