@@ -177,7 +177,8 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
         s3 = get_boto3_client("s3", aws_keys)
         response = s3.create_multipart_upload(
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
-            Key=file_key_on_s3
+            Key=file_key_on_s3,
+            ACL="public-read"
         )
 
         upload_id = response["UploadId"]
