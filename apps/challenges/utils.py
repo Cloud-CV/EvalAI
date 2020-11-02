@@ -168,7 +168,7 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
     Returns:
         response_data {dict} -- Dict containing the presigned_urls or the error if request failed
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         return
     response_data = {}
     try:
@@ -219,7 +219,7 @@ def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challeng
     Returns:
         response_data {dict} -- Dict containing the presigned_urls or the error if request failed
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         return
     response_data = {}
     try:
