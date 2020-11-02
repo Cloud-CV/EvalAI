@@ -1,2 +1,2 @@
 #!/bin/bash
-python scripts/monitoring/monitor_containers.py
+python /home/ubuntu/evalai/scripts/monitoring/monitor_containers.py
