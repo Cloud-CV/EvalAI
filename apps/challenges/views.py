@@ -1729,6 +1729,10 @@ def download_all_submissions(
                         "Submitted At",
                         "Submission Result File",
                         "Submission Metadata File",
+                        "Method Name",
+                        "Method Description",
+                        "Publication URL",
+                        "Project URL"
                     ]
                 )
                 for submission in submissions.data:
@@ -1765,6 +1769,10 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
+                            submission["method_name"],
+                            submission["method_description"],
+                            submission["publication_url"],
+                            submission["project_url"],
                         ]
                     )
                 return response
