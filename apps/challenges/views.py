@@ -1732,7 +1732,7 @@ def download_all_submissions(
                         "Method Name",
                         "Method Description",
                         "Publication URL",
-                        "Project URL"
+                        "Project URL",
                     ]
                 )
                 for submission in submissions.data:
@@ -1859,6 +1859,10 @@ def download_all_submissions(
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",
+                    "method_name": "Method Name",
+                    "method_description": "Method Description",
+                    "publication_url": "Publication URL",
+                    "project_url": "Project URL",
                 }
                 submissions = Submission.objects.filter(
                     challenge_phase__challenge=challenge
