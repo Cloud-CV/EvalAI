@@ -168,7 +168,7 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
     Returns:
         response_data {dict} -- Dict containing the presigned_urls or the error if request failed
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         return
     response_data = {}
     try:
@@ -177,7 +177,8 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
         s3 = get_boto3_client("s3", aws_keys)
         response = s3.create_multipart_upload(
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
-            Key=file_key_on_s3
+            Key=file_key_on_s3,
+            ACL="public-read"
         )
 
         upload_id = response["UploadId"]
@@ -218,7 +219,7 @@ def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challeng
     Returns:
         response_data {dict} -- Dict containing the presigned_urls or the error if request failed
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         return
     response_data = {}
     try:

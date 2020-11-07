@@ -1729,6 +1729,10 @@ def download_all_submissions(
                         "Submitted At",
                         "Submission Result File",
                         "Submission Metadata File",
+                        "Method Name",
+                        "Method Description",
+                        "Publication URL",
+                        "Project URL",
                     ]
                 )
                 for submission in submissions.data:
@@ -1765,6 +1769,10 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
+                            submission["method_name"],
+                            submission["method_description"],
+                            submission["publication_url"],
+                            submission["project_url"],
                         ]
                     )
                 return response
@@ -1851,6 +1859,10 @@ def download_all_submissions(
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",
+                    "method_name": "Method Name",
+                    "method_description": "Method Description",
+                    "publication_url": "Publication URL",
+                    "project_url": "Project URL",
                 }
                 submissions = Submission.objects.filter(
                     challenge_phase__challenge=challenge
@@ -2672,7 +2684,7 @@ def manage_worker(request, challenge_pk, action):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -2686,7 +2698,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {
             "error": "Sorry, this feature is not available in development or test environment."
         }
@@ -2764,7 +2776,7 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {
             "error": "Sorry, this feature is not available in development or test environment."
         }
