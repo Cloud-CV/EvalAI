@@ -3411,6 +3411,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "created_at": submission.created_at,
                     "method_name": submission.method_name,
                     "submission_metadata": None,
+                    "method_description": submission.method_description,
+                    "publication_url": submission.publication_url,
+                    "project_url": submission.project_url,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
