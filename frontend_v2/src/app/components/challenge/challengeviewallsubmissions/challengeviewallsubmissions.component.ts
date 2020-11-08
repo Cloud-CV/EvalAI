@@ -153,7 +153,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     'submitted_file',
     'submission_result_file',
   ];
-  columnsHeadings = ['S.No.', 'Team Name', 'Created By', 'Status', 'Execution Time', 'Submitted File', 'Result File'];
+  columnsHeadings = ['S.No.', 'Team Name', 'Created By', 'Status', 'Execution Time(sec)', 'Submitted File', 'Result File'];
 
   expandedElement: null;
 

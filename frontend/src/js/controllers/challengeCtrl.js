@@ -656,8 +656,8 @@
                         });
                     }
                     if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
-                        var attributes = details.results[k].default_submission_meta_attributes;
-                        var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
+                        var meta_attributes = details.results[k].default_submission_meta_attributes;
+                        var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(meta_attributes);
                         vm.defaultSubmissionMetaAttributes.push({
                             "phaseId": details.results[k].id,
                             "defaultAttributes": defaultMetaAttributes
@@ -1813,6 +1813,18 @@
         },{
             'label': 'Submission Metadata File',
             'id': 'submission_metadata_file'
+        },{
+            'label': 'Method Name',
+            'id': 'method_name'
+        },{
+            'label': 'Method Description',
+            'id': 'method_description'
+        },{
+            'label': 'Publication URL',
+            'id': 'publication_url'
+        },{
+            'label': 'Project URL',
+            'id': 'project_url'
         }];
 
         vm.downloadChallengeSubmissions = function() {
