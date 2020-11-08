@@ -1813,6 +1813,18 @@
         },{
             'label': 'Submission Metadata File',
             'id': 'submission_metadata_file'
+        },{
+            'label': 'Method Name',
+            'id': 'method_name'
+        },{
+            'label': 'Method Description',
+            'id': 'method_description'
+        },{
+            'label': 'Publication URL',
+            'id': 'publication_url'
+        },{
+            'label': 'Project URL',
+            'id': 'project_url'
         }];
 
         vm.downloadChallengeSubmissions = function() {
