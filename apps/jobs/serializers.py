@@ -127,6 +127,9 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "method_name",
             "participant_team_members",
             "submission_metadata",
+            "method_description",
+            "publication_url",
+            "project_url",
         )
 
     def get_participant_team(self, obj):
