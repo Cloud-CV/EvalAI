@@ -1,4 +1,6 @@
 language: python
+python:
+  - "3.7.5"
 sudo: false
 services:
   - docker
