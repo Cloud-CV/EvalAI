@@ -63,7 +63,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   getChallenge() {
     this.apiService.getUrl(this.endpointService.featuredChallengesURL()).subscribe(
       (response) => {
-        this.challengeList = response.results;
+        this.challengeList = response.results.slice(0,4);
       },
       (err) => {
         this.globalService.handleApiError(err);
@@ -103,7 +103,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       // Show Form Error on Failure
       (err) => {
-        if (err.error.message) {
+        if(err.status == 400) {
+          setTimeout(() => self.globalService.showToast('info', err.error.message, 5), 1000);
+        } else if (err.error.message) {
           setTimeout(() => self.globalService.showToast('error', err.error.message, 5), 1000);
         } else {
           self.globalService.handleApiError(err);
