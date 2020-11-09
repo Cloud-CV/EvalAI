@@ -7,7 +7,6 @@ WORKDIR /code
 
 ADD requirements/* /code/
 
-RUN pip install --upgrade pip==20.2.3
 RUN pip install -r dev.txt
 
 CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]

@@ -7,7 +7,6 @@ WORKDIR /code
 
 ADD requirements/* /code/
 
-RUN pip install --upgrade pip==20.2.3
 RUN pip install -r prod.txt
 
 ADD . /code
