@@ -1,10 +1,9 @@
-FROM python:3.7.5
+FROM python:3.6.5
 
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /code
 WORKDIR /code
-
 ADD requirements/* /code/
 RUN pip install -r prod.txt
 
