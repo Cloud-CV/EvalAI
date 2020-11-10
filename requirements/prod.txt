@@ -4,5 +4,5 @@ boto==2.43.0
 django-storages==1.7.1
 python-memcached==1.58
 raven==6.10.0
-uWSGI==2.0.15
+uWSGI==2.0.18
 datadog==0.14.0
