@@ -4,7 +4,7 @@ services:
   - docker
   - xvfb
 python:
-  - "3.7.5"
+  - "3.6"
 cache:
   directories:
     - "$HOME/.cache/pip"
