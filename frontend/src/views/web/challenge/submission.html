@@ -130,12 +130,23 @@
                                 </strong>
                             </td>
                             <td>
-                                <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.slug}}</code>
-                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                    ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                    data-clipboard-text="evalai push <image>:<tag> --phase {{key.slug}}">
-                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                </button>
+                                <div>
+                                    <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.slug}}</code>
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                        ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                        data-clipboard-text="evalai push <image>:<tag> --phase {{key.slug}}">
+                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                </div>
+                                <br/>
+                                <div>
+                                    <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.slug}} --private</code>
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                        ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                        data-clipboard-text="evalai push <image>:<tag> --phase {{key.slug}} --private">
+                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
 
@@ -394,7 +405,16 @@
                                         </button>
                                     </li>
                                     <li>
-                                        4. For more commands, please refer to <a class="highlight-link"
+                                        4. Make private submission<br>
+                                        <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit &lt;submission_file_path&gt; --large --private</code>
+                                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                            data-clipboard-text="evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit &lt;submission_file_path&gt; --large --private">
+                                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        5. For more commands, please refer to <a class="highlight-link"
                                             href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
                                     </li>
                                 </div>
