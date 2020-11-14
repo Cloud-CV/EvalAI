@@ -61,6 +61,8 @@
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </li>
+                    <li>Use <code>--private</code> or <code>--public</code> flag in the submission command to make the submission private or public respectively.<br>
+                    </li>
                     <li>For more commands, please refer to <a class="highlight-link"
                             href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
                     </li>
@@ -130,12 +132,23 @@
                                 </strong>
                             </td>
                             <td>
-                                <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.slug}}</code>
-                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                    ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                    data-clipboard-text="evalai push <image>:<tag> --phase {{key.slug}}">
-                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                </button>
+                                <div>
+                                    <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.slug}}</code>
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                        ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                        data-clipboard-text="evalai push <image>:<tag> --phase {{key.slug}}">
+                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                </div>
+                                <br/>
+                                <div>
+                                    <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.slug}} --private</code>
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                        ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                        data-clipboard-text="evalai push <image>:<tag> --phase {{key.slug}} --private">
+                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
 
@@ -203,17 +216,17 @@
                             <p class="fs-18 w-400">Select submission type:</p>
                             <li>
                                 <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
-                                    value="fileUrl" ng-click="challenge.isSubmissionUsingUrl = true">
+                                    value="fileUrl" ng-click="challenge.isSubmissionUsingCli = true">
                                 <label for="fileUrl"></label>
                                 <div class="show-member-title pointer">
-                                    <strong class="fs-16 w-300">File URL (for file size > 400MB)
+                                    <strong class="fs-16 w-300">Use CLI (for file size > 400MB)
                                     </strong>
                                 </div>
                                 <div class="clearfix"></div>
 
                                 <input type="radio" name="submissionOptions" class="with-gap selectPhase"
                                     id="fileUpload" value="challenge.showFileUploadOption"
-                                    ng-click="challenge.isSubmissionUsingUrl = false">
+                                    ng-click="challenge.isSubmissionUsingCli = false">
                                 <label for="fileUpload"></label>
                                 <div class="show-member-title pointer">
                                     <strong class="fs-16 w-300">Upload file </strong>
@@ -221,7 +234,7 @@
                                 <div class="clearfix"></div>
                             </li>
 
-                            <div ng-show="challenge.isSubmissionUsingUrl == false" class="row">
+                            <div ng-show="challenge.isSubmissionUsingCli == false" class="row">
                                 <div class="file-field input-field col s10">
                                     <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                                         <span>Upload file</span>
@@ -234,15 +247,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div ng-show="challenge.isSubmissionUsingUrl" class="row">
-                                <div class="input-field align-left col s10">
-                                    <input type="text" id="fileUrl" name="fileUrl" ng-model="challenge.fileUrl">
-                                    <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="fileUrl">Submission file URL</label>
-                                </div>
-                            </div>
-                            <span
-                                ng-show="challenge.isSubmissionUsingUrl == true || challenge.isSubmissionUsingUrl == false">
+                            <!-- Submission using file upload -->
+                            <div
+                                ng-show="challenge.isSubmissionUsingCli == false">
 
                                 <p class="fs-14 w-400">Select submission visibility:</p>
                                 <li>
@@ -304,14 +311,14 @@
                                                     <div class="input-field align-left col s10">
                                                         <input type="text" ng-model="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                        <label for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <label for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></label>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span>></label>
                                                         <div class="input-field">
                                                             <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
@@ -325,7 +332,7 @@
                                             <div ng-if="attribute.type == 'checkbox'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label class="label-checkbox" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <label class="label-checkbox" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></label>
                                                         <div class="input-field">
                                                             <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
@@ -339,7 +346,7 @@
                                             <div ng-if="attribute.type == 'boolean'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></span></label>
+                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></label>
                                                         <div class="input-field">
                                                             <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
@@ -351,22 +358,22 @@
                                             </div>
                                     </div>
                                 </div>
-
-                            <div class="text-highlight red-text"><strong>{{challenge.subErrors.msg}}</strong></div>
-                            <section class="pagination">
-                                <div class="row rm-gut">
-                                    <div class="col s12 m12">
-                                        <div class="align-left">
-                                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16"
-                                                ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
-                                                type="submit" value="Submit">Submit</button>
-                                            <br>
-                                            <br>
-                                            <span class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
+                                <div class="text-highlight red-text"><strong>{{challenge.subErrors.msg}}</strong></div>
+                                <section class="pagination">
+                                    <div class="row rm-gut">
+                                        <div class="col s12 m12">
+                                            <div class="align-left">
+                                                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16"
+                                                    ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
+                                                    type="submit" value="Submit">Submit</button>
+                                                <br>
+                                                <br>
+                                                <span class="text-dark-black"><strong>{{challenge.submissionError}}</strong></span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </section>
+                                </section>
+                            </div>
                         </ul>
                     </form>
                 </div>
@@ -428,6 +435,52 @@
                         <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}}
                         hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 fs-16 w-300">
+                <div class="submission-instructions exist-team-card">
+                <!-- Submission using cli-->
+                <div ng-show="challenge.isSubmissionUsingCli === true">
+                    <p class="fs-18 w-400 no-top-margin-p">Submission instructions</p>
+                        <ol class="fs-16 w-300">
+                        <li>
+                            Install evalai-cli<br>
+                            <code>$ pip install evalai{{challenge.cliVersion}}</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>
+                            Add your EvalAI account token to evalai-cli<br>
+                            <code>$ evalai set_token {{challenge.authToken}}</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                data-clipboard-text="evalai set_token {{challenge.authToken}}">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>
+                            Make submission<br>
+                            <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                data-clipboard-text="evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file &lt;submission_file_path&gt; --large">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>
+                            Use <code>--private</code> or <code>--public</code> flag in the submission command to make the submission private or public respectively.<br>
+                        </li>
+                        <li>
+                            For more commands, please refer to <a class="highlight-link"
+                                href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
+                        </li>
+                        </ol>
+                </div>
                 </div>
             </div>
         </div>

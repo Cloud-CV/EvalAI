@@ -62,6 +62,7 @@
         vm.termsAndConditions = false;
         vm.team = {};
         vm.isSubmissionUsingUrl = null;
+        vm.isSubmissionUsingCli = null;
         vm.isRemoteChallenge = false;
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
