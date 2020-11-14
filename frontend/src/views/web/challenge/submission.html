@@ -61,13 +61,7 @@
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </li>
-                    <li>Make private submission<br>
-                        <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase &lt;phase_name&gt; --private</code>
-                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                            data-clipboard-text="evalai push <image>:<tag> --phase <phase_name> --private">
-                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                        </button>
+                    <li>Use <code>--private</code> or <code>--public</code> flag in the submission command to make the submission private or public respectively.<br>
                     </li>
                     <li>For more commands, please refer to <a class="highlight-link"
                             href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
@@ -380,53 +374,6 @@
                                     </div>
                                 </section>
                             </div>
-
-                            <!-- Submission using cli-->
-                            <div ng-show="challenge.isSubmissionUsingCli === true">
-                                <li><p class="fs-18 w-400">Submission instructions</p></li>
-                                <div class="fs-16 w-300">
-                                    <li>
-                                        1. Install evalai-cli<br>
-                                        <code>$ pip install evalai{{challenge.cliVersion}}</code>
-                                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                            data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
-                                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                        </button>
-                                    </li>
-                                    <li>
-                                        2. Add your EvalAI account token to evalai-cli<br>
-                                        <code>$ evalai set_token {{challenge.authToken}}</code>
-                                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                            data-clipboard-text="evalai set_token {{challenge.authToken}}">
-                                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                        </button>
-                                    </li>
-                                    <li>
-                                        3. Make submission<br>
-                                        <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit &lt;submission_file_path&gt; --large</code>
-                                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                            data-clipboard-text="evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit &lt;submission_file_path&gt; --large">
-                                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                        </button>
-                                    </li>
-                                    <li>
-                                        4. Make private submission<br>
-                                        <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit &lt;submission_file_path&gt; --large --private</code>
-                                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
-                                            ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                            data-clipboard-text="evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit &lt;submission_file_path&gt; --large --private">
-                                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                        </button>
-                                    </li>
-                                    <li>
-                                        5. For more commands, please refer to <a class="highlight-link"
-                                            href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
-                                    </li>
-                                </div>
-                            </div>
                         </ul>
                     </form>
                 </div>
@@ -488,6 +435,52 @@
                         <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}}
                         hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 fs-16 w-300">
+                <div class="submission-instructions exist-team-card">
+                <!-- Submission using cli-->
+                <div ng-show="challenge.isSubmissionUsingCli === true">
+                    <p class="fs-18 w-400 no-top-margin-p">Submission instructions</p>
+                        <ol class="fs-16 w-300">
+                        <li>
+                            Install evalai-cli<br>
+                            <code>$ pip install evalai{{challenge.cliVersion}}</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>
+                            Add your EvalAI account token to evalai-cli<br>
+                            <code>$ evalai set_token {{challenge.authToken}}</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                data-clipboard-text="evalai set_token {{challenge.authToken}}">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>
+                            Make submission<br>
+                            <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
+                                ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
+                                data-clipboard-text="evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file &lt;submission_file_path&gt; --large">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>
+                            Use <code>--private</code> or <code>--public</code> flag in the submission command to make the submission private or public respectively.<br>
+                        </li>
+                        <li>
+                            For more commands, please refer to <a class="highlight-link"
+                                href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
+                        </li>
+                        </ol>
+                </div>
                 </div>
             </div>
         </div>
