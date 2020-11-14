@@ -925,11 +925,11 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 )
             )
         else:
-            challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
-                settings.HOSTNAME, challenge.id
+            challenge_url = "{}/web/challenges/challenge-page/{}".format(
+                settings.EVALAI_API_SERVER, challenge.id
             )
-            challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
-                settings.HOSTNAME, challenge.id
+            challenge_manage_url = "{}/web/challenges/challenge-page/{}/manage".format(
+                settings.EVALAI_API_SERVER, challenge.id
             )
 
             if field_name == "test_annotation":

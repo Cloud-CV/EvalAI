@@ -422,11 +422,11 @@ def get_challenge_template_data(challenge):
         Returns:
             template_data {dict} -- a dict for sendgrid email template data
     """
-    challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
-        settings.HOSTNAME, challenge.id
+    challenge_url = "{}/web/challenges/challenge-page/{}".format(
+        settings.EVALAI_API_SERVER, challenge.id
     )
-    challenge_manage_url = "https://{}/web/challenges/challenge-page/{}/manage".format(
-        settings.HOSTNAME, challenge.id
+    challenge_manage_url = "{}/web/challenges/challenge-page/{}/manage".format(
+        settings.EVALAI_API_SERVER, challenge.id
     )
     template_data = {
         "CHALLENGE_NAME": challenge.title,

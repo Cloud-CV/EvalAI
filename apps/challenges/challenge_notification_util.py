@@ -11,8 +11,8 @@ def construct_and_send_worker_start_mail(challenge):
     if settings.DEBUG:
         return
 
-    challenge_url = "https://{}/web/challenges/challenge-page/{}".format(
-        settings.HOSTNAME, challenge.pk
+    challenge_url = "{}/web/challenges/challenge-page/{}".format(
+        settings.EVALAI_API_SERVER, challenge.pk
     )
 
     template_data = {
