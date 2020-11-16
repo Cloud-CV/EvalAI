@@ -78,3 +78,7 @@ warnings.filterwarnings(
     RuntimeWarning,
     r"django\.db\.models\.fields",
 )
+
+STATICFILES_LOCATION = "static"
+STATIC_FILES_HOST = "localhost:8888"
+STATIC_URL = "http://%s/%s/" % (STATIC_FILES_HOST, STATICFILES_LOCATION)

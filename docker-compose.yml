@@ -42,6 +42,10 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/nodejs/Dockerfile
+      args:
+        NODE_ENV: development
+    depends_on:
+      - django
     environment:
       NODE_ENV: development
     ports:
@@ -56,11 +60,12 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/nodejs_v2/Dockerfile
+      args:
+        NODE_ENV: development
     environment:
       ANGULAR_ENV: development
     ports:
-      - "9999:4200"
-      - "4200:4200"
+      - "9999:80"
     volumes:
     - ./frontend_v2:/code
     - /code/node_modules
