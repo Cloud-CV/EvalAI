@@ -23,17 +23,7 @@ RUN npm install
 RUN npm install -g karma-cli
 RUN bower install --allow-root
 RUN apt-get install -y libxss1
-ADD frontend /code/frontend
 
-RUN gulp dev
+CMD ["gulp", "dev:runserver"]
 
 EXPOSE 8888
-
-# Setup nginx
-RUN apt-get install nginx -y
-
-# Adding NODE_ENV here as well since this is a multistage build
-ARG NODE_ENV
-COPY docker/dev/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
-
-CMD ["nginx", "-g", "daemon off;"]
