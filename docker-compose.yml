@@ -42,8 +42,6 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/nodejs/Dockerfile
-    depends_on:
-      - django
     environment:
       NODE_ENV: development
     ports:
