@@ -29,7 +29,7 @@ def home(request, template_name="index.html"):
     return render(request, template_name)
 
 
-def page_not_found(request):
+def page_not_found(request, exception):
     response = render(request, "error404.html")
     response.status_code = 404
     return response

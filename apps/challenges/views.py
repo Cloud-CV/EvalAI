@@ -628,6 +628,8 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
+        print("In request")
+        print(request.data)
         if not is_user_a_host_of_challenge(request.user, challenge.id):
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
@@ -1568,10 +1570,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "participant_team_members_email_ids": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of the participant team members email ID's",
                                 ),
                                 "participant_team_members_affiliations": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of the participant team members affiliations",
                                 ),
                                 "created_at": openapi.Schema(
@@ -1584,6 +1588,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "participant_team_members": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of participant team members name and email",
                                 ),
                             },

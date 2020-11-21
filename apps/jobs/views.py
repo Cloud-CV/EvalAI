@@ -533,6 +533,9 @@ def change_submission_data_and_visibility(
                                 "result": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
                                     description="Leaderboard Metrics values according to leaderboard schema",
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_OBJECT
+                                    ),
                                 ),
                                 "submission__submitted_at": openapi.Schema(
                                     type=openapi.TYPE_STRING,

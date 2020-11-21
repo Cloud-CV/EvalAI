@@ -49,3 +49,5 @@ urlpatterns = [
         name="remove_participant_team_from_challenge",
     ),
 ]
+
+app_name = "participants"

@@ -98,7 +98,6 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += [
         url(r"^dbschema/", include("django_spaghetti.urls")),
-        url(r"^docs/", include("rest_framework_docs.urls")),
         url(
             r"^api/admin-auth/",
             include("rest_framework.urls", namespace="rest_framework"),
