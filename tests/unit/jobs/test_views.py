@@ -9,10 +9,10 @@ import shutil
 from datetime import timedelta
 from moto import mock_s3
 
-from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.urls import reverse_lazy
 
 from allauth.account.models import EmailAddress
 from rest_framework import status

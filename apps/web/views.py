@@ -45,7 +45,7 @@ def notify_users_about_challenge(request):
     """
     Email New Challenge Details to EvalAI Users
     """
-    if request.user.is_authenticated() and request.user.is_superuser:
+    if request.user.is_authenticated and request.user.is_superuser:
         if request.method == "GET":
             template_name = "notification_email_data.html"
             return render(request, template_name)

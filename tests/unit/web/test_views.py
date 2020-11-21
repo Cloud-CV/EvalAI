@@ -2,7 +2,7 @@ import responses
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework import status
