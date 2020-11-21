@@ -63,12 +63,12 @@ class Submission(TimeStampedModel):
     )
 
     participant_team = models.ForeignKey(
-        ParticipantTeam, related_name="submissions", on_delete=models.CASCADE
+        ParticipantTeam, related_name="submissions", on_delete=models.DO_NOTHING
     )
     challenge_phase = models.ForeignKey(
-        ChallengePhase, related_name="submissions", on_delete=models.CASCADE
+        ChallengePhase, related_name="submissions", on_delete=models.DO_NOTHING
     )
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )

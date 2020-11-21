@@ -628,6 +628,8 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
+        print("In request")
+        print(request.data)
         if not is_user_a_host_of_challenge(request.user, challenge.id):
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
