@@ -219,9 +219,10 @@
         vm.createNewTeam = function() {
             vm.isExistLoader = true;
             vm.loaderTitle = '';
-
+            
+            
             vm.startLoader("Loading Teams");
-
+            var teamNameRegex= /[^\x00-\x80]+/;
             var parameters = {};
             parameters.url = 'hosts/create_challenge_host_team';
             parameters.method = 'POST';
@@ -229,6 +230,14 @@
                 "team_name": vm.team.name,
                 "team_url": vm.team.url
             };
+            if(teamNameRegex.test(vm.team.name))
+            {
+                $rootScope.notify("error",  "Invalid letter is contained");
+                vm.team.error = "Invalid letter is contained";
+                return
+            }
+            vm.isLoader = true;
+	        vm.loaderTitle='';
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
