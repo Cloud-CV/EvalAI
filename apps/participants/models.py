@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from base.models import TimeStampedModel
+from django.core.validators import RegexValidator
 
 
 class Participant(TimeStampedModel):
@@ -40,7 +41,10 @@ class Participant(TimeStampedModel):
 class ParticipantTeam(TimeStampedModel):
     """Model representing the Teams associated with different challenges"""
 
-    team_name = models.CharField(max_length=100, unique=True)
+   team_name = models.CharField(max_length=100,
+                                 validators=[RegexValidator(r'^[\x00-\x7F]*$',
+                                                            "Invalid letter is contained")],
+                                 unique=True)
     created_by = models.ForeignKey(User, null=True)
     team_url = models.CharField(max_length=1000, default="", blank=True)
 
