@@ -169,6 +169,13 @@ export class EndpointsService {
   challengeDetailsURL(id) {
     return `${this.challenges}${this.challenge}${id}/`;
   }
+  /**
+   * Fetch challenge tags for a given challenge id
+   * @param id 
+   */
+  challengeTagsURL(id) {
+    return `${this.challenges}${this.challenge}${id}/tags`;
+  }
 
   /**
    * Challenge stars for a given challenge id
