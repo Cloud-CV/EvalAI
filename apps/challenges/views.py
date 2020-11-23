@@ -2132,6 +2132,23 @@ def star_challenge(request, challenge_pk):
                 "count": serializer.data[0]["count"],
             }
             return Response(response_data, status=status.HTTP_200_OK)
+        
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def tag_challenge_by_challenge_pk(request, challenge_pk):
+    """
+    API endpoint for tagging a challenge.
+    """
+    challenge = get_challenge_model(challenge_pk)
+    if request.method == "GET":
+        try:
+            response_data = challenge.tags
+        except:
+            response_data = {
+                "error": "Challenge {} does not exist".format(challenge_pk)
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
