@@ -32,6 +32,7 @@ describe('ChallengecardComponent', () => {
       terms_and_conditions: 'Officiis dicta debitis expedita corrupti.',
       submission_guidelines: 'Totam ipsa debitis ',
       evaluation_details: 'Dolorem consequatur odio quos',
+      tags: ["AI", "ML"],
       image: 'https://evalai.s3.amazonaws.com/media/logos/vqa.png',
       start_date: '2017-12-03T03:38:12.655908Z',
       end_date: '2019-07-26T03:38:12.655934Z',

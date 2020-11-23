@@ -61,6 +61,12 @@
                     <i class="fa fa-star star"></i> {{ challenge.data }}&nbsp;&nbsp;{{ stars['count'] }}
                   </button>
                 </div>
+                <div class="col-lg-3 col-md-3 align-right">
+                     <ul class="list-unstyled list-inline">
+                         <li *ngFor="let tag of tags" class="list-inline-item chip green white-text">#{{tag}}
+                         </li>
+                     </ul>
+                </div
               </div>
               <div class="row rm-row-bot card-tab-row">
                 <div class="col-sm-12">

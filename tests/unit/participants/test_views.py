@@ -780,6 +780,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "short_description": self.challenge1.short_description,
                         "terms_and_conditions": self.challenge1.terms_and_conditions,
                         "submission_guidelines": self.challenge1.submission_guidelines,
+                        "tags": self.challenge1.tags,
                         "evaluation_details": self.challenge1.evaluation_details,
                         "image": self.challenge1.image,
                         "start_date": "{0}{1}".format(
@@ -845,6 +846,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "short_description": self.challenge1.short_description,
                 "terms_and_conditions": self.challenge1.terms_and_conditions,
                 "submission_guidelines": self.challenge1.submission_guidelines,
+                "tags": self.challenge1.tags,
                 "evaluation_details": self.challenge1.evaluation_details,
                 "image": self.challenge1.image,
                 "start_date": "{0}{1}".format(

@@ -12,6 +12,7 @@ import { EndpointsService } from './endpoints.service';
 export class ChallengeService {
   private defaultChallenge: any = { creator: {} };
   private defaultStars: any = { count: 0, is_starred: false };
+  private defaultTags: any = [];
   private defaultPublishChallenge: any = {
     state: 'Not Published',
     icon: 'fa fa-eye-slash red-text',
@@ -21,6 +22,8 @@ export class ChallengeService {
   currentChallenge = this.challengeSource.asObservable();
   private starSource = new BehaviorSubject(this.defaultStars);
   currentStars = this.starSource.asObservable();
+  private tagsSource = new BehaviorSubject(this.defaultTags);
+  currentTags = this.tagsSource.asObservable();
   private teamsSource = new BehaviorSubject([]);
   currentParticipantTeams = this.teamsSource.asObservable();
   private phasesSource = new BehaviorSubject([]);
@@ -73,7 +76,13 @@ export class ChallengeService {
   changeChallengePublish(publishChallenge: any) {
     this.challengePublishSource.next(publishChallenge);
   }
-
+  /**
+   * 
+   * @param tags Update tags for current challenge.
+   */
+  changeCurrentTags(tags: any) {
+    this.tagsSource.next(tags);
+  }
   /**
    * Update stars for current challenge.
    * @param stars  new stars.
@@ -135,6 +144,7 @@ export class ChallengeService {
       if (authState['isLoggedIn']) {
         SELF.isLoggedIn = true;
         SELF.fetchStars(id);
+        SELF.fetchTags(id);
         SELF.fetchParticipantTeams(id);
       } else if (!authState['isLoggedIn']) {
         SELF.isLoggedIn = false;
@@ -193,6 +203,30 @@ export class ChallengeService {
         this.logger.info('Stars', id, 'fetched!');
       }
     );
+  }
+  /**
+   * Fetch Challenge Tags
+   * @param id ID of the challenge to fetch tags for
+   * @param callback Retrive Status without update
+   */
+  fetchTags(id, callback = null) {
+    const API_PATH = this.endpointsService.challengeTagsURL(id);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      data => {
+        if (callback) {
+          callback(data);
+        } else {
+          SELF.changeCurrentTags(data);
+        }
+      },
+      err => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {
+        console.log('Challenge', id, 'tags fetched')
+      }
+    )
   }
 
   /**
