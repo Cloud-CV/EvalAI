@@ -10,7 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0061_add_models_to_store_kubernetes_cluster_details'),
+        ('challenges', '0074_add_default_meta_attributes_field.py'),
     ]
 
     operations = [
