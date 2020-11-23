@@ -57,7 +57,7 @@ export class ChallengecardComponent implements OnInit {
   /**
    * Tag list
    */
-  tags = ['Aritificial Intelligence', 'Machine Learning'];
+  tags: any;
 
   /**
    * Challenge stars
@@ -115,6 +115,7 @@ export class ChallengecardComponent implements OnInit {
     this.startDate = this.globalService.formatDate12Hour(START_DATE);
     this.endDate = this.globalService.formatDate12Hour(END_DATE);
     this.fetchStars();
+    this.fetchTags();
   }
 
   /**
@@ -142,6 +143,14 @@ export class ChallengecardComponent implements OnInit {
   fetchStars() {
     this.challengeService.fetchStars(this.challenge['id'], (data) => {
       this.stars = data;
+    });
+  }
+  /**
+   * Fetch tags for the current challenge card.
+   */
+  fetchTags() {
+    this.challengeService.fetchTags(this.challenge['id'], (data) => {
+      this.tags = data;
     });
   }
 
