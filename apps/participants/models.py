@@ -41,9 +41,7 @@ class Participant(TimeStampedModel):
 class ParticipantTeam(TimeStampedModel):
     """Model representing the Teams associated with different challenges"""
 
-   team_name = models.CharField(max_length=100,
-                                 validators=[RegexValidator(r'^[\x00-\x7F]*$',
-                                                            "Invalid letter is contained")],
+   team_name = models.CharField(max_length=100, validators=[RegexValidator(r'^[\x00-\x7F]*$', "Invalid letter is contained")],
                                  unique=True)
     created_by = models.ForeignKey(User, null=True)
     team_url = models.CharField(max_length=1000, default="", blank=True)
