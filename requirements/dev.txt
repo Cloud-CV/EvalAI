@@ -21,3 +21,4 @@ sphinx-markdown-tables==0.0.9
 sphinx-rtd-theme==0.3.0
 pytest-django==3.1.2
 Faker==0.7.7
+uWSGI==2.0.18
