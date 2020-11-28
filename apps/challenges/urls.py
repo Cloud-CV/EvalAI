@@ -205,5 +205,10 @@ urlpatterns = [
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_annotation_file_upload/$",
         views.finish_annotation_file_upload,
         name="finish_annotation_file_upload",
-    )
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/participant_team/(?P<participant_team_pk>[0-9]+)/remove_participant_team/$",
+        views.remove_participant_team_from_challenge,
+        name="remove_participant_team_from_challenge",
+    ),
 ]

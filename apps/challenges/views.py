@@ -378,6 +378,34 @@ def add_participant_team_to_challenge(
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def remove_participant_team_from_challenge(
+    request, challenge_pk, participant_team_pk
+):
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "ParticipantTeam does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if participant_team.challenge_set.filter(id=challenge_pk).exists():
+        challenge.participant_teams.remove(participant_team)
+        return Response(status=status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Team has not participated in the challenge"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
