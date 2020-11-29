@@ -4497,3 +4497,71 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class RemoveParticipantTeamFromChallengeTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(RemoveParticipantTeamFromChallengeTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:remove_participant_team_from_challenge",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk,
+            },
+        )
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.participant_team_2 = ParticipantTeam.objects.create(
+            team_name="Participant Team 2 for Challenge", created_by=self.participant_user
+        )
+
+    def test_remove_participant_team_success(self):
+        self.client.force_authenticate(user=self.participant_team.created_by)
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_remove_participant_team_when_user_is_not_authorized(self):
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.post(self.url, {})
+        expected = {"error": "Sorry, you do not have permissions to remove this participant team"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_remove_participant_team_when_not_participated(self):
+        self.challenge.participant_teams.remove(self.participant_team)
+        self.client.force_authenticate(user=self.participant_team.created_by)
+        response = self.client.post(self.url, {})
+        expected = {"error": "Team has not participated in the challenge"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_remove_participant_team_when_team_has_submissions(self):
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.participant_team.created_by,
+                status="submitted",
+                input_file=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                method_name="Test Method",
+                method_description="Test Description",
+                project_url="http://testserver/",
+                publication_url="http://testserver/",
+                is_public=True,
+            )
+
+        self.client.force_authenticate(user=self.participant_team.created_by)
+        response = self.client.post(self.url, {})
+        expected = {"error": "Unable to remove team as you have already made submission to the challenge"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
