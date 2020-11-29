@@ -378,46 +378,6 @@ def add_participant_team_to_challenge(
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def remove_participant_team_from_challenge(
-    request, challenge_pk, participant_team_pk
-):
-
-    challenge = get_challenge_model(challenge_pk)
-
-    participant_team = get_participant_model(participant_team_pk)
-
-    if participant_team.created_by == request.user:
-        if participant_team.challenge_set.filter(id=challenge_pk).exists():
-            challenge_phases = ChallengePhase.objects.filter(
-                challenge=challenge
-            )
-            for challenge_phase in challenge_phases:
-                submissions = Submission.objects.filter(
-                    participant_team=participant_team_pk,
-                    challenge_phase=challenge_phase,
-                )
-                if submissions.count() > 0:
-                    response_data = {
-                        "error": "Unable to remove team as you have already made submission to the challenge"
-                    }
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-            challenge.participant_teams.remove(participant_team)
-            return Response(status=status.HTTP_200_OK)
-        else:
-            response_data = {"error": "Team has not participated in the challenge"}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = {
-            "error": "Sorry, you do not have permissions to remove this participant team"
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-
-@api_view(["POST"])
-@throttle_classes([UserRateThrottle])
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
