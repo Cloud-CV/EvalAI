@@ -121,6 +121,7 @@ from .aws_utils import (
     stop_workers,
     restart_workers,
     get_logs_from_cloudwatch,
+    get_log_group_name,
 )
 from .utils import (
     get_aws_credentials_for_submission,
@@ -2623,7 +2624,7 @@ def get_worker_logs(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
     response_data = []
 
-    log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+    log_group_name = get_log_group_name(challenge.pk)
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.
 
