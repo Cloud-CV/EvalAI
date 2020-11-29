@@ -4525,14 +4525,14 @@ class RemoveParticipantTeamFromChallengeTest(BaseChallengePhaseClass):
         self.client.force_authenticate(user=self.participant_team.created_by)
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_remove_participant_team_when_user_is_not_authorized(self):
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.post(self.url, {})
         expected = {"error": "Sorry, you do not have permissions to remove this participant team"}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     def test_remove_participant_team_when_not_participated(self):
         self.challenge.participant_teams.remove(self.participant_team)
         self.client.force_authenticate(user=self.participant_team.created_by)
