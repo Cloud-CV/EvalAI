@@ -337,9 +337,7 @@ delete_service_args = """
 
 
 def get_log_group_name(challenge_pk):
-    log_group_name = "challenge-pk-{}-workers".format(challenge_pk)
-    if settings.ENVIRONMENT == "staging":
-        log_group_name = "challenge-pk-{}-staging-workers".format(challenge_pk)
+    log_group_name = "challenge-pk-{}-{}-workers".format(challenge_pk, settings.ENVIRONMENT)
     return log_group_name
 
 

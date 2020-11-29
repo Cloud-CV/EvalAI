@@ -332,4 +332,4 @@ EKS_CLUSTER_ROLE_ARN = os.environ.get("EKS_CLUSTER_ROLE_ARN")
 
 EKS_NODEGROUP_ROLE_ARN = os.environ.get("EKS_NODEGROUP_ROLE_ARN")
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "production")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
