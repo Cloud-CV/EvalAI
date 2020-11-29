@@ -198,7 +198,7 @@ task_definition = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
+                    "awslogs-group": "{log_group_name}",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
                     "awslogs-create-group": "true",
@@ -273,7 +273,7 @@ task_definition_code_upload_worker = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-group": "challenge-pk-{challenge_pk}-workers",
+                    "awslogs-group": "{log_group_name}",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
                     "awslogs-create-group": "true",
@@ -336,6 +336,11 @@ delete_service_args = """
 """
 
 
+def get_log_group_name(challenge_pk):
+    log_group_name = "challenge-pk-{}-{}-workers".format(challenge_pk, settings.ENVIRONMENT)
+    return log_group_name
+
+
 def client_token_generator(challenge_pk):
     """
     Returns a 32 characters long client token to ensure idempotency with create_service boto3 requests.
@@ -369,6 +374,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     container_name = "worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
+    log_group_name = get_log_group_name(challenge.pk)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
     if execution_role_arn:
@@ -403,6 +409,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 certificate=cluster_certificate,
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
+                log_group_name=log_group_name,
                 **COMMON_SETTINGS_DICT,
             )
         else:
@@ -413,6 +420,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 challenge_pk=challenge.pk,
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
+                log_group_name=log_group_name,
                 **COMMON_SETTINGS_DICT,
             )
         definition = eval(definition)
@@ -818,7 +826,7 @@ def delete_workers(queryset):
                 )
                 continue
             count += 1
-            log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+            log_group_name = get_log_group_name(challenge.pk)
             delete_log_group(log_group_name)
         else:
             response = "Please select challenges with active workers only."
