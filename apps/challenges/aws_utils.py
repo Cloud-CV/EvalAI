@@ -338,8 +338,7 @@ delete_service_args = """
 
 def get_log_group_name(challenge_pk):
     log_group_name = "challenge-pk-{}-workers".format(challenge_pk)
-    is_staging = "staging" in settings.EVALAI_API_SERVER
-    if is_staging:
+    if settings.ENVIRONMENT == "staging":
         log_group_name = "challenge-pk-{}-staging-workers".format(challenge_pk)
     return log_group_name
 
