@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -8,8 +9,9 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
 
 
@@ -1014,3 +1016,121 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
         self.client.delete(self.url, {})
         participant_teams = ParticipantTeam.objects.all()
         self.assertEqual(participant_teams.count(), 0)
+
+
+class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
+    def setUp(self):
+        super(RemoveParticipantTeamFromChallengeTest, self).setUp()
+        self.user1 = User.objects.create(
+            username="user1",
+            email="user1@platform.com",
+            password="user1_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Host Team 1", created_by=self.user1
+        )
+
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge 2",
+            short_description="Short description for test challenge 1",
+            description="Description for test challenge 1",
+            terms_and_conditions="Terms and conditions for test challenge 1",
+            submission_guidelines="Submission guidelines for test challenge 1",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            banned_email_ids=["user1@platform.com"],
+            leaderboard_description="Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+        self.url = reverse_lazy(
+            "participants:remove_participant_team_from_challenge",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "participant_team_pk": self.participant_team.pk,
+            },
+        )
+
+    def test_remove_participant_team_success(self):
+        self.client.force_authenticate(user=self.participant_team.created_by)
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_remove_participant_team_when_user_is_not_authorized(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.url, {})
+        expected = {"error": "Sorry, you do not have permissions to remove this participant team"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_remove_participant_team_when_not_participated(self):
+        self.challenge.participant_teams.remove(self.participant_team)
+        self.client.force_authenticate(user=self.participant_team.created_by)
+        response = self.client.post(self.url, {})
+        expected = {"error": "Team has not participated in the challenge"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_remove_participant_team_when_team_has_submissions(self):
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            challenge_phase = ChallengePhase.objects.create(
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                max_submissions_per_day=100000,
+                max_submissions_per_month=100000,
+                max_submissions=100000,
+                codename="Phase Code Name",
+                is_restricted_to_select_one_submission=True,
+                is_partial_submission_evaluation_enabled=False,
+            )
+
+            self.submission = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=challenge_phase,
+                created_by=self.participant_team.created_by,
+                status="submitted",
+                input_file=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                method_name="Test Method",
+                method_description="Test Description",
+                project_url="http://testserver/",
+                publication_url="http://testserver/",
+                is_public=True,
+            )
+
+        self.client.force_authenticate(user=self.participant_team.created_by)
+        response = self.client.post(self.url, {})
+        expected = {"error": "Unable to remove team as you have already made submission to the challenge"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
