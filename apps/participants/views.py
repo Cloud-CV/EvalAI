@@ -440,7 +440,7 @@ def remove_participant_team_from_challenge(
     request, challenge_pk, participant_team_pk
 ):
     """
-    API to remoev the participant team from a challenge
+    API to remove the participant team from a challenge
 
     Arguments:
         request {HttpRequest} -- The request object
