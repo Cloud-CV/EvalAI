@@ -205,5 +205,5 @@ urlpatterns = [
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_annotation_file_upload/$",
         views.finish_annotation_file_upload,
         name="finish_annotation_file_upload",
-    )
+    ),
 ]
