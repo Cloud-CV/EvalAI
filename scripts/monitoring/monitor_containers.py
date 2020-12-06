@@ -39,7 +39,7 @@ def is_container_running(container):
     try:
         container_state = container.attrs['State']
         is_running = container_state['Status'] == RUNNING
-    except:
+    except Exception:
         pass
     return is_running
 
@@ -96,7 +96,7 @@ def get_docker_client():
     try:
         client = docker.DockerClient(base_url="unix://var/run/docker.sock")
         return client
-    except:
+    except Exception:
         return None
 
 
