@@ -546,6 +546,9 @@ def run_submission(
     except Exception:
         stderr.write(traceback.format_exc())
         successful_submission_flag = False
+        # Set submission_output to None to handle case when evaluation script throws exception
+        # In case of exception from evaluation script submission_output is assigned exception object
+        submission_output = None
 
     submission_status = (
         Submission.FINISHED
@@ -574,8 +577,7 @@ def run_submission(
         submission.submission_metadata_file.save(
             "submission_metadata.json", ContentFile(submission_metadata)
         )
-
-    submission.save()
+        submission.save()
 
     stderr.close()
     stdout.close()
