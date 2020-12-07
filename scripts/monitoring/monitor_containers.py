@@ -5,13 +5,25 @@ import requests
 
 
 CHANNEL = "#evalai-deployment-notifications"
-DOCKER_CLIENT = docker.DockerClient(base_url="unix://var/run/docker.sock")
 EVALAI_CONTAINER_PREFIX = "evalai"
 RUNNING = "running"
 SLACK_WEBHOOK = os.environ.get("MONITORING_SLACK_WEBHOOK_URL")
 USERNAME = "Monitor Bot"
 ICON_EMOJI = ":robot_face:"
 ENV = os.environ.get("ENV")
+
+
+def get_environment():
+    """
+    Get script environment
+
+    Returns:
+        environment {str} -- staging/production environment
+    """
+    environment = "Staging"
+    if ENV == "PRODUCTION":
+        environment = "Production"
+    return environment
 
 
 def is_container_running(container):
@@ -32,32 +44,32 @@ def is_container_running(container):
     return is_running
 
 
-def get_container_status():
+def get_container_status(docker_client):
     """
     Get running container status
 
+    Arguments:
+        docker_client {Object} -- Docker client
     Returns:
         container_status_map {Dict} -- Dict of container status
     """
     container_status_map = {}
-    containers = DOCKER_CLIENT.containers.list(all=True)
+    containers = docker_client.containers.list(all=True)
     for container in containers:
         if EVALAI_CONTAINER_PREFIX in container.name:
             container_status_map[container.name] = is_container_running(container)
     return container_status_map
 
 
-def notify(container_names):
+def send_slack_notification(message):
     """
-    Send slack notification for workers which are failing
+    Send slack notification
 
     Arguments:
-        container_names {List} -- List of container names
+        message {string} -- Slack notification message
+    Returns:
+        response {Response} -- Http response object
     """
-    environment = "Staging"
-    if ENV == "PRODUCTION":
-        environment = "Production"
-    message = "{} environment:\n\n Following workers are down:\n\n {}".format(environment, " \n ".join(container_names))
     response = requests.post(SLACK_WEBHOOK, data=json.dumps({
         "text": message,
         "username": USERNAME,
@@ -67,12 +79,44 @@ def notify(container_names):
     return response
 
 
+def notify(container_names):
+    """
+    Send slack notification for workers which are failing
+
+    Arguments:
+        container_names {List} -- List of container names
+    """
+    environment = get_environment()
+    message = "{} environment:\n\n Following workers are down:\n\n {}".format(environment, " \n ".join(container_names))
+    response = send_slack_notification(message)
+    return response
+
+
+def get_docker_client():
+    try:
+        client = docker.DockerClient(base_url="unix://var/run/docker.sock")
+        return client
+    except Exception:
+        return None
+
+
 def check_container_status():
     """
     Check container status and send slack notification
     """
+    # Get docker client
+    docker_client = get_docker_client()
+    if not docker_client:
+        message = "{} environment:\n\n Docker daemon is down\n\n".format(get_environment())
+        send_slack_notification(message)
+        return
+
     # Containers to check status for
-    container_status_map = get_container_status()
+    container_status_map = get_container_status(docker_client)
+    if len(container_status_map.keys()) == 0:
+        message = "{} environment:\n\n No docker container is running\n\n".format(get_environment())
+        send_slack_notification(message)
+        return
 
     failed_containers = []
     for container, is_running in container_status_map.items():
