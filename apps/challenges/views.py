@@ -1568,10 +1568,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "participant_team_members_email_ids": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of the participant team members email ID's",
                                 ),
                                 "participant_team_members_affiliations": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of the participant team members affiliations",
                                 ),
                                 "created_at": openapi.Schema(
@@ -1584,6 +1586,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "participant_team_members": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of participant team members name and email",
                                 ),
                             },

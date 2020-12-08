@@ -57,7 +57,7 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
     creator = models.ForeignKey(
-        "hosts.ChallengeHostTeam", related_name="challenge_creator"
+        "hosts.ChallengeHostTeam", related_name="challenge_creator", on_delete=models.CASCADE
     )
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
@@ -234,7 +234,7 @@ class ChallengePhase(TimeStampedModel):
     end_date = models.DateTimeField(
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
-    challenge = models.ForeignKey("Challenge")
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
     test_annotation = models.FileField(
@@ -357,9 +357,9 @@ class ChallengePhaseSplit(TimeStampedModel):
         (PUBLIC, "public"),
     )
 
-    challenge_phase = models.ForeignKey("ChallengePhase")
-    dataset_split = models.ForeignKey("DatasetSplit")
-    leaderboard = models.ForeignKey("Leaderboard")
+    challenge_phase = models.ForeignKey("ChallengePhase", on_delete=models.CASCADE)
+    dataset_split = models.ForeignKey("DatasetSplit", on_delete=models.CASCADE)
+    leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
@@ -419,9 +419,9 @@ class ChallengeTemplate(TimeStampedModel):
 
 class LeaderboardData(TimeStampedModel):
 
-    challenge_phase_split = models.ForeignKey("ChallengePhaseSplit")
-    submission = models.ForeignKey("jobs.Submission")
-    leaderboard = models.ForeignKey("Leaderboard")
+    challenge_phase_split = models.ForeignKey("ChallengePhaseSplit", on_delete=models.CASCADE)
+    submission = models.ForeignKey("jobs.Submission", on_delete=models.CASCADE)
+    leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     result = JSONField()
     error = JSONField(null=True, blank=True)
 
@@ -438,8 +438,8 @@ class ChallengeConfiguration(TimeStampedModel):
     Model to store zip file for challenge creation.
     """
 
-    user = models.ForeignKey(User)
-    challenge = models.OneToOneField(Challenge, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    challenge = models.OneToOneField(Challenge, null=True, blank=True, on_delete=models.CASCADE)
     zip_configuration = models.FileField(
         upload_to=RandomFileName("zip_configuration_files/challenge_zip")
     )
@@ -465,8 +465,8 @@ class StarChallenge(TimeStampedModel):
     Model to star a challenge
     """
 
-    user = models.ForeignKey(User)
-    challenge = models.ForeignKey(Challenge)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
     is_starred = models.BooleanField(default=False, db_index=True)
 
     class Meta:
@@ -488,9 +488,9 @@ class UserInvitation(TimeStampedModel):
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
-    challenge = models.ForeignKey(Challenge, related_name="challenge")
-    user = models.ForeignKey(User)
-    invited_by = models.ForeignKey(ChallengeHost)
+    challenge = models.ForeignKey(Challenge, related_name="challenge", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    invited_by = models.ForeignKey(ChallengeHost, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "challenges"
@@ -509,7 +509,7 @@ class ChallengeEvaluationCluster(TimeStampedModel):
                                             `modified_at` fields.
     """
 
-    challenge = models.OneToOneField(Challenge)
+    challenge = models.OneToOneField(Challenge, on_delete=models.CASCADE)
     name = models.CharField(max_length=200, unique=True, db_index=True)
     cluster_endpoint = models.URLField(max_length=200, blank=True, null=True)
     cluster_ssl = models.TextField(null=True, blank=True)

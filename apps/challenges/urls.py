@@ -207,3 +207,5 @@ urlpatterns = [
         name="finish_annotation_file_upload",
     ),
 ]
+
+app_name = "challenges"

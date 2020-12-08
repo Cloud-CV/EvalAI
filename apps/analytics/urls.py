@@ -46,3 +46,5 @@ urlpatterns = [
         name="download_all_participants",
     ),
 ]
+
+app_name = "analytics"

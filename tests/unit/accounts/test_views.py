@@ -2,7 +2,7 @@ import os
 
 from rest_framework.authtoken.models import Token
 
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 
 from allauth.account.models import EmailAddress

@@ -39,3 +39,5 @@ urlpatterns = [
         name="invite_host_to_team",
     ),
 ]
+
+app_name = "hosts"

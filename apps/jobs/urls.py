@@ -106,3 +106,5 @@ urlpatterns = [
         name="finish_submission_file_upload",
     )
 ]
+
+app_name = "jobs"

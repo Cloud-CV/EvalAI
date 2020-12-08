@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.utils import timezone
 
