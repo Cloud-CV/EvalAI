@@ -13,7 +13,7 @@ from moto import mock_s3
 from os.path import join
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings

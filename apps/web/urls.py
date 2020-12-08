@@ -12,3 +12,5 @@ urlpatterns = [
         name="notify_users_about_challenge",
     ),
 ]
+
+app_name = "web"

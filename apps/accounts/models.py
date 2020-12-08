@@ -39,7 +39,7 @@ class Profile(TimeStampedModel):
     Model to store profile of a user
     """
 
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     contact_number = models.CharField(max_length=10, blank=False, null=True)
     affiliation = models.CharField(max_length=512)
     receive_participated_challenge_updates = models.BooleanField(default=False)
