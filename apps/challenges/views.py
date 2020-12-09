@@ -51,7 +51,8 @@ from base.utils import (
     send_slack_notification,
 )
 from challenges.utils import (
-    generate_presigned_url,
+    complete_s3_multipart_file_upload,
+    generate_presigned_url_for_multipart_upload,
     get_challenge_model,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
@@ -120,6 +121,7 @@ from .aws_utils import (
     stop_workers,
     restart_workers,
     get_logs_from_cloudwatch,
+    get_log_group_name,
 )
 from .utils import (
     get_aws_credentials_for_submission,
@@ -731,7 +733,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
 
         if settings.DEBUG or settings.TEST:
-            template_zip_s3_url = settings.API_HOST_URL + challenge_template.template_file.url
+            template_zip_s3_url = settings.EVALAI_API_SERVER + challenge_template.template_file.url
         else:
             template_zip_s3_url = challenge_template.template_file.url
 
@@ -995,6 +997,31 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     missing_keys_string = ", ".join(missing_keys)
                     message = "Please enter the following to the submission meta attribute in phase {}: {}.".format(
+                        data["id"], missing_keys_string
+                    )
+                    response_data = {"error": message}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+
+        if data.get("default_submission_meta_attributes"):
+            for attribute in data["default_submission_meta_attributes"]:
+                keys = ["name", "is_visible"]
+                missing_keys = get_missing_keys_from_dict(attribute, keys)
+
+                if len(missing_keys) == 0:
+                    valid_attributes = ["method_name", "method_description", "project_url", "publication_url"]
+                    if not attribute["name"] in valid_attributes:
+                        message = "Default meta attribute: {} in phase: {} does not exist!".format(
+                            attribute["name"], data["id"]
+                        )
+                        response_data = {"error": message}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                else:
+                    missing_keys_string = ", ".join(missing_keys)
+                    message = "Please enter the following to the default submission meta attribute in phase {}: {}.".format(
                         data["id"], missing_keys_string
                     )
                     response_data = {"error": message}
@@ -1390,7 +1417,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 send_slack_notification(message=message)
 
             template_data = get_challenge_template_data(zip_config.challenge)
-            if not challenge.is_docker_based and challenge.inform_hosts:
+            if not challenge.is_docker_based and challenge.inform_hosts and not challenge.remote_evaluation:
                 try:
                     response = start_workers([zip_config.challenge])
                     count, failures = response["count"], response["failures"]
@@ -1541,10 +1568,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "participant_team_members_email_ids": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of the participant team members email ID's",
                                 ),
                                 "participant_team_members_affiliations": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of the participant team members affiliations",
                                 ),
                                 "created_at": openapi.Schema(
@@ -1557,6 +1586,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "participant_team_members": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
+                                    items=openapi.Items(type=openapi.TYPE_STRING),
                                     description="Array of participant team members name and email",
                                 ),
                             },
@@ -1703,6 +1733,10 @@ def download_all_submissions(
                         "Submitted At",
                         "Submission Result File",
                         "Submission Metadata File",
+                        "Method Name",
+                        "Method Description",
+                        "Publication URL",
+                        "Project URL",
                     ]
                 )
                 for submission in submissions.data:
@@ -1739,6 +1773,10 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
+                            submission["method_name"],
+                            submission["method_description"],
+                            submission["publication_url"],
+                            submission["project_url"],
                         ]
                     )
                 return response
@@ -1825,6 +1863,10 @@ def download_all_submissions(
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",
+                    "method_name": "Method Name",
+                    "method_description": "Method Description",
+                    "publication_url": "Publication URL",
+                    "project_url": "Project URL",
                 }
                 submissions = Submission.objects.filter(
                     challenge_phase__challenge=challenge
@@ -2264,7 +2306,6 @@ def invite_users_to_challenge(request, challenge_pk):
                 invalid_emails.append(email)
 
         sender_email = settings.CLOUDCV_TEAM_EMAIL
-        # TODO: Update this URL after shifting django backend from evalapi.cloudcv.org to evalai.cloudcv.org/api
         hostname = get_url_from_hostname(settings.HOSTNAME)
         url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
         template_data = {"title": challenge.title, "url": url}
@@ -2586,7 +2627,7 @@ def get_worker_logs(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
     response_data = []
 
-    log_group_name = "challenge-pk-{}-workers".format(challenge.pk)
+    log_group_name = get_log_group_name(challenge.pk)
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.
 
@@ -2647,7 +2688,7 @@ def manage_worker(request, challenge_pk, action):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -2661,17 +2702,13 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
     Returns:
          Response Object -- An object containing the presignd url, or an error message if some failure occurs
     """
-    if settings.DEBUG or settings.TEST:
+    if settings.DEBUG:
         response_data = {
             "error": "Sorry, this feature is not available in development or test environment."
         }
         return Response(response_data)
     # Check if the challenge phase exists or not
-    try:
-        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     if not is_user_a_host_of_challenge(
         request.user, challenge_phase.challenge.pk
@@ -2680,6 +2717,11 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
             "error": "Sorry, you are not authorized for uploading an annotation file."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # Set default num of chunks to 1 if num of chunks is not specified
+    num_file_chunks = 1
+    if request.data.get("num_file_chunks"):
+        num_file_chunks = int(request.data["num_file_chunks"])
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     random_file_name = uuid.uuid4()
@@ -2711,14 +2753,81 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
             settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
         )
 
-    response = generate_presigned_url(
-        file_key_on_s3, challenge_phase.challenge.pk
+    response = generate_presigned_url_for_multipart_upload(
+        file_key_on_s3, challenge_phase.challenge.pk, num_file_chunks
     )
     if response.get("error"):
         response_data = response
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    response_data = {"presigned_url": response.get("presigned_url")}
+    response_data = {
+        "presigned_urls": response.get("presigned_urls"),
+        "upload_id": response.get("upload_id")
+    }
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def finish_annotation_file_upload(request, challenge_phase_pk):
+    """
+    API to complete multipart upload for a test annotation file
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+    Returns:
+         Response Object -- An object containing the presignd url, or an error message if some failure occurs
+    """
+    if settings.DEBUG:
+        response_data = {
+            "error": "Sorry, this feature is not available in development or test environment."
+        }
+        return Response(response_data)
+    # Check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    if not is_user_a_host_of_challenge(
+        request.user, challenge_phase.challenge.pk
+    ):
+        response_data = {
+            "error": "Sorry, you are not authorized for uploading an annotation file."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.data.get("parts") is None:
+        response_data = {"error": "Uploaded file parts metadata is missing!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.data.get("upload_id") is None:
+        response_data = {"error": "Uploaded file upload Id is missing!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    file_parts = json.loads(request.data["parts"])
+    upload_id = request.data["upload_id"]
+    file_key_on_s3 = "{}/{}".format(
+        settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
+    )
+
+    response = {}
+    try:
+        data = complete_s3_multipart_file_upload(
+            file_parts, upload_id, file_key_on_s3, challenge_phase.challenge.pk
+        )
+        if data.get("error"):
+            response_data = data
+            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                "upload_id": upload_id,
+                "challenge_phase_pk": challenge_phase.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+    except Exception:
+        response_data = {"error": "Error occurred while uploading annotations!"}
+        response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return response
 
 
 @api_view(["POST"])

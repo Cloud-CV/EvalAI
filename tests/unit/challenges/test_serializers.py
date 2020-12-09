@@ -122,6 +122,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -150,6 +152,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             }
             self.challenge_phase_create_serializer_without_max_submissions_per_month = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -177,6 +181,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "slug": self.challenge_phase.slug,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
+                "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
+                "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             }
             self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -212,6 +218,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                     "config_id",
+                    "allowed_submission_file_types",
+                    "default_submission_meta_attributes",
                 ]
             ),
         )
@@ -292,6 +300,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                     "config_id",
+                    "allowed_submission_file_types",
+                    "default_submission_meta_attributes",
                 ]
             ),
         )
@@ -368,6 +378,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "submission_meta_attributes",
                     "is_partial_submission_evaluation_enabled",
                     "config_id",
+                    "allowed_submission_file_types",
+                    "default_submission_meta_attributes",
                 ]
             ),
         )

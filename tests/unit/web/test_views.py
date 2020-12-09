@@ -2,7 +2,7 @@ import responses
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework import status
@@ -170,8 +170,9 @@ class TestErrorPages(TestCase):
         self.assertTrue(handler404.endswith(".page_not_found"))
         self.assertTrue(handler500.endswith(".internal_server_error"))
         c = Client()
+        ex = Exception()
         request = c.get("/abc")
-        response = page_not_found(request)
+        response = page_not_found(request, ex)
         self.assertEqual(response.status_code, 404)
         response = internal_server_error(request)
         self.assertEqual(response.status_code, 500)
@@ -217,7 +218,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_if_user_is_authenticated_and_superuser(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password"
         )
@@ -225,7 +226,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(response)
 
     def test_notification_email_data_page(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )
@@ -237,7 +238,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(response)
 
     def test_notification_email_without_challenge_image(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )
@@ -249,7 +250,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(response)
 
     def test_notification_email_with_challenge_image(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )
@@ -266,7 +267,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertEqual(request.status_code, 200)
 
     def test_notification_with_put_request(self):
-        request = self.client.get("/admin/", follow=True)
+        request = self.client.get("/api/admin/", follow=True)
         response = self.client.login(
             username="superuser", password="secret_password", follow=True
         )

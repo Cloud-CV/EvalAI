@@ -1,4 +1,5 @@
 /* Styles for Submission page */
+@import './variables.scss';
 
 .remaining-submission-clock {
 	padding-top: 55px;
@@ -65,7 +66,7 @@ code {
 }
 
 .submission-options {
-    margin-left: 10px;
+    margin-bottom: 10px;
 }
 
 md-radio-button.md-default-theme .md-on, md-radio-button .md-on {
@@ -89,4 +90,18 @@ md-radio-button .md-on {
 [type="checkbox"] + label:before, [type="checkbox"]:not(.filled-in) + label:after {
     width: 16px;
     height: 16px;
+}
+
+.color-orange {
+	color: $highlight;
+}
+
+.no-top-margin-p {
+	margin-top: 0px;
+}
+
+.submission-instructions {
+	padding-top: 0px;
+	padding-right: 30px;
+	padding-left: 30px;
 }

@@ -63,12 +63,12 @@ class Submission(TimeStampedModel):
     )
 
     participant_team = models.ForeignKey(
-        ParticipantTeam, related_name="submissions"
+        ParticipantTeam, related_name="submissions", on_delete=models.CASCADE
     )
     challenge_phase = models.ForeignKey(
-        ChallengePhase, related_name="submissions"
+        ChallengePhase, related_name="submissions", on_delete=models.CASCADE
     )
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
@@ -247,11 +247,6 @@ class Submission(TimeStampedModel):
                         "error": "The maximum number of submission for today has been reached"
                     }
                 )
-
-            self.is_public = (
-                True if self.challenge_phase.is_submission_public else False
-            )
-
             self.status = Submission.SUBMITTED
 
         submission_instance = super(Submission, self).save(*args, **kwargs)

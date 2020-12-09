@@ -15,13 +15,15 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import team_paginated_queryset
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengePhase
 from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
     get_challenge_model,
+    get_participant_model,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
 )
+from jobs.models import Submission
 from hosts.utils import is_user_a_host_of_challenge
 from .filters import ParticipantTeamsFilter
 from .models import Participant, ParticipantTeam
@@ -428,3 +430,53 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
             "error": f"The user {request.user.username} has not participanted in {challenge.title}"
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def remove_participant_team_from_challenge(
+    request, challenge_pk, participant_team_pk
+):
+    """
+    API to remove the participant team from a challenge
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+        participant_team_pk {[int]} -- Participant team primary key
+
+    Returns:
+        Response Object -- An object containing api response
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    participant_team = get_participant_model(participant_team_pk)
+
+    if participant_team.created_by == request.user:
+        if participant_team.challenge_set.filter(id=challenge_pk).exists():
+            challenge_phases = ChallengePhase.objects.filter(
+                challenge=challenge
+            )
+            for challenge_phase in challenge_phases:
+                submissions = Submission.objects.filter(
+                    participant_team=participant_team_pk,
+                    challenge_phase=challenge_phase,
+                )
+                if submissions.count() > 0:
+                    response_data = {
+                        "error": "Unable to remove team as you have already made submission to the challenge"
+                    }
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            challenge.participant_teams.remove(participant_team)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            response_data = {"error": "Team has not participated in the challenge"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        response_data = {
+            "error": "Sorry, you do not have permissions to remove this participant team"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)

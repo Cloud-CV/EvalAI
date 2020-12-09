@@ -23,6 +23,7 @@
         vm.methodDesc = "";
         vm.projectUrl = "";
         vm.publicationUrl = "";
+        vm.isPublicSubmission = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -61,6 +62,13 @@
         vm.termsAndConditions = false;
         vm.team = {};
         vm.isSubmissionUsingUrl = null;
+        vm.isSubmissionUsingCli = null;
+        vm.isSubmissionUsingFile = null;
+        vm.isRemoteChallenge = false;
+        vm.allowedSubmissionFileTypes = [];
+        vm.currentPhaseAllowedSubmissionFileTypes = '';
+        vm.defaultSubmissionMetaAttributes = [];
+        vm.currentPhaseMetaAttributesVisibility = {};
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -256,6 +264,7 @@
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
+                vm.isRemoteChallenge = details.remote_evaluation;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
@@ -497,6 +506,10 @@
                 if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
                     vm.subErrors.msg = "Please upload file or enter submission URL!";
                 } else {
+                    if (vm.isCurrentSubmissionMetaAttributeValid() !== true) {
+                        vm.subErrors.msg = "Please provide input for meta attributes!";
+                        return false;
+                    }
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
                     vm.loaderContainer = angular.element('.exist-team-card');
@@ -511,14 +524,14 @@
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
                         var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
-                        var validExtensions = ["json", "zip", "csv"];
+                        var validExtensions = vm.currentPhaseAllowedSubmissionFileTypes;
                         var isUrlValid = urlRegex.test(vm.fileUrl);
                         var extension = vm.fileUrl.split(".").pop();
                         if (isUrlValid && validExtensions.includes(extension)) {
                             formData.append("file_url", vm.fileUrl);
                         } else {
                             vm.stopLoader();
-                            vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
+                            vm.subErrors.msg = "Please enter a valid URL which ends in " + validExtensions + " file extension!";
                             return false;
                         }
                     } else {
@@ -530,6 +543,9 @@
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
                     formData.append("submission_metadata", JSON.stringify(vm.metaAttributesforCurrentSubmission));
+                    if (vm.isPublicSubmission !== null) {
+                        formData.append("is_public", vm.isPublicSubmission);
+                    }
 
                     parameters.data = formData;
 
@@ -555,6 +571,7 @@
                             vm.methodDesc = "";
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
+                            vm.isPublicSubmission = null;
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
                             vm.disableSubmit = true;
                             vm.showSubmissionNumbers = false;
@@ -571,6 +588,7 @@
                             vm.methodDesc = null;
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
+                            vm.isPublicSubmission = null;
                             if (status == 404) {
                                 vm.subErrors.msg = "Please select phase!";
                             } else {
@@ -613,8 +631,12 @@
                     if (details.results[k].submission_meta_attributes != undefined || details.results[k].submission_meta_attributes != null){
                         var attributes = details.results[k].submission_meta_attributes;
                         attributes.forEach(function(attribute){
-                            if (attribute["type"] == "checkbox") attribute["values"] = [];
-                            else attribute["value"] = null;
+                            if (attribute["type"] == "checkbox") {
+                                attribute["values"] = [];
+                            }
+                            else {
+                                attribute["value"] = null;
+                            }
                         });
                         data = {"phaseId":details.results[k].id, "attributes": attributes};
                         vm.submissionMetaAttributes.push(data);
@@ -622,6 +644,31 @@
                     else {
                         var data = {"phaseId":details.results[k].id, "attributes": null};
                         vm.submissionMetaAttributes.push(data);
+                    }
+                    if (details.results[k].allowed_submission_file_types != undefined || details.results[k].allowed_submission_file_types != null) {
+                        vm.allowedSubmissionFileTypes.push({
+                            "phaseId": details.results[k].id,
+                            "allowedSubmissionFileTypes": details.results[k].allowed_submission_file_types
+                        });
+                    } else {
+                        // Handle case for missing values
+                        vm.allowedSubmissionFileTypes.push({
+                            "phaseId": details.results[k].id,
+                            "allowedSubmissionFileTypes": ".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy"
+                        });
+                    }
+                    if (details.results[k].default_submission_meta_attributes != undefined && details.results[k].default_submission_meta_attributes != null) {
+                        var meta_attributes = details.results[k].default_submission_meta_attributes;
+                        var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(meta_attributes);
+                        vm.defaultSubmissionMetaAttributes.push({
+                            "phaseId": details.results[k].id,
+                            "defaultAttributes": defaultMetaAttributes
+                        });
+                    } else {
+                        vm.defaultSubmissionMetaAttributes.push({
+                            "phaseId":details.results[k].id,
+                            "defaultAttributes": {}
+                        });
                     }
                 }
                 utilities.hideLoader();
@@ -640,6 +687,26 @@
             vm.metaAttributesforCurrentSubmission = vm.submissionMetaAttributes.find(function(element){
                 return element["phaseId"] == phaseId;
             }).attributes;
+            vm.currentPhaseAllowedSubmissionFileTypes = vm.allowedSubmissionFileTypes.find(function(element) {
+                return element["phaseId"] == phaseId;
+            }).allowedSubmissionFileTypes;
+            // load default meta attributes visibility for current phase
+            vm.currentPhaseMetaAttributesVisibility = vm.defaultSubmissionMetaAttributes.find(function(element) {
+                return element["phaseId"] == phaseId;
+            }).defaultAttributes;
+            vm.subErrors.msg = "";
+        };
+
+        vm.getDefaultMetaAttributesDict = function(defaultMetaAttributes) {
+            var defaultMetaAttributesDict = {};
+            if (defaultMetaAttributes != undefined && defaultMetaAttributes != null) {
+                defaultMetaAttributes.forEach(function(attribute) {
+                    var attributeName = attribute["name"];
+                    var is_visible = attribute["is_visible"];
+                    defaultMetaAttributesDict[attributeName] = is_visible;
+                });
+            }
+            return defaultMetaAttributesDict;
         };
 
         vm.clearMetaAttributeValues = function(){
@@ -653,6 +720,26 @@
                     }
                 });
             }
+        };
+
+        vm.isCurrentSubmissionMetaAttributeValid = function() {
+            var isMetaAttributeValid = true;
+            if (vm.metaAttributesforCurrentSubmission !== null) {
+                vm.metaAttributesforCurrentSubmission.forEach(function(attribute) {
+                    if (attribute.required == true) {
+                        if (attribute.type == "checkbox") {
+                            if (attribute.values.length === 0) {
+                                isMetaAttributeValid = false;
+                            }
+                        } else {
+                            if (attribute.value === null || attribute.value === undefined) {
+                                isMetaAttributeValid = false;
+                            }
+                        }
+                    }
+                });
+            }
+            return isMetaAttributeValid;
         };
 
         vm.toggleSelection = function toggleSelection(attribute, value){ // Make sure this modifies the reference object.
@@ -977,6 +1064,10 @@
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     vm.isCurrentPhaseRestrictedToSelectOneSubmission = all_phases[i].is_restricted_to_select_one_submission;
+
+                    var attributes = all_phases[i].default_submission_meta_attributes;
+                    var defaultMetaAttributes = vm.getDefaultMetaAttributesDict(attributes);
+                    vm.currentPhaseMetaAttributesVisibility = defaultMetaAttributes;
                     break;
                 }
             }
@@ -1724,6 +1815,18 @@
         },{
             'label': 'Submission Metadata File',
             'id': 'submission_metadata_file'
+        },{
+            'label': 'Method Name',
+            'id': 'method_name'
+        },{
+            'label': 'Method Description',
+            'id': 'method_description'
+        },{
+            'label': 'Publication URL',
+            'id': 'publication_url'
+        },{
+            'label': 'Project URL',
+            'id': 'project_url'
         }];
 
         vm.downloadChallengeSubmissions = function() {

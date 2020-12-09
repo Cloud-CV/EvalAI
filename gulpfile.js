@@ -265,6 +265,7 @@ function lint() {
                 console.error("Please remove lint errors to connect the server");
             }
         }))
+        .pipe(eslint.failAfterError())
 }
 
 /* 

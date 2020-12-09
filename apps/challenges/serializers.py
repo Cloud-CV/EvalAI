@@ -59,6 +59,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "slug",
             "max_docker_image_size",
             "cli_version",
+            "remote_evaluation"
         )
 
 
@@ -95,6 +96,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_restricted_to_select_one_submission",
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
+            "allowed_submission_file_types",
+            "default_submission_meta_attributes",
         )
 
 
@@ -325,6 +328,8 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "submission_meta_attributes",
             "is_partial_submission_evaluation_enabled",
             "config_id",
+            "allowed_submission_file_types",
+            "default_submission_meta_attributes",
         )
 
 

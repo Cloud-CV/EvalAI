@@ -95,7 +95,6 @@
             >
               {{ element[column] }}</span
             >
-            <span *ngIf="column == 'execution_time'"> {{ element[column] }} sec </span>
             <a
               target="_blank"
               class="blue-text"
@@ -121,7 +120,7 @@
               <div class="elements-detail">
                 <div class="element">
                   <p>
-                    <strong class="text-light-black fw-semibold fs-12">Team Members</strong>&nbsp;
+                    <strong class="text-light-black fw-regular fs-12">Team Members</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
                       class="fw-semibold fs-14"

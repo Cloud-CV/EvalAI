@@ -29,7 +29,7 @@ def home(request, template_name="index.html"):
     return render(request, template_name)
 
 
-def page_not_found(request):
+def page_not_found(request, exception):
     response = render(request, "error404.html")
     response.status_code = 404
     return response
@@ -45,7 +45,7 @@ def notify_users_about_challenge(request):
     """
     Email New Challenge Details to EvalAI Users
     """
-    if request.user.is_authenticated() and request.user.is_superuser:
+    if request.user.is_authenticated and request.user.is_superuser:
         if request.method == "GET":
             template_name = "notification_email_data.html"
             return render(request, template_name)

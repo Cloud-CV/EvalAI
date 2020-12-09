@@ -47,20 +47,20 @@
                             </span>
                             <a href="{{profile.user.github_url}}"
                                 target="_blank"
-                                class="text-highlight">{{profile.user.github_url}}</a>
+                                class="text-highlight">{{profile.user.github_url || '-'}}</a>
                         </li>
                         <li>
                             <span class="text-light-black fs-12">
                                 Google Scholar Url<br></span>
                             <a href="{{profile.user.google_scholar_url}}"
                                 target="_blank" class="text-highlight">
-                                {{profile.user.google_scholar_url}}</a>
+                                {{profile.user.google_scholar_url || '-'}}</a>
                         </li>
                         <li>
                             <span class="text-light-black fs-12">Linkedin Url<br></span>
                             <a href="{{profile.user.linkedin_url}}"
                                 target="_blank"
-                                class="text-highlight">{{profile.user.linkedin_url}}</a>
+                                class="text-highlight">{{profile.user.linkedin_url || '-'}}</a>
                         </li>
                     </ul>
                 </div>

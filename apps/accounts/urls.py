@@ -11,3 +11,5 @@ urlpatterns = [
         name="resend_email_confirmation",
     ),
 ]
+
+app_name = "accounts"
