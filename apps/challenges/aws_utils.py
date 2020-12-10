@@ -17,8 +17,9 @@ from .challenge_notification_util import (
 )
 
 from base.utils import get_boto3_client, send_email
-from challenges.utils import get_aws_credentials_for_challenge
 from evalai.celery import app
+
+from .utils import get_challenge_model
 
 
 logger = logging.getLogger(__name__)
@@ -338,8 +339,37 @@ delete_service_args = """
 """
 
 
+def get_aws_credentials_for_challenge(challenge_pk):
+    """
+    Return the AWS credentials for a challenge using challenge pk
+    Arguments:
+        challenge_pk {int} -- challenge pk for which credentails are to be fetched
+    Returns:
+        aws_key {dict} -- Dict containing aws keys for a challenge
+    """
+    challenge = get_challenge_model(challenge_pk)
+    if challenge.use_host_credentials:
+        aws_keys = {
+            "AWS_ACCOUNT_ID": challenge.aws_account_id,
+            "AWS_ACCESS_KEY_ID": challenge.aws_access_key_id,
+            "AWS_SECRET_ACCESS_KEY": challenge.aws_secret_access_key,
+            "AWS_REGION": challenge.aws_region,
+        }
+    else:
+        aws_keys = {
+            "AWS_ACCOUNT_ID": settings.AWS_ACCOUNT_ID,
+            "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+            "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
+            "AWS_REGION": settings.AWS_REGION,
+            "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
+        }
+    return aws_keys
+
+
 def get_log_group_name(challenge_pk):
-    log_group_name = "challenge-pk-{}-{}-workers".format(challenge_pk, settings.ENVIRONMENT)
+    log_group_name = "challenge-pk-{}-{}-workers".format(
+        challenge_pk, settings.ENVIRONMENT
+    )
     return log_group_name
 
 

@@ -3,7 +3,7 @@ import boto3
 import re
 from botocore.signers import RequestSigner
 
-from challenges.utils import get_aws_credentials_for_challenge
+from challenges.aws_utils import get_aws_credentials_for_challenge
 
 
 def generate_aws_eks_bearer_token(cluster_name, challenge):
