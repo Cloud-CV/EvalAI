@@ -184,7 +184,7 @@ describe('Unit tests for teams controller', function () {
             expect(vm.isExistLoader).toBeTruthy();
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
             var headers = {
-                'Authorization': "Token " + utilities.getData('userKey')
+                'Authorization': "Bearer " + utilities.getData('userKey')
             };
             expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });

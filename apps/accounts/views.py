@@ -16,7 +16,8 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import SlidingToken
 from .permissions import HasVerifiedEmail
 
 from .throttles import ResendEmailThrottle
@@ -24,7 +25,7 @@ from .throttles import ResendEmailThrottle
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication,))
 def disable_user(request):
 
     user = request.user
@@ -37,7 +38,7 @@ def disable_user(request):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication,))
 def get_auth_token(request):
     try:
         user = User.objects.get(email=request.user.email)
@@ -46,10 +47,12 @@ def get_auth_token(request):
         Response(response_data, status.HTTP_404_NOT_FOUND)
 
     try:
-        token = Token.objects.get(user=user)
+        #token = Token.objects.get(user=user)
+        token = SlidingToken.for_user(user)
+        print(token)
     except Token.DoesNotExist:
-        token = Token.objects.create(user=user)
-        token.save()
+        token = SlidingToken.for_user(user)
+        print(token)
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
@@ -58,7 +61,7 @@ def get_auth_token(request):
 @api_view(["POST"])
 @throttle_classes([ResendEmailThrottle])
 @permission_classes((permissions.IsAuthenticated,))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication,))
 def resend_email_confirmation(request):
     """
     Resends the confirmation email on user request.

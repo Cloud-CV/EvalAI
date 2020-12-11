@@ -392,7 +392,7 @@
 
                                                     //store the header data in a variable
                                                     var headers = {
-                                                        'Authorization': "Token " + userKey
+                                                        'Authorization': "Bearer " + userKey
                                                     };
 
                                                     //Add headers with in your request
@@ -1174,7 +1174,7 @@
 
                             //store the header data in a variable
                             var headers = {
-                                'Authorization': "Token " + userKey
+                                'Authorization': "Bearer " + userKey
                             };
 
                             //Add headers with in your request
@@ -1612,7 +1612,7 @@
 
                             //store the header data in a variable
                             var headers = {
-                                'Authorization': "Token " + userKey
+                                'Authorization': "Bearer " + userKey
                             };
 
                             //Add headers with in your request

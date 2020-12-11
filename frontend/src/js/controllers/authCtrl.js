@@ -201,7 +201,10 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 200) {
-                            utilities.storeData('userKey', response.data.token);
+
+                            console.log(response.data);
+                            console.log("access: " + response.data.access);
+                            utilities.storeData('userKey', response.data.access);
                             if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();
