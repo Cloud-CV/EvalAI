@@ -1,0 +1,103 @@
+version: "3"
+services:
+  django:
+    image: evalai/evalai-aws-backend:latest
+    hostname: django
+    env_file:
+      - ./../../docker/vm/docker_vm.env
+      - ./../../.env
+    build:
+      context: ./../../
+      dockerfile: docker/vm/django/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./../..:/code
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: django_aws
+        awslogs-create-group: "true"
+
+  worker:
+    image: evalai/evalai-aws-worker:latest
+    env_file:
+      - ./../../docker/vm/docker_vm.env
+      - ./../../.env
+    build:
+      context: ./../../
+      dockerfile: docker/vm/worker/Dockerfile
+    depends_on:
+      - django
+    volumes:
+      - ./../..:/code
+
+  # required: auth token
+  # remote-worker:
+  #   image: evalai/evalai-aws-remote-worker:latest
+  #   env_file:
+  #     - ./../../docker/vm/docker_vm.env
+  #     - ./../../.env
+  #   build:
+  #     context: ./../../
+  #     dockerfile: docker/vm/worker/Dockerfile
+  #   command: ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.remote_submission_worker"]
+  #   depends_on:
+  #     - django
+  #   volumes:
+  #     - ./../..:/code
+
+  celery:
+    image: evalai/evalai-aws-celery:latest
+    env_file:
+      - ./../../docker/vm/docker_vm.env
+      - ./../../.env
+    build:
+      context: ./../../
+      dockerfile: docker/vm/celery/Dockerfile
+    depends_on:
+      - django
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: celery_aws
+        awslogs-create-group: "true"
+
+  nodejs:
+    build:
+      context: ./../../
+      dockerfile: docker/vm/nodejs/Dockerfile
+      args:
+        NODE_ENV: vm
+        DOMAIN_NAME: ${DOMAIN_NAME}
+        NGINX_FILE_NAME: nginx_aws
+        TYPE: https
+    depends_on:
+      - django
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /code/node_modules
+      - /code/bower_components
+      - ./../../certbot/conf:/etc/letsencrypt
+      - ./../../certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_DEFAULT_REGION}
+        awslogs-group: nodejs_aws
+        awslogs-create-group: "true"
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    environment: 
+      DOMAIN_NAME: ${DOMAIN_NAME}
+    volumes:
+      - ./../../certbot/conf:/etc/letsencrypt
+      - ./../../certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'" 

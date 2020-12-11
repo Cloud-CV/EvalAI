@@ -48,8 +48,8 @@ COMMON_SETTINGS_DICT = {
     ),
     "WORKER_IMAGE": os.environ.get(
         "WORKER_IMAGE",
-        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
-            aws_keys["AWS_ACCOUNT_ID"], ENV
+        "{}.dkr.ecr.{}.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], aws_keys["AWS_REGION"], ENV
         ),
     ),
     "CODE_UPLOAD_WORKER_IMAGE": os.environ.get(
@@ -63,6 +63,7 @@ COMMON_SETTINGS_DICT = {
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
     "EVALAI_API_SERVER": os.environ.get("EVALAI_API_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
+    "TEST": settings.TEST,
     "EMAIL_HOST": settings.EMAIL_HOST,
     "EMAIL_HOST_PASSWORD": settings.EMAIL_HOST_PASSWORD,
     "EMAIL_HOST_USER": settings.EMAIL_HOST_USER,
@@ -76,6 +77,7 @@ COMMON_SETTINGS_DICT = {
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
+    "DOMAIN_NAME": settings.DOMAIN_NAME,
 }
 
 VPC_DICT = {
@@ -137,6 +139,10 @@ task_definition = """
                   "value": "{DEBUG}"
                 }},
                 {{
+                  "name": "TEST",
+                  "value": "{TEST}"
+                }},
+                {{
                   "name": "EMAIL_HOST",
                   "value": "{EMAIL_HOST}"
                 }},
@@ -191,6 +197,10 @@ task_definition = """
                 {{
                   "name": "SENTRY_URL",
                   "value": "{SENTRY_URL}"
+                }},
+                {{
+                  "name": "DOMAIN_NAME",
+                  "value": "{DOMAIN_NAME}"
                 }},
             ],
             "workingDirectory": "/code",

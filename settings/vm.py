@@ -7,7 +7,13 @@ DEBUG = eval(os.environ.get("DEBUG", 'False'))
 
 TEST = eval(os.environ.get("TEST", 'False'))
 
-ALLOWED_HOSTS = ["eval.ai"]
+DOMAIN_NAME = os.environ.get("DOMAIN_NAME")
+
+ALLOWED_HOSTS = [
+    f"{DOMAIN_NAME}",
+]
+
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
@@ -15,9 +21,7 @@ ALLOWED_HOSTS = ["eval.ai"]
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
-    "evalai.s3.amazonaws.com",
-    "eval.ai",
-    "beta.eval.ai:9999",
+    f"{DOMAIN_NAME}",
 )
 
 DATABASES = {
@@ -31,15 +35,15 @@ DATABASES = {
     }
 }
 
-DATADOG_APP_NAME = "EvalAI"
-DATADOG_APP_KEY = os.environ.get("DATADOG_APP_KEY")
-DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
 
-MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
+# DATADOG_APP_NAME = "EvalAI"
+# DATADOG_APP_KEY = os.environ.get("DATADOG_APP_KEY")
+# DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
+
+# MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
 
 INSTALLED_APPS += ("storages", "raven.contrib.django.raven_compat")  # noqa
 
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_SES_REGION_NAME = os.environ.get("AWS_SES_REGION_NAME")
@@ -62,8 +66,8 @@ MEDIA_URL = "http://%s.s3.amazonaws.com/%s/" % (
 DEFAULT_FILE_STORAGE = "settings.custom_storages.MediaStorage"
 
 # Setup Email Backend related settings
-DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
 EMAIL_BACKEND = "django_ses.SESBackend"
+DEFAULT_FROM_EMAIL = os.environ.get("email")
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
@@ -73,10 +77,16 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
 # Hide API Docs on production environment
 REST_FRAMEWORK_DOCS = {"HIDE_DOCS": True}
 
-# Port number for the python-memcached cache backend.
-CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
-    "MEMCACHED_LOCATION"
-)  # noqa: ignore=F405
+# # Port number for the python-memcached cache backend.
+# CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
+#     "MEMCACHED_LOCATION"
+# )  # noqa: ignore=F405
+
+CACHES = {
+    "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
+    "throttling": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+}
+
 
 RAVEN_CONFIG = {
     "dsn": os.environ.get("SENTRY_URL"),
@@ -84,6 +94,7 @@ RAVEN_CONFIG = {
     # release based on the git info.
     "release": raven.fetch_git_sha(os.path.dirname(os.pardir)),
 }
+
 
 # https://docs.djangoproject.com/en/1.10/ref/settings/#secure-proxy-ssl-header
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
