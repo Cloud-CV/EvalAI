@@ -126,9 +126,10 @@ def check_container_status():
 
         if len(failed_containers) > 0:
             notify(failed_containers)
-    except:
+    except Exception:
         message = "{} environment:\n\n Docker client is down\n\n".format(get_environment())
         send_slack_notification(message)
+
 
 if __name__ == "__main__":
     check_container_status()
