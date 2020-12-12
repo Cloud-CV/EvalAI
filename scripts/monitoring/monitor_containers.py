@@ -111,20 +111,24 @@ def check_container_status():
         send_slack_notification(message)
         return
 
-    # Containers to check status for
-    container_status_map = get_container_status(docker_client)
-    if len(container_status_map.keys()) == 0:
-        message = "{} environment:\n\n No docker container is running\n\n".format(get_environment())
+    try:
+        # Containers to check status for
+        container_status_map = get_container_status(docker_client)
+        if len(container_status_map.keys()) == 0:
+            message = "{} environment:\n\n No docker container is running\n\n".format(get_environment())
+            send_slack_notification(message)
+            return
+
+        failed_containers = []
+        for container, is_running in container_status_map.items():
+            if not is_running:
+                failed_containers.append(container)
+
+        if len(failed_containers) > 0:
+            notify(failed_containers)
+    except Exception:
+        message = "{} environment:\n\n Docker client is down\n\n".format(get_environment())
         send_slack_notification(message)
-        return
-
-    failed_containers = []
-    for container, is_running in container_status_map.items():
-        if not is_running:
-            failed_containers.append(container)
-
-    if len(failed_containers) > 0:
-        notify(failed_containers)
 
 
 if __name__ == "__main__":
