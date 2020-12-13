@@ -1,7 +1,7 @@
-matplotlib==2.2.3
-networkx==2.1
-pandas==0.25.3
-pycocotools==2.0.0
-scipy==1.5.2
-sklearn==0.0
-tqdm==4.25.0
+matplotlib==3.3.3
+networkx==2.5
+pandas==1.1.4
+pycocotools==2.0.2
+scipy==1.5.4
+scikit-learn==0.23.2
+tqdm==4.54.0
