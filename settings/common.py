@@ -61,7 +61,6 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
-    'allauth.socialaccount',
     "corsheaders",
     "django_ses",
     "import_export",
