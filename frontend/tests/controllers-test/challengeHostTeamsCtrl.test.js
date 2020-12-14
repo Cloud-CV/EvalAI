@@ -171,7 +171,7 @@ describe('Unit tests for challenge host team controller', function () {
             expect(vm.isExistLoader).toBeTruthy();
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
             var headers = {
-                'Authorization': "Bearer " + utilities.getData('userKey')
+                'Authorization': "Token " + utilities.getData('userKey')
             };
             expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });

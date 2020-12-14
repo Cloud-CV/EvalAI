@@ -116,6 +116,7 @@
                             };
                             loginParameters.callback = {
                                 onSuccess: function(response) {
+                                    console.log(response.data);
                                     if (response.status == 200) {
                                         utilities.storeData('userKey', response.data.token);
                                         if ($rootScope.previousState) {
@@ -201,10 +202,9 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 200) {
-
-                            console.log(response.data);
-                            console.log("access: " + response.data.access);
-                            utilities.storeData('userKey', response.data.access);
+                            console.log("user login: ");
+                            console.log(response.data)
+                            utilities.storeData('userKey', response.data.token);
                             if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();

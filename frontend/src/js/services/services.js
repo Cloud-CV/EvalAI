@@ -25,7 +25,7 @@
             // check for authenticated calls
             if (parameters.token != null) {
                 var headers = {
-                    'Authorization': "Bearer " + token
+                    'Authorization': "Token " + token
                 };
             }
 
@@ -52,7 +52,7 @@
                     // alert("")
                     headers = {
                         'Content-Type': undefined,
-                        'Authorization': "Bearer " + token
+                        'Authorization': "Token " + token
                     };
                     req.transformRequest = function(data) {
                         return data;

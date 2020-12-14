@@ -7,7 +7,7 @@ from import_export import resources
 from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
-from .models import Profile
+from .models import Profile, JwtToken
 
 
 @admin.register(Profile)
@@ -73,3 +73,5 @@ class TokenAdmin(TokenAdmin):
 
 admin.site.unregister(Token)
 admin.site.register(Token, TokenAdmin)
+
+admin.site.register(JwtToken)

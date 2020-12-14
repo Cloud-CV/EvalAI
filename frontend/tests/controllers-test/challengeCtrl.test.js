@@ -458,7 +458,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.isExistLoader).toBeTruthy();
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
             var headers = {
-                'Authorization': "Bearer " + utilities.getData('userKey')
+                'Authorization': "Token " + utilities.getData('userKey')
             };
             expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });
@@ -1066,7 +1066,7 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.isExistLoader).toBeTruthy();
             expect(vm.startLoader).toHaveBeenCalledWith("Loading Submissions");
             var headers = {
-                'Authorization': "Bearer " + utilities.getData('userKey')
+                'Authorization': "Token " + utilities.getData('userKey')
             };
             expect($http.get).toHaveBeenCalledWith(url, {headers: headers});
         });

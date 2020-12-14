@@ -53,7 +53,7 @@ urlpatterns = [
     url(r"^api/admin/", admin.site.urls),
     url(
         r"^api/auth/login",
-        TokenObtainPairView.as_view(),
+        obtain_expiring_auth_token,
         name="obtain_expiring_auth_token",
     ),
     url(r"^api/auth/", include("rest_auth.urls")),

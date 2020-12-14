@@ -54,7 +54,7 @@ from .serializers import (
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_participant_team_count(request, challenge_pk):
     """
         Returns the number of participant teams in a challenge
@@ -71,7 +71,7 @@ def get_participant_team_count(request, challenge_pk):
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_participant_count(request, challenge_pk):
     """
         Returns the number of participants in a challenge
@@ -91,7 +91,7 @@ def get_participant_count(request, challenge_pk):
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_count(request, challenge_pk, duration):
     """
         Returns submission count for a challenge according to the duration
@@ -140,7 +140,7 @@ def get_submission_count(request, challenge_pk, duration):
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenge_phase_submission_count_by_team(
     request, challenge_pk, challenge_phase_pk
 ):
@@ -182,7 +182,7 @@ def get_challenge_phase_submission_count_by_team(
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_last_submission_time(
     request, challenge_pk, challenge_phase_pk, submission_by
 ):
@@ -217,7 +217,7 @@ def get_last_submission_time(
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_last_submission_datetime_analysis(
     request, challenge_pk, challenge_phase_pk
 ):
@@ -280,7 +280,7 @@ def get_last_submission_datetime_analysis(
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenge_phase_submission_analysis(
     request, challenge_pk, challenge_phase_pk
 ):
@@ -330,7 +330,7 @@ def get_challenge_phase_submission_analysis(
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_participants(request, challenge_pk):
     """
         Returns the List of Participant Teams and its details in csv format

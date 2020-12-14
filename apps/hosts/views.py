@@ -32,9 +32,8 @@ get_challenge_host_model = get_model_object(ChallengeHost)
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication,))
 def challenge_host_team_list(request):
-
     if request.method == "GET":
         challenge_host_team_ids = ChallengeHost.objects.filter(
             user=request.user
@@ -66,7 +65,7 @@ def challenge_host_team_list(request):
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_host_team_detail(request, pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
@@ -111,7 +110,7 @@ def challenge_host_team_detail(request, pk):
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_host_list(request, challenge_host_team_pk):
 
     try:
@@ -160,7 +159,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
@@ -214,7 +213,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_challenge_host_team(request):
 
     serializer = ChallengeHostTeamSerializer(
@@ -238,7 +237,7 @@ def create_challenge_host_team(request):
 @api_view(["DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
     """
     A user can remove himself from the challenge host team.
@@ -262,7 +261,7 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_host_to_team(request, pk):
 
     try:

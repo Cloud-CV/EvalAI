@@ -17,7 +17,8 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import SlidingToken
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import JwtToken
 from .permissions import HasVerifiedEmail
 
 from .throttles import ResendEmailThrottle
@@ -25,7 +26,7 @@ from .throttles import ResendEmailThrottle
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def disable_user(request):
 
     user = request.user
@@ -38,30 +39,40 @@ def disable_user(request):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_auth_token(request):
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
-
+    print("user fetched")
     try:
-        #token = Token.objects.get(user=user)
-        token = SlidingToken.for_user(user)
+        token = JwtToken.objects.get(user=user)
         print(token)
-    except Token.DoesNotExist:
-        token = SlidingToken.for_user(user)
+    except Exception as e:
+        print(e)
+        jwt_token = RefreshToken.for_user(user)
+        print(jwt_token)
+        token = JwtToken.objects.create(
+            user=user,
+            access_token=str(jwt_token.access_token),
+            refresh_token=str(jwt_token)
+        )
+        print("ola")
+        print(str(jwt_token.access_token))
+        print(str(jwt_token))
+        token.save()
         print(token)
 
-    response_data = {"token": "{}".format(token)}
+    response_data = {"token": "{}".format(token.access_token)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
 @throttle_classes([ResendEmailThrottle])
 @permission_classes((permissions.IsAuthenticated,))
-@authentication_classes((JWTAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def resend_email_confirmation(request):
     """
     Resends the confirmation email on user request.
