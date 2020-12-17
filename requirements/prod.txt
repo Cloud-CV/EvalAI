@@ -1,8 +1,8 @@
 -r common.txt
 
-boto==2.43.0
-django-storages==1.7.1
-python-memcached==1.58
+boto==2.49.0
+django-storages==1.10.1
+python-memcached==1.59
 raven==6.10.0
-uWSGI==2.0.18
-datadog==0.14.0
+uWSGI==2.0.19.1
+datadog==0.39.0
