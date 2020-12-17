@@ -78,7 +78,6 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
-                console.log(response.data);
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
             },

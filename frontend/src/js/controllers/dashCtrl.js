@@ -31,7 +31,6 @@
         parameters.url = 'auth/user/';
         parameters.method = 'GET';
         parameters.token = userKey;
-        console.log("param token: " + userKey);
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
@@ -42,8 +41,6 @@
             },
             onError: function(response) {
                 utilities.hideLoader();
-                console.log("erro: " + response);
-                console.log(response.data);
                 var status = response.status;
                 var error = response.data;
                 if (status == 403) {

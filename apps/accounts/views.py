@@ -46,24 +46,17 @@ def get_auth_token(request):
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
-    print("user fetched")
+
     try:
         token = JwtToken.objects.get(user=user)
-        print(token)
     except Exception as e:
-        print(e)
         jwt_token = RefreshToken.for_user(user)
-        print(jwt_token)
         token = JwtToken.objects.create(
             user=user,
             access_token=str(jwt_token.access_token),
             refresh_token=str(jwt_token)
         )
-        print("ola")
-        print(str(jwt_token.access_token))
-        print(str(jwt_token))
         token.save()
-        print(token)
 
     response_data = {"token": "{}".format(token.access_token)}
     return Response(response_data, status=status.HTTP_200_OK)
