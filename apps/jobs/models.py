@@ -117,7 +117,7 @@ class Submission(TimeStampedModel):
     is_baseline = models.BooleanField(default=False)
     job_name = ArrayField(
         models.TextField(null=True, blank=True),
-        default=[],
+        default=list,
         blank=True,
         null=True,
     )

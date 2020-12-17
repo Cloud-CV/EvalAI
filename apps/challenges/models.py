@@ -29,6 +29,10 @@ def save_challenge_slug(sender, instance, **kwargs):
     instance.slug = "{}-{}".format(title, instance.pk)
 
 
+def get_default_eval_metric():
+    return ["Accuracy"]
+
+
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
@@ -79,14 +83,14 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Featured", db_index=True
     )
     allowed_email_domains = ArrayField(
-        models.CharField(max_length=50, blank=True), default=[], blank=True
+        models.CharField(max_length=50, blank=True), default=list, blank=True
     )
     blocked_email_domains = ArrayField(
-        models.CharField(max_length=50, blank=True), default=[], blank=True
+        models.CharField(max_length=50, blank=True), default=list, blank=True
     )
     banned_email_ids = ArrayField(
         models.TextField(null=True, blank=True),
-        default=[],
+        default=list,
         blank=True,
         null=True,
     )
@@ -256,7 +260,7 @@ class ChallengePhase(TimeStampedModel):
     )
     allowed_email_ids = ArrayField(
         models.TextField(null=True, blank=True),
-        default=[],
+        default=list,
         blank=True,
         null=True,
     )
@@ -400,7 +404,7 @@ class ChallengeTemplate(TimeStampedModel):
     # The metrics on which the submissions are evaluated
     eval_metrics = ArrayField(
         models.CharField(max_length=200, blank=True),
-        default=["Accuracy"],
+        default=get_default_eval_metric,
         blank=True,
     )
     phases = models.IntegerField(null=True, blank=True, default=None)
