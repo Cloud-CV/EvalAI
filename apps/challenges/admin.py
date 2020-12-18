@@ -25,6 +25,7 @@ from .models import (
     DatasetSplit,
     Leaderboard,
     LeaderboardData,
+    PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
 )
@@ -287,20 +288,8 @@ class ChallengeTemplate(ImportExportTimeStampedAdmin):
         "phases",
         "splits",
     )
-    list_filter = (
-        "title",
-        "dataset",
-        "phases",
-        "splits",
-        "eval_metrics",
-    )
-    search_fields = (
-        "title",
-        "dataset",
-        "phases",
-        "splits",
-        "eval_metrics",
-    )
+    list_filter = ("title", "dataset", "phases", "splits", "eval_metrics")
+    search_fields = ("title", "dataset", "phases", "splits", "eval_metrics")
 
 
 @admin.register(DatasetSplit)
@@ -393,3 +382,37 @@ class ChallengeEvaluationClusterAdmin(ImportExportTimeStampedAdmin):
     list_display = ("id", "name", "cluster_yaml", "kube_config")
     list_filter = ("name",)
     search_fields = ("name",)
+
+
+@admin.register(PWCChallengeLeaderboard)
+class PWCChallengeLeaderboardAdmin(ImportExportTimeStampedAdmin):
+    raw_id_fields = ["phase_split"]
+    readonly_fields = ("created_at",)
+    list_display = (
+        "id",
+        "get_challenge_name_and_id",
+        "phase_split",
+        "get_challenge_phase_split_id",
+        "area",
+        "task",
+        "dataset",
+    )
+    list_filter = ("area",)
+    search_fields = ("area", "task", "dataset")
+
+    def get_challenge_phase_split_id(self, obj):
+        """Return challenge phase split id for a challenge phase and split"""
+        return "%s" % (obj.phase_split.id)
+
+    get_challenge_phase_split_id.short_description = "Challenge Phase Split ID"
+    get_challenge_phase_split_id.admin_order_field = "phase_split"
+
+    def get_challenge_name_and_id(self, obj):
+        """Return challenge name and id for a challenge"""
+        return "%s - %s" % (
+            obj.phase_split.challenge_phase.challenge.title,
+            obj.phase_split.challenge_phase.challenge.id,
+        )
+
+    get_challenge_name_and_id.short_description = "Challenge Name - ID"
+    get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"

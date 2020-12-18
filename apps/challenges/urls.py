@@ -206,6 +206,9 @@ urlpatterns = [
         views.finish_annotation_file_upload,
         name="finish_annotation_file_upload",
     ),
+    url(
+        r"^pwc_task_dataset/$", views.pwc_task_dataset, name="pwc_task_dataset"
+    ),
 ]
 
 app_name = "challenges"
