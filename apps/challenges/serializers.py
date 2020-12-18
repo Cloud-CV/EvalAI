@@ -12,6 +12,7 @@ from .models import (
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
+    PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
 )
@@ -59,7 +60,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "slug",
             "max_docker_image_size",
             "cli_version",
-            "remote_evaluation"
+            "remote_evaluation",
         )
 
 
@@ -408,3 +409,42 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "cluster_yaml",
             "kube_config",
         )
+
+
+class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
+
+    challenge_id = serializers.SerializerMethodField()
+    leaderboard = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PWCChallengeLeaderboard
+        fields = (
+            "challenge_id",
+            "phase_split",
+            "leaderboard",
+            "area",
+            "task",
+            "dataset",
+        )
+
+    def get_challenge_id(self, obj):
+        return obj.phase_split.challenge_phase.challenge.id
+
+    def get_leaderboard(self, obj):
+        """Get the leaderboard metrics array
+
+        Note: PWC requires the default sorted by metric at the index '0' of the array
+
+        Args:
+            obj ([Model Class Object]): [PWCChallengeLeaderboard model object]
+
+        Returns:
+            [array]: [Leaderboard metrics for the phase split]
+        """
+        leaderboard_schema = obj.phase_split.leaderboard.schema
+        default_order_by = leaderboard_schema["default_order_by"]
+        labels = leaderboard_schema["labels"]
+        default_order_by_index = labels.index(default_order_by)
+        # PWC requires the default sorted by metric at the index "0" of the array
+        labels.insert(0, labels.pop(default_order_by_index))
+        return labels

@@ -61,7 +61,9 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
     creator = models.ForeignKey(
-        "hosts.ChallengeHostTeam", related_name="challenge_creator", on_delete=models.CASCADE
+        "hosts.ChallengeHostTeam",
+        related_name="challenge_creator",
+        on_delete=models.CASCADE,
     )
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
@@ -282,7 +284,9 @@ class ChallengePhase(TimeStampedModel):
     # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
     # Store the default metadata for a submission meta attributes of a challenge phase.
-    default_submission_meta_attributes = JSONField(default=None, blank=True, null=True)
+    default_submission_meta_attributes = JSONField(
+        default=None, blank=True, null=True
+    )
 
     class Meta:
         app_label = "challenges"
@@ -361,7 +365,9 @@ class ChallengePhaseSplit(TimeStampedModel):
         (PUBLIC, "public"),
     )
 
-    challenge_phase = models.ForeignKey("ChallengePhase", on_delete=models.CASCADE)
+    challenge_phase = models.ForeignKey(
+        "ChallengePhase", on_delete=models.CASCADE
+    )
     dataset_split = models.ForeignKey("DatasetSplit", on_delete=models.CASCADE)
     leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     visibility = models.PositiveSmallIntegerField(
@@ -423,7 +429,9 @@ class ChallengeTemplate(TimeStampedModel):
 
 class LeaderboardData(TimeStampedModel):
 
-    challenge_phase_split = models.ForeignKey("ChallengePhaseSplit", on_delete=models.CASCADE)
+    challenge_phase_split = models.ForeignKey(
+        "ChallengePhaseSplit", on_delete=models.CASCADE
+    )
     submission = models.ForeignKey("jobs.Submission", on_delete=models.CASCADE)
     leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     result = JSONField()
@@ -443,7 +451,9 @@ class ChallengeConfiguration(TimeStampedModel):
     """
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    challenge = models.OneToOneField(Challenge, null=True, blank=True, on_delete=models.CASCADE)
+    challenge = models.OneToOneField(
+        Challenge, null=True, blank=True, on_delete=models.CASCADE
+    )
     zip_configuration = models.FileField(
         upload_to=RandomFileName("zip_configuration_files/challenge_zip")
     )
@@ -492,7 +502,9 @@ class UserInvitation(TimeStampedModel):
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
-    challenge = models.ForeignKey(Challenge, related_name="challenge", on_delete=models.CASCADE)
+    challenge = models.ForeignKey(
+        Challenge, related_name="challenge", on_delete=models.CASCADE
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     invited_by = models.ForeignKey(ChallengeHost, on_delete=models.CASCADE)
 
@@ -527,3 +539,27 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "challenge_evaluation_cluster"
+
+
+class PWCChallengeLeaderboard(TimeStampedModel):
+    """
+    Model to store the challenge mapping with area, task and dataset of papers with code (PWC)
+    (https://paperswithcode.com/)
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    phase_split = models.OneToOneField(
+        "ChallengePhaseSplit", on_delete=models.CASCADE
+    )
+    area = models.CharField(max_length=200, blank=True, null=True, default="")
+    task = models.CharField(max_length=200, blank=True, null=True, default="")
+    dataset = models.CharField(
+        max_length=200, blank=True, null=True, default=""
+    )
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "pwc_challenge_leaderboard"
