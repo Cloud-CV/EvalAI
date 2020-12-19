@@ -22,10 +22,6 @@ from django.conf.urls.static import static
 
 from allauth.account.views import ConfirmEmailView
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi

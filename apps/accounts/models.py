@@ -63,7 +63,6 @@ class JwtToken(TimeStampedModel):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     access_token = models.CharField(max_length=512, blank=False, null=False)
-    refresh_token = models.CharField(max_length=512, blank=False, null=False)
 
     def __str__(self):
         return "{}".format(self.user)

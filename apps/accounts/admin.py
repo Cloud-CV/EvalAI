@@ -74,4 +74,20 @@ class TokenAdmin(TokenAdmin):
 admin.site.unregister(Token)
 admin.site.register(Token, TokenAdmin)
 
-admin.site.register(JwtToken)
+
+@admin.register(JwtToken)
+class JwtTokenAdmin(ImportExportTimeStampedAdmin):
+    list_display = (
+        "user",
+        "access_token",
+    )
+    list_filter = (
+        "user",
+    )
+    search_fields = (
+        "user__username",
+    )
+
+
+admin.site.unregister(JwtToken)
+admin.site.register(JwtToken, JwtTokenAdmin)
