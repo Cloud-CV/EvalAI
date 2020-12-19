@@ -1,6 +1,6 @@
 import os
 
-from rest_framework.authtoken.models import Token
+from accounts.models import JwtToken
 
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
@@ -62,8 +62,8 @@ class GetAuthTokenTest(BaseAPITestClass):
 
     def test_get_auth_token(self):
         response = self.client.get(self.url, {})
-        token = Token.objects.get(user=self.user)
-        expected_data = {"token": "{}".format(token)}
+        token = JwtToken.objects.get(user=self.user)
+        expected_data = {"token": "{}".format(token.access_token)}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
