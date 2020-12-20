@@ -415,12 +415,16 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
 
     challenge_id = serializers.SerializerMethodField()
     leaderboard = serializers.SerializerMethodField()
+    leaderboard_decimal_precision = serializers.SerializerMethodField()
+    is_leaderboard_order_descending = serializers.SerializerMethodField()
 
     class Meta:
         model = PWCChallengeLeaderboard
         fields = (
             "challenge_id",
             "phase_split",
+            "leaderboard_decimal_precision",
+            "is_leaderboard_order_descending",
             "leaderboard",
             "area",
             "task",
@@ -429,6 +433,12 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
 
     def get_challenge_id(self, obj):
         return obj.phase_split.challenge_phase.challenge.id
+
+    def get_leaderboard_decimal_precision(self, obj):
+        return obj.phase_split.leaderboard_decimal_precision
+
+    def get_is_leaderboard_order_descending(self, obj):
+        return obj.phase_split.is_leaderboard_order_descending
 
     def get_leaderboard(self, obj):
         """Get the leaderboard metrics array
