@@ -263,6 +263,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
     )
     list_filter = ("dataset_split", "leaderboard", "visibility")
     search_fields = (
+        "id",
         "challenge_phase__name",
         "dataset_split__name",
         "leaderboard__id",
