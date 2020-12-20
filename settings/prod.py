@@ -13,9 +13,9 @@ ALLOWED_HOSTS = ["eval.ai"]
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
-    "evalai.s3.amazonaws.com",
-    "eval.ai",
-    "beta.eval.ai:9999",
+    "https://evalai.s3.amazonaws.com",
+    "https://eval.ai",
+    "https://beta.eval.ai:9999",
 )
 
 DATABASES = {
