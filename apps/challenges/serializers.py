@@ -429,6 +429,7 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
             "area",
             "task",
             "dataset",
+            "enable_sync",
         )
 
     def get_challenge_id(self, obj):

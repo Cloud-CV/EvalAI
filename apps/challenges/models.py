@@ -554,10 +554,13 @@ class PWCChallengeLeaderboard(TimeStampedModel):
     phase_split = models.OneToOneField(
         "ChallengePhaseSplit", on_delete=models.CASCADE
     )
-    area = models.CharField(max_length=200, blank=True, null=True, default="")
-    task = models.CharField(max_length=200, blank=True, null=True, default="")
-    dataset = models.CharField(
-        max_length=200, blank=True, null=True, default=""
+    area = models.CharField(max_length=200, default="", db_index=True)
+    task = models.CharField(max_length=200, default="", db_index=True)
+    dataset = models.CharField(max_length=200, default="", db_index=True)
+    enable_sync = models.BooleanField(
+        default=True,
+        verbose_name="Enable leaderboard sync to PWC",
+        db_index=True,
     )
 
     class Meta:
