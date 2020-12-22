@@ -12,7 +12,7 @@ djangorestframework==3.10.3
 djangorestframework-expiring-authtoken==0.1.4
 django-cors-headers==3.5.0
 django-rest-auth[with_social]==0.9.5
-django-ses==0.8.5
+django-ses==1.0.3
 docker-compose==1.27.4
 drfdocs==0.0.11
 drf-yasg==1.17.0
