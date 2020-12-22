@@ -192,6 +192,14 @@ task_definition = """
                   "name": "SENTRY_URL",
                   "value": "{SENTRY_URL}"
                 }},
+                {{
+                    "name": "AWS_SES_REGION_NAME"
+                    "value": "{AWS_SES_REGION_ENDPOINT}"
+                }},
+                {{
+                    "name": "AWS_SES_REGION_ENDPOINT",
+                    "value": "{AWS_SES_REGION_ENDPOINT}"
+                }}
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -376,6 +384,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     worker_memory = challenge.worker_memory
     log_group_name = get_log_group_name(challenge.pk)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
+    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
+    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
     if execution_role_arn:
         if challenge.is_docker_based:
@@ -421,6 +431,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
                 log_group_name=log_group_name,
+                AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+                AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
                 **COMMON_SETTINGS_DICT,
             )
         definition = eval(definition)
