@@ -3317,7 +3317,9 @@ def get_all_challenge_templates(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def pwc_task_dataset(request):
-    challenge_mapping = PWCChallengeLeaderboard.objects.all()
+    challenge_mapping = PWCChallengeLeaderboard.objects.filter(
+        enable_sync=True
+    )
     serializer = PWCChallengeLeaderboardSerializer(
         challenge_mapping, many=True, context={"request": request}
     )
