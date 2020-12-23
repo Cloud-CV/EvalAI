@@ -3328,6 +3328,6 @@ def pwc_task_dataset(request):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
-            "error": "You are not authorized to make this request.Please ask EvalAI admin to add you as a staff user for accessing this API."
+            "error": "You are not authorized to make this request. Please ask EvalAI admin to add you as a staff user for accessing this API."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
