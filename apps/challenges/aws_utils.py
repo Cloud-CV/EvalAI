@@ -193,8 +193,8 @@ task_definition = """
                   "value": "{SENTRY_URL}"
                 }},
                 {{
-                    "name": "AWS_SES_REGION_NAME"
-                    "value": "{AWS_SES_REGION_ENDPOINT}"
+                    "name": "AWS_SES_REGION_NAME",
+                    "value": "{AWS_SES_REGION_NAME}"
                 }},
                 {{
                     "name": "AWS_SES_REGION_ENDPOINT",
