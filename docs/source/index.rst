@@ -23,6 +23,7 @@ Contents:
    evaluation_scripts
    approve_challenge
    participate
+   make_submission_public_private_baseline
    pull_request
    contribution
    architecture
