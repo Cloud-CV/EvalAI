@@ -15,7 +15,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     "https://evalai.s3.amazonaws.com",
     "https://eval.ai",
-    "https://beta.eval.ai:9999",
+    "http://beta.eval.ai:9999",
 )
 
 DATABASES = {
