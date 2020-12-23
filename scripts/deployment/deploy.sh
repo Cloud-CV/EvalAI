@@ -22,7 +22,7 @@ if [ -z ${TRAVIS_BRANCH} ]; then
 fi
 
 env=${TRAVIS_BRANCH}
-JUMPBOX="jumpbox.eval.ai"
+JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
     INSTANCE=${PRODUCTION_INSTANCE}
