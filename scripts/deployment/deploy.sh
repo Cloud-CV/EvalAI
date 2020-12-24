@@ -37,23 +37,24 @@ case $opt in
         auto_deploy)
             chmod 400 scripts/deployment/evalai.pem
             ssh-add scripts/deployment/evalai.pem
-            ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} 'bash -s' <<'ENDSSH'
-            ssh ubuntu@${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} 'bash -s' <<'ENDSSH2'
-            cd ~/Projects/evalai
-            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
-            export COMMIT_ID=${COMMIT_ID}
-            eval $(aws ecr get-login --no-include-email)
-            aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
-            docker-compose -f docker-compose-${env}.yml rm -s -v -f
-            docker-compose -f docker-compose-${env}.yml pull
-            docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery
-            ENDSSH2
-            ENDSSH
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
+				ssh ubuntu@${INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
+                    source venv/bin/activate
+                    cd ~/Projects/EvalAI
+                    export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+                    export COMMIT_ID=${COMMIT_ID}
+                    eval $(aws ecr get-login --no-include-email)
+                    aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+                    docker-compose -f docker-compose-${env}.yml rm -s -v -f
+                    docker-compose -f docker-compose-${env}.yml pull
+                    docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery
+				ENDSSH2
+			ENDSSH
             ;;
         pull)
             aws_login;
             echo "Pulling environment variables file..."
-            aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+            aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prssod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
             echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
