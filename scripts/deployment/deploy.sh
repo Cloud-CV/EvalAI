@@ -22,11 +22,12 @@ if [ -z ${TRAVIS_BRANCH} ]; then
 fi
 
 env=${TRAVIS_BRANCH}
+JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
-    HOSTNAME="eval.ai"
+    INSTANCE=${PRODUCTION_INSTANCE}
 elif [[ ${env} == "staging" ]]; then
-    HOSTNAME="staging.eval.ai"
+    INSTANCE=${STAGING_INSTANCE}
 else
     echo "Skipping deployment since commit not on staging or production branch."
     exit 0
@@ -35,15 +36,20 @@ fi
 case $opt in
         auto_deploy)
             chmod 400 scripts/deployment/evalai.pem
-            ssh ubuntu@${HOSTNAME} -i scripts/deployment/evalai.pem -o StrictHostKeyChecking=no \
-            "cd ~/Projects/evalai && \
-            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} && \
-            export COMMIT_ID=${COMMIT_ID} && \
-            eval $(aws ecr get-login --no-include-email) && \
-            aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env && \
-            docker-compose -f docker-compose-${env}.yml rm -s -v -f && \
-            docker-compose -f docker-compose-${env}.yml pull && \
-            docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery "
+            ssh-add scripts/deployment/evalai.pem
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
+				ssh ubuntu@${INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
+					source venv/bin/activate
+					cd ~/Projects/EvalAI
+					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+					export COMMIT_ID=${COMMIT_ID}
+					eval $(aws ecr get-login --no-include-email)
+					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+					docker-compose -f docker-compose-${env}.yml rm -s -v -f
+					docker-compose -f docker-compose-${env}.yml pull
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery
+				ENDSSH2
+			ENDSSH
             ;;
         pull)
             aws_login;
