@@ -3317,11 +3317,17 @@ def get_all_challenge_templates(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def pwc_task_dataset(request):
-    challenge_mapping = PWCChallengeLeaderboard.objects.filter(
-        enable_sync=True
-    )
-    serializer = PWCChallengeLeaderboardSerializer(
-        challenge_mapping, many=True, context={"request": request}
-    )
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    if request.user.is_staff:
+        challenge_mapping = PWCChallengeLeaderboard.objects.filter(
+            enable_sync=True
+        )
+        serializer = PWCChallengeLeaderboardSerializer(
+            challenge_mapping, many=True, context={"request": request}
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": "You are not authorized to make this request. Please ask EvalAI admin to add you as a staff user for accessing this API."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
