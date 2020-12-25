@@ -128,7 +128,7 @@ logger = logging.getLogger(__name__)
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_submission(request, challenge_id, challenge_phase_id):
+def challenge_submission(request, challenge_id, challenge_phase_pk_or_slug, version):
     """API Endpoint for making a submission to a challenge"""
 
     # check if the challenge exists or not
@@ -139,13 +139,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge
-        )
-    except ChallengePhase.DoesNotExist:
-        response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if version == 'v2':
+        try:
+            challenge_phase = ChallengePhase.objects.get(
+                slug=challenge_phase_pk_or_slug, challenge=challenge
+            )
+        except ChallengePhase.DoesNotExist:
+            response_data = {"error": "Challenge Phase does not exist"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk_or_slug)
 
     if request.method == "GET":
         # getting participant team object for the user for a particular challenge.
@@ -286,7 +289,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 request.data,
                 request.user.id,
                 request.method,
-                challenge_phase_id,
+                challenge_phase_pk_or_slug,
             )
             response_data = {
                 "message": "Please wait while your submission being evaluated!"
@@ -340,7 +343,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
         message = {
             "challenge_pk": challenge_id,
-            "phase_pk": challenge_phase_id,
+            "phase_pk": challenge_phase_pk_or_slug,
         }
         if challenge.is_docker_based:
             try:

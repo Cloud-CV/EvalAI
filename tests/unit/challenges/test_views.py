@@ -3335,7 +3335,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk + 10,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
+                "version": 'v1',
             },
         )
         expected = {
@@ -3352,16 +3353,17 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk + 10,
+                "version": 'v1',
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
+            "detail": "ChallengePhase {} does not exist".format(
                 self.challenge5_phase3.pk + 10
             )
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all_submissions_when_user_is_host_of_challenge(self):
@@ -3369,14 +3371,16 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase1.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase1.pk,
+                "version": 'v1',
             },
         )
         self.url_phase2 = reverse_lazy(
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase2.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase2.pk,
+                "version": 'v1',
             },
         )
         self.client.force_authenticate(user=self.user5)
@@ -3428,7 +3432,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
+                "version": 'v1',
             },
         )
         self.client.force_authenticate(user=self.user6)
@@ -3478,7 +3483,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             "challenges:get_all_submissions_of_challenge",
             kwargs={
                 "challenge_pk": self.challenge5.pk,
-                "challenge_phase_pk": self.challenge5_phase3.pk,
+                "challenge_phase_pk_or_slug": self.challenge5_phase3.pk,
+                "version": 'v1',
             },
         )
         expected = {
@@ -3578,8 +3584,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk + 10,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": 'v1',
             },
         )
         expected = {
@@ -3598,17 +3605,18 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk + 10,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk + 10,
                 "file_type": self.file_type_csv,
+                "version": 'v1',
             },
         )
         expected = {
-            "error": "Challenge Phase {} does not exist".format(
+            "detail": "ChallengePhase {} does not exist".format(
                 self.challenge_phase.pk + 10
             )
         }
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertDictEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_file_type_is_not_csv(self):
@@ -3616,8 +3624,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_pdf,
+                "version": 'v1',
             },
         )
         expected = {"error": "The file type requested is not valid!"}
@@ -3630,8 +3639,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": 'v1',
             },
         )
         response = self.client.get(self.url, {})
@@ -3642,8 +3652,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": 'v1',
             },
         )
         submissions = Submission.objects.filter(
@@ -3697,8 +3708,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": 'v1',
             },
         )
 
@@ -3714,8 +3726,9 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             "challenges:download_all_submissions",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
+                "challenge_phase_pk_or_slug": self.challenge_phase.pk,
                 "file_type": self.file_type_csv,
+                "version": 'v1',
             },
         )
 
