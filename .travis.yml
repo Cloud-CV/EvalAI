@@ -16,8 +16,7 @@ before_install:
 install:
   - pip install awscli==1.18.66 flake8==3.8.2 pre-commit==2.9.2
 script:
-  - pre-commit install
-  - black ./
+  - pre-commit run -a
   - flake8 ./
   - docker-compose build
   - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
