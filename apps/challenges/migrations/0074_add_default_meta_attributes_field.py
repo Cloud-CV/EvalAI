@@ -8,24 +8,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0073_add_inform_hosts_field'),
-    ]
+    dependencies = [("challenges", "0073_add_inform_hosts_field")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='default_submission_meta_attributes',
-            field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=None, null=True),
+            model_name="challengephase",
+            name="default_submission_meta_attributes",
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                blank=True, default=None, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='worker_cpu_cores',
+            model_name="challenge",
+            name="worker_cpu_cores",
             field=models.IntegerField(blank=True, default=256, null=True),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='worker_memory',
+            model_name="challenge",
+            name="worker_memory",
             field=models.IntegerField(blank=True, default=512, null=True),
         ),
     ]

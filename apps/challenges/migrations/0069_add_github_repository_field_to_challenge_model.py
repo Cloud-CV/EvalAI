@@ -7,14 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0068_change_test_annotation_to_be_null'),
-    ]
+    dependencies = [("challenges", "0068_change_test_annotation_to_be_null")]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='github_repository',
-            field=models.CharField(blank=True, default='', max_length=1000, null=True),
-        ),
+            model_name="challenge",
+            name="github_repository",
+            field=models.CharField(
+                blank=True, default="", max_length=1000, null=True
+            ),
+        )
     ]

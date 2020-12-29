@@ -7,7 +7,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "-nc", nargs="?", default=20, type=int, help="Number of challenges."
+            "-nc",
+            nargs="?",
+            default=20,
+            type=int,
+            help="Number of challenges.",
         )
 
     def handle(self, *args, **options):

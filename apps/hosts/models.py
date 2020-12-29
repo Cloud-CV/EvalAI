@@ -15,7 +15,9 @@ class ChallengeHostTeam(TimeStampedModel):
 
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(
-        User, related_name="challenge_host_team_creator", on_delete=models.CASCADE
+        User,
+        related_name="challenge_host_team_creator",
+        on_delete=models.CASCADE,
     )
     team_url = models.CharField(max_length=1000, default="", blank=True)
 
@@ -64,7 +66,9 @@ class ChallengeHost(TimeStampedModel):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    team_name = models.ForeignKey("ChallengeHostTeam", on_delete=models.CASCADE)
+    team_name = models.ForeignKey(
+        "ChallengeHostTeam", on_delete=models.CASCADE
+    )
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     permissions = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
 

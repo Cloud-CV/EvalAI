@@ -23,10 +23,15 @@ class Participant(TimeStampedModel):
         (UNKNOWN, UNKNOWN),
     )
 
-    user = models.ForeignKey(User, related_name="participation", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="participation", on_delete=models.CASCADE
+    )
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     team = models.ForeignKey(
-        "ParticipantTeam", related_name="participants", null=True, on_delete=models.CASCADE
+        "ParticipantTeam",
+        related_name="participants",
+        null=True,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):

@@ -78,7 +78,7 @@ from .utils import (
     handle_submission_rerun,
     is_url_valid,
     reorder_submissions_comparator,
-    reorder_submissions_comparator_to_key
+    reorder_submissions_comparator_to_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -165,16 +165,18 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         submission = Submission.objects.filter(
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,
-            ignore_submission=False
+            ignore_submission=False,
         ).order_by("-submitted_at")
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
         # rerank in progress submissions in ascending order of submitted_at
-        reordered_submissions = sorted(filtered_submissions.qs,
-                                       key=reorder_submissions_comparator_to_key(
-                                           reorder_submissions_comparator
-                                       ))
+        reordered_submissions = sorted(
+            filtered_submissions.qs,
+            key=reorder_submissions_comparator_to_key(
+                reorder_submissions_comparator
+            ),
+        )
         paginator, result_page = paginated_queryset(
             reordered_submissions, request
         )
@@ -307,7 +309,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
         else:
             request.data["is_public"] = json.loads(request.data["is_public"])
-            if request.data.get("is_public") and challenge_phase.is_restricted_to_select_one_submission:
+            if (
+                request.data.get("is_public")
+                and challenge_phase.is_restricted_to_select_one_submission
+            ):
                 # Handle corner case for restrict one public lb submission
                 submissions_already_public = Submission.objects.filter(
                     is_public=True,
@@ -744,17 +749,16 @@ def get_submission_by_pk(request, submission_id):
             serializer = SubmissionSerializer(
                 submission,
                 data=request.data,
-                context={
-                    "ignore_submission": True,
-                    "request": request,
-                },
+                context={"ignore_submission": True, "request": request},
                 partial=True,
             )
             if serializer.is_valid():
                 serializer.save()
                 response_data = serializer.data
                 return Response(response_data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
     response_data = {
         "error": "Sorry, you are not authorized to access this submission."
     }
@@ -2168,13 +2172,13 @@ def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    submissions = Submission.objects.filter(
-        challenge_phase=challenge_phase,
-    ).values('status').annotate(count=Count("id"))
+    submissions = (
+        Submission.objects.filter(challenge_phase=challenge_phase)
+        .values("status")
+        .annotate(count=Count("id"))
+    )
 
-    response_data = {
-        "status": submissions
-    }
+    response_data = {"status": submissions}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -2193,7 +2197,9 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
          Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
     """
     if settings.DEBUG:
-        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        response_data = {
+            "error": "Sorry, this feature is not available in development or test environment."
+        }
         return Response(response_data)
 
     # Check if the challenge phase exists or not
@@ -2314,10 +2320,14 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         file_key_on_s3 = "{}/{}".format(
             settings.MEDIAFILES_LOCATION, submission.input_file.name
         )
-        response = generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge.pk, num_file_chunks)
+        response = generate_presigned_url_for_multipart_upload(
+            file_key_on_s3, challenge.pk, num_file_chunks
+        )
         if response.get("error"):
             response_data = response
-            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            response = Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
             response_data = {
                 "presigned_urls": response.get("presigned_urls"),
@@ -2346,7 +2356,9 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
          Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
     """
     if settings.DEBUG:
-        response_data = {"error": "Sorry, this feature is not available in development or test environment."}
+        response_data = {
+            "error": "Sorry, this feature is not available in development or test environment."
+        }
         return Response(response_data)
 
     # Check if the challenge phase exists or not
@@ -2436,7 +2448,9 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         )
         if data.get("error"):
             response_data = data
-            response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            response = Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
             response_data = {
                 "upload_id": upload_id,

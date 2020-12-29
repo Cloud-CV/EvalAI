@@ -1077,7 +1077,9 @@ class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
     def test_remove_participant_team_when_user_is_not_authorized(self):
         self.client.force_authenticate(user=self.user1)
         response = self.client.post(self.url, {})
-        expected = {"error": "Sorry, you do not have permissions to remove this participant team"}
+        expected = {
+            "error": "Sorry, you do not have permissions to remove this participant team"
+        }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -1131,6 +1133,8 @@ class RemoveParticipantTeamFromChallengeTest(BaseAPITestClass):
 
         self.client.force_authenticate(user=self.participant_team.created_by)
         response = self.client.post(self.url, {})
-        expected = {"error": "Unable to remove team as you have already made submission to the challenge"}
+        expected = {
+            "error": "Unable to remove team as you have already made submission to the challenge"
+        }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
