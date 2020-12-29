@@ -33,7 +33,9 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
-EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER", "http://localhost:8000")
+EVALAI_API_SERVER = os.environ.get(
+    "EVALAI_API_SERVER", "http://localhost:8000"
+)
 
 # Application definition
 
@@ -61,7 +63,7 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
-    'allauth.socialaccount',
+    "allauth.socialaccount",
     "corsheaders",
     "django_ses",
     "import_export",

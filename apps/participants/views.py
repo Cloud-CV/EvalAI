@@ -468,12 +468,16 @@ def remove_participant_team_from_challenge(
                     response_data = {
                         "error": "Unable to remove team as you have already made submission to the challenge"
                     }
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
 
             challenge.participant_teams.remove(participant_team)
             return Response(status=status.HTTP_200_OK)
         else:
-            response_data = {"error": "Team has not participated in the challenge"}
+            response_data = {
+                "error": "Team has not participated in the challenge"
+            }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {

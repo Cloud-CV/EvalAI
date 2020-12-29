@@ -68,7 +68,7 @@ def create_job_object(message, environment_image):
         ],
         resources=client.V1ResourceRequirements(
             limits={"nvidia.com/gpu": "1"}
-        )
+        ),
     )
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
@@ -158,7 +158,7 @@ def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
     configuration.verify_ssl = True
-    configuration.ssl_ca_cert = '.certificate.txt'
+    configuration.ssl_ca_cert = ".certificate.txt"
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -173,7 +173,7 @@ def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
     configuration.verify_ssl = True
-    configuration.ssl_ca_cert = '.certificate.txt'
+    configuration.ssl_ca_cert = ".certificate.txt"
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -188,7 +188,7 @@ def get_core_v1_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
     configuration.verify_ssl = True
-    configuration.ssl_ca_cert = '.certificate.txt'
+    configuration.ssl_ca_cert = ".certificate.txt"
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]

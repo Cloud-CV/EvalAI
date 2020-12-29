@@ -550,9 +550,7 @@ class BaseAPITestClass(APITestCase):
         expected = {"error": "The file URL is missing!"}
 
         response = self.client.post(
-            self.url,
-            {"status": "submitting"},
-            format="multipart",
+            self.url, {"status": "submitting"}, format="multipart"
         )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -2543,16 +2541,14 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
     def test_get_submission_presigned_url(self, mock_get_aws_creds):
         self.url = reverse_lazy(
             "jobs:get_submission_file_presigned_url",
-            kwargs={
-                "challenge_phase_pk": self.challenge_phase.pk,
-            },
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
         )
 
         expected = {
             "presigned_urls": [
                 {
                     "partNumber": 1,
-                    "url": "https://test-bucket.s3.amazonaws.com/media/submission_files/"
+                    "url": "https://test-bucket.s3.amazonaws.com/media/submission_files/",
                 }
             ]
         }
@@ -2562,17 +2558,24 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             "AWS_ACCESS_KEY_ID": "dummy-key",
             "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_REGION": "us-east-1"
+            "AWS_REGION": "us-east-1",
         }
-        client = boto3.client('s3')
+        client = boto3.client("s3")
         client.create_bucket(Bucket="test-bucket")
 
         num_file_chunks = 1
         response = self.client.post(
             self.url,
-            data={"status": "submitting", "num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+            data={
+                "status": "submitting",
+                "num_file_chunks": num_file_chunks,
+                "file_name": "media/submissions/dummy.txt",
+            },
         )
-        self.assertEqual(len(response.data["presigned_urls"]), len(expected["presigned_urls"]))
+        self.assertEqual(
+            len(response.data["presigned_urls"]),
+            len(expected["presigned_urls"]),
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
@@ -2580,9 +2583,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
         # Create a submission using multipart upload
         self.url = reverse_lazy(
             "jobs:get_submission_file_presigned_url",
-            kwargs={
-                "challenge_phase_pk": self.challenge_phase.pk
-            }
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
         )
 
         self.client.force_authenticate(user=self.challenge_host.user)
@@ -2590,20 +2591,24 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             "AWS_ACCESS_KEY_ID": "dummy-key",
             "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_REGION": "us-east-1"
+            "AWS_REGION": "us-east-1",
         }
-        client = boto3.client('s3')
+        client = boto3.client("s3")
         client.create_bucket(Bucket="test-bucket")
 
         num_file_chunks = 1
         response = self.client.post(
             self.url,
-            data={"status": "submitting", "num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+            data={
+                "status": "submitting",
+                "num_file_chunks": num_file_chunks,
+                "file_name": "media/submissions/dummy.txt",
+            },
         )
 
         expected = {
             "upload_id": response.data["upload_id"],
-            "submission_pk": response.data["submission_pk"]
+            "submission_pk": response.data["submission_pk"],
         }
 
         # Upload submission in parts to mocked S3 bucket
@@ -2619,7 +2624,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        etag = response.headers['ETag']
+        etag = response.headers["ETag"]
         parts.append({"ETag": etag, "PartNumber": part})
 
         # Finish multipart upload
@@ -2627,7 +2632,7 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             "jobs:finish_submission_file_upload",
             kwargs={
                 "challenge_phase_pk": self.challenge_phase.pk,
-                "submission_pk": expected["submission_pk"]
+                "submission_pk": expected["submission_pk"],
             },
         )
 
@@ -2635,8 +2640,8 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
             self.url,
             data={
                 "parts": json.dumps(parts),
-                "upload_id": expected["upload_id"]
-            }
+                "upload_id": expected["upload_id"],
+            },
         )
 
         self.assertEqual(response.data, expected)

@@ -431,7 +431,10 @@ def reorder_submissions_comparator(submission_1, submission_2):
         Submission.SUBMITTING,
         Submission.RUNNING,
     ]
-    if submission_1.status in submissions_in_progress_status and submission_2.status in submissions_in_progress_status:
+    if (
+        submission_1.status in submissions_in_progress_status
+        and submission_2.status in submissions_in_progress_status
+    ):
         return submission_1.submitted_at > submission_2.submitted_at
     return submission_1.submitted_at < submission_2.submitted_at
 
@@ -446,6 +449,7 @@ def reorder_submissions_comparator_to_key(comparator):
         Returns:
             [class] -- key class object for lamdbda
     """
+
     class ComparatorToLambdaKey:
         def __init__(self, obj, *args):
             self.obj = obj
@@ -473,4 +477,5 @@ def reorder_submissions_comparator_to_key(comparator):
         # Compares if first object is not equal to second object
         def __ne__(self, other):
             return comparator(self.obj, other.obj) != 0
+
     return ComparatorToLambdaKey

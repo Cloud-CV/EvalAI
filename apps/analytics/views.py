@@ -351,9 +351,7 @@ def download_all_participants(request, challenge_pk):
             challenge_pk
         )
         writer = csv.writer(response)
-        writer.writerow(
-            ["Team Name", "Team Members", "Email Id", ]
-        )
+        writer.writerow(["Team Name", "Team Members", "Email Id"])
         for team in teams.data:
             writer.writerow(
                 [

@@ -8,23 +8,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0069_add_github_repository_field_to_challenge_model'),
+        ("challenges", "0069_add_github_repository_field_to_challenge_model")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='config_id',
+            model_name="challengephase",
+            name="config_id",
             field=models.IntegerField(default=None, blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='datasetsplit',
-            name='config_id',
+            model_name="datasetsplit",
+            name="config_id",
             field=models.IntegerField(default=None, blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='leaderboard',
-            name='config_id',
+            model_name="leaderboard",
+            name="config_id",
             field=models.IntegerField(default=None, blank=True, null=True),
         ),
     ]

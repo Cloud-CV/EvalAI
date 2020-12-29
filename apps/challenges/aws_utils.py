@@ -345,7 +345,9 @@ delete_service_args = """
 
 
 def get_log_group_name(challenge_pk):
-    log_group_name = "challenge-pk-{}-{}-workers".format(challenge_pk, settings.ENVIRONMENT)
+    log_group_name = "challenge-pk-{}-{}-workers".format(
+        challenge_pk, settings.ENVIRONMENT
+    )
     return log_group_name
 
 

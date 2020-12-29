@@ -104,7 +104,7 @@ urlpatterns = [
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_submission_file_upload/(?P<submission_pk>[0-9]+)/$",
         views.finish_submission_file_upload,
         name="finish_submission_file_upload",
-    )
+    ),
 ]
 
 app_name = "jobs"

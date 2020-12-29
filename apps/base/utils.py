@@ -226,9 +226,9 @@ def get_queue_name(param, challenge_pk):
     queue_name = param.replace(" ", "-").lower()[:max_challenge_title_len]
     queue_name = re.sub(r"\W+", "-", queue_name)
 
-    queue_name = "{}-{}-{}-{}".format(queue_name, challenge_pk, env, uuid.uuid4())[
-        :max_len
-    ]
+    queue_name = "{}-{}-{}-{}".format(
+        queue_name, challenge_pk, env, uuid.uuid4()
+    )[:max_len]
     return queue_name
 
 

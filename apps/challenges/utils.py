@@ -14,7 +14,7 @@ from base.utils import (
     get_model_object,
     get_boto3_client,
     mock_if_non_prod_aws,
-    send_email
+    send_email,
 )
 
 from .models import (
@@ -159,7 +159,9 @@ def generate_presigned_url(file_key_on_s3, challenge_pk):
         return response_data
 
 
-def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, num_parts):
+def generate_presigned_url_for_multipart_upload(
+    file_key_on_s3, challenge_pk, num_parts
+):
     """
     Function to get the presigned urls to upload a file to s3 in chunks
     Arguments:
@@ -178,7 +180,7 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
         response = s3.create_multipart_upload(
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
             Key=file_key_on_s3,
-            ACL="public-read"
+            ACL="public-read",
         )
 
         upload_id = response["UploadId"]
@@ -190,17 +192,16 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
                     "Bucket": aws_keys["AWS_STORAGE_BUCKET_NAME"],
                     "Key": file_key_on_s3,
                     "UploadId": upload_id,
-                    "PartNumber": part_number
+                    "PartNumber": part_number,
                 },
                 ExpiresIn=settings.PRESIGNED_URL_EXPIRY_TIME,
             )
-            presigned_urls.append({
-                "partNumber": part_number,
-                "url": presigned_url
-            })
+            presigned_urls.append(
+                {"partNumber": part_number, "url": presigned_url}
+            )
         response_data = {
             "presigned_urls": presigned_urls,
-            "upload_id": upload_id
+            "upload_id": upload_id,
         }
     except Exception as e:
         logger.exception(e)
@@ -208,7 +209,9 @@ def generate_presigned_url_for_multipart_upload(file_key_on_s3, challenge_pk, nu
     return response_data
 
 
-def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challenge_pk):
+def complete_s3_multipart_file_upload(
+    parts, upload_id, file_key_on_s3, challenge_pk
+):
     """
     Function to complete the multipart upload of s3 files using presigned urls
     Arguments:
@@ -229,10 +232,8 @@ def complete_s3_multipart_file_upload(parts, upload_id, file_key_on_s3, challeng
         response_data = s3.complete_multipart_upload(
             Bucket=aws_keys["AWS_STORAGE_BUCKET_NAME"],
             Key=file_key_on_s3,
-            MultipartUpload={
-                "Parts": parts
-            },
-            UploadId=upload_id
+            MultipartUpload={"Parts": parts},
+            UploadId=upload_id,
         )
     except Exception as e:
         logger.exception(e)

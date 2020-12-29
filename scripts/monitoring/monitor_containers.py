@@ -37,8 +37,8 @@ def is_container_running(container):
     """
     is_running = False
     try:
-        container_state = container.attrs['State']
-        is_running = container_state['Status'] == RUNNING
+        container_state = container.attrs["State"]
+        is_running = container_state["Status"] == RUNNING
     except Exception:
         pass
     return is_running
@@ -57,7 +57,9 @@ def get_container_status(docker_client):
     containers = docker_client.containers.list(all=True)
     for container in containers:
         if EVALAI_CONTAINER_PREFIX in container.name:
-            container_status_map[container.name] = is_container_running(container)
+            container_status_map[container.name] = is_container_running(
+                container
+            )
     return container_status_map
 
 
@@ -70,12 +72,17 @@ def send_slack_notification(message):
     Returns:
         response {Response} -- Http response object
     """
-    response = requests.post(SLACK_WEBHOOK, data=json.dumps({
-        "text": message,
-        "username": USERNAME,
-        "channel": CHANNEL,
-        "icon_emoji": ICON_EMOJI
-    }))
+    response = requests.post(
+        SLACK_WEBHOOK,
+        data=json.dumps(
+            {
+                "text": message,
+                "username": USERNAME,
+                "channel": CHANNEL,
+                "icon_emoji": ICON_EMOJI,
+            }
+        ),
+    )
     return response
 
 
@@ -87,7 +94,9 @@ def notify(container_names):
         container_names {List} -- List of container names
     """
     environment = get_environment()
-    message = "{} environment:\n\n Following workers are down:\n\n {}".format(environment, " \n ".join(container_names))
+    message = "{} environment:\n\n Following workers are down:\n\n {}".format(
+        environment, " \n ".join(container_names)
+    )
     response = send_slack_notification(message)
     return response
 
@@ -107,7 +116,9 @@ def check_container_status():
     # Get docker client
     docker_client = get_docker_client()
     if not docker_client:
-        message = "{} environment:\n\n Docker daemon is down\n\n".format(get_environment())
+        message = "{} environment:\n\n Docker daemon is down\n\n".format(
+            get_environment()
+        )
         send_slack_notification(message)
         return
 
@@ -115,7 +126,9 @@ def check_container_status():
         # Containers to check status for
         container_status_map = get_container_status(docker_client)
         if len(container_status_map.keys()) == 0:
-            message = "{} environment:\n\n No docker container is running\n\n".format(get_environment())
+            message = "{} environment:\n\n No docker container is running\n\n".format(
+                get_environment()
+            )
             send_slack_notification(message)
             return
 
@@ -127,7 +140,9 @@ def check_container_status():
         if len(failed_containers) > 0:
             notify(failed_containers)
     except Exception:
-        message = "{} environment:\n\n Docker client is down\n\n".format(get_environment())
+        message = "{} environment:\n\n Docker client is down\n\n".format(
+            get_environment()
+        )
         send_slack_notification(message)
 
 
