@@ -18,10 +18,7 @@ from django.utils import timezone
 
 from rest_framework.test import APITestCase
 
-from challenges.models import (
-    Challenge,
-    ChallengePhase,
-)
+from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam
@@ -146,7 +143,7 @@ class BaseAPITestClass(APITestCase):
 
         input_file_name = os.path.basename(input_file.name)
         return join(self.SUBMISSION_DATA_DIR, "{input_file}").format(
-            submission_id=submission_id, input_file=input_file_name,
+            submission_id=submission_id, input_file=input_file_name
         )
 
     def test_create_dir(self):
@@ -201,7 +198,7 @@ class BaseAPITestClass(APITestCase):
             self.testserver, self.submission.input_file.url
         )
         expected_submission_input_file_path = self.get_submission_input_file_path(
-            self.submission.pk, self.submission.input_file,
+            self.submission.pk, self.submission.input_file
         )
         mock_download_and_extract_file.assert_called_with(
             expected_submission_input_file, expected_submission_input_file_path
@@ -219,7 +216,9 @@ class BaseAPITestClass(APITestCase):
         non_existing_submission_pk = self.submission.pk + 1
         value = extract_submission_data(non_existing_submission_pk)
         mock_logger.assert_called_with(
-            "{} Submission {} does not exist".format(self.SUBMISSION_LOGS_PREFIX, non_existing_submission_pk)
+            "{} Submission {} does not exist".format(
+                self.SUBMISSION_LOGS_PREFIX, non_existing_submission_pk
+            )
         )
         self.assertEqual(value, None)
 

@@ -4,10 +4,10 @@ services:
   - docker
   - xvfb
 python:
-  - "3.7.5"
+  - '3.7.5'
 cache:
   directories:
-    - "$HOME/.cache/pip"
+    - '$HOME/.cache/pip'
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
@@ -26,8 +26,8 @@ after_success:
   - coveralls --rcfile=.coveragerc
   - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv
     -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
-  - "./scripts/deployment/push.sh"
-  - "./scripts/deployment/deploy.sh auto_deploy"
+  - './scripts/deployment/push.sh'
+  - './scripts/deployment/deploy.sh auto_deploy'
 notifications:
   email:
     on_success: change

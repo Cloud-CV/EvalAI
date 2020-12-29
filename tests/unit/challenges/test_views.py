@@ -190,30 +190,35 @@ class GetChallengeTest(BaseAPITestClass):
 
 
 class GetParticipantTeamNameTest(BaseAPITestClass):
-
     def setUp(self):
         super(GetParticipantTeamNameTest, self).setUp()
 
         self.participant = Participant.objects.create(
             user=self.user,
             status=Participant.ACCEPTED,
-            team=self.participant_team
+            team=self.participant_team,
         )
 
         self.challenge.participant_teams.add(self.participant_team)
 
     def test_team_name_for_challenge(self):
-        self.url = reverse_lazy('challenges:participant_team_detail_for_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk})
+        self.url = reverse_lazy(
+            "challenges:participant_team_detail_for_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
 
         expected = "Participant Team for Challenge"
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['team_name'], expected)
+        self.assertEqual(response.data["team_name"], expected)
 
-    def test_team_name_for_challenge_with_participant_team_does_not_exist(self):
-        self.url = reverse_lazy('challenges:participant_team_detail_for_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk + 2})
+    def test_team_name_for_challenge_with_participant_team_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:participant_team_detail_for_challenge",
+            kwargs={"challenge_pk": self.challenge.pk + 2},
+        )
         expected = {"error": "You are not a participant!"}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4400,16 +4405,14 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
     def test_get_annotation_presigned_url(self, mock_get_aws_creds):
         self.url = reverse_lazy(
             "challenges:get_annotation_file_presigned_url",
-            kwargs={
-                "challenge_phase_pk": self.challenge_phase.pk,
-            },
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
         )
 
         expected = {
             "presigned_urls": [
                 {
                     "partNumber": 1,
-                    "url": "https://test-bucket.s3.amazonaws.com/media/annotation_files/"
+                    "url": "https://test-bucket.s3.amazonaws.com/media/annotation_files/",
                 }
             ]
         }
@@ -4419,17 +4422,23 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
             "AWS_ACCESS_KEY_ID": "dummy-key",
             "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_REGION": "us-east-1"
+            "AWS_REGION": "us-east-1",
         }
-        client = boto3.client('s3')
+        client = boto3.client("s3")
         client.create_bucket(Bucket="test-bucket")
 
         num_file_chunks = 1
         response = self.client.post(
             self.url,
-            data={"num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+            data={
+                "num_file_chunks": num_file_chunks,
+                "file_name": "media/submissions/dummy.txt",
+            },
         )
-        self.assertEqual(len(response.data["presigned_urls"]), len(expected["presigned_urls"]))
+        self.assertEqual(
+            len(response.data["presigned_urls"]),
+            len(expected["presigned_urls"]),
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @override_settings(MEDIA_ROOT="/tmp/evalai")
@@ -4438,9 +4447,7 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
         # Create a annotation using multipart upload
         self.url = reverse_lazy(
             "challenges:get_annotation_file_presigned_url",
-            kwargs={
-                "challenge_phase_pk": self.challenge_phase.pk
-            }
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
         )
 
         self.client.force_authenticate(user=self.challenge_host.user)
@@ -4448,20 +4455,23 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
             "AWS_ACCESS_KEY_ID": "dummy-key",
             "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
             "AWS_STORAGE_BUCKET_NAME": "test-bucket",
-            "AWS_REGION": "us-east-1"
+            "AWS_REGION": "us-east-1",
         }
-        client = boto3.client('s3')
+        client = boto3.client("s3")
         client.create_bucket(Bucket="test-bucket")
 
         num_file_chunks = 1
         response = self.client.post(
             self.url,
-            data={"num_file_chunks": num_file_chunks, "file_name": "media/submissions/dummy.txt"}
+            data={
+                "num_file_chunks": num_file_chunks,
+                "file_name": "media/submissions/dummy.txt",
+            },
         )
 
         expected = {
             "upload_id": response.data["upload_id"],
-            "challenge_phase_pk": self.challenge_phase.pk
+            "challenge_phase_pk": self.challenge_phase.pk,
         }
 
         # Upload submission in parts to mocked S3 bucket
@@ -4476,23 +4486,21 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        etag = response.headers['ETag']
+        etag = response.headers["ETag"]
         parts.append({"ETag": etag, "PartNumber": part})
 
         # Finish multipart upload
         self.url = reverse_lazy(
             "challenges:finish_annotation_file_upload",
-            kwargs={
-                "challenge_phase_pk": self.challenge_phase.pk
-            },
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
         )
 
         response = self.client.post(
             self.url,
             data={
                 "parts": json.dumps(parts),
-                "upload_id": expected["upload_id"]
-            }
+                "upload_id": expected["upload_id"],
+            },
         )
 
         self.assertEqual(response.data, expected)
