@@ -13,12 +13,13 @@ before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2
+  - pip install awscli==1.18.66 flake8==3.8.2 black==20.8b1
 script:
-  - flake8 ./
-  - docker-compose build
-  - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
-  - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+  - black --config pyproject.toml ./ --check || travis_terminate 1;
+  - flake8 ./ || travis_terminate 1;
+  - docker-compose build || travis_terminate 1;
+  - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
+  - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
 after_success:
