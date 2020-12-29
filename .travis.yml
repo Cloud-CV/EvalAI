@@ -8,14 +8,16 @@ python:
 cache:
   directories:
     - '$HOME/.cache/pip'
+    - '$HOME/.cache/pre-commit'
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2
+  - pip install awscli==1.18.66 flake8==3.8.2 pre-commit==2.9.2
 script:
-  - black --check ./
+  - pre-commit install
+  - pre-commit run --from-ref origin/HEAD --to-ref HEAD
   - flake8 ./
   - docker-compose build
   - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
