@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0064_add_is_restricted_to_select_one_submission_field_in_phase_model",
-        ),
+        )
     ]
 
     operations = [
