@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         (
             "jobs",
             "0016_add_ignore_submission_boolean_field_in_submission_model",
-        ),
+        )
     ]
 
     operations = [

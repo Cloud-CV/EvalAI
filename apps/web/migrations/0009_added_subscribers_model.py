@@ -7,9 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("web", "0008_modify_description_field_to_be_blank"),
-    ]
+    dependencies = [("web", "0008_modify_description_field_to_be_blank")]
 
     operations = [
         migrations.CreateModel(
@@ -28,6 +26,6 @@ class Migration(migrations.Migration):
                 ("modified_at", models.DateTimeField(auto_now=True)),
                 ("email", models.EmailField(max_length=70)),
             ],
-            options={"db_table": "subscribers",},
-        ),
+            options={"db_table": "subscribers"},
+        )
     ]
