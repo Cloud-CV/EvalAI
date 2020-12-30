@@ -416,7 +416,7 @@ def validate_challenge_config_util(
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
             test_annotation_file_path = join(
-                challenge_config_location, test_annotation_file,
+                challenge_config_location, test_annotation_file
             )
             if isfile(test_annotation_file_path):
                 challenge_test_annotation_file = read_file_data_as_content_file(

@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0066_added_is_partial_submission_evaluation_enabled_field_in_phase_model",
-        ),
+        )
     ]
 
     operations = [
@@ -22,5 +22,5 @@ class Migration(migrations.Migration):
             field=django.contrib.postgres.fields.jsonb.JSONField(
                 blank=True, default=None, null=True
             ),
-        ),
+        )
     ]

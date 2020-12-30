@@ -8,9 +8,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("challenges", "0053_added_is_registration_open_field"),
-    ]
+    dependencies = [("challenges", "0053_added_is_registration_open_field")]
 
     operations = [
         migrations.AddField(
@@ -23,5 +21,5 @@ class Migration(migrations.Migration):
                 null=True,
                 size=None,
             ),
-        ),
+        )
     ]

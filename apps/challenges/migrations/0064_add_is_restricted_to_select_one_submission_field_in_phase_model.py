@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("challenges", "0063_add_slack_webhook_url_field_in_challenge_model"),
+        ("challenges", "0063_add_slack_webhook_url_field_in_challenge_model")
     ]
 
     operations = [
@@ -16,5 +16,5 @@ class Migration(migrations.Migration):
             model_name="challengephase",
             name="is_restricted_to_select_one_submission",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

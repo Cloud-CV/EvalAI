@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0067_add_submission_meta_attribute_field_to_challenge_phase",
-        ),
+        )
     ]
 
     operations = [
@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
                 null=True,
                 upload_to=base.utils.RandomFileName("test_annotations"),
             ),
-        ),
+        )
     ]

@@ -30,8 +30,6 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
-import sphinx_rtd_theme
-
 from recommonmark.parser import CommonMarkParser
 
 source_parsers = {".md": CommonMarkParser}

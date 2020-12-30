@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0058_add_show_leaderboard_by_latest_submission_field_in_challenge_phase_split_model",
-        ),
+        )
     ]
 
     operations = [
@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
                 null=True,
                 validators=[django.core.validators.URLValidator()],
             ),
-        ),
+        )
     ]

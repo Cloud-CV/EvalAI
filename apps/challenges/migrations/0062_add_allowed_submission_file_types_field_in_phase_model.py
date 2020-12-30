@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("challenges", "0061_add_models_to_store_kubernetes_cluster_details"),
+        ("challenges", "0061_add_models_to_store_kubernetes_cluster_details")
     ]
 
     operations = [
@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
                 default=".json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy",
                 max_length=200,
             ),
-        ),
+        )
     ]

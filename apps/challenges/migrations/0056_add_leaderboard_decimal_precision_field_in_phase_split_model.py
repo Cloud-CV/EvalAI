@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0055_add_is_leaderboard_order_descending_in_phase_split_model",
-        ),
+        )
     ]
 
     operations = [
@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
             model_name="challengephasesplit",
             name="leaderboard_decimal_precision",
             field=models.PositiveIntegerField(default=2),
-        ),
+        )
     ]

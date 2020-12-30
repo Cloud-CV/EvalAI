@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("jobs", "0015_add_archived_as_a_submission_status"),
-    ]
+    dependencies = [("jobs", "0015_add_archived_as_a_submission_status")]
 
     operations = [
         migrations.AddField(
             model_name="submission",
             name="ignore_submission",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

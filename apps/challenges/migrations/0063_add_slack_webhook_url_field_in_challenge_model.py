@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0062_add_allowed_submission_file_types_field_in_phase_model",
-        ),
+        )
     ]
 
     operations = [
@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
             model_name="challenge",
             name="slack_webhook_url",
             field=models.URLField(blank=True, null=True),
-        ),
+        )
     ]

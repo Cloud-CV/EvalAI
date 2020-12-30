@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0057_add_task_def_arn_and_workers_field_to_challenge_model",
-        ),
+        )
     ]
 
     operations = [
@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
             model_name="challengephasesplit",
             name="show_leaderboard_by_latest_submission",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]
