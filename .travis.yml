@@ -24,6 +24,7 @@ before_cache:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - coveralls --rcfile=.coveragerc
+  - eval "$(ssh-agent -s)"
   - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv
     -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
   - './scripts/deployment/push.sh'
