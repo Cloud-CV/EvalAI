@@ -99,6 +99,7 @@ class ResendEmailVerificationTestClass(APITestCase):
             response.status_code, status.HTTP_429_TOO_MANY_REQUESTS
         )
 
+
 class RefreshAuthTokenTest(BaseAPITestClass):
 
     url = reverse_lazy("accounts:refresh_auth_token")
@@ -114,5 +115,5 @@ class RefreshAuthTokenTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         with self.assertRaises(TokenError) as context:
-            jwt_token = RefreshToken(token.refresh_token)
+            RefreshToken(token.refresh_token)
         self.assertTrue("Token is blacklisted" in str(context.exception))
