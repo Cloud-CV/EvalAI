@@ -16,7 +16,7 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 
@@ -49,14 +49,15 @@ def get_auth_token(request):
     try:
         token = JwtToken.objects.get(user=user)
     except JwtToken.DoesNotExist:
-        access_token = AccessToken.for_user(user)
+        jwt_refresh_token = RefreshToken.for_user(user)
         token = JwtToken.objects.create(
             user=user,
-            access_token=str(access_token),
+            access_token=str(jwt_refresh_token.access_token),
+            refresh_token=str(jwt_refresh_token)
         )
         token.save()
 
-    response_data = {"token": "{}".format(token.access_token)}
+    response_data = {"token": "{}".format(token.refresh_token)}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -84,17 +85,18 @@ def refresh_auth_token(request):
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
 
-    access_token = AccessToken.for_user(user)
+    token = None
     try:
         token = JwtToken.objects.get(user=user)
-        token.access_token = str(access_token)
-        token.save()
+        existing_token = RefreshToken(token.refresh_token)
+        existing_token.blacklist()
     except JwtToken.DoesNotExist:
-        token = JwtToken.objects.create(
-            user=user,
-            access_token=str(access_token),
-        )
-        token.save()
+        token = JwtToken.objects.create(user=user)
 
-    response_data = {"token": "{}".format(token.access_token)}
+    jwt_refresh_token = RefreshToken.for_user(user)
+    token.access_token = str(jwt_refresh_token.access_token)
+    token.refresh_token = str(jwt_refresh_token)
+    token.save()
+
+    response_data = {"token": "{}".format(token.refresh_token)}
     return Response(response_data, status=status.HTTP_200_OK)

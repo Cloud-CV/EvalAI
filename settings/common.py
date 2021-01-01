@@ -76,6 +76,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_expiring_authtoken",
     "drf_yasg",
     "django_filters",
+    "rest_framework_simplejwt.token_blacklist"
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -341,6 +342,8 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
+    "ROTATE_REFRESH_TOKENS": False,
     "UPDATE_LAST_LOGIN": False,
 
     "ALGORITHM": "HS256",
@@ -354,7 +357,7 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
 
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.RefreshToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
 
     "JTI_CLAIM": "jti",
