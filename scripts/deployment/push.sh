@@ -6,6 +6,11 @@ export COMMIT_ID=$(git rev-parse HEAD)
 build_and_push() {
         aws configure set default.region us-east-1
         eval $(aws ecr get-login --no-include-email)
+        echo "Pulling ssl certificates and nginx configuration..."
+        aws s3 cp s3://cloudcv-secrets/eval.ai/ssl/ ./ssl/ --recursive
+        # Need ssl files related to *.cloudcv.org since we want to provide backward compatibility
+        aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/ssl/ ./ssl/ --recursive
+        echo "Pulled ssl certificates and nginx configuration successfully"
         docker-compose -f docker-compose-$1.yml build \
             --build-arg COMMIT_ID=${COMMIT_ID} \
             --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH} \
