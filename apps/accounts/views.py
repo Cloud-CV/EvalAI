@@ -19,6 +19,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
+from .serializers import JwtTokenSerializer
 
 from .throttles import ResendEmailThrottle
 
@@ -50,12 +51,14 @@ def get_auth_token(request):
         token = JwtToken.objects.get(user=user)
     except JwtToken.DoesNotExist:
         jwt_refresh_token = RefreshToken.for_user(user)
-        token = JwtToken.objects.create(
-            user=user,
-            access_token=str(jwt_refresh_token.access_token),
-            refresh_token=str(jwt_refresh_token)
-        )
-        token.save()
+        token = JwtToken(user=user)
+        token_serializer = JwtTokenSerializer(token, data={
+            "refresh_token": str(jwt_refresh_token),
+            "access_token": str(jwt_refresh_token.access_token)
+        }, partial=True)
+        if token_serializer.is_valid():
+            token_serializer.save()
+        token = token_serializer.instance
 
     response_data = {"token": "{}".format(token.refresh_token)}
     return Response(response_data, status=status.HTTP_200_OK)
@@ -91,12 +94,18 @@ def refresh_auth_token(request):
         existing_token = RefreshToken(token.refresh_token)
         existing_token.blacklist()
     except JwtToken.DoesNotExist:
-        token = JwtToken.objects.create(user=user)
+        token = JwtToken(user=user)
 
     jwt_refresh_token = RefreshToken.for_user(user)
-    token.access_token = str(jwt_refresh_token.access_token)
-    token.refresh_token = str(jwt_refresh_token)
-    token.save()
+    token_serializer = JwtTokenSerializer(token, data={
+        "refresh_token": str(jwt_refresh_token),
+        "access_token": str(jwt_refresh_token.access_token)
+    }, partial=True)
 
-    response_data = {"token": "{}".format(token.refresh_token)}
-    return Response(response_data, status=status.HTTP_200_OK)
+    if token_serializer.is_valid():
+        token_serializer.save()
+        token = token_serializer.instance
+        response_data = {"token": "{}".format(token.refresh_token)}
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
