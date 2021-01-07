@@ -48,7 +48,12 @@ from .utils import (
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication,))
+@authentication_classes(
+    (
+        JWTAuthentication,
+        ExpiringTokenAuthentication,
+    )
+)
 def participant_team_list(request):
 
     if request.method == "GET":
@@ -187,10 +192,10 @@ def invite_participant_to_team(request, pk):
         response_data = {"error": "User is already part of the team!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
-        user
-    ).values_list(
-        "id", flat=True
+    invited_user_participated_challenges = (
+        get_list_of_challenges_participated_by_a_user(user).values_list(
+            "id", flat=True
+        )
     )
     team_participated_challenges = get_list_of_challenges_for_participant_team(
         [participant_team]

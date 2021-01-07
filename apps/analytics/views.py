@@ -57,7 +57,7 @@ from .serializers import (
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_participant_team_count(request, challenge_pk):
     """
-        Returns the number of participant teams in a challenge
+    Returns the number of participant teams in a challenge
     """
     challenge = get_challenge_model(challenge_pk)
     participant_team_count = challenge.participant_teams.count()
@@ -74,7 +74,7 @@ def get_participant_team_count(request, challenge_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_participant_count(request, challenge_pk):
     """
-        Returns the number of participants in a challenge
+    Returns the number of participants in a challenge
     """
     challenge = get_challenge_model(challenge_pk)
     participant_teams = challenge.participant_teams.all()
@@ -94,8 +94,8 @@ def get_participant_count(request, challenge_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_count(request, challenge_pk, duration):
     """
-        Returns submission count for a challenge according to the duration
-        Valid values for duration are all, daily, weekly and monthly.
+    Returns submission count for a challenge according to the duration
+    Valid values for duration are all, daily, weekly and monthly.
     """
     # make sure that a valid url is requested.
     if duration.lower() not in ("all", "daily", "weekly", "monthly"):
@@ -187,7 +187,7 @@ def get_last_submission_time(
     request, challenge_pk, challenge_phase_pk, submission_by
 ):
     """
-        Returns the last submission time for a particular challenge phase
+    Returns the last submission time for a particular challenge phase
     """
     challenge = get_challenge_model(challenge_pk)
 
@@ -254,11 +254,9 @@ def get_last_submission_datetime_analysis(
             "You dont have any submissions in this challenge phase!"
         )
     else:
-        last_submission_timestamp_in_challenge_phase = submissions_in_a_phase.order_by(
-            "-submitted_at"
-        )[
-            0
-        ].created_at
+        last_submission_timestamp_in_challenge_phase = (
+            submissions_in_a_phase.order_by("-submitted_at")[0].created_at
+        )
 
     last_submission_timestamp = LastSubmissionTimestamp(
         last_submission_timestamp_in_challenge,
@@ -333,7 +331,7 @@ def get_challenge_phase_submission_analysis(
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_participants(request, challenge_pk):
     """
-        Returns the List of Participant Teams and its details in csv format
+    Returns the List of Participant Teams and its details in csv format
     """
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk

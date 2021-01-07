@@ -81,12 +81,8 @@ class JwtTokenAdmin(ImportExportTimeStampedAdmin):
         "user",
         "access_token",
     )
-    list_filter = (
-        "user",
-    )
-    search_fields = (
-        "user__username",
-    )
+    list_filter = ("user",)
+    search_fields = ("user__username",)
 
 
 admin.site.unregister(JwtToken)

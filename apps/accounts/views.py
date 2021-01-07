@@ -52,10 +52,14 @@ def get_auth_token(request):
     except JwtToken.DoesNotExist:
         jwt_refresh_token = RefreshToken.for_user(user)
         token = JwtToken(user=user)
-        token_serializer = JwtTokenSerializer(token, data={
-            "refresh_token": str(jwt_refresh_token),
-            "access_token": str(jwt_refresh_token.access_token)
-        }, partial=True)
+        token_serializer = JwtTokenSerializer(
+            token,
+            data={
+                "refresh_token": str(jwt_refresh_token),
+                "access_token": str(jwt_refresh_token.access_token),
+            },
+            partial=True,
+        )
         if token_serializer.is_valid():
             token_serializer.save()
         token = token_serializer.instance
@@ -97,10 +101,14 @@ def refresh_auth_token(request):
         token = JwtToken(user=user)
 
     jwt_refresh_token = RefreshToken.for_user(user)
-    token_serializer = JwtTokenSerializer(token, data={
-        "refresh_token": str(jwt_refresh_token),
-        "access_token": str(jwt_refresh_token.access_token)
-    }, partial=True)
+    token_serializer = JwtTokenSerializer(
+        token,
+        data={
+            "refresh_token": str(jwt_refresh_token),
+            "access_token": str(jwt_refresh_token.access_token),
+        },
+        partial=True,
+    )
 
     if token_serializer.is_valid():
         token_serializer.save()

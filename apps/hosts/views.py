@@ -32,7 +32,12 @@ get_challenge_host_model = get_model_object(ChallengeHost)
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication,))
+@authentication_classes(
+    (
+        JWTAuthentication,
+        ExpiringTokenAuthentication,
+    )
+)
 def challenge_host_team_list(request):
     if request.method == "GET":
         challenge_host_team_ids = ChallengeHost.objects.filter(

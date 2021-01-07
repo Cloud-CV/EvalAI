@@ -1152,8 +1152,8 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1494,8 +1494,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1679,8 +1679,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
 
                 updated_result = leaderboard_data.result
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -2317,14 +2317,14 @@ def get_github_badge_data(
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
     """
-        API for fetching count of submissions by status for a challenge phase
+    API for fetching count of submissions by status for a challenge phase
 
-        Arguments:
-            request {HttpRequest} -- request object
-            challenge_phase_pk {int} -- challenge phase pk
+    Arguments:
+        request {HttpRequest} -- request object
+        challenge_phase_pk {int} -- challenge phase pk
 
-        Returns:
-            Response object -- Response object with appropriate response code (200/400/404)
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
     """
     # check if the challenge phase exists or not
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
