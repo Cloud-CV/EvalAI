@@ -45,7 +45,6 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     url(r"^$", views.home, name="home"),
-    url(r"^api/allauth/accounts/", include("allauth.urls")),
     url(r"^api/admin/", admin.site.urls),
     url(
         r"^api/auth/login",
