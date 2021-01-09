@@ -78,4 +78,4 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
         return {
             'subject_template_name': 'registration/password_reset_subject.txt',
             'html_email_template_name': 'registration/password_reset_email.txt',
-            }
+        }
