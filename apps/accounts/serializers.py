@@ -72,10 +72,13 @@ class ProfileSerializer(UserDetailsSerializer):
         return instance
 
 
-class CustomPasswordResetSerializer(PasswordResetSerializer):
+class PasswordResetSerializer(PasswordResetSerializer):
+    """
+    Serializer for requesting a password reset e-mail.
+    """
+
     def get_email_options(self):
-        super().get_email_options()
         return {
             'subject_template_name': 'registration/password_reset_subject.txt',
-            'html_email_template_name': 'registration/password_reset_email.txt',
+            'email_template_name': 'registration/password_reset_email.txt',
         }

@@ -214,63 +214,90 @@ CORS_ORIGIN_ALLOW_ALL = True
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=365)
 
 # Logging
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "root": {"level": "INFO", "handlers": ["console"]},
+#     "filters": {
+#         "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+#         "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
+#     },
+#     "formatters": {
+#         "simple": {
+#             "format": "[%(asctime)s] %(levelname)s %(message)s",
+#             "datefmt": "%Y-%m-%d %H:%M:%S",
+#         },
+#         "verbose": {
+#             "format": "[%(asctime)s] %(levelname)s %(module)s %(message)s",
+#             "datefmt": "%Y-%m-%d %H:%M:%S",
+#         },
+#     },
+#     "handlers": {
+#         "console": {
+#             "level": "INFO",
+#             "filters": ["require_debug_true"],
+#             "class": "logging.StreamHandler",
+#             "formatter": "simple",
+#         },
+#         "logfile": {
+#             "level": "DEBUG",
+#             "class": "logging.handlers.RotatingFileHandler",
+#             "filename": os.path.join(BASE_DIR, "django.log"),
+#             "maxBytes": 50000,
+#             "backupCount": 10,
+#             "formatter": "verbose",
+#         },
+#         "mail_admins": {
+#             "level": "ERROR",
+#             "class": "django.utils.log.AdminEmailHandler",
+#             "filters": ["require_debug_false"],
+#         },
+#     },
+#     "loggers": {
+#         "django": {"handlers": ["console"], "propagate": False},
+#         "django.request": {
+#             "handlers": ["mail_admins"],
+#             "level": "ERROR",
+#             "propagate": False,
+#         },
+#         "django.security": {
+#             "handlers": ["mail_admins"],
+#             "level": "ERROR",
+#             "propagate": False,
+#         },
+#         "django.db.backends": {
+#             "handlers": ["mail_admins"],
+#             "level": "ERROR",
+#             "propagate": False,
+#         },
+#     },
+# }
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "root": {"level": "INFO", "handlers": ["console"]},
-    "filters": {
-        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
-        "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
-    },
-    "formatters": {
-        "simple": {
-            "format": "[%(asctime)s] %(levelname)s %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-        "verbose": {
-            "format": "[%(asctime)s] %(levelname)s %(module)s %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
         },
     },
-    "handlers": {
-        "console": {
-            "level": "INFO",
-            "filters": ["require_debug_true"],
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-        "logfile": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(BASE_DIR, "django.log"),
-            "maxBytes": 50000,
-            "backupCount": 10,
-            "formatter": "verbose",
-        },
-        "mail_admins": {
-            "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
-            "filters": ["require_debug_false"],
-        },
+    'handlers': {
+        'console': {
+            'level': 'NOTSET',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
     },
-    "loggers": {
-        "django": {"handlers": ["console"], "propagate": False},
-        "django.request": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": False,
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'NOTSET',
         },
-        "django.security": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-        "django.db.backends": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-    },
+        'django.request': {
+            'handlers': ['console'],
+            'propagate': False,
+            'level': 'ERROR'
+        }
+    }
 }
 
 CACHES = {
@@ -287,7 +314,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
     "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
-    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer"
+    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.PasswordResetSerializer"
 }
 
 # For inviting users to participant and host teams.
