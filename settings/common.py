@@ -33,9 +33,7 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
-EVALAI_API_SERVER = os.environ.get(
-    "EVALAI_API_SERVER", "http://localhost:8000"
-)
+EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER", "http://localhost:8000")
 
 # Application definition
 
@@ -214,90 +212,63 @@ CORS_ORIGIN_ALLOW_ALL = True
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=365)
 
 # Logging
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "root": {"level": "INFO", "handlers": ["console"]},
-#     "filters": {
-#         "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
-#         "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
-#     },
-#     "formatters": {
-#         "simple": {
-#             "format": "[%(asctime)s] %(levelname)s %(message)s",
-#             "datefmt": "%Y-%m-%d %H:%M:%S",
-#         },
-#         "verbose": {
-#             "format": "[%(asctime)s] %(levelname)s %(module)s %(message)s",
-#             "datefmt": "%Y-%m-%d %H:%M:%S",
-#         },
-#     },
-#     "handlers": {
-#         "console": {
-#             "level": "INFO",
-#             "filters": ["require_debug_true"],
-#             "class": "logging.StreamHandler",
-#             "formatter": "simple",
-#         },
-#         "logfile": {
-#             "level": "DEBUG",
-#             "class": "logging.handlers.RotatingFileHandler",
-#             "filename": os.path.join(BASE_DIR, "django.log"),
-#             "maxBytes": 50000,
-#             "backupCount": 10,
-#             "formatter": "verbose",
-#         },
-#         "mail_admins": {
-#             "level": "ERROR",
-#             "class": "django.utils.log.AdminEmailHandler",
-#             "filters": ["require_debug_false"],
-#         },
-#     },
-#     "loggers": {
-#         "django": {"handlers": ["console"], "propagate": False},
-#         "django.request": {
-#             "handlers": ["mail_admins"],
-#             "level": "ERROR",
-#             "propagate": False,
-#         },
-#         "django.security": {
-#             "handlers": ["mail_admins"],
-#             "level": "ERROR",
-#             "propagate": False,
-#         },
-#         "django.db.backends": {
-#             "handlers": ["mail_admins"],
-#             "level": "ERROR",
-#             "propagate": False,
-#         },
-#     },
-# }
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "root": {"level": "INFO", "handlers": ["console"]},
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+        "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
+    },
+    "formatters": {
+        "simple": {
+            "format": "[%(asctime)s] %(levelname)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "verbose": {
+            "format": "[%(asctime)s] %(levelname)s %(module)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    'handlers': {
-        'console': {
-            'level': 'NOTSET',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
-        }
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'NOTSET',
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        'django.request': {
-            'handlers': ['console'],
-            'propagate': False,
-            'level': 'ERROR'
-        }
-    }
+        "logfile": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR, "django.log"),
+            "maxBytes": 50000,
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "filters": ["require_debug_false"],
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "propagate": False},
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
 }
 
 CACHES = {
