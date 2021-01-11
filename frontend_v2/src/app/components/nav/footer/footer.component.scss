@@ -1,8 +1,9 @@
 @import 'styles/variables';
+@import 'styles/base';
 
 .ev-footer {
   position: relative;
-  width: 100%;
+  width: 100vw;
   bottom: 0;
   left: 0;
 }

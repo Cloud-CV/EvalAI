@@ -2146,7 +2146,8 @@ tr {
   }
 
   .page-wrap {
-    width: 1440px !important;
+    width: 100% !important;
+    overflow: hidden;
     margin: auto !important;
     position: relative !important;
     background: white;
