@@ -2,7 +2,8 @@
 @import './mixins.scss';
 
 .our-team-container {
-  width: 90%;
+  width: 90rem;
+  min-height: 100vh;
   margin: 0 auto;
   margin-top: auto;
   margin-bottom: 50px;
