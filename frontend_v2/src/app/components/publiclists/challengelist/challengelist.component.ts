@@ -28,7 +28,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * Filter toggle flag
    */
-  isPastChecked = false;
+  isPastChecked = true;
 
   /**
    * Upcoming challenges list
