@@ -16,6 +16,7 @@ install:
   - pip install awscli==1.18.66 flake8==3.8.2
 script:
   - flake8 ./
+  - docker login --username="${DOCKER_USERNAME}" --password="${DOCKER_PASSWORD}"
   - docker-compose build
   - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
   - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
