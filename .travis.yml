@@ -21,7 +21,8 @@ install:
 script:
   - flake8 ./
   - docker --version
-  - docker login -u $DOCKER_USERNAME -p "$DOCKER_PASSWORD" registry-1.docker.io
+  - set +H
+  - docker login --username $DOCKER_USERNAME --password "$DOCKER_PASSWORD"
   - docker-compose build
   - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
   - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
