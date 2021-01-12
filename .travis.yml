@@ -12,6 +12,10 @@ before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 install:
   - pip install awscli==1.18.66 flake8==3.8.2
 script:
