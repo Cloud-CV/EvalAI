@@ -265,27 +265,29 @@
                             <!-- Submission using file upload or URL -->
                             <div
                                 ng-show="challenge.isSubmissionUsingUrl || challenge.isSubmissionUsingFile">
+                                
+                                <div ng-show="challenge.currentPhaseLeaderboardPublic">
+                                    <p class="fs-14 w-400" ng>Select submission visibility:</p>
+                                    <li>
+                                        <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicubmission"
+                                            value="isPublicubmission" ng-click="challenge.isPublicSubmission = true">
+                                        <label for="isPublicubmission"></label>
+                                        <div class="show-member-title pointer">
+                                            <strong class="fs-16 w-300">Public
+                                            </strong>
+                                        </div>
+                                        <div class="clearfix"></div>
 
-                                <p class="fs-14 w-400">Select submission visibility:</p>
-                                <li>
-                                    <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicubmission"
-                                        value="isPublicubmission" ng-click="challenge.isPublicSubmission = true">
-                                    <label for="isPublicubmission"></label>
-                                    <div class="show-member-title pointer">
-                                        <strong class="fs-16 w-300">Public
-                                        </strong>
-                                    </div>
-                                    <div class="clearfix"></div>
-
-                                    <input type="radio" name="submissionVisibility" class="with-gap selectPhase"
-                                        id="isPrivateSubmission" value="isPrivateSubmission"
-                                        ng-click="challenge.isPublicSubmission = false">
-                                    <label for="isPrivateSubmission"></label>
-                                    <div class="show-member-title pointer">
-                                        <strong class="fs-16 w-300">Private </strong>
-                                    </div>
-                                    <div class="clearfix"></div>
-                                </li>
+                                        <input type="radio" name="submissionVisibility" class="with-gap selectPhase"
+                                            id="isPrivateSubmission" value="isPrivateSubmission"
+                                            ng-click="challenge.isPublicSubmission = false">
+                                        <label for="isPrivateSubmission"></label>
+                                        <div class="show-member-title pointer">
+                                            <strong class="fs-16 w-300">Private </strong>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </li>
+                                </div>
 
                                 <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">
                                     <div class="input-field align-left col s10">
