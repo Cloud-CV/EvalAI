@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import random
@@ -1086,6 +1087,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     cluster_meta = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
     # TODO: Move the hardcoded cluster configuration such as the
     # instance_type, subnets, AMI to challenge configuration later.
+    vpc_dict = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
     try:
         response = client.create_nodegroup(
             clusterName=cluster_name,
@@ -1107,6 +1109,232 @@ def create_eks_nodegroup(challenge, cluster_name):
     client = get_boto3_client("ecs", aws_keys)
     client_token = client_token_generator(challenge_obj.pk)
     create_service_by_challenge_pk(client, challenge_obj, client_token)
+
+
+@app.task
+def create_eks_arn_roles(challenge):
+    """
+    Creates EKS and NodeGroup ARN roles
+
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("iam", challenge_aws_keys)
+    eks_role_name = "Eks-role"
+    eks_arn_role = None
+    try:
+        response = client.create_role(
+            RoleName=eks_role_name,
+            Description="Amazon EKS cluster role with managed policy",
+        )
+        eks_arn_role = response["Role"]["Arn"]
+    except ClientError as e:
+        logger.exception(e)
+        return response
+    waiter = client.get_waiter("role_exists")
+    waiter.wait(RoleName=eks_role_name)
+
+    try:
+        # Attach AWS managed EKS cluster policy to the role
+        response = client.attach_role_poilcy(
+            RoleName=eks_role_name, PolicyArn=settings.EKS_CLUSTER_POLICY
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return response
+
+    node_group_role_name = "NodeInstanceRole"
+    node_group_arn_role = None
+    try:
+        response = client.create_role(
+            RoleName=node_group_role_name,
+            Description="Amazon EKS node group role with managed policy",
+        )
+        node_group_arn_role = response["Role"]["Arn"]
+    except ClientError as e:
+        logger.exception(e)
+        return response
+    waiter = client.get_waiter("role_exists")
+    waiter.wait(RoleName=node_group_role_name)
+
+    node_group_policies = settings.EKS_NODE_GROUP_POLICIES
+    for policy_arn in node_group_policies:
+        try:
+            # Attach AWS managed EKS worker node policy to the role
+            response = client.attach_role_poilcy(
+                RoleName=node_group_role_name, PolicyArn=policy_arn
+            )
+        except ClientError as e:
+            logger.exception(e)
+            return response
+
+    # Create custom ECR all access policy and attach to node_group_role
+    ecr_all_access_policy_name = "AWS-ECR-Full-Access"
+    ecr_all_access_policy_arn = None
+    try:
+        response = client.create_policy(
+            PolicyName=ecr_all_access_policy_name,
+            PolicyDocument=json.dumps(settings.ECR_ALL_ACCESS_POLICY_DOCUMENT),
+        )
+        ecr_all_access_policy_arn = response["Policy"]["Arn"]
+        waiter = client.get_waiter("policy_exists")
+        waiter.wait(PolicyArn=ecr_all_access_policy_arn)
+        # Attach custom ECR policy
+        response = client.attach_role_poilcy(
+            RoleName=node_group_role_name, PolicyArn=ecr_all_access_policy_arn
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return response
+
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge_obj
+    )
+    serializer = ChallengeEvaluationClusterSerializer(
+        challenge_evaluation_cluster,
+        data={
+            "eks_arn_role": eks_arn_role,
+            "node_group_arn_role": node_group_arn_role,
+            "ecr_all_access_policy_arn": ecr_all_access_policy_arn,
+            "security_group_id": security_group_id,
+            "subnet_1_id": subnet_1_id,
+            "subnet_2_id": subnet_2_id
+        },
+        partial=True,
+    )
+    if serializer.is_valid():
+        serializer.save()
+
+
+@app.task
+def create_eks_cluster_subnets(challenge):
+    """
+    Creates EKS and NodeGroup ARN roles
+
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("ec2", challenge_aws_keys)
+    vpc_ids = []
+    try:
+        response = client.create_vpc(CidrBlock="192.168.0.0/16")
+        vpc_ids.append(response["Vpc"]["VpcId"])
+    except ClientError as e:
+        logger.exception(e)
+        return response
+
+    waiter = client.get_waiter("vpc_available")
+    waiter.wait(VpcIds=vpc_ids)
+
+    # Create internet gateway and attach to vpc
+    try:
+        response = client.create_internet_gateway()
+        internet_gateway_id = response["InternetGateway"]["InternetGatewayId"]
+        client.attach_internet_gateway(
+            InternetGatewayId=internet_gateway_id, VpcId=vpc_ids[0]
+        )
+
+        # Create and attach route table
+        response = client.create_route_table(VpcId=vpc_ids[0])
+        route_table_id = response["RouteTable"]["RouteTableId"]
+        client.create_route(
+            DestinationCidrBlock="0.0.0.0/0",
+            GatewayId=internet_gateway_id,
+            RouteTableId=route_table_id,
+        )
+
+        # Create subnets
+        subnet_ids = []
+        response = client.create_subnet(
+            CidrBlock="192.168.1.0/24", VpcId=vpc_ids[0]
+        )
+        subnet_1_id = response["Subnet"]["SubnetId"]
+        subnet_ids.append(subnet_1_id)
+
+        response = client.create_subnet(
+            CidrBlock="192.168.2.0/24", VpcId=vpc_ids[0]
+        )
+        subnet_2_id = response["Subnet"]["SubnetId"]
+        subnet_ids.append(subnet_2_id)
+
+        waiter = client.get_waiter("subnet_available")
+        waiter.wait(SubnetIds=subnet_ids)
+
+        # Associate route table with subnets
+        response = client.associate_route_table(
+            RouteTableId=route_table_id,
+            SubnetId=subnet_1_id,
+            GatewayId=internet_gateway_id,
+        )
+
+        response = client.associate_route_table(
+            RouteTableId=route_table_id,
+            SubnetId=subnet_2_id,
+            GatewayId=internet_gateway_id,
+        )
+
+        # Create security group
+        response = client.create_security_group(
+            GroupName="EvalAI code upload challenge",
+            Description="EvalAI code upload challenge worker group",
+            VpcId=vpc_ids[0],
+        )
+        security_group_id = response["GroupId"]
+
+        waiter = client.get_waiter("security_group_exists")
+        waiter.wait(GroupIds=[security_group_id])
+
+        response = client.attach_security_group_ingress(
+            GroupId=security_group_id,
+            IpPermissions=[
+                {
+                    "FromPort": 22,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0",
+                        },
+                    ],
+                    "ToPort": 22,
+                }
+            ],
+        )
+
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge_obj
+        )
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "vpc_id": vpc_ids[0],
+                "internet_gateway_id": internet_gateway_id,
+                "route_table_id": route_table_id,
+                "security_group_id": security_group_id,
+                "subnet_1_id": subnet_1_id,
+                "subnet_2_id": subnet_2_id
+            },
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+
+    except ClientError as e:
+        logger.exception(e)
+        return response
 
 
 @app.task
@@ -1135,6 +1363,11 @@ def create_eks_cluster(challenge):
             challenge_obj.pk
         )
         try:
+            challenge_evaluation_cluster = (
+                ChallengeEvaluationCluster.objects.create(
+                    challenge=challenge_obj, name=cluster_name
+                )
+            )
             response = client.create_cluster(
                 name=cluster_name,
                 version="1.15",
