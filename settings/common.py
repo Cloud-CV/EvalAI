@@ -67,13 +67,13 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_ses",
     "import_export",
-    "rest_auth",
-    "rest_auth.registration",
     "rest_framework.authtoken",
     "rest_framework",
     "rest_framework_expiring_authtoken",
     "drf_yasg",
     "django_filters",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
