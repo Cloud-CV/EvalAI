@@ -1164,8 +1164,8 @@ def create_eks_arn_roles(challenge):
     waiter = client.get_waiter("role_exists")
     waiter.wait(RoleName=node_group_role_name)
 
-    node_group_policies = settings.EKS_NODE_GROUP_POLICIES
-    for policy_arn in node_group_policies:
+    task_execution_policies = settings.EKS_NODE_GROUP_POLICIES
+    for policy_arn in task_execution_policies:
         try:
             # Attach AWS managed EKS worker node policy to the role
             response = client.attach_role_poilcy(
@@ -1368,6 +1368,15 @@ def create_eks_cluster(challenge):
                     challenge=challenge_obj, name=cluster_name
                 )
             )
+        except Exception as e:
+            logger.exception(e)
+            return
+        challenge_aws_keys = get_aws_credentials_for_challenge(
+            challenge_obj.pk
+        )
+        client = get_boto3_client("eks", challenge_aws_keys)
+        vpc_dict = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
+        try:
             response = client.create_cluster(
                 name=cluster_name,
                 version="1.15",
