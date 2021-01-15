@@ -19,6 +19,7 @@ from .challenge_notification_util import (
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
 
+
 logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
@@ -1080,6 +1081,7 @@ def create_eks_cluster(challenge):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
     from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
@@ -1140,12 +1142,19 @@ def create_eks_cluster(challenge):
             config_text = yaml.dump(cluster_config, default_flow_style=False)
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
-            ChallengeEvaluationCluster.objects.create(
-                challenge=challenge_obj,
-                name=cluster_name,
-                cluster_endpoint=cluster_ep,
-                cluster_ssl=cluster_cert,
-            )
+            try:
+                ChallengeEvaluationCluster.objects.get(
+                    challenge=challenge,
+                )
+            except ChallengeEvaluationCluster.DoesNotExist:
+                serializer = ChallengeEvaluationClusterSerializer(
+                    challenge=challenge,
+                    name=cluster_name,
+                    cluster_endpoint=cluster_ep,
+                    cluster_ssl=cluster_cert,
+                )
+                if serializer.is_valid():
+                    serializer.save()
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
