@@ -123,8 +123,8 @@ def alarm_handler(signum, frame):
 
 def download_and_extract_file(url, download_location):
     """
-        * Function to extract download a file.
-        * `download_location` should include name of file as well.
+    * Function to extract download a file.
+    * `download_location` should include name of file as well.
     """
     try:
         response = requests.get(url, stream=True)
@@ -175,10 +175,10 @@ def delete_zip_file(download_location):
 
 def delete_submission_data_directory(location):
     """
-        Helper function to delete submission data from location `location`
+    Helper function to delete submission data from location `location`
 
-        Arguments:
-            location {[string]} -- Location of directory to be removed.
+    Arguments:
+        location {[string]} -- Location of directory to be removed.
     """
     try:
         shutil.rmtree(location)
@@ -192,8 +192,8 @@ def delete_submission_data_directory(location):
 
 def download_and_extract_zip_file(url, download_location, extract_location):
     """
-        * Function to extract download a zip file, extract it and then removes the zip file.
-        * `download_location` should include name of file as well.
+    * Function to extract download a zip file, extract it and then removes the zip file.
+    * `download_location` should include name of file as well.
     """
     try:
         response = requests.get(url, stream=True)
@@ -218,7 +218,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
 
 def create_dir(directory):
     """
-        Creates a directory if it does not exists
+    Creates a directory if it does not exists
     """
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -226,8 +226,8 @@ def create_dir(directory):
 
 def create_dir_as_python_package(directory):
     """
-        Create a directory and then makes it a python
-        package by creating `__init__.py` file.
+    Create a directory and then makes it a python
+    package by creating `__init__.py` file.
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
@@ -250,8 +250,8 @@ def return_file_url_per_environment(url):
 
 def extract_challenge_data(challenge, phases):
     """
-        * Expects a challenge object and an array of phase object
-        * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
+    * Expects a challenge object and an array of phase object
+    * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
 
     """
 
@@ -319,7 +319,7 @@ def extract_challenge_data(challenge, phases):
 
 def load_challenge(challenge):
     """
-        Creates python package for a challenge and extracts relevant data
+    Creates python package for a challenge and extracts relevant data
     """
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
@@ -329,7 +329,7 @@ def load_challenge(challenge):
 
 def extract_submission_data(submission_id):
     """
-        * Expects submission id and extracts input file for it.
+    * Expects submission id and extracts input file for it.
     """
 
     try:
@@ -373,10 +373,10 @@ def run_submission(
     challenge_id, challenge_phase, submission, user_annotation_file_path
 ):
     """
-        * receives a challenge id, phase id and user annotation file path
-        * checks whether the corresponding evaluation script for the challenge exists or not
-        * checks the above for annotation file
-        * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
+    * receives a challenge id, phase id and user annotation file path
+    * checks whether the corresponding evaluation script for the challenge exists or not
+    * checks the above for annotation file
+    * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     """
 
     # Use the submission serializer to send relevant data to evaluation script
@@ -750,7 +750,6 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {}
-    q_params["start_date__lt"] = timezone.now()
     q_params["end_date__gt"] = timezone.now()
 
     challenge_pk = os.environ.get("CHALLENGE_PK")
@@ -788,10 +787,12 @@ def main():
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
                 if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
-                    current_running_submissions_count = Submission.objects.filter(
-                        challenge_phase__challenge=challenge.id,
-                        status="running",
-                    ).count()
+                    current_running_submissions_count = (
+                        Submission.objects.filter(
+                            challenge_phase__challenge=challenge.id,
+                            status="running",
+                        ).count()
+                    )
                     if (
                         current_running_submissions_count
                         == maximum_concurrent_submissions
