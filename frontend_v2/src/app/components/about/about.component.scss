@@ -1,11 +1,19 @@
 @import './styles/variables.scss';
 @import './styles/mixins.scss';
+@import './styles/base.scss';
 
 .about-container {
-  padding: 40px;
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 50px 100px 10px 60px;
+  clear: both;
+  min-height: calc(100vh - 300px);
 }
 
 .about-content-column {
+  margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
   margin-top: 68px;
   box-sizing: border-box;
   padding: 0 0.75rem;
