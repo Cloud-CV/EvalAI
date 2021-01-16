@@ -2,7 +2,7 @@
 @import './mixins.scss';
 
 .our-team-container {
-  width: 90rem;
+  max-width: 80rem;
   min-height: 100vh;
   margin: 0 auto;
   margin-top: auto;
@@ -12,7 +12,7 @@
   .our-team-title {
     color: $gray-dark;
     font-size: $fs-36;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
   }
 
   .exist-team-card {
