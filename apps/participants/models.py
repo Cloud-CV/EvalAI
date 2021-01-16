@@ -23,10 +23,15 @@ class Participant(TimeStampedModel):
         (UNKNOWN, UNKNOWN),
     )
 
-    user = models.ForeignKey(User, related_name="participation")
+    user = models.ForeignKey(
+        User, related_name="participation", on_delete=models.CASCADE
+    )
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     team = models.ForeignKey(
-        "ParticipantTeam", related_name="participants", null=True
+        "ParticipantTeam",
+        related_name="participants",
+        null=True,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -41,7 +46,7 @@ class ParticipantTeam(TimeStampedModel):
     """Model representing the Teams associated with different challenges"""
 
     team_name = models.CharField(max_length=100, unique=True)
-    created_by = models.ForeignKey(User, null=True)
+    created_by = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     team_url = models.CharField(max_length=1000, default="", blank=True)
 
     def __str__(self):

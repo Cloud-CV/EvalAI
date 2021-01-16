@@ -5,7 +5,7 @@ import shutil
 
 from datetime import timedelta
 
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -987,7 +987,7 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         expected = io.StringIO()
         expected_participant_teams = csv.writer(expected)
         expected_participant_teams.writerow(
-            ["Team Name", "Team Members", "Email Id", ]
+            ["Team Name", "Team Members", "Email Id"]
         )
         challenge = get_challenge_model(self.challenge.pk)
         participant_team = challenge.participant_teams.all().order_by(

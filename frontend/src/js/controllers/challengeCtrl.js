@@ -63,11 +63,14 @@
         vm.team = {};
         vm.isSubmissionUsingUrl = null;
         vm.isSubmissionUsingCli = null;
+        vm.isSubmissionUsingFile = null;
         vm.isRemoteChallenge = false;
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
         vm.currentPhaseMetaAttributesVisibility = {};
+        vm.phaseLeaderboardPublic = [];
+        vm.currentPhaseLeaderboardPublic = false;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -669,6 +672,10 @@
                             "defaultAttributes": {}
                         });
                     }
+                    vm.phaseLeaderboardPublic.push({
+                        "phaseId": details.results[k].id,
+                        "leaderboardPublic": details.results[k].leaderboard_public
+                    });
                 }
                 utilities.hideLoader();
             },
@@ -693,6 +700,9 @@
             vm.currentPhaseMetaAttributesVisibility = vm.defaultSubmissionMetaAttributes.find(function(element) {
                 return element["phaseId"] == phaseId;
             }).defaultAttributes;
+            vm.currentPhaseLeaderboardPublic = vm.phaseLeaderboardPublic.find(function(element) {
+                return element["phaseId"] == phaseId;
+            }).leaderboardPublic;
             vm.subErrors.msg = "";
         };
 

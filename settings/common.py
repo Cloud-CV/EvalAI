@@ -33,7 +33,9 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
-EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER", "http://localhost:8000")
+EVALAI_API_SERVER = os.environ.get(
+    "EVALAI_API_SERVER", "http://localhost:8000"
+)
 
 # Application definition
 
@@ -61,6 +63,7 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
     "corsheaders",
     "django_ses",
     "import_export",
@@ -68,7 +71,6 @@ THIRD_PARTY_APPS = [
     "rest_auth.registration",
     "rest_framework.authtoken",
     "rest_framework",
-    "rest_framework_docs",
     "rest_framework_expiring_authtoken",
     "drf_yasg",
     "django_filters",
@@ -331,3 +333,5 @@ SENDGRID_SETTINGS = {
 EKS_CLUSTER_ROLE_ARN = os.environ.get("EKS_CLUSTER_ROLE_ARN")
 
 EKS_NODEGROUP_ROLE_ARN = os.environ.get("EKS_NODEGROUP_ROLE_ARN")
+
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")

@@ -29,6 +29,10 @@ def save_challenge_slug(sender, instance, **kwargs):
     instance.slug = "{}-{}".format(title, instance.pk)
 
 
+def get_default_eval_metric():
+    return ["Accuracy"]
+
+
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
@@ -57,7 +61,9 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
     creator = models.ForeignKey(
-        "hosts.ChallengeHostTeam", related_name="challenge_creator"
+        "hosts.ChallengeHostTeam",
+        related_name="challenge_creator",
+        on_delete=models.CASCADE,
     )
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
@@ -79,14 +85,14 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Featured", db_index=True
     )
     allowed_email_domains = ArrayField(
-        models.CharField(max_length=50, blank=True), default=[], blank=True
+        models.CharField(max_length=50, blank=True), default=list, blank=True
     )
     blocked_email_domains = ArrayField(
-        models.CharField(max_length=50, blank=True), default=[], blank=True
+        models.CharField(max_length=50, blank=True), default=list, blank=True
     )
     banned_email_ids = ArrayField(
         models.TextField(null=True, blank=True),
-        default=[],
+        default=list,
         blank=True,
         null=True,
     )
@@ -234,7 +240,7 @@ class ChallengePhase(TimeStampedModel):
     end_date = models.DateTimeField(
         null=True, blank=True, verbose_name="End Date (UTC)", db_index=True
     )
-    challenge = models.ForeignKey("Challenge")
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
     test_annotation = models.FileField(
@@ -256,7 +262,7 @@ class ChallengePhase(TimeStampedModel):
     )
     allowed_email_ids = ArrayField(
         models.TextField(null=True, blank=True),
-        default=[],
+        default=list,
         blank=True,
         null=True,
     )
@@ -278,7 +284,9 @@ class ChallengePhase(TimeStampedModel):
     # Id in the challenge config file. Needed to map the object to the value in the config file while updating through Github
     config_id = models.IntegerField(default=None, blank=True, null=True)
     # Store the default metadata for a submission meta attributes of a challenge phase.
-    default_submission_meta_attributes = JSONField(default=None, blank=True, null=True)
+    default_submission_meta_attributes = JSONField(
+        default=None, blank=True, null=True
+    )
 
     class Meta:
         app_label = "challenges"
@@ -357,9 +365,11 @@ class ChallengePhaseSplit(TimeStampedModel):
         (PUBLIC, "public"),
     )
 
-    challenge_phase = models.ForeignKey("ChallengePhase")
-    dataset_split = models.ForeignKey("DatasetSplit")
-    leaderboard = models.ForeignKey("Leaderboard")
+    challenge_phase = models.ForeignKey(
+        "ChallengePhase", on_delete=models.CASCADE
+    )
+    dataset_split = models.ForeignKey("DatasetSplit", on_delete=models.CASCADE)
+    leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
@@ -400,7 +410,7 @@ class ChallengeTemplate(TimeStampedModel):
     # The metrics on which the submissions are evaluated
     eval_metrics = ArrayField(
         models.CharField(max_length=200, blank=True),
-        default=["Accuracy"],
+        default=get_default_eval_metric,
         blank=True,
     )
     phases = models.IntegerField(null=True, blank=True, default=None)
@@ -419,9 +429,11 @@ class ChallengeTemplate(TimeStampedModel):
 
 class LeaderboardData(TimeStampedModel):
 
-    challenge_phase_split = models.ForeignKey("ChallengePhaseSplit")
-    submission = models.ForeignKey("jobs.Submission")
-    leaderboard = models.ForeignKey("Leaderboard")
+    challenge_phase_split = models.ForeignKey(
+        "ChallengePhaseSplit", on_delete=models.CASCADE
+    )
+    submission = models.ForeignKey("jobs.Submission", on_delete=models.CASCADE)
+    leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     result = JSONField()
     error = JSONField(null=True, blank=True)
 
@@ -438,8 +450,10 @@ class ChallengeConfiguration(TimeStampedModel):
     Model to store zip file for challenge creation.
     """
 
-    user = models.ForeignKey(User)
-    challenge = models.OneToOneField(Challenge, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    challenge = models.OneToOneField(
+        Challenge, null=True, blank=True, on_delete=models.CASCADE
+    )
     zip_configuration = models.FileField(
         upload_to=RandomFileName("zip_configuration_files/challenge_zip")
     )
@@ -465,8 +479,8 @@ class StarChallenge(TimeStampedModel):
     Model to star a challenge
     """
 
-    user = models.ForeignKey(User)
-    challenge = models.ForeignKey(Challenge)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
     is_starred = models.BooleanField(default=False, db_index=True)
 
     class Meta:
@@ -488,9 +502,11 @@ class UserInvitation(TimeStampedModel):
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
-    challenge = models.ForeignKey(Challenge, related_name="challenge")
-    user = models.ForeignKey(User)
-    invited_by = models.ForeignKey(ChallengeHost)
+    challenge = models.ForeignKey(
+        Challenge, related_name="challenge", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    invited_by = models.ForeignKey(ChallengeHost, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "challenges"
@@ -509,7 +525,7 @@ class ChallengeEvaluationCluster(TimeStampedModel):
                                             `modified_at` fields.
     """
 
-    challenge = models.OneToOneField(Challenge)
+    challenge = models.OneToOneField(Challenge, on_delete=models.CASCADE)
     name = models.CharField(max_length=200, unique=True, db_index=True)
     cluster_endpoint = models.URLField(max_length=200, blank=True, null=True)
     cluster_ssl = models.TextField(null=True, blank=True)
@@ -519,7 +535,49 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     kube_config = models.FileField(
         upload_to=RandomFileName("kube_config"), blank=True, null=True
     )
+    eks_arn_role = models.CharField(max_length=512, null=True, blank=True)
+    node_group_arn_role = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    ecr_all_access_policy_arn = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    vpc_id = models.CharField(max_length=512, null=True, blank=True)
+    subnet_1_id = models.CharField(max_length=512, null=True, blank=True)
+    subnet_2_id = models.CharField(max_length=512, null=True, blank=True)
+    security_group_id = models.CharField(max_length=512, null=True, blank=True)
+    internet_gateway_id = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    route_table_id = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
         app_label = "challenges"
         db_table = "challenge_evaluation_cluster"
+
+
+class PWCChallengeLeaderboard(TimeStampedModel):
+    """
+    Model to store the challenge mapping with area, task and dataset of papers with code (PWC)
+    (https://paperswithcode.com/)
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    phase_split = models.OneToOneField(
+        "ChallengePhaseSplit", on_delete=models.CASCADE
+    )
+    area = models.CharField(max_length=200, default="", db_index=True)
+    task = models.CharField(max_length=200, default="", db_index=True)
+    dataset = models.CharField(max_length=200, default="", db_index=True)
+    enable_sync = models.BooleanField(
+        default=True,
+        verbose_name="Enable leaderboard sync to PWC",
+        db_index=True,
+    )
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "pwc_challenge_leaderboard"

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         (
             "challenges",
             "0065_add_cluster_details_to_challenge_evaluation_cluster_model",
-        ),
+        )
     ]
 
     operations = [
@@ -19,5 +19,5 @@ class Migration(migrations.Migration):
             model_name="challengephase",
             name="is_partial_submission_evaluation_enabled",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

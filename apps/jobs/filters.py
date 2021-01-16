@@ -10,6 +10,6 @@ class SubmissionFilter(django_filters.FilterSet):
         filter_overrides = {
             models.CharField: {
                 "filter_class": django_filters.CharFilter,
-                "extra": lambda f: {"lookup_expr": "icontains", },
-            },
+                "extra": lambda f: {"lookup_expr": "icontains"},
+            }
         }

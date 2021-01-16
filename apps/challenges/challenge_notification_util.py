@@ -42,9 +42,7 @@ def construct_and_send_eks_cluster_creation_mail(challenge):
     if settings.DEBUG:
         return
 
-    template_data = {
-        "CHALLENGE_NAME": challenge.title,
-    }
+    template_data = {"CHALLENGE_NAME": challenge.title}
     if challenge.image:
         template_data["CHALLENGE_IMAGE_URL"] = challenge.image.url
 

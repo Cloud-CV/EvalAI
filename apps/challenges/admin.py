@@ -25,6 +25,7 @@ from .models import (
     DatasetSplit,
     Leaderboard,
     LeaderboardData,
+    PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
 )
@@ -68,6 +69,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "end_date",
     )
     search_fields = (
+        "id",
         "title",
         "creator__team_name",
         "slug",
@@ -221,7 +223,7 @@ class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
         "zip_configuration",
     )
     list_filter = ("is_created", "created_at")
-    search_fields = ("challenge__title",)
+    search_fields = ("id", "challenge__title")
 
 
 @admin.register(ChallengePhase)
@@ -250,6 +252,7 @@ class ChallengePhaseAdmin(ImportExportTimeStampedAdmin):
 
 @admin.register(ChallengePhaseSplit)
 class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
+    raw_id_fields = ["challenge_phase", "leaderboard", "dataset_split"]
     list_display = (
         "id",
         "get_challenge",
@@ -260,8 +263,9 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "leaderboard_decimal_precision",
         "is_leaderboard_order_descending",
     )
-    list_filter = ("dataset_split", "leaderboard", "visibility")
+    list_filter = ("visibility",)
     search_fields = (
+        "id",
         "challenge_phase__name",
         "dataset_split__name",
         "leaderboard__id",
@@ -287,14 +291,9 @@ class ChallengeTemplate(ImportExportTimeStampedAdmin):
         "phases",
         "splits",
     )
-    list_filter = (
-        "title",
-        "dataset",
-        "phases",
-        "splits",
-        "eval_metrics",
-    )
+    list_filter = ("title", "dataset", "phases", "splits", "eval_metrics")
     search_fields = (
+        "id",
         "title",
         "dataset",
         "phases",
@@ -307,13 +306,13 @@ class ChallengeTemplate(ImportExportTimeStampedAdmin):
 class DatasetSplitAdmin(ImportExportTimeStampedAdmin):
     list_display = ("name", "codename")
     list_filter = ("name", "codename")
-    search_fields = ("name", "codename")
+    search_fields = ("id", "name", "codename")
 
 
 @admin.register(Leaderboard)
 class LeaderboardAdmin(ImportExportTimeStampedAdmin):
     list_display = ("id", "schema")
-    search_fields = ("schema",)
+    search_fields = ("id", "schema")
 
 
 @admin.register(LeaderboardData)
@@ -328,6 +327,7 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
     )
     list_filter = ("challenge_phase_split", "created_at", "modified_at")
     search_fields = (
+        "id",
         "challenge_phase_split__challenge_phase__name",
         "submission__participant_team__team_name",
         "leaderboard__schema",
@@ -346,7 +346,7 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
 class StarChallengeAdmin(ImportExportTimeStampedAdmin):
     list_display = ("user", "challenge", "is_starred")
     list_filter = ("is_starred",)
-    search_fields = ("user__username", "challenge__title")
+    search_fields = ("id", "user__username", "challenge__title")
 
 
 @admin.register(UserInvitation)
@@ -392,4 +392,39 @@ class ChallengeEvaluationClusterAdmin(ImportExportTimeStampedAdmin):
     readonly_fields = ("created_at",)
     list_display = ("id", "name", "cluster_yaml", "kube_config")
     list_filter = ("name",)
-    search_fields = ("name",)
+    search_fields = ("id", "name")
+
+
+@admin.register(PWCChallengeLeaderboard)
+class PWCChallengeLeaderboardAdmin(ImportExportTimeStampedAdmin):
+    raw_id_fields = ["phase_split"]
+    readonly_fields = ("created_at",)
+    list_display = (
+        "id",
+        "get_challenge_name_and_id",
+        "phase_split",
+        "get_challenge_phase_split_id",
+        "area",
+        "task",
+        "dataset",
+        "enable_sync",
+    )
+    list_filter = ("area", "enable_sync")
+    search_fields = ("id", "area", "task", "dataset")
+
+    def get_challenge_phase_split_id(self, obj):
+        """Return challenge phase split id for a challenge phase and split"""
+        return "%s" % (obj.phase_split.id)
+
+    get_challenge_phase_split_id.short_description = "Challenge Phase Split ID"
+    get_challenge_phase_split_id.admin_order_field = "phase_split"
+
+    def get_challenge_name_and_id(self, obj):
+        """Return challenge name and id for a challenge"""
+        return "%s - %s" % (
+            obj.phase_split.challenge_phase.challenge.title,
+            obj.phase_split.challenge_phase.challenge.id,
+        )
+
+    get_challenge_name_and_id.short_description = "Challenge Name - ID"
+    get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"

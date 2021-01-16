@@ -205,5 +205,10 @@ urlpatterns = [
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_annotation_file_upload/$",
         views.finish_annotation_file_upload,
         name="finish_annotation_file_upload",
-    )
+    ),
+    url(
+        r"^pwc_task_dataset/$", views.pwc_task_dataset, name="pwc_task_dataset"
+    ),
 ]
+
+app_name = "challenges"

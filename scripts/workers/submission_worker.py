@@ -30,7 +30,9 @@ from django.utils import timezone
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
-formatter = logging.Formatter("[%(asctime)s] %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+formatter = logging.Formatter(
+    "[%(asctime)s] %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(formatter)
@@ -121,13 +123,17 @@ def alarm_handler(signum, frame):
 
 def download_and_extract_file(url, download_location):
     """
-        * Function to extract download a file.
-        * `download_location` should include name of file as well.
+    * Function to extract download a file.
+    * `download_location` should include name of file as well.
     """
     try:
         response = requests.get(url, stream=True)
     except Exception as e:
-        logger.error("{} Failed to fetch file from {}, error {}".format(WORKER_LOGS_PREFIX, url, e))
+        logger.error(
+            "{} Failed to fetch file from {}, error {}".format(
+                WORKER_LOGS_PREFIX, url, e
+            )
+        )
         traceback.print_exc()
         response = None
 
@@ -169,10 +175,10 @@ def delete_zip_file(download_location):
 
 def delete_submission_data_directory(location):
     """
-        Helper function to delete submission data from location `location`
+    Helper function to delete submission data from location `location`
 
-        Arguments:
-            location {[string]} -- Location of directory to be removed.
+    Arguments:
+        location {[string]} -- Location of directory to be removed.
     """
     try:
         shutil.rmtree(location)
@@ -186,13 +192,17 @@ def delete_submission_data_directory(location):
 
 def download_and_extract_zip_file(url, download_location, extract_location):
     """
-        * Function to extract download a zip file, extract it and then removes the zip file.
-        * `download_location` should include name of file as well.
+    * Function to extract download a zip file, extract it and then removes the zip file.
+    * `download_location` should include name of file as well.
     """
     try:
         response = requests.get(url, stream=True)
     except Exception as e:
-        logger.error("{} Failed to fetch file from {}, error {}".format(WORKER_LOGS_PREFIX, url, e))
+        logger.error(
+            "{} Failed to fetch file from {}, error {}".format(
+                WORKER_LOGS_PREFIX, url, e
+            )
+        )
         response = None
 
     if response and response.status_code == 200:
@@ -208,7 +218,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
 
 def create_dir(directory):
     """
-        Creates a directory if it does not exists
+    Creates a directory if it does not exists
     """
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -216,8 +226,8 @@ def create_dir(directory):
 
 def create_dir_as_python_package(directory):
     """
-        Create a directory and then makes it a python
-        package by creating `__init__.py` file.
+    Create a directory and then makes it a python
+    package by creating `__init__.py` file.
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
@@ -240,8 +250,8 @@ def return_file_url_per_environment(url):
 
 def extract_challenge_data(challenge, phases):
     """
-        * Expects a challenge object and an array of phase object
-        * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
+    * Expects a challenge object and an array of phase object
+    * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
 
     """
 
@@ -300,15 +310,16 @@ def extract_challenge_data(challenge, phases):
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except Exception:
         logger.exception(
-            "{} Exception raised while creating Python module for challenge_id: {}"
-            .format(WORKER_LOGS_PREFIX, challenge.id)
+            "{} Exception raised while creating Python module for challenge_id: {}".format(
+                WORKER_LOGS_PREFIX, challenge.id
+            )
         )
         raise
 
 
 def load_challenge(challenge):
     """
-        Creates python package for a challenge and extracts relevant data
+    Creates python package for a challenge and extracts relevant data
     """
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
@@ -318,13 +329,17 @@ def load_challenge(challenge):
 
 def extract_submission_data(submission_id):
     """
-        * Expects submission id and extracts input file for it.
+    * Expects submission id and extracts input file for it.
     """
 
     try:
         submission = Submission.objects.get(id=submission_id)
     except Submission.DoesNotExist:
-        logger.critical("{} Submission {} does not exist".format(SUBMISSION_LOGS_PREFIX, submission_id))
+        logger.critical(
+            "{} Submission {} does not exist".format(
+                SUBMISSION_LOGS_PREFIX, submission_id
+            )
+        )
         traceback.print_exc()
         # return from here so that the message can be acked
         # This also indicates that we don't want to take action
@@ -358,10 +373,10 @@ def run_submission(
     challenge_id, challenge_phase, submission, user_annotation_file_path
 ):
     """
-        * receives a challenge id, phase id and user annotation file path
-        * checks whether the corresponding evaluation script for the challenge exists or not
-        * checks the above for annotation file
-        * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
+    * receives a challenge id, phase id and user annotation file path
+    * checks whether the corresponding evaluation script for the challenge exists or not
+    * checks the above for annotation file
+    * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     """
 
     # Use the submission serializer to send relevant data to evaluation script
@@ -403,8 +418,7 @@ def run_submission(
         try:
             logger.info(
                 "{} Sending submission {} for remote evaluation".format(
-                    SUBMISSION_LOGS_PREFIX,
-                    submission.id
+                    SUBMISSION_LOGS_PREFIX, submission.id
                 )
             )
             with stdout_redirect(stdout) as new_stdout, stderr_redirect(
@@ -546,6 +560,9 @@ def run_submission(
     except Exception:
         stderr.write(traceback.format_exc())
         successful_submission_flag = False
+        # Set submission_output to None to handle case when evaluation script throws exception
+        # In case of exception from evaluation script submission_output is assigned exception object
+        submission_output = None
 
     submission_status = (
         Submission.FINISHED
@@ -574,8 +591,7 @@ def run_submission(
         submission.submission_metadata_file.save(
             "submission_metadata.json", ContentFile(submission_metadata)
         )
-
-    submission.save()
+        submission.save()
 
     stderr.close()
     stdout.close()
@@ -614,7 +630,11 @@ def process_submission_message(message):
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
-        logger.exception("{} Challenge Phase {} does not exist".format(WORKER_LOGS_PREFIX, phase_id))
+        logger.exception(
+            "{} Challenge Phase {} does not exist".format(
+                WORKER_LOGS_PREFIX, phase_id
+            )
+        )
         raise
 
     user_annotation_file_path = join(
@@ -629,7 +649,8 @@ def process_submission_message(message):
     )
     # Delete submission data after processing submission
     delete_submission_data_directory(
-        SUBMISSION_DATA_DIR.format(submission_id=submission_id))
+        SUBMISSION_DATA_DIR.format(submission_id=submission_id)
+    )
 
 
 def process_add_challenge_message(message):
@@ -638,7 +659,11 @@ def process_add_challenge_message(message):
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
-        logger.exception("{} Challenge {} does not exist".format(WORKER_LOGS_PREFIX, challenge_id))
+        logger.exception(
+            "{} Challenge {} does not exist".format(
+                WORKER_LOGS_PREFIX, challenge_id
+            )
+        )
 
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
@@ -646,15 +671,18 @@ def process_add_challenge_message(message):
 
 def process_submission_callback(body):
     try:
-        logger.info("{} [x] Received submission message {}" .format(SUBMISSION_LOGS_PREFIX, body))
+        logger.info(
+            "{} [x] Received submission message {}".format(
+                SUBMISSION_LOGS_PREFIX, body
+            )
+        )
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
-                SUBMISSION_LOGS_PREFIX,
-                e
+                SUBMISSION_LOGS_PREFIX, e
             )
         )
 
@@ -699,7 +727,9 @@ def load_challenge_and_return_max_submissions(q_params):
         challenge = Challenge.objects.get(**q_params)
     except Challenge.DoesNotExist:
         logger.exception(
-            "{} Challenge with pk {} doesn't exist".format(WORKER_LOGS_PREFIX, q_params["pk"])
+            "{} Challenge with pk {} doesn't exist".format(
+                WORKER_LOGS_PREFIX, q_params["pk"]
+            )
         )
         raise
     load_challenge(challenge)
@@ -712,13 +742,14 @@ def load_challenge_and_return_max_submissions(q_params):
 def main():
     killer = GracefulKiller()
     logger.info(
-        "{} Using {} as temp directory to store data".format(WORKER_LOGS_PREFIX, BASE_TEMP_DIR)
+        "{} Using {} as temp directory to store data".format(
+            WORKER_LOGS_PREFIX, BASE_TEMP_DIR
+        )
     )
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {}
-    q_params["start_date__lt"] = timezone.now()
     q_params["end_date__gt"] = timezone.now()
 
     challenge_pk = os.environ.get("CHALLENGE_PK")
@@ -729,7 +760,9 @@ def main():
         if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
             if not challenge_pk:
                 logger.exception(
-                    "{} Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file.".format(WORKER_LOGS_PREFIX)
+                    "{} Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file.".format(
+                        WORKER_LOGS_PREFIX
+                    )
                 )
                 sys.exit(1)
             (
@@ -754,10 +787,12 @@ def main():
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
                 if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
-                    current_running_submissions_count = Submission.objects.filter(
-                        challenge_phase__challenge=challenge.id,
-                        status="running",
-                    ).count()
+                    current_running_submissions_count = (
+                        Submission.objects.filter(
+                            challenge_phase__challenge=challenge.id,
+                            status="running",
+                        ).count()
+                    )
                     if (
                         current_running_submissions_count
                         == maximum_concurrent_submissions
@@ -765,14 +800,18 @@ def main():
                         pass
                     else:
                         logger.info(
-                            "{} Processing message body: {}".format(WORKER_LOGS_PREFIX, message.body)
+                            "{} Processing message body: {}".format(
+                                WORKER_LOGS_PREFIX, message.body
+                            )
                         )
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
                 else:
                     logger.info(
-                        "{} Processing message body: {}".format(WORKER_LOGS_PREFIX, message.body)
+                        "{} Processing message body: {}".format(
+                            WORKER_LOGS_PREFIX, message.body
+                        )
                     )
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
@@ -788,7 +827,9 @@ def main():
                     pass
                 else:
                     logger.info(
-                        "{} Processing message body: {}".format(WORKER_LOGS_PREFIX, message.body)
+                        "{} Processing message body: {}".format(
+                            WORKER_LOGS_PREFIX, message.body
+                        )
                     )
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed

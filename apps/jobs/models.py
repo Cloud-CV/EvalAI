@@ -63,12 +63,12 @@ class Submission(TimeStampedModel):
     )
 
     participant_team = models.ForeignKey(
-        ParticipantTeam, related_name="submissions"
+        ParticipantTeam, related_name="submissions", on_delete=models.CASCADE
     )
     challenge_phase = models.ForeignKey(
-        ChallengePhase, related_name="submissions"
+        ChallengePhase, related_name="submissions", on_delete=models.CASCADE
     )
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
@@ -117,7 +117,7 @@ class Submission(TimeStampedModel):
     is_baseline = models.BooleanField(default=False)
     job_name = ArrayField(
         models.TextField(null=True, blank=True),
-        default=[],
+        default=list,
         blank=True,
         null=True,
     )

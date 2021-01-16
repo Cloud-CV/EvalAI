@@ -2,7 +2,7 @@ import responses
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework import status
@@ -170,8 +170,9 @@ class TestErrorPages(TestCase):
         self.assertTrue(handler404.endswith(".page_not_found"))
         self.assertTrue(handler500.endswith(".internal_server_error"))
         c = Client()
+        ex = Exception()
         request = c.get("/abc")
-        response = page_not_found(request)
+        response = page_not_found(request, ex)
         self.assertEqual(response.status_code, 404)
         response = internal_server_error(request)
         self.assertEqual(response.status_code, 500)

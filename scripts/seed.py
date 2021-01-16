@@ -127,7 +127,7 @@ def create_challenge_host_team(user):
     """
     team_name = "{} Host Team".format(fake.city())
     team = ChallengeHostTeam.objects.create(
-        team_name=team_name, created_by=user,
+        team_name=team_name, created_by=user
     )
     print(
         "Challenge Host Team created with team_name: {} created_by: {}".format(
@@ -155,13 +155,13 @@ def create_challenge_host_participant_team(challenge_host_team):
     emails = challenge_host_team.get_all_challenge_host_email()
     team_name = "Host_{}_Team".format(random.randint(1, 100000))
     participant_host_team = ParticipantTeam(
-        team_name=team_name, created_by=challenge_host_team.created_by,
+        team_name=team_name, created_by=challenge_host_team.created_by
     )
     participant_host_team.save()
     for email in emails:
         user = User.objects.get(email=email)
         host = Participant(
-            user=user, status=Participant.ACCEPTED, team=participant_host_team,
+            user=user, status=Participant.ACCEPTED, team=participant_host_team
         )
         host.save()
     return participant_host_team
@@ -322,10 +322,7 @@ def create_leaderboard():
     """
     Creates Leaderboard schema and returns it.
     """
-    schema = {
-        "labels": ["score", ],
-        "default_order_by": "score",
-    }
+    schema = {"labels": ["score"], "default_order_by": "score"}
     leaderboard = Leaderboard.objects.create(schema=schema)
     print("Leaderboard created")
     return leaderboard
@@ -353,7 +350,7 @@ def create_dataset_splits(number_of_splits):
         name = "Split {}".format(DATASET_SPLIT_ITERATOR + 1)
         codename = "{}{}".format("split", split + 1)
         dataset_split = DatasetSplit.objects.create(
-            name=name, codename=codename,
+            name=name, codename=codename
         )
         dataset_splits.append(dataset_split)
         DATASET_SPLIT_ITERATOR += 1
@@ -388,9 +385,7 @@ def create_participant_team(user):
     Creates participant team and returns it.
     """
     team_name = "{} Participant Team".format(fake.city())
-    team = ParticipantTeam.objects.create(
-        team_name=team_name, created_by=user,
-    )
+    team = ParticipantTeam.objects.create(team_name=team_name, created_by=user)
     print(
         "Participant Team created with team_name: {} created_by: {}".format(
             team_name, user.username
@@ -470,7 +465,7 @@ def create_challenge_template(challenge_config_path):
     title = "{} template".format(fake.first_name())
 
     template_file = open(
-        os.path.join(challenge_config_path, "test_zip_file.zip",), "rb",
+        os.path.join(challenge_config_path, "test_zip_file.zip"), "rb"
     )
 
     challenge_config_yaml_file_path = os.path.join(

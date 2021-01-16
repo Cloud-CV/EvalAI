@@ -7,19 +7,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0071_add_challenge_template_mode'),
-    ]
+    dependencies = [("challenges", "0071_add_challenge_template_mode")]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='worker_cpu_cores',
+            model_name="challenge",
+            name="worker_cpu_cores",
             field=models.IntegerField(blank=True, default=None, null=True),
         ),
         migrations.AddField(
-            model_name='challenge',
-            name='worker_memory',
+            model_name="challenge",
+            name="worker_memory",
             field=models.IntegerField(blank=True, default=None, null=True),
         ),
     ]
