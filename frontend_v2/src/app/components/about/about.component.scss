@@ -1,6 +1,5 @@
 @import './styles/variables.scss';
 @import './styles/mixins.scss';
-@import './styles/base.scss';
 
 .about-container {
   max-width: 1450px;
@@ -11,9 +10,6 @@
 }
 
 .about-content-column {
-  margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 20px;
   margin-top: 68px;
   box-sizing: border-box;
   padding: 0 0.75rem;
