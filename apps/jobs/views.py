@@ -19,6 +19,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
 from django.db.models import Count
 from django.utils import timezone
+from rest_framework.exceptions import NotFound
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
@@ -646,11 +647,11 @@ def leaderboard(request, challenge_phase_split_id):
                                 ),
                                 "submission__is_baseline": openapi.Schema(
                                     type=openapi.TYPE_BOOLEAN,
-                                    description="Boolean to decide if submission is baseline"
+                                    description="Boolean to decide if submission is baseline",
                                 ),
                                 "submission__is_public": openapi.Schema(
                                     type=openapi.TYPE_BOOLEAN,
-                                    description="Boolean to decide if submission is public"
+                                    description="Boolean to decide if submission is public",
                                 ),
                                 "challenge_phase_split": openapi.Schema(
                                     type=openapi.TYPE_STRING,
@@ -665,7 +666,7 @@ def leaderboard(request, challenge_phase_split_id):
                                 ),
                                 "error": openapi.Schema(
                                     type=openapi.TYPE_STRING,
-                                    description="Error returned for the result"
+                                    description="Error returned for the result",
                                 ),
                                 "leaderboard__schema": openapi.Schema(
                                     type=openapi.TYPE_OBJECT,
@@ -682,7 +683,7 @@ def leaderboard(request, challenge_phase_split_id):
                                             type=openapi.TYPE_STRING,
                                             description="Default ordering label for the leaderboard schema",
                                         ),
-                                    }
+                                    },
                                 ),
                                 "submission__submitted_at": openapi.Schema(
                                     type=openapi.TYPE_STRING,
@@ -1151,8 +1152,8 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1440,8 +1441,15 @@ def update_partially_evaluated_submission(request, challenge_pk):
         stderr_content = request.data.get("stderr", "")
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
-        submission = get_submission_model(submission_pk)
-
+        try:
+            submission = get_submission_model(submission_pk)
+        except NotFound:
+            response_data = {
+                "error": "Submission does not exist with submission_id {}".format(
+                    submission_pk
+                )
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         public_results = []
         successful_submission = (
             True
@@ -1493,8 +1501,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1589,7 +1597,15 @@ def update_partially_evaluated_submission(request, challenge_pk):
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
         job_name = request.data.get("job_name", "").lower()
-        submission = get_submission_model(submission_pk)
+        try:
+            submission = get_submission_model(submission_pk)
+        except NotFound:
+            response_data = {
+                "error": "Submission does not exist with submission_id {}".format(
+                    submission_pk
+                )
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
@@ -1678,8 +1694,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
 
                 updated_result = leaderboard_data.result
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -2316,14 +2332,14 @@ def get_github_badge_data(
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
     """
-        API for fetching count of submissions by status for a challenge phase
+    API for fetching count of submissions by status for a challenge phase
 
-        Arguments:
-            request {HttpRequest} -- request object
-            challenge_phase_pk {int} -- challenge phase pk
+    Arguments:
+        request {HttpRequest} -- request object
+        challenge_phase_pk {int} -- challenge phase pk
 
-        Returns:
-            Response object -- Response object with appropriate response code (200/400/404)
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
     """
     # check if the challenge phase exists or not
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
