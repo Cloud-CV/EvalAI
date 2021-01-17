@@ -535,6 +535,21 @@ class ChallengeEvaluationCluster(TimeStampedModel):
     kube_config = models.FileField(
         upload_to=RandomFileName("kube_config"), blank=True, null=True
     )
+    eks_arn_role = models.CharField(max_length=512, null=True, blank=True)
+    node_group_arn_role = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    ecr_all_access_policy_arn = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    vpc_id = models.CharField(max_length=512, null=True, blank=True)
+    subnet_1_id = models.CharField(max_length=512, null=True, blank=True)
+    subnet_2_id = models.CharField(max_length=512, null=True, blank=True)
+    security_group_id = models.CharField(max_length=512, null=True, blank=True)
+    internet_gateway_id = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    route_table_id = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
         app_label = "challenges"
