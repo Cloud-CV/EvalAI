@@ -1087,7 +1087,6 @@ def create_eks_nodegroup(challenge, cluster_name):
     cluster_meta = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
     # TODO: Move the hardcoded cluster configuration such as the
     # instance_type, subnets, AMI to challenge configuration later.
-    vpc_dict = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
     try:
         response = client.create_nodegroup(
             clusterName=cluster_name,
@@ -1112,7 +1111,7 @@ def create_eks_nodegroup(challenge, cluster_name):
 
 
 @app.task
-def create_eks_arn_roles(challenge):
+def setup_eks_cluster(challenge):
     """
     Creates EKS and NodeGroup ARN roles
 
@@ -1193,24 +1192,26 @@ def create_eks_arn_roles(challenge):
     except ClientError as e:
         logger.exception(e)
         return response
-
-    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
-        challenge_obj
-    )
-    serializer = ChallengeEvaluationClusterSerializer(
-        challenge_evaluation_cluster,
-        data={
-            "eks_arn_role": eks_arn_role,
-            "node_group_arn_role": node_group_arn_role,
-            "ecr_all_access_policy_arn": ecr_all_access_policy_arn,
-            "security_group_id": security_group_id,
-            "subnet_1_id": subnet_1_id,
-            "subnet_2_id": subnet_2_id
-        },
-        partial=True,
-    )
-    if serializer.is_valid():
-        serializer.save()
+    try:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge_obj
+        )
+        serializer = ChallengeEvaluationClusterSerializer(
+            challenge_evaluation_cluster,
+            data={
+                "eks_arn_role": eks_arn_role,
+                "node_group_arn_role": node_group_arn_role,
+                "ecr_all_access_policy_arn": ecr_all_access_policy_arn,
+            },
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+        # Create eks cluster vpc and subnets
+        create_eks_cluster_subnets.delay(challenge)
+    except Exception as e:
+        logger.exception(e)
+        return
 
 
 @app.task
@@ -1325,13 +1326,14 @@ def create_eks_cluster_subnets(challenge):
                 "route_table_id": route_table_id,
                 "security_group_id": security_group_id,
                 "subnet_1_id": subnet_1_id,
-                "subnet_2_id": subnet_2_id
+                "subnet_2_id": subnet_2_id,
             },
             partial=True,
         )
         if serializer.is_valid():
             serializer.save()
-
+        # Create eks cluster
+        create_eks_cluster.delay(challenge)
     except ClientError as e:
         logger.exception(e)
         return response
@@ -1375,7 +1377,6 @@ def create_eks_cluster(challenge):
             challenge_obj.pk
         )
         client = get_boto3_client("eks", challenge_aws_keys)
-        vpc_dict = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
         try:
             response = client.create_cluster(
                 name=cluster_name,
