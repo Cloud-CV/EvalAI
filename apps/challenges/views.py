@@ -260,11 +260,11 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail_for_challenge(request, challenge_pk):
     """
-        Returns the participated team detail in the challenge
-        Arguments:
-            challenge_pk {int} -- Challenge primary key
-        Returns:
-            {dict} -- Participant team detail that has participated in the challenge
+    Returns the participated team detail in the challenge
+    Arguments:
+        challenge_pk {int} -- Challenge primary key
+    Returns:
+        {dict} -- Participant team detail that has participated in the challenge
     """
     if has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
@@ -861,8 +861,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
-        message = "There are {0} YAML files instead of one in zip folder!".format(
-            yaml_file_count
+        message = (
+            "There are {0} YAML files instead of one in zip folder!".format(
+                yaml_file_count
+            )
         )
         response_data = {"error": message}
         logger.info(message)
@@ -1413,6 +1415,24 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_config.challenge = challenge
             zip_config.save()
 
+            if challenge.is_docker_based:
+                challenge_evaluation_cluster = ChallengeEvaluationCluster(
+                    challenge=zip_config.challenge
+                )
+                evaluation_cluster_serializer = (
+                    ChallengeEvaluationClusterSerializer(
+                        challenge_evaluation_cluster,
+                        data={
+                            "name": "{0}-cluster".format(
+                                challenge.title.replace(" ", "-")
+                            )
+                        },
+                        partial=True,
+                    )
+                )
+                if evaluation_cluster_serializer.is_valid():
+                    evaluation_cluster_serializer.save()
+
             if not settings.DEBUG:
                 message = {
                     "text": "A *new challenge* has been uploaded to EvalAI.",
@@ -1819,8 +1839,10 @@ def download_all_submissions(
             ):
 
                 # get participant team object for the user for a particular challenge.
-                participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-                    request.user, challenge_pk
+                participant_team_pk = (
+                    get_participant_team_id_of_user_for_a_challenge(
+                        request.user, challenge_pk
+                    )
                 )
 
                 # Filter submissions on the basis of challenge phase for a participant.
@@ -2233,19 +2255,19 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_aws_credentials_for_participant_team(request, phase_pk):
     """
-        Endpoint to generate AWS Credentails for CLI
-        Args:
-            - challenge: Challenge model
-            - participant_team: Participant Team Model
-        Returns:
-            - JSON: {
-                    "federated_user"
-                    "docker_repository_uri"
-                }
-        Raises:
-            - BadRequestException 400
-                - When participant_team has not participanted in challenge
-                - When Challenge is not Docker based
+    Endpoint to generate AWS Credentails for CLI
+    Args:
+        - challenge: Challenge model
+        - participant_team: Participant Team Model
+    Returns:
+        - JSON: {
+                "federated_user"
+                "docker_repository_uri"
+            }
+    Raises:
+        - BadRequestException 400
+            - When participant_team has not participanted in challenge
+            - When Challenge is not Docker based
     """
     challenge_phase = get_challenge_phase_model(phase_pk)
     challenge = challenge_phase.challenge
