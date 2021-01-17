@@ -592,6 +592,133 @@ def leaderboard(request, challenge_phase_split_id):
     return paginator.get_paginated_response(response_data)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_phase_split_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase Split Primary Key",
+            required=True,
+        )
+    ],
+    operation_id="get_all_entries_on_public_leaderboard",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "count": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Count of values on the leaderboard",
+                    ),
+                    "next": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL of next page of results",
+                    ),
+                    "previous": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL of previous page of results",
+                    ),
+                    "results": openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description="Array of results object",
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Result ID",
+                                ),
+                                "submission__participant_team": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team ID",
+                                ),
+                                "submission__participant_team__team_name": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team Name",
+                                ),
+                                "submission__participant_team__team_url": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team URL",
+                                ),
+                                "submission__is_baseline": openapi.Schema(
+                                    type=openapi.TYPE_BOOLEAN,
+                                    description="Boolean to decide if submission is baseline"
+                                ),
+                                "submission__is_public": openapi.Schema(
+                                    type=openapi.TYPE_BOOLEAN,
+                                    description="Boolean to decide if submission is public"
+                                ),
+                                "challenge_phase_split": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Challenge Phase Split ID",
+                                ),
+                                "result": openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    description="Leaderboard Metrics values according to leaderboard schema",
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_STRING
+                                    ),
+                                ),
+                                "error": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Error returned for the result"
+                                ),
+                                "leaderboard__schema": openapi.Schema(
+                                    type=openapi.TYPE_OBJECT,
+                                    description="Leaderboard Schema of the corresponding challenge",
+                                    properties={
+                                        "labels": openapi.Schema(
+                                            type=openapi.TYPE_ARRAY,
+                                            description="Labels of leaderboard schema",
+                                            items=openapi.Schema(
+                                                type=openapi.TYPE_STRING
+                                            ),
+                                        ),
+                                        "default_order_by": openapi.Schema(
+                                            type=openapi.TYPE_STRING,
+                                            description="Default ordering label for the leaderboard schema",
+                                        ),
+                                    }
+                                ),
+                                "submission__submitted_at": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Time stamp when submission was submitted at",
+                                ),
+                                "submission__method_name": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Method of submission",
+                                ),
+                                "submission__id": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="ID of submission",
+                                ),
+                                "submission__submission_metadata": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Metadata and other info about submission",
+                                ),
+                                "filtering_score": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Default filtering score for results",
+                                ),
+                                "filtering_error": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Default filtering error for results",
+                                ),
+                            },
+                        ),
+                    ),
+                },
+            ),
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -605,6 +732,43 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
 
     - Returns:
         All Leaderboard entry objects in a list
+
+    Below is the sample response returned by the API
+
+    ```
+    {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "submission__participant_team": 2,
+            "submission__participant_team__team_name": "Sanchezview Participant Team",
+            "submission__participant_team__team_url": "",
+            "submission__is_baseline": true,
+            "submission__is_public": true,
+            "challenge_phase_split": 1,
+            "result": [
+                26
+            ],
+            "error": null,
+            "leaderboard__schema": {
+                "labels": [
+                    "score"
+                ],
+                "default_order_by": "score"
+            },
+            "submission__submitted_at": "2021-01-12T10:14:58.764572Z",
+            "submission__method_name": "Vernon",
+            "submission__id": 10,
+            "submission__submission_metadata": null,
+            "filtering_score": 26.0,
+            "filtering_error": 0
+        }
+    ]
+    }
+    ```
     """
     # check if the challenge exists or not
     challenge_phase_split = get_challenge_phase_split_model(
