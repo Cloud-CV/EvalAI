@@ -344,6 +344,40 @@ delete_service_args = """
 """
 
 
+def get_code_upload_setup_meta_for_challenge(challenge_pk):
+    """
+    Return the EKS cluster network and arn meta for a challenge
+    Arguments:
+        challenge_pk {int} -- challenge pk for which credentails are to be fetched
+    Returns:
+        code_upload_meta {dict} -- Dict containing cluster network and arn meta
+    """
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_challenge_model
+
+    challenge = get_challenge_model(challenge_pk)
+    if challenge.use_host_credentials:
+        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+        code_upload_meta = {
+            "SUBNET_1": challenge_evaluation_cluster.subnet_1_id,
+            "SUBNET_2": challenge_evaluation_cluster.subnet_2_id,
+            "SUBNET_SECURITY_GROUP": challenge_evaluation_cluster.security_group_id,
+            "EKS_NODEGROUP_ROLE_ARN": challenge_evaluation_cluster.node_group_arn_role,
+            "EKS_CLUSTER_ROLE_ARN": challenge_evaluation_cluster.eks_arn_role,
+        }
+    else:
+        code_upload_meta = {
+            "SUBNET_1": VPC_DICT["SUBNET_1"],
+            "SUBNET_2": VPC_DICT["SUBNET_2"],
+            "SUBNET_SECURITY_GROUP": VPC_DICT["SUBNET_SECURITY_GROUP"],
+            "EKS_NODEGROUP_ROLE_ARN": settings.EKS_NODEGROUP_ROLE_ARN,
+            "EKS_CLUSTER_ROLE_ARN": settings.EKS_CLUSTER_ROLE_ARN,
+        }
+    return code_upload_meta
+
+
 def get_log_group_name(challenge_pk):
     log_group_name = "challenge-pk-{}-{}-workers".format(
         challenge_pk, settings.ENVIRONMENT
@@ -950,8 +984,10 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
             challenge_url = "{}/web/challenges/challenge-page/{}".format(
                 settings.EVALAI_API_SERVER, challenge.id
             )
-            challenge_manage_url = "{}/web/challenges/challenge-page/{}/manage".format(
-                settings.EVALAI_API_SERVER, challenge.id
+            challenge_manage_url = (
+                "{}/web/challenges/challenge-page/{}/manage".format(
+                    settings.EVALAI_API_SERVER, challenge.id
+                )
             )
 
             if field_name == "test_annotation":
@@ -1038,12 +1074,16 @@ def create_eks_nodegroup(challenge, cluster_name):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
     """
+    from .utils import get_aws_credentials_for_challenge
+
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     nodegroup_name = "{0}-nodegroup".format(
         challenge_obj.title.replace(" ", "-")
     )
-    client = get_boto3_client("eks", aws_keys)
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("eks", challenge_aws_keys)
+    cluster_meta = get_code_upload_setup_meta_for_challenge(challenge_obj.pk)
     # TODO: Move the hardcoded cluster configuration such as the
     # instance_type, subnets, AMI to challenge configuration later.
     try:
@@ -1052,10 +1092,10 @@ def create_eks_nodegroup(challenge, cluster_name):
             nodegroupName=nodegroup_name,
             scalingConfig={"minSize": 1, "maxSize": 10, "desiredSize": 1},
             diskSize=100,
-            subnets=[VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"]],
+            subnets=[cluster_meta["SUBNET_1"], cluster_meta["SUBNET_2"]],
             instanceTypes=["g4dn.xlarge"],
             amiType="AL2_x86_64_GPU",
-            nodeRole=settings.EKS_NODEGROUP_ROLE_ARN,
+            nodeRole=cluster_meta["EKS_NODEGROUP_ROLE_ARN"],
         )
     except ClientError as e:
         logger.exception(e)
@@ -1080,20 +1120,33 @@ def create_eks_cluster(challenge):
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
     from .models import ChallengeEvaluationCluster
+    from .serializers import ChallengeEvaluationClusterSerializer
+    from .utils import get_aws_credentials_for_challenge
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
     if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
-        client = get_boto3_client("eks", aws_keys)
+        challenge_aws_keys = get_aws_credentials_for_challenge(
+            challenge_obj.pk
+        )
+        client = get_boto3_client("eks", challenge_aws_keys)
+        cluster_meta = get_code_upload_setup_meta_for_challenge(
+            challenge_obj.pk
+        )
         try:
             response = client.create_cluster(
                 name=cluster_name,
                 version="1.15",
-                roleArn=settings.EKS_CLUSTER_ROLE_ARN,
+                roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
-                    "subnetIds": [VPC_DICT["SUBNET_1"], VPC_DICT["SUBNET_2"]],
-                    "securityGroupIds": [VPC_DICT["SUBNET_SECURITY_GROUP"]],
+                    "subnetIds": [
+                        cluster_meta["SUBNET_1"],
+                        cluster_meta["SUBNET_2"],
+                    ],
+                    "securityGroupIds": [
+                        cluster_meta["SUBNET_SECURITY_GROUP"]
+                    ],
                 },
             )
             waiter = client.get_waiter("cluster_active")
@@ -1140,12 +1193,20 @@ def create_eks_cluster(challenge):
             config_text = yaml.dump(cluster_config, default_flow_style=False)
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
-            ChallengeEvaluationCluster.objects.create(
-                challenge=challenge_obj,
-                name=cluster_name,
-                cluster_endpoint=cluster_ep,
-                cluster_ssl=cluster_cert,
+            challenge_evaluation_cluster = (
+                ChallengeEvaluationCluster.objects.get(challenge=challenge)
             )
+            serializer = ChallengeEvaluationClusterSerializer(
+                challenge_evaluation_cluster,
+                data={
+                    "name": cluster_name,
+                    "cluster_endpoint": cluster_ep,
+                    "cluster_ssl": cluster_cert,
+                },
+                partial=True,
+            )
+            if serializer.is_valid():
+                serializer.save()
             # Creating nodegroup
             create_eks_nodegroup.delay(challenge, cluster_name)
             return response
@@ -1155,7 +1216,7 @@ def create_eks_cluster(challenge):
 
 
 def challenge_approval_callback(sender, instance, field_name, **kwargs):
-    """ This is to check if a challenge has been approved or disapproved since last time.
+    """This is to check if a challenge has been approved or disapproved since last time.
 
     On approval of a challenge, it launches a worker on Fargate.
     On disapproval, it scales down the workers to 0, and deletes the challenge's service on Fargate.
