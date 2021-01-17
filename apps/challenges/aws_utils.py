@@ -1365,19 +1365,6 @@ def create_eks_cluster(challenge):
             challenge_obj.pk
         )
         try:
-            challenge_evaluation_cluster = (
-                ChallengeEvaluationCluster.objects.create(
-                    challenge=challenge_obj, name=cluster_name
-                )
-            )
-        except Exception as e:
-            logger.exception(e)
-            return
-        challenge_aws_keys = get_aws_credentials_for_challenge(
-            challenge_obj.pk
-        )
-        client = get_boto3_client("eks", challenge_aws_keys)
-        try:
             response = client.create_cluster(
                 name=cluster_name,
                 version="1.15",
