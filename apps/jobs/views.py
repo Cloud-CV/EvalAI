@@ -1445,7 +1445,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
             submission = get_submission_model(submission_pk)
         except NotFound:
             response_data = {
-                "error": "Submission does not exist with submission_id {}".format(
+                "error": "Submission with submission_pk {} does not exist".format(
                     submission_pk
                 )
             }
@@ -1601,7 +1601,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
             submission = get_submission_model(submission_pk)
         except NotFound:
             response_data = {
-                "error": "Submission does not exist with submission_id {}".format(
+                "error": "Submission with submission_pk {} does not exist".format(
                     submission_pk
                 )
             }
