@@ -1126,7 +1126,7 @@ def setup_eks_cluster(challenge):
         challenge_obj = obj.object
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("iam", challenge_aws_keys)
-    eks_role_name = "Eks-role"
+    eks_role_name = "evalai-code-upload-eks-role"
     eks_arn_role = None
     try:
         response = client.create_role(
@@ -1142,19 +1142,26 @@ def setup_eks_cluster(challenge):
 
     try:
         # Attach AWS managed EKS cluster policy to the role
-        response = client.attach_role_poilcy(
-            RoleName=eks_role_name, PolicyArn=settings.EKS_CLUSTER_POLICY
+        response = client.attach_role_policy(
+            RoleName=eks_role_name,
+            PolicyArn=settings.EKS_CLUSTER_POLICY,
+            AssumeRolePolicyDocument=json.dumps(
+                settings.EKS_CLUSTER_TRUST_RELATION
+            ),
         )
     except ClientError as e:
         logger.exception(e)
         return response
 
-    node_group_role_name = "NodeInstanceRole"
+    node_group_role_name = "evalai-code-upload-nodegroup-role"
     node_group_arn_role = None
     try:
         response = client.create_role(
             RoleName=node_group_role_name,
             Description="Amazon EKS node group role with managed policy",
+            AssumeRolePolicyDocument=json.dumps(
+                settings.EKS_NODE_GROUP_TRUST_RELATION
+            ),
         )
         node_group_arn_role = response["Role"]["Arn"]
     except ClientError as e:
@@ -1167,8 +1174,9 @@ def setup_eks_cluster(challenge):
     for policy_arn in task_execution_policies:
         try:
             # Attach AWS managed EKS worker node policy to the role
-            response = client.attach_role_poilcy(
-                RoleName=node_group_role_name, PolicyArn=policy_arn
+            response = client.attach_role_policy(
+                RoleName=node_group_role_name,
+                PolicyArn=policy_arn,
             )
         except ClientError as e:
             logger.exception(e)
@@ -1232,7 +1240,7 @@ def create_eks_cluster_subnets(challenge):
     client = get_boto3_client("ec2", challenge_aws_keys)
     vpc_ids = []
     try:
-        response = client.create_vpc(CidrBlock="192.168.0.0/16")
+        response = client.create_vpc(CidrBlock="100.68.0.0/16")
         vpc_ids.append(response["Vpc"]["VpcId"])
     except ClientError as e:
         logger.exception(e)
@@ -1261,13 +1269,14 @@ def create_eks_cluster_subnets(challenge):
         # Create subnets
         subnet_ids = []
         response = client.create_subnet(
-            CidrBlock="192.168.1.0/24", VpcId=vpc_ids[0]
+            CidrBlock="100.68.0.0/20", VpcId=vpc_ids[0]
         )
         subnet_1_id = response["Subnet"]["SubnetId"]
         subnet_ids.append(subnet_1_id)
 
         response = client.create_subnet(
-            CidrBlock="192.168.2.0/24", VpcId=vpc_ids[0]
+            CidrBlock="100.68.32.0/20",
+            VpcId=vpc_ids[0],
         )
         subnet_2_id = response["Subnet"]["SubnetId"]
         subnet_ids.append(subnet_2_id)
@@ -1279,13 +1288,11 @@ def create_eks_cluster_subnets(challenge):
         response = client.associate_route_table(
             RouteTableId=route_table_id,
             SubnetId=subnet_1_id,
-            GatewayId=internet_gateway_id,
         )
 
         response = client.associate_route_table(
             RouteTableId=route_table_id,
             SubnetId=subnet_2_id,
-            GatewayId=internet_gateway_id,
         )
 
         # Create security group
@@ -1295,9 +1302,6 @@ def create_eks_cluster_subnets(challenge):
             VpcId=vpc_ids[0],
         )
         security_group_id = response["GroupId"]
-
-        waiter = client.get_waiter("security_group_exists")
-        waiter.wait(GroupIds=[security_group_id])
 
         response = client.attach_security_group_ingress(
             GroupId=security_group_id,

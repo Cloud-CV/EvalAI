@@ -370,3 +370,30 @@ EKS_NODE_GROUP_POLICIES = [
 ]
 
 EKS_CLUSTER_POLICY = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+
+EKS_NODE_GROUP_TRUST_RELATION = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {"Service": "ec2.amazonaws.com"},
+            "Action": "sts:AssumeRole",
+        }
+    ],
+}
+
+EKS_CLUSTER_TRUST_RELATION = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                    "eks-fargate-pods.amazonaws.com",
+                    "eks.amazonaws.com",
+                ]
+            },
+            "Action": "sts:AssumeRole",
+        }
+    ],
+}
