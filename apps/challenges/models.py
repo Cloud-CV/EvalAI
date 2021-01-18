@@ -179,21 +179,6 @@ class Challenge(TimeStampedModel):
         return False
 
 
-def post_save_connect(field_name, sender):
-    import challenges.aws_utils as aws
-
-    signals.post_save.connect(
-        model_field_name(field_name=field_name)(
-            aws.restart_workers_signal_callback
-        ),
-        sender=sender,
-        weak=False,
-    )
-
-
-post_save_connect("evaluation_script", Challenge)
-
-
 @receiver(signals.post_save, sender="challenges.Challenge")
 def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
@@ -330,6 +315,18 @@ class ChallengePhase(TimeStampedModel):
         return challenge_phase_instance
 
 
+def post_save_connect(field_name, sender):
+    import challenges.aws_utils as aws
+    signals.post_save.connect(
+        model_field_name(field_name=field_name)(
+            aws.restart_workers_signal_callback
+        ),
+        sender=sender,
+        weak=False,
+    )
+
+
+post_save_connect("evaluation_script", Challenge)
 post_save_connect("test_annotation", ChallengePhase)
 
 
