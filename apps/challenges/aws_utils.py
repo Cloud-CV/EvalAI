@@ -1269,13 +1269,16 @@ def create_eks_cluster_subnets(challenge):
         # Create subnets
         subnet_ids = []
         response = client.create_subnet(
-            CidrBlock="100.68.0.0/20", VpcId=vpc_ids[0]
+            CidrBlock="100.68.0.0/20",
+            AvailabilityZone="us-east-1a",
+            VpcId=vpc_ids[0],
         )
         subnet_1_id = response["Subnet"]["SubnetId"]
         subnet_ids.append(subnet_1_id)
 
         response = client.create_subnet(
             CidrBlock="100.68.32.0/20",
+            AvailabilityZone="us-east-1b",
             VpcId=vpc_ids[0],
         )
         subnet_2_id = response["Subnet"]["SubnetId"]
