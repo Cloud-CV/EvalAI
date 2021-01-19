@@ -1194,7 +1194,7 @@ def create_eks_cluster(challenge):
             config_file = NamedTemporaryFile(delete=True)
             config_file.write(config_text.encode())
             challenge_evaluation_cluster = (
-                ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                ChallengeEvaluationCluster.objects.get(challenge=challenge_obj)
             )
             serializer = ChallengeEvaluationClusterSerializer(
                 challenge_evaluation_cluster,
