@@ -33,9 +33,7 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
-EVALAI_API_SERVER = os.environ.get(
-    "EVALAI_API_SERVER", "http://localhost:8000"
-)
+EVALAI_API_SERVER = os.environ.get("EVALAI_API_SERVER", "http://localhost:8000")
 
 # Application definition
 
@@ -286,7 +284,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
-    "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer"
+    "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
+    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.PasswordResetSerializer"
 }
 
 # For inviting users to participant and host teams.

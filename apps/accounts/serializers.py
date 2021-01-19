@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
+from rest_auth.serializers import PasswordResetSerializer
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
@@ -69,3 +70,15 @@ class ProfileSerializer(UserDetailsSerializer):
             profile.linkedin_url = linkedin_url
             profile.save()
         return instance
+
+
+class PasswordResetSerializer(PasswordResetSerializer):
+    """
+    Serializer for requesting a password reset e-mail.
+    """
+
+    def get_email_options(self):
+        return {
+            'subject_template_name': 'registration/password_reset_subject.txt',
+            'email_template_name': 'registration/password_reset_email.txt',
+        }
