@@ -1287,6 +1287,15 @@ def create_eks_cluster_subnets(challenge):
         waiter = client.get_waiter("subnet_available")
         waiter.wait(SubnetIds=subnet_ids)
 
+        # Creating managed node group needs subnets to auto assign ip v4
+        for subnet_id in subnet_ids:
+            response = client.modify_subnet_attribute(
+                MapPublicIpOnLaunch={
+                    "Value": True,
+                },
+                SubnetId=subnet_id,
+            )
+
         # Associate route table with subnets
         response = client.associate_route_table(
             RouteTableId=route_table_id,
