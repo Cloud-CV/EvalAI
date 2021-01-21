@@ -1100,18 +1100,13 @@ def create_eks_nodegroup(challenge, cluster_name):
     except ClientError as e:
         logger.exception(e)
         return response
-
-    try:
-        waiter = client.get_waiter("nodegroup_active")
-        waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
-        construct_and_send_eks_cluster_creation_mail(challenge_obj)
-        # starting the code-upload-worker
-        client = get_boto3_client("ecs", aws_keys)
-        client_token = client_token_generator(challenge_obj.pk)
-        create_service_by_challenge_pk(client, challenge_obj, client_token)
-    except Exception as e:
-        logger.exception(e)
-        return response
+    waiter = client.get_waiter("nodegroup_active")
+    waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+    construct_and_send_eks_cluster_creation_mail(challenge_obj)
+    # starting the code-upload-worker
+    client = get_boto3_client("ecs", aws_keys)
+    client_token = client_token_generator(challenge_obj.pk)
+    create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
 @app.task
