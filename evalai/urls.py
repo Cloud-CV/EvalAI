@@ -52,13 +52,13 @@ urlpatterns = [
         obtain_expiring_auth_token,
         name="obtain_expiring_auth_token",
     ),
-    url(r"^api/auth/", include("rest_auth.urls")),
+    url(r"^api/auth/", include("dj_rest_auth.urls")),
     url(
         r"^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$",  # noqa
         ConfirmEmailView.as_view(),
         name="account_confirm_email",
     ),
-    url(r"^api/auth/registration/", include("rest_auth.registration.urls")),
+    url(r"^api/auth/registration/", include("dj_rest_auth.registration.urls")),
     url(
         r"^auth/api/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})$",  # noqa
         TemplateView.as_view(template_name="password_reset_confirm.html"),
