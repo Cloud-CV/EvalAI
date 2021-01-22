@@ -9,12 +9,6 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import (
-    restart_workers_signal_callback,
-    create_eks_cluster,
-    challenge_approval_callback,
-)
-
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
 
@@ -185,18 +179,10 @@ class Challenge(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(
-    model_field_name(field_name="evaluation_script")(
-        restart_workers_signal_callback
-    ),
-    sender=Challenge,
-    weak=False,
-)
-
-
 @receiver(signals.post_save, sender="challenges.Challenge")
 def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
+    import challenges.aws_utils as aws
 
     if not created and is_model_field_changed(instance, field_name):
         if (
@@ -205,8 +191,8 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
             and instance.remote_evaluation is False
         ):
             serialized_obj = serializers.serialize("json", [instance])
-            create_eks_cluster.delay(serialized_obj)
-    challenge_approval_callback(sender, instance, field_name, **kwargs)
+            aws.create_eks_cluster.delay(serialized_obj)
+    aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
 class DatasetSplit(TimeStampedModel):
@@ -329,13 +315,19 @@ class ChallengePhase(TimeStampedModel):
         return challenge_phase_instance
 
 
-signals.post_save.connect(
-    model_field_name(field_name="test_annotation")(
-        restart_workers_signal_callback
-    ),
-    sender=ChallengePhase,
-    weak=False,
-)
+def post_save_connect(field_name, sender):
+    import challenges.aws_utils as aws
+    signals.post_save.connect(
+        model_field_name(field_name=field_name)(
+            aws.restart_workers_signal_callback
+        ),
+        sender=sender,
+        weak=False,
+    )
+
+
+post_save_connect("evaluation_script", Challenge)
+post_save_connect("test_annotation", ChallengePhase)
 
 
 class Leaderboard(TimeStampedModel):
