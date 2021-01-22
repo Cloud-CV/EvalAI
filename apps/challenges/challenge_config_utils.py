@@ -41,12 +41,12 @@ def extract_zip_file(file_path, mode, output_path):
 
 def get_yaml_files_from_challenge_config(zip_ref):
     """
-        Arguments:
-            zip_ref {zipfile} -- reference to challenge config zip
-        Returns:
-            yaml_file_count {int} -- number of yaml files in zip file
-            yaml_file_name {string} -- name of yaml file in the zip file
-            extracted_folder_name {string} -- zip file extraction folder name
+    Arguments:
+        zip_ref {zipfile} -- reference to challenge config zip
+    Returns:
+        yaml_file_count {int} -- number of yaml files in zip file
+        yaml_file_name {string} -- name of yaml file in the zip file
+        extracted_folder_name {string} -- zip file extraction folder name
     """
     yaml_file_count = 0
     yaml_file_name = None
@@ -74,12 +74,12 @@ def read_yaml_file(file_path, mode):
 
 def get_yaml_read_error(exc):
     """
-        Arguments:
-            exc {Exception} -- Exception object
-        Returns:
-            error_description {string} -- description of yaml read error
-            line_number {int} -- line number of error field in yaml file
-            column_number {int} -- column number of error field in yaml file
+    Arguments:
+        exc {Exception} -- Exception object
+    Returns:
+        error_description {string} -- description of yaml read error
+        line_number {int} -- line number of error field in yaml file
+        column_number {int} -- column number of error field in yaml file
     """
     error_description = None
     line_number = None
@@ -101,13 +101,13 @@ def is_challenge_config_yaml_html_field_valid(
     yaml_file_data, key, base_location
 ):
     """
-        Arguments:
-            yaml_file_data {dict} -- challenge config yaml dict
-            key {string} -- key of the validation field
-            base_location {string} -- path of extracted config zip
-        Returns:
-            is_valid {boolean} -- flag for field validation is success
-            message {string} -- error message if any
+    Arguments:
+        yaml_file_data {dict} -- challenge config yaml dict
+        key {string} -- key of the validation field
+        base_location {string} -- path of extracted config zip
+    Returns:
+        is_valid {boolean} -- flag for field validation is success
+        message {string} -- error message if any
     """
     value = yaml_file_data.get(key)
     message = ""
@@ -123,13 +123,13 @@ def is_challenge_phase_config_yaml_html_field_valid(
     yaml_file_data, key, base_location
 ):
     """
-        Arguments:
-            yaml_file_data {dict} -- challenge config yaml dict
-            key {string} -- key of the validation field
-            base_location {string} -- path of extracted config zip
-        Returns:
-            is_valid {boolean} -- flag for field validation is success
-            message {string} -- error message if any
+    Arguments:
+        yaml_file_data {dict} -- challenge config yaml dict
+        key {string} -- key of the validation field
+        base_location {string} -- path of extracted config zip
+    Returns:
+        is_valid {boolean} -- flag for field validation is success
+        message {string} -- error message if any
     """
     value = yaml_file_data.get(key)
     message = ""
@@ -145,14 +145,14 @@ def is_challenge_phase_config_yaml_html_field_valid(
 
 def download_and_write_file(url, stream, output_path, mode):
     """
-        Arguments:
-            url {string} -- source file url
-            stream {boolean} -- flag for download in stream mode
-            output_path {string} -- path to write file
-            model {string} -- access mode to write file
-        Returns:
-            is_success {boolean} -- flag for download and write is success
-            message {string} -- error message if any
+    Arguments:
+        url {string} -- source file url
+        stream {boolean} -- flag for download in stream mode
+        output_path {string} -- path to write file
+        model {string} -- access mode to write file
+    Returns:
+        is_success {boolean} -- flag for download and write is success
+        message {string} -- error message if any
     """
     is_success = False
     message = None
@@ -178,13 +178,13 @@ def is_challenge_phase_split_mapping_valid(
     phase_ids, leaderboard_ids, dataset_split_ids, phase_split
 ):
     """
-        Arguments:
-            phase_ids {array} -- list of phase ids
-            leaderboard_ids {array} -- list of leaderboard ids
-            dataset_split_ids {array} -- list of dataset split ids
-            phase_split {dict} -- challenge phase split config
-        Returns:
-            is_success {boolean} -- flag for validation success
+    Arguments:
+        phase_ids {array} -- list of phase ids
+        leaderboard_ids {array} -- list of leaderboard ids
+        dataset_split_ids {array} -- list of dataset split ids
+        phase_split {dict} -- challenge phase split config
+    Returns:
+        is_success {boolean} -- flag for validation success
     """
     phase_id = phase_split["challenge_phase_id"]
     leaderboard_id = phase_split["leaderboard_id"]
@@ -237,8 +237,10 @@ def validate_challenge_config_util(
         return error_messages, yaml_file_data, files
 
     if yaml_file_count > 1:
-        message = "There are {0} YAML files instead of one in zip file!".format(
-            yaml_file_count
+        message = (
+            "There are {0} YAML files instead of one in zip file!".format(
+                yaml_file_count
+            )
         )
         error_messages.append(message)
         return error_messages, yaml_file_data, files
@@ -419,8 +421,12 @@ def validate_challenge_config_util(
                 challenge_config_location, test_annotation_file
             )
             if isfile(test_annotation_file_path):
-                challenge_test_annotation_file = read_file_data_as_content_file(
-                    test_annotation_file_path, "rb", test_annotation_file_path
+                challenge_test_annotation_file = (
+                    read_file_data_as_content_file(
+                        test_annotation_file_path,
+                        "rb",
+                        test_annotation_file_path,
+                    )
                 )
                 files["challenge_test_annotation_files"].append(
                     challenge_test_annotation_file
@@ -532,8 +538,10 @@ def validate_challenge_config_util(
         for split in dataset_splits:
             name = split.get("name")
             if not name:
-                message = "ERROR: There is no name for dataset split {}.".format(
-                    split.get("id")
+                message = (
+                    "ERROR: There is no name for dataset split {}.".format(
+                        split.get("id")
+                    )
                 )
                 error_messages.append(message)
 

@@ -1,6 +1,6 @@
 import os
 
-from rest_framework.authtoken.models import Token
+from accounts.models import JwtToken
 
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 
 class BaseAPITestClass(APITestCase):
@@ -62,8 +64,8 @@ class GetAuthTokenTest(BaseAPITestClass):
 
     def test_get_auth_token(self):
         response = self.client.get(self.url, {})
-        token = Token.objects.get(user=self.user)
-        expected_data = {"token": "{}".format(token)}
+        token = JwtToken.objects.get(user=self.user)
+        expected_data = {"token": "{}".format(token.refresh_token)}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
@@ -96,3 +98,22 @@ class ResendEmailVerificationTestClass(APITestCase):
         self.assertEqual(
             response.status_code, status.HTTP_429_TOO_MANY_REQUESTS
         )
+
+
+class RefreshAuthTokenTest(BaseAPITestClass):
+
+    url = reverse_lazy("accounts:refresh_auth_token")
+
+    def test_refresh_auth_token(self):
+        url = reverse_lazy("accounts:get_auth_token")
+        response = self.client.get(url, {})
+        token = JwtToken.objects.get(user=self.user)
+        expected_data = {"token": "{}".format(token.refresh_token)}
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        response = self.client.get(self.url, {})
+        with self.assertRaises(TokenError) as context:
+            RefreshToken(token.refresh_token)
+        self.assertTrue("Token is blacklisted" in str(context.exception))

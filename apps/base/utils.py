@@ -32,7 +32,7 @@ def paginated_queryset(
     queryset, request, pagination_class=PageNumberPagination()
 ):
     """
-        Return a paginated result for a queryset
+    Return a paginated result for a queryset
     """
     paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["PAGE_SIZE"]
@@ -44,7 +44,7 @@ def team_paginated_queryset(
     queryset, request, pagination_class=PageNumberPagination()
 ):
     """
-        Return a paginated result for a queryset
+    Return a paginated result for a queryset
     """
     paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK["TEAM_PAGE_SIZE"]
@@ -209,14 +209,14 @@ def get_slug(param):
 
 def get_queue_name(param, challenge_pk):
     """
-        Generate unique SQS queue name of max length 80 for a challenge
+    Generate unique SQS queue name of max length 80 for a challenge
 
-        Arguments:
-            param {string} -- challenge title
-            challenge_pk {int} -- challenge primary key
+    Arguments:
+        param {string} -- challenge title
+        challenge_pk {int} -- challenge primary key
 
-        Returns:
-            {string} -- unique queue name
+    Returns:
+        {string} -- unique queue name
     """
     # The max-length for queue-name is 80 in SQS
     max_len = 80

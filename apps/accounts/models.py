@@ -56,6 +56,23 @@ class Profile(TimeStampedModel):
         db_table = "user_profile"
 
 
+class JwtToken(TimeStampedModel):
+    """
+    Model to store jwt tokens of a user
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    access_token = models.CharField(max_length=512, blank=False, null=True)
+    refresh_token = models.CharField(max_length=512, blank=False, null=True)
+
+    def __str__(self):
+        return "{}".format(self.user)
+
+    class Meta:
+        app_label = "accounts"
+        db_table = "jwt_token"
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

@@ -150,7 +150,7 @@ def create_challenge_host_team(user):
 
 def create_challenge_host_participant_team(challenge_host_team):
     """
-        Creates challenge host participant team and returns it.
+    Creates challenge host participant team and returns it.
     """
     emails = challenge_host_team.get_all_challenge_host_email()
     team_name = "Host_{}_Team".format(random.randint(1, 100000))

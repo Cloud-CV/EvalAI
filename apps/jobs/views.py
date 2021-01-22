@@ -23,6 +23,7 @@ from django.utils import timezone
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_yasg import openapi
@@ -127,7 +128,7 @@ logger = logging.getLogger(__name__)
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_submission(request, challenge_id, challenge_phase_id):
     """API Endpoint for making a submission to a challenge"""
 
@@ -379,7 +380,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def change_submission_data_and_visibility(
     request, challenge_pk, challenge_phase_pk, submission_pk
 ):
@@ -722,7 +723,7 @@ def leaderboard(request, challenge_phase_split_id):
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     """
     Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
@@ -807,7 +808,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_remaining_submissions(request, challenge_pk):
     """
     API to get the number of remaining submission for all phases.
@@ -881,7 +882,7 @@ def get_remaining_submissions(request, challenge_pk):
 @api_view(["GET", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_by_pk(request, submission_id):
     """
     API endpoint to fetch the details of a submission.
@@ -1053,7 +1054,7 @@ def get_submission_by_pk(request, submission_id):
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_submission(request, challenge_pk):
     """
     API endpoint to update submission related attributes
@@ -1151,8 +1152,8 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1388,7 +1389,7 @@ def update_submission(request, challenge_pk):
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_partially_evaluated_submission(request, challenge_pk):
     """
     API endpoint to update submission related attributes
@@ -1493,8 +1494,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1678,8 +1679,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
 
                 updated_result = leaderboard_data.result
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1780,7 +1781,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def re_run_submission_by_host(request, submission_pk):
     """
     API endpoint to re-run a submission.
@@ -1821,7 +1822,7 @@ def re_run_submission_by_host(request, submission_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submissions_for_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
@@ -1915,7 +1916,7 @@ def get_submissions_for_challenge(request, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_message_from_queue(request, queue_name):
     """
     API to fetch submission message from AWS SQS queue.
@@ -2003,7 +2004,7 @@ def get_submission_message_from_queue(request, queue_name):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def delete_submission_message_from_queue(request, queue_name):
     """
     API to delete submission message from AWS SQS queue
@@ -2059,7 +2060,7 @@ def delete_submission_message_from_queue(request, queue_name):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_signed_url_for_submission_related_file(request):
     """Returns S3 signed URL for a particular file residing on S3 bucket
 
@@ -2120,7 +2121,7 @@ def get_signed_url_for_submission_related_file(request):
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_leaderboard_data(request, leaderboard_data_pk):
     """API endpoint to update a metric in leaderboard data
 
@@ -2216,7 +2217,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_bearer_token(request, challenge_pk):
     """API to generate and return bearer token AWS EKS requests
 
@@ -2266,7 +2267,7 @@ def get_bearer_token(request, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_github_badge_data(
     request, challenge_phase_split_pk, participant_team_pk
 ):
@@ -2313,17 +2314,17 @@ def get_github_badge_data(
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
     """
-        API for fetching count of submissions by status for a challenge phase
+    API for fetching count of submissions by status for a challenge phase
 
-        Arguments:
-            request {HttpRequest} -- request object
-            challenge_phase_pk {int} -- challenge phase pk
+    Arguments:
+        request {HttpRequest} -- request object
+        challenge_phase_pk {int} -- challenge phase pk
 
-        Returns:
-            Response object -- Response object with appropriate response code (200/400/404)
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
     """
     # check if the challenge phase exists or not
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -2349,7 +2350,7 @@ def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_file_presigned_url(request, challenge_phase_pk):
     """
     API to generate a presigned url to upload a submission file
@@ -2507,7 +2508,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     """
     API to complete multipart upload of presigned url submission
@@ -2630,7 +2631,7 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def send_submission_message(request, challenge_phase_pk, submission_pk):
     """
     API to send a submisison message to the challenge specific SQS queue

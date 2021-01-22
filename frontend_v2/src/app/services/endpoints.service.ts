@@ -419,4 +419,18 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   getLogsURL(challengeId) {
     return `${this.challenges}${challengeId}/get_worker_logs/`;
   }
+
+  /**
+   * Refresh auth token
+   */
+  refreshAuthTokenURL() {
+    return `accounts/user/refresh_auth_token`;
+  }
+
+  /**
+   * Get auth token
+   */
+  getAuthTokenURL() {
+    return `accounts/user/get_auth_token`;
+  }
 }

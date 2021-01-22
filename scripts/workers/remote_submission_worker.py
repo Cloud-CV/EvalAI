@@ -98,8 +98,8 @@ def alarm_handler(signum, frame):
 
 def download_and_extract_file(url, download_location):
     """
-        * Function to extract download a file.
-        * `download_location` should include name of file as well.
+    * Function to extract download a file.
+    * `download_location` should include name of file as well.
     """
     try:
         response = requests.get(url)
@@ -115,8 +115,8 @@ def download_and_extract_file(url, download_location):
 
 def download_and_extract_zip_file(url, download_location, extract_location):
     """
-        * Function to extract download a zip file, extract it and then removes the zip file.
-        * `download_location` should include name of file as well.
+    * Function to extract download a zip file, extract it and then removes the zip file.
+    * `download_location` should include name of file as well.
     """
     try:
         response = requests.get(url)
@@ -145,7 +145,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
 
 def create_dir(directory):
     """
-        Creates a directory if it does not exists
+    Creates a directory if it does not exists
     """
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -153,8 +153,8 @@ def create_dir(directory):
 
 def create_dir_as_python_package(directory):
     """
-        Create a directory and then makes it a python
-        package by creating `__init__.py` file.
+    Create a directory and then makes it a python
+    package by creating `__init__.py` file.
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
@@ -171,7 +171,7 @@ def return_url_per_environment(url):
 
 def load_challenge():
     """
-        Creates python package for a challenge and extracts relevant data
+    Creates python package for a challenge and extracts relevant data
     """
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
@@ -189,8 +189,8 @@ def load_challenge():
 
 def extract_challenge_data(challenge, phases):
     """
-        * Expects a challenge object and an array of phase object
-        * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
+    * Expects a challenge object and an array of phase object
+    * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
     """
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.get("id")
@@ -295,7 +295,7 @@ def process_submission_message(message):
 
 def extract_submission_data(submission_pk):
     """
-        * Expects submission id and extracts input file for it.
+    * Expects submission id and extracts input file for it.
     """
 
     submission = get_submission_by_pk(submission_pk)

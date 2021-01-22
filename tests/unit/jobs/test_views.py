@@ -1766,11 +1766,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
         )
 
-        self.private_challenge_phase_split = ChallengePhaseSplit.objects.create(
-            challenge_phase=self.private_challenge_phase,
-            dataset_split=self.dataset_split,
-            leaderboard=self.private_leaderboard,
-            visibility=ChallengePhaseSplit.HOST,
+        self.private_challenge_phase_split = (
+            ChallengePhaseSplit.objects.create(
+                challenge_phase=self.private_challenge_phase,
+                dataset_split=self.dataset_split,
+                leaderboard=self.private_leaderboard,
+                visibility=ChallengePhaseSplit.HOST,
+            )
         )
 
         self.submission = Submission.objects.create(
@@ -1892,13 +1894,17 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             self.leaderboard.schema["default_order_by"]
         ]
 
-        self.filtering_score_host_participant_team = self.result_json_host_participant_team[
-            self.leaderboard.schema["default_order_by"]
-        ]
+        self.filtering_score_host_participant_team = (
+            self.result_json_host_participant_team[
+                self.leaderboard.schema["default_order_by"]
+            ]
+        )
 
-        self.filtering_score_host_participant_team_2 = self.result_json_host_participant_team_2[
-            self.leaderboard.schema["default_order_by"]
-        ]
+        self.filtering_score_host_participant_team_2 = (
+            self.result_json_host_participant_team_2[
+                self.leaderboard.schema["default_order_by"]
+            ]
+        )
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
@@ -1921,18 +1927,22 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             result=self.result_json,
         )
 
-        self.host_participant_leaderboard_data = LeaderboardData.objects.create(
-            challenge_phase_split=self.challenge_phase_split,
-            submission=self.host_participant_team_submission,
-            leaderboard=self.leaderboard,
-            result=self.result_json_host_participant_team,
+        self.host_participant_leaderboard_data = (
+            LeaderboardData.objects.create(
+                challenge_phase_split=self.challenge_phase_split,
+                submission=self.host_participant_team_submission,
+                leaderboard=self.leaderboard,
+                result=self.result_json_host_participant_team,
+            )
         )
 
-        self.host_participant_leaderboard_data_2 = LeaderboardData.objects.create(
-            challenge_phase_split=self.challenge_phase_split,
-            submission=self.host_participant_team_submission_2,
-            leaderboard=self.leaderboard,
-            result=self.result_json_host_participant_team_2,
+        self.host_participant_leaderboard_data_2 = (
+            LeaderboardData.objects.create(
+                challenge_phase_split=self.challenge_phase_split,
+                submission=self.host_participant_team_submission_2,
+                leaderboard=self.leaderboard,
+                result=self.result_json_host_participant_team_2,
+            )
         )
 
     def test_get_leaderboard(self):
