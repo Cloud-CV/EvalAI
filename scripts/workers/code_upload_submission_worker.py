@@ -142,7 +142,7 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
         submission_data = {
             "submission_status": "running",
             "submission": body["submission_pk"],
-            "job_name": response.metadata.generate_name,
+            "job_name": response.metadata.name,
         }
         evalai.update_submission_status(submission_data, body["challenge_pk"])
     except Exception as e:
@@ -158,7 +158,7 @@ def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
     configuration.verify_ssl = True
-    configuration.ssl_ca_cert = ".certificate.txt"
+    configuration.ssl_ca_cert = "/code/scripts/workers/certificate.crt"
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -168,12 +168,11 @@ def get_api_object(cluster_name, cluster_endpoint, challenge, evalai):
 
 
 def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
-    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
     configuration.verify_ssl = True
-    configuration.ssl_ca_cert = ".certificate.txt"
+    configuration.ssl_ca_cert = "/code/scripts/workers/certificate.crt"
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
@@ -183,12 +182,11 @@ def get_api_client(cluster_name, cluster_endpoint, challenge, evalai):
 
 
 def get_core_v1_api_object(cluster_name, cluster_endpoint, challenge, evalai):
-    # TODO: Add SSL verification
     configuration = client.Configuration()
     aws_eks_api = evalai.get_aws_eks_bearer_token(challenge.get("id"))
     configuration.host = cluster_endpoint
     configuration.verify_ssl = True
-    configuration.ssl_ca_cert = ".certificate.txt"
+    configuration.ssl_ca_cert = "/code/scripts/workers/certificate.crt"
     configuration.api_key["authorization"] = aws_eks_api[
         "aws_eks_bearer_token"
     ]
