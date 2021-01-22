@@ -3095,11 +3095,15 @@ class CreateChallengeUsingZipFile(APITestCase):
     ):
         challenge_phases = ChallengePhase.objects.all()
         for zipTestPhase in challenge_phases:
-            max_concurrent_submissions_allowed_field = zipTestPhase._meta.get_field(
-                "max_concurrent_submissions_allowed"
+            max_concurrent_submissions_allowed_field = (
+                zipTestPhase._meta.get_field(
+                    "max_concurrent_submissions_allowed"
+                )
             )
-            max_con = max_concurrent_submissions_allowed_field.value_from_object(
-                zipTestPhase
+            max_con = (
+                max_concurrent_submissions_allowed_field.value_from_object(
+                    zipTestPhase
+                )
             )
             self.assertTrue(max_con == 3)
 

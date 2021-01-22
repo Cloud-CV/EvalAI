@@ -246,12 +246,14 @@ def update_failed_jobs_and_send_logs(
                 if container.state.terminated.reason == "Error":
                     pod_name = pods_list.items[0].metadata.name
                     try:
-                        pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
-                            name=pod_name,
-                            namespace="default",
-                            _return_http_data_only=True,
-                            _preload_content=False,
-                            container="agent",
+                        pod_log_response = (
+                            core_v1_api_instance.read_namespaced_pod_log(
+                                name=pod_name,
+                                namespace="default",
+                                _return_http_data_only=True,
+                                _preload_content=False,
+                                container="agent",
+                            )
                         )
                         pod_log = pod_log_response.data.decode("utf-8")
                         submission_data = {
