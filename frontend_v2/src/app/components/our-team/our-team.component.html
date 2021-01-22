@@ -12,12 +12,12 @@
           <div class="team-link-head">
             <span class="col-md-1 col-sm-1 col-xs-1">
               <a ng-if="data.linkedin_url !== 'null'" href="{{ data.linkedin_url }}" target="_blank"
-                ><i class="fab fa-linkedin"></i
+                ><i class="fa fa-linkedin"></i
               ></a>
             </span>
             <span class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
               <a ng-if="data.github_url !== 'null'" href="{{ data.github_url }}" target="_blank"
-                ><i class="fab fa-github"></i
+                ><i class="fa fa-github"></i
               ></a>
             </span>
             <span class="col-lg-6 col-md-7 col-sm-7 col-xs-6 right link-team-user">
@@ -44,25 +44,25 @@
         </div>
       </div>
     </div>
-    <!-- This card is for Contributing Team -->
-    <div class="our-team-title">
-      {{ contributingTeamType }}
+     <!-- This card is for Contributing Team -->
+     <div class="our-team-title">
+      {{ contributingTeamType }} <br>
     </div>
     <div class="row">
       <div class="col-lg-3 col-md-3 col-sm-12" *ngFor="let data of contributingTeamDetails">
         <div class="team-card contributor">
           <div class="team-link-head">
-            <span>
+            <span class="col-md-1 col-sm-1 col-xs-1">
               <a ng-if="data.linkedin_url !== 'null'" href="{{ data.linkedin_url }}" target="_blank"
-                ><i class="fab fa-linkedin"></i
+                ><i class="fa fa-linkedin"></i
               ></a>
             </span>
-            <span>
+            <span class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
               <a ng-if="data.github_url !== 'null'" href="{{ data.github_url }}" target="_blank"
-                ><i class="fab fa-github"></i
+                ><i class="fa fa-github"></i
               ></a>
             </span>
-            <span class="right link-team-user">
+            <span class="col-lg-6 col-md-7 col-sm-7 col-xs-6 right link-team-user">
               <a ng-if="data.personal_website !== 'null'" href="{{ data.personal_website }}" target="_blank"
                 >Personal Website</a
               >
