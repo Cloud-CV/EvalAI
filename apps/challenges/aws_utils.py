@@ -1315,22 +1315,6 @@ def create_eks_cluster_subnets(challenge):
         )
         security_group_id = response["GroupId"]
 
-        response = client.attach_security_group_ingress(
-            GroupId=security_group_id,
-            IpPermissions=[
-                {
-                    "FromPort": 22,
-                    "IpProtocol": "tcp",
-                    "IpRanges": [
-                        {
-                            "CidrIp": "0.0.0.0/0",
-                        },
-                    ],
-                    "ToPort": 22,
-                }
-            ],
-        )
-
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
         )
