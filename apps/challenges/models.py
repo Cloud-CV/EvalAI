@@ -191,7 +191,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
             and instance.remote_evaluation is False
         ):
             serialized_obj = serializers.serialize("json", [instance])
-            aws.create_eks_cluster.delay(serialized_obj)
+            aws.setup_eks_cluster.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
