@@ -1243,6 +1243,7 @@ def create_eks_cluster_subnets(challenge):
     client = get_boto3_client("ec2", challenge_aws_keys)
     vpc_ids = []
     try:
+        # TODO: Replace vpc CIDR hardcoded value
         response = client.create_vpc(CidrBlock="100.68.0.0/16")
         vpc_ids.append(response["Vpc"]["VpcId"])
     except ClientError as e:
