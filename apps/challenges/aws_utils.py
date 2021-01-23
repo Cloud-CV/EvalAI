@@ -1126,7 +1126,8 @@ def setup_eks_cluster(challenge):
         challenge_obj = obj.object
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("iam", challenge_aws_keys)
-    eks_role_name = "evalai-code-upload-eks-role"
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    eks_role_name = "evalai-code-upload-eks-role-{}".format(environment_suffix)
     eks_arn_role = None
     try:
         response = client.create_role(
@@ -1153,7 +1154,9 @@ def setup_eks_cluster(challenge):
         logger.exception(e)
         return response
 
-    node_group_role_name = "evalai-code-upload-nodegroup-role"
+    node_group_role_name = "evalai-code-upload-nodegroup-role-{}".format(
+        environment_suffix
+    )
     node_group_arn_role = None
     try:
         response = client.create_role(
@@ -1268,6 +1271,7 @@ def create_eks_cluster_subnets(challenge):
 
         # Create subnets
         subnet_ids = []
+        # TODO: Replace subnet CIDRs and availability zone hardcoded values
         response = client.create_subnet(
             CidrBlock="100.68.0.0/20",
             AvailabilityZone="us-east-1a",
@@ -1276,6 +1280,7 @@ def create_eks_cluster_subnets(challenge):
         subnet_1_id = response["Subnet"]["SubnetId"]
         subnet_ids.append(subnet_1_id)
 
+        # TODO: Replace subnet CIDRs and availability zone hardcoded values
         response = client.create_subnet(
             CidrBlock="100.68.32.0/20",
             AvailabilityZone="us-east-1b",
