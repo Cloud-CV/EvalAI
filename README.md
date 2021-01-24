@@ -96,3 +96,40 @@ EvalAI is currently maintained by [Rishabh Jain](https://rishabhjain.xyz/) and [
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
+
+
+## Contributors 🦸
+
+[//]: contributor-faces
+<a href="https://github.com/RishabhJain2018"><img src="https://avatars.githubusercontent.com/u/12206047?v=4" title="RishabhJain2018" width="80" height="80"></a>
+<a href="https://github.com/deshraj"><img src="https://avatars.githubusercontent.com/u/2945708?v=4" title="deshraj" width="80" height="80"></a>
+<a href="https://github.com/Ram81"><img src="https://avatars.githubusercontent.com/u/16323427?v=4" title="Ram81" width="80" height="80"></a>
+<a href="https://github.com/taranjeet"><img src="https://avatars.githubusercontent.com/u/4302268?v=4" title="taranjeet" width="80" height="80"></a>
+<a href="https://github.com/Sanji515"><img src="https://avatars.githubusercontent.com/u/32524438?v=4" title="Sanji515" width="80" height="80"></a>
+<a href="https://github.com/aka-jain"><img src="https://avatars.githubusercontent.com/u/11537940?v=4" title="aka-jain" width="80" height="80"></a>
+<a href="https://github.com/Kajol-Kumari"><img src="https://avatars.githubusercontent.com/u/44888949?v=4" title="Kajol-Kumari" width="80" height="80"></a>
+<a href="https://github.com/Ayukha"><img src="https://avatars.githubusercontent.com/u/19167324?v=4" title="Ayukha" width="80" height="80"></a>
+<a href="https://github.com/spyshiv"><img src="https://avatars.githubusercontent.com/u/7015220?v=4" title="spyshiv" width="80" height="80"></a>
+<a href="https://github.com/Arun-Jain"><img src="https://avatars.githubusercontent.com/u/16155501?v=4" title="Arun-Jain" width="80" height="80"></a>
+<a href="https://github.com/vkartik97"><img src="https://avatars.githubusercontent.com/u/3920286?v=4" title="vkartik97" width="80" height="80"></a>
+<a href="https://github.com/gautamjajoo"><img src="https://avatars.githubusercontent.com/u/24366008?v=4" title="gautamjajoo" width="80" height="80"></a>
+<a href="https://github.com/KhalidRmb"><img src="https://avatars.githubusercontent.com/u/31621523?v=4" title="KhalidRmb" width="80" height="80"></a>
+<a href="https://github.com/guyandtheworld"><img src="https://avatars.githubusercontent.com/u/20072816?v=4" title="guyandtheworld" width="80" height="80"></a>
+<a href="https://github.com/anweshknayak"><img src="https://avatars.githubusercontent.com/u/8139783?v=4" title="anweshknayak" width="80" height="80"></a>
+<a href="https://github.com/sanketbansal"><img src="https://avatars.githubusercontent.com/u/17106489?v=4" title="sanketbansal" width="80" height="80"></a>
+<a href="https://github.com/live-wire"><img src="https://avatars.githubusercontent.com/u/6399428?v=4" title="live-wire" width="80" height="80"></a>
+<a href="https://github.com/gauthamzz"><img src="https://avatars.githubusercontent.com/u/12110844?v=4" title="gauthamzz" width="80" height="80"></a>
+<a href="https://github.com/HargovindArora"><img src="https://avatars.githubusercontent.com/u/22341493?v=4" title="HargovindArora" width="80" height="80"></a>
+<a href="https://github.com/parismita"><img src="https://avatars.githubusercontent.com/u/17319560?v=4" title="parismita" width="80" height="80"></a>
+<a href="https://github.com/dexter1691"><img src="https://avatars.githubusercontent.com/u/2039548?v=4" title="dexter1691" width="80" height="80"></a>
+<a href="https://github.com/harshithdwivedi"><img src="https://avatars.githubusercontent.com/u/47669588?v=4" title="harshithdwivedi" width="80" height="80"></a>
+<a href="https://github.com/nikochiko"><img src="https://avatars.githubusercontent.com/u/37668193?v=4" title="nikochiko" width="80" height="80"></a>
+<a href="https://github.com/jayndu"><img src="https://avatars.githubusercontent.com/u/35180217?v=4" title="jayndu" width="80" height="80"></a>
+<a href="https://github.com/matsujika"><img src="https://avatars.githubusercontent.com/u/57856193?v=4" title="matsujika" width="80" height="80"></a>
+<a href="https://github.com/xamfy"><img src="https://avatars.githubusercontent.com/u/19357995?v=4" title="xamfy" width="80" height="80"></a>
+<a href="https://github.com/drepram"><img src="https://avatars.githubusercontent.com/u/34530026?v=4" title="drepram" width="80" height="80"></a>
+<a href="https://github.com/yadavankit"><img src="https://avatars.githubusercontent.com/u/8945824?v=4" title="yadavankit" width="80" height="80"></a>
+<a href="https://github.com/MarchingVoxels"><img src="https://avatars.githubusercontent.com/u/28953079?v=4" title="MarchingVoxels" width="80" height="80"></a>
+<a href="https://github.com/sachinmukherjee"><img src="https://avatars.githubusercontent.com/u/19318218?v=4" title="sachinmukherjee" width="80" height="80"></a>
+
+[//]: contributor-faces
