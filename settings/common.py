@@ -356,3 +356,44 @@ SIMPLE_JWT = {
     "TOKEN_TYPE_CLAIM": "token_type",
     "JTI_CLAIM": "jti",
 }
+
+ECR_ALL_ACCESS_POLICY_DOCUMENT = {
+    "Version": "2012-10-17",
+    "Statement": [{"Effect": "Allow", "Action": "ecr:*", "Resource": "*"}],
+}
+
+EKS_NODE_GROUP_POLICIES = [
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+]
+
+EKS_CLUSTER_POLICY = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+
+EKS_NODE_GROUP_TRUST_RELATION = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {"Service": "ec2.amazonaws.com"},
+            "Action": "sts:AssumeRole",
+        }
+    ],
+}
+
+EKS_CLUSTER_TRUST_RELATION = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                    "eks-fargate-pods.amazonaws.com",
+                    "eks.amazonaws.com",
+                ]
+            },
+            "Action": "sts:AssumeRole",
+        }
+    ],
+}
