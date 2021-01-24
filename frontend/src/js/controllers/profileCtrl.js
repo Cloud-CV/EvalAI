@@ -140,6 +140,24 @@
                 anchor[0].dispatchEvent(ev);
 
         };
+
+        vm.refreshToken = function() {
+            parameters.url = 'accounts/user/refresh_auth_token';
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.jsonResponse = response.data;
+                    vm.token = response.data['token'];
+                    $rootScope.notify("success", "Token generated successfully.");
+                },
+                onError: function(response) {
+                    var details = response.data;
+                    $rootScope.notify("error", details['detail']);
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
     }
 
 })();

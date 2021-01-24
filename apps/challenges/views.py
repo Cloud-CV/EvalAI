@@ -33,6 +33,7 @@ from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -144,7 +145,7 @@ except NameError:
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_list(request, challenge_host_team_pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
@@ -195,7 +196,7 @@ def challenge_list(request, challenge_host_team_pk):
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_detail(request, challenge_host_team_pk, challenge_pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
@@ -257,7 +258,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def participant_team_detail_for_challenge(request, challenge_pk):
     """
     Returns the participated team detail in the challenge
@@ -285,7 +286,7 @@ def participant_team_detail_for_challenge(request, challenge_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def add_participant_team_to_challenge(
     request, challenge_pk, participant_team_pk
 ):
@@ -388,7 +389,7 @@ def add_participant_team_to_challenge(
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def disable_challenge(request, challenge_pk):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -487,7 +488,7 @@ def get_challenge_by_pk(request, pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_participated_challenges(request, challenge_time):
     """
     Returns the list of all participated challenges
@@ -522,7 +523,7 @@ def get_all_participated_challenges(request, challenge_time):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenges_based_on_teams(request):
     q_params = {"approved_by_admin": True, "published": True}
     participant_team_id = request.query_params.get("participant_team", None)
@@ -569,7 +570,7 @@ def get_challenges_based_on_teams(request):
         IsChallengeCreator,
     )
 )
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_phase_list(request, challenge_pk):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -613,7 +614,7 @@ def challenge_phase_list(request, challenge_pk):
         IsChallengeCreator,
     )
 )
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_phase_detail(request, challenge_pk, pk):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
@@ -709,7 +710,7 @@ def challenge_phase_split_list(request, challenge_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     Creates a challenge using a zip file.
@@ -1653,7 +1654,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_submissions_of_challenge(
     request, challenge_pk, challenge_phase_pk
 ):
@@ -1731,7 +1732,7 @@ def get_all_submissions_of_challenge(
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def download_all_submissions(
     request, challenge_pk, challenge_phase_pk, file_type
 ):
@@ -1994,7 +1995,7 @@ def download_all_submissions(
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_leaderboard(request):
     """
     Creates a leaderboard
@@ -2012,7 +2013,7 @@ def create_leaderboard(request):
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_or_update_leaderboard(request, leaderboard_pk):
     """
     Returns or Updates a leaderboard
@@ -2039,7 +2040,7 @@ def get_or_update_leaderboard(request, leaderboard_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_dataset_split(request):
     """
     Creates a dataset split
@@ -2059,7 +2060,7 @@ def create_dataset_split(request):
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_or_update_dataset_split(request, dataset_split_pk):
     """
     Returns or Updates a dataset split
@@ -2086,7 +2087,7 @@ def get_or_update_dataset_split(request, dataset_split_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_challenge_phase_split(request):
     """
     Create Challenge Phase Split
@@ -2106,7 +2107,7 @@ def create_challenge_phase_split(request):
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
     Returns or Updates challenge phase split
@@ -2134,7 +2135,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def star_challenge(request, challenge_pk):
     """
     API endpoint for starring and unstarring
@@ -2196,7 +2197,7 @@ def star_challenge(request, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_broker_urls(request):
     """
     Returns:
@@ -2223,7 +2224,7 @@ def get_broker_urls(request):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_broker_url_by_challenge_pk(request, challenge_pk):
     """
     Returns:
@@ -2252,7 +2253,7 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_aws_credentials_for_participant_team(request, phase_pk):
     """
     Endpoint to generate AWS Credentails for CLI
@@ -2293,7 +2294,7 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_users_to_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
@@ -2432,7 +2433,7 @@ def accept_challenge_invitation(request, invitation_key):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenge_by_queue_name(request, queue_name):
     """
     API endpoint to fetch the challenge details by using pk
@@ -2468,7 +2469,7 @@ def get_challenge_by_queue_name(request, queue_name):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     """
     API endpoint to fetch all challenge phase details corresponding to a challenge using challenge pk
@@ -2528,7 +2529,7 @@ def get_challenge_phase_by_slug(request, slug):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenge_phase_environment_url(request, slug):
     """
     Returns environment image url and tag required for RL challenge evaluation
@@ -2558,7 +2559,7 @@ def get_challenge_phase_environment_url(request, slug):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_challenge_evaluation_cluster_details(request, challenge_pk):
     """API to get challenge evaluation cluster details for a challenge
 
@@ -2604,7 +2605,7 @@ def get_challenge_evaluation_cluster_details(request, challenge_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def validate_challenge_config(request, challenge_host_team_pk):
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
@@ -2671,7 +2672,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_worker_logs(request, challenge_pk):
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
@@ -2703,7 +2704,7 @@ def get_worker_logs(request, challenge_pk):
 @api_view(["PUT"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def manage_worker(request, challenge_pk, action):
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
@@ -2746,7 +2747,7 @@ def manage_worker(request, challenge_pk, action):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_annotation_file_presigned_url(request, challenge_phase_pk):
     """
     API to generate a presigned url to upload a test annotation file
@@ -2824,7 +2825,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def finish_annotation_file_upload(request, challenge_phase_pk):
     """
     API to complete multipart upload for a test annotation file
@@ -2892,7 +2893,7 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_or_update_github_challenge(request, challenge_host_team_pk):
     try:
         challenge_host_team = get_challenge_host_team_model(
@@ -3323,7 +3324,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_challenge_templates(request):
     q_params = {"is_active": True}
     challenges = ChallengeTemplate.objects.filter(**q_params).order_by("-pk")
