@@ -22,6 +22,7 @@ Our central development branch is development. Coding is done on feature branche
 
 1. Create a new branch off of development. Select a descriptive branch name.
 
+        git remote add upstream git@github.com:Cloud-CV/EvalAI.git
         git fetch upstream
         git checkout master
         git merge upstream/master
