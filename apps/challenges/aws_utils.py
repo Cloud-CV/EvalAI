@@ -1133,6 +1133,9 @@ def setup_eks_cluster(challenge):
         response = client.create_role(
             RoleName=eks_role_name,
             Description="Amazon EKS cluster role with managed policy",
+            AssumeRolePolicyDocument=json.dumps(
+                settings.EKS_CLUSTER_TRUST_RELATION
+            ),
         )
         eks_arn_role = response["Role"]["Arn"]
     except ClientError as e:
@@ -1146,9 +1149,6 @@ def setup_eks_cluster(challenge):
         response = client.attach_role_policy(
             RoleName=eks_role_name,
             PolicyArn=settings.EKS_CLUSTER_POLICY,
-            AssumeRolePolicyDocument=json.dumps(
-                settings.EKS_CLUSTER_TRUST_RELATION
-            ),
         )
     except ClientError as e:
         logger.exception(e)
