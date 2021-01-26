@@ -187,8 +187,10 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
             "phase_pk": self.challenge_phase.pk,
             "submission_pk": self.submission.pk,
         }
-        user_annotation_file_path = "mocked/dir/submission_{}/user_annotation_file.txt".format(
-            self.submission.pk
+        user_annotation_file_path = (
+            "mocked/dir/submission_{}/user_annotation_file.txt".format(
+                self.submission.pk
+            )
         )
 
         with mock.patch(

@@ -125,8 +125,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             }
-            self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
-                instance=self.challenge_phase
+            self.challenge_phase_create_serializer = (
+                ChallengePhaseCreateSerializer(instance=self.challenge_phase)
             )
 
             self.serializer_data_wihout_max_submissions_per_month = {
