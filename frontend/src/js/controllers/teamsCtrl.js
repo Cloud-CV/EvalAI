@@ -415,6 +415,8 @@
                         },
                         onError: function(response) {
                             var error = response.data['error'];
+                            console.log(response.data);
+                            console.log(response.data['error']);
                             vm.stopLoader();
                             $rootScope.notify("error", error);
                         }

@@ -27,6 +27,11 @@ def get_participant_teams_for_user(user):
     return Participant.objects.filter(user=user).values_list("team", flat=True)
 
 
+def is_user_creator_of_participant_team(user, participant_team):
+    """Returns boolean if user is creator of Participant Team ids"""
+    return participant_team.created_by.pk == user.pk
+
+
 def has_user_participated_in_challenge(user, challenge_id):
     """Returns boolean if the user has participated in a particular challenge"""
     participant_teams = get_participant_teams_for_user(user)
