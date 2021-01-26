@@ -1197,7 +1197,7 @@ def setup_eks_cluster(challenge):
         waiter = client.get_waiter("policy_exists")
         waiter.wait(PolicyArn=ecr_all_access_policy_arn)
         # Attach custom ECR policy
-        response = client.attach_role_poilcy(
+        response = client.attach_role_policy(
             RoleName=node_group_role_name, PolicyArn=ecr_all_access_policy_arn
         )
     except ClientError as e:
