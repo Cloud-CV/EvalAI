@@ -28,7 +28,7 @@ def get_participant_teams_for_user(user):
 
 
 def is_user_creator_of_participant_team(user, participant_team):
-    """Returns boolean if user is creator of Participant Team ids"""
+    """Returns boolean if a user is the creator of participant team"""
     return participant_team.created_by.pk == user.pk
 
 
