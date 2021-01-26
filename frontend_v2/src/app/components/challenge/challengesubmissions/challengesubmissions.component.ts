@@ -207,6 +207,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     this.routerPublic = this.router;
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
+      this.fetchParticipated_team(this.challenge['id']);
     });
     this.challengeService.currentParticipationStatus.subscribe((status) => {
       this.isParticipated = status;
@@ -236,7 +237,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
-    this.fetchParticipated_team(this.challenge['id']);
   }
 
   /**
@@ -606,15 +606,17 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   fetchParticipated_team(challengeId) {
     const SELF = this;
-    const API_PATH = SELF.endpointsService.getParticipatedTeamNameURL(challengeId);
-    this.apiService.getUrl(API_PATH, true, false).subscribe(
-      (data) => {
-        SELF.participatedTeamName = data['team_name'];
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {}
-    );
-  }
+    if(challengeId != undefined){
+      const API_PATH = SELF.endpointsService.getParticipatedTeamNameURL(challengeId);
+      this.apiService.getUrl(API_PATH, true, false).subscribe(
+        (data) => {
+          SELF.participatedTeamName = data['team_name'];
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+    }
+  }    
 }

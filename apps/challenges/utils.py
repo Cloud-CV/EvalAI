@@ -350,18 +350,18 @@ def create_federated_user(name, repository, aws_keys):
 @mock_if_non_prod_aws(mock_sts)
 def get_aws_credentials_for_submission(challenge, participant_team):
     """
-        Method to generate AWS Credentails for CLI's Push
-        Wrappers:
-            - mock_ecr: To mock ECR requests to generate ecr credemntials
-            - mock_sts: To mock STS requests to generated federated user
-        Args:
-            - challenge: Challenge model
-            - participant_team: Participant Team Model
-        Returns:
-            - dict: {
-                "federated_user"
-                "docker_repository_uri"
-            }
+    Method to generate AWS Credentails for CLI's Push
+    Wrappers:
+        - mock_ecr: To mock ECR requests to generate ecr credemntials
+        - mock_sts: To mock STS requests to generated federated user
+    Args:
+        - challenge: Challenge model
+        - participant_team: Participant Team Model
+    Returns:
+        - dict: {
+            "federated_user"
+            "docker_repository_uri"
+        }
     """
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
     ecr_repository_name = "{}-participant-team-{}".format(
@@ -401,11 +401,11 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
 
 def get_unique_alpha_numeric_key(length):
     """
-        Returns unique alpha numeric key of length
-        Arguments:
-            length {int} -- length of unique key to generate
-        Returns:
-            key {string} -- unique alpha numeric key of length
+    Returns unique alpha numeric key of length
+    Arguments:
+        length {int} -- length of unique key to generate
+    Returns:
+        key {string} -- unique alpha numeric key of length
     """
     return "".join(
         [
@@ -417,11 +417,11 @@ def get_unique_alpha_numeric_key(length):
 
 def get_challenge_template_data(challenge):
     """
-        Returns a dict for sendgrid email template data
-        Arguments:
-            challenge {Class Object} -- Challenge model object
-        Returns:
-            template_data {dict} -- a dict for sendgrid email template data
+    Returns a dict for sendgrid email template data
+    Arguments:
+        challenge {Class Object} -- Challenge model object
+    Returns:
+        template_data {dict} -- a dict for sendgrid email template data
     """
     challenge_url = "{}/web/challenges/challenge-page/{}".format(
         settings.EVALAI_API_SERVER, challenge.id
@@ -439,11 +439,11 @@ def get_challenge_template_data(challenge):
 
 def send_emails(emails, template_id, template_data):
     """
-        Sends email to list of users using provided template
-        Arguments:
-            emails {list} -- recepient email ids
-            template_id {string} -- sendgrid template id
-            template_data {dict} -- sendgrid email template data
+    Sends email to list of users using provided template
+    Arguments:
+        emails {list} -- recepient email ids
+        template_id {string} -- sendgrid template id
+        template_data {dict} -- sendgrid email template data
     """
     for email in emails:
         send_email(
