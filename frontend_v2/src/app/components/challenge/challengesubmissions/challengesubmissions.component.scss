@@ -155,17 +155,27 @@ tr.element-row:not(.expanded-row):active {
 
   .elements-action {
     margin-left: 0;
+    padding-left: 0;
     margin-top: 20px;
   }
 
   .elements-detail {
     border-right-style: none;
     padding-right: 0;
-
     border-bottom-style: solid;
     border-bottom-color: lightgrey;
     border-bottom-width: 1px;
     padding-bottom: 20px;
+  }
+
+  .elements-status {
+    padding-left: 0;
+    border-right-style:none;
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+    margin-top: 20px;
   }
 
   .element {
