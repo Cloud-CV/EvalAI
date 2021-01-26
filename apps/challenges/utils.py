@@ -109,11 +109,13 @@ def get_aws_credentials_for_challenge(challenge_pk):
     """
     challenge = get_challenge_model(challenge_pk)
     if challenge.use_host_credentials:
+        # TODO - Add storage bucket name field in django models
         aws_keys = {
             "AWS_ACCOUNT_ID": challenge.aws_account_id,
             "AWS_ACCESS_KEY_ID": challenge.aws_access_key_id,
             "AWS_SECRET_ACCESS_KEY": challenge.aws_secret_access_key,
             "AWS_REGION": challenge.aws_region,
+            "AWS_STORAGE_BUCKET_NAME": "",
         }
     else:
         aws_keys = {

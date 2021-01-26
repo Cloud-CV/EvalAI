@@ -36,11 +36,6 @@ aws_keys = {
 
 
 COMMON_SETTINGS_DICT = {
-    "AWS_DEFAULT_REGION": aws_keys["AWS_REGION"],
-    "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
-    "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
-    "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
-    "AWS_STORAGE_BUCKET_NAME": aws_keys["AWS_STORAGE_BUCKET_NAME"],
     "EXECUTION_ROLE_ARN": os.environ.get(
         "EXECUTION_ROLE_ARN",
         "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(
@@ -425,6 +420,9 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
     if execution_role_arn:
+        from .utils import get_aws_credentials_for_challenge
+
+        challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
         if challenge.is_docker_based:
             from .models import ChallengeEvaluationCluster
 
@@ -458,6 +456,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 MEMORY=worker_memory,
                 log_group_name=log_group_name,
                 **COMMON_SETTINGS_DICT,
+                **challenge_aws_keys,
             )
         else:
             definition = task_definition.format(
@@ -471,6 +470,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                 AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
                 **COMMON_SETTINGS_DICT,
+                **challenge_aws_keys,
             )
         definition = eval(definition)
         if not challenge.task_def_arn:
