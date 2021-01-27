@@ -3,6 +3,7 @@
 
 .ev-md-container {
   padding-bottom: 0px;
+
   .phase-title {
     margin-bottom: 20px;
   }
@@ -46,6 +47,7 @@
 .pad-top {
   padding-top: 40px;
   padding-bottom: 10px;
+
   .show-on-leaderboard {
     color: rgb(169, 169, 169);
     font-size: 14px;
@@ -59,7 +61,7 @@
   margin-right: 55px;
 }
 
-.cbx:checked ~ .cbx-label {
+.cbx:checked~.cbx-label {
   background: #4caf50;
 }
 
@@ -78,9 +80,11 @@ tr.detail-row {
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
+
   td {
     font-weight: $fw-semibold;
   }
+
   background: $grad-light-black;
 }
 
@@ -115,6 +119,16 @@ tr.element-row:not(.expanded-row):active {
   padding-right: 80px;
 }
 
+.elements-status {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  padding: 0 20px;
+}
+
 .elements-action {
   overflow: hidden;
   display: flex;
@@ -138,23 +152,37 @@ tr.element-row:not(.expanded-row):active {
   .elements {
     flex-direction: column;
   }
+
   .elements-action {
     margin-left: 0;
+    padding-left: 0;
     margin-top: 20px;
   }
+
   .elements-detail {
     border-right-style: none;
     padding-right: 0;
-
     border-bottom-style: solid;
     border-bottom-color: lightgrey;
     border-bottom-width: 1px;
     padding-bottom: 20px;
   }
+
+  .elements-status {
+    padding-left: 0;
+    border-right-style:none;
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+    margin-top: 20px;
+  }
+
   .element {
     display: flex;
     flex-direction: column;
   }
+
   .element-description {
     margin-left: 0;
   }
