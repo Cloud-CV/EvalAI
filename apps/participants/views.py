@@ -142,9 +142,7 @@ def participant_team_detail(request, pk):
                 request.user, participant_team
             ):
                 response_data = {
-                    "error": [
-                        "You are not a authorized to change team details!"
-                    ]
+                    "error": "You are not a authorized to change team details!"
                 }
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
@@ -167,9 +165,8 @@ def participant_team_detail(request, pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            errors = "\n".join(serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
         participant_team.delete()
