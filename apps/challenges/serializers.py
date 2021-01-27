@@ -408,6 +408,15 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "cluster_ssl",
             "cluster_yaml",
             "kube_config",
+            "eks_arn_role",
+            "node_group_arn_role",
+            "ecr_all_access_policy_arn",
+            "vpc_id",
+            "subnet_1_id",
+            "subnet_2_id",
+            "security_group_id",
+            "internet_gateway_id",
+            "route_table_id",
         )
 
 

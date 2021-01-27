@@ -1205,7 +1205,7 @@ def setup_eks_cluster(challenge):
         return response
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
-            challenge_obj
+            challenge=challenge_obj
         )
         serializer = ChallengeEvaluationClusterSerializer(
             challenge_evaluation_cluster,
