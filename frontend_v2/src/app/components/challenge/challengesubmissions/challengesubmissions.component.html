@@ -142,13 +142,13 @@
                   <span class="element-description-attribution">Project URL</span>
                   <span class="fw-regular element-description"> {{ element.project_url }} </span>
                 </div>
+              </div>
+
+              <div class="elements-status">
                 <div class="element">
                   <span class="element-description-attribution">Publication URL</span>
                   <span class="fw-regular element-description"> {{ element.publication_url }} </span>
                 </div>
-              </div>
-
-              <div class="elements-action">
                 <div class="element">
                   <span class="element-description-attribution">Status</span>
                   <span class="fw-semibold element-description fs-12" [ngClass]="element.status">
@@ -163,6 +163,8 @@
                   <span class="element-description-attribution">Submitted At</span>
                   <span class="fw-regular element-description"> {{ element.submitted_at | date: 'medium' }} </span>
                 </div>
+              </div>
+              <div class="elements-action">
                 <div class="element">
                   <mat-checkbox
                     [checked]="element.is_public"
@@ -182,7 +184,7 @@
                   </mat-checkbox>
                 </div>
                 <div class="element fs-14 pointer">
-                  <a (click)="editSubmission(element)"> Edit submission detail &nbsp;<i class="fa fa-pencil"></i> </a>
+                  <a (click)="editSubmission(element)"><i class="fa fa-pencil"></i> Edit submission detail &nbsp; </a>
                 </div>
               </div>
             </div>
