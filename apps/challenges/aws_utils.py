@@ -20,8 +20,9 @@ from .challenge_notification_util import (
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
 
-logger = logging.getLogger(__name__)
+from .models import ChallengeEvaluationCluster, Challenge, ChallengePhase, post_save_connect
 
+logger = logging.getLogger(__name__)
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 aws_keys = {
@@ -348,7 +349,6 @@ def get_code_upload_setup_meta_for_challenge(challenge_pk):
     Returns:
         code_upload_meta {dict} -- Dict containing cluster network and arn meta
     """
-    from .models import ChallengeEvaluationCluster
     from .utils import get_challenge_model
 
     challenge = get_challenge_model(challenge_pk)
@@ -424,8 +424,6 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
 
         challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
         if challenge.is_docker_based:
-            from .models import ChallengeEvaluationCluster
-
             # Cluster detail to be used by code-upload-worker
             try:
                 cluster_details = ChallengeEvaluationCluster.objects.get(
@@ -1022,6 +1020,12 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                     )
 
 
+post_save_connect("evaluation_script", Challenge,
+                  restart_workers_signal_callback)
+post_save_connect("test_annotation", ChallengePhase,
+                  restart_workers_signal_callback)
+
+
 def get_logs_from_cloudwatch(
     log_group_name, log_stream_prefix, start_time, end_time, pattern
 ):
@@ -1118,7 +1122,6 @@ def setup_eks_cluster(challenge):
     Arguments:
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
-    from .models import ChallengeEvaluationCluster
     from .serializers import ChallengeEvaluationClusterSerializer
     from .utils import get_aws_credentials_for_challenge
 
@@ -1233,7 +1236,6 @@ def create_eks_cluster_subnets(challenge):
     Arguments:
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
-    from .models import ChallengeEvaluationCluster
     from .serializers import ChallengeEvaluationClusterSerializer
     from .utils import get_aws_credentials_for_challenge
 
@@ -1355,7 +1357,6 @@ def create_eks_cluster(challenge):
         sender {type} -- model field called the post hook
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
-    from .models import ChallengeEvaluationCluster
     from .serializers import ChallengeEvaluationClusterSerializer
     from .utils import get_aws_credentials_for_challenge
 
