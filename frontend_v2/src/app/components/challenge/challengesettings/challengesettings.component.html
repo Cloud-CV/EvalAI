@@ -54,6 +54,13 @@
           </a>
         </span>
         <br />
+        <span class="fs-16 fw-light" *ngIf="isChallengeHost">
+            <a class="pointer" (click)="togglePublishChallengeState()">
+              <strong class="text-light-black">{{ publishChallenge.state }} </strong>
+              <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
+            </a>
+        </span>
+        <br />
         <mat-checkbox
           color="primary"
           class="fw-semibold"
