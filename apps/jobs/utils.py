@@ -399,14 +399,14 @@ def calculate_distinct_sorted_leaderboard_data(
 
 def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     """
-        Function to calculate and return the sorted leaderboard data
+    Function to calculate and return the sorted leaderboard data
 
-        Arguments:
-            submission_pk {[int]} -- Submission object primary key
-            challenge_phase_split_pk {[int]} -- ChallengePhase object primary key
+    Arguments:
+        submission_pk {[int]} -- Submission object primary key
+        challenge_phase_split_pk {[int]} -- ChallengePhase object primary key
 
-        Returns:
-            [Class Object] -- LeaderboardData model object
+    Returns:
+        [Class Object] -- LeaderboardData model object
     """
     leaderboard_data = LeaderboardData.objects.get(
         submission=submission_pk,
@@ -417,14 +417,14 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
 
 def reorder_submissions_comparator(submission_1, submission_2):
     """
-        Comparator for reordering my submissions page
+    Comparator for reordering my submissions page
 
-        Arguments:
-             submission_1 {[Class Object]} -- Submission object
-             submission_2 {[Class Object]} -- Submission object
+    Arguments:
+         submission_1 {[Class Object]} -- Submission object
+         submission_2 {[Class Object]} -- Submission object
 
-        Returns:
-            [int] -- comparison result
+    Returns:
+        [int] -- comparison result
     """
     submissions_in_progress_status = [
         Submission.SUBMITTED,
@@ -441,13 +441,13 @@ def reorder_submissions_comparator(submission_1, submission_2):
 
 def reorder_submissions_comparator_to_key(comparator):
     """
-        Convert a cmp= function into a key= function for lambda
+    Convert a cmp= function into a key= function for lambda
 
-        Arguments:
-             comparator {[function]} -- comparator function
+    Arguments:
+         comparator {[function]} -- comparator function
 
-        Returns:
-            [class] -- key class object for lamdbda
+    Returns:
+        [class] -- key class object for lamdbda
     """
 
     class ComparatorToLambdaKey:
