@@ -41,11 +41,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   apiCall: any;
 
   /**
-   * Challenge stars
-   */
-  stars: any;
-
-  /**
    * Participants banned emails ids
    */
   bannedEmailIds: string[];
@@ -101,7 +96,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const SELF = this;
-    this.globalService.scrollToTop();
 
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
