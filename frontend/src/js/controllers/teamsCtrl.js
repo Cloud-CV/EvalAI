@@ -429,7 +429,7 @@
                     else {
                         error = response.data['error'];
                     }
-                    $rootScope.notify("error", error[0]);
+                    $rootScope.notify("error", error);
                 }
             };
 
