@@ -95,8 +95,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    const SELF = this;
-
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
