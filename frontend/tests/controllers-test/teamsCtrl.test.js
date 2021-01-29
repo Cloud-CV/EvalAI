@@ -461,21 +461,21 @@ describe('Unit tests for teams controller', function () {
             var updateParticipantTeamDataForm = true;
             success = false;
             errorResponse = {
-                team_name:['team name error'],
-                error: ['error']	
+                team_name: 'team name error',
+                error: 'error'	
             };
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name[0]);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name);
         });
 
         it('other backend error', function () {
             var updateParticipantTeamDataForm = true;
             success = false;
             errorResponse = {
-                error: ['error']	
+                error: 'error'	
             };
             vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error[0]);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
         });
 
         it('invalid form submission', function () {
