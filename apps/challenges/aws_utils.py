@@ -97,7 +97,7 @@ task_definition = """
             "environment": [
                 {{
                   "name": "AWS_DEFAULT_REGION",
-                  "value": "{AWS_DEFAULT_REGION}"
+                  "value": "{AWS_REGION}"
                 }},
                 {{
                   "name": "AWS_ACCOUNT_ID",
@@ -234,7 +234,7 @@ task_definition_code_upload_worker = """
             "environment": [
                 {{
                   "name": "AWS_DEFAULT_REGION",
-                  "value": "{AWS_DEFAULT_REGION}"
+                  "value": "{AWS_REGION}"
                 }},
                 {{
                   "name": "AWS_ACCESS_KEY_ID",
