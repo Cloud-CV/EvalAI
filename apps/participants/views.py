@@ -12,6 +12,7 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
 from rest_framework.throttling import UserRateThrottle
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import team_paginated_queryset
@@ -41,13 +42,19 @@ from .utils import (
     get_participant_team_of_user_for_a_challenge,
     has_user_participated_in_challenge,
     is_user_part_of_participant_team,
+    is_user_creator_of_participant_team,
 )
 
 
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes(
+    (
+        JWTAuthentication,
+        ExpiringTokenAuthentication,
+    )
+)
 def participant_team_list(request):
 
     if request.method == "GET":
@@ -88,7 +95,7 @@ def participant_team_list(request):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_participant_team_challenge_list(request, participant_team_pk):
     """
     Returns a challenge list in which the participant team has participated.
@@ -114,7 +121,7 @@ def get_participant_team_challenge_list(request, participant_team_pk):
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def participant_team_detail(request, pk):
 
     try:
@@ -131,6 +138,16 @@ def participant_team_detail(request, pk):
     elif request.method in ["PUT", "PATCH"]:
 
         if request.method == "PATCH":
+            if not is_user_creator_of_participant_team(
+                request.user, participant_team
+            ):
+                response_data = {
+                    "error": "You are not a authorized to change team details!"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
             serializer = ParticipantTeamSerializer(
                 participant_team,
                 data=request.data,
@@ -148,9 +165,8 @@ def participant_team_detail(request, pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            errors = "\n".join(serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
         participant_team.delete()
@@ -160,7 +176,7 @@ def participant_team_detail(request, pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_participant_to_team(request, pk):
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
@@ -186,10 +202,10 @@ def invite_participant_to_team(request, pk):
         response_data = {"error": "User is already part of the team!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
-        user
-    ).values_list(
-        "id", flat=True
+    invited_user_participated_challenges = (
+        get_list_of_challenges_participated_by_a_user(user).values_list(
+            "id", flat=True
+        )
     )
     team_participated_challenges = get_list_of_challenges_for_participant_team(
         [participant_team]
@@ -282,7 +298,7 @@ def invite_participant_to_team(request, pk):
 @api_view(["DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def delete_participant_from_team(request, participant_team_pk, participant_pk):
     """
     Deletes a participant from a Participant Team
@@ -323,7 +339,7 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_teams_and_corresponding_challenges_for_a_participant(
     request, challenge_pk
 ):
@@ -368,7 +384,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
 @api_view(["DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def remove_self_from_participant_team(request, participant_team_pk):
     """
     A user can remove himself from the participant team.
@@ -405,7 +421,7 @@ def remove_self_from_participant_team(request, participant_team_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_participant_team_details_for_challenge(request, challenge_pk):
     """
     API to get the participant team detail
@@ -435,7 +451,7 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def remove_participant_team_from_challenge(
     request, challenge_pk, participant_team_pk
 ):

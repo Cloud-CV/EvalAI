@@ -197,8 +197,10 @@ class BaseAPITestClass(APITestCase):
         expected_submission_input_file = "{0}{1}".format(
             self.testserver, self.submission.input_file.url
         )
-        expected_submission_input_file_path = self.get_submission_input_file_path(
-            self.submission.pk, self.submission.input_file
+        expected_submission_input_file_path = (
+            self.get_submission_input_file_path(
+                self.submission.pk, self.submission.input_file
+            )
         )
         mock_download_and_extract_file.assert_called_with(
             expected_submission_input_file, expected_submission_input_file_path

@@ -425,7 +425,7 @@ mat-chip {
   text-align: justify;
 }
 
-.ev-md-container {
+.ev-md-container { 
   padding: 20px 30px 30px 30px;
 }
 
@@ -2146,7 +2146,8 @@ tr {
   }
 
   .page-wrap {
-    width: 1440px !important;
+    max-width: 100% !important;
+    overflow: hidden;
     margin: auto !important;
     position: relative !important;
     background: white;
