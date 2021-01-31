@@ -604,7 +604,7 @@ def run_submission(
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
     if submission_status is Submission.FAILED:
         with open(stderr_file, "r") as stderr:
-            stderr_content = stderr.read()
+            stderr_content = stderr.read().encode("utf-8")
             submission.stderr_file.save(
                 "stderr.txt", ContentFile(stderr_content)
             )
