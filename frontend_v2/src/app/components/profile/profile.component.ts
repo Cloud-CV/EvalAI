@@ -92,9 +92,48 @@ export class ProfileComponent implements OnInit {
     }
     this.authService.change.subscribe((details) => {
       this.user = details;
-      this.token = this.globalService.getAuthToken();
+      this.setAccessToken();
       this.processUserDetails();
     });
+  }
+
+  /**
+   * Set access token
+   */
+  setAccessToken() {
+    const API_PATH = this.endpointsService.getAuthTokenURL();
+    const SELF = this;
+
+    SELF.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        // Success Message in data.message
+        this.token = data.token;
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err, true);
+      },
+      () => this.logger.info('GET-AUTH-TOKEN-FINISHED')
+    );
+  }
+
+  /**
+   * Refresh access token
+   */
+  refreshAccessToken() {
+    const API_PATH = this.endpointsService.refreshAuthTokenURL();
+    const SELF = this;
+
+    SELF.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        // Success Message in data.message
+        this.token = data.token;
+        SELF.globalService.showToast('success', 'Token generated successfully', 5);
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err, true);
+      },
+      () => this.logger.info('REFRESH-AUTH-TOKEN-FINISHED')
+    );
   }
 
   /**
@@ -217,7 +256,7 @@ export class ProfileComponent implements OnInit {
   downloadToken() {
     this.isTokenModalVisible = false;
     this.windowService.downloadFile(
-      { body: JSON.stringify({ token: this.globalService.getAuthToken() }) },
+      { body: JSON.stringify({ token: this.token }) },
       'token.json',
       { type: 'text/json' }
     );
@@ -227,7 +266,7 @@ export class ProfileComponent implements OnInit {
    * Copy auth token to clipboard.
    */
   copyToken() {
-    this.windowService.copyToClipboard(this.globalService.getAuthToken());
+    this.windowService.copyToClipboard(this.token);
     this.globalService.showToast('success', 'Copied to clipboard', 5);
   }
 

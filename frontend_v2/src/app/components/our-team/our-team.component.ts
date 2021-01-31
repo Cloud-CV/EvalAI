@@ -91,6 +91,18 @@ export class OurTeamComponent implements OnInit {
           // Hard coding our team members
           results = [
             {
+              name: 'Rishabh Jain',
+              description: 'Team Lead',
+              email: 'rishabhjain@gatech.edu',
+              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/IMG_6613.JPG',
+              background_image:
+                'https://evalai.s3.amazonaws.com/media/bg-images/Rishabh_Jain.jpeg',
+              github_url: 'https://github.com/RishabhJain2018',
+              linkedin_url: 'https://www.linkedin.com/in/rishabhjain1795/',
+              personal_website: 'https://rishabhjain2018.github.io/',
+              team_type: 'Core Team',
+            },
+            {
               name: 'Deshraj Yadav',
               description: 'Team Lead',
               email: 'deshraj@vt.edu',
@@ -112,56 +124,6 @@ export class OurTeamComponent implements OnInit {
               github_url: 'https://github.com/dexter1691',
               linkedin_url: 'https://www.linkedin.com/in/harsh092/',
               personal_website: 'https://dexter1691.github.io/',
-              team_type: 'Core Team',
-            },
-            {
-              name: 'Taranjeet',
-              description: 'Lead Backend Developer',
-              email: 'reachtotj@gmail.com',
-              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/4302268.jpeg',
-              background_image:
-                'https://evalai.s3.amazonaws.com/media/bg-images/10178044_664063280345448_7169289118796237_n.jpg',
-              github_url: 'http://github.com/trojan',
-              linkedin_url: 'https://www.linkedin.com/in/taranjeet-singh-1577b858/',
-              personal_website: 'http://trojan.github.io/',
-              team_type: 'Core Team',
-            },
-            {
-              name: 'Prithvijit Chattopadhyay',
-              description: 'Backend Developer',
-              email: 'prithvijitchattopadhyay@gmail.com',
-              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/prithv1.jpg',
-              background_image:
-                'https://evalai.s3.amazonaws.com/media/bg-images/18056475_1816935868332485_6070888708209307482_o.jpg',
-              github_url: 'https://github.com/prithv1',
-              linkedin_url: 'https://www.linkedin.com/in/prithvijit-chattopadhyay-260b2b54/',
-              personal_website: 'https://prithv1.github.io/',
-              team_type: 'Core Team',
-            },
-            {
-              name: 'Akash Jain',
-              description: 'Lead UI/UX',
-              email: 'akajain993@gmail.com',
-              headshot:
-                'https://evalai.s3.amazonaws.com/media/headshots/' +
-                'AAEAAQAAAAAAAAfFAAAAJDdjZTQ5MThmLTJlOTMtNGMxMS05NTFjLTI3NmZiMTA0ZDE3OQ.jpg',
-              background_image:
-                'https://evalai.s3.amazonaws.com/media/bg-images/13227264_948001968631519_3882689880500687242_o.jpg',
-              github_url: 'https://github.com/aka-jain',
-              linkedin_url: 'https://www.linkedin.com/in/jainakashin/',
-              personal_website: 'http://www.jainakash.in/',
-              team_type: 'Core Team',
-            },
-            {
-              name: 'Shiv Baran',
-              description: 'Lead Frontend',
-              email: 'spyshiv@gmail.com',
-              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/7015220.jpeg',
-              background_image:
-                'https://evalai.s3.amazonaws.com/media/bg-images/12362825_836486476462466_3609928140833176026_o.jpg',
-              github_url: 'https://github.com/spyshiv',
-              linkedin_url: 'https://www.linkedin.com/in/shivbaran1/',
-              personal_website: 'http://spyshiv.github.io/',
               team_type: 'Core Team',
             },
             {
@@ -188,6 +150,56 @@ export class OurTeamComponent implements OnInit {
               personal_website: 'https://filebox.ece.vt.edu/~dbatra/',
               team_type: 'Core Team',
             },
+            {
+              name: 'Taranjeet',
+              description: 'Lead Backend Developer',
+              email: 'reachtotj@gmail.com',
+              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/4302268.jpeg',
+              background_image:
+                'https://evalai.s3.amazonaws.com/media/bg-images/10178044_664063280345448_7169289118796237_n.jpg',
+              github_url: 'http://github.com/trojan',
+              linkedin_url: 'https://www.linkedin.com/in/taranjeet-singh-1577b858/',
+              personal_website: 'http://trojan.github.io/',
+              team_type: 'Contributor',
+            },
+            {
+              name: 'Prithvijit Chattopadhyay',
+              description: 'Backend Developer',
+              email: 'prithvijitchattopadhyay@gmail.com',
+              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/prithv1.jpg',
+              background_image:
+                'https://evalai.s3.amazonaws.com/media/bg-images/18056475_1816935868332485_6070888708209307482_o.jpg',
+              github_url: 'https://github.com/prithv1',
+              linkedin_url: 'https://www.linkedin.com/in/prithvijit-chattopadhyay-260b2b54/',
+              personal_website: 'https://prithv1.github.io/',
+              team_type: 'Contributor',
+            },
+            {
+              name: 'Akash Jain',
+              description: 'Lead UI/UX',
+              email: 'akajain993@gmail.com',
+              headshot:
+                'https://evalai.s3.amazonaws.com/media/headshots/' +
+                'AAEAAQAAAAAAAAfFAAAAJDdjZTQ5MThmLTJlOTMtNGMxMS05NTFjLTI3NmZiMTA0ZDE3OQ.jpg',
+              background_image:
+                'https://evalai.s3.amazonaws.com/media/bg-images/13227264_948001968631519_3882689880500687242_o.jpg',
+              github_url: 'https://github.com/aka-jain',
+              linkedin_url: 'https://www.linkedin.com/in/jainakashin/',
+              personal_website: 'http://www.jainakash.in/',
+              team_type: 'Contributor',
+            },
+            {
+              name: 'Shiv Baran',
+              description: 'Lead Frontend',
+              email: 'spyshiv@gmail.com',
+              headshot: 'https://evalai.s3.amazonaws.com/media/headshots/7015220.jpeg',
+              background_image:
+                'https://evalai.s3.amazonaws.com/media/bg-images/12362825_836486476462466_3609928140833176026_o.jpg',
+              github_url: 'https://github.com/spyshiv',
+              linkedin_url: 'https://www.linkedin.com/in/shivbaran1/',
+              personal_website: 'http://spyshiv.github.io/',
+              team_type: 'Contributor',
+            }
           ];
         }
         if (results.length !== 0) {
