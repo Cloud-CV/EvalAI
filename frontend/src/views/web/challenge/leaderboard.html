@@ -140,7 +140,7 @@
                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                             </td>
                             <td ng-if="challenge.showSubmissionMetaAttributesOnLeaderboard">
-                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="key.submission__submission_metadata == undefined || key.submission__submission_metadata == null;" type="submit" value="view" ng-click="challenge.showMetaAttributesDialog($event, key.submission__submission_metadata);">View</button>
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn fs-14" ng-disabled="key.submission__submission_metadata == undefined || key.submission__submission_metadata == null;" type="submit" value="view" ng-click="challenge.showMetaAttributesDialog($event, key.submission__submission_metadata);">View</button>
                             </td>
                         </tr>
                     </tbody>
