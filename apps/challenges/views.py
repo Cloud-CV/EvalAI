@@ -3384,6 +3384,7 @@ def pwc_task_dataset(request):
                     "allowed_email_ids": openapi.Schema(
                         type=openapi.TYPE_ARRAY,
                         description="List of allowed email ids",
+                        items=openapi.Schema(type=openapi.TYPE_STRING),
                     ),
                 },
             ),
