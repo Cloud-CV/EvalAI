@@ -3454,7 +3454,6 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = response_data = {
-                "challenge_phase_pk": phase_pk,
                 "allowed_email_ids": serializer.data["allowed_email_ids"],
             }
             return Response(response_data, status=status.HTTP_200_OK)
