@@ -3356,11 +3356,45 @@ def pwc_task_dataset(request):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+@swagger_auto_schema(
+    methods=["get", "put", "patch"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase ID",
+            required=True,
+        ),
+    ],
+    operation_id="update_allowed_email_ids",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "allowed_email_ids": openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description="List of allowed email ids",
+                    ),
+                },
+            ),
+        )
+    },
+)
 @api_view(["GET", "PATCH", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes(
     (
-        permissions.IsAuthenticatedOrReadOnly,
+        permissions.IsAuthenticated,
         HasVerifiedEmail,
         IsChallengeCreator,
     )
@@ -3401,7 +3435,6 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             challenge_phase, context={"request": request}
         )
         response_data = {
-            "challenge_phase_pk": phase_pk,
             "allowed_email_ids": serializer.data["allowed_email_ids"],
         }
         return Response(response_data, status=status.HTTP_200_OK)
@@ -3433,7 +3466,7 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
     elif request.method == "DELETE":
         remove_allowed_email_ids = request.data["allowed_email_ids"]
         allowed_email_ids = list(
-            set(allowed_email_ids) - set(remove_allowed_email_ids)
+            set(allowed_email_ids).difference(set(remove_allowed_email_ids))
         )
 
         serializer = ChallengePhaseCreateSerializer(
@@ -3448,7 +3481,6 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
             serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = response_data = {
-                "challenge_phase_pk": phase_pk,
                 "allowed_email_ids": serializer.data["allowed_email_ids"],
             }
             return Response(response_data, status=status.HTTP_200_OK)
