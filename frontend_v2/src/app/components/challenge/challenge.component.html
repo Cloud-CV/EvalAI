@@ -41,14 +41,6 @@
                       {{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}
                     </span>
                     <br />
-                    <span class="title-line" *ngIf="isChallengeHost">
-                      <span class="fs-16 fw-light">
-                        <a class="pointer" (click)="togglePublishChallengeState()">
-                          <strong class="text-light-black">{{ publishChallenge.state }} </strong>
-                          <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
-                        </a>
-                      </span>
-                    </span>
                   </div>
                 </div>
                 <div class="col-lg-3 col-md-3">

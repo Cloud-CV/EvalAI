@@ -41,14 +41,6 @@ export class ChallengeComponent implements OnInit {
   isChallengeHost = false;
 
   /**
-   * publish challenge state and it's icon
-   */
-  publishChallenge = {
-    state: 'Not Published',
-    icon: 'fa fa-eye-slash red-text',
-  };
-
-  /**
    * Is participated in Challenge
    */
   isParticipated = false;
@@ -154,10 +146,6 @@ export class ChallengeComponent implements OnInit {
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
-    this.challengeService.currentChallengePublishState.subscribe((publishChallenge) => {
-      this.publishChallenge.state = publishChallenge.state;
-      this.publishChallenge.icon = publishChallenge.icon;
-    });
     this.globalService.stopLoader();
   }
 
@@ -170,58 +158,5 @@ export class ChallengeComponent implements OnInit {
     } else {
       this.globalService.showToast('error', 'Please login to star the challenge!', 5);
     }
-  }
-
-  /**
-   * Publish challenge click function
-   */
-  togglePublishChallengeState() {
-    const SELF = this;
-    let toggleChallengePublishState, isPublished;
-    if (this.publishChallenge.state === 'Published') {
-      toggleChallengePublishState = 'private';
-      isPublished = false;
-    } else {
-      toggleChallengePublishState = 'public';
-      isPublished = true;
-    }
-
-    SELF.apiCall = () => {
-      const BODY = JSON.stringify({
-        published: isPublished,
-      });
-      SELF.apiService
-        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
-        .subscribe(
-          (data) => {
-            if (isPublished) {
-              this.publishChallenge.state = 'Published';
-              this.publishChallenge.icon = 'fa fa-eye green-text';
-            } else {
-              this.publishChallenge.state = 'Not Published';
-              this.publishChallenge.icon = 'fa fa-eye-slash red-text';
-            }
-            SELF.globalService.showToast(
-              'success',
-              'The challenge was successfully made ' + toggleChallengePublishState,
-              5
-            );
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err, true);
-            SELF.globalService.showToast('error', err);
-          },
-          () => this.logger.info('PUBLISH-CHALLENGE-UPDATE-FINISHED')
-        );
-    };
-
-    const PARAMS = {
-      title: 'Make this challenge ' + toggleChallengePublishState + '?',
-      content: '',
-      confirm: "Yes, I'm sure",
-      deny: 'No',
-      confirmCallback: SELF.apiCall,
-    };
-    SELF.globalService.showConfirm(PARAMS);
   }
 }
