@@ -135,7 +135,7 @@ def participant_team_detail(request, pk):
             request.user, participant_team
         ):
             response_data = {
-                "error": "You are not a authorized to change team details!"
+                "error": "Sorry, You are not authorized to view team details."
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
