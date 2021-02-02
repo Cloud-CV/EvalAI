@@ -58,6 +58,11 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   authState: any;
 
   /**
+   * Is user Logged in
+   */
+  isLoggedIn: any = false;
+
+  /**
    * Inner width
    */
   public innerWidth: any;
@@ -104,6 +109,9 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
     this.checkInnerWidth();
     this.authServiceSubscription = this.authService.change.subscribe((authState) => {
       this.authState = authState;
+      if (this.authService.isLoggedIn()) {
+        this.isLoggedIn = true;
+      }
       if (this.authState.isLoggedIn) {
         this.user = this.authState;
       }
