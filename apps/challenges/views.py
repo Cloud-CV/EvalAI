@@ -1793,7 +1793,6 @@ def download_all_submissions(
                 )
                 # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
                 # TODO: Find a better way to solve the above issue.
-                conversion = set("#")
                 for submission in submissions.data:
                     writer.writerow(
                         [
@@ -1828,8 +1827,8 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
-                            "".join("-" if c in conversion else c for c in submission["method_name"]),
-                            "".join("-" if c in conversion else c for c in submission["method_description"]),
+                            submission["method_name"].replace("#", "-"),
+                            submission["method_description"].replace("#", "-"),
                             submission["publication_url"],
                             submission["project_url"],
                         ]
