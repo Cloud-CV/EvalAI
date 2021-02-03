@@ -3357,7 +3357,7 @@ def pwc_task_dataset(request):
 
 
 @swagger_auto_schema(
-    methods=["get", "put", "patch"],
+    methods=["get", "delete", "patch"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_pk",
@@ -3374,6 +3374,16 @@ def pwc_task_dataset(request):
             required=True,
         ),
     ],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "allowed_email_ids": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description="List of allowed email ids",
+                items=openapi.Schema(type=openapi.TYPE_STRING),
+            ),
+        },
+    ),
     operation_id="update_allowed_email_ids",
     responses={
         status.HTTP_200_OK: openapi.Response(
