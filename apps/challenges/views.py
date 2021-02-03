@@ -1765,9 +1765,7 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = "attachment; filename=all_submissions.csv"
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -1793,6 +1791,9 @@ def download_all_submissions(
                         "Project URL",
                     ]
                 )
+                # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
+                # TODO: Find a better way to solve the above issue.
+                conversion = set("#")
                 for submission in submissions.data:
                     writer.writerow(
                         [
@@ -1827,8 +1828,8 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
-                            submission["method_name"],
-                            submission["method_description"],
+                            "".join("-" if c in conversion else c for c in submission["method_name"]),
+                            "".join("-" if c in conversion else c for c in submission["method_description"]),
                             submission["publication_url"],
                             submission["project_url"],
                         ]
