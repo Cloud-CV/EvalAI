@@ -42,6 +42,7 @@ from .utils import (
     get_participant_team_of_user_for_a_challenge,
     has_user_participated_in_challenge,
     is_user_part_of_participant_team,
+    is_user_creator_of_participant_team,
 )
 
 
@@ -137,6 +138,16 @@ def participant_team_detail(request, pk):
     elif request.method in ["PUT", "PATCH"]:
 
         if request.method == "PATCH":
+            if not is_user_creator_of_participant_team(
+                request.user, participant_team
+            ):
+                response_data = {
+                    "error": "You are not a authorized to change team details!"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
             serializer = ParticipantTeamSerializer(
                 participant_team,
                 data=request.data,
@@ -154,9 +165,8 @@ def participant_team_detail(request, pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            errors = "\n".join(serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
         participant_team.delete()
