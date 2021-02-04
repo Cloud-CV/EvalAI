@@ -209,6 +209,11 @@ urlpatterns = [
     url(
         r"^pwc_task_dataset/$", views.pwc_task_dataset, name="pwc_task_dataset"
     ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/phases/(?P<phase_pk>[0-9]+)/allowed_email_ids/$",
+        views.update_allowed_email_ids,
+        name="get_or_update_allowed_email_ids",
+    ),
 ]
 
 app_name = "challenges"
