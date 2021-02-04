@@ -1765,7 +1765,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = "attachment; filename=all_submissions.csv"
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -3357,7 +3359,42 @@ def pwc_task_dataset(request):
 
 
 @swagger_auto_schema(
-    methods=["get", "delete", "patch"],
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase ID",
+            required=True,
+        ),
+    ],
+    operation_id="update_allowed_email_ids",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "allowed_email_ids": openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description="List of allowed email ids",
+                        items=openapi.Schema(type=openapi.TYPE_STRING),
+                    ),
+                },
+            ),
+        )
+    },
+)
+@swagger_auto_schema(
+    methods=["delete", "patch"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_pk",
