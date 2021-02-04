@@ -6,12 +6,6 @@
   padding-right: 10px;
 }
 
-.ev-card-panel {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 .tnc-pad {
   padding-left: 10px;
   padding-right: 15px;
@@ -30,7 +24,9 @@
 .ev-action {
   display: flex;
   flex-direction: row;
-  padding-top: 2.5px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 35px;
 }
 
 .ev-upload-action {
@@ -46,17 +42,10 @@
     padding-left: 15px;
   }
 
-  .ev-card-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .ev-action {
     margin-top: 10px;
     padding-left: 15px;
-    display: flex;
-    flex-direction: row;
+    display: inline-block;
   }
 
 }
