@@ -10,7 +10,6 @@ from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
-from rest_framework.authtoken.models import Token
 
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
@@ -19,6 +18,7 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
+from accounts.models import JwtToken
 
 logger = logging.getLogger(__name__)
 
@@ -438,17 +438,13 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 logger.exception(e)
                 return e.response
             # challenge host auth token to be used by code-upload-worker
-            try:
-                token = Token.objects.get(user=challenge.creator.created_by)
-            except Token.DoesNotExist:
-                token = Token.objects.create(user=challenge.creator.created_by)
-                token.save()
+            token = JwtToken.objects.get(user=challenge.creator.created_by)
             definition = task_definition_code_upload_worker.format(
                 queue_name=queue_name,
                 container_name=container_name,
                 ENV=ENV,
                 challenge_pk=challenge.pk,
-                auth_token=token,
+                auth_token=token.refresh_token,
                 cluster_name=cluster_name,
                 cluster_endpoint=cluster_endpoint,
                 certificate=cluster_certificate,
