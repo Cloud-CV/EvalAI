@@ -11,7 +11,7 @@ import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
-import { environment } from '../../../../environments/environment.staging';
+import { environment } from '../../../../environments/environment';
 
 /**
  * Component Class
