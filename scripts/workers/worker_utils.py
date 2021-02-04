@@ -24,7 +24,7 @@ class EvalAI_Interface:
         self.QUEUE_NAME = QUEUE_NAME
 
     def get_request_headers(self):
-        headers = {"Authorization": "Token {}".format(self.AUTH_TOKEN)}
+        headers = {"Authorization": "Bearer {}".format(self.AUTH_TOKEN)}
         return headers
 
     def make_request(self, url, method, data=None):
