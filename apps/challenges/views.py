@@ -3354,3 +3354,145 @@ def pwc_task_dataset(request):
             "error": "You are not authorized to make this request. Please ask EvalAI admin to add you as a staff user for accessing this API."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@swagger_auto_schema(
+    methods=["get", "delete", "patch"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase ID",
+            required=True,
+        ),
+    ],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "allowed_email_ids": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description="List of allowed email ids",
+                items=openapi.Schema(type=openapi.TYPE_STRING),
+            ),
+        },
+    ),
+    operation_id="update_allowed_email_ids",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "allowed_email_ids": openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description="List of allowed email ids",
+                        items=openapi.Schema(type=openapi.TYPE_STRING),
+                    ),
+                },
+            ),
+        )
+    },
+)
+@api_view(["GET", "PATCH", "DELETE"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (
+        permissions.IsAuthenticated,
+        HasVerifiedEmail,
+        IsChallengeCreator,
+    )
+)
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_allowed_email_ids(request, challenge_pk, phase_pk):
+    """
+    API to GET/UPDATE/DELETE email ids from challenge phase allowed email ids
+    Arguments:
+        challenge_pk {int} -- Challenge primary key
+        phase_pk {int} -- Challenge phase primary key
+    Returns:
+        {dict} -- Response object
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    challenge_phase = get_challenge_phase_model(phase_pk)
+    allowed_email_ids = challenge_phase.allowed_email_ids
+
+    if allowed_email_ids is None:
+        allowed_email_ids = []
+
+    if request.method != "GET":
+        if request.data.get("allowed_email_ids") is not None:
+            if not isinstance(request.data["allowed_email_ids"], list):
+                response_data = {
+                    "error": "Field allowed_email_ids should be a list."
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            response_data = {"error": "Field allowed_email_ids is missing."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "GET":
+        serializer = ChallengePhaseCreateSerializer(
+            challenge_phase, context={"request": request}
+        )
+        response_data = {
+            "allowed_email_ids": serializer.data["allowed_email_ids"],
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ["PATCH"]:
+        allowed_email_ids.extend(request.data["allowed_email_ids"])
+        allowed_email_ids = list(set(allowed_email_ids))
+        serializer = ChallengePhaseCreateSerializer(
+            challenge_phase,
+            data={"allowed_email_ids": allowed_email_ids},
+            context={"challenge": challenge},
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+            serializer = ChallengePhaseSerializer(challenge_phase)
+            response_data = response_data = {
+                "allowed_email_ids": serializer.data["allowed_email_ids"],
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+    elif request.method == "DELETE":
+        remove_allowed_email_ids = request.data["allowed_email_ids"]
+        allowed_email_ids = list(
+            set(allowed_email_ids).difference(set(remove_allowed_email_ids))
+        )
+
+        serializer = ChallengePhaseCreateSerializer(
+            challenge_phase,
+            data={"allowed_email_ids": allowed_email_ids},
+            context={"challenge": challenge},
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+            serializer = ChallengePhaseSerializer(challenge_phase)
+            response_data = response_data = {
+                "allowed_email_ids": serializer.data["allowed_email_ids"],
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
