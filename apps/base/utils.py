@@ -119,7 +119,7 @@ def send_email(
     """
     try:
         sg = sendgrid.SendGridAPIClient(
-            apikey=os.environ.get("SENDGRID_API_KEY")
+            api_key=os.environ.get("SENDGRID_API_KEY")
         )
         sender = Email(sender)
         mail = Mail()
