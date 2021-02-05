@@ -212,6 +212,12 @@ img.profile-pic {
   margin-top: 25px;
 }
 
+@media only screen and (min-width: 1441px) {
+  .container-fluid {
+    width: calc(1440px - 223px) !important;
+  }
+}
+
 @media only screen and (max-width: 992px) {
   .container-fluid {
     width: 100%;
