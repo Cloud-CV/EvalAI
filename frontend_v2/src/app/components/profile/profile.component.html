@@ -134,7 +134,7 @@
                     <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                   </button>
                 </div>
-                <ul id="auth_token_buttons" class="inline-list">
+                <ul class="inline-list auth-token-buttons">
                   <li>
                     <a (click)="isTokenModalVisible = false" class="dark-link pointer">
                       <strong class="fw-semibold fs-15">Cancel</strong>
@@ -152,7 +152,7 @@
                   </li>
                   <li>
                     <span
-                      class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14 rm-pad-top"
+                      class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14 rm-pad-top show-token-btn"
                       (click)="tokenModalButtonToggle()"
                       >{{ tokenModalButton }}</span
                     >
