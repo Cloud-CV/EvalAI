@@ -118,7 +118,8 @@
 
 .rangeslider {
   width: 50%;
-  display: inline-block;
+  display: flex;
+  justify-content: space-around;
 }
 
 mat-slider {
@@ -150,7 +151,7 @@ mat-slider {
 }
 
 .leaderboard-description-span {
-  margin-left: 2%;
+  margin-top: 2%;
 }
 
 .private {
