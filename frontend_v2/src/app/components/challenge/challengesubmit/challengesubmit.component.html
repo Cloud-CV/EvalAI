@@ -236,6 +236,40 @@
                     </div>
                   </div>
                 </div>
+                <div ng-show="challenge.currentPhaseLeaderboardPublic">
+                  <p class="fs-14 w-400" ng>Select submission visibility:</p>
+                  <li>
+                      <input 
+                        type="radio" 
+                        name="submissionVisibility" 
+                        class="with-gap selectPhase" 
+                        id="isPublicubmission"
+                        value="isPublicubmission"
+                        ng-click="challenge.isPublicSubmission = true"
+                        />
+                      <label for="isPublicubmission" class="radio-button-text pointer">
+                        <div 
+                          class="show-member-title pointer">
+                          <strong class="text-med-black fs-16">Public</strong>
+                      </div>
+                      </label>
+                      <div class="clearfix"></div>
+                      <input type="radio"
+                        name="submissionVisibility"
+                        class="with-gap selectPhase"
+                        id="isPrivateSubmission"
+                        value="isPrivateSubmission"
+                        ng-click="challenge.isPublicSubmission = false"
+                        />
+                      <label for="isPrivateSubmission" class="radio-button-text pointer">
+                        <div 
+                          class="show-member-title pointer">
+                          <strong class="text-med-black fs-16">Private</strong>
+                      </div>
+                      </label>
+                      <div class="clearfix"></div>
+                  </li>
+              </div>
                 <div class="row row-lr-margin">
                   <div class="align-left col-sm-10 col-lr-pad">
                     <div class="input-field align-left">
