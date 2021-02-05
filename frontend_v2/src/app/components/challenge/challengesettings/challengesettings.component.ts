@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
-import { NGXLogger } from 'ngx-logger';
 import * as moment from 'moment';
 
 import { ChallengeService } from '../../../services/challenge.service';
@@ -92,8 +91,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     private globalService: GlobalService,
     private apiService: ApiService,
     private endpointsService: EndpointsService,
-    private router: Router,
-    private logger: NGXLogger
+    private router: Router
   ) {}
 
   ngOnInit() {
