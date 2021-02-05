@@ -3459,13 +3459,17 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
     """
     challenge = get_challenge_model(challenge_pk)
 
-    challenge_phase = get_challenge_phase_model(phase_pk)
-
-    if challenge.pk != challenge_phase.challenge.pk:
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, pk=phase_pk
+        )
+    except ChallengePhase.DoesNotExist:
         response_data = {
-            "error": "Challenge phase pk {} is incorrect.".format(phase_pk)
+            "error": "Challenge phase {} does not exist for challenge {}".format(
+                phase_pk, challenge.pk
+            )
         }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     allowed_email_ids = challenge_phase.allowed_email_ids
 
