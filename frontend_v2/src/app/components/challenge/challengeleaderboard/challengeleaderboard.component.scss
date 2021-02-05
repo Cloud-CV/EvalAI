@@ -151,7 +151,7 @@ mat-slider {
 }
 
 .leaderboard-description-span {
-  margin-top: 2%;
+  margin-left: 2%;
 }
 
 .private {
@@ -179,5 +179,12 @@ mat-slider {
 @media only screen and (max-width: $screen-sm) {
   mat-slider {
     width: 100%;
+  }
+}
+
+@media only screen and (max-width: 485px) {
+  .leaderboard-description-span {
+    margin-top: 2%;
+    margin-left: 0;
   }
 }
