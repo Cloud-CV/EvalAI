@@ -88,6 +88,7 @@ from participants.utils import (
     has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
+    is_user_part_of_participant_team,
 )
 
 from .models import (
@@ -314,6 +315,12 @@ def add_participant_team_to_challenge(
         participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
         response_data = {"error": "ParticipantTeam does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not is_user_part_of_participant_team(request.user, participant_team):
+        response_data = {
+            "error": "Sorry, you are not authorized to to make this request"
+        }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is banned
