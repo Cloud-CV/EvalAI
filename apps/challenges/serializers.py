@@ -245,6 +245,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_docker_image_size",
             "cli_version",
             "github_repository",
+            "vpc_cidr",
+            "subnet_1_cidr",
+            "subnet_2_cidr",
         )
 
 
