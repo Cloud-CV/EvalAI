@@ -89,6 +89,7 @@ from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
+    is_user_creator_of_participant_team,
 )
 
 from .models import (
@@ -317,12 +318,6 @@ def add_participant_team_to_challenge(
         response_data = {"error": "ParticipantTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not is_user_part_of_participant_team(request.user, participant_team):
-        response_data = {
-            "error": "Sorry, you are not authorized to to make this request"
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     # Check if user is banned
     if len(challenge.banned_email_ids) > 0:
         for participant_email in participant_team.get_all_participants_email():
@@ -378,6 +373,15 @@ def add_participant_team_to_challenge(
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+    if not (
+        is_user_part_of_participant_team(request.user, participant_team)
+        or is_user_creator_of_participant_team(request.user, participant_team)
+    ):
+        response_data = {
+            "error": "Sorry, you are not authorized to to make this request"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if participant_team.challenge_set.filter(id=challenge_pk).exists():
         response_data = {
