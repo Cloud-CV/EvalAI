@@ -118,7 +118,8 @@
 
 .rangeslider {
   width: 50%;
-  display: inline-block;
+  display: flex;
+  justify-content: space-around;
 }
 
 mat-slider {
@@ -178,5 +179,12 @@ mat-slider {
 @media only screen and (max-width: $screen-sm) {
   mat-slider {
     width: 100%;
+  }
+}
+
+@media only screen and (max-width: 485px) {
+  .leaderboard-description-span {
+    margin-top: 2%;
+    margin-left: 0;
   }
 }
