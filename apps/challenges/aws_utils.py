@@ -1182,7 +1182,9 @@ def setup_eks_cluster(challenge):
             return response
 
     # Create custom ECR all access policy and attach to node_group_role
-    ecr_all_access_policy_name = "AWS-ECR-Full-Access"
+    ecr_all_access_policy_name = "AWS-ECR-Full-Access-{}".format(
+        environment_suffix
+    )
     ecr_all_access_policy_arn = None
     try:
         response = client.create_policy(
@@ -1239,8 +1241,7 @@ def create_eks_cluster_subnets(challenge):
     client = get_boto3_client("ec2", challenge_aws_keys)
     vpc_ids = []
     try:
-        # TODO: Replace vpc CIDR hardcoded value
-        response = client.create_vpc(CidrBlock="100.68.0.0/16")
+        response = client.create_vpc(CidrBlock=challenge_obj.vpc_cidr)
         vpc_ids.append(response["Vpc"]["VpcId"])
     except ClientError as e:
         logger.exception(e)
@@ -1268,18 +1269,16 @@ def create_eks_cluster_subnets(challenge):
 
         # Create subnets
         subnet_ids = []
-        # TODO: Replace subnet CIDRs and availability zone hardcoded values
         response = client.create_subnet(
-            CidrBlock="100.68.0.0/20",
+            CidrBlock=challenge_obj.subnet_1_cidr,
             AvailabilityZone="us-east-1a",
             VpcId=vpc_ids[0],
         )
         subnet_1_id = response["Subnet"]["SubnetId"]
         subnet_ids.append(subnet_1_id)
 
-        # TODO: Replace subnet CIDRs and availability zone hardcoded values
         response = client.create_subnet(
-            CidrBlock="100.68.32.0/20",
+            CidrBlock=challenge_obj.subnet_2_cidr,
             AvailabilityZone="us-east-1b",
             VpcId=vpc_ids[0],
         )
