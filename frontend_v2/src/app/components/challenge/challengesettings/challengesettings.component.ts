@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 import * as moment from 'moment';
 
 import { ChallengeService } from '../../../services/challenge.service';
@@ -61,6 +62,14 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   message: string;
 
   /**
+   * publish challenge state and it's icon
+   */
+  publishChallenge = {
+    state: 'Not Published',
+    icon: 'fa fa-eye-slash red-text',
+  };
+
+  /**
    * Separator key codes
    */
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -83,17 +92,23 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     private globalService: GlobalService,
     private apiService: ApiService,
     private endpointsService: EndpointsService,
-    private router: Router
+    private router: Router,
+    private logger: NGXLogger
   ) {}
 
   ngOnInit() {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
-      this.updateView();
     });
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
+
+    this.challengeService.currentChallengePublishState.subscribe((publishChallenge) => {
+      this.publishChallenge.state = publishChallenge.state;
+      this.publishChallenge.icon = publishChallenge.icon;
+    });
+
     if (!this.challenge["remote_evaluation"]) {
       this.fetchWorkerLogs();
       this.startLoadingLogs();
@@ -474,4 +489,58 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     clearInterval(this.pollingInterval);
   }
+
+  /**
+   * Publish challenge click function
+   */
+  togglePublishChallengeState() {
+    const SELF = this;
+    let toggleChallengePublishState, isPublished;
+    if (this.publishChallenge.state === 'Published') {
+      toggleChallengePublishState = 'private';
+      isPublished = false;
+    } else {
+      toggleChallengePublishState = 'public';
+      isPublished = true;
+    }
+    console.log(isPublished);
+    SELF.apiCall = () => {
+      const BODY = JSON.stringify({
+        published: isPublished,
+      });
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            if (isPublished) {
+              this.publishChallenge.state = 'Published';
+              this.publishChallenge.icon = 'fa fa-eye green-text';
+            } else {
+              this.publishChallenge.state = 'Not Published';
+              this.publishChallenge.icon = 'fa fa-eye-slash red-text';
+            }
+            SELF.globalService.showToast(
+              'success',
+              'The challenge was successfully made ' + toggleChallengePublishState,
+              5
+            );
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('PUBLISH-CHALLENGE-UPDATE-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Make this challenge ' + toggleChallengePublishState + '?',
+      content: '',
+      confirm: "Yes, I'm sure",
+      deny: 'No',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showConfirm(PARAMS);
+  }
+
 }
