@@ -2154,6 +2154,10 @@ tr {
     zoom: 1 !important;
   }
 
+  .web-container {
+    width: unset;
+  }
+
   .dashboard-flex,
   .dashboard-content {
     min-height: calc(90vh - 64px) !important;
