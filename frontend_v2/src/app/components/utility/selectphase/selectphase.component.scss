@@ -6,6 +6,10 @@
   display: none;
 }
 
+.phase_name {
+  white-space: normal;
+}
+
 ::ng-deep .mat-select-panel mat-option.mat-option {
   height: unset;
 }
