@@ -11,6 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
+    delete_evaluation_cluster_resources,
 )
 
 from .admin_filters import ChallengeFilter
@@ -210,6 +211,30 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     delete_selected_workers.short_description = (
         "Delete all selected challenge workers."
     )
+
+    def delete_selected_evaluation_cluster_resources(self, request, queryset):
+        response = delete_evaluation_cluster_resources(queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count == queryset.count():
+            message = "All selected challenge workers successfully deleted."
+            messages.success(request, message)
+        else:
+            messages.success(
+                request,
+                "{} challenge workers were succesfully deleted.".format(count),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+            
+    delete_selected_evaluation_cluster_resources.short_description = (
+        "Deallocate Evaluation Cluster Resources."
+    )
+
 
 
 @admin.register(ChallengeConfiguration)
