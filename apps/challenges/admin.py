@@ -82,6 +82,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "delete_selected_evaluation_cluster_resources",
     ]
     action_form = UpdateNumOfWorkersForm
 
