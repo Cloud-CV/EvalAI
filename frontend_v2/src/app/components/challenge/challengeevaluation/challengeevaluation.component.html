@@ -6,15 +6,17 @@
           <h5 class="fw-light">Evaluation Criteria</h5>
           <div class="evaluation-details fs-16 fw-light" id="challenge-evaluation"></div>
         </div>
-        <div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1">
-          <a class="pointer fs-16" (click)="editEvaluationCriteria()">
-            <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;edit
-          </a>
-        </div>
-        <div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1">
-          <a class="pointer fs-15" (click)="editEvaluationScript()">
-            <i class="fa fa-file" aria-hidden="true"> </i>&nbsp;upload
-          </a>
+        <div class="ev-action">
+          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+            <a class="pointer fs-15" (click)="editEvaluationScript()">
+              <i class="fa fa-file" aria-hidden="true"> </i>&nbsp;Upload
+            </a>
+          </div>
+          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5">
+            <a class="pointer fs-16" (click)="editEvaluationCriteria()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;Edit
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -26,10 +28,12 @@
           <h5 class="fw-light">Terms And Conditions</h5>
           <div class="terms-and-conditions fs-16 fw-light" id="challenge-tnc"></div>
         </div>
-        <div *ngIf="isChallengeHost" class="col-sm-1 col-xs-1 terms-and-condition">
-          <a class="pointer fs-16" (click)="editTermsAndConditions()">
-            <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;edit
-          </a>
+        <div class="ev-action">
+          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 terms-and-condition">
+            <a class="pointer fs-16" (click)="editTermsAndConditions()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;Edit
+            </a>
+          </div>
         </div>
       </div>
     </div>

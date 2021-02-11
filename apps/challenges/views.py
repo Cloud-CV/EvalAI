@@ -88,6 +88,8 @@ from participants.utils import (
     has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
+    is_user_part_of_participant_team,
+    is_user_creator_of_participant_team,
 )
 
 from .models import (
@@ -371,6 +373,15 @@ def add_participant_team_to_challenge(
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+    if not (
+        is_user_part_of_participant_team(request.user, participant_team)
+        or is_user_creator_of_participant_team(request.user, participant_team)
+    ):
+        response_data = {
+            "error": "Sorry, you are not authorized to to make this request"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if participant_team.challenge_set.filter(id=challenge_pk).exists():
         response_data = {
@@ -3459,7 +3470,18 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
     """
     challenge = get_challenge_model(challenge_pk)
 
-    challenge_phase = get_challenge_phase_model(phase_pk)
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, pk=phase_pk
+        )
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge phase {} does not exist for challenge {}".format(
+                phase_pk, challenge.pk
+            )
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     allowed_email_ids = challenge_phase.allowed_email_ids
 
     if allowed_email_ids is None:
