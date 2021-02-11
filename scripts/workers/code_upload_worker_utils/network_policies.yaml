@@ -1,27 +1,22 @@
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
 metadata:
-  name: default-deny
-  namespace: default
+  name: "fqdn"
 spec:
-  podSelector:
-    matchLabels: {}
-  policyTypes:
-  - Egress
-
----
-
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: evalai-network-policy
-  namespace: default
-spec:
-  podSelector:
-    matchLabels: {}
-  policyTypes:
-  - Egress
+  endpointSelector:
+    matchLabels:
+      {}
   egress:
-  - to:
-    - ipBlock:
-        cidr: {{CIDR}}
+  - toFQDNs:
+    - matchName: {{EVALAI_API_SERVER}}
+  - toEndpoints:
+    - matchLabels:
+        "k8s:io.kubernetes.pod.namespace": kube-system
+        "k8s:k8s-app": kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: ANY
+      rules:
+        dns:
+        - matchPattern: "*"
