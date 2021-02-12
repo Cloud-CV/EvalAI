@@ -20,7 +20,7 @@
         <strong class="text-med-black fw-semibold fs-16">End date: </strong>
         <span class="content fs-16 fs-light">{{ item.end_date | date: 'medium' }}</span>
       </div>
-      <div class="radio-button-text pointer" *ngIf="item.showPrivate">
+      <div class="pointer" *ngIf="item.showPrivate">
         <strong class="text-highlight fw-semibold fs-16">Phase: </strong>
         <span class="text-highlight fs-16 fs-light">{{ item.name }}</span>
         <br />
