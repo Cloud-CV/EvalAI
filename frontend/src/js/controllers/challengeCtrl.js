@@ -1890,6 +1890,15 @@
             }
         };
 
+        vm.isOptionChecked = function (option,attribute) {
+            if(attribute.values.findIndex((el)=>{
+                return el === option
+            }) !== -1){
+                return true
+            }
+            return false
+        }
+
         vm.showMdDialog = function(ev, submissionId) {
             for (var i = 0; i < vm.submissionResult.count; i++) {
                 if (vm.submissionResult.results[i].id === submissionId) {
@@ -1901,8 +1910,19 @@
             vm.method_description = vm.submissionMetaData.method_description;
             vm.project_url = vm.submissionMetaData.project_url;
             vm.publication_url = vm.submissionMetaData.publication_url;
-            vm.submissionId = submissionId;
-
+            vm.submissionId=submissionId;
+            if(vm.submissionMetaAttributes != null){
+            vm.submissionMetaAttributes[0].attributes.forEach(((attribute,index)=>{
+                let submission_metadata = JSON.parse(vm.submissionMetaData.submission_metadata)
+                if(submission_metadata){
+                if(submission_metadata[index].value){
+                attribute.value = submission_metadata[index].value
+                }else if(submission_metadata[index].values){
+                    attribute.values = submission_metadata[index].values
+                }
+            }
+            }))
+        }
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -1943,7 +1963,8 @@
                     "method_name": vm.method_name,
                     "method_description": vm.method_description,
                     "project_url": vm.project_url,
-                    "publication_url": vm.publication_url
+                    "publication_url": vm.publication_url,
+                    "submission_metadata":JSON.stringify(vm.submissionMetaAttributes[0].attributes)
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
