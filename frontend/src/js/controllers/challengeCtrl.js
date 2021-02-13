@@ -1892,12 +1892,12 @@
 
         vm.isOptionChecked = function (option,attribute) {
             if(attribute.values.findIndex((el)=>{
-                return el === option
+                return el === option;
             }) !== -1){
-                return true
+                return true;
             }
-            return false
-        }
+            return false;
+        };
 
         vm.showMdDialog = function(ev, submissionId) {
             for (var i = 0; i < vm.submissionResult.count; i++) {
@@ -1913,15 +1913,15 @@
             vm.submissionId=submissionId;
             if(vm.submissionMetaAttributes != null){
             vm.submissionMetaAttributes[0].attributes.forEach(((attribute,index)=>{
-                let submission_metadata = JSON.parse(vm.submissionMetaData.submission_metadata)
+                let submission_metadata = JSON.parse(vm.submissionMetaData.submission_metadata);
                 if(submission_metadata){
                 if(submission_metadata[index].value){
-                attribute.value = submission_metadata[index].value
+                attribute.value = submission_metadata[index].value;
                 }else if(submission_metadata[index].values){
-                    attribute.values = submission_metadata[index].values
+                    attribute.values = submission_metadata[index].values;
                 }
             }
-            }))
+            }));
         }
             $mdDialog.show({
                 scope: $scope,
