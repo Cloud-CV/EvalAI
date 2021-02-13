@@ -338,7 +338,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 
         # Override submission visibility if leaderboard_public = False for a challenge phase
         if not challenge_phase.leaderboard_public:
-            request.data["is_public"] = False
+            request.data["is_public"] = challenge_phase.leaderboard_public
 
         serializer = SubmissionSerializer(
             data=request.data,
