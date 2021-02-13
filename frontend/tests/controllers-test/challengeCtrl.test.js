@@ -1659,6 +1659,10 @@ describe('Unit tests for challenge controller', function () {
             vm.method_description = 'method description';
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
+            vm.submissionMetaAttributes = []
+            vm.submissionMetaAttributes.push({
+                attributes:{}
+            })
             success = true;
             var updateSubmissionMetaDataForm = true;
             vm.updateSubmissionMetaData(updateSubmissionMetaDataForm);
@@ -1672,6 +1676,10 @@ describe('Unit tests for challenge controller', function () {
             vm.method_description = 'method description';
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
+            vm.submissionMetaAttributes = []
+            vm.submissionMetaAttributes.push({
+                attributes:{}
+            })
             success = false;
             var updateSubmissionMetaDataForm = true;
             vm.updateSubmissionMetaData(updateSubmissionMetaDataForm);

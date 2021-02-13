@@ -1912,6 +1912,7 @@
             vm.publication_url = vm.submissionMetaData.publication_url;
             vm.submissionId=submissionId;
             if(vm.submissionMetaAttributes != null){
+            if(vm.submissionMetaAttributes.length > 0){
             vm.submissionMetaAttributes[0].attributes.forEach(((attribute,index)=>{
                 let submission_metadata = JSON.parse(vm.submissionMetaData.submission_metadata);
                 if(submission_metadata){
@@ -1922,6 +1923,7 @@
                 }
             }
             }));
+        }
         }
             $mdDialog.show({
                 scope: $scope,
