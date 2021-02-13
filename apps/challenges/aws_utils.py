@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
+EVALAI_DNS = os.environ.get("SERVICE_DNS")
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
@@ -271,6 +272,11 @@ task_definition_code_upload_worker = """
                     "value": "{auth_token}"
                 }},
 
+                {{
+                    "name": "EVALAI_DNS",
+                    "value": "{EVALAI_DNS}"
+                }}
+
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -451,6 +457,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
                 log_group_name=log_group_name,
+                EVALAI_DNS=EVALAI_DNS,
                 **COMMON_SETTINGS_DICT,
                 **challenge_aws_keys,
             )
