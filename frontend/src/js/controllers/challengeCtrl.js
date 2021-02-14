@@ -68,6 +68,7 @@
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
+        vm.submissionMetaAttributeIndex = null;
         vm.currentPhaseMetaAttributesVisibility = {};
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
@@ -1890,48 +1891,66 @@
             }
         };
 
-        vm.isOptionChecked = function (option,attribute) {
-            if(attribute.values.findIndex((el)=>{
-                return el === option;
-            }) !== -1){
-                return true;
-            }
-            return false;
-        };
+        vm.isOptionChecked = function (option, attribute) {
+        if (
+            attribute.values.findIndex((el) => {
+            return el === option
+            }) !== -1
+        ) {
+            return true
+        }
+        return false
+        }
 
-        vm.showMdDialog = function(ev, submissionId) {
-            for (var i = 0; i < vm.submissionResult.count; i++) {
-                if (vm.submissionResult.results[i].id === submissionId) {
-                    vm.submissionMetaData = vm.submissionResult.results[i];
-                    break;
-                }
+        vm.showMdDialog = function (ev, submissionId) {
+        for (var i = 0; i < vm.submissionResult.count; i++) {
+            if (vm.submissionResult.results[i].id === submissionId) {
+            vm.submissionMetaData = vm.submissionResult.results[i]
+            break
             }
-            vm.method_name = vm.submissionMetaData.method_name;
-            vm.method_description = vm.submissionMetaData.method_description;
-            vm.project_url = vm.submissionMetaData.project_url;
-            vm.publication_url = vm.submissionMetaData.publication_url;
-            vm.submissionId=submissionId;
-            if(vm.submissionMetaAttributes != null){
-            if(vm.submissionMetaAttributes.length > 0){
-            vm.submissionMetaAttributes[0].attributes.forEach(((attribute,index)=>{
-                let submission_metadata = JSON.parse(vm.submissionMetaData.submission_metadata);
-                if(submission_metadata){
-                if(submission_metadata[index].value){
-                attribute.value = submission_metadata[index].value;
-                }else if(submission_metadata[index].values){
-                    attribute.values = submission_metadata[index].values;
+        }
+        vm.method_name = vm.submissionMetaData.method_name
+        vm.method_description = vm.submissionMetaData.method_description
+        vm.project_url = vm.submissionMetaData.project_url
+        vm.publication_url = vm.submissionMetaData.publication_url
+        vm.submissionId = submissionId
+        if (vm.submissionMetaAttributes != null) {
+            if (vm.submissionMetaAttributes.length > 0) {
+            vm.submissionMetaAttributeIndex = vm.submissionMetaAttributes.findIndex(
+                (el) => {
+                return el.phaseId === vm.phaseId
+                },
+            )
+            vm.submissionMetaAttributes[
+                vm.submissionMetaAttributeIndex
+            ].attributes.forEach((attribute, index) => {
+                if (vm.submissionMetaData.submission_metadata === null) {
+                attribute.value = null
+                attribute.values = []
+                } else if (
+                typeof vm.submissionMetaData.submission_metadata === 'string'
+                ) {
+                let submission_metadata = JSON.parse(
+                    vm.submissionMetaData.submission_metadata,
+                )
+                if (submission_metadata) {
+                    if (submission_metadata[index].value) {
+                    attribute.value = submission_metadata[index].value
+                    } else if (submission_metadata[index].values) {
+                    attribute.values = submission_metadata[index].values
+                    }
                 }
+                }
+            })
             }
-            }));
         }
+        $mdDialog.show({
+            scope: $scope,
+            preserveScope: true,
+            targetEvent: ev,
+            templateUrl: 'dist/views/web/challenge/update-submission-metadata.html',
+        })
         }
-            $mdDialog.show({
-                scope: $scope,
-                preserveScope: true,
-                targetEvent: ev,
-                templateUrl: 'dist/views/web/challenge/update-submission-metadata.html'
-            });
-        };
 
         vm.showVisibilityDialog = function(submissionId, submissionVisibility) {
             vm.submissionId = submissionId;
@@ -1966,7 +1985,7 @@
                     "method_description": vm.method_description,
                     "project_url": vm.project_url,
                     "publication_url": vm.publication_url,
-                    "submission_metadata":JSON.stringify(vm.submissionMetaAttributes[0].attributes)
+                    "submission_metadata": JSON.stringify(vm.submissionMetaAttributes[vm.submissionMetaAttributeIndex].attributes)
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
