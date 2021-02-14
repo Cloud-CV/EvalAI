@@ -1659,6 +1659,7 @@ describe('Unit tests for challenge controller', function () {
             vm.method_description = 'method description';
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
+            vm.submissionMetaAttributeIndex = 0;
             vm.submissionMetaAttributes = []
             vm.submissionMetaAttributes.push({
                 attributes:{}
@@ -1676,6 +1677,7 @@ describe('Unit tests for challenge controller', function () {
             vm.method_description = 'method description';
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
+            vm.submissionMetaAttributeIndex = 0;
             vm.submissionMetaAttributes = []
             vm.submissionMetaAttributes.push({
                 attributes:{}
