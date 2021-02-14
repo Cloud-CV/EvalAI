@@ -37,7 +37,7 @@ kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/k
 echo "### Cilium Installed"
 
 # Apply network policies
-cat scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s|{{EVALAI_DNS}}|$EVALAI_DNS|;" | kubectl apply -f -
+kubectl apply -f /code/scripts/workers/code_upload_worker_utils/network_policies.yaml
 
 # Set ssl-certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt
