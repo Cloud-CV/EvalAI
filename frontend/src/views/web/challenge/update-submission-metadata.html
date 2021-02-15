@@ -68,8 +68,8 @@
             <label for="publicationUrl">Publication Url</label>
           </div>
           <div
-            ng-if="challenge.submissionMetaAttributes[0].attributes != null"
-            ng-repeat="attribute in challenge.submissionMetaAttributes[0].attributes"
+            ng-if="challenge.submission_metadata != null"
+            ng-repeat="attribute in challenge.submission_metadata"
           >
             <div
               ng-if="attribute.type == 'text'"

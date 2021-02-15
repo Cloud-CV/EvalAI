@@ -68,7 +68,7 @@
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
-        vm.submissionMetaAttributeIndex = null;
+        vm.submission_metadata = null;
         vm.currentPhaseMetaAttributesVisibility = {};
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
@@ -1914,28 +1914,8 @@
             vm.project_url = vm.submissionMetaData.project_url;
             vm.publication_url = vm.submissionMetaData.publication_url;
             vm.submissionId = submissionId;
-            if (vm.submissionMetaAttributes != null) {
-                if (vm.submissionMetaAttributes.length > 0) {
-                    vm.submissionMetaAttributeIndex = vm.submissionMetaAttributes.findIndex((el) => {
-                            return el.phaseId === vm.phaseId;
-                        }
-                    );
-                    vm.submissionMetaAttributes[vm.submissionMetaAttributeIndex].attributes.forEach((attribute, index) => {
-                        if (vm.submissionMetaData.submission_metadata === null) {
-                            attribute.value = null;
-                            attribute.values = [];
-                        } else if (typeof vm.submissionMetaData.submission_metadata === 'string') {
-                            let submission_metadata = JSON.parse(vm.submissionMetaData.submission_metadata);
-                            if (submission_metadata) {
-                                if (submission_metadata[index].value) {
-                                    attribute.value = submission_metadata[index].value;
-                                } else if(submission_metadata[index].values) {
-                                    attribute.values = submission_metadata[index].values;
-                                }
-                            }
-                        }
-                    });
-                }
+            if (vm.submissionMetaData.submission_metadata != null) {
+                vm.submission_metadata = JSON.parse(JSON.stringify(vm.submissionMetaData.submission_metadata));
             }
             $mdDialog.show({
                 scope: $scope,
@@ -1978,7 +1958,7 @@
                     "method_description": vm.method_description,
                     "project_url": vm.project_url,
                     "publication_url": vm.publication_url,
-                    "submission_metadata": JSON.stringify(vm.submissionMetaAttributes[vm.submissionMetaAttributeIndex].attributes)
+                    "submission_metadata": vm.submission_metadata
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -1986,6 +1966,9 @@
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The data is successfully updated!");
+                            if(vm.submission_metadata != null) {
+                                vm.submissionMetaData.submission_metadata = JSON.parse(JSON.stringify(vm.submission_metadata));
+                            }
                         }
                     },
                     onError: function(response) {
