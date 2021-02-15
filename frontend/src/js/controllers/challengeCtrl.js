@@ -68,7 +68,7 @@
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
-        vm.submission_metadata = null;
+        vm.submissionMetaDataTemp = null;
         vm.currentPhaseMetaAttributesVisibility = {};
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
@@ -1915,7 +1915,7 @@
             vm.publication_url = vm.submissionMetaData.publication_url;
             vm.submissionId = submissionId;
             if (vm.submissionMetaData.submission_metadata != null) {
-                vm.submission_metadata = JSON.parse(JSON.stringify(vm.submissionMetaData.submission_metadata));
+                vm.submissionMetaDataTemp = JSON.parse(JSON.stringify(vm.submissionMetaData.submission_metadata));
             }
             $mdDialog.show({
                 scope: $scope,
@@ -1958,7 +1958,7 @@
                     "method_description": vm.method_description,
                     "project_url": vm.project_url,
                     "publication_url": vm.publication_url,
-                    "submission_metadata": vm.submission_metadata
+                    "submission_metadata": vm.submissionMetaDataTemp
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -1966,8 +1966,8 @@
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The data is successfully updated!");
-                            if(vm.submission_metadata != null) {
-                                vm.submissionMetaData.submission_metadata = JSON.parse(JSON.stringify(vm.submission_metadata));
+                            if(vm.submissionMetaDataTemp != null) {
+                                vm.submissionMetaData.submission_metadata = JSON.parse(JSON.stringify(vm.submissionMetaDataTemp));
                             }
                         }
                     },
