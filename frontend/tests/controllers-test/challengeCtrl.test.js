@@ -1662,7 +1662,7 @@ describe('Unit tests for challenge controller', function () {
             vm.submissionMetaData = {
                 submission_metadata : null
             };
-            vm.submissionMetaDataTemp = [
+            vm.currentSubmissionMetaData = [
                 {
                     name: 'TextAttribute',
                     type: 'text',
@@ -1710,7 +1710,7 @@ describe('Unit tests for challenge controller', function () {
             vm.submissionMetaData = {
                 submission_metadata : null
             };
-            vm.submissionMetaDataTemp = [
+            vm.currentSubmissionMetaData = [
                 {
                     name: 'TextAttribute',
                     type: 'text',
