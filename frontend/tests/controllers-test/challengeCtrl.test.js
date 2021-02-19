@@ -1659,6 +1659,41 @@ describe('Unit tests for challenge controller', function () {
             vm.method_description = 'method description';
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
+            vm.submissionMetaData = {
+                submission_metadata : null
+            };
+            vm.currentSubmissionMetaData = [
+                {
+                    name: 'TextAttribute',
+                    type: 'text',
+                    value: null,
+                    $$hashKey: 'object:42',
+                    description: 'Sample',
+                },
+                {
+                    name: 'SingleOptionAttribute',
+                    type: 'radio',
+                    value: null,
+                    options: ['A','B','C'],
+                    $$hashKey: 'object:43',
+                    description: 'Sample',
+                },
+                {
+                    name: 'MultipleChoiceAttribute',
+                    type: 'checkbox',
+                    values: [],
+                    options: ['alpha','beta','gamma'],
+                    $$hashKey: 'object:44',
+                    description: 'Sample',
+                },
+                {
+                    name: 'TrueFalseField',
+                    type: 'boolean',
+                    value: null,
+                    $$hashKey: 'object:45',
+                    description: 'Sample',
+                },
+            ];
             success = true;
             var updateSubmissionMetaDataForm = true;
             vm.updateSubmissionMetaData(updateSubmissionMetaDataForm);
@@ -1672,6 +1707,41 @@ describe('Unit tests for challenge controller', function () {
             vm.method_description = 'method description';
             vm.project_url = 'project url';
             vm.publication_url = 'publication url';
+            vm.submissionMetaData = {
+                submission_metadata : null
+            };
+            vm.currentSubmissionMetaData = [
+                {
+                    name: 'TextAttribute',
+                    type: 'text',
+                    value: null,
+                    $$hashKey: 'object:42',
+                    description: 'Sample',
+                },
+                {
+                    name: 'SingleOptionAttribute',
+                    type: 'radio',
+                    value: null,
+                    options: ['A','B','C'],
+                    $$hashKey: 'object:43',
+                    description: 'Sample',
+                },
+                {
+                    name: 'MultipleChoiceAttribute',
+                    type: 'checkbox',
+                    values: [],
+                    options: ['alpha','beta','gamma'],
+                    $$hashKey: 'object:44',
+                    description: 'Sample',
+                },
+                {
+                    name: 'TrueFalseField',
+                    type: 'boolean',
+                    value: null,
+                    $$hashKey: 'object:45',
+                    description: 'Sample',
+                },
+            ];
             success = false;
             var updateSubmissionMetaDataForm = true;
             vm.updateSubmissionMetaData(updateSubmissionMetaDataForm);
