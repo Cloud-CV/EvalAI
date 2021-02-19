@@ -167,6 +167,7 @@ def get_boto3_client(resource, aws_keys):
     except Exception as e:
         logger.exception(e)
 
+
 def get_boto3_resource(resource, aws_keys):
     """
     Returns the boto3 resource for a resource in AWS

@@ -231,11 +231,10 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                     challenge_pk, message
                 )
                 messages.error(request, display_message)
-            
+
     delete_selected_evaluation_cluster_resources.short_description = (
         "Deallocate Evaluation Cluster Resources."
     )
-
 
 
 @admin.register(ChallengeConfiguration)
