@@ -36,9 +36,6 @@ echo "### Container Insights Installed"
 kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
 echo "### Cilium Installed"
 
-# Apply network policies
-cat scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s|{{EVALAI_API_SERVER}}|$EVALAI_API_SERVER|;" | kubectl apply -f -
-
 # Set ssl-certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt
 
