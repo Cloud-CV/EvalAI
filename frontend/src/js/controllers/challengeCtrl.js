@@ -68,6 +68,7 @@
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
+        vm.currentSubmissionMetaData = null;
         vm.currentPhaseMetaAttributesVisibility = {};
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
@@ -1892,7 +1893,18 @@
             }
         };
 
-        vm.showMdDialog = function(ev, submissionId) {
+        vm.isOptionChecked = function (option, attribute) {
+            if(
+                attribute.values.findIndex((el) => {
+                    return el===option;
+                }) !== -1
+            ) {
+                return true;
+            }
+            return false;
+        };
+
+        vm.showMdDialog = function (ev, submissionId) {
             for (var i = 0; i < vm.submissionResult.count; i++) {
                 if (vm.submissionResult.results[i].id === submissionId) {
                     vm.submissionMetaData = vm.submissionResult.results[i];
@@ -1904,12 +1916,14 @@
             vm.project_url = vm.submissionMetaData.project_url;
             vm.publication_url = vm.submissionMetaData.publication_url;
             vm.submissionId = submissionId;
-
+            if (vm.submissionMetaData.submission_metadata != null) {
+                vm.currentSubmissionMetaData = JSON.parse(JSON.stringify(vm.submissionMetaData.submission_metadata));
+            }
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
                 targetEvent: ev,
-                templateUrl: 'dist/views/web/challenge/update-submission-metadata.html'
+                templateUrl: 'dist/views/web/challenge/update-submission-metadata.html',
             });
         };
 
@@ -1945,7 +1959,8 @@
                     "method_name": vm.method_name,
                     "method_description": vm.method_description,
                     "project_url": vm.project_url,
-                    "publication_url": vm.publication_url
+                    "publication_url": vm.publication_url,
+                    "submission_metadata": vm.currentSubmissionMetaData
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -1953,6 +1968,9 @@
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The data is successfully updated!");
+                            if(vm.currentSubmissionMetaData != null) {
+                                vm.submissionMetaData.submission_metadata = JSON.parse(JSON.stringify(vm.currentSubmissionMetaData));
+                            }
                         }
                     },
                     onError: function(response) {
