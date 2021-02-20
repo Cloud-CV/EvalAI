@@ -186,6 +186,38 @@
             }
         };
 
+        // Function to fetch and set refreshJWT 
+        vm.setRefreshJWT = function () {
+            var parameters = {};
+            parameters.url = 'accounts/user/get_auth_token';
+            parameters.method = 'GET';
+            parameters.token = utilities.getData('userKey');
+            parameters.callback = {
+                onSuccess: function (response) {
+                    if (response.status == 200) {
+                        utilities.storeData('refreshJWT', response.data.token);
+                    } else {
+                        alert("Could not fetch Auth Token");
+                    }
+                },
+                onError: function (response) {
+                    if (response.status == 400) {
+                        vm.isFormError = true;
+                        var non_field_errors;
+                        try {
+                            non_field_errors = typeof (response.data.non_field_errors) !== 'undefined' ? true : false;
+                            if (non_field_errors) {
+                                vm.FormError = response.data.non_field_errors[0];
+                            }
+                        } catch (error) {
+                            $rootScope.notify("error", error);
+                        }
+                    }
+                }
+            };
+            utilities.sendRequest(parameters, "header");
+        };
+
         // Function to login
         vm.userLogin = function(loginFormValid) {
             if (loginFormValid) {
@@ -202,6 +234,7 @@
                     onSuccess: function(response) {
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
+                            vm.setRefreshJWT();
                             if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();

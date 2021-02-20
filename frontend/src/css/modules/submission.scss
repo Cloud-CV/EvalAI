@@ -45,16 +45,22 @@ li {
 
 code {
 	font-family: "Roboto";
+	display: inline-block;
 	font-size: 14px;
 	font-weight: 300;
 	background:#eff0f1; border:#eff0f1 dashed 1px; padding:6px;
 	border-radius: 10px;
+	max-width: 90%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .code-btn {
 	height: 100% !important;
 	padding: 0 0.5rem !important;
 	line-height: 200% !important;
+	margin-top: -25px;
 }
 
 .dashed-link {

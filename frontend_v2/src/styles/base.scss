@@ -1182,6 +1182,11 @@ code {
   border: #eff0f1 dashed 1px;
   padding: 6px;
   border-radius: 10px;
+	display: inline-block;
+	max-width: 90%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .code-btn {
@@ -1189,6 +1194,7 @@ code {
   padding: 0 0.5rem !important;
   line-height: 200% !important;
   margin-left: 5px;
+  margin-top: -25px !important;
 }
 
 .code-btn {

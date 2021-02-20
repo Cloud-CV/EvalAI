@@ -83,6 +83,8 @@
         var userKey = utilities.getData('userKey');
         vm.authToken = userKey;
 
+        vm.refreshJWT = utilities.getData('refreshJWT');
+
         vm.subErrors = {};
 
         vm.isChallengeLeaderboardPrivate = false;

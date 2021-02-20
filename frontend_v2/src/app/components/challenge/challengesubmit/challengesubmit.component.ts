@@ -259,7 +259,7 @@ export class ChallengesubmitComponent implements OnInit {
     if (this.challenge.is_docker_based) {
       this.displayDockerSubmissionInstructions(this.challenge.id, this.isParticipated);
     }
-    this.authToken = this.globalService.getAuthToken();
+    this.authToken = this.globalService.getData('refreshJWT');
   }
 
   /**
