@@ -99,6 +99,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_partial_submission_evaluation_enabled",
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
+            "allowed_email_ids",
         )
 
 
@@ -244,6 +245,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_docker_image_size",
             "cli_version",
             "github_repository",
+            "vpc_cidr",
+            "subnet_1_cidr",
+            "subnet_2_cidr",
         )
 
 
@@ -331,6 +335,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "config_id",
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
+            "allowed_email_ids",
         )
 
 

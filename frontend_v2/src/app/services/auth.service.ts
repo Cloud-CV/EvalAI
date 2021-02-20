@@ -183,6 +183,23 @@ export class AuthService {
     );
   }
 
+  /**
+   * Fetch JWT for submission Auth Token
+   */
+  setRefreshJWT() {
+    const API_PATH = 'accounts/user/get_auth_token';
+    this.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        this.globalService.storeData('refreshJWT', data['token']);
+      },
+      (err) => {
+        this.globalService.showToast('info', 'Could not fetch Auth Token');
+        return false;
+      },
+      () => {}
+    )
+  }
+
   // toggle password visibility
   togglePasswordVisibility() {
     this.canShowPassword = !this.canShowPassword;
