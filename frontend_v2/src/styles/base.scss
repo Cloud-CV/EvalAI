@@ -2161,12 +2161,13 @@ tr {
   }
 
   .web-container {
-    width: calc(1440px - 223px) !important;
+    width: unset;
   }
 
   .dashboard-flex,
   .dashboard-content {
     min-height: calc(90vh - 64px) !important;
+    width: calc(1440px - 223px) !important;
   }
 
   .grad-vh {
