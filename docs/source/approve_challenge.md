@@ -8,7 +8,7 @@ Let's assume that we want to approve a challenge with name `Random Number Genera
 
 ### Step 1: Approve challenge using django admin
 
-1. Login to EvalAI's [django admin panel](http://localhost:8000/admin/challenges/challenge/), and you will see the list of challenges
+1. Login to EvalAI's [django admin panel](http://localhost:8000/api/admin/challenges/challenge/), and you will see the list of challenges
 
    ![](https://i.imgur.com/FRi5ofa.png)
 
