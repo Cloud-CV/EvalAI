@@ -42,9 +42,7 @@ class Challenge(TimeStampedModel):
     terms_and_conditions = models.TextField(null=True, blank=True)
     submission_guidelines = models.TextField(null=True, blank=True)
     evaluation_details = models.TextField(null=True, blank=True)
-    tags = ArrayField(
-        models.CharField(max_length=200, blank=True), default=list, blank=True, null=True
-    )
+    
     image = models.ImageField(
         upload_to=RandomFileName("logos"),
         null=True,
@@ -61,6 +59,9 @@ class Challenge(TimeStampedModel):
         "hosts.ChallengeHostTeam",
         related_name="challenge_creator",
         on_delete=models.CASCADE,
+    )
+    tags = ArrayField(
+        models.CharField(max_length=200, blank=True), default=list, blank=True, null=True
     )
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
