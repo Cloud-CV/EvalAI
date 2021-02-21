@@ -425,7 +425,7 @@ mat-chip {
   text-align: justify;
 }
 
-.ev-md-container { 
+.ev-md-container {
   padding: 20px 30px 30px 30px;
 }
 
@@ -1182,11 +1182,11 @@ code {
   border: #eff0f1 dashed 1px;
   padding: 6px;
   border-radius: 10px;
-	display: inline-block;
-	max-width: 90%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .code-btn {
@@ -2167,7 +2167,7 @@ tr {
   .dashboard-flex,
   .dashboard-content {
     min-height: calc(90vh - 64px) !important;
-    width: calc(1440px - 223px) !important;
+    width: unset;
   }
 
   .grad-vh {

@@ -787,6 +787,14 @@
   }
 }
 
+@media only screen and (min-width: 601px) {
+  :root {
+    .col.m3 {
+      width: auto;
+    }
+  }
+}
+
 .clearfix:before,
 .clearfix:after,
 .container:before,
