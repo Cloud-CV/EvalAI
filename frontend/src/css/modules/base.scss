@@ -1013,15 +1013,15 @@ h4.challenge-step-title {
     }
 
     #page-wrap {
+        width: unset;
         margin: auto !important;
         position: relative !important;
         background: white;
         zoom: 1 !important;
     }
 
-    .web-container { 
-        width: unset !important;
-        margin-left: 220px;
+    .web-container {
+        width: unset;
     }
 
     .dashboard-flex,
