@@ -107,6 +107,45 @@
             }, 500);
         };
 
+        // Function to fetch and set refreshJWT 
+        vm.fetchRefreshJWTToken = function () {
+            if (userKey) {
+                var parameters = {};
+                parameters.url = 'accounts/user/get_auth_token';
+                parameters.method = 'GET';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function (response) {
+                        if (response.status == 200) {
+                            utilities.storeData('refreshJWT', response.data.token);
+                            vm.refreshJWT = utilities.getData('refreshJWT');
+                        } else {
+                            alert("Could not fetch Auth Token");
+                        }
+                    },
+                    onError: function (response) {
+                        if (response.status == 400) {
+                            vm.isFormError = true;
+                            var non_field_errors;
+                            try {
+                                non_field_errors = typeof (response.data.non_field_errors) !== 'undefined' ? true : false;
+                                if (non_field_errors) {
+                                    vm.FormError = response.data.non_field_errors[0];
+                                }
+                            } catch (error) {
+                                $rootScope.notify("error", error);
+                            }
+                        }
+                    }
+                };
+                utilities.sendRequest(parameters, "header");
+            }
+        };
+
+        // check if the user is already logged in and jwt token is not set
+        if (typeof vm.refreshJWT != "string") {
+            vm.fetchRefreshJWTToken();
+        }
 
         // API call to manage the worker from UI.
         // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
