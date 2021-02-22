@@ -15,7 +15,7 @@ from base.utils import RandomFileName, get_slug, is_model_field_changed
 
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
-
+from .challenge_notification_util import construct_and_send_remote_evaluation_mail
 
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
@@ -202,6 +202,8 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_eks_cluster.delay(serialized_obj)
+    if created:
+        construct_and_send_remote_evaluation_mail(instance)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 

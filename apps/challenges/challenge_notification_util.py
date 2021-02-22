@@ -56,3 +56,21 @@ def construct_and_send_eks_cluster_creation_mail(challenge):
         template_id=template_id,
         template_data=template_data,
     )
+
+
+def construct_and_send_remote_evaluation_mail(challenge):
+    if settings.DEBUG:
+        return
+
+    template_data = {"CHALLENGE_PK": challenge.id,
+                     "QUEUE_NAME": challenge.queue}
+
+    template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+        "REMOTE_EVALUATION_EMAIL"
+    )
+    send_email(
+        sender=settings.CLOUDCV_TEAM_EMAIL,
+        recipient=settings.ADMIN_EMAIL,
+        template_id=template_id,
+        template_data=template_data,
+    )
