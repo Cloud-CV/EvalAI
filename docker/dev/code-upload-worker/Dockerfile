@@ -15,6 +15,6 @@ RUN pip install -r code_upload_worker.txt
 
 ADD . /code
 
-RUN chmod +x scripts/workers/code_upload_worker_utils/deploy_calico.sh
+RUN chmod +x scripts/workers/code_upload_worker_utils/install_dependencies.sh
 
-CMD ["scripts/workers/code_upload_worker_utils/deploy_calico.sh"]
+CMD ["scripts/workers/code_upload_worker_utils/install_dependencies.sh"]

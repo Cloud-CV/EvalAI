@@ -140,6 +140,16 @@ class Challenge(TimeStampedModel):
     worker_memory = models.IntegerField(null=True, blank=True, default=512)
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
+    # VPC and subnet CIDRs for code upload challenge
+    vpc_cidr = models.CharField(
+        null=True, blank=True, max_length=200, default=""
+    )
+    subnet_1_cidr = models.CharField(
+        null=True, blank=True, max_length=200, default=""
+    )
+    subnet_2_cidr = models.CharField(
+        null=True, blank=True, max_length=200, default=""
+    )
 
     class Meta:
         app_label = "challenges"

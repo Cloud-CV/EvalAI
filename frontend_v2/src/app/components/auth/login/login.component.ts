@@ -115,6 +115,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       (data) => {
         this.globalService.storeData(this.globalService.authStorageKey, data['token']);
         this.authService.loggedIn(true);
+        this.authService.setRefreshJWT();
         this.globalService.stopLoader();
         this.redirectCheck(this);
       },
