@@ -142,6 +142,7 @@
             }
         };
 
+        // check if the user is already logged in and jwt token is not set
         if (typeof vm.refreshJWT != "string") {
             vm.fetchRefreshJWTToken();
         }
