@@ -17,6 +17,7 @@ from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 from .challenge_notification_util import construct_and_send_remote_evaluation_mail
 
+
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
     title = get_slug(instance.title)
