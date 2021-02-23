@@ -13,6 +13,8 @@ from rest_framework_expiring_authtoken.authentication import (
 )
 from rest_framework.throttling import UserRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import team_paginated_queryset
@@ -456,6 +458,35 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
+@swagger_auto_schema(
+    methods=["post"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge Primary Key",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="participant_team_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Participant Team Primary Key",
+            required=True,
+        ),
+    ],
+    operation_id="remove_participant_team_from_challenge",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+        status.HTTP_401_UNAUTHORIZED: openapi.Response(
+            "{'error': 'Sorry, you do not have permissions to remove this participant team'}"
+        )
+    },
+)
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -466,14 +497,11 @@ def remove_participant_team_from_challenge(
     """
     API to remove the participant team from a challenge
 
-    Arguments:
-        request {HttpRequest} -- The request object
-        challenge_pk {[int]} -- Challenge primary key
-        participant_team_pk {[int]} -- Participant team primary key
-
-    Returns:
-        Response Object -- An object containing api response
+    - Arguments:
+       - ``challenge_pk``: Primary key for the challenge from which a participant team is to be removed
+       - ``participant_team_pk``: Primary key for the participant team which is to be removed
     """
+    
     challenge = get_challenge_model(challenge_pk)
 
     participant_team = get_participant_model(participant_team_pk)
