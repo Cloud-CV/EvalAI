@@ -46,7 +46,7 @@ export class ChallengesubmitComponent implements OnInit {
   /**
    * Is submittion submitted
    */
-  isPublicSubmission = false;
+  isPublicSubmission:boolean = true;
 
   /**
    * Challenge object
