@@ -1095,9 +1095,9 @@ def create_eks_nodegroup(challenge, cluster_name):
             clusterName=cluster_name,
             nodegroupName=nodegroup_name,
             scalingConfig={
-                "minSize": 1,
+                "minSize": challenge_obj.min_worker_instance,
                 "maxSize": challenge_obj.max_worker_instance,
-                "desiredSize": 1,
+                "desiredSize": challenge_obj.desired_worker_instance,
             },
             diskSize=challenge_obj.worker_disk_size,
             subnets=[cluster_meta["SUBNET_1"], cluster_meta["SUBNET_2"]],

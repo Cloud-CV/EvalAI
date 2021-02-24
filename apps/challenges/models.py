@@ -163,6 +163,10 @@ class Challenge(TimeStampedModel):
     max_worker_instance = models.IntegerField(
         null=True, blank=True, default=10
     )
+    min_worker_instance = models.IntegerField(null=True, blank=True, default=1)
+    desired_worker_instance = models.IntegerField(
+        null=True, blank=True, default=1
+    )
 
     class Meta:
         app_label = "challenges"
