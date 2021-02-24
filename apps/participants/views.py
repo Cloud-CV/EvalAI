@@ -501,7 +501,6 @@ def remove_participant_team_from_challenge(
        - ``challenge_pk``: Primary key for the challenge from which a participant team is to be removed
        - ``participant_team_pk``: Primary key for the participant team which is to be removed
     """
-    
     challenge = get_challenge_model(challenge_pk)
 
     participant_team = get_participant_model(participant_team_pk)
