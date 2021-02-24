@@ -159,7 +159,7 @@ class Challenge(TimeStampedModel):
     worker_ami_type = models.CharField(
         max_length=256, null=True, blank=True, default="AL2_x86_64_GPU"
     )
-    worker_disk_size = models.IntegerField(null=True, blank=True, default=500)
+    worker_disk_size = models.IntegerField(null=True, blank=True, default=100)
     max_worker_instance = models.IntegerField(
         null=True, blank=True, default=10
     )
