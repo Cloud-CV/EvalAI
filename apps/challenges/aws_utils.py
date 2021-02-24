@@ -1094,11 +1094,15 @@ def create_eks_nodegroup(challenge, cluster_name):
         response = client.create_nodegroup(
             clusterName=cluster_name,
             nodegroupName=nodegroup_name,
-            scalingConfig={"minSize": 1, "maxSize": 10, "desiredSize": 1},
-            diskSize=100,
+            scalingConfig={
+                "minSize": 1,
+                "maxSize": challenge_obj.max_worker_instance,
+                "desiredSize": 1,
+            },
+            diskSize=challenge_obj.worker_disk_size,
             subnets=[cluster_meta["SUBNET_1"], cluster_meta["SUBNET_2"]],
-            instanceTypes=["g4dn.xlarge"],
-            amiType="AL2_x86_64_GPU",
+            instanceTypes=[challenge_obj.worker_instance_type],
+            amiType=challenge_obj.worker_ami_type,
             nodeRole=cluster_meta["EKS_NODEGROUP_ROLE_ARN"],
         )
     except ClientError as e:
