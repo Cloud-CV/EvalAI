@@ -252,6 +252,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "worker_ami_type",
             "worker_disk_size",
             "max_worker_instance",
+            "min_worker_instance",
+            "desired_worker_instance",
         )
 
 
