@@ -4533,3 +4533,63 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+class TestAllowedEmailIds(BaseChallengePhaseClass):
+
+    def check_api_get_request(self):
+        self.url = reverse_lazy(
+            'challenges:get_or_update_allowed_email_ids',
+            kwargs={"challenge_pk":self.challenge.pk,
+            "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        expected = [{
+            "allowed_email_ids":self.challenge_phase.allowed_email_ids,
+        }]
+        response = self.client.get(self.url,{},format='json')
+        self.assertEqual(response.data,expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def check_api_patch_request(self):
+        self.url = reverse_lazy(
+            'challenges:get_or_update_allowed_email_ids',
+            kwargs={"challenge_pk":self.challenge.pk,
+            "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        expected = []
+        expected.append("abc@def.com")
+        expected.append("sample@fortest.com")
+        for ele in self.challenge_phase.allowed_email_ids:
+            expected.append(ele)
+        dummy_data = ["abc@def.com","sample@fortest.com"]
+        data = [{
+            "allowed_email_ids":dummy_data,
+        }]
+        response = self.client.patch(self.url,data)
+        self.assertCountEqual(response.data,expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def check_api_delete_request(self):
+        self.url = reverse_lazy(
+            'challenges:get_or_update_allowed_email_ids',
+            kwargs={"challenge_pk":self.challenge.pk,
+            "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        #add dummy data
+        dummy_data = ["abc@def.com","sample@fortest.com"]
+        data = [{
+            "allowed_email_ids":dummy_data,
+        }]
+        self.client.patch(self.url,data)
+        #actual test...here we check if api is able to delete the dummy data added before
+        expected = [
+            {
+                "allowed_email_ids":self.challenge_phase.allowed_email_ids,
+            }
+        ]
+        response = self.client.delete(self.url,data)
+        self.assertCountEqual(response.data,expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
