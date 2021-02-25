@@ -591,8 +591,15 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         # user invited to the participant team
         self.user4 = User.objects.create(
             username="someuser4",
-            email="user@example4.com",
+            email="user@test.com",
             password="some_secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user4,
+            email="user4@test.com",
+            primary=True,
+            verified=True,
         )
 
         self.challenge_host_team2 = ChallengeHostTeam.objects.create(
@@ -674,7 +681,9 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_map_challenge_and_participant_team_together(self):
+        self.client.force_authenticate(user=self.participant_team.created_by)
         response = self.client.post(self.url, {})
+        self.client.force_authenticate(user=self.participant_team.created_by)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # to check when the api is hit again
         expected = {
@@ -753,6 +762,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
     def test_add_participant_team_to_challenge_when_some_members_have_already_participated(
         self,
     ):
+        self.client.force_authenticate(user=self.participant_team3.created_by)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
             kwargs={
@@ -801,6 +811,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_participation_when_participant_is_not_in_allowed_list(self):
+        self.client.force_authenticate(user=self.participant_team3.created_by)
         self.challenge2.allowed_email_domains.extend(["example1", "example2"])
         self.challenge2.save()
         self.url = reverse_lazy(
@@ -821,6 +832,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
     def test_participation_when_participant_is_in_allowed_list(self):
         self.challenge2.allowed_email_domains.append("test")
         self.challenge2.save()
+        self.client.force_authenticate(user=self.participant_team3.created_by)
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
             kwargs={
@@ -1987,6 +1999,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2013,6 +2026,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             },
         ]
 
@@ -2047,6 +2061,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2091,6 +2106,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2117,6 +2133,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "allowed_submission_file_types": self.private_challenge_phase.allowed_submission_file_types,
                 "is_partial_submission_evaluation_enabled": self.private_challenge_phase.is_partial_submission_evaluation_enabled,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,
             },
         ]
 
@@ -2465,6 +2482,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2502,6 +2520,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "config_id": None,
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -2562,6 +2581,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2661,6 +2681,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -4169,6 +4190,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "is_partial_submission_evaluation_enabled": self.challenge_phase.is_partial_submission_evaluation_enabled,
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4242,6 +4264,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "config_id": None,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4273,6 +4296,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "config_id": None,
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
+                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             },
         ]
         response = self.client.get(self.url, {})

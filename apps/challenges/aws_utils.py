@@ -10,7 +10,6 @@ from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
-from rest_framework.authtoken.models import Token
 
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
@@ -19,11 +18,13 @@ from .challenge_notification_util import (
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
+from accounts.models import JwtToken
 
 logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
+EVALAI_DNS = os.environ.get("SERVICE_DNS")
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
@@ -271,6 +272,11 @@ task_definition_code_upload_worker = """
                     "value": "{auth_token}"
                 }},
 
+                {{
+                    "name": "EVALAI_DNS",
+                    "value": "{EVALAI_DNS}"
+                }}
+
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -438,23 +444,20 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 logger.exception(e)
                 return e.response
             # challenge host auth token to be used by code-upload-worker
-            try:
-                token = Token.objects.get(user=challenge.creator.created_by)
-            except Token.DoesNotExist:
-                token = Token.objects.create(user=challenge.creator.created_by)
-                token.save()
+            token = JwtToken.objects.get(user=challenge.creator.created_by)
             definition = task_definition_code_upload_worker.format(
                 queue_name=queue_name,
                 container_name=container_name,
                 ENV=ENV,
                 challenge_pk=challenge.pk,
-                auth_token=token,
+                auth_token=token.refresh_token,
                 cluster_name=cluster_name,
                 cluster_endpoint=cluster_endpoint,
                 certificate=cluster_certificate,
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
                 log_group_name=log_group_name,
+                EVALAI_DNS=EVALAI_DNS,
                 **COMMON_SETTINGS_DICT,
                 **challenge_aws_keys,
             )
@@ -1186,7 +1189,9 @@ def setup_eks_cluster(challenge):
             return response
 
     # Create custom ECR all access policy and attach to node_group_role
-    ecr_all_access_policy_name = "AWS-ECR-Full-Access"
+    ecr_all_access_policy_name = "AWS-ECR-Full-Access-{}".format(
+        environment_suffix
+    )
     ecr_all_access_policy_arn = None
     try:
         response = client.create_policy(
@@ -1243,8 +1248,7 @@ def create_eks_cluster_subnets(challenge):
     client = get_boto3_client("ec2", challenge_aws_keys)
     vpc_ids = []
     try:
-        # TODO: Replace vpc CIDR hardcoded value
-        response = client.create_vpc(CidrBlock="100.68.0.0/16")
+        response = client.create_vpc(CidrBlock=challenge_obj.vpc_cidr)
         vpc_ids.append(response["Vpc"]["VpcId"])
     except ClientError as e:
         logger.exception(e)
@@ -1272,18 +1276,16 @@ def create_eks_cluster_subnets(challenge):
 
         # Create subnets
         subnet_ids = []
-        # TODO: Replace subnet CIDRs and availability zone hardcoded values
         response = client.create_subnet(
-            CidrBlock="100.68.0.0/20",
+            CidrBlock=challenge_obj.subnet_1_cidr,
             AvailabilityZone="us-east-1a",
             VpcId=vpc_ids[0],
         )
         subnet_1_id = response["Subnet"]["SubnetId"]
         subnet_ids.append(subnet_1_id)
 
-        # TODO: Replace subnet CIDRs and availability zone hardcoded values
         response = client.create_subnet(
-            CidrBlock="100.68.32.0/20",
+            CidrBlock=challenge_obj.subnet_2_cidr,
             AvailabilityZone="us-east-1b",
             VpcId=vpc_ids[0],
         )
