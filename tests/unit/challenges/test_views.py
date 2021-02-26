@@ -213,7 +213,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.data["team_name"], expected)
 
     def test_team_name_for_challenge_with_participant_team_does_not_exist(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:participant_team_detail_for_challenge",
@@ -696,7 +696,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
@@ -745,7 +745,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
@@ -760,7 +760,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_add_participant_team_to_challenge_when_some_members_have_already_participated(
-            self,
+        self,
     ):
         self.client.force_authenticate(user=self.participant_team3.created_by)
         self.url = reverse_lazy(
@@ -775,7 +775,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         expected = {
             "error": "Sorry, other team member(s) have already participated in the Challenge."
-                     " Please participate with a different team!",
+            " Please participate with a different team!",
             "challenge_id": self.challenge.pk,
             "participant_team_id": self.participant_team3.pk,
         }
@@ -889,7 +889,7 @@ class DisableChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_when_user_does_not_have_permission_to_disable_particular_challenge(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:disable_challenge",
@@ -2511,7 +2511,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "test_annotation": "http://testserver%s"
-                               % (self.challenge_phase.test_annotation.url),
+            % (self.challenge_phase.test_annotation.url),
             "slug": self.challenge_phase.slug,
             "environment_image": self.challenge_phase.environment_image,
             "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
@@ -2620,7 +2620,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_particular_challenge_phase_when_user_is_not_authenticated(
-            self,
+        self,
     ):
         self.client.force_authenticate(user=None)
 
@@ -2689,6 +2689,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
 
     @override_settings(MEDIA_ROOT="/tmp/evalai")
     def test_particular_challenge_phase_update(self):
+
         self.update_test_annotation = SimpleUploadedFile(
             "update_test_sample_file.txt",
             b"Dummy update file content",
@@ -2845,7 +2846,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_split_when_challenge_phase_does_not_exist(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:challenge_phase_split_list",
@@ -3017,7 +3018,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(
-            self,
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -3031,7 +3032,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(
-            self,
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -3070,7 +3071,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(
-            self,
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -3094,7 +3095,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_user_is_not_authenticated(
-            self,
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -3111,7 +3112,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(
-            self,
+        self,
     ):
         challenge_phases = ChallengePhase.objects.all()
         for zipTestPhase in challenge_phases:
@@ -3427,7 +3428,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     ).replace("+00:00", ""),
                     "execution_time": submission.execution_time,
                     "input_file": "http://testserver%s"
-                                  % (submission.input_file.url),
+                    % (submission.input_file.url),
                     "stdout_file": None,
                     "stderr_file": None,
                     "submission_result_file": None,
@@ -3471,7 +3472,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "created_by": self.submission1.created_by.pk,
                 "status": self.submission1.status,
                 "input_file": "http://testserver%s"
-                              % (self.submission1.input_file.url),
+                % (self.submission1.input_file.url),
                 "method_name": self.submission1.method_name,
                 "method_description": self.submission1.method_description,
                 "project_url": self.submission1.project_url,
@@ -3483,7 +3484,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "completed_at": self.submission1.completed_at,
                 "submitted_at": "{0}{1}".format(
                     self.submission1.submitted_at.isoformat(), "Z"
-                              ).replace("+00:00", ""),
+                ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
                 "ignore_submission": False,
@@ -3500,7 +3501,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_submissions_when_user_is_neither_host_nor_participant_of_challenge(
-            self,
+        self,
     ):
         self.client.force_authenticate(user=self.user7)
         self.url = reverse_lazy(
@@ -3621,7 +3622,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_challenge_phase_does_not_exist(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:download_all_submissions",
@@ -3737,7 +3738,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:download_all_submissions",
@@ -4254,7 +4255,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
                 "codename": self.private_challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
-                                   % (self.private_challenge_phase.test_annotation.url),
+                % (self.private_challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
                 "environment_image": self.private_challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.private_challenge_phase.is_restricted_to_select_one_submission,
@@ -4286,7 +4287,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_submission_public": self.challenge_phase.is_submission_public,
                 "codename": self.challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
-                                   % (self.challenge_phase.test_annotation.url),
+                % (self.challenge_phase.test_annotation.url),
                 "slug": self.challenge_phase.slug,
                 "environment_image": self.challenge_phase.environment_image,
                 "is_restricted_to_select_one_submission": self.challenge_phase.is_restricted_to_select_one_submission,
@@ -4303,7 +4304,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(
-            self,
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:get_challenge_phases_by_challenge_pk",
@@ -4320,7 +4321,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(
-            self,
+        self,
     ):
         """
         This is the case in which a user is not a challenge host
@@ -4536,12 +4537,13 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
 
-    def check_api_get_request(self):
+    def test_get_or_update_allowed_email_ids_success(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "phase_pk": self.challenge_phase.pk,
-                    },
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
         )
         expected = [{
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -4550,37 +4552,38 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def check_api_patch_request(self):
+    def test_get_or_update_allowed_email_ids_patch_success(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "phase_pk": self.challenge_phase.pk,
-                    })
-        expected = ["abc@def.com", "sample@fortest.com"]
-        for ele in self.challenge_phase.allowed_email_ids:
-            expected.append(ele)
-        dummy_data = ["abc@def.com", "sample@fortest.com"]
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        expected = ["user1@example.com", "user2@example.com"]
+        for allowed_email_id in self.challenge_phase.allowed_email_ids:
+            expected.append(allowed_email_id)
+        allowed_email_ids = ["user1@example.com", "user2@example.com"]
         data = [{
-            "allowed_email_ids": dummy_data,
+            "allowed_email_ids": allowed_email_ids,
         }]
         response = self.client.patch(self.url, data)
         self.assertCountEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def check_api_delete_request(self):
+    def test_get_or_update_allowed_email_ids_delete_request(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
-            kwargs={"challenge_pk": self.challenge.pk,
-                    "phase_pk": self.challenge_phase.pk,
-                    },
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
         )
-        # add dummy data
-        dummy_data = ["abc@def.com", "sample@fortest.com"]
+        allowed_email_ids = ["user1@example.com", "user2@example.com"]
         data = [{
-            "allowed_email_ids": dummy_data,
+            "allowed_email_ids": allowed_email_ids,
         }]
         self.client.patch(self.url, data)
-        # actual test...here we check if api is able to delete the dummy data added before
         expected = [
             {
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
@@ -4588,3 +4591,59 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         response = self.client.delete(self.url, data)
         self.assertCountEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_if_allowed_email_ids_is_not_list(self):
+        self.url = reverse_lazy(
+            'challenges:get_or_update_allowed_email_ids',
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        allowed_email_ids = ('user1@example.com')
+        data = [{
+            "allowed_email_ids":allowed_email_ids,
+        }]
+        response = self.client.patch(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"],"Field allowed_email_ids should be a list." )
+    
+
+    def test_if_allowed_email_ids_is_none(self):
+        self.url = reverse_lazy(
+            'challenges:get_or_update_allowed_email_ids',
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        data = [{
+            "allowed_email_ids":None,
+        }]
+        response = self.client.patch(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"],"Field allowed_email_ids is missing." )
+    
+
+    def test_if_challange_phase_does_not_exist(self):
+        self.url = reverse_lazy(
+            'challenges:get_or_update_allowed_email_ids',
+            kwargs={
+                "challenge_pk": self.challenge.pk+1000,
+                "phase_pk": self.challenge_phase.pk+1000,
+            },
+        )
+        expected = [{
+            "error": "Challenge phase {} does not exist for challenge {}".format(
+                self.challenge_phase.pk+1000, self.challenge.pk+1000
+            )
+        }]
+        response = self.client.get(self.url, {}, json)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
+    
+
+
