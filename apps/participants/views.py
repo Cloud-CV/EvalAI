@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -13,8 +16,6 @@ from rest_framework_expiring_authtoken.authentication import (
 )
 from rest_framework.throttling import UserRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import team_paginated_queryset
@@ -465,14 +466,14 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
             name="challenge_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Challenge Primary Key",
+            description="Challenge ID",
             required=True,
         ),
         openapi.Parameter(
             name="participant_team_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Participant Team Primary Key",
+            description="Participant Team ID",
             required=True,
         ),
     ],
@@ -480,7 +481,7 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
     responses={
         status.HTTP_200_OK: openapi.Response(""),
         status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+            "{'error': 'Team has not participated in the challenge'}"
         ),
         status.HTTP_401_UNAUTHORIZED: openapi.Response(
             "{'error': 'Sorry, you do not have permissions to remove this participant team'}"
@@ -498,7 +499,7 @@ def remove_participant_team_from_challenge(
     API to remove the participant team from a challenge
 
     - Arguments:
-       - ``challenge_pk``: Primary key for the challenge from which a participant team is to be removed
+       - ``challenge_pk``: Challenge primary key
        - ``participant_team_pk``: Primary key for the participant team which is to be removed
     """
     challenge = get_challenge_model(challenge_pk)
