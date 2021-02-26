@@ -20,6 +20,10 @@
   padding-right: 0px;
 }
 
-.phase-placeholder{
+::ng-deep .mat-select-placeholder {
+  padding-bottom: 10px;
+}
+
+.phase-placeholder {
   padding-left: 10px;
 }
