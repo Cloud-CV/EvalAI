@@ -498,9 +498,12 @@ def remove_participant_team_from_challenge(
     """
     API to remove the participant team from a challenge
 
-    - Arguments:
-       - ``challenge_pk``: Challenge primary key
-       - ``participant_team_pk``: Primary key for the participant team which is to be removed
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+        participant_team_pk {[int]} -- Participant team primary key
+    Returns:
+        Response Object -- An object containing api response
     """
     challenge = get_challenge_model(challenge_pk)
 
