@@ -4536,7 +4536,7 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
-
+    
     def test_get_or_update_allowed_email_ids_success(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
@@ -4561,8 +4561,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             },
         )
         expected = ["user1@example.com", "user2@example.com"]
-        for allowed_email_id in self.challenge_phase.allowed_email_ids:
-            expected.append(allowed_email_id)
+        expected.extend(self.challenge_phase.allowed_email_ids)
         allowed_email_ids = ["user1@example.com", "user2@example.com"]
         data = {
             "allowed_email_ids": allowed_email_ids,
@@ -4616,7 +4615,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             },
         )
         data = {
-            "allowed_email_ids": [],
+            "allowed_email_ids": None,
         }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -4626,15 +4625,15 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
             kwargs={
-                "challenge_pk": self.challenge.pk + 1000,
+                "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk + 1000,
             },
         )
         expected = {
             "error": "Challenge phase {} does not exist for challenge {}".format(
-                self.challenge_phase.pk + 1000, self.challenge.pk + 1000
+                self.challenge_phase.pk + 1000, self.challenge.pk
             )
         }
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
