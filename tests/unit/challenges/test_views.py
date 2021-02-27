@@ -4536,7 +4536,7 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
-    
+
     def test_get_or_update_allowed_email_ids_success(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
