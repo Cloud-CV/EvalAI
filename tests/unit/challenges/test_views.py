@@ -4545,9 +4545,9 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
                 "phase_pk": self.challenge_phase.pk,
             },
         )
-        expected = [{
+        expected = {
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
-        }]
+        }
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -4564,9 +4564,9 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         for allowed_email_id in self.challenge_phase.allowed_email_ids:
             expected.append(allowed_email_id)
         allowed_email_ids = ["user1@example.com", "user2@example.com"]
-        data = [{
+        data = {
             "allowed_email_ids": allowed_email_ids,
-        }]
+        }
         response = self.client.patch(self.url, data)
         self.assertCountEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -4580,14 +4580,13 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             },
         )
         allowed_email_ids = ["user1@example.com", "user2@example.com"]
-        data = [{
+        data = {
             "allowed_email_ids": allowed_email_ids,
-        }]
+        }
         self.client.patch(self.url, data)
-        expected = [
-            {
-                "allowed_email_ids": self.challenge_phase.allowed_email_ids,
-            }]
+        expected = {
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+        }
         response = self.client.delete(self.url, data)
         self.assertCountEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -4601,13 +4600,12 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             },
         )
         allowed_email_ids = ('user1@example.com')
-        data = [{
+        data = {
             "allowed_email_ids": allowed_email_ids,
-        }]
+        }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data["error"], "Field allowed_email_ids should be a list.")
+        self.assertEqual(response.data["error"], "Field allowed_email_ids should be a list.")
 
     def test_if_allowed_email_ids_is_none(self):
         self.url = reverse_lazy(
@@ -4617,13 +4615,12 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
                 "phase_pk": self.challenge_phase.pk,
             },
         )
-        data = [{
-            "allowed_email_ids": None,
-        }]
+        data = {
+            "allowed_email_ids": [],
+        }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"],
-                         "Field allowed_email_ids is missing.")
+        self.assertEqual(response.data["error"], "Field allowed_email_ids is missing.")
 
     def test_if_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
@@ -4633,11 +4630,11 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
                 "phase_pk": self.challenge_phase.pk + 1000,
             },
         )
-        expected = [{
+        expected = {
             "error": "Challenge phase {} does not exist for challenge {}".format(
                 self.challenge_phase.pk + 1000, self.challenge.pk + 1000
             )
-        }]
+        }
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
