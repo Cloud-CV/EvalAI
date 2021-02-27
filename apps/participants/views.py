@@ -502,6 +502,7 @@ def remove_participant_team_from_challenge(
         request {HttpRequest} -- The request object
         challenge_pk {[int]} -- Challenge primary key
         participant_team_pk {[int]} -- Participant team primary key
+        
     Returns:
         Response Object -- An object containing api response
     """
