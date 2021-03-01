@@ -1844,7 +1844,7 @@ def download_all_submissions(
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
                             ",".join(
-                                f'{key}: {value}' 
+                                f'{key}: {value}'
                                 for key, value in submission[
                                     "submission_metadata"
                                 ].items()
