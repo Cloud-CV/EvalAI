@@ -4567,7 +4567,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             "allowed_email_ids": allowed_email_ids,
         }
         response = self.client.patch(self.url, data)
-        self.assertCountEqual(response.data, expected)
+        self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_or_update_allowed_email_ids_delete_request(self):
@@ -4587,7 +4587,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
         response = self.client.delete(self.url, data)
-        self.assertCountEqual(response.data, expected)
+        self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_if_allowed_email_ids_is_not_list(self):
