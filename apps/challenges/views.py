@@ -1747,21 +1747,21 @@ def get_all_submissions_of_challenge(
             name="challenge_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Challenge ID",
+            description="Challenge pk",
             required=True,
         ),
         openapi.Parameter(
             name="challenge_phase_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Challenge Phase ID",
+            description="Challenge phase pk",
             required=True,
         ),
         openapi.Parameter(
             name="file_type",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
-            description="File Type",
+            description="File type",
             required=True,
         ),
     ],
@@ -1783,21 +1783,21 @@ def get_all_submissions_of_challenge(
             name="challenge_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Challenge ID",
+            description="Challenge pk",
             required=True,
         ),
         openapi.Parameter(
             name="challenge_phase_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Challenge Phase ID",
+            description="Challenge phase pk",
             required=True,
         ),
         openapi.Parameter(
             name="file_type",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
-            description="File Type",
+            description="File type",
             required=True,
         ),
     ],
@@ -1821,6 +1821,15 @@ def download_all_submissions(
 ):
     """
     API endpoint to download all the submissions for a particular challenge as a csv
+    
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+        challenge_phase_pk {[int]} -- Challenge phase primary key
+        file_type {[str]} -- File type
+
+    Returns:
+        Response Object -- An object containing api response
     """
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
