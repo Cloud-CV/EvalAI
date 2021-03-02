@@ -1810,6 +1810,12 @@ def download_all_submissions(
                 for submission in submissions.data:
                     if submission["submission_metadata"] is None:
                         submission["submission_metadata"] = {}
+                    submission["submission_metadata"] = ",".join(
+                        f'{key}: {value}'
+                        for key, value in submission[
+                            "submission_metadata"
+                        ].items()
+                    )
                     writer.writerow(
                         [
                             submission["id"],
@@ -1843,12 +1849,7 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
-                            ",".join(
-                                f'{key}: {value}'
-                                for key, value in submission[
-                                    "submission_metadata"
-                                ].items()
-                            ),
+                            submission["submission_metadata"],
                             submission["method_name"].replace("#", "-"),
                             submission["method_description"].replace("#", "-"),
                             submission["publication_url"],
