@@ -1821,7 +1821,7 @@ def download_all_submissions(
 ):
     """
     API endpoint to download all the submissions for a particular challenge as a csv
-    
+
     Arguments:
         request {HttpRequest} -- The request object
         challenge_pk {[int]} -- Challenge primary key
