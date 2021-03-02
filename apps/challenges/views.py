@@ -136,7 +136,7 @@ from .utils import (
     send_emails,
 )
 
-from .challenge_notification_util import construct_and_send_remote_evaluation_mail
+from .challenge_notification_util import construct_and_send_challenge_details_mail
 
 logger = logging.getLogger(__name__)
 
@@ -1499,7 +1499,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 " sent for review to EvalAI Admin.".format(challenge.title)
             }
             if challenge.remote_evaluation:
-                construct_and_send_remote_evaluation_mail(challenge)
+                construct_and_send_challenge_details_mail(challenge)
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:  # noqa: E722
