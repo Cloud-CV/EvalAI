@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -466,14 +465,14 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
             name="challenge_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Challenge ID",
+            description="Challenge pk",
             required=True,
         ),
         openapi.Parameter(
             name="participant_team_pk",
             in_=openapi.IN_PATH,
             type=openapi.TYPE_NUMBER,
-            description="Participant Team ID",
+            description="Participant team pk",
             required=True,
         ),
     ],
