@@ -4570,7 +4570,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertCountEqual(response.data["allowed_email_ids"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_or_update_allowed_email_ids_delete_request(self):
+    def test_get_or_update_allowed_email_ids_delete_success(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
             kwargs={
@@ -4590,7 +4590,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertCountEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_if_allowed_email_ids_is_not_list(self):
+    def test_update_allowed_email_ids_with_invalid_input(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
             kwargs={
@@ -4606,7 +4606,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "Field allowed_email_ids should be a list.")
 
-    def test_if_allowed_email_ids_is_none(self):
+    def test_update_allowed_email_ids_when_input_is_none(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
             kwargs={
@@ -4621,7 +4621,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "Field allowed_email_ids is missing.")
 
-    def test_if_challenge_phase_does_not_exist(self):
+    def test_get_allowed_email_ids_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
             'challenges:get_or_update_allowed_email_ids',
             kwargs={
