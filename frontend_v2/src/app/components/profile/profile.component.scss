@@ -258,3 +258,8 @@ img.profile-pic {
     height: auto;
   }
 }
+
+.dark-link {
+  z-index: -1;
+  will-change: opacity, transform;
+}
