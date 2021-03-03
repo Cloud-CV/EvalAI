@@ -336,13 +336,22 @@ def main():
                     or submission.get("status") == "failed"
                     or submission.get("status") == "cancelled"
                 ):
-                    # Fetch the last job name from the list as it is the latest running job
-                    job_name = submission.get("job_name")[-1]
-                    delete_job(api_instance, job_name)
-                    message_receipt_handle = message.get("receipt_handle")
-                    evalai.delete_message_from_sqs_queue(
-                        message_receipt_handle
-                    )
+                    try:
+                        # Fetch the last job name from the list as it is the latest running job
+                        job_name = submission.get("job_name")[-1]
+                        delete_job(api_instance, job_name)
+                        message_receipt_handle = message.get("receipt_handle")
+                        evalai.delete_message_from_sqs_queue(
+                            message_receipt_handle
+                        )
+                    except Exception as e:
+                        logger.exception(
+                            "Failed to delete submission job: {}".format(e)
+                        )
+                        # Delete message from sqs queue to avoid re-triggering job delete
+                        evalai.delete_message_from_sqs_queue(
+                            message_receipt_handle
+                        )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(

@@ -235,10 +235,19 @@ img.profile-pic {
 #sty_button {
   max-lines: 80;
 }
+
+.token-container {
+  height: 30px;
+}
+
 #auth_button_style {
-  margin-top: -80px;
   margin-left: 90%;
 }
+
+.auth-token-inline-list {
+  margin-top: 20px;
+}
+
 #auth_tok_button {
   @media (min-width: 600px) {
     padding-top: 3px;
