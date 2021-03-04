@@ -19,3 +19,11 @@
   float: right;
   padding-right: 0px;
 }
+
+::ng-deep .mat-select-placeholder {
+  padding-bottom: 10px;
+}
+
+.phase-placeholder {
+  padding-left: 10px;
+}
