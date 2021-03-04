@@ -28,6 +28,15 @@ Our central development branch is development. Coding is done on feature branche
         git merge upstream/master
         git checkout -b your-branch-name
 
+    We highly encourage using [black](http://www.github.com/psf/black)
+    to format your code. It sticks to PEP8 for the most part and is in 
+    line with the rest of the repo. We have already set up [pre-commit 
+    hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
+    to run black and flake8. To activate the hooks, you just need to run
+    the following comamnd once:
+
+        pre-commit install
+
 2. Commit and push code to your branch:
 
     - Commits should be self-contained and contain a descriptive commit message.
