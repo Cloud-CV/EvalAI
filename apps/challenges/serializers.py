@@ -248,6 +248,12 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",
+            "worker_instance_type",
+            "worker_ami_type",
+            "worker_disk_size",
+            "max_worker_instance",
+            "min_worker_instance",
+            "desired_worker_instance",
         )
 
 
