@@ -142,6 +142,31 @@ class Challenge(TimeStampedModel):
     worker_memory = models.IntegerField(null=True, blank=True, default=512)
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
+    # VPC and subnet CIDRs for code upload challenge
+    vpc_cidr = models.CharField(
+        null=True, blank=True, max_length=200, default=""
+    )
+    subnet_1_cidr = models.CharField(
+        null=True, blank=True, max_length=200, default=""
+    )
+    subnet_2_cidr = models.CharField(
+        null=True, blank=True, max_length=200, default=""
+    )
+    # Evaluation instance config for code upload challenge
+    worker_instance_type = models.CharField(
+        max_length=256, null=True, blank=True, default="g4dn.xlarge"
+    )
+    worker_ami_type = models.CharField(
+        max_length=256, null=True, blank=True, default="AL2_x86_64_GPU"
+    )
+    worker_disk_size = models.IntegerField(null=True, blank=True, default=100)
+    max_worker_instance = models.IntegerField(
+        null=True, blank=True, default=10
+    )
+    min_worker_instance = models.IntegerField(null=True, blank=True, default=1)
+    desired_worker_instance = models.IntegerField(
+        null=True, blank=True, default=1
+    )
 
     class Meta:
         app_label = "challenges"
@@ -317,6 +342,7 @@ class ChallengePhase(TimeStampedModel):
 
 def post_save_connect(field_name, sender):
     import challenges.aws_utils as aws
+
     signals.post_save.connect(
         model_field_name(field_name=field_name)(
             aws.restart_workers_signal_callback

@@ -1,5 +1,5 @@
 :host li {
-  margin: 20px 0px 50px 0px;
+  margin: 20px 0px;
 }
 
 .hide-label {
@@ -26,4 +26,12 @@
 .private-badge {
   float: right;
   padding-right: 0px;
+}
+
+::ng-deep .mat-select-placeholder {
+  padding-bottom: 10px;
+}
+
+.phase-placeholder {
+  padding-left: 10px;
 }

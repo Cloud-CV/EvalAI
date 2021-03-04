@@ -114,7 +114,7 @@
                   API Authentication Token
                 </div>
                 <div class="form row">
-                  <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                  <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 token-container">
                     <app-input
                       [label]="'token'"
                       [placeholder]="'Auth Token'"
@@ -133,7 +133,7 @@
                     <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                   </button>
                 </div>
-                <ul class="inline-list">
+                <ul class="inline-list auth-token-inline-list">
                   <li>
                     <a (click)="isTokenModalVisible = false" class="dark-link pointer">
                       <strong class="fw-semibold fs-15">Cancel</strong>

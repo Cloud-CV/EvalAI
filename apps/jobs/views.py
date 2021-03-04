@@ -336,6 +336,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     if submission_serializer.is_valid():
                         submission_serializer.save()
 
+        # Override submission visibility if leaderboard_public = False for a challenge phase
+        if not challenge_phase.leaderboard_public:
+            request.data["is_public"] = challenge_phase.is_submission_public
+
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -647,11 +651,11 @@ def leaderboard(request, challenge_phase_split_id):
                                 ),
                                 "submission__is_baseline": openapi.Schema(
                                     type=openapi.TYPE_BOOLEAN,
-                                    description="Boolean to decide if submission is baseline"
+                                    description="Boolean to decide if submission is baseline",
                                 ),
                                 "submission__is_public": openapi.Schema(
                                     type=openapi.TYPE_BOOLEAN,
-                                    description="Boolean to decide if submission is public"
+                                    description="Boolean to decide if submission is public",
                                 ),
                                 "challenge_phase_split": openapi.Schema(
                                     type=openapi.TYPE_STRING,
@@ -666,7 +670,7 @@ def leaderboard(request, challenge_phase_split_id):
                                 ),
                                 "error": openapi.Schema(
                                     type=openapi.TYPE_STRING,
-                                    description="Error returned for the result"
+                                    description="Error returned for the result",
                                 ),
                                 "leaderboard__schema": openapi.Schema(
                                     type=openapi.TYPE_OBJECT,
@@ -683,7 +687,7 @@ def leaderboard(request, challenge_phase_split_id):
                                             type=openapi.TYPE_STRING,
                                             description="Default ordering label for the leaderboard schema",
                                         ),
-                                    }
+                                    },
                                 ),
                                 "submission__submitted_at": openapi.Schema(
                                     type=openapi.TYPE_STRING,
