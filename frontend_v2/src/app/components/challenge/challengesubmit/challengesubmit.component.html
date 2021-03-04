@@ -236,6 +236,36 @@
                     </div>
                   </div>
                 </div>
+                <div>
+                  <p class="fs-14 w-400">Select submission visibility:</p>
+                  <input 
+                    type="radio" 
+                    name="submissionVisibility" 
+                    class="with-gap selectPhase" 
+                    id="isPublicSubmission"
+                    (change)="isPublicSubmission = true"
+                    />
+                  <label for="isPublicSubmission" class="radio-button-text pointer">
+                    <div 
+                      class="show-member-title pointer">
+                      <strong class="text-med-black fs-16">Public</strong>
+                  </div>
+                  </label>
+                  <div class="clearfix"></div>
+                  <input type="radio"
+                    name="submissionVisibility"
+                    class="with-gap selectPhase"
+                    id="isPrivateSubmission"
+                    (change)="isPublicSubmission = false"
+                    />
+                  <label for="isPrivateSubmission" class="radio-button-text pointer">
+                    <div 
+                      class="show-member-title pointer">
+                      <strong class="text-med-black fs-16">Private</strong>
+                  </div>
+                  </label>
+                  <div class="clearfix"></div>
+                </div>
                 <div class="row row-lr-margin">
                   <div class="align-left col-sm-10 col-lr-pad">
                     <div class="input-field align-left">
