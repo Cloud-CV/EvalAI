@@ -4539,7 +4539,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
     def test_get_or_update_allowed_email_ids_success(self):
         self.url = reverse_lazy(
-            'challenges:get_or_update_allowed_email_ids',
+            "challenges:get_or_update_allowed_email_ids",
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk,
@@ -4554,7 +4554,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
     def test_get_or_update_allowed_email_ids_patch_success(self):
         self.url = reverse_lazy(
-            'challenges:get_or_update_allowed_email_ids',
+            "challenges:get_or_update_allowed_email_ids",
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk,
@@ -4572,7 +4572,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
     def test_get_or_update_allowed_email_ids_delete_success(self):
         self.url = reverse_lazy(
-            'challenges:get_or_update_allowed_email_ids',
+            "challenges:get_or_update_allowed_email_ids",
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk,
@@ -4592,7 +4592,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
     def test_update_allowed_email_ids_with_invalid_input(self):
         self.url = reverse_lazy(
-            'challenges:get_or_update_allowed_email_ids',
+            "challenges:get_or_update_allowed_email_ids",
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk,
@@ -4608,7 +4608,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
     def test_update_allowed_email_ids_when_input_is_none(self):
         self.url = reverse_lazy(
-            'challenges:get_or_update_allowed_email_ids',
+            "challenges:get_or_update_allowed_email_ids",
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk,
@@ -4623,7 +4623,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
     def test_get_allowed_email_ids_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
-            'challenges:get_or_update_allowed_email_ids',
+            "challenges:get_or_update_allowed_email_ids",
             kwargs={
                 "challenge_pk": self.challenge.pk,
                 "phase_pk": self.challenge_phase.pk + 1000,
