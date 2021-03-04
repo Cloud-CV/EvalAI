@@ -6,6 +6,14 @@
   display: none;
 }
 
+.phase_name {
+  white-space: normal;
+}
+
+.select_phase_form {
+  display: unset;
+}
+
 ::ng-deep .mat-select-panel mat-option.mat-option {
   height: unset;
 }
