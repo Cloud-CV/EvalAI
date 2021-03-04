@@ -1094,16 +1094,21 @@ def create_eks_nodegroup(challenge, cluster_name):
         response = client.create_nodegroup(
             clusterName=cluster_name,
             nodegroupName=nodegroup_name,
-            scalingConfig={"minSize": 1, "maxSize": 10, "desiredSize": 1},
-            diskSize=100,
+            scalingConfig={
+                "minSize": challenge_obj.min_worker_instance,
+                "maxSize": challenge_obj.max_worker_instance,
+                "desiredSize": challenge_obj.desired_worker_instance,
+            },
+            diskSize=challenge_obj.worker_disk_size,
             subnets=[cluster_meta["SUBNET_1"], cluster_meta["SUBNET_2"]],
-            instanceTypes=["g4dn.xlarge"],
-            amiType="AL2_x86_64_GPU",
+            instanceTypes=[challenge_obj.worker_instance_type],
+            amiType=challenge_obj.worker_ami_type,
             nodeRole=cluster_meta["EKS_NODEGROUP_ROLE_ARN"],
         )
+        logger.info("Nodegroup create: {}".format(response))
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
@@ -1143,7 +1148,7 @@ def setup_eks_cluster(challenge):
         eks_arn_role = response["Role"]["Arn"]
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     waiter = client.get_waiter("role_exists")
     waiter.wait(RoleName=eks_role_name)
 
@@ -1155,7 +1160,7 @@ def setup_eks_cluster(challenge):
         )
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
 
     node_group_role_name = "evalai-code-upload-nodegroup-role-{}".format(
         environment_suffix
@@ -1172,7 +1177,7 @@ def setup_eks_cluster(challenge):
         node_group_arn_role = response["Role"]["Arn"]
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     waiter = client.get_waiter("role_exists")
     waiter.wait(RoleName=node_group_role_name)
 
@@ -1186,7 +1191,7 @@ def setup_eks_cluster(challenge):
             )
         except ClientError as e:
             logger.exception(e)
-            return response
+            return
 
     # Create custom ECR all access policy and attach to node_group_role
     ecr_all_access_policy_name = "AWS-ECR-Full-Access-{}".format(
@@ -1207,7 +1212,7 @@ def setup_eks_cluster(challenge):
         )
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
@@ -1252,7 +1257,7 @@ def create_eks_cluster_subnets(challenge):
         vpc_ids.append(response["Vpc"]["VpcId"])
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
 
     waiter = client.get_waiter("vpc_available")
     waiter.wait(VpcIds=vpc_ids)
@@ -1344,7 +1349,7 @@ def create_eks_cluster_subnets(challenge):
         create_eks_cluster.delay(challenge)
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
 
 
 @app.task
