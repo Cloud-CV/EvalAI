@@ -244,8 +244,23 @@ img.profile-pic {
   margin-left: 90%;
 }
 
-.auth-token-inline-list {
+#auth_token_input ::ng-deep .input-field {
+  padding-bottom: 0px;
+  height: 30px;
+  width: 107%;
+}
+
+#auth_token_input ::ng-deep label {
+  top: -5px;
+}
+
+.auth_token_button {
+  margin-left: -25px;
   margin-top: 20px;
+}
+
+.show_token_button {
+  padding: 0 1rem;
 }
 
 #auth_tok_button {
