@@ -340,9 +340,13 @@ export class ModalComponent implements OnInit {
     this.isDisabled = e.target.value === '';
   }
 
-  myFunction() {
-   console.log(this.passwordVisibility)
-
-  }
+  visibilityPassword() {
+    if(this.passwordVisibility === 'text') {
+      this.passwordVisibility = 'password';
+    }
+    else {
+      this.passwordVisibility = 'text';
+    }
+  } 
 
 }
