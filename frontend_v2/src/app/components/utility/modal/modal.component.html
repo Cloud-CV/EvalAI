@@ -16,19 +16,45 @@
         </div>
         <div class="form modal-inputs">
           <div *ngFor="let item of form">
-            <app-input
-              *ngIf="item['type'] != 'file'"
-              [name]="item['name']"
-              (input)="validateModalInput($event)"
-              [isRequired]="item['isRequired']"
-              [label]="item['label']"
-              [placeholder]="item['placeholder']"
-              [type]="item['type']"
-              [icon]="item['icon']"
-              [value]="item['value']"
-              [message]="inputErrorMessage"
-              #formmodal
-            ></app-input>
+            <div *ngIf="item['type'] != 'file'">
+              <div *ngIf="item['type'] != 'password'" class="input-field align-left">
+                <app-input
+                  [name]="item['name']"
+                  (input)="validateModalInput($event)"
+                  [isRequired]="item['isRequired']"
+                  [label]="item['label']"
+                  [placeholder]="item['placeholder']"
+                  [type]="item['type']"
+                  [icon]="item['icon']"
+                  [value]="item['value']"
+                  [message]="inputErrorMessage"
+                  #formmodal
+                ></app-input>
+              </div>
+              <div *ngIf="item['type'] == 'password'" class="input-field align-left">
+                <app-input
+                  [name]="item['name']"
+                  (input)="validateModalInput($event)"
+                  [isRequired]="item['isRequired']"
+                  [label]="item['label']"
+                  [placeholder]="item['placeholder']"
+                  [type]="passwordVisibility"
+                  [icon]="item['icon']"
+                  [value]="item['value']"
+                  [message]="inputErrorMessage"
+                  #formmodal
+                ></app-input>
+                <span
+                  class="form-icon form-icon-dark"
+                  (click)="myFunction()"
+                  role="button"
+                  tabindex="0"
+                >
+                  <i class="fa fa-eye pointer ng-scope"></i>
+                </span>
+              </div>
+            </div>
+
             <app-input
               *ngIf="item['type'] == 'file'"
               [name]="item['name']"

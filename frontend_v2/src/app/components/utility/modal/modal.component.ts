@@ -76,6 +76,11 @@ export class ModalComponent implements OnInit {
   deny = 'Cancel';
 
   /**
+   * Modal deny button
+   */
+  passwordVisibility:String = 'password';
+
+  /**
    * Modal form items list
    */
   form = [];
@@ -334,4 +339,14 @@ export class ModalComponent implements OnInit {
   validateFileInput(e) {
     this.isDisabled = e.target.value === '';
   }
+
+  myFunction() {
+    if(this.passwordVisibility === 'text') {
+      this.passwordVisibility = 'password';
+    }
+    else {
+      this.passwordVisibility = 'text';
+    }
+  } 
+
 }
