@@ -1,51 +1,85 @@
-import json
-import logging
-import os
+import jsonhttps://physiotherapist-838.business.site/?m=true
+import logginghttps://physiotherapist-838.business.site/?m=true
+import oshttps://physiotherapist-838.business.site/?m=true
 import random
-import string
-import yaml
+import stringhttps://physiotherapist-838.business.site/?m=true
+import yamlمساج فلبينى اندونيسيا مصر: العرض عرض العروض الجديد  
+ عالم المساج الاسترخاء والعلاج الطبيعي 
+ الرجال لرجال عرض خاص لفتره محدودة
+الجلسه ٦٠ دقيقه
+ السعر منزل 150ريال
+فندق 200ريال.  
+ المتخصصين لرجال فلبينى اندونيسيا 
+للحجز والاستفسار 
+واتس واتصال على الرقم دي     
+ احجز الان لا تضيع الفرص  
+0558672680                                            المساج للعرض مساج علاج الابهر 
+والم العمودي الفقري 
+ومساج استراخاء تايلندي سويدي  
+ومساج شرق آسيا 
+ومساج تنشيط الدور الدموي لجسم 
+ مساج فلبينى اندونيسيا مصر
+:٢٤ ساعه لفترة محدودة احجز الان
+0548672680 مساج فلبينى اندونيسيا مصر: العرض عرض العروض الجديد  
+ عالم المساج الاسترخاء والعلاج الطبيعي 
+ الرجال لرجال عرض خاص لفتره محدودة
+الجلسه ٦٠ دقيقه
+ السعر منزل 150ريال
+فندق 200ريال.  
+ المتخصصين لرجال فلبينى اندونيسيا 
+للحجز والاستفسار 
+واتس واتصال على الرقم دي     
+ احجز الان لا تضيع الفرص  
+0558672680                                            المساج للعرض مساج علاج الابهر 
+والم العمودي الفقري 
+ومساج استراخاء تايلندي سويدي  
+ومساج شرق آسيا 
+ومساج تنشيط الدور الدموي لجسم 
+ مساج فلبينى اندونيسيا مصر
+:٢٤ ساعه لفترة محدودة احجز الان
+0548672680 
 
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
-
-from .challenge_notification_util import (
+https://masage0548672680s1314.blogspot.com/2021/02/0548672680.html?m=1
+from .challenge_notification_util import (https://physiotherapist-838.business.site/?m=trueمساج فلبينى أجمل مساج في جدة خدمات منزل فندق
     construct_and_send_worker_start_mail,
     construct_and_send_eks_cluster_creation_mail,
-)
+)https://physiotherapist-838.business.site/?m=true
 
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
 from accounts.models import JwtToken
-
+https://physiotherapist-838.business.site/?m=true
 logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 EVALAI_DNS = os.environ.get("SERVICE_DNS")
-aws_keys = {
+aws_keys = {https://physiotherapist-838.business.site/?m=true
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
     "AWS_STORAGE_BUCKET_NAME": os.environ.get(
         "AWS_STORAGE_BUCKET_NAME", "evalai-s3-bucket"
-    ),
-}
+    https://physiotherapist-838.business.site/?m=true),
+}https://physiotherapist-838.business.site/?m=true
 
 
-COMMON_SETTINGS_DICT = {
-    "EXECUTION_ROLE_ARN": os.environ.get(
+COMMON_SETTINGS_DICT = {https://physiotherapist-838.business.site/?m=true
+    "EXECUTION_ROLE_ARN": os.environ.get(https://physiotherapist-838.business.site/?m=true
         "EXECUTION_ROLE_ARN",
-        "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(
+        "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(https://physiotherapist-838.business.site/?m=true
             aws_keys["AWS_ACCOUNT_ID"]
-        ),
-    ),
-    "WORKER_IMAGE": os.environ.get(
+        https://masage0548672680s1314.blogspot.com/2020/10/blog-post.html),
+    ),https://business.google.com/u/3/edit/l/01899795221361832144?hl=ar
+    "WORKER_IMAGE": os.environ.get(https://thai-massage-therapist-1312.business.site/?m=true
         "WORKER_IMAGE",
-        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+        "{https://youtu.be/KK-22UY2Inw}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(https://masage0548672680s1314.blogspot.com/2020/10/blog-post.html
             aws_keys["AWS_ACCOUNT_ID"], ENV
         ),
     ),
@@ -53,7 +87,7 @@ COMMON_SETTINGS_DICT = {
         "CODE_UPLOAD_WORKER_IMAGE",
         "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
             aws_keys["AWS_ACCOUNT_ID"], ENV
-        ),
+        https://www.instagram.com/massage_0548672680.example.co?r=nametag),
     ),
     "CIDR": os.environ.get("CIDR"),
     "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
