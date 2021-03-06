@@ -76,7 +76,7 @@ export class ModalComponent implements OnInit {
   deny = 'Cancel';
 
   /**
-   * Modal deny button
+   * password feild visibility
    */
   passwordVisibility:String = 'password';
 
@@ -341,12 +341,8 @@ export class ModalComponent implements OnInit {
   }
 
   myFunction() {
-    if(this.passwordVisibility === 'text') {
-      this.passwordVisibility = 'password';
-    }
-    else {
-      this.passwordVisibility = 'text';
-    }
-  } 
+   console.log(this.passwordVisibility)
+
+  }
 
 }
