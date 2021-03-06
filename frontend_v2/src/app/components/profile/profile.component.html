@@ -116,6 +116,7 @@
                 <div class="form row">
                   <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 token-container">
                     <app-input
+                      id="auth_token_input"
                       [label]="'token'"
                       [placeholder]="'Auth Token'"
                       [type]="'password'"
@@ -133,7 +134,7 @@
                     <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                   </button>
                 </div>
-                <ul class="inline-list auth-token-inline-list">
+                <ul class="inline-list auth_token_button">
                   <li>
                     <a (click)="isTokenModalVisible = false" class="dark-link pointer">
                       <strong class="fw-semibold fs-15">Cancel</strong>
@@ -151,7 +152,7 @@
                   </li>
                   <li>
                     <span
-                      class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14 rm-pad-top"
+                      class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14 rm-pad-top show_token_button"
                       (click)="tokenModalButtonToggle()"
                       >{{ tokenModalButton }}</span
                     >

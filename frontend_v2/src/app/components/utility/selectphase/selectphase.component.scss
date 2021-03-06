@@ -1,9 +1,17 @@
 :host li {
-  margin: 20px 0px 50px 0px;
+  margin: 20px 0px;
 }
 
 .hide-label {
   display: none;
+}
+
+.phase_name {
+  white-space: normal;
+}
+
+.select_phase_form {
+  display: unset;
 }
 
 ::ng-deep .mat-select-panel mat-option.mat-option {
@@ -18,4 +26,12 @@
 .private-badge {
   float: right;
   padding-right: 0px;
+}
+
+::ng-deep .mat-select-placeholder {
+  padding-bottom: 10px;
+}
+
+.phase-placeholder {
+  padding-left: 10px;
 }
