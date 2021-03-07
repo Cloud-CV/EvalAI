@@ -2,6 +2,19 @@
   <!-- ongoing challenges -->
   <div *ngIf="routerPublic.url === allChallengesRoutePathCommon" [@.disabled]="true">
     <h4 class="fw-light">All challenges</h4>
+     <div class="title-search-bar">
+        <div class="challenge-page-title" id = "ongoing-challenges">
+            <strong ng-if="!challengeList.searchModeOn" class="text-med-black fs-18">Ongoing Challenges</strong>
+            <strong ng-if="challengeList.searchModeOn" class="text-med-black fs-18">Challenges Matching your Search</strong>
+        </div>
+        <div>
+            <form ng-submit="challengeList.submit(searchQuery)" class="searchbar">
+                <input class="searchbarElements" placeholder="Search Challenges" type="text" ng-model="searchQuery" name="searchQuery" />
+                <input class="btn ev-btn-dark grad-btn fs-14 searchbarElements" type="submit" id="submit" value="Search" />
+                <input class="btn ev-btn-dark grad-btn fs-14 searchbarElements" type="reset" id="reset" value="Reset" ng-click="challengeList.reset()"/>
+            </form>
+        </div>
+    </div>
     <mat-tab-group>
       <mat-tab label="Ongoing ({{ ongoingChallenges.length }})">
         <div *ngIf="ongoingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
@@ -13,7 +26,7 @@
           </div>
         </div>
       </mat-tab>
-
+    
       <mat-tab class="fs-16" label="Upcoming ({{ upcomingChallenges.length }})">
         <!-- upcoming challenges -->
         <div *ngIf="upcomingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>

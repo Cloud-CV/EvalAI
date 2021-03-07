@@ -16,3 +16,23 @@ a.btn-card-detail:focus {
   font-weight: 500;
   font-size: 18px;
 }
+
+.title-search-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.searchbar{
+  display: flex;
+  align-items: center;
+}
+
+.searchbarElements{
+  margin-left: 5px;
+}
+
+::placeholder {
+  color: #999;
+  opacity: 1;
+}
