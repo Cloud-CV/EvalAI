@@ -30,7 +30,7 @@
             vm.currentSearchTerm = "";
             vm.searchModeOn = false;
             vm.renderAllChallenges();
-        }
+        };
 
         vm.submit = function (searchQuery) {
             if (searchQuery === "") {
@@ -84,7 +84,7 @@
                 onError: function () {
                     utilities.hideLoader();
                 }
-            }
+            };
             utilities.sendRequest(parameters);
         };
         vm.renderAllChallenges = function () {
