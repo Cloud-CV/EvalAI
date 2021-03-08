@@ -88,6 +88,8 @@ from participants.utils import (
     has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
+    is_user_part_of_participant_team,
+    is_user_creator_of_participant_team,
 )
 
 from .models import (
@@ -371,6 +373,15 @@ def add_participant_team_to_challenge(
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+    if not (
+        is_user_part_of_participant_team(request.user, participant_team)
+        or is_user_creator_of_participant_team(request.user, participant_team)
+    ):
+        response_data = {
+            "error": "Sorry, you are not authorized to to make this request"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if participant_team.challenge_set.filter(id=challenge_pk).exists():
         response_data = {
@@ -1729,6 +1740,78 @@ def get_all_submissions_of_challenge(
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="challenge_phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge phase pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="file_type",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="File type",
+            required=True,
+        ),
+    ],
+    operation_id="download_all_submissions",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'The file type requested is not valid!'}"
+        ),
+        status.HTTP_404_NOT_FOUND: openapi.Response(
+            "{'error': 'Challenge Phase does not exist'}"
+        )
+    },
+)
+@swagger_auto_schema(
+    methods=["post"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="challenge_phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge phase pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="file_type",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="File type",
+            required=True,
+        ),
+    ],
+    operation_id="download_all_submissions",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'The file type requested is not valid!'}"
+        ),
+        status.HTTP_401_UNAUTHORIZED: openapi.Response(
+            "{'error': 'Sorry, you do not belong to this Host Team!'}"
+        )
+    },
+)
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1736,7 +1819,18 @@ def get_all_submissions_of_challenge(
 def download_all_submissions(
     request, challenge_pk, challenge_phase_pk, file_type
 ):
+    """
+    API endpoint to download all the submissions for a particular challenge as a csv
 
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+        challenge_phase_pk {[int]} -- Challenge phase primary key
+        file_type {[str]} -- File type
+
+    Returns:
+        Response Object -- An object containing api response
+    """
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 

@@ -46,10 +46,10 @@
                         </button>
                     </li>
                     <li>Add your EvalAI account token to evalai-cli<br>
-                        <code>$ evalai set_token {{challenge.authToken}}</code>
+                        <code>$ evalai set_token {{challenge.refreshJWT}}</code>
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
                             ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                            data-clipboard-text="evalai set_token {{challenge.authToken}}">
+                            data-clipboard-text="evalai set_token {{challenge.refreshJWT}}">
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </li>
@@ -269,9 +269,9 @@
                                 <div ng-show="challenge.currentPhaseLeaderboardPublic">
                                     <p class="fs-14 w-400" ng>Select submission visibility:</p>
                                     <li>
-                                        <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicubmission"
-                                            value="isPublicubmission" ng-click="challenge.isPublicSubmission = true">
-                                        <label for="isPublicubmission"></label>
+                                        <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicSubmission"
+                                            value="isPublicSubmission" ng-click="challenge.isPublicSubmission = true">
+                                        <label for="isPublicSubmission"></label>
                                         <div class="show-member-title pointer">
                                             <strong class="fs-16 w-300">Public
                                             </strong>
@@ -473,10 +473,10 @@
                         </li>
                         <li>
                             Add your EvalAI account token to evalai-cli<br>
-                            <code>$ evalai set_token {{challenge.authToken}}</code>
+                            <code>$ evalai set_token {{challenge.refreshJWT}}</code>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
                                 ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                data-clipboard-text="evalai set_token {{challenge.authToken}}">
+                                data-clipboard-text="evalai set_token {{challenge.refreshJWT}}">
                                 <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                             </button>
                         </li>
