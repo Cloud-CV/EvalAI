@@ -31,14 +31,14 @@
                   #formmodal
                 ></app-input>
               </div>
-              <div *ngIf="item['type'] == 'password'" class="input-field align-left">
+              <div *ngIf="item['name'] == 'old_password'" class="input-field align-left">
                 <app-input
                   [name]="item['name']"
                   (input)="validateModalInput($event)"
                   [isRequired]="item['isRequired']"
                   [label]="item['label']"
                   [placeholder]="item['placeholder']"
-                  [type]="passwordVisibility"
+                  [type]="old_passwordVisibility ? 'text' : 'password'"
                   [icon]="item['icon']"
                   [value]="item['value']"
                   [message]="inputErrorMessage"
@@ -46,11 +46,58 @@
                 ></app-input>
                 <span
                   class="form-icon form-icon-dark"
-                  (click)="myFunction()"
+                  (click)="old_passwordVisibility = !old_passwordVisibility"
                   role="button"
                   tabindex="0"
                 >
-                  <i class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "!old_passwordVisibility" class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "old_passwordVisibility" class="fa fa-eye-slash pointer ng-scope"></i>
+                </span>
+              </div>
+              <div *ngIf="item['name'] == 'new_password1'" class="input-field align-left">
+                <app-input
+                  [name]="item['name']"
+                  (input)="validateModalInput($event)"
+                  [isRequired]="item['isRequired']"
+                  [label]="item['label']"
+                  [placeholder]="item['placeholder']"
+                  [type]="new_password1Visibility ? 'text' : 'password'"
+                  [icon]="item['icon']"
+                  [value]="item['value']"
+                  [message]="inputErrorMessage"
+                  #formmodal
+                ></app-input>
+                <span
+                  class="form-icon form-icon-dark"
+                  (click)="new_password1Visibility = !new_password1Visibility"
+                  role="button"
+                  tabindex="0"
+                >
+                  <i *ngIf = "!new_password1Visibility" class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "new_password1Visibility" class="fa fa-eye-slash pointer ng-scope"></i>
+                </span>
+              </div>
+              <div *ngIf="item['name'] == 'new_password2'" class="input-field align-left">
+                <app-input
+                  [name]="item['name']"
+                  (input)="validateModalInput($event)"
+                  [isRequired]="item['isRequired']"
+                  [label]="item['label']"
+                  [placeholder]="item['placeholder']"
+                  [type]="new_password2 ? 'text' : 'password'"
+                  [icon]="item['icon']"
+                  [value]="item['value']"
+                  [message]="inputErrorMessage"
+                  #formmodal
+                ></app-input>
+                <span
+                  class="form-icon form-icon-dark"
+                  (click)="new_password2 = !new_password2"
+                  role="button"
+                  tabindex="0"
+                >
+                  <i *ngIf = "!new_password2" class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "new_password2" class="fa fa-eye-slash pointer ng-scope"></i>
                 </span>
               </div>
             </div>
