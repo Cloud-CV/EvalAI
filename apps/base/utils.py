@@ -168,27 +168,6 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_boto3_resource(resource, aws_keys):
-    """
-    Returns the boto3 resource for a resource in AWS
-    Arguments:
-        resource {str} -- Name of the resource
-        aws_keys {dict} -- AWS keys which are to be used
-    Returns:
-        Boto3 resource object
-    """
-    try:
-        resource = boto3.resource(
-            resource,
-            region_name=aws_keys["AWS_REGION"],
-            aws_access_key_id=aws_keys["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key=aws_keys["AWS_SECRET_ACCESS_KEY"],
-        )
-        return resource
-    except Exception as e:
-        logger.exception(e)
-
-
 def get_or_create_sqs_queue_object(queue_name):
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"

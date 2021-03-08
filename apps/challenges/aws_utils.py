@@ -16,7 +16,7 @@ from .challenge_notification_util import (
     construct_and_send_eks_cluster_creation_mail,
 )
 
-from base.utils import get_boto3_client, get_boto3_resource, send_email
+from base.utils import get_boto3_client, send_email
 from evalai.celery import app
 from accounts.models import JwtToken
 
@@ -1685,89 +1685,54 @@ def delete_eks_vpc(challenge):
         challenge=challenge_obj
     )
     vpc_id = challenge_evaluation_cluster.vpc_id
+    internet_gateway_id = challenge_evaluation_cluster.internet_gateway_id
+    route_table_id = challenge_evaluation_cluster.route_table_id
+    security_group_id = challenge_evaluation_cluster.security_group_id
+    subnet_1_id = challenge_evaluation_cluster.subnet_1_id
+    subnet_2_id = challenge_evaluation_cluster.subnet_2_id
     if not vpc_id:
         return
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    ec2 = get_boto3_resource("ec2", challenge_aws_keys)
-    client = ec2.meta.client
+    client = get_boto3_client("ec2", challenge_aws_keys)
 
-    vpc = ec2.Vpc(vpc_id)
-    # Detach default dhcp_options if associated with the vpc
-    dhcp_options_default = ec2.DhcpOptions("default")
-    if dhcp_options_default:
-        dhcp_options_default.associate_with_vpc(VpcId=vpc.id)
-    # Detach and delete all gateways associated with the vpc
-    for internet_gateway in vpc.internet_gateways.all():
-        try:
-            vpc.detach_internet_gateway(InternetGatewayId=internet_gateway.id)
-            internet_gateway.delete()
-        except ClientError as e:
-            logger.exception(e)
-            return
+    # Detach and delete internet gateway associated with the vpc
+    try:
+        client.detach_internet_gateway(
+            InternetGatewayId=internet_gateway_id, VpcId=vpc_id
+        )
+        client.delete_internet_gateway(InternetGatewayId=internet_gateway_id)
+    except ClientError as e:
+        logger.exception(e)
     # Delete all route table associations
-    for route_table in vpc.route_tables.all():
-        for rta in route_table.associations:
-            if not rta.main:
+    try:
+        route_table = client.describe_route_tables(
+            Filters=[{"Name": "route-table-id", "Values": [route_table_id]}]
+        )["RouteTables"][0]
+        for association in route_table["Associations"]:
+            # If it's not the Main association
+            if not association["Main"]:
                 try:
-                    rta.delete()
+                    association_id = association["RouteTableAssociationId"]
+                    # Diassociate Route Table from the subnet
+                    client.disassociate_route_table(
+                        AssociationId=association_id
+                    )
+                    client.delete_route_table(RouteTableId=route_table_id)
                 except ClientError as e:
                     logger.exception(e)
-                    return
-    # Delete any instances
-    for subnet in vpc.subnets.all():
-        for instance in subnet.instances.all():
-            try:
-                instance.terminate()
-            except ClientError as e:
-                logger.exception(e)
-                return
-    # Delete our endpoints
-    for endpoint in client.describe_vpc_endpoints(
-        Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
-    )["VpcEndpoints"]:
-        try:
-            client.delete_vpc_endpoints(
-                VpcEndpointIds=[endpoint["VpcEndpointId"]]
-            )
-        except ClientError as e:
-            logger.exception(e)
-            return
+    except ClientError as e:
+        logger.exception(e)
     # Delete our security groups
-    for security_group in vpc.security_groups.all():
+    try:
+        client.delete_security_group(GroupId=security_group_id)
+    except ClientError as e:
+        logger.exception(e)
+    # Delete subnets
+    for subnet_id in [subnet_1_id, subnet_2_id]:
         try:
-            if security_group.group_name != "default":
-                security_group.delete()
+            client.delete_subnet(SubnetId=subnet_id)
         except ClientError as e:
             logger.exception(e)
-            return
-    # Delete any vpc peering connections
-    for vpc_peer in client.describe_vpc_peering_connections(
-        Filters=[{"Name": "requester-vpc-info.vpc-id", "Values": [vpc_id]}]
-    )["VpcPeeringConnections"]:
-        try:
-            ec2.VpcPeeringConnection(
-                vpc_peer["VpcPeeringConnectionId"]
-            ).delete()
-        except ClientError as e:
-            logger.exception(e)
-            return
-    # Delete non-default network acls
-    for netacl in vpc.network_acls.all():
-        if not netacl.is_default:
-            try:
-                netacl.delete()
-            except ClientError as e:
-                logger.exception(e)
-                return
-    # Delete network interfaces
-    for subnet in vpc.subnets.all():
-        try:
-            for interface in subnet.network_interfaces.all():
-                interface.delete()
-            subnet.delete()
-        except ClientError as e:
-            logger.exception(e)
-            return
     try:
         # Delete the vpc
         client.delete_vpc(VpcId=vpc_id)
