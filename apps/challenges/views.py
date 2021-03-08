@@ -1964,6 +1964,14 @@ def download_all_submissions(
                 writer.writerow(fields)
                 for submission in submissions.data:
                     row = [submission["id"]]
+                    if submission["submission_metadata"] is None:
+                        submission["submission_metadata"] = {}
+                    submission["submission_metadata"] = ",".join(
+                        f'{key}: {value}'
+                        for key, value in submission[
+                            "submission_metadata"
+                        ].items()
+                    )
                     for field in request.data:
                         if field == "participant_team_members":
                             row.append(
@@ -1998,6 +2006,15 @@ def download_all_submissions(
                                     "%m/%d/%Y %H:%M:%S"
                                 )
                             )
+                        # elif field == "submission_metadata":
+                        #     row.append(
+                        #         ",".join(
+                        #             f'{key}: {value}'
+                        #             for key, value in submission[
+                        #                 "submission_metadata"
+                        #             ].items()
+                        #         )
+                        #     )
                         else:
                             row.append(submission[field])
                     writer.writerow(row)
