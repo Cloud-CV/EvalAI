@@ -793,6 +793,12 @@
       width: auto;
     }
   }
+
+  :root {
+    .row .col.m3 {
+      width: auto;
+    }
+  }
 }
 
 .clearfix:before,
