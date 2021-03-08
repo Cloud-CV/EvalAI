@@ -2006,15 +2006,6 @@ def download_all_submissions(
                                     "%m/%d/%Y %H:%M:%S"
                                 )
                             )
-                        # elif field == "submission_metadata":
-                        #     row.append(
-                        #         ",".join(
-                        #             f'{key}: {value}'
-                        #             for key, value in submission[
-                        #                 "submission_metadata"
-                        #             ].items()
-                        #         )
-                        #     )
                         else:
                             row.append(submission[field])
                     writer.writerow(row)
