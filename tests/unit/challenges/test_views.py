@@ -4642,9 +4642,10 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.url = reverse_lazy(
             "challenges:get_or_update_allowed_email_ids",
             kwargs={
-                "challenge_pk": self.challenge.pk +1000,
+                "challenge_pk": self.challenge.pk + 1000,
                 "phase_pk": self.challenge_phase.pk,
             },
         )
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
