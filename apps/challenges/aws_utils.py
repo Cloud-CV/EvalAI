@@ -1340,7 +1340,7 @@ def create_eks_cluster_subnets(challenge):
             GroupName="evalai-code-upload-challenge-efs-{}".format(
                 environment_suffix
             ),
-            Description="EKs nodegroup EFS",
+            Description="EKS nodegroup EFS",
             VpcId=vpc_ids[0],
         )
         efs_security_group_id = response["GroupId"]
