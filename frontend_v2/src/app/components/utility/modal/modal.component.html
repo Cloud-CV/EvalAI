@@ -38,7 +38,7 @@
                   [isRequired]="item['isRequired']"
                   [label]="item['label']"
                   [placeholder]="item['placeholder']"
-                  [type]="old_passwordVisibility ? 'text' : 'password'"
+                  [type]="old_passwordTextVisibility ? 'text' : 'password'"
                   [icon]="item['icon']"
                   [value]="item['value']"
                   [message]="inputErrorMessage"
@@ -46,12 +46,12 @@
                 ></app-input>
                 <span
                   class="form-icon form-icon-dark"
-                  (click)="old_passwordVisibility = !old_passwordVisibility"
+                  (click)="old_passwordTextVisibility = !old_passwordTextVisibility"
                   role="button"
                   tabindex="0"
                 >
-                  <i *ngIf = "!old_passwordVisibility" class="fa fa-eye pointer ng-scope"></i>
-                  <i *ngIf = "old_passwordVisibility" class="fa fa-eye-slash pointer ng-scope"></i>
+                  <i *ngIf = "!old_passwordTextVisibility" class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "old_passwordTextVisibility" class="fa fa-eye-slash pointer ng-scope"></i>
                 </span>
               </div>
               <div *ngIf="item['name'] == 'new_password1'" class="input-field align-left">
