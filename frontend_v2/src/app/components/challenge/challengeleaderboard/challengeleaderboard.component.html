@@ -65,11 +65,13 @@
             <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit == null" class="fw-light result-wrn">
               No phase selected.
             </div>
-            <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="result-wrn content fw-light">
-              <mat-chip-list> <mat-chip>B</mat-chip> - Baseline submission </mat-chip-list>
-              <mat-chip-list class="leaderboard-description-span private">
-                <mat-chip>P</mat-chip> - Private submission
-              </mat-chip-list>
+            <div *ngIf="selectedPhaseSplit" class="result-wrn legend-row">
+              <div *ngIf="leaderboard.length > 0" class="content">
+                <mat-chip-list> <mat-chip>B</mat-chip> - Baseline submission </mat-chip-list>
+                <mat-chip-list class="leaderboard-description-span private">
+                  <mat-chip>P</mat-chip> - Private submission
+                </mat-chip-list>
+              </div>
               <!-- <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
                 <div
                   (click)="showLeaderboardByLatestOrBest()"
@@ -88,7 +90,7 @@
                 <span class="w-400"> {{ sortLeaderboardTextOption }}</span>
               </mat-chip-list> -->
               <mat-checkbox
-                class="pull-right complete-leaderboard"
+                class="move-right complete-leaderboard"
                 *ngIf="isChallengeHost && showLeaderboardToggle"
                 (change)="toggleLeaderboard(getAllEntries)"
                 [(ngModel)]="getAllEntries"
