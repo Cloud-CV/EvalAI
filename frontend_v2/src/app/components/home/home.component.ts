@@ -50,7 +50,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   ngAfterViewInit() {
     this.SUBSCRIBE_FORM[this.subscribeForm] = this.components;
-    (<any>window).twttr.widgets.load();
   }
 
   init() {
