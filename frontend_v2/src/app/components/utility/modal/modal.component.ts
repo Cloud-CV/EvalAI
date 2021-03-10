@@ -348,5 +348,5 @@ export class ModalComponent implements OnInit {
 
   validateFileInput(e) {
     this.isDisabled = e.target.value === '';
-  } 
+  }
 }
