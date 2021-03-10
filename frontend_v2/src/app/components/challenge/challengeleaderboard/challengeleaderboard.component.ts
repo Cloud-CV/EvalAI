@@ -111,9 +111,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   showLeaderboardUpdate = false;
 
   /**
-   * Returns true is leaderboard is public for the selected phase
+   * Returns true if leaderboard is public for the selected phase
    */
-  isLeaderboardPublic = true;
+  isSelectedPhaseLeaderboardPublic = true;
 
   /**
    * Currently selected phase split's id
@@ -342,7 +342,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         let selectedPhase = SELF.phases.find((phase) => {
           return phase.id === SELF.selectedPhaseSplit.challenge_phase
         })
-        SELF.isLeaderboardPublic = selectedPhase.leaderboard_public
+        SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
       }
     };
   }
@@ -628,5 +628,4 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   ngOnDestroy() {
     clearInterval(this.pollingInterval);
   }
-
 }
