@@ -61,7 +61,7 @@
                   [isRequired]="item['isRequired']"
                   [label]="item['label']"
                   [placeholder]="item['placeholder']"
-                  [type]="new_password1Visibility ? 'text' : 'password'"
+                  [type]="newPasswordTextVisibility ? 'text' : 'password'"
                   [icon]="item['icon']"
                   [value]="item['value']"
                   [message]="inputErrorMessage"
@@ -69,12 +69,12 @@
                 ></app-input>
                 <span
                   class="form-icon form-icon-dark"
-                  (click)="new_password1Visibility = !new_password1Visibility"
+                  (click)="newPasswordTextVisibility = !newPasswordTextVisibility"
                   role="button"
                   tabindex="0"
                 >
-                  <i *ngIf = "!new_password1Visibility" class="fa fa-eye pointer ng-scope"></i>
-                  <i *ngIf = "new_password1Visibility" class="fa fa-eye-slash pointer ng-scope"></i>
+                  <i *ngIf = "!newPasswordTextVisibility" class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "newPasswordTextVisibility" class="fa fa-eye-slash pointer ng-scope"></i>
                 </span>
               </div>
               <div *ngIf="item['name'] == 'new_password2'" class="input-field align-left">
@@ -84,7 +84,7 @@
                   [isRequired]="item['isRequired']"
                   [label]="item['label']"
                   [placeholder]="item['placeholder']"
-                  [type]="new_password2 ? 'text' : 'password'"
+                  [type]="reenteredPasswordTextVisibility ? 'text' : 'password'"
                   [icon]="item['icon']"
                   [value]="item['value']"
                   [message]="inputErrorMessage"
@@ -92,12 +92,12 @@
                 ></app-input>
                 <span
                   class="form-icon form-icon-dark"
-                  (click)="new_password2 = !new_password2"
+                  (click)="reenteredPasswordTextVisibility = !reenteredPasswordTextVisibility"
                   role="button"
                   tabindex="0"
                 >
-                  <i *ngIf = "!new_password2" class="fa fa-eye pointer ng-scope"></i>
-                  <i *ngIf = "new_password2" class="fa fa-eye-slash pointer ng-scope"></i>
+                  <i *ngIf = "!reenteredPasswordTextVisibility" class="fa fa-eye pointer ng-scope"></i>
+                  <i *ngIf = "reenteredPasswordTextVisibility" class="fa fa-eye-slash pointer ng-scope"></i>
                 </span>
               </div>
             </div>

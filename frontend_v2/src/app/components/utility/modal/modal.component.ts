@@ -36,6 +36,9 @@ export class ModalComponent implements OnInit {
 
   /**
    * Invalid fields
+   */
+  invalidFields = [];
+  invalidFieldsAsText = '';
 
   /**
    * Modal name
@@ -80,12 +83,12 @@ export class ModalComponent implements OnInit {
   /**
    * new_password1 field visibility
    */
-   new_password1Visibility:boolean = false;
+  newPasswordTextVisibility:boolean = false;
 
    /**
    * new_password2 field visibility
    */
-  new_password2Visibility:boolean = false;
+  reenteredPasswordTextVisibility:boolean = false;
 
   /**
    * Modal form items list
@@ -345,6 +348,5 @@ export class ModalComponent implements OnInit {
 
   validateFileInput(e) {
     this.isDisabled = e.target.value === '';
-  }
-  
+  } 
 }
