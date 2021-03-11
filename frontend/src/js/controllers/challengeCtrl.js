@@ -10,6 +10,7 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
+        vm.disableWorkerButtons = false;
         vm.areSubmissionsFailing = false;
         vm.getAllEntriesTestOption = "Include private submissions";
         vm.showPrivateIds = [];
@@ -150,11 +151,13 @@
         // API call to manage the worker from UI.
         // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
         vm.manageWorker = function(action){
+            if (action == "start" || action == "restart") vm.disableWorkerButtons = true;
             parameters.url = 'challenges/' + vm.challengeId + '/manage_worker/' + action +'/';
             parameters.method = 'PUT';
             parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
+                    vm.disableWorkerButtons = false;
                     var details = response.data;
                     if (details.action == "Success"){
                         $rootScope.notify("success", "Worker(s) " + action + "ed succesfully.");
@@ -164,6 +167,7 @@
                     }
                 },
                 onError: function(response) {
+                    vm.disableWorkerButtons = false;
                     var error = response.data.error;
                     if (error == undefined){
                         $rootScope.notify("error", "There was an error.");
