@@ -4533,3 +4533,118 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class TestAllowedEmailIds(BaseChallengePhaseClass):
+
+    def test_get_or_update_allowed_email_ids_success(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        expected = {
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+        }
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_or_update_allowed_email_ids_patch_success(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        expected = ["user1@example.com", "user2@example.com"]
+        expected.extend(self.challenge_phase.allowed_email_ids)
+        allowed_email_ids = ["user1@example.com", "user2@example.com"]
+        data = {
+            "allowed_email_ids": allowed_email_ids,
+        }
+        response = self.client.patch(self.url, data)
+        self.assertCountEqual(response.data["allowed_email_ids"], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_or_update_allowed_email_ids_delete_success(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        allowed_email_ids = ["user1@example.com", "user2@example.com"]
+        data = {
+            "allowed_email_ids": allowed_email_ids,
+        }
+        self.client.patch(self.url, data)
+        expected = {
+            "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+        }
+        response = self.client.delete(self.url, data)
+        self.assertCountEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_allowed_email_ids_with_invalid_input(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        allowed_email_ids = ('user1@example.com')
+        data = {
+            "allowed_email_ids": allowed_email_ids,
+        }
+        response = self.client.patch(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "Field allowed_email_ids should be a list.")
+
+    def test_update_allowed_email_ids_when_input_is_none(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        data = {
+            "allowed_email_ids": None,
+        }
+        response = self.client.patch(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "Field allowed_email_ids is missing.")
+
+    def test_get_allowed_email_ids_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "phase_pk": self.challenge_phase.pk + 1000,
+            },
+        )
+        expected = {
+            "error": "Challenge phase {} does not exist for challenge {}".format(
+                self.challenge_phase.pk + 1000, self.challenge.pk
+            )
+        }
+        response = self.client.get(self.url, {}, json)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_allowed_email_ids_when_challange_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:get_or_update_allowed_email_ids",
+            kwargs={
+                "challenge_pk": self.challenge.pk + 1000,
+                "phase_pk": self.challenge_phase.pk,
+            },
+        )
+        response = self.client.get(self.url, {}, json)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
