@@ -1363,22 +1363,23 @@ def create_eks_cluster_subnets(challenge):
         )
 
         # Create EFS
+        efs_client = get_boto3_client("efs", challenge_aws_keys)
         efs_creation_token = str(uuid.uuid4())[:64]
-        response = client.create_file_system(
+        response = efs_client.create_file_system(
             CreationToken=efs_creation_token,
         )
         efs_id = response["FileSystemId"]
 
         # Create mount targets for subnets
         mount_target_ids = []
-        response = client.create_mount_target(
+        response = efs_client.create_mount_target(
             FileSystemId=efs_id,
             SubnetId=subnet_1_id,
             SecurityGroups=[efs_security_group_id],
         )
         mount_target_ids.append(response["MountTargetId"])
 
-        response = client.create_mount_target(
+        response = efs_client.create_mount_target(
             FileSystemId=efs_id,
             SubnetId=subnet_2_id,
             SecurityGroups=[efs_security_group_id],
