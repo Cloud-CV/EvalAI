@@ -34,6 +34,29 @@ EVALAI_API_SERVER = os.environ.get(
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 
 
+def get_volume_mount_list(mount_path):
+    pvc_claim_name = "efs-claim"
+    volume_mount = client.V1VolumeMount(
+        mount_path=mount_path, name=pvc_claim_name
+    )
+    logger.info("Volume mount created at path: %s" % str(mount_path))
+    volume_mount_list = [volume_mount]
+    return volume_mount_list
+
+
+def get_volume_list():
+    pvc_claim_name = "efs-claim"
+    persistent_volume_claim = client.V1PersistentVolumeClaimVolumeSource(
+        claim_name=pvc_claim_name
+    )
+    volume = client.V1Volume(
+        persistent_volume_claim=persistent_volume_claim, name=pvc_claim_name
+    )
+    logger.info("Volume object created for '%s' pvc" % str(pvc_claim_name))
+    volume_list = [volume]
+    return volume_list
+
+
 def create_job_object(message, environment_image):
     """Function to create the AWS EKS Job object
 
@@ -56,6 +79,7 @@ def create_job_object(message, environment_image):
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
+    volume_mount_list = get_volume_mount_list("/dataset")
     # Configureate Pod environment container
     environment_container = client.V1Container(
         name="environment",
@@ -69,13 +93,16 @@ def create_job_object(message, environment_image):
         resources=client.V1ResourceRequirements(
             limits={"nvidia.com/gpu": "1"}
         ),
+        volume_mounts=volume_mount_list,
     )
+    volume_list = get_volume_list()
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
         spec=client.V1PodSpec(
             containers=[environment_container, agent_container],
             restart_policy="Never",
+            volumes=volume_list,
         ),
     )
     # Create the specification of deployment

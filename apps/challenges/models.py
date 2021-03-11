@@ -568,6 +568,16 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         max_length=512, null=True, blank=True
     )
     route_table_id = models.CharField(max_length=512, null=True, blank=True)
+    efs_security_group_id = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    efs_id = models.CharField(max_length=512, null=True, blank=True)
+    efs_creation_token = models.CharField(
+        max_length=256, null=True, blank=True
+    )
+    efs_mount_target_ids = ArrayField(
+        models.CharField(max_length=256, blank=True), default=list, blank=True
+    )
 
     class Meta:
         app_label = "challenges"
