@@ -75,7 +75,7 @@ def construct_and_send_challenge_details_mail(challenge):
     }
 
     template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-        "CHALLENGE_DETAILS_EMAIL"
+        "REMOTE_CHALLENGE_EVALUATION_DETAILS_EMAIL"
     )
     send_email(
         sender=settings.CLOUDCV_TEAM_EMAIL,
