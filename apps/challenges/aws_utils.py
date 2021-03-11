@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import string
+import uuid
 import yaml
 
 from botocore.exceptions import ClientError
@@ -275,6 +276,11 @@ task_definition_code_upload_worker = """
                 {{
                     "name": "EVALAI_DNS",
                     "value": "{EVALAI_DNS}"
+                }},
+
+                {{
+                    "name": "EFS_ID",
+                    "value": "{EFS_ID}"
                 }}
 
             ],
@@ -440,6 +446,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 cluster_name = cluster_details.name
                 cluster_endpoint = cluster_details.cluster_endpoint
                 cluster_certificate = cluster_details.cluster_ssl
+                efs_id = cluster_details.efs_id
             except ClientError as e:
                 logger.exception(e)
                 return e.response
@@ -458,6 +465,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 MEMORY=worker_memory,
                 log_group_name=log_group_name,
                 EVALAI_DNS=EVALAI_DNS,
+                EFS_ID=efs_id,
                 **COMMON_SETTINGS_DICT,
                 **challenge_aws_keys,
             )
@@ -1250,6 +1258,7 @@ def create_eks_cluster_subnets(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
     client = get_boto3_client("ec2", challenge_aws_keys)
     vpc_ids = []
     try:
@@ -1328,6 +1337,54 @@ def create_eks_cluster_subnets(challenge):
         )
         security_group_id = response["GroupId"]
 
+        response = client.create_security_group(
+            GroupName="evalai-code-upload-challenge-efs-{}".format(
+                environment_suffix
+            ),
+            Description="EKS nodegroup EFS",
+            VpcId=vpc_ids[0],
+        )
+        efs_security_group_id = response["GroupId"]
+
+        response = client.authorize_security_group_ingress(
+            GroupId=efs_security_group_id,
+            IpPermissions=[
+                {
+                    "FromPort": 2049,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": challenge_obj.vpc_cidr,
+                        },
+                    ],
+                    "ToPort": 2049,
+                }
+            ],
+        )
+
+        # Create EFS
+        efs_creation_token = str(uuid.uuid4())[:64]
+        response = client.create_file_system(
+            CreationToken=efs_creation_token,
+        )
+        efs_id = response["FileSystemId"]
+
+        # Create mount targets for subnets
+        mount_target_ids = []
+        response = client.create_mount_target(
+            FileSystemId=efs_id,
+            SubnetId=subnet_1_id,
+            SecurityGroups=[efs_security_group_id],
+        )
+        mount_target_ids.append(response["MountTargetId"])
+
+        response = client.create_mount_target(
+            FileSystemId=efs_id,
+            SubnetId=subnet_2_id,
+            SecurityGroups=[efs_security_group_id],
+        )
+        mount_target_ids.append(response["MountTargetId"])
+
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
         )
@@ -1340,6 +1397,10 @@ def create_eks_cluster_subnets(challenge):
                 "security_group_id": security_group_id,
                 "subnet_1_id": subnet_1_id,
                 "subnet_2_id": subnet_2_id,
+                "efs_security_group_id": efs_security_group_id,
+                "efs_id": efs_id,
+                "efs_creation_token": efs_creation_token,
+                "efs_mount_target_ids": mount_target_ids,
             },
             partial=True,
         )
