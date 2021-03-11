@@ -1043,7 +1043,7 @@ def get_logs_from_cloudwatch(
     logs = []
     if settings.DEBUG:
         logs = [
-            "The worker logs in the development environment are available on the terminal. Please use docker-compose worker -f to view the logs."
+            "The worker logs in the development environment are available on the terminal. Please use docker-compose logs -f worker to view the logs."
         ]
     else:
         try:
