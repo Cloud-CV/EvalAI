@@ -24,7 +24,7 @@
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
         vm.searchModeOn = false;
-        vm.noneSearchedChallenge = false;
+        vm.noSearchChallengeResult = false;
 
         vm.reset = function () {
             vm.currentSearchTerm = "";
@@ -45,8 +45,6 @@
             parameters.method = 'GET';
             if (userKey) {
                 parameters.token = userKey;
-            } else {
-                parameters.token = null;
             }
 
             parameters.url = 'challenges/challenge/' + vm.currentSearchTerm + '/';
@@ -57,9 +55,9 @@
                     vm.currentList = data;
 
                     if (vm.currentList.length === 0) {
-                        vm.noneSearchedChallenge = true;
+                        vm.noSearchChallengeResult = true;
                     } else {
-                        vm.noneSearchedChallenge = false;
+                        vm.noSearchChallengeResult = false;
                     }
 
                     var timezone = moment.tz.guess();
@@ -67,9 +65,9 @@
 
                         var descLength = vm.currentList[i].description.length;
                         if (descLength >= 50) {
-                            vm.currentList[i].isLarge = "...";
+                            vm.currentList[i].isLarge = true;
                         } else {
-                            vm.currentList[i].isLarge = "";
+                            vm.currentList[i].isLarge = false;
                         }
                         var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
                         vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
@@ -115,9 +113,9 @@
 
                         var descLength = vm.currentList[i].description.length;
                         if (descLength >= 50) {
-                            vm.currentList[i].isLarge = "...";
+                            vm.currentList[i].isLarge = true;
                         } else {
-                            vm.currentList[i].isLarge = "";
+                            vm.currentList[i].isLarge = false;
                         }
                         var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
                         vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
@@ -151,9 +149,9 @@
                                 var descLength = vm.upcomingList[i].description.length;
 
                                 if (descLength >= 50) {
-                                    vm.upcomingList[i].isLarge = "...";
+                                    vm.upcomingList[i].isLarge = true;
                                 } else {
-                                    vm.upcomingList[i].isLarge = "";
+                                    vm.upcomingList[i].isLarge = false;
                                 }
 
                                 var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
@@ -185,13 +183,11 @@
 
                                     var timezone = moment.tz.guess();
                                     for (var i in vm.pastList) {
-
-
                                         var descLength = vm.pastList[i].description.length;
                                         if (descLength >= 50) {
-                                            vm.pastList[i].isLarge = "...";
+                                            vm.pastList[i].isLarge = true;
                                         } else {
-                                            vm.pastList[i].isLarge = "";
+                                            vm.pastList[i].isLarge = false;
                                         }
 
                                         var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();

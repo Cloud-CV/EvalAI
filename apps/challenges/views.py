@@ -417,8 +417,9 @@ def disable_challenge(request, challenge_pk):
 @throttle_classes([AnonRateThrottle])
 def get_challenges_by_title(request, challenge_title):
     """
-    Returns a particular challenge by title. The string in request should exactly match the title of challenge.
+    Returns a particular challenge by title.
     """
+    # The string requested should exactly match the title of challenge.
     challenges = Challenge.objects.filter(
         title__icontains=challenge_title, approved_by_admin=True, published=True
     )
