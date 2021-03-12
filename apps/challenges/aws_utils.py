@@ -1273,6 +1273,11 @@ def create_eks_cluster_subnets(challenge):
 
     # Create internet gateway and attach to vpc
     try:
+        # Enable DNS resolution for VPC
+        response = client.modify_vpc_attribute(
+            EnableDnsHostnames={"Value": True}, VpcId=vpc_ids[0]
+        )
+
         response = client.create_internet_gateway()
         internet_gateway_id = response["InternetGateway"]["InternetGatewayId"]
         client.attach_internet_gateway(
