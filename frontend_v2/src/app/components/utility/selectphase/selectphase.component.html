@@ -36,7 +36,7 @@
 
 <ng-container *ngIf="phaseSelectionType == 'selectBox' && phaseSelectionListType == 'phase'">
   <mat-form-field>
-    <mat-label class="fs-16" [ngClass]="{ 'hide-label': phaseName !== '' }">Select phase</mat-label>
+    <mat-label class="fs-16 phase-placeholder" [ngClass]="{ 'hide-label': phaseName !== '' }">Select phase</mat-label>
     <mat-select class="rm-margin">
       <mat-select-trigger>
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{ phaseName }} </span>
