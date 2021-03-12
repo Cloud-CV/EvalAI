@@ -1370,22 +1370,6 @@ def create_eks_cluster_subnets(challenge):
         )
         efs_id = response["FileSystemId"]
 
-        # Create mount targets for subnets
-        mount_target_ids = []
-        response = efs_client.create_mount_target(
-            FileSystemId=efs_id,
-            SubnetId=subnet_1_id,
-            SecurityGroups=[efs_security_group_id],
-        )
-        mount_target_ids.append(response["MountTargetId"])
-
-        response = efs_client.create_mount_target(
-            FileSystemId=efs_id,
-            SubnetId=subnet_2_id,
-            SecurityGroups=[efs_security_group_id],
-        )
-        mount_target_ids.append(response["MountTargetId"])
-
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
         )
@@ -1401,7 +1385,6 @@ def create_eks_cluster_subnets(challenge):
                 "efs_security_group_id": efs_security_group_id,
                 "efs_id": efs_id,
                 "efs_creation_token": efs_creation_token,
-                "efs_mount_target_ids": mount_target_ids,
             },
             partial=True,
         )
@@ -1501,12 +1484,35 @@ def create_eks_cluster(challenge):
             challenge_evaluation_cluster = (
                 ChallengeEvaluationCluster.objects.get(challenge=challenge_obj)
             )
+
+            efs_client = get_boto3_client("efs", challenge_aws_keys)
+            # Create mount targets for subnets
+            mount_target_ids = []
+            response = efs_client.create_mount_target(
+                FileSystemId=challenge_evaluation_cluster.efs_id,
+                SubnetId=challenge_evaluation_cluster.subnet_1_id,
+                SecurityGroups=[
+                    challenge_evaluation_cluster.efs_security_group_id
+                ],
+            )
+            mount_target_ids.append(response["MountTargetId"])
+
+            response = efs_client.create_mount_target(
+                FileSystemId=challenge_evaluation_cluster.efs_id,
+                SubnetId=challenge_evaluation_cluster.subnet_2_id,
+                SecurityGroups=[
+                    challenge_evaluation_cluster.efs_security_group_id
+                ],
+            )
+            mount_target_ids.append(response["MountTargetId"])
+
             serializer = ChallengeEvaluationClusterSerializer(
                 challenge_evaluation_cluster,
                 data={
                     "name": cluster_name,
                     "cluster_endpoint": cluster_ep,
                     "cluster_ssl": cluster_cert,
+                    "efs_mount_target_ids": mount_target_ids,
                 },
                 partial=True,
             )
