@@ -92,8 +92,6 @@
             parameters.method = 'GET';
             if (userKey) {
                 parameters.token = userKey;
-            } else {
-                parameters.token = null;
             }
             parameters.url = 'challenges/challenge/present';
 
