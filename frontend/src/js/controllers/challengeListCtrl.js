@@ -65,9 +65,9 @@
 
                         var descLength = vm.currentList[i].description.length;
                         if (descLength >= 50) {
-                            vm.currentList[i].isLarge = true;
+                            vm.currentList[i].isLarge = '...';
                         } else {
-                            vm.currentList[i].isLarge = false;
+                            vm.currentList[i].isLarge = '';
                         }
                         var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
                         vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
@@ -111,9 +111,9 @@
 
                         var descLength = vm.currentList[i].description.length;
                         if (descLength >= 50) {
-                            vm.currentList[i].isLarge = true;
+                            vm.currentList[i].isLarge = '...';
                         } else {
-                            vm.currentList[i].isLarge = false;
+                            vm.currentList[i].isLarge = '';
                         }
                         var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
                         vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
@@ -147,9 +147,9 @@
                                 var descLength = vm.upcomingList[i].description.length;
 
                                 if (descLength >= 50) {
-                                    vm.upcomingList[i].isLarge = true;
+                                    vm.upcomingList[i].isLarge = '...';
                                 } else {
-                                    vm.upcomingList[i].isLarge = false;
+                                    vm.upcomingList[i].isLarge = '';
                                 }
 
                                 var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
@@ -183,9 +183,9 @@
                                     for (var i in vm.pastList) {
                                         var descLength = vm.pastList[i].description.length;
                                         if (descLength >= 50) {
-                                            vm.pastList[i].isLarge = true;
+                                            vm.pastList[i].isLarge = '...';
                                         } else {
-                                            vm.pastList[i].isLarge = false;
+                                            vm.pastList[i].isLarge = '';
                                         }
 
                                         var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
