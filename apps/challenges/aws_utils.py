@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import string
+import time
 import uuid
 import yaml
 
@@ -1369,6 +1370,24 @@ def create_eks_cluster_subnets(challenge):
             CreationToken=efs_creation_token,
         )
         efs_id = response["FileSystemId"]
+
+        # Adding custom retry logic to wait for EFS creation
+        # as boto3 doesn't have a EFS waiter
+        max_retries = 5
+        retry = 0
+        while retry < max_retries:
+            describe_efs_response = efs_client.describe_file_systems(
+                CreationToken=efs_creation_token, FileSystemId=efs_id
+            )
+            if (
+                len(describe_efs_response["FileSystems"]) == 1
+                and describe_efs_response["FileSystems"][0]["LifeCycleState"]
+                == "available"
+            ):
+                break
+            # Add 5 second delay before making another boto3 API call
+            time.sleep(5)
+            retry += 1
 
         # Create mount targets for subnets
         mount_target_ids = []
