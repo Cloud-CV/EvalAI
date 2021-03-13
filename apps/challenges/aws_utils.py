@@ -1081,7 +1081,7 @@ def get_task_status(task_def_arn):
     else:
         try:
             response = client.describe_tasks(
-                tasks = [
+                tasks=[
                     task_def_arn
                 ]
             )
