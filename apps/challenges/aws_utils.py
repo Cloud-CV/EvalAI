@@ -1067,6 +1067,38 @@ def get_logs_from_cloudwatch(
     return logs
 
 
+def get_task_status(task_def_arn):
+    """
+    To fetch current status of worker for the given task_def_arn
+    """
+    client = get_boto3_client("ecs", aws_keys)
+    worker_status = {}
+    if settings.DEBUG:
+        worker_status = {
+            "error": False,
+            "details": "Not available for development environment"
+        }
+    else:
+        try:
+            response = client.describe_tasks(
+                tasks = [
+                    task_def_arn
+                ]
+            )
+            task_details = response["tasks"][0]
+            worker_status = {
+                "error": False,
+                "details": task_details
+            }
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"Error fetching worker status: {e}"
+            }
+    return worker_status
+
+
 def delete_log_group(log_group_name):
     if settings.DEBUG:
         pass

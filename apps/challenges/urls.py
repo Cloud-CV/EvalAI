@@ -182,6 +182,11 @@ urlpatterns = [
         name="get_worker_logs",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/get_worker_status/$",
+        views.get_worker_status,
+        name="get_worker_status",
+    ),
+    url(
         r"^(?P<challenge_pk>[0-9]+)/manage_worker/(?P<action>[\w-]+)/$",
         views.manage_worker,
         name="manage_worker",
