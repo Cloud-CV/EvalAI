@@ -52,9 +52,9 @@ def get_yaml_files_from_challenge_config(zip_ref):
     yaml_file_name = None
     extracted_folder_name = None
     for name in zip_ref.namelist():
-        if (name.endswith(".yaml") or name.endswith(".yml")) and (
-            not name.startswith("__MACOSX")
-        ):
+        if (
+            name.lower().endswith(".yaml") or name.lower().endswith(".yml")
+        ) and (not name.startswith("__MACOSX")):
             yaml_file_name = name
             extracted_folder_name = yaml_file_name.split(
                 basename(yaml_file_name)
@@ -203,7 +203,7 @@ def is_challenge_phase_split_mapping_valid(
 def get_value_from_field(data, base_location, field_name):
     file_path = join(base_location, data.get(field_name))
     field_value = None
-    if file_path.endswith(".html") and isfile(file_path):
+    if file_path.lower().endswith(".html") and isfile(file_path):
         field_value = get_file_content(file_path, "rb").decode("utf-8")
     return field_value
 
@@ -267,9 +267,9 @@ def validate_challenge_config_util(
     # Check for the challenge logo
     image = yaml_file_data.get("image")
     if image and (
-        image.endswith(".jpg")
-        or image.endswith(".jpeg")
-        or image.endswith(".png")
+        image.lower().endswith(".jpg")
+        or image.lower().endswith(".jpeg")
+        or image.lower().endswith(".png")
     ):
         challenge_image_path = join(
             BASE_LOCATION, unique_folder_name, extracted_folder_name, image
