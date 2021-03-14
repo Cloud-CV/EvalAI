@@ -111,6 +111,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   showLeaderboardUpdate = false;
 
   /**
+   * Returns true if leaderboard is public for the selected phase
+   */
+  isSelectedPhaseLeaderboardPublic = true;
+
+  /**
    * Currently selected phase split's id
    */
   selectedPhaseSplitId: any = null;
@@ -334,6 +339,10 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
+        let selectedPhase = SELF.phases.find((phase) => {
+          return phase.id === SELF.selectedPhaseSplit.challenge_phase
+        })
+        SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
       }
     };
   }
