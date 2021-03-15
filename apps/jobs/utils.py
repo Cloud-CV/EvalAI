@@ -364,7 +364,6 @@ def calculate_distinct_sorted_leaderboard_data(
             if challenge_phase_split.is_leaderboard_order_descending
             else False,
         )
-        
     distinct_sorted_leaderboard_data = []
     team_list = []
     for data in sorted_leaderboard_data:

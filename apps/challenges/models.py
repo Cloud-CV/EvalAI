@@ -395,7 +395,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     is_leaderboard_order_descending = models.BooleanField(default=True)
     show_leaderboard_by_latest_submission = models.BooleanField(default=False)
     show_execution_time = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return "{0} : {1}".format(
             self.challenge_phase.name, self.dataset_split.name

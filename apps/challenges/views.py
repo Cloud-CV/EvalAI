@@ -2211,7 +2211,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     challenge_phase_split = get_challenge_phase_split_model(
         challenge_phase_split_pk
     )
-    
+
     if request.method == "PATCH":
         serializer = ZipChallengePhaseSplitSerializer(
             challenge_phase_split, data=request.data, partial=True
