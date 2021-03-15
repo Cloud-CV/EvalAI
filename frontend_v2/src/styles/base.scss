@@ -425,7 +425,7 @@ mat-chip {
   text-align: justify;
 }
 
-.ev-md-container { 
+.ev-md-container {
   padding: 20px 30px 30px 30px;
 }
 
@@ -1181,11 +1181,11 @@ code {
   border: #eff0f1 dashed 1px;
   padding: 6px;
   border-radius: 10px;
-	display: inline-block;
-	max-width: 90%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .code-btn {
@@ -1627,7 +1627,7 @@ th {
   display: none;
 }
 
-/* autofill transparent */
+/* autofill black */
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -1986,7 +1986,8 @@ input[type='radio'].selectTeam + label {
 
 .input-field input[type='email']:focus + label,
 .input-field input[type='password']:focus + label,
-.input-field input[type='text']:focus + label {
+.input-field input[type='text']:focus + label,
+.input-field input[type='datetime-local']:focus + label {
   color: $light-gray;
 }
 
@@ -1994,7 +1995,8 @@ input[type='radio'].selectTeam + label {
 
 .input-field input[type='email']:focus,
 .input-field input[type='password']:focus,
-.input-field input[type='text']:focus {
+.input-field input[type='text']:focus,
+.input-field input[type='datetime-local']:focus {
   border-bottom: 1px solid $link-hover-dark;
   box-shadow: 0 0px 0 0 $link-hover-dark;
 }
