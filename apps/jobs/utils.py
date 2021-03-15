@@ -334,6 +334,9 @@ def calculate_distinct_sorted_leaderboard_data(
 
     all_banned_participant_team = []
     for leaderboard_item in leaderboard_data:
+        if challenge_phase_split.show_execution_time:
+            leaderboard_data_submission = Submission.objects.get(pk=leaderboard_item["submission__id"])
+            leaderboard_item["submission__execution_time"] = leaderboard_data_submission.execution_time
         participant_team_id = leaderboard_item["submission__participant_team"]
         participant_team = ParticipantTeam.objects.get(id=participant_team_id)
         all_participants_email_ids = (
@@ -361,7 +364,7 @@ def calculate_distinct_sorted_leaderboard_data(
             if challenge_phase_split.is_leaderboard_order_descending
             else False,
         )
-
+        
     distinct_sorted_leaderboard_data = []
     team_list = []
     for data in sorted_leaderboard_data:
