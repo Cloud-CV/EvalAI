@@ -98,6 +98,18 @@
                                     </span>
                                 </a>
                             </td>
+                            <td ng-if="challenge.selectedPhaseSplit.show_execution_time" data-field="execution_time">
+                                <a href="#"
+                                ng-click="challenge.sortLeaderboard(challenge, 'exec');">
+                                <span class="fs-20 w-300">Execution time (sec)</span>
+                                <span class="fa-stack fa-1x">
+                                    <i class="fa fa-sort-asc fa-stack-1x"
+                                        ng-class="challenge.reverseSort && challenge.sortColumn == 'exec' ? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                    <i class="fa fa-sort-desc fa-stack-1x"
+                                        ng-class="!challenge.reverseSort && challenge.sortColumn == 'exec'  ? 'text-dark-black' : 'text-light-black w-300'"></i>
+                                </span>
+                            </a>      
+                            </td>
                             <td data-field="submission_time">
                                 <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
                                     <span class="fs-20 w-300">Last submission at</span>
@@ -137,6 +149,7 @@
                                 <span ng-if="key.error != nil"> ±
                                     {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                             </td>
+                            <td ng-if="challenge.selectedPhaseSplit.show_execution_time">{{ key.submission__execution_time }}</td>
                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                             </td>
                             <td ng-if="challenge.showSubmissionMetaAttributesOnLeaderboard">
