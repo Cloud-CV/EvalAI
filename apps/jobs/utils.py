@@ -4,8 +4,7 @@ import os
 import requests
 import tempfile
 import urllib.request
-
-from django.db.models import FloatField, Q
+from django.db.models import FloatField, Q, F, fields, ExpressionWrapper
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from rest_framework import status
@@ -299,35 +298,65 @@ def calculate_distinct_sorted_leaderboard_data(
         submission__status__in=all_valid_submission_status,
     ).order_by("-created_at")
 
-    leaderboard_data = leaderboard_data.annotate(
-        filtering_score=RawSQL(
-            "result->>%s", (default_order_by,), output_field=FloatField()
-        ),
-        filtering_error=RawSQL(
-            "error->>%s",
-            ("error_{0}".format(default_order_by),),
-            output_field=FloatField(),
-        ),
-    ).values(
-        "id",
-        "submission__participant_team",
-        "submission__participant_team__team_name",
-        "submission__participant_team__team_url",
-        "submission__is_baseline",
-        "submission__is_public",
-        "challenge_phase_split",
-        "result",
-        "error",
-        "filtering_score",
-        "filtering_error",
-        "leaderboard__schema",
-        "submission__submitted_at",
-        "submission__method_name",
-        "submission__id",
-        "submission__submission_metadata",
-        "submission__started_at",
-        "submission__completed_at"
-    )
+    if challenge_phase_split.show_execution_time:
+        time_diff_expression = ExpressionWrapper(F('submission__completed_at') - F('submission__started_at'), output_field=fields.DurationField())
+        leaderboard_data = leaderboard_data.annotate(
+            filtering_score=RawSQL(
+                "result->>%s", (default_order_by,), output_field=FloatField()
+            ),
+            filtering_error=RawSQL(
+                "error->>%s",
+                ("error_{0}".format(default_order_by),),
+                output_field=FloatField(),
+            ),
+            submission__execution_time=time_diff_expression
+        ).values(
+            "id",
+            "submission__participant_team",
+            "submission__participant_team__team_name",
+            "submission__participant_team__team_url",
+            "submission__is_baseline",
+            "submission__is_public",
+            "challenge_phase_split",
+            "result",
+            "error",
+            "filtering_score",
+            "filtering_error",
+            "leaderboard__schema",
+            "submission__submitted_at",
+            "submission__method_name",
+            "submission__id",
+            "submission__submission_metadata",
+            "submission__execution_time"
+        )
+    else:
+        leaderboard_data = leaderboard_data.annotate(
+            filtering_score=RawSQL(
+                "result->>%s", (default_order_by,), output_field=FloatField()
+            ),
+            filtering_error=RawSQL(
+                "error->>%s",
+                ("error_{0}".format(default_order_by),),
+                output_field=FloatField(),
+            ),
+        ).values(
+            "id",
+            "submission__participant_team",
+            "submission__participant_team__team_name",
+            "submission__participant_team__team_url",
+            "submission__is_baseline",
+            "submission__is_public",
+            "challenge_phase_split",
+            "result",
+            "error",
+            "filtering_score",
+            "filtering_error",
+            "leaderboard__schema",
+            "submission__submitted_at",
+            "submission__method_name",
+            "submission__id",
+            "submission__submission_metadata",
+        )
     if only_public_entries:
         if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
             leaderboard_data = leaderboard_data.filter(
@@ -379,11 +408,7 @@ def calculate_distinct_sorted_leaderboard_data(
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     for item in distinct_sorted_leaderboard_data:
-        if challenge_phase_split.show_execution_time:
-            item["submission__execution_time"] = (item["submission__completed_at"] - item["submission__started_at"]).total_seconds()
         item_result = []
-        item.pop("submission__completed_at", None)
-        item.pop("submission__started_at", None)
         for index in leaderboard_labels:
             # Handle case for partially evaluated submissions
             if index in item["result"].keys():
