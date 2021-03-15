@@ -325,6 +325,8 @@ def calculate_distinct_sorted_leaderboard_data(
         "submission__method_name",
         "submission__id",
         "submission__submission_metadata",
+        "submission__started_at",
+        "submission__completed_at"
     )
     if only_public_entries:
         if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
@@ -334,9 +336,6 @@ def calculate_distinct_sorted_leaderboard_data(
 
     all_banned_participant_team = []
     for leaderboard_item in leaderboard_data:
-        if challenge_phase_split.show_execution_time:
-            leaderboard_data_submission = Submission.objects.get(pk=leaderboard_item["submission__id"])
-            leaderboard_item["submission__execution_time"] = leaderboard_data_submission.execution_time
         participant_team_id = leaderboard_item["submission__participant_team"]
         participant_team = ParticipantTeam.objects.get(id=participant_team_id)
         all_participants_email_ids = (
@@ -350,7 +349,6 @@ def calculate_distinct_sorted_leaderboard_data(
             leaderboard_item.update(filtering_error=0)
         if leaderboard_item["filtering_score"] is None:
             leaderboard_item.update(filtering_score=0)
-
     if challenge_phase_split.show_leaderboard_by_latest_submission:
         sorted_leaderboard_data = leaderboard_data
     else:
@@ -381,7 +379,11 @@ def calculate_distinct_sorted_leaderboard_data(
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     for item in distinct_sorted_leaderboard_data:
+        if challenge_phase_split.show_execution_time:
+            item["submission__execution_time"] = (item["submission__completed_at"] - item["submission__started_at"]).total_seconds()
         item_result = []
+        item.pop("submission__completed_at", None)
+        item.pop("submission__started_at", None)
         for index in leaderboard_labels:
             # Handle case for partially evaluated submissions
             if index in item["result"].keys():
@@ -395,7 +397,6 @@ def calculate_distinct_sorted_leaderboard_data(
                 item["error"]["error_{0}".format(index)]
                 for index in leaderboard_labels
             ]
-
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
 
 
