@@ -857,7 +857,7 @@
                 return key.submission__participant_team__team_name;
             }
             else if (vm.sortColumn == 'exec'){
-                return key.submission__execution_time
+                return key.submission__execution_time;
             }
             return 0;
         };
