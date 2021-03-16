@@ -2,10 +2,12 @@
  * Config for the router
  */
 
+import 'ng-meta'
+
 (function () {
     'use strict';
     angular
-        .module('evalai')
+        .module('evalai', ['ngMeta'])
         .config(configure);
 
     var baseUrl = "dist/views";
@@ -31,9 +33,12 @@
             templateUrl: baseUrl + "/web/landing.html",
             controller: 'MainCtrl',
             controllerAs: 'main',
+            data: {
                 'meta': {
-                  'title': 'Welcome'
+                  'title': 'Welcome',
+                  desc
                 }
+              }
         };
 
         // Auth related urls
@@ -533,6 +538,8 @@
 
         $stateProvider.state(manage);
 
+        $stateProvider.decorator('data', ngMetaProvider.mergeNestedStateData);
+
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
             state.go('error-404');
@@ -548,12 +555,12 @@
     'use strict';
 
     angular
-        .module('evalai')
+        .module('evalai', ['ngMeta'])
         .run(runFunc);
 
-    runFunc.$inject = ['$rootScope', '$state', 'utilities', '$window', '$location', 'toaster'];
+    runFunc.$inject = ['$rootScope', '$state', 'utilities', '$window', '$location', 'toaster', 'ngMeta'];
     
-    function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
+    function runFunc($rootScope, $state, utilities, $window, $location, toaster, ngMeta) {
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
         // var timeNow = (new Date()).getTime();
@@ -562,6 +569,8 @@
         // if ((timeNow - getTokenTime) > tokenExpTime) {
         //     utilities.resetStorage();
         // }
+
+        ngMeta.init();
 
         $rootScope.isAuth = false;
         // check for valid user
