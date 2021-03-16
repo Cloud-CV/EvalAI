@@ -10,13 +10,14 @@
 
     var baseUrl = "dist/views";
 
-    configure.$inject = ['$stateProvider', '$urlRouterProvider', '$locationProvider', '$urlMatcherFactoryProvider'];
+    configure.$inject = ['$stateProvider', '$urlRouterProvider', '$locationProvider', '$urlMatcherFactoryProvider', 'ngMetaProvider'];
 
-    function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
+    function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider, ngMetaProvider) {
 
         //in order to prevent 404 for trailing '/' in urls
         $urlMatcherFactoryProvider.strictMode(false);
 
+        
         // formating hashed url
         $locationProvider.html5Mode({
             enabled: true,
@@ -30,7 +31,9 @@
             templateUrl: baseUrl + "/web/landing.html",
             controller: 'MainCtrl',
             controllerAs: 'main',
-            title: "Welcome"
+                'meta': {
+                  'title': 'Welcome'
+                }
         };
 
         // Auth related urls
@@ -589,8 +592,6 @@
         });
 
         $rootScope.$on('$stateChangeSuccess', function() {
-            // Save the route title
-            $rootScope.pageTitle = $state.current.title;
             // Scroll to top
             $window.scrollTo(0, 0);
             // Google Analytics Scripts

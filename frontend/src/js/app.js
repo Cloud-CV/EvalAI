@@ -14,7 +14,8 @@ angular
 		'angularTrix',
 		'angularMoment',
 		'ngclipboard',
-		'moment-picker'
+		'moment-picker',
+		'ngMeta'
 	]).config(['$compileProvider', function($compileProvider) {
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
 }]);
