@@ -872,6 +872,14 @@
             scope.sortColumn = column;
         };
 
+        vm.format_execution_time = function(execution_time) {
+            var execution_time_hr = Math.floor(execution_time/60/60);
+            var execution_time_min = Math.floor(execution_time/60) - (execution_time_hr * 60);
+            var execution_time_sec = Math.floor(execution_time % 60);
+            var formatted = execution_time_hr + 'hr ' + execution_time_min + 'min ' + execution_time_sec + 'sec';
+            return formatted;
+        };
+
         // my submissions
         vm.isResult = false;
 
