@@ -873,11 +873,15 @@
         };
 
         vm.format_execution_time = function(execution_time) {
-            var execution_time_hr = Math.floor(execution_time/60/60);
-            var execution_time_min = Math.floor(execution_time/60) - (execution_time_hr * 60);
-            var execution_time_sec = Math.floor(execution_time % 60);
-            var formatted = execution_time_hr + 'hr ' + execution_time_min + 'min ' + execution_time_sec + 'sec';
-            return formatted;
+            var executiontime = new Date(execution_time * 1000);
+            var days = executiontime.getUTCDate() - 1;
+            var hours = executiontime.getUTCHours();
+            var minutes = executiontime.getUTCMinutes();
+            var seconds = executiontime.getSeconds();
+            var timeString = days.toString().padStart(2, '0') + ' day ' + hours.toString().padStart(2, '0') + ' hr ' + 
+                minutes.toString().padStart(2, '0') + ' min ' + 
+                seconds.toString().padStart(2, '0') + ' sec';
+            return timeString;
         };
 
         // my submissions
