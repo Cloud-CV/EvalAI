@@ -149,7 +149,7 @@
                                 <span ng-if="key.error != nil"> ±
                                     {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                             </td>
-                            <td ng-if="challenge.selectedPhaseSplit.show_execution_time">{{ challenge.format_execution_time(key.submission__execution_time) }}</td>
+                            <td ng-if="challenge.selectedPhaseSplit.show_execution_time">{{ key.submission__execution_time | secondsToDateTime }}</td>
                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                             </td>
                             <td ng-if="challenge.showSubmissionMetaAttributesOnLeaderboard">
