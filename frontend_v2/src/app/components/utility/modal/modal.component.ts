@@ -78,17 +78,17 @@ export class ModalComponent implements OnInit {
   /**
    * old_password field visibility
    */
-  oldpasswordTextVisibility:boolean = false;
+  oldPasswordTextVisibility:boolean = false;
 
   /**
-   * new_password1 field visibility
+   * new_password field visibility
    */
   newPasswordTextVisibility:boolean = false;
 
    /**
-   * new_password2 field visibility
+   * confirm_new_password field visibility
    */
-  reenteredPasswordTextVisibility:boolean = false;
+  reEnteredPasswordTextVisibility:boolean = false;
 
   /**
    * Modal form items list
