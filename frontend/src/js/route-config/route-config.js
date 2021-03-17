@@ -33,12 +33,10 @@ import 'ng-meta'
             templateUrl: baseUrl + "/web/landing.html",
             controller: 'MainCtrl',
             controllerAs: 'main',
-            data: {
-                'meta': {
+            meta: {
                   'title': 'Welcome',
-                  desc
+                  'url': 
                 }
-              }
         };
 
         // Auth related urls
@@ -537,8 +535,6 @@ import 'ng-meta'
         $stateProvider.state(get_submission_related_files);
 
         $stateProvider.state(manage);
-
-        $stateProvider.decorator('data', ngMetaProvider.mergeNestedStateData);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
