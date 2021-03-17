@@ -1773,7 +1773,7 @@ def get_all_submissions_of_challenge(
         ),
         status.HTTP_404_NOT_FOUND: openapi.Response(
             "{'error': 'Challenge Phase does not exist'}"
-        )
+        ),
     },
 )
 @swagger_auto_schema(
@@ -1809,7 +1809,7 @@ def get_all_submissions_of_challenge(
         ),
         status.HTTP_401_UNAUTHORIZED: openapi.Response(
             "{'error': 'Sorry, you do not belong to this Host Team!'}"
-        )
+        ),
     },
 )
 @api_view(["GET", "POST"])
@@ -2802,11 +2802,12 @@ def get_worker_logs(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def manage_worker(request, challenge_pk, action):
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if not request.user.is_superuser:
+        if not is_user_a_host_of_challenge(request.user, challenge_pk):
+            response_data = {
+                "error": "Sorry, you are not authorized for access worker operations."
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
     if action not in ("start", "stop", "restart"):
