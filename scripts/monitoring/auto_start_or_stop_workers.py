@@ -19,22 +19,20 @@ def execute_get_request(url):
 
 
 def start_worker(challenge_id):
-    start_worker_endpoint = "{}/api/challenges/{}/manage_worker/start".format(
+    start_worker_endpoint = "{}/api/challenges/{}/manage_worker/start/".format(
         evalai_endpoint, challenge_id
     )
-    response = requests.post(
+    response = requests.put(
         start_worker_endpoint, headers=authorization_header
     )
     return response
 
 
 def stop_worker(challenge_id):
-    stop_worker_endpoint = "{}/api/challenges/{}/manage_worker/stop".format(
+    stop_worker_endpoint = "{}/api/challenges/{}/manage_worker/stop/".format(
         evalai_endpoint, challenge_id
     )
-    response = requests.post(
-        stop_worker_endpoint, headers=authorization_header
-    )
+    response = requests.put(stop_worker_endpoint, headers=authorization_header)
     return response
 
 
