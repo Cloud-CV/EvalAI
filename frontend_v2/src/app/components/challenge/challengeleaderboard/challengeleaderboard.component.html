@@ -163,7 +163,7 @@
                   </td>
                   <td data-field="submission_time" class="align-center">
                     <a (click)="sortNonMetricsColumn('date')">
-                      <span class="fs-18 fw-regular">Last submission at</span>
+                      <span class="fs-18 fw-regular">Submitted at</span>
                       <span class="fa-stack fa-1x">
                         <i
                           class="fa fa-sort-asc fa-stack-1x"
@@ -186,7 +186,7 @@
                   <td>{{ initial_ranking[key.id] }}</td>
                   <td class="fw-regular">
                     {{ key.submission__participant_team__team_name }}
-                    <span *ngIf="key.submission__is_public === false" class="private">
+                    <span *ngIf="key.submission__is_public === false && isSelectedPhaseLeaderboardPublic" class="private">
                       <mat-chip-list>
                         <mat-chip>P</mat-chip>
                       </mat-chip-list>

@@ -2838,6 +2838,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -2874,6 +2875,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -2883,6 +2885,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
             },
         ]
         self.client.force_authenticate(user=self.user)
@@ -4009,6 +4012,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
             "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+            "show_execution_time": False,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
