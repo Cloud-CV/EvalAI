@@ -1773,7 +1773,7 @@ def get_all_submissions_of_challenge(
         ),
         status.HTTP_404_NOT_FOUND: openapi.Response(
             "{'error': 'Challenge Phase does not exist'}"
-        )
+        ),
     },
 )
 @swagger_auto_schema(
@@ -1809,7 +1809,7 @@ def get_all_submissions_of_challenge(
         ),
         status.HTTP_401_UNAUTHORIZED: openapi.Response(
             "{'error': 'Sorry, you do not belong to this Host Team!'}"
-        )
+        ),
     },
 )
 @api_view(["GET", "POST"])
@@ -2892,7 +2892,10 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         serializer = ChallengePhaseCreateSerializer(
             challenge_phase,
             data={"test_annotation": test_annotation_file},
-            context={"challenge": challenge_phase.challenge},
+            context={
+                "challenge": challenge_phase.challenge,
+                "annotations_uploaded_using_cli": True,
+            },
             partial=True,
         )
         if serializer.is_valid():
@@ -3320,7 +3323,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase = ChallengePhase.objects.filter(
                     challenge__pk=challenge.pk, config_id=data["id"]
                 ).first()
-                if challenge_test_annotation_file:
+                if (
+                    challenge_test_annotation_file
+                    and challenge_phase.annotations_uploaded_using_cli is False
+                ):
                     serializer = ChallengePhaseCreateSerializer(
                         challenge_phase,
                         data=data,
@@ -3329,6 +3335,19 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "test_annotation": challenge_test_annotation_file,
                             "config_id": data["config_id"],
                         },
+                    )
+                elif (
+                    challenge_test_annotation_file
+                    and challenge_phase.annotations_uploaded_using_cli
+                ):
+                    serializer = ChallengePhaseCreateSerializer(
+                        challenge_phase,
+                        data=data,
+                        context={
+                            "challenge": challenge,
+                            "config_id": data["config_id"],
+                        },
+                        partial=True,
                     )
                 else:
                     serializer = ChallengePhaseCreateSerializer(

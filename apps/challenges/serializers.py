@@ -305,6 +305,13 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             test_annotation = context.get("test_annotation")
             if test_annotation:
                 kwargs["data"]["test_annotation"] = test_annotation
+            annotations_uploaded_using_cli = context.get(
+                "annotations_uploaded_using_cli"
+            )
+            if annotations_uploaded_using_cli:
+                kwargs["data"][
+                    "annotations_uploaded_using_cli"
+                ] = annotations_uploaded_using_cli
             exclude_fields = context.get("exclude_fields")
             if exclude_fields:
                 # check to avoid exception because of invalid fields
@@ -332,6 +339,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "is_submission_public",
+            "annotations_uploaded_using_cli",
             "codename",
             "test_annotation",
             "slug",
