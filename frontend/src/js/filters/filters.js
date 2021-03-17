@@ -10,7 +10,7 @@
         .filter('ceil', ceil);
 
     angular.module('evalai')
-            .filter('secondsToDateTime', format_execution_time)
+            .filter('format_execution_time', format_execution_time)
 
     function format_execution_time() {
         return function(execution_time) {
