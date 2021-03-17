@@ -9,6 +9,12 @@
         .module('evalai')
         .filter('ceil', ceil);
 
+    function ceil() {
+        return function(input) {
+            return Math.ceil(input);
+        };
+    }
+
     angular.module('evalai')
             .filter('format_execution_time', format_execution_time)
 
@@ -23,12 +29,6 @@
                 minutes.toString().padStart(2, '0') + ' min ' + 
                 seconds.toString().padStart(2, '0') + ' sec';
             return timeString;
-        };
-    }
-
-    function ceil() {
-        return function(input) {
-            return Math.ceil(input);
         };
     }
 
