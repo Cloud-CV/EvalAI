@@ -3358,6 +3358,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_test_annotation_file
                     and challenge_phase.annotations_uploaded_using_cli
                 ):
+                    data.pop("test_annotation", None)
                     serializer = ChallengePhaseCreateSerializer(
                         challenge_phase,
                         data=data,
