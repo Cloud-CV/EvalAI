@@ -1,7 +1,7 @@
 // define filters here
 
 // filter to get ceiling value
-(function () {
+(function() {
 
     'use strict';
 
@@ -10,7 +10,7 @@
         .filter('ceil', ceil);
 
     function ceil() {
-        return function (input) {
+        return function(input) {
             return Math.ceil(input);
         };
     }
