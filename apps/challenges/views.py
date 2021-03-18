@@ -2802,7 +2802,7 @@ def get_worker_logs(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def manage_worker(request, challenge_pk, action):
-    if not request.user.is_superuser:
+    if not request.user.is_staff:
         if not is_user_a_host_of_challenge(request.user, challenge_pk):
             response_data = {
                 "error": "Sorry, you are not authorized for access worker operations."
