@@ -2894,7 +2894,6 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
             data={"test_annotation": test_annotation_file},
             context={
                 "challenge": challenge_phase.challenge,
-                "annotations_uploaded_using_cli": True,
             },
             partial=True,
         )
@@ -2964,7 +2963,9 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
     file_key_on_s3 = "{}/{}".format(
         settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
     )
-
+    annotations_uploaded_using_cli = request.data.get(
+        "annotations_uploaded_using_cli"
+    )
     response = {}
     try:
         data = complete_s3_multipart_file_upload(
@@ -2981,6 +2982,23 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
                 "challenge_phase_pk": challenge_phase.pk,
             }
             response = Response(response_data, status=status.HTTP_201_CREATED)
+
+            if annotations_uploaded_using_cli:
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data={"annotations_uploaded_using_cli": True},
+                    context={
+                        "challenge": challenge_phase.challenge,
+                    },
+                    partial=True,
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    response_data = {"error": serializer.errors}
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
     except Exception:
         response_data = {
             "error": "Error occurred while uploading annotations!"
