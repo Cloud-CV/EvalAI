@@ -3234,6 +3234,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         not challenge.is_docker_based
                         and challenge.inform_hosts
                         and not challenge.remote_evaluation
+                        and not challenge.workers
                     ):
                         try:
                             response = start_workers([zip_config.challenge])
