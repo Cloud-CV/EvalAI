@@ -69,6 +69,7 @@ services:
         NODE_ENV: staging
     ports:
       - "9999:80"
+      - "443:443"
     volumes:
       - /code/node_modules
     logging:
