@@ -86,7 +86,7 @@ export class ModalComponent implements OnInit {
   newPasswordTextVisibility:boolean = false;
 
    /**
-   * confirm_new_password field visibility
+   * re_enter_new_password field visibility
    */
   reEnteredPasswordTextVisibility:boolean = false;
 
