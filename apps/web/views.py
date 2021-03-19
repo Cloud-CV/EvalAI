@@ -101,8 +101,8 @@ def contact_us(request):
         user_does_not_exist = True
 
     if request.method == "POST" or user_does_not_exist:
-        if request.POST.get("message"):
-            request_data["message"] = request.POST.get("message")
+        if request.data.get("message"):
+            request_data["message"] = request.data.get("message")
         serializer = ContactSerializer(data=request_data)
         if serializer.is_valid():
             serializer.save()
