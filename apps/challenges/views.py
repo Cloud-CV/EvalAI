@@ -3232,7 +3232,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     template_data = get_challenge_template_data(zip_config.challenge)
                     if (
                         not challenge.is_docker_based
-                        and challenge.inform_hosts
                         and not challenge.remote_evaluation
                         and not challenge.workers
                     ):
@@ -3248,10 +3247,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 logging.info(
                                     "{} workers started successfully".format(count)
                                 )
-                                template_id = settings.SENDGRID_SETTINGS.get(
-                                    "TEMPLATES"
-                                ).get("WORKER_START_EMAIL")
-                                send_emails(emails, template_id, template_data)
+                                if challenge.inform_hosts:
+                                    template_id = settings.SENDGRID_SETTINGS.get(
+                                        "TEMPLATES"
+                                    ).get("WORKER_START_EMAIL")
+                                    send_emails(emails, template_id, template_data)
                         except Exception:
                             logger.exception(
                                 "Failed to start workers for challenge {}".format(
