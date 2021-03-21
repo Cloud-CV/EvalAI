@@ -2,7 +2,7 @@
  * Config for the router
  */
 
-import 'ng-meta'
+import 'ng-meta';
 
 (function () {
     'use strict';
@@ -34,8 +34,10 @@ import 'ng-meta'
             controller: 'MainCtrl',
             controllerAs: 'main',
             meta: {
-                  'title': 'Welcome',
-                  'url': 
+                  'og:image': 'https://eval.ai/dist/images/evalai-cover.png',
+                  'url': '/',
+                  'title': 'Welcome - EvalAI',
+                  'og:description': 'EvalAI is an open-source web platform for organizing and participating in challenges to push the state of the art on AI tasks.' 
                 }
         };
 
