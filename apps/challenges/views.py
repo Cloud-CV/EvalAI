@@ -3343,7 +3343,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 ).first()
                 if (
                     challenge_test_annotation_file
-                    and challenge_phase.annotations_uploaded_using_cli is False
+                    and not challenge_phase.annotations_uploaded_using_cli
                 ):
                     serializer = ChallengePhaseCreateSerializer(
                         challenge_phase,
