@@ -1,7 +1,7 @@
 #!/bin/bash
 path=$PWD
 auth_token=''
-api_host_url='https://staging.eval.ai'
+api_host_url=''
 if [ ! -z "$1" ]
   then
     path=$1
