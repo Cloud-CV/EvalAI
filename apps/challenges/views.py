@@ -1810,10 +1810,9 @@ def download_all_submissions(
                 for submission in submissions.data:
                     if submission["submission_metadata"] is None:
                         submission["submission_metadata"] = []
-                    submission["submission_metadata"] = ",".join(
-                        f'{key}: {value}'
+                    submission["submission_metadata"] = ", ".join(
+                        f'{metadata["name"]}: {metadata["value"]}'
                         for metadata in submission["submission_metadata"]
-                        for key, value in metadata.items()
                     )
                     writer.writerow(
                         [
@@ -1966,9 +1965,8 @@ def download_all_submissions(
                     if submission["submission_metadata"] is None:
                         submission["submission_metadata"] = []
                     submission["submission_metadata"] = ",".join(
-                        f'{key}: {value}'
+                        f'{metadata["name"]}: {metadata["value"]}'
                         for metadata in submission["submission_metadata"]
-                        for key, value in metadata.items()
                     )
                     for field in request.data:
                         if field == "participant_team_members":
