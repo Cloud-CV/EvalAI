@@ -1964,7 +1964,7 @@ def download_all_submissions(
                     row = [submission["id"]]
                     if submission["submission_metadata"] is None:
                         submission["submission_metadata"] = []
-                    submission["submission_metadata"] = ",".join(
+                    submission["submission_metadata"] = ", ".join(
                         f'{metadata["name"]}: {metadata["value"]}'
                         for metadata in submission["submission_metadata"]
                     )
