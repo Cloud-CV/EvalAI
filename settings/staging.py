@@ -7,5 +7,5 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     "https://staging-evalai.s3.amazonaws.com",
     "https://staging.eval.ai",
-    "http://beta-staging.eval.ai:9999",
+    "https://beta-staging.eval.ai",
 )
