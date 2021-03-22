@@ -1,5 +1,6 @@
 FROM node:12.2.0 as node
 
+ARG NODE_ENV
 RUN npm install -g @angular/cli@7.3.9
 
 WORKDIR /code
