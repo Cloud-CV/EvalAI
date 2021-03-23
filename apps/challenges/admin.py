@@ -262,6 +262,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "visibility",
         "leaderboard_decimal_precision",
         "is_leaderboard_order_descending",
+        "show_execution_time",
     )
     list_filter = ("visibility",)
     search_fields = (
