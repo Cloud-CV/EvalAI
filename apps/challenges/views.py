@@ -420,7 +420,6 @@ def get_challenges_by_title(request):
     Returns a particular challenge by title.
     """
     # The string requested should exactly match the title of challenge.
-    print(request.query_params.get('title', None))
     challenges = Challenge.objects.all()
     title = request.query_params.get('title', None)
     if title is not None:
