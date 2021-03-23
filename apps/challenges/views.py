@@ -415,20 +415,25 @@ def disable_challenge(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def get_challenges_by_title(request, challenge_title):
+def get_challenges_by_title(request):
     """
     Returns a particular challenge by title.
     """
     # The string requested should exactly match the title of challenge.
-    challenges = Challenge.objects.filter(
-        title__icontains=challenge_title, approved_by_admin=True, published=True
-    )
+    print(request.query_params.get('title', None))
+    challenges = Challenge.objects.all()
+    title = request.query_params.get('title', None)
+    if title is not None:
+        challenges = challenges.filter(
+            title__icontains=title, approved_by_admin=True, published=True
+        )
     response_data = []
     for challenge in challenges:
         serializer = ChallengeSerializer(
             challenge, context={"request": request}
         )
         response_data.append(serializer.data)
+        print(serializer.data)
     if len(response_data) == 0:
         exception_data = {"error": "Challenge with the title {} does not exist!".format(challenge_title)}
 

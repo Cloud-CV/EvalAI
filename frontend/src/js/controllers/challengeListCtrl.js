@@ -47,7 +47,7 @@
                 parameters.token = userKey;
             }
 
-            parameters.url = 'challenges/challenge/' + vm.currentSearchTerm + '/';
+            parameters.url = `challenges/challenge/?title=${vm.currentSearchTerm}`;
 
             parameters.callback = {
                 onSuccess: function (response) {
