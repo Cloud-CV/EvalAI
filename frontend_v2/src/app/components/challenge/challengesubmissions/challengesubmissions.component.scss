@@ -41,7 +41,6 @@
 
 .marker {
   margin-right: 10px;
-  font-size: 20px;
 }
 
 .pad-top {
@@ -80,11 +79,6 @@ tr.detail-row {
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-
-  td {
-    font-weight: $fw-semibold;
-  }
-
   background: $grad-light-black;
 }
 
