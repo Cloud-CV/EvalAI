@@ -95,7 +95,7 @@ tr.element-row.expanded-row {
 }
 
 .elements-detail {
-  width: 55%;
+  width: 40%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -105,12 +105,24 @@ tr.element-row.expanded-row {
 }
 
 .elements-action {
-  width: 40%;
+  width: 25%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-left: 40px;
+  margin-left: 20px;
 }
+
+.elements-status {
+  width: 35%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  margin-left: 20px;
+}
+
 
 .element-icon {
   margin-right: 10px;
@@ -123,6 +135,14 @@ tr.element-row.expanded-row {
   .elements-action {
     margin-left: 0;
     margin-top: 20px;
+  }
+  .elements-status {
+    border-right-style: none;
+    margin-left: 0;
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
   }
   .elements-detail {
     border-right-style: none;

@@ -144,7 +144,7 @@
                   </p>
                 </div>
                 <div class="row rm-margin">
-                  <div class="col-sm-4 col-md-4 col-lg-4 no-pad-lr element">
+                  <div class="col-sm-6 col-md-6 col-lg-6 no-pad-lr element">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12"
                         >Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
@@ -162,7 +162,7 @@
                       </strong>
                     </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
+                  <div class="col-sm-6 col-md-6 col-lg-6 no-pad-lr element">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12"
                         >Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
@@ -180,30 +180,11 @@
                       </strong>
                     </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p>
-                      <strong class="text-light-black fw-semibold fs-12"
-                        >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
-                      >&nbsp;
-                      <a
-                        target="_blank"
-                        class="blue-text fs-12"
-                        [href]="element.submission_metadata_file"
-                        *ngIf="element.submission_metadata_file"
-                      >
-                        <i class="fa fa-external-link"></i> Link
-                      </a>
-                      <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-12">
-                        None
-                      </strong>
-                    </p>
-                  </div>
                 </div>
               </div>
-
-              <div class="elements-action">
+              <div class="elements-status">
                 <div class="row rm-margin">
-                  <div class="col-sm-6 sol-md-6 col-lg-4 no-pad-lr">
+                  <div class="col-sm-6 sol-md-6 col-lg-5 no-pad-lr">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12">Status</strong> &nbsp;
                       <strong class="fw-semibold fs-14" [ngClass]="element.status" class="fs-12">
@@ -211,7 +192,7 @@
                       </strong>
                     </p>
                   </div>
-                  <div class="col-sm-6 sol-md-6 col-lg-8 no-pad-lr">
+                  <div class="col-sm-6 sol-md-6 col-lg-7 no-pad-lr">
                     <p>
                       <strong class="text-light-black fw-semibold fs-12">Submission Number</strong> &nbsp;
                       <strong class="fw-semibold fs-14">
@@ -228,6 +209,26 @@
                     </strong>
                   </p>
                 </div>
+                <div class="element">
+                  <p>
+                    <strong class="text-light-black fw-semibold fs-12"
+                      >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
+                    >&nbsp;
+                    <a
+                      target="_blank"
+                      class="blue-text fs-12"
+                      [href]="element.submission_metadata_file"
+                      *ngIf="element.submission_metadata_file"
+                    >
+                      <i class="fa fa-external-link"></i> Link
+                    </a>
+                    <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-12">
+                      None
+                    </strong>
+                  </p>
+                </div>
+              </div>
+              <div class="elements-action">
                 <div class="element">
                   <p>
                     <mat-checkbox
