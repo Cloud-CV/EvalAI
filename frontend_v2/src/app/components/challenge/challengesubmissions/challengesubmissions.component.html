@@ -99,7 +99,7 @@
       >
         <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
           <th class="cell-outside fw-regular fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
-          <td class="cell-outside fw-light" mat-cell *matCellDef="let element">
+          <td class="cell-outside fw-light"  mat-cell *matCellDef="let element">
             <span *ngIf="column === 's_no'" class="{{ element[column] }} fs-12"> {{ element[column] }}</span>
             <a
               target="_blank"
