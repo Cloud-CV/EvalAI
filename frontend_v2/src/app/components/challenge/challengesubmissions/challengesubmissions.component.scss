@@ -74,6 +74,18 @@ tr.detail-row {
   overflow: hidden;
 }
 
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
+}
+
 .cell-outside {
   padding: 8px;
 }
