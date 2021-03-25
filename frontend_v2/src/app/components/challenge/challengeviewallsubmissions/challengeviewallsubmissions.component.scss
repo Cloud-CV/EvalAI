@@ -132,10 +132,12 @@ tr.element-row.expanded-row {
   .elements {
     flex-direction: column;
   }
+
   .elements-action {
     margin-left: 0;
     margin-top: 20px;
   }
+
   .elements-status {
     border-right-style: none;
     margin-left: 0;
@@ -144,15 +146,16 @@ tr.element-row.expanded-row {
     border-bottom-width: 1px;
     padding-bottom: 20px;
   }
+
   .elements-detail {
     border-right-style: none;
     padding-right: 0;
-
     border-bottom-style: solid;
     border-bottom-color: lightgrey;
     border-bottom-width: 1px;
     padding-bottom: 20px;
   }
+
   .element {
     display: flex;
     flex-direction: column;
