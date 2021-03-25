@@ -104,7 +104,8 @@
           <td class="cell-outside fw-regular" mat-cell *matCellDef="let element">
             <span *ngIf="column === 's_no'" class="{{ element[column] }} fs-12"> {{ element[column] }}</span>
             <span *ngIf="column === 'submitted_at'" class="{{ element[column] }} fs-12"> {{ element[column] | date: 'medium' }}</span>
-            <span *ngIf="column === 'execution_time'" class="{{ element[column] }} fs-12"> {{ element[column] }} sec</span>
+            <span *ngIf="element[column] !== 'None' && column === 'execution_time'" class="{{ element[column] }} fs-12"> {{ element[column] }} sec</span>
+            <span *ngIf="element[column] === 'None' && column === 'execution_time'" class="{{ element[column] }} fs-12"> {{ 'N/A' }}</span>
             <a
               target="_blank"
               class="blue-text"
