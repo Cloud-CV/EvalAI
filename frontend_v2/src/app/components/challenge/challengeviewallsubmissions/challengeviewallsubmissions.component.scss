@@ -73,11 +73,6 @@ tr.element-row.expanded-row {
 .detail-row {
   height: 0;
   overflow: hidden;
-  border-bottom-width: 0;
-}
-
-.element-row.expanded {
-  border-bottom-color: transparent;
 }
 
 .collapsed-td {
@@ -93,10 +88,6 @@ tr.element-row.expanded-row {
   overflow: hidden;
   display: flex;
   flex-direction: row;
-}
-
-.element-row tr {
-  border-bottom-width: 0;
 }
 
 .elements-detail {
