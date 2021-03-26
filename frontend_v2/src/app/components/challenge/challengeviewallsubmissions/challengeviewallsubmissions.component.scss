@@ -123,9 +123,16 @@ tr.element-row.expanded-row {
   margin-left: 20px;
 }
 
-
 .element-icon {
   margin-right: 10px;
+}
+
+.element {
+  margin-bottom: 10px;
+}
+
+.element-description-attribution {
+  opacity: 0.5;
 }
 
 @include screen-small {
