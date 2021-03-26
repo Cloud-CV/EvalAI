@@ -72,9 +72,6 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
     participant_team_name = serializers.SerializerMethodField()
     leaderboard_schema = serializers.SerializerMethodField()
 
-    def __init__(self, *args, **kwargs):
-        super(LeaderboardDataSerializer, self).__init__(*args, **kwargs)
-
     class Meta:
         model = LeaderboardData
         fields = (
