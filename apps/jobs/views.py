@@ -1165,9 +1165,7 @@ def update_submission(request, challenge_pk):
                     if metric not in leaderboard_metrics:
                         missing_metrics.append(metric)
 
-                    if not (
-                        isinstance(value, float) or isinstance(value, int)
-                    ):
+                    if not isinstance(value, (float, int)):
                         malformed_metrics.append((metric, type(value)))
 
                 if missing_metrics:
@@ -1507,9 +1505,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     if metric not in leaderboard_metrics:
                         missing_metrics.append(metric)
 
-                    if not (
-                        isinstance(value, float) or isinstance(value, int)
-                    ):
+                    if not isinstance(value, (float, int)):
                         malformed_metrics.append((metric, type(value)))
 
                 is_partial_evaluation_phase = (
@@ -1692,9 +1688,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     if metric not in leaderboard_metrics:
                         missing_metrics.append(metric)
 
-                    if not (
-                        isinstance(value, float) or isinstance(value, int)
-                    ):
+                    if not isinstance(value, (float, int)):
                         malformed_metrics.append((metric, type(value)))
                     updated_result[metric] = value
 
@@ -2175,7 +2169,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         if metric not in leaderboard_metrics:
             extra_metrics.append(metric)
 
-        if not (isinstance(value, float) or isinstance(value, int)):
+        if not isinstance(value, (float, int)):
             malformed_metrics.append((metric, type(value)))
 
     if missing_metrics and extra_metrics:
