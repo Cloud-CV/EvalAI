@@ -1170,7 +1170,7 @@ def update_submission(request, challenge_pk):
                     ):
                         malformed_metrics.append((metric, type(value)))
 
-                if len(missing_metrics):
+                if missing_metrics:
                     response_data = {
                         "error": "Following metrics are missing in the"
                         "leaderboard data: {}".format(missing_metrics)
@@ -1179,7 +1179,7 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                if len(malformed_metrics):
+                if malformed_metrics:
                     response_data = {
                         "error": "Values for following metrics are not of"
                         "float/int: {}".format(malformed_metrics)
@@ -1515,7 +1515,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 is_partial_evaluation_phase = (
                     challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
                 )
-                if len(missing_metrics) and not is_partial_evaluation_phase:
+                if missing_metrics and not is_partial_evaluation_phase:
                     response_data = {
                         "error": "Following metrics are missing in the"
                         "leaderboard data: {} of challenge phase: {}".format(
@@ -1526,7 +1526,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                if len(malformed_metrics):
+                if malformed_metrics:
                     response_data = {
                         "error": "Values for following metrics are not of"
                         "float/int: {}".format(malformed_metrics)
@@ -1701,7 +1701,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 is_partial_evaluation_phase = (
                     challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
                 )
-                if len(missing_metrics) and not is_partial_evaluation_phase:
+                if missing_metrics and not is_partial_evaluation_phase:
                     response_data = {
                         "error": "Following metrics are missing in the"
                         "leaderboard data: {} of challenge phase: {}".format(
@@ -1712,7 +1712,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                if len(malformed_metrics):
+                if malformed_metrics:
                     response_data = {
                         "error": "Values for following metrics are not of"
                         "float/int: {}".format(malformed_metrics)
@@ -1951,7 +1951,7 @@ def get_submission_message_from_queue(request, queue_name):
     queue = get_or_create_sqs_queue_object(queue_name)
     try:
         messages = queue.receive_messages()
-        if len(messages):
+        if messages:
             message_receipt_handle = messages[0].receipt_handle
             message_body = eval(messages[0].body)
             logger.info(
@@ -2178,28 +2178,28 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         if not (isinstance(value, float) or isinstance(value, int)):
             malformed_metrics.append((metric, type(value)))
 
-    if len(missing_metrics) and len(extra_metrics):
+    if missing_metrics and extra_metrics:
         response_data = {
             "error": "Following metrics {0} are missing and following metrics are invalid {1} in the "
             "leaderboard data".format(missing_metrics, extra_metrics)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(missing_metrics):
+    if missing_metrics:
         response_data = {
             "error": "Following metrics are missing in the "
             "leaderboard data: {}".format(missing_metrics)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(extra_metrics):
+    if extra_metrics:
         response_data = {
             "error": "Following metrics are invalid in the "
             "leaderboard data: {}".format(extra_metrics)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(malformed_metrics):
+    if malformed_metrics:
         response_data = {
             "error": "Values for following metrics are not of"
             "float/int: {}".format(malformed_metrics)
