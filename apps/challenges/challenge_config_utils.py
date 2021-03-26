@@ -191,10 +191,7 @@ def is_challenge_phase_split_mapping_valid(
     dataset_split_id = phase_split["dataset_split_id"]
     if phase_id in phase_ids:
         if leaderboard_id in leaderboard_ids:
-            if dataset_split_id in dataset_split_ids:
-                return True
-            else:
-                return False
+            return dataset_split_id in dataset_split_ids
         else:
             return False
     return False

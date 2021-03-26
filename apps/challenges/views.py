@@ -728,10 +728,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    if request.data.get("is_challenge_template"):
-        is_challenge_template = True
-    else:
-        is_challenge_template = False
+    is_challenge_template = bool(request.data.get("is_challenge_template"))
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
