@@ -493,7 +493,7 @@ def run_submission(
             }
         """
 
-        error_bars_dict = dict()
+        error_bars_dict = {}
         if "error" in submission_output:
             for split_error in submission_output["error"]:
                 split_code_name = list(split_error.keys())[0]

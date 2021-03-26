@@ -857,7 +857,7 @@ def get_remaining_submissions(request, challenge_pk):
         challenge_phases = challenge_phases.filter(
             challenge=challenge, is_public=True
         ).order_by("pk")
-    phase_data_list = list()
+    phase_data_list = []
     for phase in challenge_phases:
         (
             remaining_submission_message,
