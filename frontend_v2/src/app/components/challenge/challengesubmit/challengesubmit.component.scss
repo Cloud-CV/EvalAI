@@ -122,3 +122,9 @@ th {
 #submission_option_style {
   margin-left: 1em;
 }
+
+.numbered-list{
+  li{
+  list-style-type: decimal !important;
+  }
+}
