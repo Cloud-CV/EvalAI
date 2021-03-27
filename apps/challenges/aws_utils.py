@@ -1101,7 +1101,7 @@ def get_tasks_status(service_name):
                         "status": container["lastStatus"]
                     })
                 task_detail = {
-                    "task_arn_def": task_detail["taskArn"]
+                    "task_arn_def": task_detail["taskArn"],
                     "containers": containers
                 }
                 tasks_status['details'].append(task_detail)
