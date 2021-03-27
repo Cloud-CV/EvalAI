@@ -10,7 +10,7 @@
     margin-top: 30px;
     top: 10%;
     bottom: 0;
-    max-height: 600px !important;
+    max-height: 90vh !important;
     overflow-y: scroll;
 
     .privacy-nav {
@@ -19,8 +19,8 @@
 
     position: relative;
     position: -webkit-sticky;
-    position: sticky;
-    max-height: 65vh;
+    /*position: sticky;*/
+    /*max-height: 100vh;*/
     ul {
       list-style-type: none;
       padding-left: 0;

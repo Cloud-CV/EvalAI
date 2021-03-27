@@ -112,8 +112,8 @@ body {
 
 /** Pad and margin*/
 .row-lr-margin {
-  margin-left: 0px;
-  margin-right: 0px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .col-lr-pad {
@@ -1015,7 +1015,7 @@ ul {
 }
 
 .container-top {
-  padding-top: 100px;
+  padding-top: 64px;
 }
 
 @include screen-medium {
