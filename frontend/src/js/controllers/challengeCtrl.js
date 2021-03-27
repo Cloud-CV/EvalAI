@@ -212,7 +212,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
-                        vm.workerStatus = details.status;
+                        vm.workerStatus = details.tasks_status;
                     },
                     onError: function(response) {
                         var error = response.data.error;

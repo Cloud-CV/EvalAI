@@ -127,7 +127,7 @@ from .aws_utils import (
     restart_workers,
     get_logs_from_cloudwatch,
     get_log_group_name,
-    get_task_status
+    get_tasks_status
 )
 from .utils import (
     get_aws_credentials_for_submission,
@@ -2810,13 +2810,13 @@ def get_worker_status(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
-    task_def_arn = challenge.task_def_arn
-    worker_status = get_task_status(task_def_arn)
-    if worker_status["error"]:
-        response_data = {"error": worker_status["details"]}
+    service_name = challenge.service_name
+    tasks_status = get_tasks_status(service_name)
+    if tasks_status["error"]:
+        response_data = {"error": tasks_status["details"]}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
-        response_data = {"status": worker_status["details"]}
+        response_data = {"tasks_status": tasks_status["details"]}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
