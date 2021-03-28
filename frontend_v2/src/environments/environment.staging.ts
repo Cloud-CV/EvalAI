@@ -8,5 +8,5 @@
  */
 export const environment = {
   production: true,
-  api_endpoint: 'http://staging.eval.ai/api/',
+  api_endpoint: 'https://beta-staging.eval.ai/api/',
 };

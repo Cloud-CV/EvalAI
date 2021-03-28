@@ -1,5 +1,6 @@
 FROM node:12.2.0 as node
 
+ARG NODE_ENV
 RUN npm install -g @angular/cli@7.3.9
 
 WORKDIR /code
@@ -13,3 +14,4 @@ FROM nginx:1.13.12-alpine
 ARG NODE_ENV
 COPY docker/prod/nodejs_v2/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
 COPY --from=node /code/dist /usr/share/nginx/html
+COPY /ssl /etc/ssl
