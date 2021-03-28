@@ -25,7 +25,7 @@
             var hours = executiontime.getUTCHours();
             var minutes = executiontime.getUTCMinutes();
             var seconds = executiontime.getSeconds();
-            var timeString = (execution_time >= 1) ? (
+            var timeString = (execution_time != 0) ? (
                 (days !=0 ? days.toString().padStart(2, '0') + ' day ' : '') +
                 (hours !=0 ? hours.toString().padStart(2, '0') + ' hr ' : '') +
                 (minutes != 0 ? minutes.toString().padStart(2, '0') + ' min ' : '') +
