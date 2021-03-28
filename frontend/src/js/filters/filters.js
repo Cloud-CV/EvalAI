@@ -26,10 +26,10 @@
             var minutes = executiontime.getUTCMinutes();
             var seconds = executiontime.getSeconds();
             var timeString = (execution_time >= 1) ? (
-                days.toString().padStart(2, '0') + ' day ' +
-                hours.toString().padStart(2, '0') + ' hr ' +
-                minutes.toString().padStart(2, '0') + ' min ' +
-                seconds.toString().padStart(2, '0') + ' sec'
+                (days !=0 ? days.toString().padStart(2, '0') + ' day ' : '') +
+                (hours !=0 ? hours.toString().padStart(2, '0') + ' hr ' : '') +
+                (minutes != 0 ? minutes.toString().padStart(2, '0') + ' min ' : '') +
+                (seconds !=0 ? seconds.toString().padStart(2, '0') + ' sec' : '')
             ) : (seconds.toString().padStart(2, '0') + ' sec');
             return timeString;
         };
