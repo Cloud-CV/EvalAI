@@ -275,6 +275,17 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if not request.FILES:
+            allowed_files = tuple(
+                map(
+                    str.strip,
+                    challenge_phase.allowed_submission_file_types.split(","),
+                )
+            )
+            if not request.data.get("file_url").endswith(allowed_files):
+                response_data = {"error": "The file type is not supported!"}
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
             if request.data.get("file_url") is None:
                 response_data = {"error": "The file URL is missing!"}
                 return Response(
