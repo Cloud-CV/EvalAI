@@ -9,7 +9,7 @@ COPY frontend_v2/package.json frontend_v2/yarn.lock /code/
 RUN yarn install
 ENV PATH="/code/node_modules/.bin:$PATH" 
 COPY frontend_v2/ /code
-RUN ng build --prod
+RUN ng build --prod --configuration=production
 
 FROM nginx:1.13.12-alpine
 ARG NODE_ENV
