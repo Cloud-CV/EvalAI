@@ -149,6 +149,7 @@
                 onSuccess: function(response) {
                     vm.jsonResponse = response.data;
                     vm.token = response.data['token'];
+                    utilities.storeData('refreshJWT', vm.token);
                     $rootScope.notify("success", "Token generated successfully.");
                 },
                 onError: function(response) {
