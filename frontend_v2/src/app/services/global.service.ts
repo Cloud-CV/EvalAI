@@ -439,7 +439,7 @@ export class GlobalService {
     if (err.status === 401) {
       this.checkTokenValidity(err, toast);
     } else if (err.status === 403 && toast) {
-      this.showToast('error', err.error['error'], 5);
+      this.showToast('error', err.error['detail'], 5);
     } else if (err.status === 404 && toast) {
       this.showToast('error', err.error['detail'], 5);
     } else if (err.status === 406 && toast) {

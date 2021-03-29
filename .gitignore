@@ -66,4 +66,4 @@ ssl/
 *.iws
 out/
 .idea_modules/
-
+Session.vim
