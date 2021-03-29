@@ -95,7 +95,7 @@ tr.element-row.expanded-row {
 }
 
 .elements-detail {
-  width: 40%;
+  width: 45%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -105,11 +105,11 @@ tr.element-row.expanded-row {
 }
 
 .elements-action {
-  width: 25%;
+  width: 20%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 .elements-status {
@@ -120,7 +120,7 @@ tr.element-row.expanded-row {
   border-right-style: solid;
   border-right-width: 1px;
   border-right-color: lightgrey;
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 .element-icon {
