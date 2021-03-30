@@ -16,36 +16,36 @@
       <div class="row rm-margin">
         <div class="col-md-8 col-lg-8 no-pad-lr element">
           <p>
-            <strong class="text-light-black fw-light fs-16">Starts on</strong> <br />
+            <strong class="text-light-black fw-regular text-med-black fs-16">Starts on</strong> <br />
             <strong class="fw-light fs-14 phase-value">{{ startDate }} {{ phase['start_zone'] }}</strong>
           </p>
         </div>
         <div class="col-lg-4 col-lg-4 no-pad-lr element">
           <p>
-            <strong class="text-light-black fw-light fs-16">Ends on</strong> <br />
+            <strong class="text-light-black fw-regular text-med-black  fs-16">Ends on</strong> <br />
             <strong class="fw-light fs-14 phase-value">{{ endDate }} {{ phase['end_zone'] }}</strong>
           </p>
         </div>
-        <div [innerHTML]="phase['description']" class="phase-description content"></div>
+        <div [innerHTML]="phase['description']" class="phase-description content fw-light"></div>
 
         <div class="row rm-margin">
           <div class="col-lg-4 no-pad-lr element">
             <p>
-              <strong class="text-light-black fw-light fs-16">Max number of submissions/day</strong> <br />
+              <strong class="text-light-black fw-regular text-med-black  fs-16">Max number of submissions/day</strong> <br />
               <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions_per_day'] }}</strong>
             </p>
           </div>
 
           <div class="col-lg-4 no-pad-lr element">
             <p>
-              <strong class="text-light-black fw-light fs-16">Max number of submissions/month</strong> <br />
+              <strong class="text-light-black fw-regular text-med-black  fs-16">Max number of submissions/month</strong> <br />
               <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions_per_month'] }}</strong>
             </p>
           </div>
 
           <div class="col-lg-4 no-pad-lr element">
             <p>
-              <strong class="text-light-black fw-light fs-16">Max total submissions</strong> <br />
+              <strong class="text-light-black fw-regular text-med-black  fs-16">Max total submissions</strong> <br />
               <strong class="fs-14 phase-value fw-light">{{ phase['max_submissions'] }}</strong>
             </p>
           </div>
