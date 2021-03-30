@@ -4,30 +4,30 @@
       [disabled]="challenge['currentDate'] < item.start_date || challenge['currentDate'] >= item.end_date"
       type="radio"
       name="selectPhase"
-      class="with-gap selectPhase"
+      class="with-gap selectPhase fw-light"
       id="{{ item.id }}"
       value="{{ item.id }}"
       (click)="selectPhase(item)"
     />
     <label for="{{ item.id }}" class="radio-button-text pointer">
       <div *ngIf="!item.showPrivate">
-        <strong class="text-med-black fw-semibold fs-16">Phase: </strong>
+        <strong class="text-med-black fw-light fs-16">Phase: </strong>
         <span class="content fs-16 fs-light">{{ item.name }}</span>
         <br />
-        <strong class="text-med-black fw-semibold fs-16">Start date: </strong>
+        <strong class="text-med-black fw-light fs-16">Start date: </strong>
         <span class="content fs-16 fs-light">{{ item.start_date | date: 'medium' }}</span>
         <br />
-        <strong class="text-med-black fw-semibold fs-16">End date: </strong>
+        <strong class="text-med-black fw-light fs-16">End date: </strong>
         <span class="content fs-16 fs-light">{{ item.end_date | date: 'medium' }}</span>
       </div>
       <div class="pointer" *ngIf="item.showPrivate">
-        <strong class="text-highlight fw-semibold fs-16">Phase: </strong>
+        <strong class="text-highlight fw-light fs-16">Phase: </strong>
         <span class="text-highlight fs-16 fs-light">{{ item.name }}</span>
         <br />
-        <strong class="text-highlight fw-semibold fs-16">Start date: </strong>
+        <strong class="text-highlight fw-light fs-16">Start date: </strong>
         <span class="text-highlight fs-16 fs-light">{{ item.start_date | date: 'medium' }}</span>
         <br />
-        <strong class="text-highlight fw-semibold fs-16">End date: </strong>
+        <strong class="text-highlight fw-light fs-16">End date: </strong>
         <span class="text-highlight fs-16 fs-light">{{ item.end_date | date: 'medium' }}</span>
       </div>
     </label>
@@ -64,7 +64,7 @@
     <mat-select class="rm-margin" [(ngModel)]="selectedPhaseSplit">
       <mat-select-trigger>
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7 phase_name">
-          <span class="fw-regular">Phase:&nbsp;</span>{{ phaseName }}, <span class="fw-regular">Split:&nbsp; </span
+          <span class="fw-light">Phase:&nbsp;</span>{{ phaseName }}, <span class="fw-light">Split:&nbsp; </span
           >{{ splitName }} &nbsp;
         </span>
         <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5 private-badge">
@@ -75,7 +75,7 @@
       </mat-select-trigger>
       <mat-option (click)="selectPhaseSplit(key, 'selectBox', 'phaseSplit')" [value]="key" *ngFor="let key of phases">
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">
-          <span class="fw-regular">Phase:</span>{{ key.challenge_phase_name }}, <span class="fw-regular">Split: </span
+          <span class="fw-light">Phase:</span>{{ key.challenge_phase_name }}, <span class="fw-light">Split: </span
           >{{ key.dataset_split_name }} &nbsp;
         </span>
         <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">

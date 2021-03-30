@@ -53,16 +53,12 @@
 
   .table-header {
     color: rgba(0, 0, 0, 0.87) !important;
-    font-weight: bold;
     text-align: center !important;
   }
 }
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-  td {
-    font-weight: $fw-semibold;
-  }
   background: $grad-light-black;
 }
 

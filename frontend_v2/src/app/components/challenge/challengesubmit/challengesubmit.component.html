@@ -104,9 +104,9 @@
           <td class="content">
             {{ key.name }}
             <br />
-            <strong class="text-med-black">Start date: </strong>{{ key.start_date | date: 'medium' }}
+            <strong class="text-med-black fw-light">Start date: </strong>{{ key.start_date | date: 'medium' }}
             <br />
-            <strong class="text-med-black">End date: </strong>{{ key.end_date | date: 'medium' }}
+            <strong class="text-med-black fw-light">End date: </strong>{{ key.end_date | date: 'medium' }}
           </td>
           <td *ngIf="phaseRemainingSubmissionsFlags[key.id] === 'showSubmissionDetails'" class="content">
             <strong class="fw-semibold">
@@ -123,7 +123,7 @@
             {{ key.limits.remaining_submissions_count }}
           </td>
           <td *ngIf="phaseRemainingSubmissionsFlags[key.id] === 'showClock'" class="content">
-            <strong class="fw-semibold">{{ key.limits.message }}</strong
+            <strong class="fw-light">{{ key.limits.message }}</strong
             ><br />
             Next submission will be available in<br />
             <div>
@@ -166,17 +166,18 @@
       <div class="col-md-7 col-sm-7 col-xs-10">
         <div class="exist-team-card">
           <ul>
-            <p class="content fs-18 fw-light">Select phase:</p>
+            <p class="content fs-18">Select phase:</p>
             <app-selectphase
               [phases]="filteredPhases"
               [phaseSelectionListType]="phaseSelectionListType"
               [phaseSelectionType]="phaseSelectionType"
               [phaseSelected]="phaseSelected()"
               (click)="isPhaseSelected = true"
+              class="fw-light"
             ></app-selectphase>
             <div [hidden]="!isPhaseSelected" class="row">
               <div id="submission_option_style">
-                <p class="fw-light content fs-18">Submission Options:</p>
+                <p class="content fs-18">Submission Options:</p>
                 <span class="submission-option">
                   <input
                     type="radio"
@@ -187,7 +188,7 @@
                   />
                   <label for="fileUrl" class="radio-button-text pointer">
                     <div id="radio_button_url" class="show-member-title pointer">
-                      <strong class="text-med-black fs-16">Enter file URL (for file size > 400MB) </strong>
+                      <strong class="text-med-black fw-light fs-16">Enter file URL (for file size > 400MB) </strong>
                     </div>
                   </label>
                 </span>
@@ -201,7 +202,7 @@
                   />
                   <label for="fileUpload" class="radio-button-text pointer">
                     <div id="radio_button_file" class="show-member-title pointer">
-                      <strong class="text-med-black fs-16">Upload file </strong>
+                      <strong class="text-med-black fw-light fs-16">Upload file </strong>
                     </div>
                   </label>
                 </span>
@@ -248,7 +249,7 @@
                   <label for="isPublicSubmission" class="radio-button-text pointer">
                     <div 
                       class="show-member-title pointer">
-                      <strong class="text-med-black fs-16">Public</strong>
+                      <strong class="text-med-black fs-16 fw-light">Public</strong>
                   </div>
                   </label>
                   <div class="clearfix"></div>
@@ -261,7 +262,7 @@
                   <label for="isPrivateSubmission" class="radio-button-text pointer">
                     <div 
                       class="show-member-title pointer">
-                      <strong class="text-med-black fs-16">Private</strong>
+                      <strong class="text-med-black fs-16 fw-light">Private</strong>
                   </div>
                   </label>
                   <div class="clearfix"></div>
@@ -375,11 +376,11 @@
                             <br />
                             <mat-radio-group [(ngModel)]="attribute.value" name="{{ attribute.name }}">
                               <mat-radio-button [value]="'True'"
-                                ><label class="fw-semibold fs-16 meta-label">True</label></mat-radio-button
+                                ><label class="fw-light fs-16 meta-label">True</label></mat-radio-button
                               >
                               <br />
                               <mat-radio-button [value]="'False'"
-                                ><label class="fw-semibold fs-16 meta-label">False</label></mat-radio-button
+                                ><label class="fw-light fs-16 meta-label">False</label></mat-radio-button
                               >
                             </mat-radio-group>
                           </div>
@@ -416,7 +417,7 @@
         <div class="ev-submission-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-semibold fs-16 red-text">
+              <strong class="fw-light fs-16 red-text">
                 {{ selectedPhaseSubmissions.maxExceededMessage }}
               </strong>
             </span>
