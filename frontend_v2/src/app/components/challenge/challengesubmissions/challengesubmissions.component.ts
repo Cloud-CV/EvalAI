@@ -316,16 +316,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Filter submissions by participant team name
-   * @param participantTeamName Participant team name
-   */
-  filterSubmissions(participantTeamName) {
-    const SELF = this;
-    SELF.filterSubmissionsQuery = participantTeamName;
-    SELF.fetchSubmissions(SELF.challenge['id'], SELF.selectedPhase['id']);
-  }
-
-  /**
    * Download Submission csv.
    */
   downloadSubmission() {
