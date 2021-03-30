@@ -285,14 +285,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
-            allowed_files = tuple(
+            allowed_file_types = tuple(
                 map(
                     str.strip,
                     challenge_phase.allowed_submission_file_types.split(","),
                 )
             )
-            if not request.data.get("file_url").endswith(allowed_files):
-                response_data = {"error": "The file type is not supported!"}
+            if not request.data.get("file_url").endswith(allowed_file_types):
+                response_data = {
+                    "error": f"The file type .{request.data.get('file_url').split('.')[-1]} is not supported!"
+                }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
