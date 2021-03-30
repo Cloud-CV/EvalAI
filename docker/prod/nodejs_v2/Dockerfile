@@ -2,13 +2,14 @@ FROM node:12.2.0 as node
 
 ARG NODE_ENV
 RUN npm install -g @angular/cli@7.3.9
+RUN npm install --save-dev @angular-devkit/build-angular
 
 WORKDIR /code
 COPY frontend_v2/package.json frontend_v2/yarn.lock /code/
 RUN yarn install
 ENV PATH="/code/node_modules/.bin:$PATH" 
 COPY frontend_v2/ /code
-RUN ng build --prod
+RUN ng build --prod --configuration=${NODE_ENV}
 
 FROM nginx:1.13.12-alpine
 ARG NODE_ENV
