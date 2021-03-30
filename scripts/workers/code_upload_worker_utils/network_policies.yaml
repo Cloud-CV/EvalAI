@@ -8,7 +8,7 @@ spec:
       {}
   egress:
   - toFQDNs:
-    - matchPattern: "*.eval.ai"
+    - matchName: {{EVALAI_DNS}}
   - toEndpoints:
     - matchLabels:
         "k8s:io.kubernetes.pod.namespace": kube-system
