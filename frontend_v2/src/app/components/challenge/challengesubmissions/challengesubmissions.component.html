@@ -43,26 +43,6 @@
         </div>
       </div>
         <div class="row row-lr-margin" *ngIf="selectedPhase">
-          <div class="col-sm-6 col-xs-12 col-lg-6">
-            <div class="row row-lr-margin">
-              <div class="col-sm-12">
-                <strong class="fw-light content fs-15">Filter Submissions by Team name</strong>
-              </div>
-            </div>
-            <div class="row row-lr-margin">
-              <div class="col-sm-10 col-xs-10 col-lg-10 col-lr-pad phase-select-box">
-                <app-input
-                  [name]="'filterByTeamName'"
-                  (input)="filterSubmissions($event.target.value)"
-                  [label]="'Team name'"
-                  [placeholder]="'Team name'"
-                  [type]="'text'"
-                  #formFilter
-                >
-                </app-input>
-              </div>
-            </div>
-          </div>
           <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad">
               <span class="fw-light">
                 Total Submissions Done:
