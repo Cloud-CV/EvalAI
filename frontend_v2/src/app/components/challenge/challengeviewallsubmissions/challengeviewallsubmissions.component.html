@@ -36,7 +36,7 @@
         <div *ngIf="selectedPhase">
           <div class="row">
             <div class="col-sm-12 col-xs-12">
-              <strong class="fw-semibold content fs-16">Filter Submissions by Team name</strong>
+              <strong class="fw-light content fs-16">Filter Submissions by Team name</strong>
             </div>
           </div>
           <div class="row">
@@ -61,7 +61,7 @@
     >
       <div class="row row-lr-margin">
         <div class="col-md-12 col-lr-pad">
-          <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
+          <div *ngIf="!isPhaseSelected" class="result-wrn fw-light">No phase selected.</div>
           <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected" class="result-wrn">
             No results found.
           </div>
@@ -78,8 +78,8 @@
         class="mat-elevation-z0"
       >
         <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
-          <th class="cell-outside table-header fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
-          <td class="cell-outside fw-regular align-center" mat-cell *matCellDef="let element; let j = index">
+          <th class="cell-outside table-header fs-16 fw-regular" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
+          <td class="cell-outside fw-light align-center" mat-cell *matCellDef="let element; let j = index">
             <span *ngIf="column === 'status' && element[column] !== null" class="{{ element[column] }} fs-12">
               {{ element[column] | uppercase }}</span
             >
@@ -119,10 +119,10 @@
             >
               <div class="elements-detail">
                 <div class="element">
-                    <strong class="element-description-attribution">Team Members</strong>&nbsp;
+                    <strong class="text-light-black fw-light fs-12">Team Members</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
-                      class="fw-semibold fs-14"
+                      class="fw-light fs-14"
                     >
                       <span *ngIf="element.participant_team_members.length !== i + 1"> {{ team.username + ' ,' }}</span>
                       <span *ngIf="element.participant_team_members.length === i + 1"> {{ team.username }}</span>
@@ -130,17 +130,17 @@
                   <span class=""></span>
                 </div>
                 <div class="element">
-                    <strong class="element-description-attribution">Team Members Email Id</strong>&nbsp;
+                    <strong class="text-light-black fw-light fs-12">Team Members Email Id</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
-                      class="fw-semibold fs-14"
+                      class="fw-light fs-14"
                     >
                       <span *ngIf="element.participant_team_members.length !== i + 1"> {{ team.email + ' ,' }}</span>
                       <span *ngIf="element.participant_team_members.length === i + 1"> {{ team.email }}</span>
                     </strong>
                 </div>
                   <div class="element">
-                      <strong class="element-description-attribution"
+                      <strong class="text-light-black fw-light fs-12"
                         >Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
                       >&nbsp;
                       <a
@@ -151,12 +151,12 @@
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stdout_file" class="fw-semibold fs-12">
+                      <strong *ngIf="!element.stdout_file" class="fw-light fs-12">
                         None
                       </strong>
                   </div>
                   <div class="element">
-                      <strong class="element-description-attribution"
+                      <strong class="text-light-black fw-light fs-12"
                         >Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
                       >&nbsp;
                       <a
@@ -167,26 +167,26 @@
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stderr_file" class="fw-semibold fs-12">
+                      <strong *ngIf="!element.stderr_file" class="fw-light fs-12">
                         None
                       </strong>
                   </div>
               </div>
               <div class="elements-status">
                 <div class="element">
-                    <strong class="element-description-attribution">Status</strong> &nbsp;
+                    <strong class="text-light-black fw-light fs-12">Status</strong> &nbsp;
                     <strong class="fw-semibold fs-14" [ngClass]="element.status" class="fs-12">
                       {{ element.status | uppercase }}
                     </strong>
                 </div>
                 <div class="element">
-                    <strong class="element-description-attribution">Submission Number</strong> &nbsp;
+                    <strong class="text-light-black fw-light fs-12">Submission Number</strong> &nbsp;
                     <strong class="fw-semibold fs-14">
                       {{ element.submission_number }}
                     </strong>
                 </div>
                 <div class="element">
-                    <strong class="element-description-attribution">Submitted At</strong> &nbsp;
+                    <strong class="text-light-black fw-light fs-12">Submitted At</strong> &nbsp;
                     <strong class="fw-semibold fs-14">
                       {{ element.created_at | date: 'medium' }}
                     </strong>
@@ -211,7 +211,7 @@
               <div class="elements-action">
                 <div class="element">
                     <mat-checkbox
-                      class="element-icon fw-semibold"
+                      class="element-icon fw-light"
                       [checked]="element.is_public"
                       [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']"
                       (change)="confirmSubmissionVisibility(element, element.is_public)"
@@ -221,7 +221,7 @@
                 </div>
                 <div class="element">
                     <mat-checkbox
-                      class="element-icon fw-semibold"
+                      class="element-icon fw-light"
                       [checked]="element.is_flagged"
                       (change)="confirmSubmissionFlagChange(element, element.is_flagged)"
                     >
@@ -229,11 +229,11 @@
                     </mat-checkbox>
                 </div>
                 <div class="element">
-                  <a class="fa fa-refresh pointer" (click)="reRunSubmission(element.id)"> Re-run submission </a>
+                  <a class="fa fa-refresh pointer fw-light" (click)="reRunSubmission(element.id)"> Re-run submission </a>
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
                   <a class="pointer" (click)="deleteChallengeSubmission(element)">
-                    <i class="fa fa-trash red-text fs-14" aria-hidden="true">&nbsp;Delete Submission</i>
+                    <i class="fa fa-trash red-text fs-14 fw-light" aria-hidden="true">&nbsp;Delete Submission</i>
                   </a>
                 </div>
               </div>
