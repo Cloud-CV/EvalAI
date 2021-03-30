@@ -41,7 +41,6 @@
 
 .marker {
   margin-right: 10px;
-  font-size: 20px;
 }
 
 .pad-top {
@@ -66,7 +65,7 @@
 }
 
 .collapsible-table {
-  overflow: auto;
+  overflow: auto;  
 }
 
 tr.detail-row {
@@ -76,15 +75,11 @@ tr.detail-row {
 
 .cell-outside {
   padding: 8px;
+  color:rgba(0, 0, 0, 0.87);
 }
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-
-  td {
-    font-weight: $fw-semibold;
-  }
-
   background: $grad-light-black;
 }
 
@@ -94,6 +89,7 @@ tr.element-row.expanded-row {
 
 tr.element-row:not(.expanded-row):active {
   background: #efefef;
+  border-bottom-width: 0;
 }
 
 .expanded-row {
