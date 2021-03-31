@@ -1,5 +1,6 @@
 import { Injectable, Output, EventEmitter } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class GlobalService {
@@ -84,7 +85,7 @@ export class GlobalService {
   /**
    * constructor
    */
-  constructor() {}
+  constructor(private router: Router) {}
 
   /**
    * Update Scrolled State.
@@ -439,7 +440,9 @@ export class GlobalService {
     if (err.status === 401) {
       this.checkTokenValidity(err, toast);
     } else if (err.status === 403 && toast) {
-      this.showToast('error', err.error['error'], 5);
+      console.log(err.error);
+      this.router.navigate(['permission-denied']);
+      this.showToast('error', err.error['detail'], 5);
     } else if (err.status === 404 && toast) {
       this.showToast('error', err.error['detail'], 5);
     } else if (err.status === 406 && toast) {
