@@ -128,3 +128,9 @@ th {
   list-style-type: decimal !important;
   }
 }
+
+.center-content{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
