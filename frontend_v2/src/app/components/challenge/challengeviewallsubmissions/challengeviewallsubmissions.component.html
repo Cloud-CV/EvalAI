@@ -145,13 +145,13 @@
                       >&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.stdout_file"
                         *ngIf="element.stdout_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stdout_file" class="fw-light fs-12">
+                      <strong *ngIf="!element.stdout_file" class="fw-light fs-14">
                         None
                       </strong>
                   </div>
@@ -161,13 +161,13 @@
                       >&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.stderr_file"
                         *ngIf="element.stderr_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stderr_file" class="fw-light fs-12">
+                      <strong *ngIf="!element.stderr_file" class="fw-light fs-14">
                         None
                       </strong>
                   </div>
@@ -175,19 +175,19 @@
               <div class="elements-status">
                 <div class="element">
                     <strong class="element-description-attribution">Status</strong> &nbsp;
-                    <strong class="fw-semibold fs-14" [ngClass]="element.status" class="fs-12">
+                    <strong class="fw-light fs-14" [ngClass]="element.status" class="fs-12">
                       {{ element.status | uppercase }}
                     </strong>
                 </div>
                 <div class="element">
                     <strong class="element-description-attribution">Submission Number</strong> &nbsp;
-                    <strong class="fw-semibold fs-14">
+                    <strong class="fw-light fs-14">
                       {{ element.submission_number }}
                     </strong>
                 </div>
                 <div class="element">
                     <strong class="element-description-attribution">Submitted At</strong> &nbsp;
-                    <strong class="fw-semibold fs-14">
+                    <strong class="fw-light fs-14">
                       {{ element.created_at | date: 'medium' }}
                     </strong>
                 </div>
@@ -197,13 +197,13 @@
                     >&nbsp;
                     <a
                       target="_blank"
-                      class="blue-text fs-12"
+                      class="blue-text fs-14"
                       [href]="element.submission_metadata_file"
                       *ngIf="element.submission_metadata_file"
                     >
                       <i class="fa fa-external-link"></i> Link
                     </a>
-                    <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-12">
+                    <strong *ngIf="!element.submission_metadata_file" class="fw-light fs-14">
                       None
                     </strong>
                 </div>
@@ -211,25 +211,29 @@
               <div class="elements-action">
                 <div class="element">
                     <mat-checkbox
-                      class="element-icon fw-semibold"
+                      class="element-icon fw-light"
                       [checked]="element.is_public"
                       [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']"
                       (change)="confirmSubmissionVisibility(element, element.is_public)"
                     >
+                    <strong class="fw-light fs-14">
                       Show On Leaderboard
+                    </strong>
                     </mat-checkbox>
                 </div>
                 <div class="element">
                     <mat-checkbox
-                      class="element-icon fw-semibold"
+                      class="element-icon fw-light"
                       [checked]="element.is_flagged"
                       (change)="confirmSubmissionFlagChange(element, element.is_flagged)"
                     >
+                    <strong class="fw-light fs-14">
                       {{ element.submissionFlagText }}
+                    </strong>
                     </mat-checkbox>
                 </div>
                 <div class="element">
-                  <a class="fa fa-refresh pointer fw-light" (click)="reRunSubmission(element.id)"> Re-run submission </a>
+                  <a class="fa fa-refresh pointer fw-light fs-14" (click)="reRunSubmission(element.id)"> Re-run submission </a>
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
                   <a class="pointer" (click)="deleteChallengeSubmission(element)">
