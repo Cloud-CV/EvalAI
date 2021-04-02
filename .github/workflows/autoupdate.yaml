@@ -1,0 +1,22 @@
+name: autoupdate
+on:
+  # Triggers if commits are pushed to master branch
+  push:
+    branches:
+      - master
+jobs:
+  autoupdate:
+    name: autoupdate
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: docker://chinthakagodawita/autoupdate-action:v1
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          DRY_RUN: 'true'
+          PR_FILTER: 'labelled'
+          PR_LABELS: 'can-be-merged'
+          EXCLUDED_LABELS: 'needs-more-work'
+          MERGE_MSG: 'Branch was auto-updated.'
+          RETRY_COUNT: '10'
+          RETRY_SLEEP: '300'
+          MERGE_CONFLICT_ACTION: 'fail'
