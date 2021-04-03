@@ -40,7 +40,7 @@ kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volum
 # Install cilium
 # Cilium is being used to provide networking and network policy
 kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
-# echo "### Cilium Installed"
+echo "### Cilium Installed"
 
 sleep 120s;
 
