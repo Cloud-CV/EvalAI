@@ -254,6 +254,7 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
+    annotations_uploaded_using_cli = models.BooleanField(default=False)
     test_annotation = models.FileField(
         upload_to=RandomFileName("test_annotations"), null=True, blank=True
     )
