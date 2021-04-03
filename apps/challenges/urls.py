@@ -65,7 +65,7 @@ urlpatterns = [
         name="get_challenges_by_title",
     ),
     url(
-        r"^challenge$",
+        r"^challenge/\?title=.+",
         views.get_challenges_based_on_teams,
         name="get_challenges_based_on_teams",
     ),
