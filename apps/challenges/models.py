@@ -257,6 +257,7 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
+    annotations_uploaded_using_cli = models.BooleanField(default=False)
     test_annotation = models.FileField(
         upload_to=RandomFileName("test_annotations"), null=True, blank=True
     )
@@ -397,6 +398,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     leaderboard_decimal_precision = models.PositiveIntegerField(default=2)
     is_leaderboard_order_descending = models.BooleanField(default=True)
     show_leaderboard_by_latest_submission = models.BooleanField(default=False)
+    show_execution_time = models.BooleanField(default=False)
 
     def __str__(self):
         return "{0} : {1}".format(
@@ -571,6 +573,16 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         max_length=512, null=True, blank=True
     )
     route_table_id = models.CharField(max_length=512, null=True, blank=True)
+    efs_security_group_id = models.CharField(
+        max_length=512, null=True, blank=True
+    )
+    efs_id = models.CharField(max_length=512, null=True, blank=True)
+    efs_creation_token = models.CharField(
+        max_length=256, null=True, blank=True
+    )
+    efs_mount_target_ids = ArrayField(
+        models.CharField(max_length=256, blank=True), default=list, blank=True
+    )
 
     class Meta:
         app_label = "challenges"
