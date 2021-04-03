@@ -2504,6 +2504,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,
             "is_active": True,
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
@@ -4257,6 +4258,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
+                "annotations_uploaded_using_cli": self.private_challenge_phase.annotations_uploaded_using_cli,
                 "codename": self.private_challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.private_challenge_phase.test_annotation.url),
@@ -4289,6 +4291,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,
                 "codename": self.challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
@@ -4540,7 +4543,6 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
-
     def test_get_or_update_allowed_email_ids_success(self):
         self.url = reverse_lazy(
             "challenges:get_or_update_allowed_email_ids",
@@ -4552,7 +4554,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         expected = {
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
-        response = self.client.get(self.url, {}, format='json')
+        response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -4602,13 +4604,15 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
                 "phase_pk": self.challenge_phase.pk,
             },
         )
-        allowed_email_ids = ('user1@example.com')
+        allowed_email_ids = "user1@example.com"
         data = {
             "allowed_email_ids": allowed_email_ids,
         }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "Field allowed_email_ids should be a list.")
+        self.assertEqual(
+            response.data["error"], "Field allowed_email_ids should be a list."
+        )
 
     def test_update_allowed_email_ids_when_input_is_none(self):
         self.url = reverse_lazy(
@@ -4623,7 +4627,9 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "Field allowed_email_ids is missing.")
+        self.assertEqual(
+            response.data["error"], "Field allowed_email_ids is missing."
+        )
 
     def test_get_allowed_email_ids_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
