@@ -13,7 +13,7 @@
         <br />
         <br />
         <div class="col-sm-12">
-          <span class="fw-300">My Participated Team:&nbsp;&nbsp;{{ participatedTeamName }}</span>
+          <span class="fw-light">My Participated Team:&nbsp;&nbsp;{{ participatedTeamName }}</span>
         </div>
       </div>
       <div class="row row-lr-margin">
@@ -38,16 +38,34 @@
             </mat-form-field>
           </div>
           <div class="col-md-2 col-sm-2 col-xs-6 col-lg-6 col-lr-pad download-submissions">
-            <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download </a>
+            <a class="waves-effect waves-dark btn ev-btn-dark fw-light fs-16" (click)="downloadSubmission()">Download </a>
           </div>
         </div>
       </div>
         <div class="row row-lr-margin" *ngIf="selectedPhase">
+          <div class="col-sm-6 col-xs-12 col-lg-6">
+            <div class="row row-lr-margin">
+              <div class="col-sm-12">
+                <strong class="fw-light content fs-15">Filter Submissions by Team name</strong>
+              </div>
+            </div>
+            <div class="row row-lr-margin">
+              <div class="col-sm-10 col-xs-10 col-lg-10 col-lr-pad phase-select-box">
+                <app-input
+                  [name]="'filterByTeamName'"
+                  (input)="filterSubmissions($event.target.value)"
+                  [label]="'Team name'"
+                  [placeholder]="'Team name'"
+                  [type]="'text'"
+                  #formFilter
+                >
+                </app-input>
+              </div>
+            </div>
+          </div>
           <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad">
-            <span>
-              <strong class="fw-semibold text-med-black">
+              <span class="fw-light">
                 Total Submissions Done:
-              </strong>
             </span>
             <span class="show-submission-count text-highlight">
               {{ submissionCount || 0 }}
@@ -62,7 +80,7 @@
     >
       <div class="row row-lr-margin">
         <div class="col-md-12 col-lr-pad">
-          <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
+          <div *ngIf="!isPhaseSelected" class="result-wrn fw-light">No phase selected.</div>
           <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected" class="result-wrn">
             No results found.
           </div>
@@ -78,8 +96,8 @@
         class="mat-elevation-z0 ev-md-container"
       >
         <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
-          <th class="cell-outside text-dark-black fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
-          <td class="cell-outside fw-regular" mat-cell *matCellDef="let element">
+          <th class="cell-outside fw-regular fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
+          <td class="cell-outside fw-light" mat-cell *matCellDef="let element">
             <span *ngIf="column === 's_no'" class="{{ element[column] }} fs-12"> {{ element[column] }}</span>
             <a
               target="_blank"
@@ -106,40 +124,40 @@
               <div class="elements-detail">
                 <div class="element">
                   <span class="element-description-attribution">Team Name</span>
-                  <span class="fw-regular element-description"> {{ element.participant_team_name }} </span>
+                  <span class="fw-light element-description"> {{ element.participant_team_name }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Method Name</span>
-                  <span class="fw-regular element-description"> {{ element.method_name }} </span>
+                  <span class="fw-light element-description"> {{ element.method_name }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Method Description</span>
-                  <span class="fw-regular element-description"> {{ element.method_description }} </span>
+                  <span class="fw-light element-description"> {{ element.method_description }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Project URL</span>
-                  <span class="fw-regular element-description"> {{ element.project_url }} </span>
+                  <span class="fw-light element-description"> {{ element.project_url }} </span>
                 </div>
               </div>
 
               <div class="elements-status">
                 <div class="element">
                   <span class="element-description-attribution">Publication URL</span>
-                  <span class="fw-regular element-description"> {{ element.publication_url }} </span>
+                  <span class="fw-light element-description"> {{ element.publication_url }} </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Status</span>
-                  <span class="fw-semibold element-description fs-12" [ngClass]="element.status">
+                  <span class="fw-light element-description fs-12" [ngClass]="element.status">
                     {{ element.status | uppercase }}
                   </span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Execution Time</span>
-                  <span class="fw-regular element-description"> {{ element.execution_time }} sec</span>
+                  <span class="fw-light element-description"> {{ element.execution_time }} sec</span>
                 </div>
                 <div class="element">
                   <span class="element-description-attribution">Submitted At</span>
-                  <span class="fw-regular element-description"> {{ element.submitted_at | date: 'medium' }} </span>
+                  <span class="fw-light element-description"> {{ element.submitted_at | date: 'medium' }} </span>
                 </div>
               </div>
               <div class="elements-action">
@@ -149,7 +167,7 @@
                     [disabled]="element.status === 'failed' || element.status === 'cancelled' || !selectedPhase['leaderboard_public']"
                     (change)="changeSubmissionVisibility(element.id, element.is_public)"
                   >
-                    <span class="fs-14">Show on leaderboard</span>
+                    <span class="fs-14 w-300">Show on leaderboard</span>
                   </mat-checkbox>
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
@@ -158,11 +176,11 @@
                     [disabled]="element.status !== 'finished'"
                     (change)="changeBaselineStatus(element.id, element.is_baseline)"
                   >
-                    <span class="fs-14">Baseline</span>
+                    <span class="fs-14 w-300">Baseline</span>
                   </mat-checkbox>
                 </div>
                 <div class="element fs-14 pointer">
-                  <a (click)="editSubmission(element)"><i class="fa fa-pencil"></i> Edit submission detail &nbsp; </a>
+                  <a class ="w-300" (click)="editSubmission(element)"><i class="fa fa-pencil"></i> Edit submission detail &nbsp; </a>
                 </div>
               </div>
             </div>
