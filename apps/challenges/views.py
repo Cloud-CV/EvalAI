@@ -2893,7 +2893,9 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         serializer = ChallengePhaseCreateSerializer(
             challenge_phase,
             data={"test_annotation": test_annotation_file},
-            context={"challenge": challenge_phase.challenge},
+            context={
+                "challenge": challenge_phase.challenge,
+            },
             partial=True,
         )
         if serializer.is_valid():
@@ -2962,7 +2964,9 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
     file_key_on_s3 = "{}/{}".format(
         settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
     )
-
+    annotations_uploaded_using_cli = request.data.get(
+        "annotations_uploaded_using_cli"
+    )
     response = {}
     try:
         data = complete_s3_multipart_file_upload(
@@ -2979,6 +2983,23 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
                 "challenge_phase_pk": challenge_phase.pk,
             }
             response = Response(response_data, status=status.HTTP_201_CREATED)
+
+            if annotations_uploaded_using_cli:
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data={"annotations_uploaded_using_cli": True},
+                    context={
+                        "challenge": challenge_phase.challenge,
+                    },
+                    partial=True,
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    response_data = {"error": serializer.errors}
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
     except Exception:
         response_data = {
             "error": "Error occurred while uploading annotations!"
@@ -3321,7 +3342,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase = ChallengePhase.objects.filter(
                     challenge__pk=challenge.pk, config_id=data["id"]
                 ).first()
-                if challenge_test_annotation_file:
+                if (
+                    challenge_test_annotation_file
+                    and not challenge_phase.annotations_uploaded_using_cli
+                ):
                     serializer = ChallengePhaseCreateSerializer(
                         challenge_phase,
                         data=data,
@@ -3330,6 +3354,20 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "test_annotation": challenge_test_annotation_file,
                             "config_id": data["config_id"],
                         },
+                    )
+                elif (
+                    challenge_test_annotation_file
+                    and challenge_phase.annotations_uploaded_using_cli
+                ):
+                    data.pop("test_annotation", None)
+                    serializer = ChallengePhaseCreateSerializer(
+                        challenge_phase,
+                        data=data,
+                        context={
+                            "challenge": challenge,
+                            "config_id": data["config_id"],
+                        },
+                        partial=True,
                     )
                 else:
                     serializer = ChallengePhaseCreateSerializer(

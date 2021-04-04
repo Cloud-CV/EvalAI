@@ -53,21 +53,29 @@
 
   .table-header {
     color: rgba(0, 0, 0, 0.87) !important;
-    font-weight: bold;
     text-align: center !important;
   }
 }
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-  td {
-    font-weight: $fw-semibold;
-  }
   background: $grad-light-black;
 }
 
 tr.element-row.expanded-row {
   cursor: pointer;
+}
+  
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
 }
 
 .cell-outside {
@@ -92,7 +100,7 @@ tr.element-row.expanded-row {
   overflow: hidden;
   display: flex;
   flex-direction: row;
-}
+} 
 
 .elements-detail {
   width: 55%;
