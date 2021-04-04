@@ -8,7 +8,7 @@
   }
   .privacy-nav-container {
     margin-top: 30px;
-    top: 10%;
+    top: 0;
     bottom: 0;
     max-height: 600px !important;
     overflow-y: scroll;
@@ -91,5 +91,20 @@
 @include screen-medium {
   .privacy-nav-container {
     top: 20%;
+  }
+}
+
+@include screen-medium {
+  .privacy-container {
+    padding-top:100px !important;
+  }
+}
+
+@include screen-large {
+  .privacy-container {
+    padding-left:0;
+    padding-right: 0;
+    margin-right: auto;
+    margin-left: auto;
   }
 }
