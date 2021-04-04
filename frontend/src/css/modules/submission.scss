@@ -111,3 +111,9 @@ md-radio-button .md-on {
 	padding-right: 30px;
 	padding-left: 30px;
 }
+
+.center-content {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}

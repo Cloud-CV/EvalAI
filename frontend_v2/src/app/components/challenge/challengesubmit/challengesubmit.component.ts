@@ -34,6 +34,11 @@ export class ChallengesubmitComponent implements OnInit {
   isSubmissionUsingUrl: any;
 
   /**
+   * Is submission through CLI
+   */
+  isSubmissionUsingCli: any;
+
+  /**
    * Is user logged in
    */
   isLoggedIn = false;
