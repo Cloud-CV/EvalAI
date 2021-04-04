@@ -1,8 +1,9 @@
 name: autoupdate
 on:
-  # This will trigger every 10 mins (tweak this as required)
-  schedule:
-    - cron: '*/10 * * * *'
+  # Triggers if commits are pushed to master branch
+  push:
+    branches:
+      - master
 jobs:
   autoupdate:
     name: autoupdate
