@@ -349,7 +349,8 @@ export class ChallengeService {
         callback();
       },
       (err) => {
-        SELF.globalService.handleApiError(err);
+        SELF.globalService.handleApiError(err, false);
+        SELF.globalService.showToast('error', err['error']['error'], 5)
         callback();
       },
       () => {
