@@ -216,28 +216,32 @@
                       [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']"
                       (change)="confirmSubmissionVisibility(element, element.is_public)"
                     >
-                    <strong class="fw-light fs-14">
+                    <strong class="fs-14">
                       Show On Leaderboard
                     </strong>
                     </mat-checkbox>
                 </div>
                 <div class="element">
                     <mat-checkbox
-                      class="element-icon fw-light"
+                      class="element-icon"
                       [checked]="element.is_flagged"
                       (change)="confirmSubmissionFlagChange(element, element.is_flagged)"
                     >
-                    <strong class="fw-light fs-14">
+                    <strong class="fs-14">
                       {{ element.submissionFlagText }}
                     </strong>
                     </mat-checkbox>
                 </div>
-                <div class="element">
-                  <a class="fa fa-refresh pointer fw-light fs-14" (click)="reRunSubmission(element.id)"> Re-run submission </a>
+                <div class="element element-description-attribution">
+                  <a (click)="reRunSubmission(element.id)">
+                    <strong class="fa fa-refresh pointer "> &nbsp;</strong>
+                    <strong>Re-run submission</strong>
+                  </a>
                 </div>
-                <div class="element" *ngIf="isChallengeHost">
+                <div class="element element-description-attribution" *ngIf="isChallengeHost">
                   <a class="pointer" (click)="deleteChallengeSubmission(element)">
-                    <i class="fa fa-trash red-text fs-14 fw-light" aria-hidden="true">&nbsp;Delete Submission</i>
+                    <i class="fa fa-trash" aria-hidden="true"> &nbsp;</i>
+                    <strong>Delete Submission</strong>
                   </a>
                 </div>
               </div>
