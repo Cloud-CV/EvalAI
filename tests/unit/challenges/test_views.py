@@ -171,6 +171,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
+                "workers": self.challenge.workers,
             }
         ]
 
@@ -317,6 +318,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "workers": self.challenge.workers,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -390,6 +392,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "workers": self.challenge.workers,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -489,6 +492,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "workers": self.challenge.workers,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -537,6 +541,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "workers": self.challenge.workers,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1046,6 +1051,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
+                "workers": self.challenge3.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1096,6 +1102,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "workers": self.challenge2.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1146,6 +1153,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
+                "workers": self.challenge4.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1195,6 +1203,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
+                "workers": self.challenge4.workers,
             },
             {
                 "id": self.challenge3.pk,
@@ -1233,6 +1242,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
+                "workers": self.challenge3.workers,
             },
             {
                 "id": self.challenge2.pk,
@@ -1271,6 +1281,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "workers": self.challenge2.workers,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1370,6 +1381,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
+                "workers": self.challenge3.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1496,6 +1508,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "max_docker_image_size": self.challenge3.max_docker_image_size,
             "cli_version": self.challenge3.cli_version,
             "remote_evaluation": self.challenge3.remote_evaluation,
+            "workers": self.challenge3.workers,
         }
 
         response = self.client.get(self.url, {})
@@ -1558,6 +1571,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "max_docker_image_size": self.challenge4.max_docker_image_size,
             "cli_version": self.challenge4.cli_version,
             "remote_evaluation": self.challenge4.remote_evaluation,
+            "workers": self.challenge4.workers,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1676,6 +1690,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "workers": self.challenge2.workers,
             }
         ]
 
@@ -1726,6 +1741,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "workers": self.challenge2.workers,
             }
         ]
 
@@ -1776,6 +1792,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "workers": self.challenge2.workers,
             }
         ]
 
@@ -1824,6 +1841,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
+                "workers": self.challenge.workers,
             },
             {
                 "id": self.challenge2.pk,
@@ -1862,6 +1880,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "workers": self.challenge2.workers,
             },
         ]
 
@@ -2504,6 +2523,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,
             "is_active": True,
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
@@ -2838,6 +2858,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -2874,6 +2895,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -2883,6 +2905,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
                 "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
             },
         ]
         self.client.force_authenticate(user=self.user)
@@ -4009,6 +4032,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
             "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+            "show_execution_time": False,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
@@ -4253,6 +4277,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
+                "annotations_uploaded_using_cli": self.private_challenge_phase.annotations_uploaded_using_cli,
                 "codename": self.private_challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.private_challenge_phase.test_annotation.url),
@@ -4285,6 +4310,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "annotations_uploaded_using_cli": self.challenge_phase.annotations_uploaded_using_cli,
                 "codename": self.challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
@@ -4536,7 +4562,6 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
-
     def test_get_or_update_allowed_email_ids_success(self):
         self.url = reverse_lazy(
             "challenges:get_or_update_allowed_email_ids",
@@ -4548,7 +4573,7 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         expected = {
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
         }
-        response = self.client.get(self.url, {}, format='json')
+        response = self.client.get(self.url, {}, format="json")
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -4598,13 +4623,15 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
                 "phase_pk": self.challenge_phase.pk,
             },
         )
-        allowed_email_ids = ('user1@example.com')
+        allowed_email_ids = "user1@example.com"
         data = {
             "allowed_email_ids": allowed_email_ids,
         }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "Field allowed_email_ids should be a list.")
+        self.assertEqual(
+            response.data["error"], "Field allowed_email_ids should be a list."
+        )
 
     def test_update_allowed_email_ids_when_input_is_none(self):
         self.url = reverse_lazy(
@@ -4619,7 +4646,9 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         }
         response = self.client.patch(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "Field allowed_email_ids is missing.")
+        self.assertEqual(
+            response.data["error"], "Field allowed_email_ids is missing."
+        )
 
     def test_get_allowed_email_ids_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(

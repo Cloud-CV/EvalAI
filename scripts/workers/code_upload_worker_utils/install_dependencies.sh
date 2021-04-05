@@ -44,8 +44,8 @@ echo "### Cilium Installed"
 
 sleep 120s;
 
-# Apply network policies
-kubectl apply -f /code/scripts/workers/code_upload_worker_utils/network_policies.yaml
+# # Apply cilium network policy
+cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
 
 # Set ssl-certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt

@@ -61,6 +61,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "max_docker_image_size",
             "cli_version",
             "remote_evaluation",
+            "workers",
         )
 
 
@@ -150,6 +151,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "dataset_split_name",
             "visibility",
             "show_leaderboard_by_latest_submission",
+            "show_execution_time",
         )
 
     def get_dataset_split_name(self, obj):
@@ -286,6 +288,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "leaderboard_decimal_precision",
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
+            "show_execution_time",
         )
 
 
@@ -330,6 +333,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "is_submission_public",
+            "annotations_uploaded_using_cli",
             "codename",
             "test_annotation",
             "slug",
