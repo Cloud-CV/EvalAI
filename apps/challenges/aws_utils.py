@@ -531,8 +531,6 @@ def create_service_by_challenge_pk(client, challenge, client_token):
 
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
-    challenge.service_name = service_name
-    challenge.save()
     if (
         challenge.workers is None
     ):  # Verify if the challenge is new (i.e, service not yet created.).
@@ -554,6 +552,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+                challenge.service_name = response["service"]["serviceName"]
                 challenge.workers = 1
                 challenge.save()
             return response
@@ -1083,10 +1082,10 @@ def get_tasks_status(service_name):
     else:
         try:
             tasks_response = client.list_tasks(
-                serviceName = service_name
+                serviceName=service_name
             )
             response = client.describe_tasks(
-                tasks = tasks_response["taskArns"]
+                tasks=tasks_response["taskArns"]
             )
             task_details = response["tasks"]
             tasks_status = {
