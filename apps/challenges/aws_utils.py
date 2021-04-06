@@ -1090,8 +1090,9 @@ def create_eks_nodegroup(challenge, cluster_name):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    nodegroup_name = "{0}-nodegroup".format(
-        challenge_obj.title.replace(" ", "-")
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    nodegroup_name = "{}-{}-nodegroup".format(
+        challenge_obj.title.replace("_", "-"), environment_suffix
     )
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("eks", challenge_aws_keys)
@@ -1418,7 +1419,10 @@ def create_eks_cluster(challenge):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    cluster_name = "{}-{}-cluster".format(
+        challenge_obj.title.replace("_", "-"), environment_suffix
+    )
     if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
         challenge_aws_keys = get_aws_credentials_for_challenge(
             challenge_obj.pk
