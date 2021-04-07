@@ -61,6 +61,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "max_docker_image_size",
             "cli_version",
             "remote_evaluation",
+            "workers",
         )
 
 
@@ -332,6 +333,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "is_submission_public",
+            "annotations_uploaded_using_cli",
             "codename",
             "test_annotation",
             "slug",
