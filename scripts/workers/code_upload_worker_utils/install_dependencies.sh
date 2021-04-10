@@ -39,13 +39,13 @@ kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volum
 
 # Install cilium
 # Cilium is being used to provide networking and network policy
-kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
-echo "### Cilium Installed"
+# kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
+# echo "### Cilium Installed"
 
 sleep 120s;
 
-# # Apply cilium network policy
-cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
+# Apply cilium network policy
+# cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
 
 # Set ssl-certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt
