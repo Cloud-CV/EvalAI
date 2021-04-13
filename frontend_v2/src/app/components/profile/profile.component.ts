@@ -145,6 +145,9 @@ export class ProfileComponent implements OnInit {
     for (const i in this.user) {
       if (this.user.hasOwnProperty(i)) {
         if (this.user[i] === '' || this.user[i] === undefined || this.user[i] === null) {
+          if(i === "linkedin_url" ||  i === "github_url" || i === "google_scholar_url"){
+            this.user[i] = "";
+          }
           this.user[i] = '-';
           countLeft = countLeft + 1;
         }
