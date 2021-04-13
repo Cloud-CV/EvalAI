@@ -28,7 +28,7 @@ export class ProfileComponent implements OnInit {
   /**
    * Profile completion score
    */
-  pcomp: any;
+  profileComplete: any;
 
   /**
    * Auth token string
@@ -155,7 +155,7 @@ export class ProfileComponent implements OnInit {
       }
     }
     const TEMP = ((countLeft / count) * 100).toString();
-    this.pcomp = (100 - parseInt(TEMP, 10)).toString() + '%';
+    this.profileComplete = (100 - parseInt(TEMP, 10)).toString() + '%';
   }
 
   /**
