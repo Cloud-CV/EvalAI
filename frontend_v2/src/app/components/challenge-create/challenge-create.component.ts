@@ -44,11 +44,6 @@ export class ChallengeCreateComponent implements OnInit {
   hostTeam: any = null;
 
   /**
-   * Route for hosted challenges
-   */
-  hostedChallengesRoute = '/challenges/me';
-
-  /**
    * Route path for host teams
    */
   hostTeamsRoute = '/teams/hosts';
@@ -57,6 +52,11 @@ export class ChallengeCreateComponent implements OnInit {
    * Route path for listing all challenge templates
    */
   challengeTemplatesListRoute = '/challenges/templates';
+
+  /**
+   * Challenge common path
+   */
+  challengeRoutePathCommon = '/challenge';
 
   /**
    * Constructor.
@@ -105,7 +105,7 @@ export class ChallengeCreateComponent implements OnInit {
         (data) => {
           this.globalService.stopLoader();
           this.globalService.showToast('success', 'Successfuly sent to EvalAI admin for approval.');
-          this.router.navigate([this.hostedChallengesRoute]);
+          this.router.navigate([this.challengeRoutePathCommon, data.challenge_id]);
         },
         (err) => {
           this.globalService.stopLoader();

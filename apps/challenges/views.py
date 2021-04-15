@@ -1494,7 +1494,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"
-                " sent for review to EvalAI Admin.".format(challenge.title)
+                " sent for review to EvalAI Admin.".format(challenge.title),
+                "challenge_id": challenge.id
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
 
