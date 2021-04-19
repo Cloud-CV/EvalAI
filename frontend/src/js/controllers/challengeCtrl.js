@@ -203,8 +203,8 @@
             $interval.cancel(vm.logs_poller);
         };
 
-         // Get the status of workers continuously
-         vm.startFetchingWorkerStatus = function() {
+         // Poll evaluation worker status at interval x
+         vm.fetchWorkerStatus = function() {
             vm.status_poller = $interval(function(){
                 parameters.url = 'challenges/' + vm.challengeId + '/get_worker_status/';
                 parameters.method = 'GET';
@@ -217,10 +217,9 @@
                     onError: function(response) {
                         var error = response.data.error;
                         if (error == undefined){
-                            $rootScope.notify("error", "There was an error.");
-                        }
-                        else {
-                            $rootScope.notify("error", "There was an error: " + error);
+                            $rootScope.notify("error", "An error occurred when fetching worker status");
+                        } else {
+                            $rootScope.notify("error", "An error occurred when fetching worker status: " + error);
                         }
                     }
                 };
@@ -228,7 +227,7 @@
             }, 5000);
         };
 
-        vm.stopFetchingWorkerStatus = function(){
+        vm.stopWorkerStatusFetchPoller = function(){
             $interval.cancel(vm.status_poller);
         };
 
@@ -2626,7 +2625,7 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
             vm.stopLoadingLogs();
-            vm.stopFetchingSubmissions();
+            vm.stopWorkerStatusFetchPoller();
         });
 
         $rootScope.$on('$stateChangeStart', function() {

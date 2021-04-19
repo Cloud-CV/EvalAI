@@ -131,7 +131,7 @@ class Challenge(TimeStampedModel):
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
-    # The service name for the challenge which contains all the tasks
+    # Challenge evaluation worker service name
     service_name = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
