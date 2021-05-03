@@ -15,7 +15,6 @@
         </div>
         <div [innerHTML]="submissionGuidelines" class="submission-guidelines fw-light fs-16"></div>
       </div>
-
       <div *ngIf="isChallengeHost" class="col-md-1 col-sm-1 col-xs-2 col-lr-pad">
         <a class="pointer fs-16" (click)="editSubmissionGuideline()">
           <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;edit
@@ -23,7 +22,6 @@
       </div>
     </div>
   </div>
-
   <div *ngIf="challenge.is_docker_based" class="ev-md-container ev-card-panel card-bt-margin">
     <div class="row row-lr-margin">
       <div class="col-lg-12 col-md-12 col-sm-12 col-lr-pad">
@@ -183,9 +181,19 @@
                     type="radio"
                     name="submissionOptions"
                     class="with-gap selectPhase"
-                    id="fileUrl"
-                    (click)="isSubmissionUsingUrl = true; showForm = true"
+                    id="useCli"
+                    (click)="isSubmissionUsingUrl = false;
+                    showForm = false; isSubmissionUsingCli=true;" 
                   />
+                  <label for="useCli" class="radio-button-text pointer">
+                    <div id="radio_button_url" class="show-member-title pointer">
+                      <strong class="text-med-black fs-16"> Use CLI (for file size > 400MB) </strong>
+                    </div>
+                  </label>
+                </span>
+                <span class="submission-option">
+                  <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
+                    (click)="isSubmissionUsingUrl = true; showForm = true;" />
                   <label for="fileUrl" class="radio-button-text pointer">
                     <div id="radio_button_url" class="show-member-title pointer">
                       <strong class="text-med-black fw-light fs-16">Enter file URL (for file size > 400MB) </strong>
@@ -193,19 +201,54 @@
                   </label>
                 </span>
                 <span class="submission-option">
-                  <input
-                    type="radio"
-                    name="submissionOptions"
-                    class="with-gap selectPhase"
-                    id="fileUpload"
-                    (click)="isSubmissionUsingUrl = false; showForm = true"
-                  />
+                  <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUpload"
+                    (click)="isSubmissionUsingUrl = false; showForm = true;" />
                   <label for="fileUpload" class="radio-button-text pointer">
                     <div id="radio_button_file" class="show-member-title pointer">
                       <strong class="text-med-black fw-light fs-16">Upload file </strong>
                     </div>
                   </label>
                 </span>
+              </div>
+              <div *ngIf="isSubmissionUsingCli && !showForm">
+                <p class="fs-18 w-400 no-top-margin-p">Submission instructions</p>
+                <ol class="numbered-list">
+                  <li class="content"> Install evalai-cli<br />
+                    <code #install_evalai>$ pip install evalai{{ cliVersion }}</code>
+                    <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                      value="pip install &quot;evalai{{ cliVersion }}&quot;"
+                      (click)="copyTextToClipboard(install_evalai)">
+                      <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
+                            clipboard."></i>
+                    </button>
+                  </li>
+                  <li class="content"> Add your EvalAI account token to evalai-cli<br />
+                    <code #set_token>$ evalai set_token {{authToken}}</code>
+                    <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                      value="evalai set_token {{ authToken }}" (click)="copyTextToClipboard(set_token)">
+                      <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
+                            clipboard."></i>
+                    </button>
+                  </li>
+                  <li class="content"> Make Submission<br />
+                    <code
+                      #make_submission>$ evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+                    <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                      value="evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large"
+                      (click)="copyTextToClipboard(make_submission)">
+                      <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
+                            clipboard."></i>
+                    </button>
+                  </li>
+                  <li class="content">
+                    <div class="center-content">Use &nbsp;<code> --private </code> &nbsp;or&nbsp; <code> --public </code>&nbsp; flag in the submission
+                    command to make the submission private or public respectively.<br />
+                    </div>
+                  </li>
+                  <li class="content"> For more commands, please refer to <a class="highlight-link"
+                      href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
+                  </li>
+                </ol>
               </div>
               <div [hidden]="!showForm" class="form">
                 <div class="row row-lr-margin">

@@ -171,7 +171,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
-                "tags": self.challenge.tags
+                "tags": self.challenge.tags,
+                "workers": self.challenge.workers,
             }
         ]
 
@@ -318,7 +319,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "tags": self.challenge.tags
+            "tags": self.challenge.tags,
+            "workers": self.challenge.workers,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -392,7 +394,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "tags": self.challenge.tags
+            "tags": self.challenge.tags,
+            "workers": self.challenge.workers,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -492,7 +495,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "tags": self.challenge.tags
+            "tags": self.challenge.tags,
+            "workers": self.challenge.workers,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -541,7 +545,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
-            "tags": self.challenge.tags
+            "tags": self.challenge.tags,
+            "workers": self.challenge.workers,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1051,7 +1056,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
-                "tags": self.challenge3.tags
+                "tags": self.challenge3.tags,
+                "workers": self.challenge3.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1102,7 +1108,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "tags": self.challenge2.tags
+                "tags": self.challenge2.tags,
+                "workers": self.challenge2.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1153,7 +1160,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
-                "tags": self.challenge4.tags
+                "tags": self.challenge4.tags,
+                "workers": self.challenge4.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1203,7 +1211,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
-                "tags": self.challenge4.tags
+                "tags": self.challenge4.tags,
+                "workers": self.challenge4.workers,
             },
             {
                 "id": self.challenge3.pk,
@@ -1242,7 +1251,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
-                "tags": self.challenge3.tags
+                "tags": self.challenge3.tags,
+                "workers": self.challenge3.workers,
             },
             {
                 "id": self.challenge2.pk,
@@ -1281,7 +1291,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "tags": self.challenge2.tags
+                "tags": self.challenge2.tags,
+                "workers": self.challenge2.workers,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1381,7 +1392,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
-                "tags": self.challenge3.tags
+                "tags": self.challenge3.tags,
+                "workers": self.challenge3.workers,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1508,7 +1520,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "max_docker_image_size": self.challenge3.max_docker_image_size,
             "cli_version": self.challenge3.cli_version,
             "remote_evaluation": self.challenge3.remote_evaluation,
-            "tags": self.challenge3.tags
+            "tags": self.challenge3.tags,
+            "workers": self.challenge3.workers,
         }
 
         response = self.client.get(self.url, {})
@@ -1571,7 +1584,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "max_docker_image_size": self.challenge4.max_docker_image_size,
             "cli_version": self.challenge4.cli_version,
             "remote_evaluation": self.challenge4.remote_evaluation,
-            "tags": self.challenge4.tags
+            "tags": self.challenge4.tags,
+            "workers": self.challenge4.workers,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1690,7 +1704,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "tags": self.challenge2.tags
+                "tags": self.challenge2.tags,
+                "workers": self.challenge2.workers,
             }
         ]
 
@@ -1741,7 +1756,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "tags": self.challenge2.tags
+                "tags": self.challenge2.tags,
+                "workers": self.challenge2.workers,
             }
         ]
 
@@ -1792,7 +1808,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "tags": self.challenge2.tags
+                "tags": self.challenge2.tags,
+                "workers": self.challenge2.workers,
             }
         ]
 
@@ -1841,7 +1858,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
-                "tags": self.challenge.tags
+                "tags": self.challenge.tags,
+                "workers": self.challenge.workers,
             },
             {
                 "id": self.challenge2.pk,
@@ -1880,7 +1898,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
-                "tags": self.challenge2.tags
+                "tags": self.challenge2.tags,
+                "workers": self.challenge2.workers,
             },
         ]
 

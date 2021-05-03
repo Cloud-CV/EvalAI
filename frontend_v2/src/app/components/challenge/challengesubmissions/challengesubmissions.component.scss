@@ -2,7 +2,7 @@
 @import './mixins.scss';
 
 .ev-md-container {
-  padding-bottom: 0px;
+  padding: 0px 30px 30px 30px;
 
   .phase-title {
     margin-bottom: 20px;
@@ -71,6 +71,18 @@
 tr.detail-row {
   height: 0;
   overflow: hidden;
+}
+
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
 }
 
 .cell-outside {

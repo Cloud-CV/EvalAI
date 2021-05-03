@@ -42,9 +42,9 @@ kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volum
 # kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
 # echo "### Cilium Installed"
 
-# sleep 120s;
+sleep 120s;
 
-# # Apply network policies
+# Apply cilium network policy
 # cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
 
 # Set ssl-certificate

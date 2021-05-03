@@ -65,6 +65,18 @@ tr.element-row:not(.expanded-row):hover {
 tr.element-row.expanded-row {
   cursor: pointer;
 }
+  
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
+}
 
 .cell-outside {
   padding: 8px;
@@ -88,7 +100,7 @@ tr.element-row.expanded-row {
   overflow: hidden;
   display: flex;
   flex-direction: row;
-}
+} 
 
 .elements-detail {
   width: 55%;
