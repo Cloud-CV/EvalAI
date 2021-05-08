@@ -563,6 +563,12 @@ def get_challenges_based_on_teams(request):
         host_team_ids = get_challenge_host_teams_for_user(request.user)
         q_params["creator__id__in"] = host_team_ids
 
+    else:
+        response_data = {
+            "error": "Invalid url pattern, 'mode' should be either 'participant' or 'host'"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     challenge = Challenge.objects.filter(**q_params).order_by("id")
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
