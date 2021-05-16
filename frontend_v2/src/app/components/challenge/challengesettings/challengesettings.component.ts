@@ -262,10 +262,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challenge.title = data.title;
-            SELF.meta.updateTag({
-              property: 'og:title',
-              content: SELF.challenge.title,
-            });
             SELF.globalService.showToast('success', 'The challenge title is  successfully updated!', 5);
           },
           (err) => {
@@ -410,6 +406,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challenge.image = data.image;
+            SELF.meta.updateTag({
+              property: 'og:image',
+              content: SELF.challenge.image,
+            });
             SELF.globalService.showToast('success', 'The Challenge image successfully updated!', 5);
           },
           (err) => {
