@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { NGXLogger } from 'ngx-logger';
 import * as moment from 'moment';
 
@@ -93,6 +94,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private endpointsService: EndpointsService,
     private router: Router,
+    private meta: Meta,
     private logger: NGXLogger
   ) {}
 
@@ -260,6 +262,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challenge.title = data.title;
+            SELF.meta.updateTag({
+              property: 'og:title',
+              content: SELF.challenge.title,
+            });
             SELF.globalService.showToast('success', 'The challenge title is  successfully updated!', 5);
           },
           (err) => {
