@@ -385,6 +385,10 @@ def run_submission(
 
     submission_output = None
     phase_id = challenge_phase.id
+    if challenge_id not in PHASE_ANNOTATION_FILE_NAME_MAP:
+        # The challenge is not in the map. It must've been created after the
+        # submission worker started. Load it now.
+        process_add_challenge_message({"challenge_id": challenge_id})
     annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(
         challenge_id
     ).get(phase_id)
