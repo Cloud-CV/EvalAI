@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSliderChange } from '@angular/material';
@@ -201,6 +201,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   plusDisabled = false;
 
   /**
+   * Current Tab active flag
+   */
+  isTabActive = true
+
+  /**
    * Challenge phase visibility
    */
   challengePhaseVisibility = {
@@ -262,6 +267,14 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   }
 
   /**
+   * Listens for visibilitychange event to check if the current Tab is in focus
+   */
+  @HostListener('document:visibilitychange', ['$event'])
+  onVisibilityChange(event){
+    this.isTabActive = !this.isTabActive;
+  }
+
+  /**
    * Filter phases based on visibility and leaderboard public flag.
    */
   filterPhases() {
@@ -304,8 +317,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         const checkViewInit = () => {
           if (self.viewInit) {
             self.components.map((item) => {
-              item.selectPhaseSplit(self.selectedPhaseSplit, 'selectBox', 'phaseSplit');
-            });
+              item.selectPhaseSplit(self.selectedPhaseSplit, 'selectBox', 'phaseSplit')
+            })
+            this.phaseSplitSelected(self.selectedPhaseSplit)
           } else {
             setTimeout(() => {
               checkViewInit();
@@ -322,29 +336,35 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   }
 
   /**
+   * Updates the router URL with phase-split-id
    * This is called when a phase split is selected (from child components)
    */
-  phaseSplitSelected() {
+  changeUrlWithPhaseSplit = (phaseSplit) => {
     const SELF = this;
-    return (phaseSplit) => {
-      if (SELF.router.url.endsWith('leaderboard')) {
-        SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
-      } else if (SELF.router.url.split('/').length === 5) {
-        SELF.router.navigate(['../' + phaseSplit['id']], { relativeTo: this.route });
-      } else if (SELF.router.url.split('/').length === 6) {
-        SELF.router.navigate(['../../' + phaseSplit['id']], { relativeTo: this.route });
-      }
-      SELF.selectedPhaseSplit = phaseSplit;
-      if (SELF.selectedPhaseSplit) {
-        SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
-        SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
-        SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
-        let selectedPhase = SELF.phases.find((phase) => {
-          return phase.id === SELF.selectedPhaseSplit.challenge_phase
-        })
-        SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
-      }
-    };
+    if (SELF.router.url.endsWith('leaderboard')) {
+      SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
+    } else if (SELF.router.url.split('/').length === 5) {
+      SELF.router.navigate(['../' + phaseSplit['id']], { relativeTo: this.route });
+    } else if (SELF.router.url.split('/').length === 6) {
+      SELF.router.navigate(['../../' + phaseSplit['id']], { relativeTo: this.route });
+    }
+  }
+
+  /**
+   * This is called when a phase split is selected
+   */
+  phaseSplitSelected(phaseSplit) {
+    const SELF = this;
+    SELF.selectedPhaseSplit = phaseSplit;
+    if (SELF.selectedPhaseSplit) {
+      SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
+      SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
+      SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
+      let selectedPhase = SELF.phases.find((phase) => {
+        return phase.id === SELF.selectedPhaseSplit.challenge_phase
+      })
+      SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
+    }
   }
 
   /**
@@ -517,17 +537,19 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     const SELF = this;
     clearInterval(SELF.pollingInterval);
     SELF.pollingInterval = setInterval(function () {
-      SELF.apiService.getUrl(API_PATH, true, false).subscribe(
-        (data) => {
-          if (SELF.leaderboard.length !== data['results'].length) {
-            SELF.showLeaderboardUpdate = true;
-          }
-        },
-        (err) => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => {}
-      );
+      if (SELF.isTabActive) {
+        SELF.apiService.getUrl(API_PATH, true, false).subscribe(
+          (data) => {
+            if (SELF.leaderboard.length !== data['results'].length) {
+              SELF.showLeaderboardUpdate = true;
+            }
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {}
+          );
+        }
     }, 5000);
   }
 
