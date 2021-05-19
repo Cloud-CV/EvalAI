@@ -24,7 +24,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   /**
    * Selected phase split callback
    */
-  @Input() phaseSplitSelected: any;
+  @Input() phaseSelectedUrlChange: any;
 
   /**
    * Phase selection type (radio button or select box)
@@ -111,7 +111,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseName = phaseSplit.challenge_phase_name;
     this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
-    this.phaseSplitSelected(phaseSplit);
+    this.phaseSelectedUrlChange(phaseSplit);
   }
 
   /**
