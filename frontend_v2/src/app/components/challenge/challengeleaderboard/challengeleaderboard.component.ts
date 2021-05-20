@@ -339,7 +339,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     phaseSplitSelected(phaseSplit) {
       const SELF = this;
       SELF.selectedPhaseSplit = phaseSplit;
-      if (SELF.selectedPhaseSplit) {
+      if (SELF.selectedPhaseSplit && !SELF.router.url.endsWith('leaderboard')) {
         SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
