@@ -324,6 +324,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
 
   /**
    * This is called when a phase split is selected (from child components)
+   * Updates the router URL with phase-split-id
    */
   phaseSelectedUrlChange = (phaseSplit) => {
     const SELF = this;
@@ -336,10 +337,13 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       }
     }
 
+  /**
+   * This is called when a phase split is selected
+   */
     phaseSplitSelected(phaseSplit) {
       const SELF = this;
       SELF.selectedPhaseSplit = phaseSplit;
-      if (SELF.selectedPhaseSplit && !SELF.router.url.endsWith('leaderboard')) {
+      if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
         SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';

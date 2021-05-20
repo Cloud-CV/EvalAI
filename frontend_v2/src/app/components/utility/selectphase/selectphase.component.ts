@@ -22,7 +22,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phaseSelected: any;
 
   /**
-   * Selected phase split callback
+   * Selected phase split callback to update the router URL
    */
   @Input() phaseSelectedUrlChange: any;
 
