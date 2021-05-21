@@ -326,7 +326,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * This is called when a phase split is selected (from child components)
    * Updates the router URL with phase-split-id
    */
-  phaseSelectedUrlChange = (phaseSplit) => {
+   selectedPhaseSplitUrlChange = (phaseSplit) => {
     const SELF = this;
       if (SELF.router.url.endsWith('leaderboard')) {
         SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
@@ -353,7 +353,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
       }
     };
-        
 
   /**
    * This updates the leaderboard results after fetching them from API

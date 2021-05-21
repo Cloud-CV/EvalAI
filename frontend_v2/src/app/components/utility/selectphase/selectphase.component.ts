@@ -24,7 +24,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   /**
    * Selected phase split callback to update the router URL
    */
-  @Input() phaseSelectedUrlChange: any;
+  @Input() selectedPhaseSplitUrlChange: any;
 
   /**
    * Phase selection type (radio button or select box)
@@ -111,7 +111,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseName = phaseSplit.challenge_phase_name;
     this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
-    this.phaseSelectedUrlChange(phaseSplit);
+    this.selectedPhaseSplitUrlChange(phaseSplit);
   }
 
   /**
