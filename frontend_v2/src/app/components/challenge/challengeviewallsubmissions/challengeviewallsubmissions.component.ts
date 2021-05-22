@@ -383,10 +383,9 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     if (url !== null) {
       const SELF = this;
       const API_PATH = url.split(environment.api_endpoint)[1];
-      console.log(API_PATH);
       SELF.apiService.getUrl(API_PATH, true).subscribe(
         (data) => {
-          SELF.submissions = data['results'];          
+          SELF.submissions = data['results'];
           SELF.paginationDetails.next = data.next;
           SELF.paginationDetails.previous = data.previous;
           
