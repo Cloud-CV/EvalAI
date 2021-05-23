@@ -1881,6 +1881,7 @@ def download_all_submissions(
                         "Submitted At",
                         "Submission Result File",
                         "Submission Metadata File",
+                        "Submission Meta Attributes",
                         "Method Name",
                         "Method Description",
                         "Publication URL",
@@ -1890,6 +1891,12 @@ def download_all_submissions(
                 # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
                 # TODO: Find a better way to solve the above issue.
                 for submission in submissions.data:
+                    if submission["submission_metadata"] is None:
+                        submission["submission_metadata"] = []
+                    submission["submission_metadata"] = ", ".join(
+                        f'{metadata["name"]}: {metadata["value"]}'
+                        for metadata in submission["submission_metadata"]
+                    )
                     writer.writerow(
                         [
                             submission["id"],
@@ -1923,6 +1930,7 @@ def download_all_submissions(
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
+                            submission["submission_metadata"],
                             submission["method_name"].replace("#", "-"),
                             submission["method_description"].replace("#", "-"),
                             submission["publication_url"],
@@ -2015,6 +2023,7 @@ def download_all_submissions(
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",
+                    "submission_metadata": "Submission Meta Attributes",
                     "method_name": "Method Name",
                     "method_description": "Method Description",
                     "publication_url": "Publication URL",
@@ -2036,6 +2045,12 @@ def download_all_submissions(
                 writer.writerow(fields)
                 for submission in submissions.data:
                     row = [submission["id"]]
+                    if submission["submission_metadata"] is None:
+                        submission["submission_metadata"] = []
+                    submission["submission_metadata"] = ", ".join(
+                        f'{metadata["name"]}: {metadata["value"]}'
+                        for metadata in submission["submission_metadata"]
+                    )
                     for field in request.data:
                         if field == "participant_team_members":
                             row.append(

@@ -1869,6 +1869,9 @@
             'label': 'Submission Metadata File',
             'id': 'submission_metadata_file'
         },{
+            'label': 'Submission Meta Attributes',
+            'id': 'submission_metadata'
+        },{
             'label': 'Method Name',
             'id': 'method_name'
         },{
