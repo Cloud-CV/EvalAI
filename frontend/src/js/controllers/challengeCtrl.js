@@ -1880,6 +1880,9 @@
         },{
             'label': 'Project URL',
             'id': 'project_url'
+        },{
+            'label': 'Submission Meta Attributes',
+            'id': 'submission_meta_attributes'
         }];
 
         vm.downloadChallengeSubmissions = function() {

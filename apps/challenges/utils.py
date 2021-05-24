@@ -454,3 +454,26 @@ def send_emails(emails, template_id, template_data):
             template_id=template_id,
             template_data=template_data,
         )
+
+
+def parse_submission_meta_attributes(submission):
+    """
+    Extracts submission attributes into Dict
+    Arguments:
+        submission {dict} -- Serialized submission object
+    Returns:
+        submission_meta_attributes {dict} -- a dict of submission meta attributes
+    """
+    submission_meta_attributes = {}
+    if submission["submission_metadata"] is None:
+        return {}
+    for meta_attribute in submission["submission_metadata"]:
+        if meta_attribute["type"] == "checkbox":
+            submission_meta_attributes[
+                meta_attribute["name"]
+            ] = meta_attribute.get("values")
+        else:
+            submission_meta_attributes[
+                meta_attribute["name"]
+            ] = meta_attribute.get("value")
+    return submission_meta_attributes
