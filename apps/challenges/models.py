@@ -102,6 +102,11 @@ class Challenge(TimeStampedModel):
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
     )
+    is_static_dataset_docker_based_challenge = models.BooleanField(
+        default=False,
+        verbose_name="Is Static Code Docker Based",
+        db_index=True,
+    )
     slug = models.SlugField(max_length=200, null=True, unique=True)
     max_docker_image_size = models.BigIntegerField(
         default=42949672960, null=True, blank=True
