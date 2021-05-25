@@ -31,12 +31,18 @@ def skip_saving_file(sender, instance, **kwargs):
     if not instance.pk and not hasattr(instance, "_input_file"):
         setattr(instance, "_input_file", instance.input_file)
         instance.input_file = None
+    if not instance.pk and not hasattr(instance, "_docker_input_file"):
+        setattr(instance, "_docker_input_file", instance.docker_input_file)
+        instance.docker_input_file = None
 
 
 @receiver(post_save, sender="jobs.Submission")
 def save_file(sender, instance, created, **kwargs):
     if created and hasattr(instance, "_input_file"):
         instance.input_file = getattr(instance, "_input_file")
+        instance.save()
+    if created and hasattr(instance, "_docker_input_file"):
+        instance.docker_input_file = getattr(instance, "_docker_input_file")
         instance.save()
 
 
@@ -84,6 +90,12 @@ class Submission(TimeStampedModel):
     # Model to store submitted submission files by the user
     input_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}")
+    )
+    # Model to store submitted docker image information
+    docker_input_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"),
+        null=True,
+        blank=True,
     )
     # Model to store large submission file (> 400 MB's) URLs submitted by the user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)

@@ -31,6 +31,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "submitted_at",
         "execution_time",
         "input_file",
+        "docker_input_file",
         "stdout_file",
         "stderr_file",
         "submission_result_file",
