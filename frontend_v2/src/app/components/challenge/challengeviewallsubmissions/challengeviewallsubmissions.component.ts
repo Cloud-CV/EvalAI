@@ -130,10 +130,10 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   fieldsToGetExport: any = [];
 
-    /**
+  /**
    *Check whether team name is filtered
    */
-  filter: boolean = true;
+  isTeamFiltered: boolean = true;
 
 
   /**
@@ -259,14 +259,14 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     let API_PATH;
     if (SELF.filterSubmissionsQuery === '') {
       API_PATH = SELF.endpointsService.allChallengeSubmissionURL(challenge, phase);
-      this.filter = false;
+      this.isTeamFiltered = false;
     } else {
       API_PATH = SELF.endpointsService.allChallengeSubmissionWithFilterQueryUrl(
         challenge,
         phase,
         SELF.filterSubmissionsQuery
       );
-      this.filter = true;
+      this.isTeamFiltered = true;
     }
 
     let name = SELF.filterSubmissionsQuery;
@@ -275,7 +275,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         if(name == SELF.filterSubmissionsQuery) {
           SELF.submissions = data['results'];
           let index = 0;
-          console.log(SELF.submissions);
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
             index += 1;
@@ -302,8 +301,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.showPagination = true;
             SELF.paginationDetails.paginationMessage = '';
           }
-          
-          console.log(data.next);
           // condition for pagination
           if (data.next === null) {
             SELF.paginationDetails.isNext = 'disabled';
@@ -394,7 +391,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = Math.ceil(data.count / 100);
           } else {
             SELF.paginationDetails.isNext = '';
-            if(this.filter) {
+            if(this.isTeamFiltered) {
               SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] -1);
             }
             else {
