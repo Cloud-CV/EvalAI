@@ -340,6 +340,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         if not challenge_phase.leaderboard_public:
             request.data["is_public"] = challenge_phase.is_submission_public
 
+        if challenge.is_docker_based:
+            request.data["docker_input_file"] = request.data["input_file"]
+
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -351,6 +354,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         message = {
             "challenge_pk": challenge_id,
             "phase_pk": challenge_phase_id,
+            "is_static_code_upload_submission": False,
         }
         if challenge.is_docker_based:
             try:
@@ -358,6 +362,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 message["submitted_image_uri"] = file_content[
                     "submitted_image_uri"
                 ]
+                if challenge.is_static_dataset_docker_based_challenge:
+                    message["is_static_code_upload_submission"] = True
             except Exception as ex:
                 response_data = {
                     "error": "Error {} in submitted_image_uri from submission file".format(
@@ -483,6 +489,18 @@ def change_submission_data_and_visibility(
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
+        if (
+            request.FILES.get("input_file")
+            and challenge.is_static_dataset_docker_based_challenge
+        ):
+            message = {
+                "challenge_pk": challenge_pk,
+                "phase_pk": challenge_phase_pk,
+                "submission_pk": submission_pk,
+                "is_static_code_upload_submission": False,
+            }
+            # publish message in the queue
+            publish_submission_message(message)
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -2308,10 +2326,12 @@ def get_github_badge_data(
         if team_data["submission__participant_team"] == int(
             participant_team_pk
         ):
-            data["message"] = f"{challenge_obj.title} Rank #{idx+1}"
+            data["message"] = "{} Rank #{}".format(
+                challenge_obj.title, idx + 1
+            )
             break
         else:
-            data["message"] = f"{challenge_obj.title}"
+            data["message"] = "{}".format(challenge_obj.title)
     return Response(data, status=http_status_code)
 
 
