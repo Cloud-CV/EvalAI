@@ -3471,6 +3471,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "execution_time": submission.execution_time,
                     "input_file": "http://testserver%s"
                     % (submission.input_file.url),
+                    "docker_input_file": None,
                     "stdout_file": None,
                     "stderr_file": None,
                     "submission_result_file": None,
@@ -3515,6 +3516,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "status": self.submission1.status,
                 "input_file": "http://testserver%s"
                 % (self.submission1.input_file.url),
+                "docker_input_file": None,
                 "method_name": self.submission1.method_name,
                 "method_description": self.submission1.method_description,
                 "project_url": self.submission1.project_url,
