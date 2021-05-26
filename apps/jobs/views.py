@@ -340,9 +340,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         if not challenge_phase.leaderboard_public:
             request.data["is_public"] = challenge_phase.is_submission_public
 
-        if challenge.is_docker_based:
-            request.data["docker_input_file"] = request.data["input_file"]
-
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -490,7 +487,7 @@ def change_submission_data_and_visibility(
         serializer.save()
         response_data = serializer.data
         if (
-            request.FILES.get("input_file")
+            request.FILES.get("submission_input_file")
             and challenge.is_static_dataset_docker_based_challenge
         ):
             message = {
