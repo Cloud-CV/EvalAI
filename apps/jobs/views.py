@@ -2328,7 +2328,7 @@ def get_github_badge_data(
             )
             break
         else:
-            data["message"] = "{}".format(challenge_obj.title)
+            data["message"] = challenge_obj.title
     return Response(data, status=http_status_code)
 
 
