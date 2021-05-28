@@ -69,4 +69,5 @@ out/
 
 # Monitoring-Setup
 prometheus/prometheus_db/*
+!prometheus/prometheus_db/.gitkeep
 grafana/grafana_db/grafana.db
