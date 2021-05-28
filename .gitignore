@@ -67,3 +67,6 @@ ssl/
 out/
 .idea_modules/
 
+# Monitoring-Setup
+prometheus/prometheus_db/*
+grafana/grafana_db/grafana.db
