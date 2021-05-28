@@ -856,7 +856,9 @@
                 // sort teams alphabetically
                 return key.submission__participant_team__team_name;
             }
-
+            else if (vm.sortColumn == 'exec'){
+                return key.submission__execution_time;
+            }
             return 0;
         };
 
@@ -1878,6 +1880,9 @@
         },{
             'label': 'Project URL',
             'id': 'project_url'
+        },{
+            'label': 'Submission Meta Attributes',
+            'id': 'submission_meta_attributes'
         }];
 
         vm.downloadChallengeSubmissions = function() {
