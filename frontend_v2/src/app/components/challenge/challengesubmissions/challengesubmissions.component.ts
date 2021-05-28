@@ -13,6 +13,7 @@ import { EndpointsService } from '../../../services/endpoints.service';
 // import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { InputComponent } from '../../utility/input/input.component';
+import { environment } from '../../../../environments/environment';
 
 import { animate, state, style, transition, trigger } from '@angular/animations';
 /**
@@ -158,11 +159,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   expandedElement: null;
 
   /**
-   * Filter query as participant team name
-   */
-  filterSubmissionsQuery = '';
-
-  /**
    * Modal form items
    */
   @ViewChildren('formFilter')
@@ -263,15 +259,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   fetchSubmissions(challenge, phase) {
     const SELF = this;
     let API_PATH;
-    if (SELF.filterSubmissionsQuery === '') {
       API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
-    } else {
-      API_PATH = SELF.endpointsService.challengeSubmissionWithFilterQueryURL(
-        challenge,
-        phase,
-        SELF.filterSubmissionsQuery
-      );
-    }
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.submissions = data['results'];
@@ -352,8 +340,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   loadPaginationData = function (url) {
     if (url !== null) {
       const SELF = this;
-      const API_PATH = url.split('localhost:8000/api/')[1];
-
+      const API_PATH = url.split(environment.api_endpoint)[1];
       SELF.apiService.getUrl(API_PATH, true).subscribe(
         (data) => {
           SELF.submissions = data['results'];

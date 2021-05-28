@@ -135,7 +135,6 @@ export class TeamcardComponent implements OnInit, OnChanges {
    * Select a team content toggle.
    */
   selectTeamContentToggle() {
-    console.log("HERE");
     this.isSelected = !this.isSelected;
     this.team['isSelected'] = this.isSelected;
     this.deselectTeamCard.emit(this.team);
