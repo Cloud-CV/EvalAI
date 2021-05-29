@@ -434,10 +434,11 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "security_group_id",
             "internet_gateway_id",
             "route_table_id",
-            "efs_id",
+            "route_table_association_ids" "efs_id",
             "efs_security_group_id",
             "efs_creation_token",
             "efs_mount_target_ids",
+            "active",
         )
 
 
