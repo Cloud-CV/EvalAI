@@ -1,6 +1,6 @@
 from .prod import *  # noqa: ignore=F405
 
-ALLOWED_HOSTS = ["staging.eval.ai"]
+ALLOWED_HOSTS = ["staging.eval.ai", "beta-staging.eval.ai"]
 
 CORS_ORIGIN_ALLOW_ALL = False
 
