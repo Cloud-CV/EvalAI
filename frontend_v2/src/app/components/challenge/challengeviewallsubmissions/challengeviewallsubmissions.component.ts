@@ -1,8 +1,6 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, Observable, isObservable } from 'rxjs';
-import { switchMap, distinctUntilChanged, debounceTime } from 'rxjs/operators'
 import { NGXLogger } from 'ngx-logger';
 
 // import service
@@ -137,8 +135,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   isTeamFiltered: boolean = true;
 
-  apiPath = new Subject<string>();
-
 
   /**
    * @param showPagination Is pagination
@@ -253,10 +249,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     };
   }
 
-  filterTeam() :Observable<string> {
-    return this.apiPath.asObservable();
-   }
-
   /**
    * Fetch submissions from API.
    * @param challenge  challenge id
@@ -265,31 +257,22 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   fetchSubmissions(challenge, phase) {
     const SELF = this;
     let API_PATH;
+    if (SELF.filterSubmissionsQuery === '') {
+      API_PATH = SELF.endpointsService.allChallengeSubmissionURL(challenge, phase);
+      this.isTeamFiltered = false;
+    } else {
+      API_PATH = SELF.endpointsService.allChallengeSubmissionWithFilterQueryUrl(
+        challenge,
+        phase,
+        SELF.filterSubmissionsQuery
+      );
+      this.isTeamFiltered = true;
+    }
 
-        if (SELF.filterSubmissionsQuery === '') {
-              API_PATH = SELF.endpointsService.allChallengeSubmissionURL(challenge, phase);
-              this.isTeamFiltered = false;
-            } else {
-              API_PATH = SELF.endpointsService.allChallengeSubmissionWithFilterQueryUrl(
-                challenge,
-                phase,
-                SELF.filterSubmissionsQuery
-              );
-              this.isTeamFiltered = true;
-            }
-
-       SELF.apiPath.next(API_PATH); 
-
-           this.filterTeam()
-            .pipe(                                                                                                                                                                                                                                                                                                                            
-              debounceTime(400),
-              distinctUntilChanged(),
-              switchMap( (path) => {
-                return SELF.apiService.getUrl(path)
-              }
-              )
-            ).subscribe(
+    let name = SELF.filterSubmissionsQuery;
+    SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        if(name == SELF.filterSubmissionsQuery) {
           SELF.submissions = data['results'];
           let index = 0;
           SELF.submissions.forEach((submission) => {
@@ -336,6 +319,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
           } else {
             SELF.paginationDetails.isPrev = '';
           }
+        }
       },
       (err) => {
         SELF.globalService.handleApiError(err);
