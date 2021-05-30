@@ -81,10 +81,10 @@ services:
     image: prom/prometheus:latest
     user: "1000"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/prometheus_db:/var/lib/prometheus
-      - ./prometheus/prometheus_db:/prometheus
-      - ./prometheus/prometheus_db:/etc/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/prometheus_db:/var/lib/prometheus
+      - ./monitoring/prometheus/prometheus_db:/prometheus
+      - ./monitoring/prometheus/prometheus_db:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     restart: unless-stopped
@@ -97,7 +97,7 @@ services:
     env_file:
       - docker/prod/docker_production.env
     volumes:
-      - ./grafana/grafana_db:/var/lib/grafana
+      - ./monitoring/grafana/grafana_db:/var/lib/grafana
     depends_on:
       - prometheus
     ports:
