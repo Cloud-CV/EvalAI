@@ -238,7 +238,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.submissionCount = 0;
       if (SELF.challenge['id'] && phase['id']) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
-        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -263,6 +262,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.submissions = data['results'];
+        this.submissionCount = data.count;
         let index = 0;
         SELF.submissions.forEach((submission) => {
           submission['s_no'] = index + 1;
@@ -335,17 +335,22 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       );
       const SELF = this;
       if (SELF.fieldsToGetExport.length === 0 || SELF.fieldsToGetExport === undefined) {
-        SELF.apiService.getUrl(API_PATH, false).subscribe(
-          (data) => {
-            SELF.windowService.downloadFile(data, 'all_submissions.csv');
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err);
-          },
-          () => {
-            this.logger.info('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
-          }
-        );
+        if(this.submissionCount > 5000) {
+          this.globalService.showToast('error', 'Results are greater than 5k you should use the ' + ('get_all_submissions ').link('https://eval.ai/api/docs/#operation/get_all_submissions_for_a_challenge') + 'API to download results', 10);
+        }
+        else {
+          SELF.apiService.getUrl(API_PATH, false).subscribe(
+            (data) => {
+              SELF.windowService.downloadFile(data, 'all_submissions.csv');
+            },
+            (err) => {
+              SELF.globalService.handleApiError(err);
+            },
+            () => {
+              this.logger.info('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
+            }
+          );
+        }
       }
     } else {
       if (this.selectedPhase === null) {
@@ -502,29 +507,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
-  }
-
-  /**
-   * Fetch number of submissions for a challenge phase.
-   * @param challenge  challenge id
-   * @param phase  phase id
-   */
-  fetchSubmissionCounts(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        if (data['participant_team_submission_count']) {
-          SELF.submissionCount = data['participant_team_submission_count'];
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {
-        this.logger.info('Fetched submission counts', challenge, phase);
-      }
-    );
   }
 
   /**
