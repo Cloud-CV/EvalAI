@@ -594,7 +594,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
             team_name: '',
           };
 
-          this.isnameFocused = false;
+          this.isnameFocused = true;
           this.isurlFocused = false;
           this.isTeamNameRequired = false;
         },
