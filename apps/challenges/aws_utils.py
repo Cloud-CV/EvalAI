@@ -1305,6 +1305,8 @@ def delete_eks_nodegroup(challenge, cluster_name):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
+    # deleting the code-upload-worker
+    delete_workers([challenge_obj])
     environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
     nodegroup_name = "{}-{}-nodegroup".format(
         challenge_obj.title.replace(" ", "-"), environment_suffix
@@ -1322,8 +1324,6 @@ def delete_eks_nodegroup(challenge, cluster_name):
         return
     waiter = client.get_waiter("nodegroup_deleted")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
-    # deleting the code-upload-worker
-    delete_workers([challenge])
 
 
 def delete_eks_cluster(challenge):
@@ -1349,7 +1349,6 @@ def delete_eks_cluster(challenge):
         challenge_aws_keys = get_aws_credentials_for_challenge(
             challenge_obj.pk
         )
-
         try:
             efs_client = get_boto3_client("efs", challenge_aws_keys)
             # Delete mount targets for subnets
@@ -1408,7 +1407,7 @@ def delete_eks_cluster_subnets(challenge):
         client = get_boto3_client("ec2", challenge_aws_keys)
 
         client.revoke_security_group_ingress(
-            GroupId=challenge_evaluation_cluster.security_group_id,
+            GroupId=challenge_evaluation_cluster.efs_security_group_id,
             IpPermissions=[
                 {
                     "FromPort": 2049,
@@ -1431,7 +1430,7 @@ def delete_eks_cluster_subnets(challenge):
             GroupId=challenge_evaluation_cluster.efs_security_group_id,
         )
 
-        client.create_security_group(
+        client.delete_security_group(
             GroupName="EvalAI code upload challenge",
             GroupId=challenge_evaluation_cluster.security_group_id,
         )
@@ -1457,7 +1456,6 @@ def delete_eks_cluster_subnets(challenge):
         # Delete and detach route table
         client.delete_route(
             DestinationCidrBlock="0.0.0.0/0",
-            GatewayId=challenge_evaluation_cluster.internet_gateway_id,
             RouteTableId=challenge_evaluation_cluster.route_table_id,
         )
         client.delete_route_table(
@@ -1465,7 +1463,8 @@ def delete_eks_cluster_subnets(challenge):
         )
 
         client.detach_internet_gateway(
-            InternetGatewayId=challenge_evaluation_cluster.internet_gateway_id
+            InternetGatewayId=challenge_evaluation_cluster.internet_gateway_id,
+            VpcId=challenge_evaluation_cluster.vpc_id,
         )
         client.delete_internet_gateway(
             InternetGatewayId=challenge_evaluation_cluster.internet_gateway_id
@@ -1512,7 +1511,7 @@ def delete_setup_eks_cluster(challenge):
             PolicyArn=challenge_evaluation_cluster.ecr_all_access_policy_arn,
         )
         client.delete_policy(
-            PolicyName=challenge_evaluation_cluster.ecr_all_access_policy_name,
+            PolicyArn=challenge_evaluation_cluster.ecr_all_access_policy_arn,
         )
     except ClientError as e:
         logger.exception(e)
@@ -1521,7 +1520,7 @@ def delete_setup_eks_cluster(challenge):
     task_execution_policies = settings.EKS_NODE_GROUP_POLICIES
     for policy_arn in task_execution_policies:
         try:
-            # Attach AWS managed EKS worker node policy to the role
+            # Detach AWS managed EKS worker node policy to the role
             client.detach_role_policy(
                 RoleName=node_group_role_name,
                 PolicyArn=policy_arn,
@@ -1558,9 +1557,6 @@ def delete_setup_eks_cluster(challenge):
         return
 
     try:
-        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
-            challenge=challenge_obj
-        )
         serializer = ChallengeEvaluationClusterSerializer(
             challenge_evaluation_cluster,
             data={
