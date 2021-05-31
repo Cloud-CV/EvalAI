@@ -104,7 +104,7 @@ class Challenge(TimeStampedModel):
     )
     is_static_dataset_docker_based_challenge = models.BooleanField(
         default=False,
-        verbose_name="Is static dataset docker based",
+        verbose_name="Is Static Dataset Docker Based",
         db_index=True,
     )
     slug = models.SlugField(max_length=200, null=True, unique=True)
