@@ -21,6 +21,7 @@ CORS_ORIGIN_WHITELIST = (
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_prometheus.db.backends.postgresql",
         "NAME": os.environ.get("RDS_DB_NAME"),
         "USER": os.environ.get("RDS_USERNAME"),
         "PASSWORD": os.environ.get("RDS_PASSWORD"),

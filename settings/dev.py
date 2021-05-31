@@ -12,6 +12,7 @@ ALLOWED_HOSTS = ["*"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_prometheus.db.backends.postgresql",
         "NAME": os.environ.get("POSTGRES_NAME", "evalai"),  # noqa: ignore=F405
         "USER": os.environ.get(  # noqa: ignore=F405
             "POSTGRES_USER", "postgres"
