@@ -43,26 +43,6 @@
         </div>
       </div>
         <div class="row row-lr-margin" *ngIf="selectedPhase">
-          <div class="col-sm-6 col-xs-12 col-lg-6">
-            <div class="row row-lr-margin">
-              <div class="col-sm-12">
-                <strong class="fw-light content fs-15">Filter Submissions by Team name</strong>
-              </div>
-            </div>
-            <div class="row row-lr-margin">
-              <div class="col-sm-10 col-xs-10 col-lg-10 col-lr-pad phase-select-box">
-                <app-input
-                  [name]="'filterByTeamName'"
-                  (input)="filterSubmissions($event.target.value)"
-                  [label]="'Team name'"
-                  [placeholder]="'Team name'"
-                  [type]="'text'"
-                  #formFilter
-                >
-                </app-input>
-              </div>
-            </div>
-          </div>
           <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad">
               <span class="fw-light">
                 Total Submissions Done:
@@ -99,11 +79,14 @@
           <th class="cell-outside fw-regular fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
           <td class="cell-outside fw-light" mat-cell *matCellDef="let element">
             <span *ngIf="column === 's_no'" class="{{ element[column] }} fs-12"> {{ element[column] }}</span>
+            <span *ngIf="column === 'submitted_at'" class="{{ element[column] }} fs-12"> {{ element[column] | date: 'medium' }}</span>
+            <span *ngIf="element[column] !== 'None' && column === 'execution_time'" class="{{ element[column] }} fs-12"> {{ element[column] }} sec</span>
+            <span *ngIf="element[column] === 'None' && column === 'execution_time'" class="{{ element[column] }} fs-12"> {{ 'N/A' }}</span>
             <a
               target="_blank"
               class="blue-text"
               [href]="element[column]"
-              *ngIf="element[column] !== null && column !== 'status' && column !== 's_no'"
+              *ngIf="element[column] !== null && column !== 'status' && column !== 's_no' && column !== 'execution_time' && column !== 'submitted_at'"
             >
               <i class="fa fa-external-link"></i>
               Link
@@ -150,14 +133,6 @@
                   <span class="fw-light element-description fs-12" [ngClass]="element.status">
                     {{ element.status | uppercase }}
                   </span>
-                </div>
-                <div class="element">
-                  <span class="element-description-attribution">Execution Time</span>
-                  <span class="fw-light element-description"> {{ element.execution_time }} sec</span>
-                </div>
-                <div class="element">
-                  <span class="element-description-attribution">Submitted At</span>
-                  <span class="fw-light element-description"> {{ element.submitted_at | date: 'medium' }} </span>
                 </div>
               </div>
               <div class="elements-action">

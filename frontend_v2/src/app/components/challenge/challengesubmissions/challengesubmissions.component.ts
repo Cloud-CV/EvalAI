@@ -151,8 +151,8 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   apiCall: any;
 
-  columnsToDisplay = ['s_no', 'status', 'submission_result_file', 'stdout_file', 'stderr_file'];
-  columnsHeadings = ['S.No.', 'Status', 'Result File', 'Stdout File', 'Stderr File', ];
+  columnsToDisplay = ['s_no', 'status', 'execution_time', 'submission_result_file', 'stdout_file', 'stderr_file', 'submitted_at'];
+  columnsHeadings = ['S.No.', 'Status', 'Execution Time', 'Result File', 'Stdout File', 'Stderr File', 'Submitted At'];
 
 
   expandedElement: null;
@@ -368,6 +368,12 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
             SELF.paginationDetails.isNext = '';
             SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
           }
+
+          let index =  (SELF.paginationDetails.currentPage-1)*10;
+          SELF.submissions.forEach((submission) => {
+            submission['s_no'] = index + 1;
+            index += 1;
+          });
 
           if (data.previous === null) {
             SELF.paginationDetails.isPrev = 'disabled';
