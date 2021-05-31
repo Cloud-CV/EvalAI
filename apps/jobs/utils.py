@@ -165,7 +165,7 @@ def is_url_valid(url):
 
 
 def get_file_from_url(url):
-    """ Get file object from a url """
+    """Get file object from a url"""
 
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name = url.split("/")[-1]
@@ -211,6 +211,7 @@ def handle_submission_rerun(submission, updated_status):
         "challenge_pk": submission.challenge_phase.challenge.pk,
         "phase_pk": submission.challenge_phase.pk,
         "submission_pk": submission.pk,
+        "is_static_dataset_code_upload_submission": False,
     }
 
     if submission.challenge_phase.challenge.is_docker_based:
@@ -224,6 +225,11 @@ def handle_submission_rerun(submission, updated_status):
             message["submitted_image_uri"] = response.json()[
                 "submitted_image_uri"
             ]
+            if (
+                submission.challenge_phase.challenge.is_static_dataset_code_upload
+            ):
+                message["is_static_dataset_code_upload_submission"] = True
+
     return message
 
 
@@ -299,7 +305,10 @@ def calculate_distinct_sorted_leaderboard_data(
     ).order_by("-created_at")
 
     if challenge_phase_split.show_execution_time:
-        time_diff_expression = ExpressionWrapper(F('submission__completed_at') - F('submission__started_at'), output_field=fields.DurationField())
+        time_diff_expression = ExpressionWrapper(
+            F("submission__completed_at") - F("submission__started_at"),
+            output_field=fields.DurationField(),
+        )
         leaderboard_data = leaderboard_data.annotate(
             filtering_score=RawSQL(
                 "result->>%s", (default_order_by,), output_field=FloatField()
@@ -309,7 +318,7 @@ def calculate_distinct_sorted_leaderboard_data(
                 ("error_{0}".format(default_order_by),),
                 output_field=FloatField(),
             ),
-            submission__execution_time=time_diff_expression
+            submission__execution_time=time_diff_expression,
         ).values(
             "id",
             "submission__participant_team",
@@ -327,7 +336,7 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__method_name",
             "submission__id",
             "submission__submission_metadata",
-            "submission__execution_time"
+            "submission__execution_time",
         )
     else:
         leaderboard_data = leaderboard_data.annotate(
