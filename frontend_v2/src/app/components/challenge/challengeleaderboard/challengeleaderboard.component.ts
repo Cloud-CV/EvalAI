@@ -305,7 +305,8 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
           if (self.viewInit) {
             self.components.map((item) => {
               item.selectPhaseSplit(self.selectedPhaseSplit, 'selectBox', 'phaseSplit');
-            });
+            })
+            this.phaseSplitSelected(self.selectedPhaseSplit)
           } else {
             setTimeout(() => {
               checkViewInit();
@@ -323,10 +324,10 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
 
   /**
    * This is called when a phase split is selected (from child components)
+   * Updates the router URL with phase-split-id
    */
-  phaseSplitSelected() {
+   selectedPhaseSplitUrlChange = (phaseSplit) => {
     const SELF = this;
-    return (phaseSplit) => {
       if (SELF.router.url.endsWith('leaderboard')) {
         SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
       } else if (SELF.router.url.split('/').length === 5) {
@@ -334,8 +335,15 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       } else if (SELF.router.url.split('/').length === 6) {
         SELF.router.navigate(['../../' + phaseSplit['id']], { relativeTo: this.route });
       }
+    }
+
+  /**
+   * This is called when a phase split is selected
+   */
+    phaseSplitSelected(phaseSplit) {
+      const SELF = this;
       SELF.selectedPhaseSplit = phaseSplit;
-      if (SELF.selectedPhaseSplit) {
+      if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
         SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
@@ -345,7 +353,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
       }
     };
-  }
 
   /**
    * This updates the leaderboard results after fetching them from API
