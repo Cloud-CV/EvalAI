@@ -103,7 +103,7 @@ tr.element-row.expanded-row {
 } 
 
 .elements-detail {
-  width: 55%;
+  width: 45%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -113,34 +113,64 @@ tr.element-row.expanded-row {
 }
 
 .elements-action {
-  width: 40%;
+  width: 20%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-left: 40px;
+  margin-left: 30px;
+}
+
+.elements-status {
+  width: 35%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  margin-left: 30px;
 }
 
 .element-icon {
   margin-right: 10px;
 }
 
+.element {
+  margin-bottom: 10px;
+}
+
+.element-description-attribution {
+  opacity: 0.5;
+}
+
 @include screen-small {
   .elements {
     flex-direction: column;
   }
+
   .elements-action {
     margin-left: 0;
     margin-top: 20px;
   }
-  .elements-detail {
-    border-right-style: none;
-    padding-right: 0;
 
+  .elements-status {
+    border-right-style: none;
+    margin-left: 0;
     border-bottom-style: solid;
     border-bottom-color: lightgrey;
     border-bottom-width: 1px;
     padding-bottom: 20px;
   }
+
+  .elements-detail {
+    border-right-style: none;
+    padding-right: 0;
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+  }
+
   .element {
     display: flex;
     flex-direction: column;
