@@ -378,6 +378,12 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
           }
 
+          let index =  (SELF.paginationDetails.currentPage-1)*10;
+          SELF.submissions.forEach((submission) => {
+            submission['s_no'] = index + 1;
+            index += 1;
+          });
+
           if (data.previous === null) {
             SELF.paginationDetails.isPrev = 'disabled';
           } else {
