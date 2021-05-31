@@ -351,7 +351,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         message = {
             "challenge_pk": challenge_id,
             "phase_pk": challenge_phase_id,
-            "is_static_code_upload_submission": False,
+            "is_static_dataset_code_upload_submission": False,
         }
         if challenge.is_docker_based:
             try:
@@ -359,8 +359,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 message["submitted_image_uri"] = file_content[
                     "submitted_image_uri"
                 ]
-                if challenge.is_static_dataset_docker_based_challenge:
-                    message["is_static_code_upload_submission"] = True
+                if challenge.is_static_dataset_code_upload:
+                    message["is_static_dataset_code_upload_submission"] = True
             except Exception as ex:
                 response_data = {
                     "error": "Error {} in submitted_image_uri from submission file".format(
@@ -488,13 +488,13 @@ def change_submission_data_and_visibility(
         response_data = serializer.data
         if (
             request.FILES.get("submission_input_file")
-            and challenge.is_static_dataset_docker_based_challenge
+            and challenge.is_static_dataset_code_upload
         ):
             message = {
                 "challenge_pk": challenge_pk,
                 "phase_pk": challenge_phase_pk,
                 "submission_pk": submission_pk,
-                "is_static_code_upload_submission": False,
+                "is_static_dataset_code_upload_submission": False,
             }
             # publish message in the queue
             publish_submission_message(message)

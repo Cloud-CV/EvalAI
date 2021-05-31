@@ -165,7 +165,7 @@ def is_url_valid(url):
 
 
 def get_file_from_url(url):
-    """ Get file object from a url """
+    """Get file object from a url"""
 
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name = url.split("/")[-1]
@@ -211,7 +211,7 @@ def handle_submission_rerun(submission, updated_status):
         "challenge_pk": submission.challenge_phase.challenge.pk,
         "phase_pk": submission.challenge_phase.pk,
         "submission_pk": submission.pk,
-        "is_static_code_upload_submission": False,
+        "is_static_dataset_code_upload_submission": False,
     }
 
     if submission.challenge_phase.challenge.is_docker_based:
@@ -226,9 +226,9 @@ def handle_submission_rerun(submission, updated_status):
                 "submitted_image_uri"
             ]
             if (
-                submission.challenge_phase.challenge.is_static_dataset_docker_based_challenge
+                submission.challenge_phase.challenge.is_static_dataset_code_upload
             ):
-                message["is_static_code_upload_submission"] = True
+                message["is_static_dataset_code_upload_submission"] = True
 
     return message
 
