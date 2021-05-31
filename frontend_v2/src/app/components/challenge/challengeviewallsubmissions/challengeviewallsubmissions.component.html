@@ -119,8 +119,7 @@
             >
               <div class="elements-detail">
                 <div class="element">
-                  <p>
-                    <strong class="text-light-black fw-light fs-12">Team Members</strong>&nbsp;
+                    <strong class="element-description-attribution">Team Members</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
                       class="fw-light fs-14"
@@ -128,12 +127,10 @@
                       <span *ngIf="element.participant_team_members.length !== i + 1"> {{ team.username + ' ,' }}</span>
                       <span *ngIf="element.participant_team_members.length === i + 1"> {{ team.username }}</span>
                     </strong>
-                  </p>
                   <span class=""></span>
                 </div>
                 <div class="element">
-                  <p>
-                    <strong class="text-light-black fw-light fs-12">Team Members Email Id</strong>&nbsp;
+                    <strong class="element-description-attribution">Team Members Email Id</strong>&nbsp;
                     <strong
                       *ngFor="let team of element.participant_team_members; let i = index"
                       class="fw-light fs-14"
@@ -141,120 +138,110 @@
                       <span *ngIf="element.participant_team_members.length !== i + 1"> {{ team.email + ' ,' }}</span>
                       <span *ngIf="element.participant_team_members.length === i + 1"> {{ team.email }}</span>
                     </strong>
-                  </p>
                 </div>
-                <div class="row rm-margin">
-                  <div class="col-sm-4 col-md-4 col-lg-4 no-pad-lr element">
-                    <p>
-                      <strong class="text-light-black fw-light fs-12"
+                  <div class="element">
+                      <strong class="element-description-attribution"
                         >Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
                       >&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.stdout_file"
                         *ngIf="element.stdout_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stdout_file" class="fw-light fs-12">
+                      <strong *ngIf="!element.stdout_file" class="fw-light fs-14">
                         None
                       </strong>
-                    </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p>
-                      <strong class="text-light-black fw-light fs-12"
+                  <div class="element">
+                      <strong class="element-description-attribution"
                         >Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
                       >&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.stderr_file"
                         *ngIf="element.stderr_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stderr_file" class="fw-light fs-12">
+                      <strong *ngIf="!element.stderr_file" class="fw-light fs-14">
                         None
                       </strong>
-                    </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p>
-                      <strong class="text-light-black fw-light fs-12"
-                        >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
-                      >&nbsp;
-                      <a
-                        target="_blank"
-                        class="blue-text fs-12"
-                        [href]="element.submission_metadata_file"
-                        *ngIf="element.submission_metadata_file"
-                      >
-                        <i class="fa fa-external-link"></i> Link
-                      </a>
-                      <strong *ngIf="!element.submission_metadata_file" class="fw-light fs-12">
-                        None
-                      </strong>
-                    </p>
-                  </div>
-                </div>
               </div>
-
-              <div class="elements-action">
-                <div class="row rm-margin">
-                  <div class="col-sm-6 sol-md-6 col-lg-4 no-pad-lr">
-                    <p>
-                      <strong class="text-light-black fw-light fs-12">Status</strong> &nbsp;
-                      <strong class="fw-light fs-14" [ngClass]="element.status" class="fs-12">
-                        {{ element.status | uppercase }}
-                      </strong>
-                    </p>
-                  </div>
-                  <div class="col-sm-6 sol-md-6 col-lg-8 no-pad-lr">
-                    <p>
-                      <strong class="text-light-black fw-light fs-12">Submission Number</strong> &nbsp;
-                      <strong class="fw-light fs-14">
-                        {{ element.submission_number }}
-                      </strong>
-                    </p>
-                  </div>
+              <div class="elements-status">
+                <div class="element">
+                    <strong class="element-description-attribution">Status</strong> &nbsp;
+                    <strong class="fw-light fs-14" [ngClass]="element.status" class="fs-12">
+                      {{ element.status | uppercase }}
+                    </strong>
                 </div>
                 <div class="element">
-                  <p>
-                    <strong class="text-light-black fw-light fs-12">Submitted At</strong> &nbsp;
+                    <strong class="element-description-attribution">Submission Number</strong> &nbsp;
+                    <strong class="fw-light fs-14">
+                      {{ element.submission_number }}
+                    </strong>
+                </div>
+                <div class="element">
+                    <strong class="element-description-attribution">Submitted At</strong> &nbsp;
                     <strong class="fw-light fs-14">
                       {{ element.created_at | date: 'medium' }}
                     </strong>
-                  </p>
                 </div>
                 <div class="element">
-                  <p>
+                    <strong class="element-description-attribution"
+                      >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
+                    >&nbsp;
+                    <a
+                      target="_blank"
+                      class="blue-text fs-14"
+                      [href]="element.submission_metadata_file"
+                      *ngIf="element.submission_metadata_file"
+                    >
+                      <i class="fa fa-external-link"></i> Link
+                    </a>
+                    <strong *ngIf="!element.submission_metadata_file" class="fw-light fs-14">
+                      None
+                    </strong>
+                </div>
+              </div>
+              <div class="elements-action">
+                <div class="element">
                     <mat-checkbox
                       class="element-icon fw-light"
                       [checked]="element.is_public"
                       [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']"
                       (change)="confirmSubmissionVisibility(element, element.is_public)"
                     >
+                    <strong class="fs-14">
                       Show On Leaderboard
+                    </strong>
                     </mat-checkbox>
-                  </p>
                 </div>
                 <div class="element">
-                  <p>
                     <mat-checkbox
-                      class="element-icon fw-light"
+                      class="element-icon"
                       [checked]="element.is_flagged"
                       (change)="confirmSubmissionFlagChange(element, element.is_flagged)"
                     >
+                    <strong class="fs-14">
                       {{ element.submissionFlagText }}
+                    </strong>
                     </mat-checkbox>
-                    <a class="fa fa-refresh pointer fw-light" (click)="reRunSubmission(element.id)"> Re-run submission </a>
-                  </p>
                 </div>
-                <div class="element" *ngIf="isChallengeHost">
+                <div class="element element-description-attribution">
+                  <a (click)="reRunSubmission(element.id)">
+                    <strong class="fa fa-refresh pointer "> &nbsp;</strong>
+                    <strong>Re-run submission</strong>
+                  </a>
+                </div>
+                <div class="element element-description-attribution" *ngIf="isChallengeHost">
                   <a class="pointer" (click)="deleteChallengeSubmission(element)">
-                    <i class="fa fa-trash red-text fs-14 fw-light" aria-hidden="true">&nbsp;Delete Submission</i>
+                    <i class="fa fa-trash" aria-hidden="true"> &nbsp;</i>
+                    <strong>Delete Submission</strong>
                   </a>
                 </div>
               </div>
