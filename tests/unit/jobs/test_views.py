@@ -669,6 +669,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "status": self.submission.status,
                 "input_file": "http://testserver%s"
                 % (self.submission.input_file.url),
+                "submission_input_file": None,
                 "method_name": self.submission.method_name,
                 "method_description": self.submission.method_description,
                 "project_url": self.submission.project_url,
@@ -1376,6 +1377,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.data["method_name"],
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1426,6 +1428,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.private_submission.status,
             "input_file": "http://testserver%s"
             % (self.private_submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.data["method_name"],
             "method_description": self.private_submission.method_description,
             "project_url": self.private_submission.project_url,
@@ -1494,6 +1497,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1578,6 +1582,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.host_participant_team_submission.status,
             "input_file": "http://testserver%s"
             % (self.host_participant_team_submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.host_participant_team_submission.method_name,
             "method_description": self.host_participant_team_submission.method_description,
             "project_url": self.host_participant_team_submission.project_url,
@@ -1658,6 +1663,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1703,6 +1709,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -2164,7 +2171,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": f"ChallengePhaseSplit {self.challenge_phase_split.id + 2} does not exist"
+            "detail": "ChallengePhaseSplit {} does not exist".format(
+                self.challenge_phase_split.id + 2
+            )
         }
 
         response = self.client.get(self.url, {})

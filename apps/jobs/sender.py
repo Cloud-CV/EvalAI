@@ -65,6 +65,7 @@ def publish_submission_message(message):
             - "phase_pk": int
             - "submission_pk": int
             - "submitted_image_uri": str, (only available when the challenge is a code upload challenge)
+            - "is_static_dataset_code_upload_submission": bool
 
     Returns:
         Returns SQS response
