@@ -67,7 +67,6 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "corsheaders",
-    "django_prometheus",
     "django_ses",
     "import_export",
     "rest_auth",
