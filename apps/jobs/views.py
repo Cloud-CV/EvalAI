@@ -1968,7 +1968,7 @@ def get_submission_message_from_queue(request, queue_name):
         messages = queue.receive_messages()
         if len(messages):
             message_receipt_handle = messages[0].receipt_handle
-            message_body = eval(messages[0].body)
+            message_body = json.loads(messages[0].body)
             logger.info(
                 "A submission is received with pk {}".format(
                     message_body.get("submission_pk")
