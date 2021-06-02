@@ -262,7 +262,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.submissions = data['results'];
-        this.submissionCount = data.count;
+        SELF.submissionCount = data.count;
         let index = 0;
         SELF.submissions.forEach((submission) => {
           submission['s_no'] = index + 1;
@@ -335,22 +335,17 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       );
       const SELF = this;
       if (SELF.fieldsToGetExport.length === 0 || SELF.fieldsToGetExport === undefined) {
-        if(this.submissionCount > 5000) {
-          this.globalService.showToast('error', 'Results are greater than 5k you should use the ' + ('get_all_submissions ').link('https://eval.ai/api/docs/#operation/get_all_submissions_for_a_challenge') + 'API to download results', 10);
-        }
-        else {
-          SELF.apiService.getUrl(API_PATH, false).subscribe(
-            (data) => {
-              SELF.windowService.downloadFile(data, 'all_submissions.csv');
-            },
-            (err) => {
-              SELF.globalService.handleApiError(err);
-            },
-            () => {
-              this.logger.info('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
-            }
-          );
-        }
+        SELF.apiService.getUrl(API_PATH, false).subscribe(
+          (data) => {
+            SELF.windowService.downloadFile(data, 'all_submissions.csv');
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {
+            this.logger.info('Download complete.', SELF.challenge['id'], SELF.selectedPhase['id']);
+          }
+        );
       }
     } else {
       if (this.selectedPhase === null) {
