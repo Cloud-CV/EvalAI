@@ -6,3 +6,9 @@ scrape_configs:
   - job_name: 'prometheus' 
     static_configs: 
       - targets: ['localhost:9090']
+
+  - job_name: 'django-prometheus'
+    metrics_path: '/prometheus/metrics'
+    static_configs:
+      - targets: ['django:8000']
+      
