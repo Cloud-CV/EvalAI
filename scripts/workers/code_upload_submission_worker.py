@@ -138,6 +138,69 @@ def create_job_object(message, environment_image):
     return job
 
 
+def create_single_pod_job_object(message):
+    """Function to create the single pod AWS EKS Job object
+
+    Arguments:
+        message {[dict]} -- Submission message from AWS SQS queue
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
+    PYTHONUNBUFFERED_ENV = client.V1EnvVar(name="PYTHONUNBUFFERED", value="1")
+    EVALAI_API_SERVER_ENV = client.V1EnvVar(
+        name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
+    )
+    # Used by agent to create submission file by phase_pk and selecting dataset location
+    MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
+    submission_pk = message["submission_pk"]
+    image = message["submitted_image_uri"]
+
+    volume_mount_list = get_volume_mount_list("/dataset")
+    lifecycle_config = client.V1Lifecycle(
+        pre_stop=client.V1Handler(
+            _exec=client.V1ExecAction(
+                command=["/bin/sh", "-c", "sleep 10"]  # Submit File to evalai
+            )
+        )
+    )
+    # Configureate Pod agent container
+    agent_container = client.V1Container(
+        name="agent",
+        image=image,
+        env=[PYTHONUNBUFFERED_ENV, EVALAI_API_SERVER_ENV, MESSAGE_BODY_ENV],
+        resources=client.V1ResourceRequirements(
+            limits={"nvidia.com/gpu": "1"}
+        ),
+        volume_mounts=volume_mount_list,
+        lifecycle=lifecycle_config,
+    )
+
+    volume_list = get_volume_list()
+    # Create and configurate a spec section
+    template = client.V1PodTemplateSpec(
+        metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
+        spec=client.V1PodSpec(
+            containers=[agent_container],
+            restart_policy="Never",
+            volumes=volume_list,
+        ),
+    )
+    # Create the specification of deployment
+    spec = client.V1JobSpec(backoff_limit=1, template=template)
+    # Instantiate the job object
+    job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=client.V1ObjectMeta(
+            name="submission-{0}".format(submission_pk)
+        ),
+        spec=spec,
+    )
+    return job
+
+
 def create_job(api_instance, job):
     """Function to create a job on AWS EKS cluster
 
@@ -182,8 +245,11 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
     """
     try:
         logger.info("[x] Received submission message %s" % body)
-        environment_image = challenge_phase.get("environment_image")
-        job = create_job_object(body, environment_image)
+        if body.get("is_static_dataset_code_upload_submission"):
+            job = create_single_pod_job_object(body)
+        else:
+            environment_image = challenge_phase.get("environment_image")
+            job = create_job_object(body, environment_image)
         response = create_job(api_instance, job)
         submission_data = {
             "submission_status": "running",
@@ -366,6 +432,13 @@ def main():
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
+            if (
+                challenge.is_static_dataset_code_upload
+                and not message_body.get(
+                    "is_static_dataset_code_upload_submission"
+                )
+            ):
+                continue
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
