@@ -63,6 +63,7 @@ from challenges.utils import (
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    parse_submission_meta_attributes,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -1885,11 +1886,15 @@ def download_all_submissions(
                         "Method Description",
                         "Publication URL",
                         "Project URL",
+                        "Submission Meta Attributes",
                     ]
                 )
                 # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
                 # TODO: Find a better way to solve the above issue.
                 for submission in submissions.data:
+                    submission_meta_attributes = (
+                        parse_submission_meta_attributes(submission)
+                    )
                     writer.writerow(
                         [
                             submission["id"],
@@ -1927,6 +1932,7 @@ def download_all_submissions(
                             submission["method_description"].replace("#", "-"),
                             submission["publication_url"],
                             submission["project_url"],
+                            submission_meta_attributes,
                         ]
                     )
                 return response
@@ -2019,6 +2025,7 @@ def download_all_submissions(
                     "method_description": "Method Description",
                     "publication_url": "Publication URL",
                     "project_url": "Project URL",
+                    "submission_meta_attributes": "Submission Meta Attributes",
                 }
                 submissions = Submission.objects.filter(
                     challenge_phase__challenge=challenge
@@ -2070,6 +2077,11 @@ def download_all_submissions(
                                     "%m/%d/%Y %H:%M:%S"
                                 )
                             )
+                        elif field == "submission_meta_attributes":
+                            submission_meta_attributes = (
+                                parse_submission_meta_attributes(submission)
+                            )
+                            row.append(submission_meta_attributes)
                         else:
                             row.append(submission[field])
                     writer.writerow(row)
