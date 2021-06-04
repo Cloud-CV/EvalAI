@@ -105,6 +105,11 @@ urlpatterns = [
         views.finish_submission_file_upload,
         name="finish_submission_file_upload",
     ),
+    url(
+        r"^submission/(?P<submission_pk>[0-9]+)/update_started_at/$",
+        views.update_submission_started_at,
+        name="update_submission_started_at",
+    ),
 ]
 
 app_name = "jobs"
