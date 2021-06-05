@@ -670,9 +670,12 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     } else {
       API_PATH = SELF.endpointsService.FilteredParticipantTeamURL(teamName);
     }
+    let name = SELF.filterTeamsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
-        SELF.updateTeamsData(data);
+        if(name == SELF.filterTeamsQuery) {
+          SELF.updateTeamsData(data);
+        }
       },
       (err) => {
         SELF.globalService.handleApiError(err, true);
