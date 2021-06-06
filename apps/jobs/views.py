@@ -2824,7 +2824,74 @@ def update_submission_meta(request, challenge_pk, submission_pk):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
     else:
-        response_data = {
-            "error": "Sorry, you are not authorized to make this request"
-        }
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+
+        try:
+            participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+        except ParticipantTeam.DoesNotExist:
+            response_data = {"error": "You haven't participated in the challenge"}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            submission = Submission.objects.get(
+                id=submission_pk,
+                participant_team=participant_team,
+            )
+        except Submission.DoesNotExist:
+            response_data = {"error": "Submission does not exist"}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={"request": request},
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def change_submission_status_to_cancel(request, challenge_pk, submission_pk):
+    """
+    API Endpoint for setting submission status to CANCELLED.
+    """
+    print(request.user, challenge_pk)
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk
+    )
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        submission = Submission.objects.get(
+            id=submission_pk,
+            participant_team=participant_team,
+        )
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = SubmissionSerializer(
+        submission,
+        data={"status": Submission.CANCELLED},
+        context={"request": request},
+        partial=True,
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
