@@ -55,7 +55,7 @@
         (change)="ispasswordFocused = authService.getUser['password'] !== ''"
         [(ngModel)]="authService.getUser['password']"
         #password="ngModel"
-        autocomplete="new-password"
+        autocomplete="current-password"
         minlength="8"
         required
       />
