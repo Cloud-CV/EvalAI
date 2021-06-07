@@ -538,12 +538,6 @@ service_definition = """
     "deploymentController":{{
         "type": "ECS"
     }},
-    "deploymentConfiguration":{{
-        "deploymentCircuitBreaker":{{
-            "enable": True,
-            "rollback": False
-        }}
-    }}
 }}
 """
 
