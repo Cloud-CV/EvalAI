@@ -22,8 +22,8 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   /**
    * Phase select card components
    */
-   @ViewChildren('phaseselect')
-   components: QueryList<SelectphaseComponent>;
+  @ViewChildren('phaseselect')
+  components: QueryList<SelectphaseComponent>;
 
   /**
    * Challenge object
@@ -44,11 +44,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Select box list type
    */
   phaseSelectionListType = 'phase';
-
-  /**
-   * Currently selected phase's id
-   */
-  selectedPhaseId: any;
 
   /**
    * Currently selected phase
@@ -189,53 +184,52 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     /**
    * Called when a phase is selected (from child component)
    */
-     phaseSelected() {
-      const SELF = this;
-      return (phase) => {
-        SELF.selectedPhase = phase;
+    phaseSelected() {
+    const SELF = this;
+    return (phase) => {
+      SELF.selectedPhase = phase;
 
-        SELF.apiCall = (params) => {
-          const FORM_DATA: FormData = new FormData();
-          for (const key in params) {
-            if (params[key]) {
-              FORM_DATA.append(key, params[key]);
-            }
+      SELF.apiCall = (params) => {
+        const FORM_DATA: FormData = new FormData();
+        for (const key in params) {
+          if (params[key]) {
+            FORM_DATA.append(key, params[key]);
           }
-          SELF.apiService
-            .patchFileUrl(
-              SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.selectedPhase['id']),
-              FORM_DATA
-            )
-            .subscribe(
-              (data) => {
-                SELF.selectedPhase = data;
-                SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
-              },
-              (err) => {
-                SELF.globalService.showToast('error', err);
-              },
-              () => {}
-            );
-        };
-    
-        const PARAMS = {
-          title: 'Edit Challenge Phase Details',
-          name: SELF.selectedPhase['name'],
-          label: 'description',
-          description: SELF.selectedPhase['description'],
-          startDate: SELF.selectedPhase['start_date'],
-          endDate: SELF.selectedPhase['end_date'],
-          maxSubmissionsPerDay: SELF.selectedPhase['max_submissions_per_day'],
-          maxSubmissionsPerMonth: SELF.selectedPhase['max_submissions_per_month'],
-          maxSubmissions: SELF.selectedPhase['max_submissions'],
-          confirm: 'Submit',
-          deny: 'Cancel',
-          confirmCallback: SELF.apiCall,
-        };
-        SELF.globalService.showEditPhaseModal(PARAMS);
+        }
+        SELF.apiService
+          .patchFileUrl(
+            SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.selectedPhase['id']),
+            FORM_DATA
+          )
+          .subscribe(
+            (data) => {
+              SELF.selectedPhase = data;
+              SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
+            },
+            (err) => {
+              SELF.globalService.showToast('error', err);
+            },
+            () => {this.logger.info('PHASE-UPDATE-FINISHED')}
+          );
       };
-    }
-  
+
+      const PARAMS = {
+        title: 'Edit Challenge Phase Details',
+        name: SELF.selectedPhase['name'],
+        label: 'description',
+        description: SELF.selectedPhase['description'],
+        startDate: SELF.selectedPhase['start_date'],
+        endDate: SELF.selectedPhase['end_date'],
+        maxSubmissionsPerDay: SELF.selectedPhase['max_submissions_per_day'],
+        maxSubmissionsPerMonth: SELF.selectedPhase['max_submissions_per_month'],
+        maxSubmissions: SELF.selectedPhase['max_submissions'],
+        confirm: 'Submit',
+        deny: 'Cancel',
+        confirmCallback: SELF.apiCall,
+      };
+      SELF.globalService.showEditPhaseModal(PARAMS);
+    };
+  } 
 
   /**
    * Remove banned email chip
