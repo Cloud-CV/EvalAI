@@ -67,6 +67,56 @@ def get_submission_meta_update_curl(submission_pk):
     return curl_request
 
 
+def get_static_code_upload_submission_file_curl(
+    challenge_pk, phase_pk, submission_pk, submission_path
+):
+    url = "{}/api/jobs/challenge/{}/challenge_phase/{}/submission/{}".format(
+        EVALAI_API_SERVER, challenge_pk, phase_pk, submission_pk
+    )
+    curl_base_request = "curl --location --request PATCH '{}' --header 'Authorization: Bearer {}'".format(
+        url, AUTH_TOKEN
+    )
+    curl_request = (
+        curl_base_request
+        + ' -F "submission_input_file=@{}/$file_path"'.format(submission_path)
+    )
+    return curl_request
+
+
+def get_job_object(submission_pk, spec):
+    """Function to instantiate the AWS EKS Job object
+
+    Arguments:
+        submission_pk {[int]} -- Submission id
+        spec {[V1JobSpec]} -- Specification of deployment of job
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
+    job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=client.V1ObjectMeta(
+            name="submission-{0}".format(submission_pk)
+        ),
+        spec=spec,
+    )
+    return job
+
+
+def get_init_container(submission_pk):
+    curl_request = get_submission_meta_update_curl(submission_pk)
+    # Configure init container
+    init_container = client.V1Container(
+        name="init-container",
+        image="busybox",
+        command="/bin/sh",
+        args=["-c", curl_request],
+    )
+    return init_container
+
+
 def create_job_object(message, environment_image):
     """Function to create the AWS EKS Job object
 
@@ -85,19 +135,13 @@ def create_job_object(message, environment_image):
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
-    # Configureate Pod agent container
+    # Configure Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
     volume_mount_list = get_volume_mount_list("/dataset")
-    curl_request = get_submission_meta_update_curl(submission_pk)
-    # Configure init container
-    init_container = client.V1Container(
-        name="init-container",
-        image="busybox",
-        command="/bin/sh",
-        args=["-c", curl_request],
-    )
+    # Get init container
+    init_container = get_init_container(submission_pk)
     # Configure Pod environment container
     environment_container = client.V1Container(
         name="environment",
@@ -127,19 +171,12 @@ def create_job_object(message, environment_image):
     # Create the specification of deployment
     spec = client.V1JobSpec(backoff_limit=1, template=template)
     # Instantiate the job object
-    job = client.V1Job(
-        api_version="batch/v1",
-        kind="Job",
-        metadata=client.V1ObjectMeta(
-            name="submission-{0}".format(submission_pk)
-        ),
-        spec=spec,
-    )
+    job = get_job_object(submission_pk, spec)
     return job
 
 
-def create_single_pod_job_object(message):
-    """Function to create the single pod AWS EKS Job object
+def create_static_code_upload_submission_job_object(message):
+    """Function to create the static code upload pod AWS EKS Job object
 
     Arguments:
         message {[dict]} -- Submission message from AWS SQS queue
@@ -149,32 +186,44 @@ def create_single_pod_job_object(message):
     """
 
     PYTHONUNBUFFERED_ENV = client.V1EnvVar(name="PYTHONUNBUFFERED", value="1")
-    EVALAI_API_SERVER_ENV = client.V1EnvVar(
-        name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
-    )
-    # Used by agent to create submission file by phase_pk and selecting dataset location
+    # Used to create submission file by phase_pk and selecting dataset location
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
+    challenge_pk = message["challenge_pk"]
+    phase_pk = message["phase_pk"]
     image = message["submitted_image_uri"]
-
     volume_mount_list = get_volume_mount_list("/dataset")
-    lifecycle_config = client.V1Lifecycle(
+    # Get init container
+    init_container = get_init_container(submission_pk)
+    # Configure submission pod container pre-stop hook to submit file.
+    submission_path = "/submission"
+    SUBMISSION_PATH_ENV = client.V1EnvVar(
+        name="SUBMISSION_PATH", value=submission_path
+    )
+    # TODO: Mount an empty folder at submission_path or create post-start hook
+    submission_curl_request = get_static_code_upload_submission_file_curl(
+        challenge_pk, phase_pk, submission_pk, submission_path
+    )
+    pre_stop_exec_command = "mkdir -p {submission_path}; for file_path in `ls {submission_path} | tail -n 1`; do {curl_request}; done;".format(
+        submission_path=submission_path, curl_request=submission_curl_request
+    )
+    life_cycle_config = client.V1Lifecycle(
         pre_stop=client.V1Handler(
             _exec=client.V1ExecAction(
-                command=["/bin/sh", "-c", "sleep 10"]  # Submit File to evalai
+                command=["/bin/sh", "-c", pre_stop_exec_command]
             )
         )
     )
-    # Configureate Pod agent container
-    agent_container = client.V1Container(
-        name="agent",
+    # Configure Pod submission container
+    submission_container = client.V1Container(
+        name="submission",
         image=image,
-        env=[PYTHONUNBUFFERED_ENV, EVALAI_API_SERVER_ENV, MESSAGE_BODY_ENV],
+        env=[PYTHONUNBUFFERED_ENV, SUBMISSION_PATH_ENV, MESSAGE_BODY_ENV],
         resources=client.V1ResourceRequirements(
             limits={"nvidia.com/gpu": "1"}
         ),
         volume_mounts=volume_mount_list,
-        lifecycle=lifecycle_config,
+        lifecycle=life_cycle_config,
     )
 
     volume_list = get_volume_list()
@@ -182,7 +231,8 @@ def create_single_pod_job_object(message):
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
         spec=client.V1PodSpec(
-            containers=[agent_container],
+            init_containers=[init_container],
+            containers=[submission_container],
             restart_policy="Never",
             volumes=volume_list,
         ),
@@ -190,14 +240,7 @@ def create_single_pod_job_object(message):
     # Create the specification of deployment
     spec = client.V1JobSpec(backoff_limit=1, template=template)
     # Instantiate the job object
-    job = client.V1Job(
-        api_version="batch/v1",
-        kind="Job",
-        metadata=client.V1ObjectMeta(
-            name="submission-{0}".format(submission_pk)
-        ),
-        spec=spec,
-    )
+    job = get_job_object(submission_pk, spec)
     return job
 
 
@@ -246,7 +289,7 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
     try:
         logger.info("[x] Received submission message %s" % body)
         if body.get("is_static_dataset_code_upload_submission"):
-            job = create_single_pod_job_object(body)
+            job = create_static_code_upload_submission_job_object(body)
         else:
             environment_image = challenge_phase.get("environment_image")
             job = create_job_object(body, environment_image)
@@ -351,7 +394,7 @@ def update_failed_jobs_and_send_logs(
         timeout_seconds=10,
     )
     for container in pods_list.items[0].status.container_statuses:
-        if container.name == "agent":
+        if container.name in ["agent", "submission"]:
             if container.state.terminated is not None:
                 if container.state.terminated.reason == "Error":
                     pod_name = pods_list.items[0].metadata.name
@@ -362,7 +405,7 @@ def update_failed_jobs_and_send_logs(
                                 namespace="default",
                                 _return_http_data_only=True,
                                 _preload_content=False,
-                                container="agent",
+                                container=container.name,
                             )
                         )
                         pod_log = pod_log_response.data.decode("utf-8")
