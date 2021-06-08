@@ -12,10 +12,15 @@ class HasVerifiedEmail(permissions.BasePermission):
     def has_permission(self, request, view):
 
         if request.user.is_anonymous:
-            return True
+             return False
+            message="Verify your email"
+            
+            
+            
+           
         else:
             if EmailAddress.objects.filter(
-                user=request.user, verified=True
+                user=request.user, verified= True
             ).exists():
                 return True
             else:
