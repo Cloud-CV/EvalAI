@@ -351,6 +351,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         message = {
             "challenge_pk": challenge_id,
             "phase_pk": challenge_phase_id,
+            "is_static_dataset_code_upload_submission": False,
         }
         if challenge.is_docker_based:
             try:
@@ -358,6 +359,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 message["submitted_image_uri"] = file_content[
                     "submitted_image_uri"
                 ]
+                if challenge.is_static_dataset_code_upload:
+                    message["is_static_dataset_code_upload_submission"] = True
             except Exception as ex:
                 response_data = {
                     "error": "Error {} in submitted_image_uri from submission file".format(
@@ -483,6 +486,18 @@ def change_submission_data_and_visibility(
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
+        if (
+            request.FILES.get("submission_input_file")
+            and challenge.is_static_dataset_code_upload
+        ):
+            message = {
+                "challenge_pk": challenge_pk,
+                "phase_pk": challenge_phase_pk,
+                "submission_pk": submission_pk,
+                "is_static_dataset_code_upload_submission": False,
+            }
+            # publish message in the queue
+            publish_submission_message(message)
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1953,7 +1968,7 @@ def get_submission_message_from_queue(request, queue_name):
         messages = queue.receive_messages()
         if len(messages):
             message_receipt_handle = messages[0].receipt_handle
-            message_body = eval(messages[0].body)
+            message_body = json.loads(messages[0].body)
             logger.info(
                 "A submission is received with pk {}".format(
                     message_body.get("submission_pk")
@@ -2308,10 +2323,12 @@ def get_github_badge_data(
         if team_data["submission__participant_team"] == int(
             participant_team_pk
         ):
-            data["message"] = f"{challenge_obj.title} Rank #{idx+1}"
+            data["message"] = "{} Rank #{}".format(
+                challenge_obj.title, idx + 1
+            )
             break
         else:
-            data["message"] = f"{challenge_obj.title}"
+            data["message"] = challenge_obj.title
     return Response(data, status=http_status_code)
 
 
@@ -2727,3 +2744,34 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     publish_submission_message(submission_message)
     response_data = {}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_submission_started_at(request, submission_pk):
+    """
+    API Endpoint for updating the submission evaluation start time.
+    """
+    try:
+        submission = Submission.objects.get(
+            id=submission_pk,
+        )
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = SubmissionSerializer(
+        submission,
+        data={"started_at": str(timezone.now())},
+        context={"request": request},
+        partial=True,
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

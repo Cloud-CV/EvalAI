@@ -57,6 +57,16 @@ def get_volume_list():
     return volume_list
 
 
+def get_submission_meta_update_curl(submission_pk):
+    url = "{}/api/jobs/submission/{}/update_started_at/".format(
+        EVALAI_API_SERVER, submission_pk
+    )
+    curl_request = "curl --location --request PATCH '{}' --header 'Authorization: Bearer {}'".format(
+        url, AUTH_TOKEN
+    )
+    return curl_request
+
+
 def create_job_object(message, environment_image):
     """Function to create the AWS EKS Job object
 
@@ -80,7 +90,15 @@ def create_job_object(message, environment_image):
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
     volume_mount_list = get_volume_mount_list("/dataset")
-    # Configureate Pod environment container
+    curl_request = get_submission_meta_update_curl(submission_pk)
+    # Configure init container
+    init_container = client.V1Container(
+        name="init-container",
+        image="busybox",
+        command="/bin/sh",
+        args=["-c", curl_request],
+    )
+    # Configure Pod environment container
     environment_container = client.V1Container(
         name="environment",
         image=environment_image,
@@ -100,6 +118,7 @@ def create_job_object(message, environment_image):
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
         spec=client.V1PodSpec(
+            init_containers=[init_container],
             containers=[environment_container, agent_container],
             restart_policy="Never",
             volumes=volume_list,
