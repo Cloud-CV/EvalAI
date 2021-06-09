@@ -226,14 +226,6 @@ export class ChallengelistComponent implements OnInit {
     this.routerPublic = this.router;
   }
 
-  /**
-   * Listener for page scroll event
-   */
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
-    this.isScrollbtnVisible = RECT.top < 0;
-  }
 
   /**
    * Fetch teams function.
