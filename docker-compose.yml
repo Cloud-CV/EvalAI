@@ -101,3 +101,9 @@ services:
     ports:
       - '9125:9125'
       - '9102:9102'
+      
+  node-exporter:
+    hostname: nodeexporter
+    image: prom/node-exporter
+    ports:
+      - '9100:9100'
