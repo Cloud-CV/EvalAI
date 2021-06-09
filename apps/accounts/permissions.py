@@ -12,7 +12,7 @@ class HasVerifiedEmail(permissions.BasePermission):
     def has_permission(self, request, view):
 
         if request.user.is_anonymous:
-             return False
+            return True
             message="Verify your email"
             
             
