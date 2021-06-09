@@ -244,6 +244,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.submissionCount = 0;
       if (SELF.challenge['id'] && phase['id']) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
+        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -271,47 +272,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     let name = SELF.filterSubmissionsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
-        SELF.submissions = data['results'];
-        SELF.submissionCount = data.count;
-        let index = 0;
-        SELF.submissions.forEach((submission) => {
-          submission['s_no'] = index + 1;
-          index += 1;
-        });
-        for (let i = 0; i < SELF.submissions.length; i++) {
-          // Update view for submission visibility setting
-          SELF.submissions[i].submissionVisibilityIcon = SELF.submissions[i].is_public
-            ? 'visibility'
-            : 'visibility_off';
-          SELF.submissions[i].submissionVisibilityText = SELF.submissions[i].is_public ? 'Public' : 'Private';
-          // Update view for flag submission setting
-          SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
-          SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
-        }
-        SELF.paginationDetails.next = data.next;
-        SELF.paginationDetails.previous = data.previous;
-        SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
-
-        if (data.count === 0) {
-          SELF.paginationDetails.showPagination = false;
-          SELF.paginationDetails.paginationMessage = 'No results found';
-        } else {
-          SELF.paginationDetails.showPagination = true;
-          SELF.paginationDetails.paginationMessage = '';
-        }
-
-        // condition for pagination
-        if (data.next === null) {
-          SELF.paginationDetails.isNext = 'disabled';
-          SELF.paginationDetails.currentPage = 1;
-        } else {
-          SELF.paginationDetails.isNext = '';
-          SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
-        }
-        if (data.previous === null) {
-          SELF.paginationDetails.isPrev = 'disabled';
-        } else {
-          SELF.paginationDetails.isPrev = '';
         if(name == SELF.filterSubmissionsQuery) {
           SELF.submissions = data['results'];
           let index = 0;
@@ -569,6 +529,29 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
+  }
+
+  /**
+   * Fetch number of submissions for a challenge phase.
+   * @param challenge  challenge id
+   * @param phase  phase id
+   */
+  fetchSubmissionCounts(challenge, phase) {
+    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        if (data['participant_team_submission_count']) {
+          SELF.submissionCount = data['participant_team_submission_count'];
+        }
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {
+        this.logger.info('Fetched submission counts', challenge, phase);
+      }
+    );
   }
 
   /**
