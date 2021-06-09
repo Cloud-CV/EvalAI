@@ -7,7 +7,7 @@ class HasVerifiedEmail(permissions.BasePermission):
     Permission class for if the user has verified the email or not
     """
 
-    message = "Please verify your email!"
+    message = "Enter valid registered email address!"
 
     def has_permission(self, request, view):
 
