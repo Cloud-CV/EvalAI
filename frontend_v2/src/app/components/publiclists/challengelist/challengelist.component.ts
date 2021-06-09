@@ -1,4 +1,4 @@
-import { Component, HostListener, Inject, OnInit, AfterViewInit } from '@angular/core';
+import { Component, HostListener, Inject, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
@@ -14,7 +14,7 @@ import { DOCUMENT } from '@angular/common';
   templateUrl: './challengelist.component.html',
   styleUrls: ['./challengelist.component.scss'],
 })
-export class ChallengelistComponent implements OnInit, AfterViewInit {
+export class ChallengelistComponent implements OnInit {
   /**
    * Filter toggle flag
    */
@@ -38,28 +38,13 @@ export class ChallengelistComponent implements OnInit, AfterViewInit {
   /**
    * Ongoing challenges list
    */
-  ongoingChallenges: any;
+  ongoingChallenges = [];
 
   /**
    * Past challeges list
    */
   pastChallenges = [];
 
-  /**
-   * Upcoming challenges list
-   */
-   upcomingChallengesCount = 0;
-
-   /**
-    * Ongoing challenges list
-    */
-   ongoingChallengesCount = 0;
- 
-   /**
-    * Past challeges list
-    */
-   pastChallengesCount = 0;  
-  
   /**
    * Unapproved challeges list
    */
@@ -105,7 +90,7 @@ export class ChallengelistComponent implements OnInit, AfterViewInit {
   /**
    * List of filtered ongoing challenges
    */
-  filteredOngoingChallenges: any;
+  filteredOngoingChallenges = [];
 
   /**
    * List of filtered upcoming challenges
@@ -242,22 +227,13 @@ export class ChallengelistComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * After view is initialized.
-   */
-   ngAfterViewInit() {}
-
- 
-  /**
    * Listener for page scroll event
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    setTimeout(() => {
     const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
     this.isScrollbtnVisible = RECT.top < 0;
-  });
   }
-
 
   /**
    * Fetch teams function.
@@ -401,18 +377,14 @@ export class ChallengelistComponent implements OnInit, AfterViewInit {
    */
   fetchChallengesFromApi(path, callback = null) {
     const SELF = this;
-    setTimeout(() => {
     SELF.apiService.getUrl(path, true, false).subscribe(
       (data) => {
         if (path.endsWith('future')) {
           SELF.upcomingChallenges = data['results'];
-          SELF.upcomingChallengesCount = Object.keys(SELF.upcomingChallenges).length;
         } else if (path.endsWith('present')) {
           SELF.ongoingChallenges = data['results'];
-          SELF.ongoingChallengesCount = Object.keys(SELF.ongoingChallenges).length;
         } else if (path.endsWith('past')) {
           SELF.pastChallenges = data['results'];
-          SELF.pastChallengesCount = Object.keys(SELF.pastChallenges).length;
         }
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
@@ -424,8 +396,7 @@ export class ChallengelistComponent implements OnInit, AfterViewInit {
         SELF.globalService.handleApiError(err);
       },
       () => {}
-    )
-    });
+    );
   }
 
   /**
