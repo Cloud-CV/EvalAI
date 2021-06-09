@@ -13,7 +13,8 @@ class HasVerifiedEmail(permissions.BasePermission):
 
         if request.user.is_anonymous:
             
-            return True
+             return True
+            
             
             
             
@@ -25,3 +26,4 @@ class HasVerifiedEmail(permissions.BasePermission):
                 return True
             else:
                 return False
+
