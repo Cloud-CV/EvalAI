@@ -1,20 +1,18 @@
 <div class="challenge-card">
 
   <!-- Card for submissions greater than 5000 -->
-  <div class="ev-card-panel card-bt-margin" *ngIf="submissionCount > 5000">
-    <div class="ev-md-container">
-      <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
-        <div class="fw-light">
+  <div class="ev-md-container ev-card-panel card-bt-margin" *ngIf="submissionCount > 5000">
+    <div class="row">
+        <div class="col s12 m12 l12">
           <p class="fs-16">
-          <strong> Note: </strong> Results are greater than 5k, please use the 
-          <a href="https://eval.ai/api/docs/#operation/get_all_submissions_for_a_challenge"><strong class="blue-text"> get_all_submissions </strong></a> API to download results.
-          </p>
+            <strong> Note: </strong> Results are greater than 5k, please use the 
+            <a href="https://eval.ai/api/docs/#operation/get_all_submissions_for_a_challenge"><strong class="blue-text"> get_all_submissions </strong></a> API to download results.
+            </p>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <div class="ev-card-panel card-bt-margin">
+<div class="ev-card-panel card-bt-margin">
     <div class="ev-md-container bottom-hr-line">
       <div class="row row-lr-margin phase-title">
         <div class="col-sm-12">
