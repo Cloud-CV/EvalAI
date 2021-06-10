@@ -67,22 +67,43 @@
           *ngIf="isChallengeHost"
           [checked]="!challenge['is_registration_open']"
           (click)="stopParticipation($event)"
-          ><strong class="text-light-black fs-15">Close Participation</strong>
+          ><strong clEdit description:ass="text-light-black fs-15">Close Participation</strong>
         </mat-checkbox>
-        <div class="ev-action">
-          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
-            <span class="fs-16 fw-light">
-              <strong class="text-light-black">Evaluation Criteria: </strong>
-            </span>
-            <a class="pointer fs-15" (click)="editEvaluationScript()">
-              &nbsp;&nbsp;
-              <i class="fa fa-file" aria-hidden="true"> </i>&nbsp;Upload
-            </a>
-            <a class="pointer fs-16" (click)="editEvaluationCriteria()">
-              &nbsp;&nbsp;
-              <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;Edit
-            </a>
-          </div>
+      </div>
+    </div>
+
+    <!-- Edit Description -->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Edit description:</span>
+      </div>
+      <div class="ev-action">
+        <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Evaluation Criteria: </strong>
+          </span>
+          <a class="pointer fs-16" (click)="editEvaluationCriteria()">
+            &nbsp;&nbsp;
+            <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;Edit
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evaluations and Annoatations -->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Evaluation and Annoatations:</span>
+      </div>
+      <div class="ev-action">
+        <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Evaluation Script: </strong>
+          </span>
+          <a class="pointer fs-15" (click)="editEvaluationScript()">
+            &nbsp;&nbsp;
+            <i class="fa fa-file" aria-hidden="true"> </i>&nbsp;Upload
+          </a>
         </div>
       </div>
     </div>
