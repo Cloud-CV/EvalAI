@@ -136,6 +136,7 @@ from .utils import (
     get_challenge_template_data,
     send_emails,
 )
+from metrics.common import Metrics, push_prometheus_metrics_to_gateway
 
 logger = logging.getLogger(__name__)
 
@@ -423,6 +424,10 @@ def get_all_challenges(request, challenge_time):
     # make sure that a valid url is requested.
     if challenge_time.lower() not in ("all", "future", "past", "present"):
         response_data = {"error": "Wrong url pattern!"}
+        Metrics.total_http_requests_sample.labels(
+            "challenge", "get_all_challenges", request.method, "406"
+        ).inc()
+        push_prometheus_metrics_to_gateway()
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     q_params = {"published": True, "approved_by_admin": True}
@@ -446,6 +451,10 @@ def get_all_challenges(request, challenge_time):
         result_page, many=True, context={"request": request}
     )
     response_data = serializer.data
+    Metrics.total_http_requests_sample.labels(
+        "challenge", "get_all_challenges", request.method, "200"
+    ).inc()
+    push_prometheus_metrics_to_gateway()
     return paginator.get_paginated_response(response_data)
 
 
