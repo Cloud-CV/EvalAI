@@ -93,7 +93,7 @@ def create_config_map_object(config_map_name, file_paths):
 
 
 def create_script_config_map(config_map_name):
-    submission_script_file_path = "code_upload_worker_utils/submission.sh"
+    submission_script_file_path = "code_upload_worker_utils/make_submission.sh"
     script_config_map = create_config_map_object(
         config_map_name, [submission_script_file_path]
     )
@@ -297,10 +297,12 @@ def create_static_code_upload_submission_job_object(message):
             challenge_pk, phase_pk, submission_pk
         )
     )
-    pre_stop_exec_command = 'sh /scripts/submission.sh {} "{}" "{}"'.format(
-        submission_path,
-        submission_curl_request,
-        submission_file_not_present_curl_request,
+    pre_stop_exec_command = (
+        'sh /scripts/make_submission.sh {} "{}" "{}"'.format(
+            submission_path,
+            submission_curl_request,
+            submission_file_not_present_curl_request,
+        )
     )
     life_cycle_config = client.V1Lifecycle(
         pre_stop=client.V1Handler(
