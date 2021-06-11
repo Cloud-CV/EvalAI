@@ -34,12 +34,19 @@ EVALAI_API_SERVER = os.environ.get(
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 
 
-def get_volume_mount_list(mount_path):
-    pvc_claim_name = "efs-claim"
+def get_volume_mount_object(mount_path, name, read_only=False):
     volume_mount = client.V1VolumeMount(
-        mount_path=mount_path, name=pvc_claim_name
+        mount_path=mount_path, name=name, read_only=read_only
     )
     logger.info("Volume mount created at path: %s" % str(mount_path))
+    return volume_mount
+
+
+def get_volume_mount_list(mount_path, read_only=False):
+    pvc_claim_name = "efs-claim"
+    volume_mount = get_volume_mount_object(
+        mount_path, pvc_claim_name, read_only
+    )
     volume_mount_list = [volume_mount]
     return volume_mount_list
 
@@ -57,12 +64,70 @@ def get_volume_list():
     return volume_list
 
 
+def get_empty_volume_object(volume_name):
+    empty_dir = client.V1EmptyDirVolumeSource()
+    volume = client.V1Volume(empty_dir=empty_dir, name=volume_name)
+    return volume
+
+
+def get_config_map_volume_object(config_name, volume_name):
+    config_map = client.V1ConfigMapVolumeSource(name=config_name)
+    volume = client.V1Volume(config_map=config_map, name=volume_name)
+    return volume
+
+
+def create_config_map_object(config_map_name, file_paths):
+    # Configure ConfigMap metadata
+    metadata = client.V1ObjectMeta(
+        name=config_map_name,
+    )
+    config_data = {}
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_content = open(file_path, "r").read()
+        config_data[file_name] = file_content
+    # Instantiate the config_map object
+    config_map = client.V1ConfigMap(
+        api_version="v1", kind="ConfigMap", data=config_data, metadata=metadata
+    )
+    return config_map
+
+
+def create_script_config_map(config_map_name):
+    submission_script_file_path = "code_upload_worker_utils/submission.sh"
+    script_config_map = create_config_map_object(
+        config_map_name, [submission_script_file_path]
+    )
+    return script_config_map
+
+
 def get_submission_meta_update_curl(submission_pk):
     url = "{}/api/jobs/submission/{}/update_started_at/".format(
         EVALAI_API_SERVER, submission_pk
     )
     curl_request = "curl --location --request PATCH '{}' --header 'Authorization: Bearer {}'".format(
         url, AUTH_TOKEN
+    )
+    return curl_request
+
+
+def get_static_code_upload_no_submission_file_curl(
+    challenge_pk, phase_pk, submission_pk
+):
+    url = "{}/api/jobs/challenge/{}/update_submission/".format(
+        EVALAI_API_SERVER, challenge_pk
+    )
+    submission_data = {
+        "challenge_phase": phase_pk,
+        "submission": submission_pk,
+        "stdout": "",
+        "stderr": "submission.json/submission.csv not found.",
+        "submission_status": "failed",
+        "result": "[]",
+        "metadata": "",
+    }
+    curl_request = "curl --location --request PUT '{}' -H 'Content-Type: application/json' --header 'Authorization: Bearer {}' -d '{}'".format(
+        url, AUTH_TOKEN, json.dumps(submission_data)
     )
     return curl_request
 
@@ -192,20 +257,48 @@ def create_static_code_upload_submission_job_object(message):
     challenge_pk = message["challenge_pk"]
     phase_pk = message["phase_pk"]
     image = message["submitted_image_uri"]
-    volume_mount_list = get_volume_mount_list("/dataset")
     # Get init container
     init_container = get_init_container(submission_pk)
-    # Configure submission pod container pre-stop hook to submit file.
+    # Get dataset volume and volume mounts
+    volume_mount_list = get_volume_mount_list("/dataset", True)
+    volume_list = get_volume_list()
+    # Create and Mount Script Volume
+    script_config_map_name = "script-config"
+    create_script_config_map(script_config_map_name)
+    script_volume_name = "scripts-dir"
+    script_volume = get_config_map_volume_object(
+        script_config_map_name, script_volume_name
+    )
+    volume_list.append(script_volume)
+    script_volume_mount = get_volume_mount_object(
+        "/scripts", script_volume_name, True
+    )
+    volume_mount_list.append(script_volume_mount)
+    # Create and Mount submission Volume
     submission_path = "/submission"
     SUBMISSION_PATH_ENV = client.V1EnvVar(
         name="SUBMISSION_PATH", value=submission_path
     )
-    # TODO: Mount an empty folder at submission_path or create post-start hook
+    submission_volume_name = "submissions-dir"
+    submission_volume = get_empty_volume_object(submission_volume_name)
+    volume_list.append(submission_volume)
+    submission_volume_mount = get_volume_mount_object(
+        submission_path, submission_volume_name
+    )
+    volume_mount_list.append(submission_volume_mount)
+    # Pre-Stop Container Hook to Submit file
     submission_curl_request = get_static_code_upload_submission_file_curl(
         challenge_pk, phase_pk, submission_pk, submission_path
     )
-    pre_stop_exec_command = "mkdir -p {submission_path}; for file_path in `ls {submission_path} | tail -n 1`; do {curl_request}; done;".format(
-        submission_path=submission_path, curl_request=submission_curl_request
+    submission_file_not_present_curl_request = (
+        get_static_code_upload_no_submission_file_curl(
+            challenge_pk, phase_pk, submission_pk
+        )
+    )
+    pre_stop_exec_command = 'sh /scripts/submission.sh {} "{}" "{}"'.format(
+        submission_path,
+        submission_curl_request,
+        submission_file_not_present_curl_request,
     )
     life_cycle_config = client.V1Lifecycle(
         pre_stop=client.V1Handler(
@@ -225,8 +318,6 @@ def create_static_code_upload_submission_job_object(message):
         volume_mounts=volume_mount_list,
         lifecycle=life_cycle_config,
     )
-
-    volume_list = get_volume_list()
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
