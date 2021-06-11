@@ -388,45 +388,45 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     SELF.globalService.showModal(PARAMS);
   }
 
-    /**
+  /**
    * Edit evaluation criteria of the challenge
    */
-     editEvaluationCriteria() {
-      const SELF = this;
-      SELF.apiCall = (params) => {
-        const BODY = JSON.stringify(params);
-        SELF.apiService
-          .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
-          .subscribe(
-            (data) => {
-              SELF.challenge.evaluation_details = data.evaluation_details;
-              this.updateView();
-              SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
-            },
-            (err) => {
-              SELF.globalService.handleApiError(err, true);
-              SELF.globalService.showToast('error', err);
-            },
-            () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
-          );
-      };
-  
-      /**
-       * Parameters of the modal
-       */
-      const PARAMS = {
-        title: 'Edit Evaluation Details',
-        label: 'evaluation_details',
-        isEditorRequired: true,
-        editorContent: this.challenge.evaluation_details,
-        confirm: 'Submit',
-        deny: 'Cancel',
-        confirmCallback: SELF.apiCall,
-      };
-      SELF.globalService.showModal(PARAMS);
-    }
+  editEvaluationCriteria() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.evaluation_details = data.evaluation_details;
+            this.updateView();
+            SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
+        );
+    };
 
-     /**
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Evaluation Details',
+      label: 'evaluation_details',
+      isEditorRequired: true,
+      editorContent: this.challenge.evaluation_details,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
    * Edit evaluation script of the challenge
    */
   editEvaluationScript() {
