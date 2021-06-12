@@ -36,7 +36,6 @@
           <strong class="text-light-black">Starts on:</strong>
           {{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}
         </span>
-        &nbsp;
         <span *ngIf="isChallengeHost" class="fs-16 fw-light">
           <a class="pointer fs-16" (click)="challengeDateDialog()">
             <i class="fa fa-pencil" aria-hidden="true"></i>
@@ -84,7 +83,6 @@
             <strong class="text-light-black">Evaluation Criteria </strong>
           </span>
           <a class="pointer fs-16" (click)="editEvaluationCriteria()">
-            &nbsp;&nbsp;
             <i class="fa fa-pencil" aria-hidden="true"> </i>
           </a>
           <br />
@@ -93,7 +91,6 @@
             <strong class="text-light-black">Evaluation Script </strong>
           </span>
           <a class="pointer fs-15" (click)="editEvaluationScript()">
-            &nbsp;&nbsp;
             <i class="fa fa-file" aria-hidden="true"> </i>
           </a>
         </div>
