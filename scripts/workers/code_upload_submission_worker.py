@@ -111,43 +111,6 @@ def get_submission_meta_update_curl(submission_pk):
     return curl_request
 
 
-def get_static_code_upload_no_submission_file_curl(
-    challenge_pk, phase_pk, submission_pk
-):
-    url = "{}/api/jobs/challenge/{}/update_submission/".format(
-        EVALAI_API_SERVER, challenge_pk
-    )
-    submission_data = {
-        "challenge_phase": phase_pk,
-        "submission": submission_pk,
-        "stdout": "",
-        "stderr": "submission.json/submission.csv not found.",
-        "submission_status": "failed",
-        "result": "[]",
-        "metadata": "",
-    }
-    curl_request = "curl --location --request PUT '{}' -H 'Content-Type: application/json' --header 'Authorization: Bearer {}' -d '{}'".format(
-        url, AUTH_TOKEN, json.dumps(submission_data)
-    )
-    return curl_request
-
-
-def get_static_code_upload_submission_file_curl(
-    challenge_pk, phase_pk, submission_pk, submission_path
-):
-    url = "{}/api/jobs/challenge/{}/challenge_phase/{}/submission/{}".format(
-        EVALAI_API_SERVER, challenge_pk, phase_pk, submission_pk
-    )
-    curl_base_request = "curl --location --request PATCH '{}' --header 'Authorization: Bearer {}'".format(
-        url, AUTH_TOKEN
-    )
-    curl_request = (
-        curl_base_request
-        + ' -F "submission_input_file=@{}/$file_path"'.format(submission_path)
-    )
-    return curl_request
-
-
 def get_job_object(submission_pk, spec):
     """Function to instantiate the AWS EKS Job object
 
@@ -252,10 +215,20 @@ def create_static_code_upload_submission_job_object(message):
 
     PYTHONUNBUFFERED_ENV = client.V1EnvVar(name="PYTHONUNBUFFERED", value="1")
     # Used to create submission file by phase_pk and selecting dataset location
-    MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     challenge_pk = message["challenge_pk"]
     phase_pk = message["phase_pk"]
+    SUBMISSION_PK_ENV = client.V1EnvVar(
+        name="SUBMISSION_PK", value=str(submission_pk)
+    )
+    CHALLENGE_PK_ENV = client.V1EnvVar(
+        name="CHALLENGE_PK", value=str(challenge_pk)
+    )
+    PHASE_PK_ENV = client.V1EnvVar(name="PHASE_PK", value=str(phase_pk))
+    AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
+    EVALAI_API_SERVER_ENV = client.V1EnvVar(
+        name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
+    )
     image = message["submitted_image_uri"]
     # Get init container
     init_container = get_init_container(submission_pk)
@@ -287,25 +260,10 @@ def create_static_code_upload_submission_job_object(message):
     )
     volume_mount_list.append(submission_volume_mount)
     # Pre-Stop Container Hook to Submit file
-    submission_curl_request = get_static_code_upload_submission_file_curl(
-        challenge_pk, phase_pk, submission_pk, submission_path
-    )
-    submission_file_not_present_curl_request = (
-        get_static_code_upload_no_submission_file_curl(
-            challenge_pk, phase_pk, submission_pk
-        )
-    )
-    pre_stop_exec_command = (
-        'sh /scripts/make_submission.sh {} "{}" "{}"'.format(
-            submission_path,
-            submission_curl_request,
-            submission_file_not_present_curl_request,
-        )
-    )
     life_cycle_config = client.V1Lifecycle(
         pre_stop=client.V1Handler(
             _exec=client.V1ExecAction(
-                command=["/bin/sh", "-c", pre_stop_exec_command]
+                command=["/bin/sh", "-c", "sh /scripts/make_submission.sh"]
             )
         )
     )
@@ -313,7 +271,15 @@ def create_static_code_upload_submission_job_object(message):
     submission_container = client.V1Container(
         name="submission",
         image=image,
-        env=[PYTHONUNBUFFERED_ENV, SUBMISSION_PATH_ENV, MESSAGE_BODY_ENV],
+        env=[
+            PYTHONUNBUFFERED_ENV,
+            SUBMISSION_PATH_ENV,
+            CHALLENGE_PK_ENV,
+            PHASE_PK_ENV,
+            SUBMISSION_PK_ENV,
+            AUTH_TOKEN_ENV,
+            EVALAI_API_SERVER_ENV,
+        ],
         resources=client.V1ResourceRequirements(
             limits={"nvidia.com/gpu": "1"}
         ),
