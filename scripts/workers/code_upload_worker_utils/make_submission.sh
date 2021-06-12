@@ -24,6 +24,5 @@ else
     }"
     curl_request="curl --location --request PUT '$url' -H 'Content-Type: application/json' --header 'Authorization: Bearer $AUTH_TOKEN' -d '$submission_data'"
 fi
-echo $curl_request
 eval $curl_request
 echo "\nFile Submission Ended"
