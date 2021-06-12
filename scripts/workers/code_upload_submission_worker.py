@@ -69,8 +69,8 @@ def get_empty_volume_object(volume_name):
     return volume
 
 
-def get_config_map_volume_object(config_name, volume_name):
-    config_map = client.V1ConfigMapVolumeSource(name=config_name)
+def get_config_map_volume_object(config_map_name, volume_name):
+    config_map = client.V1ConfigMapVolumeSource(name=config_map_name)
     volume = client.V1Volume(config_map=config_map, name=volume_name)
     return volume
 
