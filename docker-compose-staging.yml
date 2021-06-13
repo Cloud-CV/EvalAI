@@ -99,7 +99,7 @@ services:
     image: prom/prometheus:latest
     user: "1000"
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/prometheus_staging.yml:/etc/prometheus/prometheus.yml
       - ./monitoring/prometheus/prometheus_db:/var/lib/prometheus
       - ./monitoring/prometheus/prometheus_db:/prometheus
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
