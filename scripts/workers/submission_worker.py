@@ -649,7 +649,7 @@ def process_submission_message(message):
         input_file_name = submission_instance.input_file.name
     user_annotation_file_path = join(
         SUBMISSION_DATA_DIR.format(submission_id=submission_id),
-        os.path.basename(input_file_name.name),
+        os.path.basename(input_file_name),
     )
     run_submission(
         challenge_id,
