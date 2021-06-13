@@ -587,7 +587,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       toggleChallengePublishState = 'public';
       isPublished = true;
     }
-    console.log(isPublished);
     SELF.apiCall = () => {
       const BODY = JSON.stringify({
         published: isPublished,
