@@ -120,3 +120,15 @@ services:
       - prometheus
     ports:
       - '3000:3000'
+  
+  node-exporter:
+    hostname: nodeexporter
+    image: prom/node-exporter
+    ports:
+      - '9100:9100'
+
+  pushgateway:
+    hostname: pushgateway
+    image: prom/pushgateway
+    ports:
+    - 9091:9091
