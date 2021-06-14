@@ -24,6 +24,7 @@ services:
       - db
       - sqs
       - statsd-exporter
+      - pushgateway
     volumes:
       - .:/code
 
