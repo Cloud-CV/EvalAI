@@ -23,6 +23,8 @@ services:
     depends_on:
       - db
       - sqs
+      - prometheus
+      - pushgateway
     volumes:
       - .:/code
 
