@@ -161,6 +161,14 @@ case $opt in
         deploy-statsd)
             echo "Deploying statsd docker container..."
             docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
+        deploy-node-exporter)
+            echo "Deploying node-exporter docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d node-exporter
+            echo "Completed deploy operation."
+            ;;
+        deploy-pushgateway)
+            echo "Deploying prometheus-pushgateway docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d pushgateway
             echo "Completed deploy operation."
             ;;
         deploy-node-exporter)
