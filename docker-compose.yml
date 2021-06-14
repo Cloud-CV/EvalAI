@@ -112,4 +112,3 @@ services:
     image: prom/pushgateway
     ports:
     - 9091:9091
-        
