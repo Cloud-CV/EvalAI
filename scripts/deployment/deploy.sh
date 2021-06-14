@@ -148,6 +148,14 @@ case $opt in
         deploy-statsd-exporter)
             echo "Deploying statsd docker container..."
             docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
+        deploy-node-exporter)
+            echo "Deploying node-exporter docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d node-exporter
+            echo "Completed deploy operation."
+            ;;
+        deploy-pushgateway)
+            echo "Deploying prometheus-pushgateway docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d pushgateway
             echo "Completed deploy operation."
             ;;
         scale)
@@ -193,6 +201,10 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
         echo "    deploy-statsd-exporter : Deploy statsd container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd-exporter production"
+        echo "    deploy-node-exporter : Deploy node-exporter container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
+        echo "    deploy-pushgateway : Deploy prometheus-pushgateway container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-pushgateway production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
