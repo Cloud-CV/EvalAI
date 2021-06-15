@@ -1624,16 +1624,17 @@
                     var details = response.data;
                     vm.submissionResult = details;
 
-                    for (var i = 0; i < details.results.length; i++) {
-                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
+                    if (Array.isArray(vm.submissionResult.results)) {
+                        for (var i = 0; i < details.results.length; i++) {
+                            vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                            vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
+                        }
                     }
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
-
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
