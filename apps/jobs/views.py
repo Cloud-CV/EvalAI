@@ -2781,38 +2781,39 @@ def update_submission_started_at(request, submission_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def update_submission_data(request, challenge_pk, submission_pk):
+def update_submission_meta(request, challenge_pk, submission_pk):
     """
-    API Endpoint for updating the submission meta data by hosts.
+    Common API Endpoint for updating the submission meta data for hosts and participants.
     """
 
-    # check if challenge phase is public and accepting solutions
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        try:
+            submission = Submission.objects.get(
+                id=submission_pk,
+            )
+        except Submission.DoesNotExist:
+            response_data = {"error": "Submission does not exist"}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={
+                "request": request,
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
         response_data = {
             "error": "Sorry, you are not authorized to make this request"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-    try:
-        submission = Submission.objects.get(
-            id=submission_pk,
-        )
-    except Submission.DoesNotExist:
-        response_data = {"error": "Submission does not exist"}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-    serializer = SubmissionSerializer(
-        submission,
-        data=request.data,
-        context={
-            "request": request,
-        },
-        partial=True,
-    )
-
-    if serializer.is_valid():
-        serializer.save()
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

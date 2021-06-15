@@ -1079,7 +1079,7 @@
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
-                                vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified;
+                                vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                             }
 
                             if (vm.submissionResult.results.length !== details.results.length) {
@@ -1171,7 +1171,7 @@
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
-                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified;
+                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                         // Set previous public submission id for phases with one public submission restriction
                         if (details.results[i].is_public) {
                             vm.previousPublicSubmissionId = details.results[i].id;
@@ -1322,7 +1322,7 @@
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
-                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified;
+                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                     }
 
                     vm.submissionResult = details;
@@ -1626,7 +1626,7 @@
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified;
+                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                     }
 
                     if (vm.submissionResult.count === 0) {
@@ -2040,10 +2040,10 @@
         };
 
         vm.verifySubmission = function(submissionId, isVerified) {
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/submission/" + submissionId + "/update_submission/";
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/submission/" + submissionId + "/update_submission_meta/";
             parameters.method = 'PATCH';
             parameters.data = {
-                "is_verified": isVerified,
+                "is_verified_by_host": isVerified,
             };
             parameters.callback = {
                 onSuccess: function(response) {

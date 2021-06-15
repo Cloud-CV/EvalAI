@@ -112,9 +112,9 @@ urlpatterns = [
     ),
     url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/"
-        r"submission/(?P<submission_pk>[0-9]+)/update_submission/$",
-        views.update_submission_data,
-        name="update_submission_data",
+        r"submission/(?P<submission_pk>[0-9]+)/update_submission_meta/$",
+        views.update_submission_meta,
+        name="update_submission_meta",
     ),
 ]
 

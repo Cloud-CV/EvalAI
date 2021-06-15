@@ -147,7 +147,7 @@
                                     ng-if="key.submission__is_baseline"></span>
                                 <span
                                     id="verified-badge" class="new badge green-background baseline-tag" data-badge-caption="V"
-                                    ng-if="key.submission__is_verified"></span>
+                                    ng-if="key.submission__is_verified_by_host"></span>
                             </td>
                             <td ng-repeat="(i, score) in key.result track by $index">
                                 {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}

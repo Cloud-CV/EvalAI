@@ -59,7 +59,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_baseline",
             "job_name",
             "submission_metadata",
-            "is_verified",
+            "is_verified_by_host",
         )
 
     def get_participant_team_name(self, obj):
@@ -133,7 +133,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "method_description",
             "publication_url",
             "project_url",
-            "is_verified",
+            "is_verified_by_host",
         )
 
     def get_participant_team(self, obj):

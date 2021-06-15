@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="submission",
-            name="is_verified",
+            name="is_verified_by_host",
             field=models.BooleanField(default=False),
         ),
     ]
