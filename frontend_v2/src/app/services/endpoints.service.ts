@@ -309,7 +309,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
-   * Challenge Submission Counts
+   * Challenge Submission Counts of the participant Team 
    * @param challenge  challenge id
    * @param phase  phase id
    */

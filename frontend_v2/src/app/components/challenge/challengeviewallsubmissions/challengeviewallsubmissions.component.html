@@ -1,11 +1,24 @@
 <div class="challenge-card">
-  <div class="ev-card-panel card-bt-margin">
+
+  <!-- Card for submissions greater than 5000 -->
+  <div class="ev-md-container ev-card-panel card-bt-margin" *ngIf="submissionCount > 5000">
+    <div class="row">
+        <div class="col s12 m12 l12">
+          <p class="fs-16">
+            <strong> Note: </strong> Results are greater than 5k, please use the 
+            <a href="https://eval.ai/api/docs/#operation/get_all_submissions_for_a_challenge"><strong class="blue-text"> get_all_submissions </strong></a> API to download results.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="ev-card-panel card-bt-margin">
     <div class="ev-md-container bottom-hr-line">
       <div class="row row-lr-margin phase-title">
         <div class="col-sm-12">
           <h5 class="fw-light">All Submissions</h5>
         </div>
-      </div>
+      </div>      
       <div class="row row-lr-margin">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
           <app-selectphase
@@ -28,7 +41,10 @@
             </mat-form-field>
           </div>
           <div class="col-md-2 col-sm-2 col-xs-6 col-lg-6 col-lr-pad download-submissions">
-            <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download </a>
+            <button 
+            class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14" 
+            (click)="downloadSubmission()" 
+            [disabled]="submissionCount>5000">Download </button>
           </div>
         </div>
       </div>
