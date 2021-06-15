@@ -204,6 +204,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           .subscribe(
             (data) => {
               SELF.selectedPhase = data;
+              SELF.challengeService.fetchPhases(SELF.challenge['id']);
               SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
             },
             (err) => {
