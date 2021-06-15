@@ -36,7 +36,6 @@
           <strong class="text-light-black">Starts on:</strong>
           {{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}
         </span>
-        &nbsp;
         <span *ngIf="isChallengeHost" class="fs-16 fw-light">
           <a class="pointer fs-16" (click)="challengeDateDialog()">
             <i class="fa fa-pencil" aria-hidden="true"></i>
@@ -69,6 +68,32 @@
           (click)="stopParticipation($event)"
           ><strong class="text-light-black fs-15">Close Participation</strong>
         </mat-checkbox>
+      </div>
+    </div>
+
+    <!-- Evaluations and Annotations -->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Evaluation and Annotations</span>
+      </div>
+      <br />
+      <div class="ev-action">
+        <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+          <!-- Evaluations Criteria Description -->
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Evaluation Criteria </strong>
+          </span>
+          <a class="pointer fs-16" (click)="editEvaluationCriteria()">
+            <i class="fa fa-pencil" aria-hidden="true"> </i>
+          </a>&nbsp;&nbsp;
+          <!-- Evaluation Script -->
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Evaluation Script </strong>
+          </span>
+          <a class="pointer fs-15" (click)="editEvaluationScript()">
+            <i class="fa fa-file" aria-hidden="true"> </i>
+          </a>
+        </div>
       </div>
     </div>
 
