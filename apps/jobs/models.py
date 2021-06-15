@@ -17,6 +17,7 @@ from base.utils import RandomFileName
 from challenges.models import ChallengePhase
 from jobs.constants import submission_status_to_exclude
 from participants.models import ParticipantTeam
+from django_prometheus.models import ExportModelOperationsMixin
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ def save_file(sender, instance, created, **kwargs):
         instance.save()
 
 
-class Submission(TimeStampedModel):
+class Submission(ExportModelOperationsMixin("submission"), TimeStampedModel):
 
     SUBMITTED = "submitted"
     RUNNING = "running"

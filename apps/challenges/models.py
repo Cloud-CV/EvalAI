@@ -15,6 +15,7 @@ from base.utils import RandomFileName, get_slug, is_model_field_changed
 
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
+from django_prometheus.models import ExportModelOperationsMixin
 
 
 @receiver(pre_save, sender="challenges.Challenge")
@@ -27,7 +28,7 @@ def get_default_eval_metric():
     return ["Accuracy"]
 
 
-class Challenge(TimeStampedModel):
+class Challenge(ExportModelOperationsMixin("challenge"), TimeStampedModel):
 
     """Model representing a hosted Challenge"""
 
@@ -239,7 +240,9 @@ class DatasetSplit(TimeStampedModel):
         db_table = "dataset_split"
 
 
-class ChallengePhase(TimeStampedModel):
+class ChallengePhase(
+    ExportModelOperationsMixin("challenge_phase"), TimeStampedModel
+):
 
     """Model representing a Challenge Phase"""
 
@@ -376,7 +379,9 @@ class Leaderboard(TimeStampedModel):
         db_table = "leaderboard"
 
 
-class ChallengePhaseSplit(TimeStampedModel):
+class ChallengePhaseSplit(
+    ExportModelOperationsMixin("challenge_phase_split"), TimeStampedModel
+):
 
     # visibility options
     HOST = 1
