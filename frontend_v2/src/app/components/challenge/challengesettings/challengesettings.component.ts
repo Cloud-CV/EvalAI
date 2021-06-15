@@ -389,6 +389,90 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Edit evaluation criteria of the challenge
+   */
+  editEvaluationCriteria() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.evaluation_details = data.evaluation_details;
+            this.updateView();
+            SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Evaluation Details',
+      label: 'evaluation_details',
+      isEditorRequired: true,
+      editorContent: this.challenge.evaluation_details,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Edit evaluation script of the challenge
+   */
+  editEvaluationScript() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('evaluation_script', params['evaluation_script']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.globalService.showToast('success', 'The evaluation script is successfully updated!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-EVALUATION-SCRIPT-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Evaluation Script',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'evaluationScript',
+          isRequired: true,
+          label: 'evaluation_script',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
    * Edit challenge image function
    */
   editChallengeImage() {
