@@ -575,6 +575,7 @@ class ChallengeEvaluationCluster(TimeStampedModel):
         max_length=512, null=True, blank=True
     )
     route_table_id = models.CharField(max_length=512, null=True, blank=True)
+    # Association ids of route table with subntes
     route_table_association_ids = ArrayField(
         models.CharField(max_length=256, blank=True), default=list, blank=True
     )

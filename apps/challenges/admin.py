@@ -6,12 +6,12 @@ from django.contrib.admin.helpers import ActionForm
 from base.admin import ImportExportTimeStampedAdmin
 
 from .aws_utils import (
+    delete_evaluation_clusters,
     delete_workers,
     restart_workers,
     scale_workers,
     start_workers,
     stop_workers,
-    delete_evaluation_clusters,
 )
 
 from .admin_filters import ChallengeFilter
@@ -224,7 +224,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         else:
             messages.success(
                 request,
-                "{} challenge evaluation cluster successfully deleted.".format(
+                "{} challenge evaluation cluster(s) successfully deleted.".format(
                     count
                 ),
             )
