@@ -1592,7 +1592,7 @@ def delete_evaluation_clusters(queryset):
         for challenge in queryset:
             failures.append(
                 {
-                    "message": "Workers cannot be deleted on AWS ECS service in development environment",
+                    "message": "Evaluation cluster cannot be deleted on AWS EKS service in development environment",
                     "challenge_pk": challenge.pk,
                 }
             )
