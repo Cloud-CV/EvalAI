@@ -1601,15 +1601,23 @@ def delete_evaluation_clusters(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
-            challenge=challenge
-        )
         if not challenge.is_docker_based:
             response = "Sorry. This feature is not available for non code upload/docker based challenges."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
             )
-        elif challenge_evaluation_cluster.active:
+            continue
+        try:
+            challenge_evaluation_cluster = (
+                ChallengeEvaluationCluster.objects.get(challenge=challenge)
+            )
+        except ChallengeEvaluationCluster.DoesNotExist:
+            response = "Challenge evaluation cluster for the challenge does not exist."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+            continue
+        if challenge_evaluation_cluster.active:
             serialized_obj = serializers.serialize("json", [challenge])
             response = delete_setup_eks_cluster(serialized_obj)
             if not response:
