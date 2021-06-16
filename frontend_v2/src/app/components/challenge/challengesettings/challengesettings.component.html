@@ -69,8 +69,16 @@
           (click)="stopParticipation($event)"
           ><strong class="text-light-black fs-15">Close Participation</strong>
         </mat-checkbox>
-        <br/>
-       
+      </div>
+    </div>
+
+    <!-- Phase Edit Section-->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Edit Phase Detail</span>
+      </div>
+      <br />
+      <div class="ev-action">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
           <app-selectphase
             [phases]="phases"
