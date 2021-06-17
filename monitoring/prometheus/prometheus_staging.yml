@@ -3,12 +3,15 @@ global:
   external_labels:
     monitor: 'evalai-monitor'
 
+rule_files:
+  - /etc/rules/rules.yml
+
 scrape_configs:
   - job_name: 'prometheus' 
     static_configs: 
       - targets: ['localhost:9090']
 
-  - job_name: 'django-prometheus'
+  - job_name: 'django'
     metrics_path: '/api/prometheus/metrics'
     static_configs:
       - targets: ['https://staging.eval.ai']
@@ -20,4 +23,10 @@ scrape_configs:
   - job_name: 'pushgateway'
     metrics_path: '/pushgateway/metrics'
     static_configs:
+      - targets: ['https://staging.eval.ai']
+
+alerting:
+  alertmanagers:
+    - path_prefix: '/alertmanager'
+      static_configs:
       - targets: ['https://staging.eval.ai']

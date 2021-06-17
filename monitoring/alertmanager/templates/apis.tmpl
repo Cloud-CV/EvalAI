@@ -1,0 +1,16 @@
+{{ define "slack.apis.title" -}}
+    {{- if .CommonAnnotations.title -}}
+        {{- .CommonAnnotations.title -}}
+    {{- else -}}
+        API-Threshold-Exceeded
+    {{- end -}}
+{{- end }}
+{{ define "slack.apis.text" -}}
+    {{- if .CommonAnnotations.description -}}
+        {{- .CommonAnnotations.description -}}
+    {{- else -}}
+        {{- range $i, $alert := .Alerts }}
+            {{- "\n" -}}{{- .Annotations.description -}}
+        {{- end -}}
+    {{- end -}}
+{{- end }}
