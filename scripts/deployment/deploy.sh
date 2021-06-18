@@ -155,6 +155,11 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d pushgateway
             echo "Completed deploy operation."
             ;;
+        deploy-alertmanager)
+            echo "Deploying prometheus-alertmanager docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d alertmanager
+            echo "Completed deploy operation."
+            ;;
         scale)
             service=${3}
             instances=${4}
@@ -200,6 +205,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
         echo "    deploy-pushgateway : Deploy prometheus-pushgateway container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-pushgateway production"
+        echo "    deploy-alertmanager : Deploy prometheus-alertmanager container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alertmanager production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."

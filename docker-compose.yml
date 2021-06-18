@@ -109,7 +109,7 @@ services:
       - 9091:9091
 
   alertmanager:
-    hostname: alertmanager
+    hostname: alerts
     image: prom/alertmanager
     user: "1000"
     volumes:
@@ -119,5 +119,6 @@ services:
     command:
       - '--config.file=/prometheus/alertmanager.yml'
       - '--storage.path=/data'
+      - '--web.external-url=http://localhost:9093/alerts'
     ports:
       - 9093:9093

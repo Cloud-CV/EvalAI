@@ -134,3 +134,18 @@ services:
       - '--web.route-prefix=/pushgateway'
     ports:
     - 9091:9091
+    
+  alertmanager:
+    hostname: alerts
+    image: prom/alertmanager
+    user: "1000"
+    volumes:
+      - ./monitoring/prometheus:/prometheus
+      - ./monitoring/alertmanager/data:/data
+      - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
+    command:
+      - '--config.file=/prometheus/alertmanager.yml'
+      - '--storage.path=/data'
+      - '--web.external-url=https://staging.eval.ai:9093/alerts'
+    ports:
+      - 9093:9093
