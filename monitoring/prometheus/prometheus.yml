@@ -28,6 +28,6 @@ scrape_configs:
 
 alerting:
   alertmanagers:
-  # - path_prefix: 'alertmanager/'
-  - static_configs:
-    - targets: ['alertmanager:9093']
+  - path_prefix: 'alerts/'
+    static_configs:
+    - targets: ['192.168.29.33']
