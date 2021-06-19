@@ -2152,7 +2152,7 @@ tr {
   }
 
   .page-wrap {
-    max-width: 100% !important;
+    max-width: 1440px !important;
     overflow: hidden;
     margin: auto !important;
     position: relative !important;
@@ -2161,6 +2161,10 @@ tr {
   }
 
   .web-container {
+    width: unset;
+  }
+
+  .dash-container {
     width: unset;
   }
 
