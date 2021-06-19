@@ -80,7 +80,26 @@
         </mat-checkbox>
       </div>
     </div>
-
+    
+    <!-- Phase Edit Section-->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Edit phase details:</span>
+      </div>
+      <br />
+      <div class="ev-action">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
+          <app-selectphase
+            [phases]="phases"
+            [phaseSelectionListType]="phaseSelectionListType"
+            [phaseSelectionType]="phaseSelectionType"
+            [phaseSelected]="phaseSelected()"
+            #phaseselect
+          ></app-selectphase>
+         </div>
+      </div>
+    </div>
+          
     <!-- Evaluations and Annotations -->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
