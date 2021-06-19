@@ -3,7 +3,7 @@ groups:
   rules:
   - alert: API-Threshold-Exceeded-4XX
     expr: increase(django_http_responses_total_by_status_view_method_total{job="django",method="GET",status=~"4..",view=~"jobs:.*|challenges:.*"}[5m]) > 100
-    for: 1m
+    for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 4XX'
       description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* API calls with the response code of *4XX* in the last 5 minutes'
@@ -13,7 +13,7 @@ groups:
 
   - alert: API-Threshold-Exceeded-5XX
     expr: increase(django_http_responses_total_by_status_view_method_total{job="django",method="GET",status=~"5..",view=~"jobs:.*|challenges:.*"}[5m]) > 100
-    for: 1m
+    for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 5XX'
       description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* API calls with the response code of *5XX* in the last 5 minutes'
@@ -25,10 +25,10 @@ groups:
   rules:
   - alert: InstanceDown
     expr: up == 0
-    for: 1m
+    for: 5m
     annotations:
       title: "Instance(s) Down"
-      description: "•*{{ $labels.instance }}* of prometheus job *{{ $labels.job }}* has been down for more than 1 minute."
+      description: "•*{{ $labels.instance }}* of prometheus job *{{ $labels.job }}* has been down for more than 5 minute."
     labels:
       severity: major
       group: 'instance'
