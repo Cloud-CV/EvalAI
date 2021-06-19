@@ -236,15 +236,15 @@ def create_static_code_upload_submission_job_object(message):
     volume_mount_list = get_volume_mount_list("/dataset", True)
     volume_list = get_volume_list()
     # Create and Mount Script Volume
-    script_config_map_name = "script-config"
+    script_config_map_name = "evalai-scripts-cm"
     create_script_config_map(script_config_map_name)
-    script_volume_name = "scripts-dir"
+    script_volume_name = "evalai-scripts"
     script_volume = get_config_map_volume_object(
         script_config_map_name, script_volume_name
     )
     volume_list.append(script_volume)
     script_volume_mount = get_volume_mount_object(
-        "/scripts", script_volume_name, True
+        "/evalai_scripts", script_volume_name, True
     )
     volume_mount_list.append(script_volume_mount)
     # Create and Mount submission Volume
@@ -263,7 +263,11 @@ def create_static_code_upload_submission_job_object(message):
     life_cycle_config = client.V1Lifecycle(
         pre_stop=client.V1Handler(
             _exec=client.V1ExecAction(
-                command=["/bin/sh", "-c", "sh /scripts/make_submission.sh"]
+                command=[
+                    "/bin/sh",
+                    "-c",
+                    "sh /evalai_scripts/make_submission.sh",
+                ]
             )
         )
     )

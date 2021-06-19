@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "File Submission Started."
+echo "Submitting file to EvalAI..."
 submission_url="$EVALAI_API_SERVER/api/jobs/challenge/$CHALLENGE_PK/challenge_phase/$PHASE_PK/submission/$SUBMISSION_PK"
 submission_curl_base_request="curl --location --request PATCH '$submission_url' --header 'Authorization: Bearer $AUTH_TOKEN'"
 if [ -f "$SUBMISSION_PATH/submission.csv" ]
@@ -23,6 +23,9 @@ else
       \"metadata\": \"\"\
     }"
     curl_request="curl --location --request PUT '$url' -H 'Content-Type: application/json' --header 'Authorization: Bearer $AUTH_TOKEN' -d '$submission_data'"
+    eval $curl_request
+    echo "\nFile submission failed."
+    exit 0
 fi
 eval $curl_request
-echo "\nFile Submission Ended"
+echo "\nFile submitted successfully"
