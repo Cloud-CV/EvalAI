@@ -2041,7 +2041,7 @@
         };
 
         vm.verifySubmission = function(submissionId, isVerified) {
-            parameters.url = "jobs/challenges/" + vm.challengeId + "/submission/" + submissionId + "/update_submission_meta/";
+            parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_verified_by_host": isVerified,
