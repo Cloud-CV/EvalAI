@@ -51,7 +51,7 @@ urlpatterns = [
         name="update_partially_evaluated_submission",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/$",
         views.get_submissions_for_challenge,
         name="get_submissions_for_challenge",
     ),
@@ -109,6 +109,12 @@ urlpatterns = [
         r"^submission/(?P<submission_pk>[0-9]+)/update_started_at/$",
         views.update_submission_started_at,
         name="update_submission_started_at",
+    ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/"
+        r"submissions/(?P<submission_pk>[0-9]+)/update_submission_meta/$",
+        views.update_submission_meta,
+        name="update_submission_meta",
     ),
 ]
 

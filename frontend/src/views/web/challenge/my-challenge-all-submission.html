@@ -90,7 +90,9 @@
                         <th class="fs-18 w-300" data-field="file">Stderr file</th>
                         <th class="fs-18 w-300" data-field="file">Result file</th>
                         <th class="fs-18 w-300" data-field="file">Metadata file</th>
+                        <!-- <th ng-if="challenge.currentPhaseLeaderboardPublic" class="fs-18 w-300" data-field="button">Show on Leaderboard</th> -->
                         <th class="fs-18 w-300" data-field="button">Rerun submission</th>
+                        <th class="fs-18 w-300" data-field="button">Verify submission</th>
                     </thead>
                     <tbody>
                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
@@ -140,6 +142,14 @@
                             <td>
                                 <center><a ng-class="key.classList" class="fa fa-refresh pointer"
                                         ng-click="challenge.reRunSubmission(key)"></a></center>
+                            </td>
+                            <td>
+                                <center><input ng-checked="key.is_verified_by_host"
+                                        ng-model="challenge.verifiedStatus[key.id]" type="checkbox"
+                                        id="isVerifiedSubmission{{ key.id }}"
+                                        ng-change="challenge.verifySubmission(key.id, challenge.verifiedStatus[key.id])" />
+                                <label for="isVerifiedSubmission{{ key.id }}"></label>
+                                </center>
                             </td>
                         </tr>
                     </tbody>

@@ -45,13 +45,17 @@
                 <div class="col s12">
                     <div ng-if="challenge.isResult && challenge.leaderboard.length &&
                                     !challenge.leaderboard.error" class="row">
-                        <div class="result-wrn col l3 m4 s12"><span id="baseline-badge-desc"
+                        <div class="result-wrn col l2 m4 s12"><span id="baseline-badge-desc"
                                 class="new badge orange-background fs-16 w-300" data-badge-caption="B"></span>
-                            <span class="fs-16 w-300"> - Baseline submission</span>
+                            <span class="fs-16 w-300"> - Baseline</span>
                         </div>
-                        <div class="result-wrn col l3 m4 s12">
+                        <div class="result-wrn col l2 m4 s12">
                             <b><span class="orange-text">*</span></b>
-                            <span class="fs-16 w-300"> - Private submission</span>
+                            <span class="fs-16 w-300"> - Private</span>
+                        </div>
+                        <div class="result-wrn col l2 m4 s12"><span id="baseline-badge-desc"
+                                class="new badge green-background fs-16 w-300" data-badge-caption="V"></span>
+                            <span class="fs-16 w-300"> - Verified</span>
                         </div>
                         <div class="align-right result-wrn col l6 m6 s12" ng-if="challenge.isChallengeHost && challenge.showLeaderboardToggle">
                             <input ng-checked="challenge.getAllEntries" type="checkbox" id="getAllEntries" ng-model="challenge.getAllEntries"
@@ -141,6 +145,9 @@
                                     ng-if="key.submission__method_name">({{key.submission__method_name | limitTo:30}})</span><span
                                     id="baseline-badge" class="new badge orange-background baseline-tag" data-badge-caption="B"
                                     ng-if="key.submission__is_baseline"></span>
+                                <span
+                                    id="verified-badge" class="new badge green-background baseline-tag" data-badge-caption="V"
+                                    ng-if="key.submission__is_verified_by_host"></span>
                             </td>
                             <td ng-repeat="(i, score) in key.result track by $index">
                                 {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
