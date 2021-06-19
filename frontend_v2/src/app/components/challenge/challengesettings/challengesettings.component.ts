@@ -181,10 +181,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-    /**
+  /**
    * Called when a phase is selected (from child component)
    */
-    phaseSelected() {
+  phaseSelected() {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
