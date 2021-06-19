@@ -31,6 +31,16 @@
           <i class="fa fa-trash red-text" aria-hidden="true"></i>
         </a>
         <br />
+        <div class="ev-action">
+          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+            <span class="fs-16 fw-light">
+              <strong class="text-light-black">Challenge Overview </strong>
+            </span>
+            <a class="pointer fs-16" (click)="editChallengeOverview()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>
+            </a>
+          </div>
+        </div>
         <!-- Start date -->
         <span class="fs-16 fw-light">
           <strong class="text-light-black">Starts on:</strong>
