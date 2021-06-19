@@ -522,6 +522,42 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Edit challenge overview function
+   */
+
+  editChallengeOverview() {
+    const SELF = this;
+
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.description = data.description;
+            SELF.globalService.showToast('success', 'The description is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Edit Challenge Description',
+      label: 'description',
+      isEditorRequired: true,
+      editorContent: this.challenge.description,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
    * API call to manage the worker from UI.
    * Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
    */
