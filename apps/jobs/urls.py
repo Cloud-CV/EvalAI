@@ -111,7 +111,7 @@ urlpatterns = [
         name="update_submission_started_at",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/"
+        r"^challenges/(?P<challenge_pk>[0-9]+)/"
         r"submission/(?P<submission_pk>[0-9]+)/update_submission_meta/$",
         views.update_submission_meta,
         name="update_submission_meta",

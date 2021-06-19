@@ -2787,13 +2787,7 @@ def update_submission_meta(request, challenge_pk, submission_pk):
     """
 
     if is_user_a_host_of_challenge(request.user, challenge_pk):
-        try:
-            submission = Submission.objects.get(
-                id=submission_pk,
-            )
-        except Submission.DoesNotExist:
-            response_data = {"error": "Submission does not exist"}
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        submission = get_submission_model(submission_pk)
 
         serializer = SubmissionSerializer(
             submission,
