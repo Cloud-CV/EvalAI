@@ -234,7 +234,7 @@ def handle_submission_rerun(submission, updated_status):
 
 
 def calculate_distinct_sorted_leaderboard_data(
-    user, challenge_obj, challenge_phase_split, only_public_entries
+    user, challenge_obj, challenge_phase_split, only_public_entries, order_by
 ):
     """
     Function to calculate and return the sorted leaderboard data
@@ -253,11 +253,21 @@ def calculate_distinct_sorted_leaderboard_data(
     leaderboard = challenge_phase_split.leaderboard
 
     # Get the default order by key to rank the entries on the leaderboard
+    default_order_by = None
     try:
         default_order_by = leaderboard.schema["default_order_by"]
     except KeyError:
         response_data = {
             "error": "Sorry, default_order_by key is missing in leaderboard schema!"
+        }
+        return response_data, status.HTTP_400_BAD_REQUEST
+    # Use order by field from request only if it is valid
+    try:
+        if order_by in leaderboard.schema["labels"]:
+            default_order_by = order_by
+    except KeyError:
+        response_data = {
+            "error": "Sorry, labels key is missing in leaderboard schema!"
         }
         return response_data, status.HTTP_400_BAD_REQUEST
 

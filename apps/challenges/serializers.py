@@ -144,6 +144,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     dataset_split_name = serializers.SerializerMethodField()
     challenge_phase_name = serializers.SerializerMethodField()
+    leaderboard_schema = serializers.SerializerMethodField()
 
     class Meta:
         model = ChallengePhaseSplit
@@ -156,7 +157,12 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "leaderboard_schema",
         )
+
+    def get_leaderboard_schema(self, obj):
+        print(obj.leaderboard.schema)
+        return obj.leaderboard.schema
 
     def get_dataset_split_name(self, obj):
         return obj.dataset_split.name
@@ -262,6 +268,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
+            "is_multi_metric_leaderboard",
         )
 
 

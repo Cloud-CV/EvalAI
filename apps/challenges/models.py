@@ -173,6 +173,8 @@ class Challenge(TimeStampedModel):
     desired_worker_instance = models.IntegerField(
         null=True, blank=True, default=1
     )
+    # Allow ordering leaderboard by all metrics
+    is_multi_metric_leaderboard = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"

@@ -40,6 +40,17 @@
                 </span>
             </div>
         </div>
+        <div class="row" ng-if="challenge.isMultiMetricLeaderboardEnabled">
+            <div class="col xs12 s6">
+                <span>
+                    <md-select ng-model="challenge.orderLeaderboardBy" placeholder="Order by metric" class="rm-margin">
+                        <md-option value="{{key}}" ui-sref="web.challenge-main.challenge-page.phase-metric-leaderboard({phaseSplitId:challenge.phaseSplitId, metric:challenge.encodeMetricURI(key)})"
+                         ng-repeat="key in challenge.phaseSplitLeaderboardSchema[challenge.phaseSplitId].labels">
+                            <span class="fs-16 w-300">{{key}}</span>
+                    </md-select>
+                </span>
+            </div>
+        </div>
         <div class="row">
             <div class="horizontal-scroll">
                 <div class="col s12">
