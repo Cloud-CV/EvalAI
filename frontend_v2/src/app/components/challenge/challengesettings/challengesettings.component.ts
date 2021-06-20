@@ -667,20 +667,22 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
   // Get the logs from worker if submissions are failing.
   fetchWorkerLogs() {
-    const API_PATH = this.endpointsService.getLogsURL(this.challenge['id']);
-    const SELF = this;
-    SELF.apiService.getUrl(API_PATH, true, false).subscribe(
-      (data) => {
-        SELF.workerLogs = [];
-        for (let i = 0; i < data.logs.length; i++) {
-          SELF.workerLogs.push(data.logs[i]);
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {}
-    );
+    if(this.challenge['id']) {
+      const API_PATH = this.endpointsService.getLogsURL(this.challenge['id']);
+      const SELF = this;
+      SELF.apiService.getUrl(API_PATH, true, false).subscribe(
+        (data) => {
+          SELF.workerLogs = [];
+          for (let i = 0; i < data.logs.length; i++) {
+            SELF.workerLogs.push(data.logs[i]);
+          }
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+    }
   }
 
   // Get the logs from worker if submissions are failing at an interval of 5sec.
