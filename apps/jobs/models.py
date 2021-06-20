@@ -129,6 +129,7 @@ class Submission(TimeStampedModel):
     ignore_submission = models.BooleanField(default=False)
     # Store the values of meta attributes for the submission here.
     submission_metadata = JSONField(blank=True, null=True)
+    is_verified_by_host = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}".format(self.id)

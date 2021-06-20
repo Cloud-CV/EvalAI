@@ -337,6 +337,7 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__id",
             "submission__submission_metadata",
             "submission__execution_time",
+            "submission__is_verified_by_host",
         )
     else:
         leaderboard_data = leaderboard_data.annotate(
@@ -365,6 +366,7 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__method_name",
             "submission__id",
             "submission__submission_metadata",
+            "submission__is_verified_by_host",
         )
     if only_public_entries:
         if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
