@@ -27,6 +27,11 @@ export class EditphasemodalComponent implements OnInit {
    * Challenge phase name
    */
   name = '';
+  
+  /**
+   * Challenge phase allowed submission file types
+   */
+  allowedSubmissionFileTypes = '';
 
   /**
    * Challenge phase description
@@ -57,6 +62,11 @@ export class EditphasemodalComponent implements OnInit {
    * Challenge phase max submissions
    */
   maxSubmissions: number;
+
+  /**
+   * Challenge phase max concurrent submissions allowed
+   */
+  maxConcurrentSubmissionsAllowed: number;
 
   /**
    * If editor error message
@@ -171,6 +181,12 @@ export class EditphasemodalComponent implements OnInit {
       }
       if (this.params['maxSubmissions']) {
         this.maxSubmissions = this.params['maxSubmissions'];
+      }
+      if (this.params['maxConcurrentSubmissionsAllowed']) {
+        this.maxConcurrentSubmissionsAllowed = this.params['maxConcurrentSubmissionsAllowed'];
+      }
+      if (this.params['allowedSubmissionFileTypes']) {
+        this.allowedSubmissionFileTypes = this.params['allowedSubmissionFileTypes'];
       }
       if (this.params['confirm']) {
         this.confirm = this.params['confirm'];

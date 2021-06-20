@@ -224,6 +224,8 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         maxSubmissionsPerDay: SELF.selectedPhase['max_submissions_per_day'],
         maxSubmissionsPerMonth: SELF.selectedPhase['max_submissions_per_month'],
         maxSubmissions: SELF.selectedPhase['max_submissions'],
+        maxConcurrentSubmissionsAllowed: SELF.selectedPhase['max_concurrent_submissions_allowed'],
+        allowedSubmissionFileTypes: SELF.selectedPhase['allowed_submission_file_types'], 
         confirm: 'Submit',
         deny: 'Cancel',
         confirmCallback: SELF.apiCall,
