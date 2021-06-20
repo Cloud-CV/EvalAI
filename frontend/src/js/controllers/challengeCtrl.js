@@ -2031,9 +2031,11 @@
         };
 
         vm.cancelSubmission = function(submissionId) {
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/submissions/" + submissionId + "/cancel/";
+            parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
             parameters.method = 'PATCH';
-            console.log("Cancelling submission: " + vm.submissionId);
+            parameters.data = {
+                "status": "cancelled",
+            };
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
