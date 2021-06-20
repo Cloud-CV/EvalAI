@@ -661,7 +661,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 return e.response
             # challenge host auth token to be used by code-upload-worker
             token = JwtToken.objects.get(user=challenge.creator.created_by)
-            if challenge.is_static_dataset_docker_based_challenge:
+            if challenge.is_static_dataset_code_upload:
                 definition = task_definition_static_code_upload_worker.format(
                     queue_name=queue_name,
                     container_name=container_name,
