@@ -470,47 +470,62 @@ def update_failed_jobs_and_send_logs(
     challenge_pk,
     phase_pk,
 ):
-    job_def = read_job(api_instance, job_name)
-    controller_uid = job_def.metadata.labels["controller-uid"]
-    pod_label_selector = "controller-uid=" + controller_uid
-    pods_list = core_v1_api_instance.list_namespaced_pod(
-        namespace="default",
-        label_selector=pod_label_selector,
-        timeout_seconds=10,
-    )
-    for container in pods_list.items[0].status.container_statuses:
-        if container.name in ["agent", "submission"]:
-            if container.state.terminated is not None:
-                if container.state.terminated.reason == "Error":
-                    pod_name = pods_list.items[0].metadata.name
-                    try:
-                        pod_log_response = (
-                            core_v1_api_instance.read_namespaced_pod_log(
-                                name=pod_name,
-                                namespace="default",
-                                _return_http_data_only=True,
-                                _preload_content=False,
-                                container=container.name,
+    try:
+        job_def = read_job(api_instance, job_name)
+        controller_uid = job_def.metadata.labels["controller-uid"]
+        pod_label_selector = "controller-uid=" + controller_uid
+        pods_list = core_v1_api_instance.list_namespaced_pod(
+            namespace="default",
+            label_selector=pod_label_selector,
+            timeout_seconds=10,
+        )
+        for container in pods_list.items[0].status.container_statuses:
+            if container.name in ["agent", "submission"]:
+                if container.state.terminated is not None:
+                    if container.state.terminated.reason == "Error":
+                        pod_name = pods_list.items[0].metadata.name
+                        try:
+                            pod_log_response = (
+                                core_v1_api_instance.read_namespaced_pod_log(
+                                    name=pod_name,
+                                    namespace="default",
+                                    _return_http_data_only=True,
+                                    _preload_content=False,
+                                    container=container.name,
+                                )
                             )
-                        )
-                        pod_log = pod_log_response.data.decode("utf-8")
-                        submission_data = {
-                            "challenge_phase": phase_pk,
-                            "submission": submission_pk,
-                            "stdout": "",
-                            "stderr": pod_log,
-                            "submission_status": "FAILED",
-                            "result": "[]",
-                            "metadata": "",
-                        }
-                        response = evalai.update_submission_data(
-                            submission_data, challenge_pk, phase_pk
-                        )
-                        print(response)
-                    except client.rest.ApiException as e:
-                        logger.exception(
-                            "Exception while reading Job logs {}".format(e)
-                        )
+                            pod_log = pod_log_response.data.decode("utf-8")
+                            submission_data = {
+                                "challenge_phase": phase_pk,
+                                "submission": submission_pk,
+                                "stdout": "",
+                                "stderr": pod_log,
+                                "submission_status": "FAILED",
+                                "result": "[]",
+                                "metadata": "",
+                            }
+                            response = evalai.update_submission_data(
+                                submission_data, challenge_pk, phase_pk
+                            )
+                            print(response)
+                        except client.rest.ApiException as e:
+                            logger.exception(
+                                "Exception while reading Job logs {}".format(e)
+                            )
+    except Exception as e:
+        logger.exception("Exception while reading Job {}".format(e))
+        submission_data = {
+            "challenge_phase": phase_pk,
+            "submission": submission_pk,
+            "stdout": "",
+            "stderr": "Submission Job failed.",
+            "submission_status": "failed",
+            "result": "[]",
+            "metadata": "",
+        }
+        response = evalai.update_submission_data(
+            submission_data, challenge_pk, phase_pk
+        )
 
 
 def install_gpu_drivers(api_instance):
