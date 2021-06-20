@@ -25,7 +25,11 @@ else
     curl_request="curl --location --request PUT '$url' -H 'Content-Type: application/json' --header 'Authorization: Bearer $AUTH_TOKEN' -d '$submission_data'"
     eval $curl_request
     echo "\nFile submission failed."
+    touch "$SUBMISSION_PATH/failed.txt"
+    echo $(date) < "$SUBMISSION_PATH/failed.txt"
     exit 0
 fi
 eval $curl_request
 echo "\nFile submitted successfully"
+touch "$SUBMISSION_PATH/completed.txt"
+echo $(date) < "$SUBMISSION_PATH/completed.txt"
