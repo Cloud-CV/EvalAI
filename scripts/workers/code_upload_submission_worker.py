@@ -94,8 +94,12 @@ def create_config_map_object(config_map_name, file_paths):
 
 def create_script_config_map(config_map_name):
     submission_script_file_path = "code_upload_worker_utils/make_submission.sh"
+    monitor_submission_script_path = (
+        "code_upload_worker_utils/monitor_submission.sh"
+    )
     script_config_map = create_config_map_object(
-        config_map_name, [submission_script_file_path]
+        config_map_name,
+        [submission_script_file_path, monitor_submission_script_path],
     )
     return script_config_map
 
@@ -227,6 +231,10 @@ def create_static_code_upload_submission_job_object(message):
         name="CHALLENGE_PK", value=str(challenge_pk)
     )
     PHASE_PK_ENV = client.V1EnvVar(name="PHASE_PK", value=str(phase_pk))
+    # Using Default value 1 day = 86400s as Time Limit.
+    SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_LIMIT", value="86400"
+    )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
         name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
@@ -292,12 +300,29 @@ def create_static_code_upload_submission_job_object(message):
         volume_mounts=volume_mount_list,
         lifecycle=life_cycle_config,
     )
+    # Configure Pod sidecar container
+    sidecar_container = client.V1Container(
+        name="sidecar-container",
+        image="busybox",
+        command="/bin/sh",
+        args=["-c", "sh /evalai_scripts/monitor_submission.sh"],
+        env=[
+            SUBMISSION_PATH_ENV,
+            CHALLENGE_PK_ENV,
+            PHASE_PK_ENV,
+            SUBMISSION_PK_ENV,
+            AUTH_TOKEN_ENV,
+            EVALAI_API_SERVER_ENV,
+            SUBMISSION_TIME_LIMIT_ENV,
+        ],
+        volume_mounts=volume_mount_list,
+    )
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
         spec=client.V1PodSpec(
             init_containers=[init_container],
-            containers=[submission_container],
+            containers=[sidecar_container, submission_container],
             restart_policy="Never",
             volumes=volume_list,
         ),
