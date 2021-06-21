@@ -1,7 +1,6 @@
 #!/bin/sh
 echo "Monitoring submission..."
 time_elapsed=0
-time_delta=3600
 while [ $time_elapsed -le $SUBMISSION_TIME_LIMIT ]
 do
     echo "Checking for submission file after $time_elapsed secs.."
@@ -14,11 +13,11 @@ do
         echo "Submission File not found."
         break
     fi
-    if [ $time_elapsed -lt $SUBMISSION_TIME_LIMIT -a $(( $time_elapsed + $time_delta )) -gt $SUBMISSION_TIME_LIMIT ]
+    if [ $time_elapsed -lt $SUBMISSION_TIME_LIMIT -a $(( $time_elapsed + $SUBMISSION_TIME_DELTA )) -gt $SUBMISSION_TIME_LIMIT ]
     then
         next_checkpoint=$SUBMISSION_TIME_LIMIT
     else
-        next_checkpoint=$(( $time_elapsed + $time_delta ))
+        next_checkpoint=$(( $time_elapsed + $SUBMISSION_TIME_DELTA ))
     fi
     if [ $next_checkpoint -le $SUBMISSION_TIME_LIMIT ]
     then
