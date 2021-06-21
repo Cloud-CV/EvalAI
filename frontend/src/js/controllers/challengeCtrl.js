@@ -2707,7 +2707,7 @@
 
         vm.encodeMetricURI = function(metric) {
             return encodeURIComponent(metric);
-        }
+        };
 
     }
 
