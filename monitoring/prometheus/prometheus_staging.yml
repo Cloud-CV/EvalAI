@@ -27,6 +27,6 @@ scrape_configs:
 
 alerting:
   alertmanagers:
-    - path_prefix: '/alerts'
+    - path_prefix: 'alerts/'
       static_configs:
       - targets: ['https://staging.eval.ai']

@@ -100,6 +100,7 @@ services:
     user: "1000"
     volumes:
       - ./monitoring/prometheus/prometheus_staging.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/rules.yml:/etc/rules/rules.yml
       - ./monitoring/prometheus/prometheus_db:/var/lib/prometheus
       - ./monitoring/prometheus/prometheus_db:/prometheus
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
