@@ -1968,7 +1968,7 @@ def get_submission_message_from_queue(request, queue_name):
         messages = queue.receive_messages()
         if len(messages):
             message_receipt_handle = messages[0].receipt_handle
-            message_body = eval(messages[0].body)
+            message_body = json.loads(messages[0].body)
             logger.info(
                 "A submission is received with pk {}".format(
                     message_body.get("submission_pk")
@@ -2744,3 +2744,70 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     publish_submission_message(submission_message)
     response_data = {}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_submission_started_at(request, submission_pk):
+    """
+    API Endpoint for updating the submission evaluation start time.
+    """
+    try:
+        submission = Submission.objects.get(
+            id=submission_pk,
+        )
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = SubmissionSerializer(
+        submission,
+        data={"started_at": str(timezone.now())},
+        context={"request": request},
+        partial=True,
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_submission_meta(request, challenge_pk, submission_pk):
+    """
+    Common API Endpoint for updating the submission meta data for hosts and participants.
+    """
+
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        submission = get_submission_model(submission_pk)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={
+                "request": request,
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
