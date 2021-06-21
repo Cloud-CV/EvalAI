@@ -688,9 +688,29 @@ def process_submission_callback(body):
                 SUBMISSION_LOGS_PREFIX, body
             )
         )
+        submission_pk = json.loads(body)["submission_pk"]
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
-        process_submission_message(body)
+        pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
+        response = requests.post(
+            "{endpoint}/metrics/job/{j}/instance/{i}/submission_pk/{s}".format(
+                endpoint=pushgateway_endpoint,
+                j="submission-worker",
+                i="pushgateway",
+                s=submission_pk,
+            ),
+            data="{k} {v}\n".format(k="submissions_unloaded_from_queue", v=1),
+        )
+        if response.status_code != 200:
+            logger.exception(
+                "{} Exception while pushing metrics to pushgateway with status code {} due to error {}".format(
+                    SUBMISSION_LOGS_PREFIX,
+                    response.status_code,
+                    response.reason,
+                )
+            )
+        else:
+            process_submission_message(body)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
