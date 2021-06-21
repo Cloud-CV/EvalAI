@@ -235,6 +235,9 @@ def create_static_code_upload_submission_job_object(message):
     SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
         name="SUBMISSION_TIME_LIMIT", value="86400"
     )
+    SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_DELTA", value="3600"
+    )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
         name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
@@ -314,6 +317,7 @@ def create_static_code_upload_submission_job_object(message):
             AUTH_TOKEN_ENV,
             EVALAI_API_SERVER_ENV,
             SUBMISSION_TIME_LIMIT_ENV,
+            SUBMISSION_TIME_DELTA_ENV,
         ],
         volume_mounts=volume_mount_list,
     )
