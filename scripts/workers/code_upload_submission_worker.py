@@ -233,7 +233,8 @@ def create_static_code_upload_submission_job_object(message):
     PHASE_PK_ENV = client.V1EnvVar(name="PHASE_PK", value=str(phase_pk))
     # Using Default value 1 day = 86400s as Time Limit.
     SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
-        name="SUBMISSION_TIME_LIMIT", value="86400"
+        name="SUBMISSION_TIME_LIMIT",
+        value=str(message["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
         name="SUBMISSION_TIME_DELTA", value="3600"
@@ -569,6 +570,7 @@ def main():
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
+        message_body["submission_time_limit"] = challenge.submission_time_limit
         if message_body:
             if (
                 challenge.is_static_dataset_code_upload
