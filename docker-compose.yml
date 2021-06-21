@@ -112,5 +112,7 @@ services:
   pushgateway:
     hostname: pushgateway
     image: prom/pushgateway
+    command:
+      - '--web.route-prefix=/pushgateway'
     ports:
-    - 9091:9091
+      - 9091:9091
