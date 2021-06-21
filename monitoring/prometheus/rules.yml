@@ -28,7 +28,7 @@ groups:
     for: 5m
     annotations:
       title: "Instance(s) Down"
-      description: "•*{{ $labels.instance }}* of prometheus job *{{ $labels.job }}* has been down for more than 5 minute."
+      description: "•*{{ $labels.instance }}* of prometheus job *{{ $labels.job }}* has been down for more than 5 minutes"
     labels:
       severity: major
       group: 'instance'
