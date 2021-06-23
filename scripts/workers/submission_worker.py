@@ -25,7 +25,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from http import HTTPStatus
+from prometheus_client import pushadd_to_gateway, CollectorRegistry, Counter
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -681,18 +681,24 @@ def process_add_challenge_message(message):
 
 
 def push_metrics_to_pushgateway(submission_pk, queue_name):
-    pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
-    response = requests.post(
-        "{endpoint}/metrics/job/{j}/instance/{i}/queue_name/{q}/submission_pk/{s}".format(
-            endpoint=pushgateway_endpoint,
-            j="submission-worker",
-            i="pushgateway",
-            q=queue_name,
-            s=submission_pk,
-        ),
-        data="{k} {v}\n".format(k="submissions_unloaded_from_queue", v=1),
-    )
-    return response
+    try:
+        registry = CollectorRegistry()
+        submissions_unloaded_from_queue = Counter(
+            "submissions_unloaded_from_queue",
+            "Submissions unloaded from queue",
+            ["submission_id", "queue_name"],
+            registry=registry,
+        )
+        submissions_unloaded_from_queue.labels(submission_pk, queue_name).inc()
+        pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
+        job_id = "submission_worker_{}".format(submission_pk)
+        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=registry)
+    except Exception as e:
+        logger.exception(
+            "{} Exception when pushing metrics to push gateway: {}".format(
+                SUBMISSION_LOGS_PREFIX, e
+            )
+        )
 
 
 def process_submission_callback(body, queue_name):
@@ -706,13 +712,7 @@ def process_submission_callback(body, queue_name):
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
-        push_response = push_metrics_to_pushgateway(submission_pk, queue_name)
-        if push_response.status_code != HTTPStatus.OK:
-            logger.exception(
-                "{} Exception when pushing metrics to push gateway: {}".format(
-                    SUBMISSION_LOGS_PREFIX, push_response.reason
-                )
-            )
+        push_metrics_to_pushgateway(submission_pk, queue_name)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
