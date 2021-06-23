@@ -30,4 +30,4 @@ alerting:
   alertmanagers:
   - path_prefix: 'alerts/'
     static_configs:
-    - targets: ['192.168.29.33']
+    - targets: ['alerts:9093']

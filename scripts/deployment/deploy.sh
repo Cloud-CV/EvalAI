@@ -56,6 +56,9 @@ case $opt in
             echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
+            echo "Pulling alertmanager config file..."
+            aws s3 cp s3://cloudcv-secrets/evalai/${env}/alertmanager_${env}.env ./monitoring/prometheus/alertmanager_${env}.yml
+            echo "Alertmanager config file successfully downloaded."
             echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
