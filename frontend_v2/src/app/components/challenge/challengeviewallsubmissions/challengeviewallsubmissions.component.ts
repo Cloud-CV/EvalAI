@@ -131,6 +131,12 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   fieldsToGetExport: any = [];
 
   /**
+   *Check whether team name is filtered
+   */
+  isTeamFiltered: boolean = true;
+
+
+  /**
    * @param showPagination Is pagination
    * @param paginationMessage Pagination message
    * @param isPrev Previous page state
@@ -253,55 +259,66 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     let API_PATH;
     if (SELF.filterSubmissionsQuery === '') {
       API_PATH = SELF.endpointsService.allChallengeSubmissionURL(challenge, phase);
+      this.isTeamFiltered = false;
     } else {
       API_PATH = SELF.endpointsService.allChallengeSubmissionWithFilterQueryUrl(
         challenge,
         phase,
         SELF.filterSubmissionsQuery
       );
+      this.isTeamFiltered = true;
     }
+
+    let name = SELF.filterSubmissionsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
-        SELF.submissions = data['results'];
-        let index = 0;
-        SELF.submissions.forEach((submission) => {
-          submission['s_no'] = index + 1;
-          index += 1;
-        });
-        for (let i = 0; i < SELF.submissions.length; i++) {
-          // Update view for submission visibility setting
-          SELF.submissions[i].submissionVisibilityIcon = SELF.submissions[i].is_public
-            ? 'visibility'
-            : 'visibility_off';
-          SELF.submissions[i].submissionVisibilityText = SELF.submissions[i].is_public ? 'Public' : 'Private';
-          // Update view for flag submission setting
-          SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
-          SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
-        }
-        SELF.paginationDetails.next = data.next;
-        SELF.paginationDetails.previous = data.previous;
-        SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
-
-        if (data.count === 0) {
-          SELF.paginationDetails.showPagination = false;
-          SELF.paginationDetails.paginationMessage = 'No results found';
-        } else {
-          SELF.paginationDetails.showPagination = true;
-          SELF.paginationDetails.paginationMessage = '';
-        }
-
-        // condition for pagination
-        if (data.next === null) {
-          SELF.paginationDetails.isNext = 'disabled';
-          SELF.paginationDetails.currentPage = 1;
-        } else {
-          SELF.paginationDetails.isNext = '';
-          SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
-        }
-        if (data.previous === null) {
-          SELF.paginationDetails.isPrev = 'disabled';
-        } else {
-          SELF.paginationDetails.isPrev = '';
+        if(name == SELF.filterSubmissionsQuery) {
+          SELF.submissions = data['results'];
+          let index = 0;
+          SELF.submissions.forEach((submission) => {
+            submission['s_no'] = index + 1;
+            index += 1;
+          });
+          for (let i = 0; i < SELF.submissions.length; i++) {
+            // Update view for submission visibility setting
+            SELF.submissions[i].submissionVisibilityIcon = SELF.submissions[i].is_public
+              ? 'visibility'
+              : 'visibility_off';
+            SELF.submissions[i].submissionVisibilityText = SELF.submissions[i].is_public ? 'Public' : 'Private';
+            // Update view for flag submission setting
+            SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
+            SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
+          }
+  
+          SELF.paginationDetails.next = data.next;
+          SELF.paginationDetails.previous = data.previous;
+          SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
+  
+          if (data.count === 0) {
+            SELF.paginationDetails.showPagination = false;
+            SELF.paginationDetails.paginationMessage = 'No results found';
+          } else {
+            SELF.paginationDetails.showPagination = true;
+            SELF.paginationDetails.paginationMessage = '';
+          }
+          // condition for pagination
+          if (data.next === null) {
+            SELF.paginationDetails.isNext = 'disabled';
+            SELF.paginationDetails.currentPage = 1;
+          } else {
+            SELF.paginationDetails.isNext = '';
+              if(this.isTeamFiltered) {
+                SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
+              }
+              else {
+                SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
+              }
+          }
+          if (data.previous === null) {
+            SELF.paginationDetails.isPrev = 'disabled';
+          } else {
+            SELF.paginationDetails.isPrev = '';
+          }
         }
       },
       (err) => {
@@ -363,7 +380,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     if (url !== null) {
       const SELF = this;
       const API_PATH = url.split(environment.api_endpoint)[1];
-
       SELF.apiService.getUrl(API_PATH, true).subscribe(
         (data) => {
           SELF.submissions = data['results'];
@@ -375,7 +391,12 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = Math.ceil(data.count / 100);
           } else {
             SELF.paginationDetails.isNext = '';
-            SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
+            if(this.isTeamFiltered) {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] -1);
+            }
+            else {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
+            }
           }
 
           let index =  (SELF.paginationDetails.currentPage-1)*10;
