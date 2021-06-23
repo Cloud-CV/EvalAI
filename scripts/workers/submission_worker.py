@@ -25,6 +25,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from http import HTTPStatus
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -669,7 +670,22 @@ def process_add_challenge_message(message):
     extract_challenge_data(challenge, phases)
 
 
-def process_submission_callback(body):
+def push_metrics_to_pushgateway(submission_pk, queue_name):
+    pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
+    response = requests.post(
+        "{endpoint}/metrics/job/{j}/instance/{i}/queue_name/{q}/submission_pk/{s}".format(
+            endpoint=pushgateway_endpoint,
+            j="submission-worker",
+            i="pushgateway",
+            q=queue_name,
+            s=submission_pk,
+        ),
+        data="{k} {v}\n".format(k="submissions_unloaded_from_queue", v=1),
+    )
+    return response
+
+
+def process_submission_callback(body, queue_name):
     try:
         logger.info(
             "{} [x] Received submission message {}".format(
@@ -679,26 +695,14 @@ def process_submission_callback(body):
         submission_pk = json.loads(body)["submission_pk"]
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
-        pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
-        response = requests.post(
-            "{endpoint}/metrics/job/{j}/instance/{i}/submission_pk/{s}".format(
-                endpoint=pushgateway_endpoint,
-                j="submission-worker",
-                i="pushgateway",
-                s=submission_pk,
-            ),
-            data="{k} {v}\n".format(k="submissions_unloaded_from_queue", v=1),
-        )
-        if response.status_code != 200:
+        process_submission_message(body)
+        push_response = push_metrics_to_pushgateway(submission_pk, queue_name)
+        if push_response.status_code != HTTPStatus.OK:
             logger.exception(
-                "{} Exception while pushing metrics to pushgateway with status code {} due to error {}".format(
-                    SUBMISSION_LOGS_PREFIX,
-                    response.status_code,
-                    response.reason,
+                "{} Exception when pushing metrics to push gateway: {}".format(
+                    SUBMISSION_LOGS_PREFIX, push_response.reason
                 )
             )
-        else:
-            process_submission_message(body)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
@@ -824,7 +828,7 @@ def main():
                                 WORKER_LOGS_PREFIX, message.body
                             )
                         )
-                        process_submission_callback(message.body)
+                        process_submission_callback(message.body, queue_name)
                         # Let the queue know that the message is processed
                         message.delete()
                 else:
@@ -833,7 +837,7 @@ def main():
                             WORKER_LOGS_PREFIX, message.body
                         )
                     )
-                    process_submission_callback(message.body)
+                    process_submission_callback(message.body, queue_name)
                     # Let the queue know that the message is processed
                     message.delete()
             else:
@@ -851,7 +855,7 @@ def main():
                             WORKER_LOGS_PREFIX, message.body
                         )
                     )
-                    process_submission_callback(message.body)
+                    process_submission_callback(message.body, queue_name)
                     # Let the queue know that the message is processed
                     message.delete()
         if killer.kill_now:
