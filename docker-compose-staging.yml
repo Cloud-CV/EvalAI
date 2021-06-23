@@ -145,7 +145,7 @@ services:
       - ./monitoring/alertmanager/data:/data
       - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
     command:
-      - '--config.file=/prometheus/alertmanager.yml'
+      - '--config.file=/prometheus/alertmanager_staging.yml'
       - '--storage.path=/data'
       - '--web.external-url=https://staging.eval.ai:9093/alerts'
     ports:
