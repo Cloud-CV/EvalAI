@@ -72,3 +72,4 @@ monitoring/prometheus/prometheus_db/*
 !monitoring/prometheus/prometheus_db/.gitkeep
 monitoring/grafana/grafana_db/grafana.db
 monitoring/prometheus/django/*
+!monitoring/prometheus/django/.gitkeep
