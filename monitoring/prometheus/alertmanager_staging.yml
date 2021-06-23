@@ -1,7 +1,6 @@
 global:
   resolve_timeout: 10s
   slack_api_url: 'https://hooks.slack.com/services/x/x/x'
-
 route:
   receiver: 'slack-default-notifications'
   group_interval: 10s
