@@ -273,18 +273,6 @@ def create_static_code_upload_submission_job_object(message):
         submission_path, submission_volume_name
     )
     volume_mount_list.append(submission_volume_mount)
-    # Pre-Stop Container Hook to Submit file
-    life_cycle_config = client.V1Lifecycle(
-        pre_stop=client.V1Handler(
-            _exec=client.V1ExecAction(
-                command=[
-                    "/bin/sh",
-                    "-c",
-                    "sh /evalai_scripts/make_submission.sh",
-                ]
-            )
-        )
-    )
     # Configure Pod submission container
     submission_container = client.V1Container(
         name="submission",
@@ -294,15 +282,11 @@ def create_static_code_upload_submission_job_object(message):
             SUBMISSION_PATH_ENV,
             CHALLENGE_PK_ENV,
             PHASE_PK_ENV,
-            SUBMISSION_PK_ENV,
-            AUTH_TOKEN_ENV,
-            EVALAI_API_SERVER_ENV,
         ],
         resources=client.V1ResourceRequirements(
             limits={"nvidia.com/gpu": "1"}
         ),
         volume_mounts=volume_mount_list,
-        lifecycle=life_cycle_config,
     )
     # Configure Pod sidecar container
     sidecar_container = client.V1Container(

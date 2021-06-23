@@ -4,14 +4,11 @@ time_elapsed=0
 while [ $time_elapsed -le $SUBMISSION_TIME_LIMIT ]
 do
     echo "Checking for submission file after $time_elapsed secs.."
+    sh /evalai_scripts/make_submission.sh
     if [ -f "$SUBMISSION_PATH/completed.txt" ]
     then
         echo "Submission Complete, Exiting."
         exit 0
-    elif [ -f "$SUBMISSION_PATH/failed.txt" ]
-    then
-        echo "Submission File not found."
-        break
     fi
     if [ $time_elapsed -lt $SUBMISSION_TIME_LIMIT -a $(( $time_elapsed + $SUBMISSION_TIME_DELTA )) -gt $SUBMISSION_TIME_LIMIT ]
     then
@@ -37,4 +34,5 @@ submission_data="{\
 }"
 curl_request="curl --location --request PUT '$url' -H 'Content-Type: application/json' --header 'Authorization: Bearer $AUTH_TOKEN' -d '$submission_data'"
 eval $curl_request
-echo "\nMonitoring submission completed."
+echo "\nFile submission failed."
+echo "Monitoring submission completed."
