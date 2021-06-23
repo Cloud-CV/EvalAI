@@ -31,6 +31,7 @@
           <i class="fa fa-trash red-text" aria-hidden="true"></i>
         </a>
         <br />
+        
         <div class="ev-action">
           <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5">
             <span class="fs-16 fw-light">
@@ -80,7 +81,26 @@
         </mat-checkbox>
       </div>
     </div>
-
+    
+    <!-- Phase Edit Section-->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Edit phase details:</span>
+      </div>
+      <br />
+      <div class="ev-action">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
+          <app-selectphase
+            [phases]="phases"
+            [phaseSelectionListType]="phaseSelectionListType"
+            [phaseSelectionType]="phaseSelectionType"
+            [phaseSelected]="phaseSelected()"
+            #phaseselect
+          ></app-selectphase>
+         </div>
+      </div>
+    </div>
+          
     <!-- Evaluations and Annotations -->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">

@@ -3487,6 +3487,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "method_description": submission.method_description,
                     "publication_url": submission.publication_url,
                     "project_url": submission.project_url,
+                    "is_verified_by_host": False,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
@@ -3536,6 +3537,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_baseline": self.submission1.is_baseline,
                 "job_name": self.submission1.job_name,
                 "submission_metadata": None,
+                "is_verified_by_host": False,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
