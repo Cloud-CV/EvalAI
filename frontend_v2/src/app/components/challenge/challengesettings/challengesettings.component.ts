@@ -188,7 +188,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
-
       SELF.apiCall = (params) => {
         const FORM_DATA: FormData = new FormData();
         for (const key in params) {
@@ -216,6 +215,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
       const PARAMS = {
         title: 'Edit Challenge Phase Details',
+        phase: SELF.selectedPhase['id'],
+        challenge: SELF.selectedPhase['challenge'],
+        isPublic: SELF.selectedPhase['is_public'],
         name: SELF.selectedPhase['name'],
         label: 'description',
         description: SELF.selectedPhase['description'],

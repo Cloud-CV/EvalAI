@@ -21,6 +21,18 @@
             ></app-input>
           </div>
         </div>
+        <div class="col-lg-6 col-md-6 col-sm-6 col-lr-pad">
+          <div class="input-field align-left">
+            <div class="fs-16 fw-regular text-med-black">Phase Visibility &nbsp;&nbsp;
+              <span class="fs-16 fw-light">
+                <a class="pointer" (click)="togglePhaseVisibility()">
+                  <strong class="text-light-black">{{ phaseVisibility.state }} </strong>
+                  <i class="{{ phaseVisibility.icon }}" aria-hidden="true"></i>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="row row-lr-margin">

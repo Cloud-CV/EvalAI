@@ -1,6 +1,12 @@
 import { ViewChildren, QueryList, Component, Input, OnInit } from '@angular/core';
 import { GlobalService } from '../../../../services/global.service';
 import { InputComponent } from '../../../utility/input/input.component';
+import { NGXLogger } from 'ngx-logger';
+
+import { EndpointsService } from '../../../../services/endpoints.service';
+import { ApiService } from '../../../../services/api.service';
+import { ChallengeService } from '../../../../services/challenge.service';
+
 
 @Component({
   selector: 'app-editphasemodal',
@@ -12,6 +18,21 @@ export class EditphasemodalComponent implements OnInit {
    * Input parameters object
    */
   @Input() params: any;
+
+  /**
+   * To call the API inside modal for editing the challenge details
+   */
+  apiCall: any;
+
+  /**
+   * Challenge object
+   */
+  challenge: any;
+   
+  /**
+   * Challenge object
+   */
+  phase: any;
 
   /**
    * Modal title
@@ -124,6 +145,14 @@ export class EditphasemodalComponent implements OnInit {
   editPhaseDetails = true;
 
   /**
+   * publish challenge state and it's icon
+   */
+  phaseVisibility = {
+    state: 'Private',
+    icon: 'fa fa-eye-slash red-text',
+  };
+
+  /**
    * Quill editor style
    */
   quillEditorStyle = {
@@ -151,12 +180,28 @@ export class EditphasemodalComponent implements OnInit {
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService) {}
+  constructor(
+    private globalService: GlobalService,
+    private apiService: ApiService,
+    private endpointsService: EndpointsService,
+    private challengeService: ChallengeService,
+    private logger: NGXLogger
+    ) {}
 
   ngOnInit() {
     if (this.params) {
       if (this.params['title']) {
         this.title = this.params['title'];
+      }
+      if (this.params['challenge']) {
+        this.challenge = this.params['challenge'];
+      }
+      if (this.params['phase']) {
+        this.phase = this.params['phase'];
+      }
+      if (this.params['isPublic']) {
+        this.phaseVisibility.state = 'Public';
+        this.phaseVisibility.icon = 'fa fa-eye green-text';
       }
       if (this.params['label']) {
         this.label = this.params['label'];
@@ -202,6 +247,62 @@ export class EditphasemodalComponent implements OnInit {
       }
     }
     this.todayDateTime = new Date();
+  }
+
+  /**
+   * Phase Visibility click function
+   */
+  togglePhaseVisibility() {
+    const SELF = this;
+    let togglePhaseVisibilityState, isPublic;
+    if (this.phaseVisibility.state === 'Public') {
+      togglePhaseVisibilityState = 'private';
+      isPublic = false;
+    } else {
+      togglePhaseVisibilityState = 'public';
+      isPublic = true;
+    }
+    SELF.apiCall = () => {
+      const BODY: FormData = new FormData();
+      BODY.append("is_public", isPublic);
+      SELF.apiService
+      .patchFileUrl(
+        SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.params['challenge'], SELF.params['phase']),
+        BODY
+      )
+        .subscribe(
+          (data) => {
+            SELF.challengeService.fetchPhases(SELF.params['challenge']);
+            SELF.denied();
+            if (isPublic) {
+              this.phaseVisibility.state = 'Public';
+              this.phaseVisibility.icon = 'fa fa-eye green-text';
+            } else {
+              this.phaseVisibility.state = 'Private';
+              this.phaseVisibility.icon = 'fa fa-eye-slash red-text';
+            }
+            SELF.globalService.showToast(
+              'success',
+              'The phase was successfully made ' + togglePhaseVisibilityState,
+              5
+            );
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('PHASE-VISIBILITY-UPDATE-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Make this phase ' + togglePhaseVisibilityState + '?',
+      content: '',
+      confirm: "Yes, I'm sure",
+      deny: 'No',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showConfirm(PARAMS);
   }
 
   /**
