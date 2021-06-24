@@ -218,6 +218,8 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         phase: SELF.selectedPhase['id'],
         challenge: SELF.selectedPhase['challenge'],
         isPublic: SELF.selectedPhase['is_public'],
+        isSubmissionPublic: SELF.selectedPhase['is_submission_public'],
+        isLeaderboardPublic: SELF.selectedPhase['leaderboard_public'],
         name: SELF.selectedPhase['name'],
         label: 'description',
         description: SELF.selectedPhase['description'],

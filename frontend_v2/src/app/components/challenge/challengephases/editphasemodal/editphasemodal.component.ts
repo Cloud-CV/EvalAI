@@ -120,6 +120,11 @@ export class EditphasemodalComponent implements OnInit {
   PerMonthSubmissionValidationMessage = '';
 
   /**
+   * If leaderboard is public
+   */
+  isLeaderboardPublic : boolean = false;
+
+  /**
    * Modal accept button
    */
   confirm = 'Submit';
@@ -151,6 +156,14 @@ export class EditphasemodalComponent implements OnInit {
     state: 'Private',
     icon: 'fa fa-eye-slash red-text',
   };
+
+  /**
+   * publish challenge state and it's icon
+   */
+  submissionVisibility = {
+    state: 'Private',
+    icon: 'fa fa-eye-slash red-text',
+  };  
 
   /**
    * Quill editor style
@@ -203,6 +216,10 @@ export class EditphasemodalComponent implements OnInit {
         this.phaseVisibility.state = 'Public';
         this.phaseVisibility.icon = 'fa fa-eye green-text';
       }
+      if (this.params['isSubmissionPublic']) {
+        this.submissionVisibility.state = 'Public';
+        this.submissionVisibility.icon = 'fa fa-eye green-text';
+      }
       if (this.params['label']) {
         this.label = this.params['label'];
       }
@@ -211,6 +228,9 @@ export class EditphasemodalComponent implements OnInit {
       }
       if (this.params['description']) {
         this.description = this.params['description'];
+      }
+      if(this.params['isLeaderboardPublic']) {
+        this.isLeaderboardPublic = this.params['isLeaderboardPublic'];
       }
       if (this.params['startDate']) {
         this.startDate = this.params['startDate'];
@@ -303,6 +323,68 @@ export class EditphasemodalComponent implements OnInit {
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
+  }
+
+  /**
+   * Submission Visibility click function
+   */
+   toggleSubmissionVisibility() {
+    const SELF = this;
+    if(this.isLeaderboardPublic == true) {
+      let toggleSubmissionVisibilityState, isSubmissionPublic;
+      if (this.submissionVisibility.state === 'Public') {
+        toggleSubmissionVisibilityState = 'private';
+        isSubmissionPublic = false;
+      } else {
+        toggleSubmissionVisibilityState = 'public';
+        isSubmissionPublic = true;
+      }
+      SELF.apiCall = () => {
+        const BODY: FormData = new FormData();
+        BODY.append("is_submission_public", isSubmissionPublic);
+        SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.params['challenge'], SELF.params['phase']),
+          BODY
+        )
+          .subscribe(
+            (data) => {
+              SELF.challengeService.fetchPhases(SELF.params['challenge']);
+              SELF.denied();
+              if (isSubmissionPublic) {
+                this.submissionVisibility.state = 'Public';
+                this.submissionVisibility.icon = 'fa fa-eye green-text';
+              } else {
+                this.submissionVisibility.state = 'Private';
+                this.submissionVisibility.icon = 'fa fa-eye-slash red-text';
+              }
+              SELF.globalService.showToast(
+                'success',
+                'The submissions were successfully made ' + toggleSubmissionVisibilityState,
+                5
+              );
+            },
+            (err) => {
+              SELF.globalService.handleApiError(err, true);
+              SELF.globalService.showToast('error', err);
+            },
+            () => this.logger.info('SUBMISSION-VISIBILITY-UPDATE-FINISHED')
+          );
+      };
+  
+      const PARAMS = {
+        title: 'Make the submissions ' + toggleSubmissionVisibilityState + '?',
+        content: '',
+        confirm: "Yes, I'm sure",
+        deny: 'No',
+        confirmCallback: SELF.apiCall,
+      };
+      SELF.globalService.showConfirm(PARAMS);
+    }
+    else {
+      SELF.globalService.showToast('error', "Leaderboard is private, please make the leaderbaord public");
+      SELF.denied();
+    }
   }
 
   /**
