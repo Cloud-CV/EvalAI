@@ -93,7 +93,7 @@ def create_job_object(message, environment_image):
     # Configure init container
     init_container = client.V1Container(
         name="init-container",
-        image="busybox",
+        image="ubuntu",
         command=[
             "/bin/bash",
             "-c",
