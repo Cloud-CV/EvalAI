@@ -12,15 +12,15 @@ do
     fi
     if [ $time_elapsed -lt $SUBMISSION_TIME_LIMIT -a $(( $time_elapsed + $SUBMISSION_TIME_DELTA )) -gt $SUBMISSION_TIME_LIMIT ]
     then
-        next_checkpoint=$SUBMISSION_TIME_LIMIT
+        time_interval=$(( $SUBMISSION_TIME_LIMIT - $time_elapsed ))
     else
-        next_checkpoint=$(( $time_elapsed + $SUBMISSION_TIME_DELTA ))
+        time_interval=$SUBMISSION_TIME_DELTA
     fi
-    if [ $next_checkpoint -le $SUBMISSION_TIME_LIMIT ]
+    time_elapsed=$(( $time_elapsed + $time_interval ))
+    if [ $time_elapsed -le $SUBMISSION_TIME_LIMIT ]
     then
-        sleep $(( $next_checkpoint - $time_elapsed ))
+        sleep $time_interval
     fi
-    time_elapsed=$next_checkpoint
 done
 url="$EVALAI_API_SERVER/api/jobs/challenge/$CHALLENGE_PK/update_submission/"
 submission_data="{\
