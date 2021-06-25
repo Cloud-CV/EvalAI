@@ -328,7 +328,7 @@ def install_gpu_drivers(api_instance):
     """
     logging.info("Installing Nvidia-GPU Drivers ...")
     # Original manifest source: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
-    manifest_path = "/code/scripts/workers/nvidia-device-plugin.yml"
+    manifest_path = "/code/scripts/workers/code_upload_worker_utils/nvidia-device-plugin.yml"
     logging.info("Using daemonset file: %s", manifest_path)
     nvidia_manifest = open(manifest_path).read()
     daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
