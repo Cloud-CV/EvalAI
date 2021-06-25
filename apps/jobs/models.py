@@ -85,6 +85,11 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}")
     )
+    submission_input_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"),
+        null=True,
+        blank=True,
+    )
     # Model to store large submission file (> 400 MB's) URLs submitted by the user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)
     stdout_file = models.FileField(
@@ -124,6 +129,7 @@ class Submission(TimeStampedModel):
     ignore_submission = models.BooleanField(default=False)
     # Store the values of meta attributes for the submission here.
     submission_metadata = JSONField(blank=True, null=True)
+    is_verified_by_host = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}".format(self.id)

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Router } from '@angular/router';
@@ -11,17 +11,46 @@ import { EndpointsService } from '../../../services/endpoints.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 
+import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
+
 @Component({
   selector: 'app-challengesettings',
   templateUrl: './challengesettings.component.html',
   styleUrls: ['./challengesettings.component.scss'],
 })
 export class ChallengesettingsComponent implements OnInit, OnDestroy {
+
+  /**
+   * Phase select card components
+   */
+  @ViewChildren('phaseselect')
+  components: QueryList<SelectphaseComponent>;
+
   /**
    * Challenge object
    */
   challenge: any;
 
+  /**
+   * Challenge phase list
+   */
+  phases = [];
+
+  /**
+   * Phase selection type (radio button or select box)
+   */
+  phaseSelectionType = 'selectBox';
+
+  /**
+   * Select box list type
+   */
+  phaseSelectionListType = 'phase';
+
+  /**
+   * Currently selected phase
+   */
+  selectedPhase: any = null;
+  
   /**
    * store worker logs
    */
@@ -102,6 +131,11 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
+
+    this.challengeService.currentPhases.subscribe((phases) => {
+      this.phases = phases;
+    });  
+
     this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
@@ -148,6 +182,57 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       input.value = '';
     }
   }
+
+  /**
+   * Called when a phase is selected (from child component)
+   */
+  phaseSelected() {
+    const SELF = this;
+    return (phase) => {
+      SELF.selectedPhase = phase;
+
+      SELF.apiCall = (params) => {
+        const FORM_DATA: FormData = new FormData();
+        for (const key in params) {
+          if (params[key]) {
+            FORM_DATA.append(key, params[key]);
+          }
+        }
+        SELF.apiService
+          .patchFileUrl(
+            SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.selectedPhase['id']),
+            FORM_DATA
+          )
+          .subscribe(
+            (data) => {
+              SELF.selectedPhase = data;
+              SELF.challengeService.fetchPhases(SELF.challenge['id']);
+              SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
+            },
+            (err) => {
+              SELF.globalService.showToast('error', err);
+            },
+            () => {this.logger.info('PHASE-UPDATE-FINISHED')}
+          );
+      };
+
+      const PARAMS = {
+        title: 'Edit Challenge Phase Details',
+        name: SELF.selectedPhase['name'],
+        label: 'description',
+        description: SELF.selectedPhase['description'],
+        startDate: SELF.selectedPhase['start_date'],
+        endDate: SELF.selectedPhase['end_date'],
+        maxSubmissionsPerDay: SELF.selectedPhase['max_submissions_per_day'],
+        maxSubmissionsPerMonth: SELF.selectedPhase['max_submissions_per_month'],
+        maxSubmissions: SELF.selectedPhase['max_submissions'],
+        confirm: 'Submit',
+        deny: 'Cancel',
+        confirmCallback: SELF.apiCall,
+      };
+      SELF.globalService.showEditPhaseModal(PARAMS);
+    };
+  } 
 
   /**
    * Remove banned email chip
@@ -391,6 +476,90 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Edit evaluation criteria of the challenge
+   */
+  editEvaluationCriteria() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.evaluation_details = data.evaluation_details;
+            this.updateView();
+            SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Evaluation Details',
+      label: 'evaluation_details',
+      isEditorRequired: true,
+      editorContent: this.challenge.evaluation_details,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Edit evaluation script of the challenge
+   */
+  editEvaluationScript() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('evaluation_script', params['evaluation_script']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.globalService.showToast('success', 'The evaluation script is successfully updated!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-EVALUATION-SCRIPT-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Evaluation Script',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'evaluationScript',
+          isRequired: true,
+          label: 'evaluation_script',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
    * Edit challenge image function
    */
   editChallengeImage() {
@@ -438,6 +607,42 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           value: '',
         },
       ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Edit challenge overview function
+   */
+
+  editChallengeOverview() {
+    const SELF = this;
+
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.description = data.description;
+            SELF.globalService.showToast('success', 'The description is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Edit Challenge Description',
+      label: 'description',
+      isEditorRequired: true,
+      editorContent: this.challenge.description,
+      confirm: 'Submit',
+      deny: 'Cancel',
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
@@ -509,7 +714,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       toggleChallengePublishState = 'public';
       isPublished = true;
     }
-    console.log(isPublished);
     SELF.apiCall = () => {
       const BODY = JSON.stringify({
         published: isPublished,
