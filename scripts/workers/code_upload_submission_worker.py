@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import signal
-import urllib.request
 import yaml
 
 
@@ -94,9 +93,12 @@ def create_job_object(message, environment_image):
     # Configure init container
     init_container = client.V1Container(
         name="init-container",
-        image="busybox",
-        command="/bin/sh",
-        args=["-c", curl_request],
+        image="ubuntu",
+        command=[
+            "/bin/bash",
+            "-c",
+            "apt update && apt install -y curl && {}".format(curl_request),
+        ],
     )
     # Configure Pod environment container
     environment_container = client.V1Container(
@@ -325,11 +327,12 @@ def install_gpu_drivers(api_instance):
         api_instance {[AWS EKS API object]} -- API object for creating deamonset
     """
     logging.info("Installing Nvidia-GPU Drivers ...")
-    link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
-    logging.info("Using daemonset file: %s", link)
-    nvidia_manifest = urllib.request.urlopen(link)
+    # Original manifest source: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+    manifest_path = "/code/scripts/workers/nvidia-device-plugin.yml"
+    logging.info("Using daemonset file: %s", manifest_path)
+    nvidia_manifest = open(manifest_path).read()
     daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
-    ext_client = client.ExtensionsV1beta1Api(api_instance)
+    ext_client = client.AppsV1Api(api_instance)
     try:
         namespace = daemonset_spec["metadata"]["namespace"]
         ext_client.create_namespaced_daemon_set(namespace, daemonset_spec)
