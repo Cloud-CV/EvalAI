@@ -291,9 +291,12 @@ def create_static_code_upload_submission_job_object(message):
     # Configure Pod sidecar container
     sidecar_container = client.V1Container(
         name="sidecar-container",
-        image="busybox",
-        command="/bin/sh",
-        args=["-c", "sh /evalai_scripts/monitor_submission.sh"],
+        image="ubuntu:latest",
+        command=[
+            "/bin/sh",
+            "-c",
+            "apt update && apt install -y curl && sh /evalai_scripts/monitor_submission.sh",
+        ],
         env=[
             SUBMISSION_PATH_ENV,
             CHALLENGE_PK_ENV,
