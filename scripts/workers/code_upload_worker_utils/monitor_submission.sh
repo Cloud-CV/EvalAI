@@ -27,7 +27,7 @@ submission_data="{\
     \"challenge_phase\": $PHASE_PK,\
     \"submission\": $SUBMISSION_PK,\
     \"stdout\": \"\",\
-    \"stderr\": \"submission.json/submission.csv not found.\",\
+    \"stderr\": \"Execution time limit exceeded\",\
     \"submission_status\": \"failed\",\
     \"result\": \"[]\",\
     \"metadata\": \"\"\

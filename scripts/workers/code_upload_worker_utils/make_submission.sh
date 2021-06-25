@@ -10,10 +10,10 @@ then
     file_path="submission.json"
     curl_request="$submission_curl_base_request -F \"submission_input_file=@$SUBMISSION_PATH/$file_path\""
 else
+    echo "Submission not complete"
     exit 0
 fi
 echo "Submitting file to EvalAI..."
 eval $curl_request
 echo "\nFile submitted successfully"
-touch "$SUBMISSION_PATH/completed.txt"
-echo $(date) < "$SUBMISSION_PATH/completed.txt"
+echo $(date) > "$SUBMISSION_PATH/completed.txt"
