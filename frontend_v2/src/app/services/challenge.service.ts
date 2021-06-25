@@ -267,7 +267,7 @@ export class ChallengeService {
    * Fetch Phases
    * @param id  id of the challenge.
    */
-  private fetchPhases(id) {
+  fetchPhases(id) {
     const API_PATH = this.endpointsService.challengePhaseURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(
