@@ -18,12 +18,13 @@
               <img *ngIf="challenge['image'] != null" [src]="challenge['image']" width="100%" />
               <img *ngIf="challenge['image'] == null" src="assets/images/404.png" width="80%" />
           </div>
-          <div
-          class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16"
-          (click)="editChallengeImage()"
-        >
-          <span>Upload Image</span>
-        </div>
+            <div
+            class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+            (click)="editChallengeImage()"
+            >
+            <i class="fa fa-file" aria-hidden="true"> </i> 
+            <span> Upload New Image</span>
+          </div>
         </div>
         <div class="col-lg-6 col-md-12 col-sm-7 col-xs-12">
         <span class="fs-20 fw-semibold challenge-title">
