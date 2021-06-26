@@ -2553,7 +2553,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
-            "max_submissions_per_month": self.challenge_phase.max_submiessions_per_month,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_concurrent_submissions_allowed": self.challenge_phase.max_concurrent_submissions_allowed,
             "test_annotation": "http://testserver%s"
             % (self.challenge_phase.test_annotation.url),
