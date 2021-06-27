@@ -224,6 +224,7 @@ def create_static_code_upload_submission_job_object(message):
     submission_pk = message["submission_pk"]
     challenge_pk = message["challenge_pk"]
     phase_pk = message["phase_pk"]
+    submission_meta = message["submission_meta"]
     SUBMISSION_PK_ENV = client.V1EnvVar(
         name="SUBMISSION_PK", value=str(submission_pk)
     )
@@ -234,7 +235,7 @@ def create_static_code_upload_submission_job_object(message):
     # Using Default value 1 day = 86400s as Time Limit.
     SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
         name="SUBMISSION_TIME_LIMIT",
-        value=str(message["submission_time_limit"]),
+        value=str(submission_meta["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
         name="SUBMISSION_TIME_DELTA", value="3600"
@@ -554,10 +555,12 @@ def main():
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
+    submission_meta = {}
+    submission_meta["submission_time_limit"] = challenge.submission_time_limit
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
-        message_body["submission_time_limit"] = challenge.submission_time_limit
+        message_body["submission_meta"] = submission_meta
         if message_body:
             if (
                 challenge.is_static_dataset_code_upload
