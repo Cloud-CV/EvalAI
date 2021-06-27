@@ -128,6 +128,8 @@ from .aws_utils import (
     restart_workers,
     get_logs_from_cloudwatch,
     get_log_group_name,
+    get_all_tasks,
+    get_all_tasks_status
 )
 from .utils import (
     get_aws_credentials_for_submission,
@@ -2807,6 +2809,35 @@ def get_worker_logs(request, challenge_pk):
 
     response_data = {"logs": logs}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_worker_status(request, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access the worker logs."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+    service_name = challenge.service_name
+    tasks = get_all_tasks(service_name)
+    if tasks["error"]:
+        response_data = {"error": tasks["details"]}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if isinstance(tasks["details"], str):
+        response_data = {"tasks_status": tasks["details"]}
+        return Response(response_data, status=status.HTTP_200_OK)
+    tasks_status = get_all_tasks_status(tasks["details"]["taskArns"])
+    if tasks_status["error"]:
+        response_data = {"error": tasks_status["details"]}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        response_data = {"tasks_status": tasks_status["details"]}
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["PUT"])

@@ -92,7 +92,7 @@
         vm.previousPublicSubmissionId = null;
 
         vm.workerLogs = [];
-
+        vm.workerStatus = null;
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -202,6 +202,34 @@
 
         vm.stopLoadingLogs = function(){
             $interval.cancel(vm.logs_poller);
+        };
+
+         // Poll evaluation worker status at interval x
+         vm.fetchWorkerStatus = function() {
+            vm.status_poller = $interval(function(){
+                parameters.url = 'challenges/' + vm.challengeId + '/get_worker_status/';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        vm.workerStatus = details.tasks_status;
+                    },
+                    onError: function(response) {
+                        var error = response.data.error;
+                        if (error == undefined){
+                            $rootScope.notify("error", "An error occurred when fetching worker status");
+                        } else {
+                            $rootScope.notify("error", "An error occurred when fetching worker status: " + error);
+                        }
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }, 5000);
+        };
+
+        vm.stopWorkerStatusFetchPoller = function(){
+            $interval.cancel(vm.status_poller);
         };
 
          // scroll to the specific entry of the leaderboard
@@ -2631,6 +2659,7 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
             vm.stopLoadingLogs();
+            vm.stopWorkerStatusFetchPoller();
         });
 
         $rootScope.$on('$stateChangeStart', function() {

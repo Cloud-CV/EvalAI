@@ -783,6 +783,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+                challenge.service_name = response["service"]["serviceName"]
                 challenge.workers = 1
                 challenge.save()
             return response
@@ -1281,6 +1282,74 @@ def get_logs_from_cloudwatch(
                 f"There is an error in displaying logs. Please find the full error traceback here {e}"
             ]
     return logs
+
+
+def get_all_tasks(service_name):
+    """
+    To fetch all tasks for the given service name
+    """
+    if settings.DEBUG:
+        return {
+            "error": False,
+            "details": "Not available for development environment"
+        }
+    else:
+        client = get_boto3_client("ecs", aws_keys)
+        try:
+            tasks_response = client.list_tasks(
+                serviceName=service_name
+            )
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"Error fetching list of all tasks for the service: {e}"
+            }
+        return {
+            "error": False,
+            "details": tasks_response
+        }
+
+
+def get_all_tasks_status(task_arns):
+    """
+    To fetch status of all containers for the array of task arns
+    """
+    if settings.DEBUG:
+        return {
+            "error": False,
+            "details": "Not available for development environment"
+        }
+    else:
+        try:
+            client = get_boto3_client("ecs", aws_keys)
+            response = client.describe_tasks(
+                tasks=task_arns
+            )
+            tasks_status = {
+                "error": False,
+                "details": []
+            }
+            task_details = response["tasks"]
+            for task_detail in task_details:
+                containers = []
+                for container in task_detail["containers"]:
+                    containers.append({
+                        "container_arn": container["containerArn"],
+                        "status": container["lastStatus"]
+                    })
+                task_detail = {
+                    "task_arn_def": task_detail["taskArn"],
+                    "containers": containers
+                }
+                tasks_status['details'].append(task_detail)
+            return tasks_status
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"Error fetching worker status: {e}"
+            }
 
 
 def delete_log_group(log_group_name):
