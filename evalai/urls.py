@@ -92,6 +92,7 @@ urlpatterns = [
         schema_view.with_ui("redoc", cache_timeout=0),
         name="schema-redoc",
     ),
+    url(r"^api/prometheus/", include("django_prometheus.urls")),
 ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.

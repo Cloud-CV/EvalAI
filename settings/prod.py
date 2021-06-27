@@ -20,7 +20,7 @@ CORS_ORIGIN_WHITELIST = (
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "settings.custom_databases.postgres_psycopg2",
         "NAME": os.environ.get("RDS_DB_NAME"),
         "USER": os.environ.get("RDS_USERNAME"),
         "PASSWORD": os.environ.get("RDS_PASSWORD"),
@@ -35,7 +35,11 @@ DATADOG_API_KEY = os.environ.get("DATADOG_API_KEY")
 
 MIDDLEWARE += ["middleware.metrics.DatadogMiddleware"]  # noqa
 
-INSTALLED_APPS += ("storages", "raven.contrib.django.raven_compat")  # noqa
+INSTALLED_APPS += (  # noqa
+    "storages",
+    "raven.contrib.django.raven_compat",
+    "django_prometheus",
+)
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
