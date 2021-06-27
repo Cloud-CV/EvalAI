@@ -469,6 +469,7 @@ def update_failed_jobs_and_send_logs(
     submission_pk,
     challenge_pk,
     phase_pk,
+    message,
 ):
     try:
         job_def = read_job(api_instance, job_name)
@@ -526,6 +527,14 @@ def update_failed_jobs_and_send_logs(
         response = evalai.update_submission_data(
             submission_data, challenge_pk, phase_pk
         )
+        message_receipt_handle = message.get("receipt_handle")
+        try:
+            delete_job(api_instance, job_name)
+            evalai.delete_message_from_sqs_queue(message_receipt_handle)
+        except Exception as e:
+            logger.exception("Failed to delete submission job: {}".format(e))
+            # Delete message from sqs queue to avoid re-triggering job delete
+            evalai.delete_message_from_sqs_queue(message_receipt_handle)
 
 
 def install_gpu_drivers(api_instance):
@@ -628,6 +637,7 @@ def main():
                         submission_pk,
                         challenge_pk,
                         phase_pk,
+                        message,
                     )
                 else:
                     logger.info(
