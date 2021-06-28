@@ -54,6 +54,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "is_docker_based",
         "is_static_dataset_code_upload",
         "slug",
+        "submission_time_limit",
         "banned_email_ids",
         "workers",
         "task_def_arn",
