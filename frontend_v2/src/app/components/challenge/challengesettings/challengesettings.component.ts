@@ -558,6 +558,55 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Edit test annotation of the phase
+   */
+  editTestAnnotation() {
+    const SELF = this;
+    return (phase) => {
+      SELF.selectedPhase = phase;
+        SELF.apiCall = (params) => {
+          const FORM_DATA: FormData = new FormData();
+          FORM_DATA.append('test_annotation', params['test_annotation']);
+          SELF.apiService
+          .patchFileUrl(
+            SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhase['challenge'], SELF.selectedPhase['id']),
+            FORM_DATA
+          )
+            .subscribe(
+              (data) => {
+                SELF.globalService.showToast('success', 'The test annoation file is successfully uploaded!');
+              },
+              (err) => {
+                SELF.globalService.showToast('error', err);
+              },
+              () => this.logger.info('EDIT-TEST-ANNOTATION-FINISHED')
+            );
+        };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Test Annotation',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'testAnnotation',
+          isRequired: true,
+          label: 'test_annotation',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+}
+
+  /**
    * Edit challenge image function
    */
   editChallengeImage() {

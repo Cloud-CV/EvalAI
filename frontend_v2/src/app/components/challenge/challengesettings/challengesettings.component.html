@@ -107,7 +107,7 @@
       </div>
       <br />
       <div class="ev-action">
-        <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+        <div *ngIf="isChallengeHost" class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad ev-upload-action">
           <!-- Evaluations Criteria Description -->
           <span class="fs-16 fw-light">
             <strong class="text-light-black">Evaluation Criteria </strong>
@@ -122,6 +122,17 @@
           <a class="pointer fs-15" (click)="editEvaluationScript()">
             <i class="fa fa-file" aria-hidden="true"> </i>
           </a>
+          <br />
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Test Annotation </strong>
+          </span>
+          <app-selectphase
+          [phases]="phases"
+          [phaseSelectionListType]="phaseSelectionListType"
+          [phaseSelectionType]="phaseSelectionType"
+          [phaseSelected]="editTestAnnotation()"
+          #phaseselect
+        ></app-selectphase>
         </div>
       </div>
     </div>
