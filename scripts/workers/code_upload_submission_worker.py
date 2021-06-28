@@ -565,11 +565,10 @@ def main():
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
-            if (
-                challenge.is_static_dataset_code_upload
-                and not message_body.get(
-                    "is_static_dataset_code_upload_submission"
-                )
+            if challenge.get(
+                "is_static_dataset_code_upload"
+            ) and not message_body.get(
+                "is_static_dataset_code_upload_submission"
             ):
                 continue
             message_body["submission_meta"] = submission_meta
