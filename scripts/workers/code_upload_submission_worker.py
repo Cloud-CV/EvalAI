@@ -558,11 +558,12 @@ def main():
     )
     install_gpu_drivers(api_instance)
     submission_meta = {}
-    submission_meta["submission_time_limit"] = challenge.submission_time_limit
+    submission_meta["submission_time_limit"] = challenge.get(
+        "submission_time_limit"
+    )
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
-        message_body["submission_meta"] = submission_meta
         if message_body:
             if (
                 challenge.is_static_dataset_code_upload
@@ -571,6 +572,7 @@ def main():
                 )
             ):
                 continue
+            message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
