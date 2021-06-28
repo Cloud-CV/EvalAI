@@ -1861,7 +1861,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
-                "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
                 "enable_forum": self.challenge.enable_forum,
                 "leaderboard_description": self.challenge.leaderboard_description,

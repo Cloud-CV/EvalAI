@@ -93,9 +93,11 @@ def create_config_map_object(config_map_name, file_paths):
 
 
 def create_script_config_map(config_map_name):
-    submission_script_file_path = "code_upload_worker_utils/make_submission.sh"
+    submission_script_file_path = (
+        "/code/scripts/workers/code_upload_worker_utils/make_submission.sh"
+    )
     monitor_submission_script_path = (
-        "code_upload_worker_utils/monitor_submission.sh"
+        "/code/scripts/workers/code_upload_worker_utils/monitor_submission.sh"
     )
     script_config_map = create_config_map_object(
         config_map_name,
