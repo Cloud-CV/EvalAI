@@ -1,11 +1,6 @@
 import { ViewChildren, QueryList, Component, Input, OnInit } from '@angular/core';
 import { GlobalService } from '../../../../services/global.service';
 import { InputComponent } from '../../../utility/input/input.component';
-import { NGXLogger } from 'ngx-logger';
-
-import { EndpointsService } from '../../../../services/endpoints.service';
-import { ApiService } from '../../../../services/api.service';
-import { ChallengeService } from '../../../../services/challenge.service';
 
 
 @Component({
@@ -120,11 +115,6 @@ export class EditphasemodalComponent implements OnInit {
   PerMonthSubmissionValidationMessage = '';
 
   /**
-   * If leaderboard is public
-   */
-  isLeaderboardPublic : boolean = false;
-
-  /**
    * Modal accept button
    */
   confirm = 'Submit';
@@ -148,22 +138,6 @@ export class EditphasemodalComponent implements OnInit {
    * Is edit phase details
    */
   editPhaseDetails = true;
-
-  /**
-   * publish challenge state and it's icon
-   */
-  phaseVisibility = {
-    state: 'Private',
-    icon: 'fa fa-eye-slash red-text',
-  };
-
-  /**
-   * publish challenge state and it's icon
-   */
-  submissionVisibility = {
-    state: 'Private',
-    icon: 'fa fa-eye-slash red-text',
-  };  
 
   /**
    * Quill editor style
@@ -195,10 +169,6 @@ export class EditphasemodalComponent implements OnInit {
    */
   constructor(
     private globalService: GlobalService,
-    private apiService: ApiService,
-    private endpointsService: EndpointsService,
-    private challengeService: ChallengeService,
-    private logger: NGXLogger
     ) {}
 
   ngOnInit() {
@@ -212,14 +182,6 @@ export class EditphasemodalComponent implements OnInit {
       if (this.params['phase']) {
         this.phase = this.params['phase'];
       }
-      if (this.params['isPublic']) {
-        this.phaseVisibility.state = 'Public';
-        this.phaseVisibility.icon = 'fa fa-eye green-text';
-      }
-      if (this.params['isSubmissionPublic']) {
-        this.submissionVisibility.state = 'Public';
-        this.submissionVisibility.icon = 'fa fa-eye green-text';
-      }
       if (this.params['label']) {
         this.label = this.params['label'];
       }
@@ -228,9 +190,6 @@ export class EditphasemodalComponent implements OnInit {
       }
       if (this.params['description']) {
         this.description = this.params['description'];
-      }
-      if(this.params['isLeaderboardPublic']) {
-        this.isLeaderboardPublic = this.params['isLeaderboardPublic'];
       }
       if (this.params['startDate']) {
         this.startDate = this.params['startDate'];
@@ -267,124 +226,6 @@ export class EditphasemodalComponent implements OnInit {
       }
     }
     this.todayDateTime = new Date();
-  }
-
-  /**
-   * Phase Visibility click function
-   */
-  togglePhaseVisibility() {
-    const SELF = this;
-    let togglePhaseVisibilityState, isPublic;
-    if (this.phaseVisibility.state === 'Public') {
-      togglePhaseVisibilityState = 'private';
-      isPublic = false;
-    } else {
-      togglePhaseVisibilityState = 'public';
-      isPublic = true;
-    }
-    SELF.apiCall = () => {
-      const BODY: FormData = new FormData();
-      BODY.append("is_public", isPublic);
-      SELF.apiService
-      .patchFileUrl(
-        SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.params['challenge'], SELF.params['phase']),
-        BODY
-      )
-        .subscribe(
-          (data) => {
-            SELF.challengeService.fetchPhases(SELF.params['challenge']);
-            SELF.denied();
-            if (isPublic) {
-              this.phaseVisibility.state = 'Public';
-              this.phaseVisibility.icon = 'fa fa-eye green-text';
-            } else {
-              this.phaseVisibility.state = 'Private';
-              this.phaseVisibility.icon = 'fa fa-eye-slash red-text';
-            }
-            SELF.globalService.showToast(
-              'success',
-              'The phase was successfully made ' + togglePhaseVisibilityState,
-              5
-            );
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err, true);
-            SELF.globalService.showToast('error', err);
-          },
-          () => this.logger.info('PHASE-VISIBILITY-UPDATE-FINISHED')
-        );
-    };
-
-    const PARAMS = {
-      title: 'Make this phase ' + togglePhaseVisibilityState + '?',
-      content: '',
-      confirm: "Yes, I'm sure",
-      deny: 'No',
-      confirmCallback: SELF.apiCall,
-    };
-    SELF.globalService.showConfirm(PARAMS);
-  }
-
-  /**
-   * Submission Visibility click function
-   */
-   toggleSubmissionVisibility() {
-    const SELF = this;
-    if(this.isLeaderboardPublic == true) {
-      let toggleSubmissionVisibilityState, isSubmissionPublic;
-      if (this.submissionVisibility.state === 'Public') {
-        toggleSubmissionVisibilityState = 'private';
-        isSubmissionPublic = false;
-      } else {
-        toggleSubmissionVisibilityState = 'public';
-        isSubmissionPublic = true;
-      }
-      SELF.apiCall = () => {
-        const BODY: FormData = new FormData();
-        BODY.append("is_submission_public", isSubmissionPublic);
-        SELF.apiService
-        .patchFileUrl(
-          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.params['challenge'], SELF.params['phase']),
-          BODY
-        )
-          .subscribe(
-            (data) => {
-              SELF.challengeService.fetchPhases(SELF.params['challenge']);
-              SELF.denied();
-              if (isSubmissionPublic) {
-                this.submissionVisibility.state = 'Public';
-                this.submissionVisibility.icon = 'fa fa-eye green-text';
-              } else {
-                this.submissionVisibility.state = 'Private';
-                this.submissionVisibility.icon = 'fa fa-eye-slash red-text';
-              }
-              SELF.globalService.showToast(
-                'success',
-                'The submissions were successfully made ' + toggleSubmissionVisibilityState,
-                5
-              );
-            },
-            (err) => {
-              SELF.globalService.handleApiError(err, true);
-              SELF.globalService.showToast('error', err);
-            },
-            () => this.logger.info('SUBMISSION-VISIBILITY-UPDATE-FINISHED')
-          );
-      };
-  
-      const PARAMS = {
-        title: 'Make the submissions ' + toggleSubmissionVisibilityState + '?',
-        content: '',
-        confirm: "Yes, I'm sure",
-        deny: 'No',
-        confirmCallback: SELF.apiCall,
-      };
-      SELF.globalService.showConfirm(PARAMS);
-    }
-    else {
-      SELF.globalService.showToast('error', "Leaderboard is private, please make the leaderbaord public");
-      SELF.denied();
-    }
   }
 
   /**

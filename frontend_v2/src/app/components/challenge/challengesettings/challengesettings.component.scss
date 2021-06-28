@@ -13,6 +13,10 @@
   }
 }
 
+.phase-card {
+  width:50vw; 
+}
+
 @include screen-medium {
   .settings-section {
     padding: 10px 20px !important;

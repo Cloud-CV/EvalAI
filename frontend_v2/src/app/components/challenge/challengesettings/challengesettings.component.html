@@ -96,9 +96,32 @@
             [phaseSelected]="phaseSelected()"
             #phaseselect
           ></app-selectphase>
-         </div>
-      </div>
+
+        <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhase">
+          <div class="col s12">
+            <button
+              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12"
+              (click)="editPhaseDetails()"
+            >
+            Phase Details
+            </button>
+            <button
+              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12"
+              (click)="togglePhaseVisibility()"
+            >
+              <i class="{{ phaseVisibility.icon }}"></i> Phase Visibility
+            </button>
+            <button
+              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12"
+              (click)="toggleSubmissionVisibility()"
+            >
+              <i class="{{ submissionVisibility.icon }}"></i> Submission Visibility
+            </button>
+          </div>
+        </div>
+       </div>
     </div>
+  </div>
           
     <!-- Evaluations and Annotations -->
     <div class="row settings-section">
