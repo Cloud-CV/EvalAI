@@ -376,6 +376,45 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Edit terms and conditions of the challenge
+   */
+  editTermsAndConditions() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.terms_and_conditions = data.terms_and_conditions;
+            this.updateView();
+            SELF.globalService.showToast('success', 'The terms and conditions are successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-TERMS-AND-CONDITIONS-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Terms And Conditions',
+      label: 'terms_and_conditions',
+      isEditorRequired: true,
+      editorContent: this.challenge.terms_and_conditions,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+
+  /**
    * Delete challenge
    */
   deleteChallenge() {
