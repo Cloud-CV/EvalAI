@@ -92,6 +92,18 @@ def create_config_map_object(config_map_name, file_paths):
     return config_map
 
 
+def create_configmap(core_v1_api_instance, config_map):
+    try:
+        core_v1_api_instance.create_namespaced_config_map(
+            namespace="default",
+            body=config_map,
+        )
+    except ApiException as e:
+        logger.exception(
+            "Exception while creating configmap with error {}".format(e)
+        )
+
+
 def create_script_config_map(config_map_name):
     submission_script_file_path = (
         "/code/scripts/workers/code_upload_worker_utils/make_submission.sh"
@@ -211,7 +223,9 @@ def create_job_object(message, environment_image):
     return job
 
 
-def create_static_code_upload_submission_job_object(message):
+def create_static_code_upload_submission_job_object(
+    message, core_v1_api_instance
+):
     """Function to create the static code upload pod AWS EKS Job object
 
     Arguments:
@@ -254,7 +268,8 @@ def create_static_code_upload_submission_job_object(message):
     volume_list = get_volume_list()
     # Create and Mount Script Volume
     script_config_map_name = "evalai-scripts-cm"
-    create_script_config_map(script_config_map_name)
+    script_config_map = create_script_config_map(script_config_map_name)
+    create_configmap(core_v1_api_instance, script_config_map)
     script_volume_name = "evalai-scripts"
     script_volume = get_config_map_volume_object(
         script_config_map_name, script_volume_name
@@ -364,7 +379,9 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(api_instance, body, challenge_phase, evalai):
+def process_submission_callback(
+    api_instance, core_v1_api_instance, body, challenge_phase, evalai
+):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -374,7 +391,9 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
     try:
         logger.info("[x] Received submission message %s" % body)
         if body.get("is_static_dataset_code_upload_submission"):
-            job = create_static_code_upload_submission_job_object(body)
+            job = create_static_code_upload_submission_job_object(
+                body, core_v1_api_instance
+            )
         else:
             environment_image = challenge_phase.get("environment_image")
             job = create_job_object(body, environment_image)
@@ -623,7 +642,11 @@ def main():
                         challenge_pk, phase_pk
                     )
                     process_submission_callback(
-                        api_instance, message_body, challenge_phase, evalai
+                        api_instance,
+                        core_v1_api_instance,
+                        message_body,
+                        challenge_phase,
+                        evalai,
                     )
 
         if killer.kill_now:
