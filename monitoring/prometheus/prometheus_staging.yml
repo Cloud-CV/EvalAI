@@ -24,9 +24,15 @@ scrape_configs:
     metrics_path: '/pushgateway/metrics'
     static_configs:
       - targets: ['https://staging.eval.ai']
+    basic_auth:
+      username: x
+      password: x
 
 alerting:
   alertmanagers:
     - path_prefix: 'alerts/'
       static_configs:
       - targets: ['https://staging.eval.ai']
+      basic_auth:
+        username: x
+        password: x

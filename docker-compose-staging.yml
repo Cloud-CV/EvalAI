@@ -47,6 +47,8 @@ services:
       dockerfile: docker/prod/nodejs/Dockerfile
       args:
         NODE_ENV: staging
+        HTTP_AUTH_USERNAME: admin
+        HTTP_AUTH_PASSWORD: password
     ports:
       - '80:80'
       - '443:443'
