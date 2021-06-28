@@ -33,12 +33,19 @@ EVALAI_API_SERVER = os.environ.get(
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 
 
-def get_volume_mount_list(mount_path):
-    pvc_claim_name = "efs-claim"
+def get_volume_mount_object(mount_path, name, read_only=False):
     volume_mount = client.V1VolumeMount(
-        mount_path=mount_path, name=pvc_claim_name
+        mount_path=mount_path, name=name, read_only=read_only
     )
     logger.info("Volume mount created at path: %s" % str(mount_path))
+    return volume_mount
+
+
+def get_volume_mount_list(mount_path, read_only=False):
+    pvc_claim_name = "efs-claim"
+    volume_mount = get_volume_mount_object(
+        mount_path, pvc_claim_name, read_only
+    )
     volume_mount_list = [volume_mount]
     return volume_mount_list
 
@@ -56,6 +63,49 @@ def get_volume_list():
     return volume_list
 
 
+def get_empty_volume_object(volume_name):
+    empty_dir = client.V1EmptyDirVolumeSource()
+    volume = client.V1Volume(empty_dir=empty_dir, name=volume_name)
+    return volume
+
+
+def get_config_map_volume_object(config_map_name, volume_name):
+    config_map = client.V1ConfigMapVolumeSource(name=config_map_name)
+    volume = client.V1Volume(config_map=config_map, name=volume_name)
+    return volume
+
+
+def create_config_map_object(config_map_name, file_paths):
+    # Configure ConfigMap metadata
+    metadata = client.V1ObjectMeta(
+        name=config_map_name,
+    )
+    config_data = {}
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_content = open(file_path, "r").read()
+        config_data[file_name] = file_content
+    # Instantiate the config_map object
+    config_map = client.V1ConfigMap(
+        api_version="v1", kind="ConfigMap", data=config_data, metadata=metadata
+    )
+    return config_map
+
+
+def create_script_config_map(config_map_name):
+    submission_script_file_path = (
+        "/code/scripts/workers/code_upload_worker_utils/make_submission.sh"
+    )
+    monitor_submission_script_path = (
+        "/code/scripts/workers/code_upload_worker_utils/monitor_submission.sh"
+    )
+    script_config_map = create_config_map_object(
+        config_map_name,
+        [submission_script_file_path, monitor_submission_script_path],
+    )
+    return script_config_map
+
+
 def get_submission_meta_update_curl(submission_pk):
     url = "{}/api/jobs/submission/{}/update_started_at/".format(
         EVALAI_API_SERVER, submission_pk
@@ -64,6 +114,43 @@ def get_submission_meta_update_curl(submission_pk):
         url, AUTH_TOKEN
     )
     return curl_request
+
+
+def get_job_object(submission_pk, spec):
+    """Function to instantiate the AWS EKS Job object
+
+    Arguments:
+        submission_pk {[int]} -- Submission id
+        spec {[V1JobSpec]} -- Specification of deployment of job
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
+    job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=client.V1ObjectMeta(
+            name="submission-{0}".format(submission_pk)
+        ),
+        spec=spec,
+    )
+    return job
+
+
+def get_init_container(submission_pk):
+    curl_request = get_submission_meta_update_curl(submission_pk)
+    # Configure init container
+    init_container = client.V1Container(
+        name="init-container",
+        image="ubuntu",
+        command=[
+            "/bin/bash",
+            "-c",
+            "apt update && apt install -y curl && {}".format(curl_request),
+        ],
+    )
+    return init_container
 
 
 def create_job_object(message, environment_image):
@@ -84,22 +171,13 @@ def create_job_object(message, environment_image):
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
-    # Configureate Pod agent container
+    # Configure Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
     volume_mount_list = get_volume_mount_list("/dataset")
-    curl_request = get_submission_meta_update_curl(submission_pk)
-    # Configure init container
-    init_container = client.V1Container(
-        name="init-container",
-        image="ubuntu",
-        command=[
-            "/bin/bash",
-            "-c",
-            "apt update && apt install -y curl && {}".format(curl_request),
-        ],
-    )
+    # Get init container
+    init_container = get_init_container(submission_pk)
     # Configure Pod environment container
     environment_container = client.V1Container(
         name="environment",
@@ -129,14 +207,125 @@ def create_job_object(message, environment_image):
     # Create the specification of deployment
     spec = client.V1JobSpec(backoff_limit=1, template=template)
     # Instantiate the job object
-    job = client.V1Job(
-        api_version="batch/v1",
-        kind="Job",
-        metadata=client.V1ObjectMeta(
-            name="submission-{0}".format(submission_pk)
-        ),
-        spec=spec,
+    job = get_job_object(submission_pk, spec)
+    return job
+
+
+def create_static_code_upload_submission_job_object(message):
+    """Function to create the static code upload pod AWS EKS Job object
+
+    Arguments:
+        message {[dict]} -- Submission message from AWS SQS queue
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
+    PYTHONUNBUFFERED_ENV = client.V1EnvVar(name="PYTHONUNBUFFERED", value="1")
+    # Used to create submission file by phase_pk and selecting dataset location
+    submission_pk = message["submission_pk"]
+    challenge_pk = message["challenge_pk"]
+    phase_pk = message["phase_pk"]
+    submission_meta = message["submission_meta"]
+    SUBMISSION_PK_ENV = client.V1EnvVar(
+        name="SUBMISSION_PK", value=str(submission_pk)
     )
+    CHALLENGE_PK_ENV = client.V1EnvVar(
+        name="CHALLENGE_PK", value=str(challenge_pk)
+    )
+    PHASE_PK_ENV = client.V1EnvVar(name="PHASE_PK", value=str(phase_pk))
+    # Using Default value 1 day = 86400s as Time Limit.
+    SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_LIMIT",
+        value=str(submission_meta["submission_time_limit"]),
+    )
+    SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_DELTA", value="3600"
+    )
+    AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
+    EVALAI_API_SERVER_ENV = client.V1EnvVar(
+        name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
+    )
+    image = message["submitted_image_uri"]
+    # Get init container
+    init_container = get_init_container(submission_pk)
+    # Get dataset volume and volume mounts
+    volume_mount_list = get_volume_mount_list("/dataset", True)
+    volume_list = get_volume_list()
+    # Create and Mount Script Volume
+    script_config_map_name = "evalai-scripts-cm"
+    create_script_config_map(script_config_map_name)
+    script_volume_name = "evalai-scripts"
+    script_volume = get_config_map_volume_object(
+        script_config_map_name, script_volume_name
+    )
+    volume_list.append(script_volume)
+    script_volume_mount = get_volume_mount_object(
+        "/evalai_scripts", script_volume_name, True
+    )
+    volume_mount_list.append(script_volume_mount)
+    # Create and Mount submission Volume
+    submission_path = "/submission"
+    SUBMISSION_PATH_ENV = client.V1EnvVar(
+        name="SUBMISSION_PATH", value=submission_path
+    )
+    submission_volume_name = "submissions-dir"
+    submission_volume = get_empty_volume_object(submission_volume_name)
+    volume_list.append(submission_volume)
+    submission_volume_mount = get_volume_mount_object(
+        submission_path, submission_volume_name
+    )
+    volume_mount_list.append(submission_volume_mount)
+    # Configure Pod submission container
+    submission_container = client.V1Container(
+        name="submission",
+        image=image,
+        env=[
+            PYTHONUNBUFFERED_ENV,
+            SUBMISSION_PATH_ENV,
+            CHALLENGE_PK_ENV,
+            PHASE_PK_ENV,
+        ],
+        resources=client.V1ResourceRequirements(
+            limits={"nvidia.com/gpu": "1"}
+        ),
+        volume_mounts=volume_mount_list,
+    )
+    # Configure Pod sidecar container
+    sidecar_container = client.V1Container(
+        name="sidecar-container",
+        image="ubuntu:latest",
+        command=[
+            "/bin/sh",
+            "-c",
+            "apt update && apt install -y curl && sh /evalai_scripts/monitor_submission.sh",
+        ],
+        env=[
+            SUBMISSION_PATH_ENV,
+            CHALLENGE_PK_ENV,
+            PHASE_PK_ENV,
+            SUBMISSION_PK_ENV,
+            AUTH_TOKEN_ENV,
+            EVALAI_API_SERVER_ENV,
+            SUBMISSION_TIME_LIMIT_ENV,
+            SUBMISSION_TIME_DELTA_ENV,
+        ],
+        volume_mounts=volume_mount_list,
+    )
+    # Create and configurate a spec section
+    template = client.V1PodTemplateSpec(
+        metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
+        spec=client.V1PodSpec(
+            init_containers=[init_container],
+            containers=[sidecar_container, submission_container],
+            restart_policy="Never",
+            volumes=volume_list,
+        ),
+    )
+    # Create the specification of deployment
+    spec = client.V1JobSpec(backoff_limit=1, template=template)
+    # Instantiate the job object
+    job = get_job_object(submission_pk, spec)
     return job
 
 
@@ -184,8 +373,11 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
     """
     try:
         logger.info("[x] Received submission message %s" % body)
-        environment_image = challenge_phase.get("environment_image")
-        job = create_job_object(body, environment_image)
+        if body.get("is_static_dataset_code_upload_submission"):
+            job = create_static_code_upload_submission_job_object(body)
+        else:
+            environment_image = challenge_phase.get("environment_image")
+            job = create_job_object(body, environment_image)
         response = create_job(api_instance, job)
         submission_data = {
             "submission_status": "running",
@@ -287,7 +479,7 @@ def update_failed_jobs_and_send_logs(
         timeout_seconds=10,
     )
     for container in pods_list.items[0].status.container_statuses:
-        if container.name == "agent":
+        if container.name in ["agent", "submission"]:
             if container.state.terminated is not None:
                 if container.state.terminated.reason == "Error":
                     pod_name = pods_list.items[0].metadata.name
@@ -298,7 +490,7 @@ def update_failed_jobs_and_send_logs(
                                 namespace="default",
                                 _return_http_data_only=True,
                                 _preload_content=False,
-                                container="agent",
+                                container=container.name,
                             )
                         )
                         pod_log = pod_log_response.data.decode("utf-8")
@@ -365,10 +557,20 @@ def main():
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
+    submission_meta = {}
+    submission_meta["submission_time_limit"] = challenge.submission_time_limit
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
+        message_body["submission_meta"] = submission_meta
         if message_body:
+            if (
+                challenge.is_static_dataset_code_upload
+                and not message_body.get(
+                    "is_static_dataset_code_upload_submission"
+                )
+            ):
+                continue
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
