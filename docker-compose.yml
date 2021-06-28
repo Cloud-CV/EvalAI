@@ -66,6 +66,7 @@ services:
     - /code/node_modules
 
   prometheus:
+    hostname: prometheus
     image: prom/prometheus:latest
     user: "1000"
     volumes:
@@ -75,15 +76,20 @@ services:
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=http://localhost:9090/prometheus'
     restart: unless-stopped
     ports:
       - '9090:9090'
   
   grafana:
+    hostname: grafana
     image: grafana/grafana:latest
     user: "1000"
     env_file:
       - docker/dev/docker.env
+    environment:
+      GF_SERVER_ROOT_URL: http://localhost:3000/grafana
+      GF_SERVER_SERVE_FROM_SUB_PATH: 'true'
     volumes:
       - ./monitoring/grafana/grafana_db:/var/lib/grafana
     depends_on:
