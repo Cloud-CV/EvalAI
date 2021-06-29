@@ -1,5 +1,5 @@
 #!/bin/sh
-submission_url="$EVALAI_API_SERVER/api/jobs/challenge/$CHALLENGE_PK/challenge_phase/$PHASE_PK/submission/$SUBMISSION_PK"
+submission_url="$EVALAI_API_SERVER/api/jobs/challenge/$CHALLENGE_PK/update_submission/"
 submission_curl_base_request="curl --location --request PATCH '$submission_url' --header 'Authorization: Bearer $AUTH_TOKEN'"
 if [ -f "$SUBMISSION_PATH/submission.csv" ]
 then
