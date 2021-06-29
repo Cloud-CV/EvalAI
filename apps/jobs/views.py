@@ -1249,7 +1249,7 @@ def update_submission(request, challenge_pk):
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
         submission = get_submission_model(submission_pk)
-        # Submission of submission_input_file for static_dataset_code_upload challenge from submission to evaluation stage
+        # Update submission_input_file for is_static_dataset_code_upload submission evaluation
         if (
             request.FILES.get("submission_input_file")
             and submission.challenge_phase.challenge.is_static_dataset_code_upload
