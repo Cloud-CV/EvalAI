@@ -563,10 +563,10 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
-    api_instance = get_api_client(
+    api_instance_client = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
-    install_gpu_drivers(api_instance)
+    install_gpu_drivers(api_instance_client)
     api_instance = get_api_object(
         cluster_name, cluster_endpoint, challenge, evalai
     )
