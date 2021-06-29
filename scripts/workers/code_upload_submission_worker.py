@@ -31,6 +31,7 @@ EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
+script_config_map_name = "evalai-scripts-cm"
 
 
 def get_volume_mount_object(mount_path, name, read_only=False):
@@ -98,7 +99,7 @@ def create_configmap(core_v1_api_instance, config_map):
             namespace="default",
             body=config_map,
         )
-    except ApiException as e:
+    except Exception as e:
         logger.exception(
             "Exception while creating configmap with error {}".format(e)
         )
@@ -223,9 +224,7 @@ def create_job_object(message, environment_image):
     return job
 
 
-def create_static_code_upload_submission_job_object(
-    message, core_v1_api_instance
-):
+def create_static_code_upload_submission_job_object(message):
     """Function to create the static code upload pod AWS EKS Job object
 
     Arguments:
@@ -266,10 +265,6 @@ def create_static_code_upload_submission_job_object(
     # Get dataset volume and volume mounts
     volume_mount_list = get_volume_mount_list("/dataset", True)
     volume_list = get_volume_list()
-    # Create and Mount Script Volume
-    script_config_map_name = "evalai-scripts-cm"
-    script_config_map = create_script_config_map(script_config_map_name)
-    create_configmap(core_v1_api_instance, script_config_map)
     script_volume_name = "evalai-scripts"
     script_volume = get_config_map_volume_object(
         script_config_map_name, script_volume_name
@@ -379,9 +374,7 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(
-    api_instance, core_v1_api_instance, body, challenge_phase, evalai
-):
+def process_submission_callback(api_instance, body, challenge_phase, evalai):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -391,9 +384,7 @@ def process_submission_callback(
     try:
         logger.info("[x] Received submission message %s" % body)
         if body.get("is_static_dataset_code_upload_submission"):
-            job = create_static_code_upload_submission_job_object(
-                body, core_v1_api_instance
-            )
+            job = create_static_code_upload_submission_job_object(body)
         else:
             environment_image = challenge_phase.get("environment_image")
             job = create_job_object(body, environment_image)
@@ -576,6 +567,16 @@ def main():
         cluster_name, cluster_endpoint, challenge, evalai
     )
     install_gpu_drivers(api_instance)
+    api_instance = get_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    core_v1_api_instance = get_core_v1_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    if challenge.get("is_static_dataset_code_upload"):
+        # Create and Mount Script Volume
+        script_config_map = create_script_config_map(script_config_map_name)
+        create_configmap(core_v1_api_instance, script_config_map)
     submission_meta = {}
     submission_meta["submission_time_limit"] = challenge.get(
         "submission_time_limit"
@@ -596,12 +597,6 @@ def main():
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
-                core_v1_api_instance = get_core_v1_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
@@ -642,11 +637,7 @@ def main():
                         challenge_pk, phase_pk
                     )
                     process_submission_callback(
-                        api_instance,
-                        core_v1_api_instance,
-                        message_body,
-                        challenge_phase,
-                        evalai,
+                        api_instance, message_body, challenge_phase, evalai
                     )
 
         if killer.kill_now:
