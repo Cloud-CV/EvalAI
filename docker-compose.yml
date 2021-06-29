@@ -72,6 +72,7 @@ services:
     user: "1000"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/rules.yml:/etc/rules/rules.yml
       - ./monitoring/prometheus/prometheus_db:/var/lib/prometheus
       - ./monitoring/prometheus/prometheus_db:/prometheus
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
@@ -116,3 +117,16 @@ services:
       - '--web.route-prefix=/pushgateway'
     ports:
       - '9091:9091' 
+  alertmanager:
+    hostname: alertmanager
+    image: prom/alertmanager
+    user: "1000"
+    volumes:
+      - ./monitoring/prometheus:/prometheus
+      - ./monitoring/alertmanager/data:/data
+      - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
+    command:
+      - '--config.file=/prometheus/alertmanager.yml'
+      - '--storage.path=/data'
+    ports:
+      - 9093:9093
