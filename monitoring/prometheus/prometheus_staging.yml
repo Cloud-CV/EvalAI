@@ -3,6 +3,9 @@ global:
   external_labels:
     monitor: 'evalai-monitor'
 
+rule_files:
+  - /etc/rules/rules.yml
+
 scrape_configs:
   - job_name: 'prometheus' 
     metrics_path: '/prometheus/metrics'

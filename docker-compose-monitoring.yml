@@ -30,3 +30,17 @@ services:
     image: prom/node-exporter
     ports:
       - "9100:9100"
+
+  alertmanager:
+    hostname: alertmanager
+    image: prom/alertmanager
+    user: "1000"
+    volumes:
+      - ./monitoring/prometheus:/prometheus
+      - ./monitoring/alertmanager/data:/data
+      - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
+    command:
+      - '--config.file=/prometheus/alertmanager.yml'
+      - '--storage.path=/data'
+    ports:
+      - 9093:9093
