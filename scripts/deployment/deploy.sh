@@ -135,16 +135,6 @@ case $opt in
                 echo "Deployed worker docker container for queue: " $queue
              done
             ;;
-        deploy-prometheus)
-            echo "Deploying prometheus docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d prometheus
-            echo "Completed deploy operation."
-            ;;
-        deploy-grafana)
-            echo "Deploying grafana docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d grafana
-            echo "Completed deploy operation."
-            ;;
         scale)
             service=${3}
             instances=${4}
@@ -182,10 +172,6 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-remote-worker production <auth_token> <queue_name>"   
         echo "    deploy-workers : Deploy worker containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy production <superuser_auth_token>"
-        echo "    deploy-prometheus : Deploy prometheus container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-prometheus production"
-        echo "    deploy-grafana : Deploy grafana container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
