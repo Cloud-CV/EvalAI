@@ -577,7 +577,7 @@ def run_submission(
                 new_res.append(temp)
         submission_data["result"] = json.dumps(new_res)
         submission_data["metadata"] = json.dumps(
-            submission_output.get("submission_metadata")
+            submission_output.get("submission_result")
         )
         submission_data["submission_status"] = status
     else:
