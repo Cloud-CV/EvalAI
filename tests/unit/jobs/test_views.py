@@ -669,6 +669,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "status": self.submission.status,
                 "input_file": "http://testserver%s"
                 % (self.submission.input_file.url),
+                "submission_input_file": None,
                 "method_name": self.submission.method_name,
                 "method_description": self.submission.method_description,
                 "project_url": self.submission.project_url,
@@ -688,6 +689,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "is_baseline": self.submission.is_baseline,
                 "job_name": self.submission.job_name,
                 "submission_metadata": None,
+                "is_verified_by_host": False,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -1376,6 +1378,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.data["method_name"],
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1397,6 +1400,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1426,6 +1430,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.private_submission.status,
             "input_file": "http://testserver%s"
             % (self.private_submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.data["method_name"],
             "method_description": self.private_submission.method_description,
             "project_url": self.private_submission.project_url,
@@ -1447,6 +1452,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1494,6 +1500,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1515,6 +1522,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1578,6 +1586,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.host_participant_team_submission.status,
             "input_file": "http://testserver%s"
             % (self.host_participant_team_submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.host_participant_team_submission.method_name,
             "method_description": self.host_participant_team_submission.method_description,
             "project_url": self.host_participant_team_submission.project_url,
@@ -1601,6 +1610,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": True,
             "job_name": self.host_participant_team_submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1658,6 +1668,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1679,6 +1690,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1703,6 +1715,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1724,6 +1737,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1976,6 +1990,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.submission.id,
                     "submission__submission_metadata": self.submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 }
             ],
         }
@@ -2022,6 +2037,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.host_participant_team_submission.id,
                     "submission__submission_metadata": self.host_participant_team_submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2043,6 +2059,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.submission.id,
                     "submission__submission_metadata": self.submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
             ],
         }
@@ -2096,6 +2113,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.host_participant_team_submission.id,
                     "submission__submission_metadata": self.host_participant_team_submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2117,6 +2135,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.submission.id,
                     "submission__submission_metadata": self.submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
@@ -2138,6 +2157,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.host_participant_team_submission_2.id,
                     "submission__submission_metadata": self.host_participant_team_submission_2.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
             ],
         }
@@ -2164,7 +2184,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": f"ChallengePhaseSplit {self.challenge_phase_split.id + 2} does not exist"
+            "detail": "ChallengePhaseSplit {} does not exist".format(
+                self.challenge_phase_split.id + 2
+            )
         }
 
         response = self.client.get(self.url, {})
@@ -2224,6 +2246,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.private_submission.is_public,
                     "submission__id": self.private_submission.id,
                     "submission__submission_metadata": self.private_submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 }
             ],
         }

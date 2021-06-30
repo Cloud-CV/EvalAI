@@ -62,6 +62,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
+    submission_time_limit = models.PositiveIntegerField(default=86400)
     is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
@@ -101,6 +102,11 @@ class Challenge(TimeStampedModel):
     )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
+    )
+    is_static_dataset_code_upload = models.BooleanField(
+        default=False,
+        verbose_name="Is Static Dataset Code Upload Based",
+        db_index=True,
     )
     slug = models.SlugField(max_length=200, null=True, unique=True)
     max_docker_image_size = models.BigIntegerField(
