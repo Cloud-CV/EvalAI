@@ -13,6 +13,7 @@ scrape_configs:
       - targets: ['statsd:9102']
   
   - job_name: 'node-exporter'
+    metrics_path: '/metrics'
     static_configs:
       - targets: ['nodeexporter:9100']
   
