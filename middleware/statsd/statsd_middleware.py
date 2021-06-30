@@ -15,13 +15,21 @@ class StatsdMetricsMiddleware(MiddlewareMixin):
     def process_request(self, request):
         request.start_time = time.time()
 
+    def get_view_name(self, request):
+        view_name = "<unnamed view>"
+        if hasattr(request, "resolver_match"):
+            if request.resolver_match is not None:
+                if request.resolver_match.view_name is not None:
+                    view_name = request.resolver_match.view_name
+        return view_name
+
     def process_response(self, request, response):
         statsd.increment(
             REQUEST_COUNT_METRIC_NAME,
             tags=[
                 "service:django_worker",
                 "method:%s" % request.method,
-                "endpoint:%s" % request.path,
+                "view:%s" % self.get_view_name(request),
                 "status:%s" % str(response.status_code),
             ],
         )
