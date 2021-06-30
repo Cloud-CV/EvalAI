@@ -4,7 +4,8 @@ from datadog import DogStatsd
 from django.utils.deprecation import MiddlewareMixin
 
 statsd_host = os.environ.get("STATSD_ENDPOINT")
-statsd = DogStatsd(host=statsd_host, port=9125)
+statsd_port = int(os.environ.get("STATSD_PORT"))
+statsd = DogStatsd(host=statsd_host, port=statsd_port)
 
 REQUEST_LATENCY_METRIC_NAME = 'django_request_latency_seconds'
 REQUEST_COUNT_METRIC_NAME = 'django_request_count'
