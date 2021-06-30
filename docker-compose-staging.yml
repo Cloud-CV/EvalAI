@@ -170,4 +170,4 @@ services:
       - '--storage.path=/data'
       - '--web.external-url=https://localhost:9093/alerts'
     ports:
-      - 9093:9093
+      - '9093:9093'
