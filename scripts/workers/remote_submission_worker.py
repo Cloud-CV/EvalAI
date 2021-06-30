@@ -25,7 +25,7 @@ COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
@@ -566,19 +566,15 @@ def run_submission(
     if "result" in submission_output:
         status = "finished"
         res = submission_output.get("result")
-        print("res: %s" % res)
-        
         new_res = []
         for item in res:
-          for key, value in item.items():
-            temp = {
-              "split": key,
-              "show_to_participant": True,
-              "accuracies": value
-            }
-            new_res.append(temp)
-        print("new_res: %s" % new_res)
-        
+            for key, value in item.items():
+                temp = {
+                    "split": key,
+                    "show_to_participant": True,
+                    "accuracies": value
+                }
+                new_res.append(temp)
         submission_data["result"] = json.dumps(new_res)
         submission_data["metadata"] = json.dumps(
             submission_output.get("submission_metadata")
