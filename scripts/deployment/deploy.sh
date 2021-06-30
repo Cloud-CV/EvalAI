@@ -152,6 +152,7 @@ case $opt in
             echo "Deploying statsd docker container..."
             docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
             echo "Completed deploy operation."
+            ;;
         deploy-alertmanager)
             echo "Deploying prometheus-alertmanager docker container..."
             docker-compose -f docker-compose-${env}.yml up -d alertmanager
