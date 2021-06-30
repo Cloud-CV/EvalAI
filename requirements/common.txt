@@ -8,7 +8,6 @@ django==2.2.20
 django-allauth==0.43.0
 django-filter==2.4.0
 django-import-export==2.4.0
-django-prometheus==2.1.0
 djangorestframework==3.10.3
 djangorestframework-expiring-authtoken==0.1.4
 djangorestframework-simplejwt==4.6.0

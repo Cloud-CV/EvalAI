@@ -11,7 +11,7 @@ ALLOWED_HOSTS = ["*"]
 
 DATABASES = {
     "default": {
-        "ENGINE": "settings.custom_databases.postgres_psycopg2",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": os.environ.get("POSTGRES_NAME", "evalai"),  # noqa: ignore=F405
         "USER": os.environ.get(  # noqa: ignore=F405
             "POSTGRES_USER", "postgres"
@@ -35,7 +35,6 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
 INSTALLED_APPS += [  # noqa: ignore=F405
-    "django_prometheus",
     "django_spaghetti",
     "autofixture",
     "debug_toolbar",
