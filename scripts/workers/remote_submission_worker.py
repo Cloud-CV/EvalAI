@@ -25,7 +25,7 @@ COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
