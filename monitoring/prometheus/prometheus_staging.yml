@@ -14,6 +14,7 @@ scrape_configs:
       - targets: ['staging.eval.ai']
 
   - job_name: 'node-exporter'
+    metrics_path: '/nodeexporter'
     static_configs:
       - targets: ['staging.eval.ai']
   
