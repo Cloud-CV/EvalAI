@@ -114,4 +114,4 @@ services:
     command:
       - '--web.route-prefix=/pushgateway'
     ports:
-      - 9091:9091
+      - '9091:9091' 
