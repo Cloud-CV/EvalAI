@@ -23,6 +23,7 @@ services:
     depends_on:
       - db
       - sqs
+      - statsd-exporter
     volumes:
       - .:/code
 
