@@ -676,7 +676,7 @@ def push_metrics_to_pushgateway(submission_pk, queue_name):
         submissions_unloaded_from_queue = Counter(
             "submissions_unloaded_from_queue",
             "Submissions unloaded from queue",
-            ["submission_id", "queue_name"],
+            ["submission_pk", "queue_name"],
             registry=registry,
         )
         submissions_unloaded_from_queue.labels(submission_pk, queue_name).inc()
