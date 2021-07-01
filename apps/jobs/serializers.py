@@ -41,6 +41,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "created_by",
             "status",
             "input_file",
+            "submission_input_file",
             "stdout_file",
             "stderr_file",
             "started_at",
@@ -58,6 +59,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_baseline",
             "job_name",
             "submission_metadata",
+            "is_verified_by_host",
         )
 
     def get_participant_team_name(self, obj):
@@ -117,6 +119,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "submitted_at",
             "execution_time",
             "input_file",
+            "submission_input_file",
             "stdout_file",
             "stderr_file",
             "submission_result_file",
@@ -130,6 +133,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "method_description",
             "publication_url",
             "project_url",
+            "is_verified_by_host",
         )
 
     def get_participant_team(self, obj):
