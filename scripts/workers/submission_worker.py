@@ -795,7 +795,9 @@ def main():
     queue = get_or_create_sqs_queue(queue_name)
     while True:
         for message in queue.receive_messages():
-            if message.body.get("is_static_dataset_code_upload_submission"):
+            if json.loads(message.body).get(
+                "is_static_dataset_code_upload_submission"
+            ):
                 continue
             if settings.DEBUG or settings.TEST:
                 if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
