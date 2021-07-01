@@ -272,8 +272,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
     const PARAMS = {
       title: 'Edit Challenge Phase Details',
-      phase: SELF.selectedPhase['id'],
-      challenge: SELF.selectedPhase['challenge'],
       name: SELF.selectedPhase['name'],
       label: 'description',
       description: SELF.selectedPhase['description'],

@@ -14,16 +14,6 @@ export class EditphasemodalComponent implements OnInit {
   @Input() params: any;
 
   /**
-   * Challenge object
-   */
-  challenge: any;
-   
-  /**
-   * Challenge object
-   */
-  phase: any;
-
-  /**
    * Modal title
    */
   title = 'Edit Challenge Phase Details';
@@ -169,12 +159,6 @@ export class EditphasemodalComponent implements OnInit {
     if (this.params) {
       if (this.params['title']) {
         this.title = this.params['title'];
-      }
-      if (this.params['challenge']) {
-        this.challenge = this.params['challenge'];
-      }
-      if (this.params['phase']) {
-        this.phase = this.params['phase'];
       }
       if (this.params['label']) {
         this.label = this.params['label'];
