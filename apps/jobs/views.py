@@ -486,18 +486,6 @@ def change_submission_data_and_visibility(
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
-        if (
-            request.FILES.get("submission_input_file")
-            and challenge.is_static_dataset_code_upload
-        ):
-            message = {
-                "challenge_pk": challenge_pk,
-                "phase_pk": challenge_phase_pk,
-                "submission_pk": submission_pk,
-                "is_static_dataset_code_upload_submission": False,
-            }
-            # publish message in the queue
-            publish_submission_message(message)
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1260,9 +1248,38 @@ def update_submission(request, challenge_pk):
 
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
+        submission = get_submission_model(submission_pk)
+        # Update submission_input_file for is_static_dataset_code_upload submission evaluation
+        if (
+            request.FILES.get("submission_input_file")
+            and submission.challenge_phase.challenge.is_static_dataset_code_upload
+        ):
+            serializer = SubmissionSerializer(
+                submission,
+                data=request.data,
+                context={
+                    "request": request,
+                },
+                partial=True,
+            )
+            if serializer.is_valid():
+                serializer.save()
+                message = {
+                    "challenge_pk": challenge_pk,
+                    "phase_pk": submission.challenge_phase.pk,
+                    "submission_pk": submission_pk,
+                    "is_static_dataset_code_upload_submission": False,
+                }
+                # publish message in the queue
+                publish_submission_message(message)
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
         submission_status = request.data.get("submission_status", "").lower()
         job_name = request.data.get("job_name", "").lower()
-        submission = get_submission_model(submission_pk)
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
@@ -2775,3 +2792,39 @@ def update_submission_started_at(request, submission_pk):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_submission_meta(request, challenge_pk, submission_pk):
+    """
+    Common API Endpoint for updating the submission meta data for hosts and participants.
+    """
+
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        submission = get_submission_model(submission_pk)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={
+                "request": request,
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)

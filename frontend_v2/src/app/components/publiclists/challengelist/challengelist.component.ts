@@ -38,7 +38,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * Ongoing challenges list
    */
-  ongoingChallenges: any;
+  ongoingChallenges = [];
 
   /**
    * Past challeges list
@@ -90,7 +90,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * List of filtered ongoing challenges
    */
-  filteredOngoingChallenges: any;
+  filteredOngoingChallenges = [];
 
   /**
    * List of filtered upcoming challenges
@@ -231,8 +231,10 @@ export class ChallengelistComponent implements OnInit {
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
-    this.isScrollbtnVisible = RECT.top < 0;
+    if(this.document.getElementById('ongoing-challenges')) {
+      const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
+      this.isScrollbtnVisible = RECT.top < 0;
+    }
   }
 
   /**
