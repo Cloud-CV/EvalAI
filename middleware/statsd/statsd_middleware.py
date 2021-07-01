@@ -1,7 +1,5 @@
 import os
 import time
-from datadog import DogStatsd
-from django.utils.deprecation import MiddlewareMixin
 
 from datadog import DogStatsd
 from django.utils.deprecation import MiddlewareMixin
