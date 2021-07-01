@@ -1,7 +1,7 @@
-import time
-import os
 from datadog import DogStatsd
 from django.utils.deprecation import MiddlewareMixin
+import os
+import time
 
 statsd_host = os.environ.get("STATSD_ENDPOINT")
 statsd_port = int(os.environ.get("STATSD_PORT"))
