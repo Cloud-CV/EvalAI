@@ -106,11 +106,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   isLeaderboardPublic : boolean = false;
 
   /**
-   * If leaderboard is public
-   */
-  isPhaseSelected : boolean = false;
-
-  /**
    * phase visibility state and it's icon
    */
   phaseVisibility = {
@@ -228,20 +223,20 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       SELF.isSubmissionPublic = SELF.selectedPhase['is_submission_public'];
       SELF.isLeaderboardPublic = SELF.selectedPhase['leaderboard_public'];
       if (SELF.isPhasePublic) {
-        this.phaseVisibility.state = 'Public';
-        this.phaseVisibility.icon = 'fa fa-eye green-text';
+        SELF.phaseVisibility.state = 'Public';
+        SELF.phaseVisibility.icon = 'fa fa-eye green-text';
       }
       else {
-        this.phaseVisibility.state = 'Private';
-        this.phaseVisibility.icon = 'fa fa-eye-slash red-text';
+        SELF.phaseVisibility.state = 'Private';
+        SELF.phaseVisibility.icon = 'fa fa-eye-slash red-text';
       }
       if (SELF.isSubmissionPublic) {
-        this.submissionVisibility.state = 'Public';
-        this.submissionVisibility.icon = 'fa fa-eye green-text';
+        SELF.submissionVisibility.state = 'Public';
+        SELF.submissionVisibility.icon = 'fa fa-eye green-text';
       }
       else {
-        this.submissionVisibility.state = 'Private';
-        this.submissionVisibility.icon = 'fa fa-eye-slash red-text';
+        SELF.submissionVisibility.state = 'Private';
+        SELF.submissionVisibility.icon = 'fa fa-eye-slash red-text';
       }
     };
   } 
@@ -265,6 +260,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.selectedPhase = data;
             SELF.challengeService.fetchPhases(SELF.challenge['id']);
             SELF.challengeService.changePhaseSelected(true);
+            SELF.selectedPhase = false;
             SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
           },
           (err) => {
@@ -301,7 +297,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    togglePhaseVisibility() {
     const SELF = this;
     let togglePhaseVisibilityState, isPublic;
-    if (this.phaseVisibility.state === 'Public') {
+    if (SELF.phaseVisibility.state === 'Public') {
       togglePhaseVisibilityState = 'private';
       isPublic = false;
     } else {
@@ -321,12 +317,13 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.challengeService.fetchPhases(SELF.selectedPhase['challenge']);
             SELF.challengeService.changePhaseSelected(true);
             if (isPublic) {
-              this.phaseVisibility.state = 'Public';
-              this.phaseVisibility.icon = 'fa fa-eye green-text';
+              SELF.phaseVisibility.state = 'Public';
+              SELF.phaseVisibility.icon = 'fa fa-eye green-text';
             } else {
-              this.phaseVisibility.state = 'Private';
-              this.phaseVisibility.icon = 'fa fa-eye-slash red-text';
+              SELF.phaseVisibility.state = 'Private';
+              SELF.phaseVisibility.icon = 'fa fa-eye-slash red-text';
             }
+            SELF.selectedPhase = false;
             SELF.globalService.showToast(
               'success',
               'The phase was successfully made ' + togglePhaseVisibilityState,
@@ -356,9 +353,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
    toggleSubmissionVisibility() {
     const SELF = this;
-    if(this.isLeaderboardPublic == true) {
+    if(SELF.isLeaderboardPublic == true) {
       let toggleSubmissionVisibilityState, isSubmissionPublic;
-      if (this.submissionVisibility.state === 'Public') {
+      if (SELF.submissionVisibility.state === 'Public') {
         toggleSubmissionVisibilityState = 'private';
         isSubmissionPublic = false;
       } else {
@@ -378,12 +375,13 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
               SELF.challengeService.fetchPhases(SELF.selectedPhase['challenge']);
               SELF.challengeService.changePhaseSelected(true);
               if (isSubmissionPublic) {
-                this.submissionVisibility.state = 'Public';
-                this.submissionVisibility.icon = 'fa fa-eye green-text';
+                SELF.submissionVisibility.state = 'Public';
+                SELF.submissionVisibility.icon = 'fa fa-eye green-text';
               } else {
-                this.submissionVisibility.state = 'Private';
-                this.submissionVisibility.icon = 'fa fa-eye-slash red-text';
+                SELF.submissionVisibility.state = 'Private';
+                SELF.submissionVisibility.icon = 'fa fa-eye-slash red-text';
               }
+              SELF.selectedPhase = false;
               SELF.globalService.showToast(
                 'success',
                 'The submissions were successfully made ' + toggleSubmissionVisibilityState,
