@@ -1,6 +1,4 @@
 import time
-from datadog import DogStatsd
-from django.utils.deprecation import MiddlewareMixin
 
 from django.utils.deprecation import MiddlewareMixin
 from monitoring.statsd.metrics import statsd, REQUEST_COUNT_METRIC_NAME, REQUEST_LATENCY_METRIC_NAME
