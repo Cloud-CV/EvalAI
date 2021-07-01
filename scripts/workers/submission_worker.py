@@ -26,7 +26,7 @@ from os.path import join
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from prometheus_client import pushadd_to_gateway, CollectorRegistry, Counter
-
+from prometheus_client.exposition import basic_auth_handler
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -669,6 +669,17 @@ def process_add_challenge_message(message):
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
 
+def pushgateway_auth_handler(url, method, timeout, headers, data):
+    try:
+        username = os.environ.get('HTTP_AUTH_USERNAME')
+        password = os.environ.get('HTTP_AUTH_PASSWORD')
+    except Exception as e:
+        logger.exception(
+            "{} Exception while fetching env variables for pushgateway authentication: {}".format(
+                    SUBMISSION_LOGS_PREFIX, e
+            )
+        )
+    return basic_auth_handler(url, method, timeout, headers, data, username, password)
 
 def push_metrics_to_pushgateway(submission_pk, queue_name):
     try:
@@ -682,7 +693,7 @@ def push_metrics_to_pushgateway(submission_pk, queue_name):
         submissions_unloaded_from_queue.labels(submission_pk, queue_name).inc()
         pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
         job_id = "submission_worker_{}".format(submission_pk)
-        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=registry)
+        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=registry,handler=pushgateway_auth_handler)
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to push gateway: {}".format(

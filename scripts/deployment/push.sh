@@ -11,6 +11,9 @@ build_and_push() {
         # Need ssl files related to *.cloudcv.org since we want to provide backward compatibility
         aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/ssl/ ./ssl/ --recursive
         echo "Pulled ssl certificates and nginx configuration successfully"
+        echo "Pulling htpasswd config file..."
+        aws s3 cp s3://cloudcv-secrets/evalai/${env}/.htpasswd ./monitoring/prometheus/.htpasswd
+        echo "htpasswd config file successfully downloaded."
         docker-compose -f docker-compose-$1.yml build \
             --build-arg COMMIT_ID=${COMMIT_ID} \
             --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH} \
