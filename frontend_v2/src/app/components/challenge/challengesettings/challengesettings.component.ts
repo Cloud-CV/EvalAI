@@ -106,6 +106,11 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   isLeaderboardPublic : boolean = false;
 
   /**
+   * If leaderboard is public
+   */
+  isPhaseSelected : boolean = false;
+
+  /**
    * phase visibility state and it's icon
    */
   phaseVisibility = {
@@ -226,9 +231,17 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         this.phaseVisibility.state = 'Public';
         this.phaseVisibility.icon = 'fa fa-eye green-text';
       }
+      else {
+        this.phaseVisibility.state = 'Private';
+        this.phaseVisibility.icon = 'fa fa-eye-slash red-text';
+      }
       if (SELF.isSubmissionPublic) {
         this.submissionVisibility.state = 'Public';
         this.submissionVisibility.icon = 'fa fa-eye green-text';
+      }
+      else {
+        this.submissionVisibility.state = 'Private';
+        this.submissionVisibility.icon = 'fa fa-eye-slash red-text';
       }
     };
   } 
@@ -251,6 +264,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           (data) => {
             SELF.selectedPhase = data;
             SELF.challengeService.fetchPhases(SELF.challenge['id']);
+            SELF.challengeService.changePhaseSelected(true);
             SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
           },
           (err) => {
@@ -305,6 +319,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challengeService.fetchPhases(SELF.selectedPhase['challenge']);
+            SELF.challengeService.changePhaseSelected(true);
             if (isPublic) {
               this.phaseVisibility.state = 'Public';
               this.phaseVisibility.icon = 'fa fa-eye green-text';
@@ -361,6 +376,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           .subscribe(
             (data) => {
               SELF.challengeService.fetchPhases(SELF.selectedPhase['challenge']);
+              SELF.challengeService.changePhaseSelected(true);
               if (isSubmissionPublic) {
                 this.submissionVisibility.state = 'Public';
                 this.submissionVisibility.icon = 'fa fa-eye green-text';

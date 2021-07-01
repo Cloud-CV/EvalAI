@@ -2,7 +2,6 @@ import { ViewChildren, QueryList, Component, Input, OnInit } from '@angular/core
 import { GlobalService } from '../../../../services/global.service';
 import { InputComponent } from '../../../utility/input/input.component';
 
-
 @Component({
   selector: 'app-editphasemodal',
   templateUrl: './editphasemodal.component.html',
@@ -13,11 +12,6 @@ export class EditphasemodalComponent implements OnInit {
    * Input parameters object
    */
   @Input() params: any;
-
-  /**
-   * To call the API inside modal for editing the challenge details
-   */
-  apiCall: any;
 
   /**
    * Challenge object
