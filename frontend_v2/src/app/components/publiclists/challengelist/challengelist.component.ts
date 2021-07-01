@@ -231,8 +231,10 @@ export class ChallengelistComponent implements OnInit {
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
-    this.isScrollbtnVisible = RECT.top < 0;
+    if(this.document.getElementById('ongoing-challenges')) {
+      const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
+      this.isScrollbtnVisible = RECT.top < 0;
+    }
   }
 
   /**
