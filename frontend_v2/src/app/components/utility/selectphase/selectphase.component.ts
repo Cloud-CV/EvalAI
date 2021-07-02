@@ -27,6 +27,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() selectedPhaseSplitUrlChange: any;
 
   /**
+   * Selected phase split 
+   */
+  @Input() phaseSplitSelected: any;
+
+  /**
    * Phase selection type (radio button or select box)
    */
   @Input() phaseSelectionType: string;
@@ -108,10 +113,22 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseSelectionType = phaseSelectionType;
     this.phaseSelectionListType = phaseSelectionListType;
     this.selectedPhaseSplit = phaseSplit;
+    console.log(this.selectedPhaseSplit);
     this.phaseName = phaseSplit.challenge_phase_name;
     this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
     this.selectedPhaseSplitUrlChange(phaseSplit);
+  }
+
+  selectSettingsPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+    this.phaseSelectionType = phaseSelectionType;
+    this.phaseSelectionListType = phaseSelectionListType;
+    this.selectedPhaseSplit = phaseSplit;
+    console.log(this.selectedPhaseSplit);
+    this.phaseName = phaseSplit.challenge_phase_name;
+    this.splitName = phaseSplit.dataset_split_name;
+    this.phaseVisibility = phaseSplit.showPrivate;
+    this.phaseSplitSelected(phaseSplit);
   }
 
   /**

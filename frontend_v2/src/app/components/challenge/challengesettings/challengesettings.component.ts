@@ -91,6 +91,34 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   message: string;
 
   /**
+   * Phase split list
+   */
+  phaseSplits = [];
+
+  /**
+   * Phase selection type (radio button or select box)
+   */
+  phaseLeaderboardSelectionType = 'selectBox';
+
+   /**
+    * Select box list type
+    */
+  phaseLeaderboardSelectionListType = 'settingsPhaseSplit';
+
+  /**
+   * Currently selected phase split
+   */
+  selectedPhaseSplit: any = null;
+
+  /**
+   * phase visibility state and it's icon
+   */
+  leaderboardVisibility = {
+    state: 'Private',
+    icon: 'fa fa-eye-slash red-text',
+  };
+
+  /**
    * publish challenge state and it's icon
    */
   publishChallenge = {
@@ -143,6 +171,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       this.publishChallenge.icon = publishChallenge.icon;
     });
 
+    this.challengeService.currentPhaseSplit.subscribe((phaseSplits) => {
+      this.phaseSplits = phaseSplits;
+    });
+
     if (!this.challenge["remote_evaluation"]) {
       this.fetchWorkerLogs();
       this.startLoadingLogs();
@@ -179,6 +211,16 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     if (input && !SELF.isValidationError) {
       input.value = '';
     }
+  }
+
+  /**
+   * This is called when a phase split is selected (from child components)
+   */
+  phaseSplitSelected () {
+    const SELF = this;
+    return (phaseSplit) => {
+       SELF.selectedPhaseSplit = phaseSplit;
+      }
   }
 
   /**
