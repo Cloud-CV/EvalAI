@@ -2,8 +2,8 @@ groups:
 - name: API-Threshold-Exceeded
   rules:
   - alert: API-Threshold-Exceeded-4XX
-    expr: increase(django_request_count{job="statsd",method="GET",status=~"2..",view=~"jobs:.*|challenges:.*"}[5m]) > 0
-    # for: 5m
+    expr: increase(django_request_count{job="statsd",method="GET",status=~"2..",view=~"jobs:.*|challenges:.*"}[5m]) > 100
+    for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 4XX'
       description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* API calls with the response code of *4XX* in the last 5 minutes'
