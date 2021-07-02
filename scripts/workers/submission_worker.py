@@ -669,6 +669,7 @@ def process_add_challenge_message(message):
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
 
+
 def pushgateway_auth_handler(url, method, timeout, headers, data):
     try:
         username = os.environ.get('HTTP_AUTH_USERNAME')
@@ -676,10 +677,11 @@ def pushgateway_auth_handler(url, method, timeout, headers, data):
     except Exception as e:
         logger.exception(
             "{} Exception while fetching env variables for pushgateway authentication: {}".format(
-                    SUBMISSION_LOGS_PREFIX, e
+                SUBMISSION_LOGS_PREFIX, e
             )
         )
     return basic_auth_handler(url, method, timeout, headers, data, username, password)
+
 
 def push_metrics_to_pushgateway(submission_pk, queue_name):
     try:
@@ -693,7 +695,7 @@ def push_metrics_to_pushgateway(submission_pk, queue_name):
         submissions_unloaded_from_queue.labels(submission_pk, queue_name).inc()
         pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
         job_id = "submission_worker_{}".format(submission_pk)
-        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=registry,handler=pushgateway_auth_handler)
+        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=registry, handler=pushgateway_auth_handler)
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to push gateway: {}".format(
