@@ -157,6 +157,6 @@ services:
     command:
       - '--config.file=/prometheus/alertmanager_staging.yml'
       - '--storage.path=/data'
-      - '--web.external-url=https://localhost:9093/alerts'
+      - '--web.external-url=http://localhost:9093/alerts'
     ports:
       - '9093:9093'
