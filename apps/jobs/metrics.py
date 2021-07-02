@@ -1,5 +1,7 @@
-from prometheus_client import Counter, pushadd_to_gateway, CollectorRegistry
 import os
+
+from prometheus_client import Counter, pushadd_to_gateway, CollectorRegistry
+
 
 pushgateway_registry = CollectorRegistry()
 
