@@ -28,3 +28,4 @@ PyYaml==5.1
 proc==1.0
 rstr==2.2.6
 sendgrid==6.4.8
+datadog==0.39.0

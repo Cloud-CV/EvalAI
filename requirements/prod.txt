@@ -5,4 +5,3 @@ django-storages==1.7.1
 python-memcached==1.59
 raven==6.10.0
 uWSGI==2.0.19.1
-datadog==0.39.0

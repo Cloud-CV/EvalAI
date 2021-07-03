@@ -6,3 +6,8 @@ scrape_configs:
   - job_name: 'prometheus' 
     static_configs: 
       - targets: ['localhost:9090']
+      
+  - job_name: 'statsd'
+    metrics_path: '/statsd/metrics'
+    static_configs:
+      - targets: ['statsd:9102']

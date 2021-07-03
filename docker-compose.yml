@@ -23,6 +23,7 @@ services:
     depends_on:
       - db
       - sqs
+      - statsd-exporter
     volumes:
       - .:/code
 
@@ -90,3 +91,13 @@ services:
       - prometheus
     ports:
       - '3000:3000'
+
+  statsd-exporter:
+    hostname: statsd
+    image: prom/statsd-exporter:latest
+    command:
+      - '--log.level=info'
+      - '--web.telemetry-path=/statsd/metrics'
+    ports:
+      - '9125:9125'
+      - '9102:9102'
