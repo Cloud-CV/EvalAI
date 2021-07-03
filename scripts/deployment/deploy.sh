@@ -145,7 +145,7 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d grafana
             echo "Completed deploy operation."
             ;;
-        deploy-statsd-exporter)
+        deploy-statsd)
             echo "Deploying statsd docker container..."
             docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
             echo "Completed deploy operation."
@@ -191,8 +191,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-prometheus production"
         echo "    deploy-grafana : Deploy grafana container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
-        echo "    deploy-statsd-exporter : Deploy statsd container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd-exporter production"
+        echo "    deploy-statsd : Deploy statsd container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
