@@ -119,6 +119,11 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   };
 
   /**
+   * If leaderboard of phase split is public
+   */
+   isPhaseSplitLeaderboardPublic: number = 1;
+
+  /**
    * publish challenge state and it's icon
    */
   publishChallenge = {
@@ -220,7 +225,71 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     const SELF = this;
     return (phaseSplit) => {
        SELF.selectedPhaseSplit = phaseSplit;
+       SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility']
+       if(SELF.isPhaseSplitLeaderboardPublic == 3) {
+         SELF.leaderboardVisibility.state = 'Public';
+         SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
+       }
+       else {
+        SELF.leaderboardVisibility.state = 'Private';
+        SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
+       }
       }
+  }
+
+  /**
+   * Leadeboard Visibility toggle function
+   */
+  toggleLeaderboardVisibility() {
+    const SELF = this;
+    let toggleLeaderboardVisibilityState, isPublic;
+    if (SELF.leaderboardVisibility.state === 'Public') {
+      toggleLeaderboardVisibilityState = 'private';
+      isPublic = 3;
+    } else {
+      toggleLeaderboardVisibilityState = 'public';
+      isPublic = 1;
+    }
+    SELF.apiCall = () => {
+      const BODY: FormData = new FormData();
+      BODY.append("visibility", isPublic);
+      SELF.apiService
+      .patchFileUrl(
+        SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']),
+        BODY
+      )
+        .subscribe(
+          (data) => {
+            if (isPublic == 3) {
+              SELF.leaderboardVisibility.state = 'Public';
+              SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
+            } else {
+              SELF.leaderboardVisibility.state = 'Private';
+              SELF.leaderboardVisibility.icon = 'fa fa-eye-slash red-text';
+            }
+            SELF.selectedPhaseSplit = false;
+            SELF.globalService.showToast(
+              'success',
+              'The phase was successfully made ' + toggleLeaderboardVisibilityState,
+              5
+            );
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('PHASE-SPLIT-VISIBILITY-UPDATE-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Make this leaderboard ' + toggleLeaderboardVisibilityState + '?',
+      content: '',
+      confirm: "Yes, I'm sure",
+      deny: 'No',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showConfirm(PARAMS);
   }
 
   /**
