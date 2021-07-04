@@ -143,10 +143,9 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
             "phase_pk": self.challenge_phase.pk,
             "submission_pk": self.submission.pk,
         }
-        queue_name = "evalai_submission_queue"
         body = json.dumps(message)
 
-        submission_worker.process_submission_callback(body, queue_name)
+        submission_worker.process_submission_callback(body)
         mock_psm.assert_called_with(message)
 
     @mock.patch("scripts.workers.submission_worker.logger.exception")
@@ -159,12 +158,11 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
             "phase_pk": self.challenge_phase.pk,
             "submission_pk": self.submission.pk,
         }
-        queue_name = "evalai_submission_queue"
         body = json.dumps(message)
 
         mock_psm.side_effect = Exception("test error")
 
-        submission_worker.process_submission_callback(body, queue_name)
+        submission_worker.process_submission_callback(body)
 
         mock_logger.assert_called_with(
             "{} Exception while receiving message from submission queue with error test error".format(

@@ -5,9 +5,9 @@ from prometheus_client import Counter, pushadd_to_gateway, CollectorRegistry
 
 pushgateway_registry = CollectorRegistry()
 
-submissions_loaded_in_queue = Counter(
-    "submissions_loaded_in_queue",
-    "Counter for total number of submissions pushed into the queue when a submission is made",
+num_submissions_in_queue = Counter(
+    "num_submissions_in_queue",
+    "Counter for number of submissions pushed into queue",
     ["submission_pk", "queue_name"],
     registry=pushgateway_registry,
 )
