@@ -681,39 +681,16 @@ def process_add_challenge_message(message):
     extract_challenge_data(challenge, phases)
 
 
-def push_metrics_to_pushgateway(submission_pk, queue_name):
-    try:
-        registry = CollectorRegistry()
-        submissions_unloaded_from_queue = Counter(
-            "submissions_unloaded_from_queue",
-            "Submissions unloaded from queue",
-            ["submission_pk", "queue_name"],
-            registry=registry,
-        )
-        submissions_unloaded_from_queue.labels(submission_pk, queue_name).inc()
-        pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
-        job_id = "submission_worker_{}".format(submission_pk)
-        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=registry)
-    except Exception as e:
-        logger.exception(
-            "{} Exception when pushing metrics to push gateway: {}".format(
-                SUBMISSION_LOGS_PREFIX, e
-            )
-        )
-
-
-def process_submission_callback(body, queue_name):
+def process_submission_callback(body):
     try:
         logger.info(
             "{} [x] Received submission message {}".format(
                 SUBMISSION_LOGS_PREFIX, body
             )
         )
-        submission_pk = json.loads(body)["submission_pk"]
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
-        push_metrics_to_pushgateway(submission_pk, queue_name)
     except Exception as e:
         logger.exception(
             "{} Exception while receiving message from submission queue with error {}".format(
@@ -857,7 +834,7 @@ def main():
                                 WORKER_LOGS_PREFIX, message.body
                             )
                         )
-                        process_submission_callback(message.body, queue_name)
+                        process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
                         increment_and_push_metrics_to_statsd(queue_name)
@@ -867,7 +844,7 @@ def main():
                             WORKER_LOGS_PREFIX, message.body
                         )
                     )
-                    process_submission_callback(message.body, queue_name)
+                    process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
                     increment_and_push_metrics_to_statsd(queue_name)
@@ -886,7 +863,7 @@ def main():
                             WORKER_LOGS_PREFIX, message.body
                         )
                     )
-                    process_submission_callback(message.body, queue_name)
+                    process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
                     increment_and_push_metrics_to_statsd(queue_name)
