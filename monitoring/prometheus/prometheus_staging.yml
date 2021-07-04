@@ -11,4 +11,4 @@ scrape_configs:
   - job_name: 'statsd'
     metrics_path: '/statsd/metrics'
     static_configs:
-      - targets: ['https://staging.eval.ai']
+      - targets: ['staging.eval.ai']
