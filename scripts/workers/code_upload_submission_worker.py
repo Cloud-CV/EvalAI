@@ -95,6 +95,14 @@ def create_config_map_object(config_map_name, file_paths):
 
 def create_configmap(core_v1_api_instance, config_map):
     try:
+        config_maps = core_v1_api_instance.list_namespaced_config_map(
+            namespace="default"
+        )
+        if (
+            len(config_maps.items)
+            and config_maps.items[0].metadata.name == script_config_map_name
+        ):
+            return
         core_v1_api_instance.create_namespaced_config_map(
             namespace="default",
             body=config_map,
@@ -253,7 +261,7 @@ def create_static_code_upload_submission_job_object(message):
         value=str(submission_meta["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
-        name="SUBMISSION_TIME_DELTA", value="3600"
+        name="SUBMISSION_TIME_DELTA", value="60"
     )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
