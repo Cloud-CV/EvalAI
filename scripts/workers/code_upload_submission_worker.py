@@ -527,10 +527,13 @@ def update_failed_jobs_and_send_logs(
             label_selector=pod_label_selector,
             timeout_seconds=10,
         )
+        container_state_map = {}
         for container in pods_list.items[0].status.container_statuses:
-            if container.name in ["agent", "submission"]:
-                if container.state.terminated is not None:
-                    if container.state.terminated.reason == "Error":
+            container_state_map[container.name] = container.state
+        for container_name, container_state in container_state_map.items():
+            if container_name in ["agent", "submission"]:
+                if container_state.terminated is not None:
+                    if container_state.terminated.reason == "Error":
                         pod_name = pods_list.items[0].metadata.name
                         try:
                             pod_log_response = (
@@ -539,7 +542,7 @@ def update_failed_jobs_and_send_logs(
                                     namespace="default",
                                     _return_http_data_only=True,
                                     _preload_content=False,
-                                    container=container.name,
+                                    container=container_name,
                                 )
                             )
                             pod_log = pod_log_response.data.decode("utf-8")
@@ -557,6 +560,25 @@ def update_failed_jobs_and_send_logs(
                             logger.exception(
                                 "Exception while reading Job logs {}".format(e)
                             )
+                    elif (
+                        container_name == "submission"
+                        and container_state.terminated.reason == "Completed"
+                        and container_state_map.get("sidecar-container")
+                        and container_state_map.get(
+                            "sidecar-container"
+                        ).terminated
+                        is None
+                    ):
+                        cleanup_submission(
+                            api_instance,
+                            evalai,
+                            job_name,
+                            submission_pk,
+                            challenge_pk,
+                            phase_pk,
+                            "submission.json/submission.csv file not found.",
+                            message,
+                        )
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         cleanup_submission(
