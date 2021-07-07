@@ -1,11 +1,11 @@
 <!-- The <router-outlet> tells the router where to display routed views. -->
 <div
   [ngClass]="
-    currentRoutePath == '/' || currentRoutePath == '/auth/login' || currentRoutePath == '/auth/signup'
-      ? ''
-      : 'page-wrap'
-  "
->
+    (currentRoutePath == '/' || currentRoutePath == '/auth/login' || currentRoutePath == '/auth/signup')
+      ? '' : (currentRoutePath == '/about' || currentRoutePath == '/contact' || currentRoutePath == '/our-team' ||
+      currentRoutePath == '/get-involved' || currentRoutePath == '/privacy-policy')
+      ? 'page-wrap' : 'page-wrap-challenge'
+      " >
   <router-outlet></router-outlet>
 </div>
 <app-toast></app-toast>

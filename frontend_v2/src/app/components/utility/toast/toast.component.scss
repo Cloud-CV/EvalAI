@@ -4,6 +4,7 @@
 .toast-container {
   visibility: hidden;
   word-wrap: break-word;
+  z-index: 1;
   display: inline-block;
   color: #fff;
   text-align: center;
