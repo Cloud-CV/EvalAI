@@ -150,12 +150,12 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
             echo "Completed deploy operation."
             ;;
-        deploy-node_exporter)
+        deploy-node-exporter)
             echo "Deploying node_exporter docker container..."
             docker-compose -f docker-compose-${env}.yml up -d node_exporter
             echo "Completed deploy operation."
             ;;
-        deploy-push_gateway)
+        deploy-push-gateway)
             echo "Deploying push_gateway docker container..."
             docker-compose -f docker-compose-${env}.yml up -d push_gateway
             echo "Completed deploy operation."
@@ -203,10 +203,10 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
         echo "    deploy-statsd : Deploy statsd container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
-        echo "    deploy-node_exporter : Deploy node_exporter container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-node_exporter production"
-        echo "    deploy-push_gateway : Deploy push_gateway container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-push_gateway production"
+        echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
+        echo "    deploy-push-gateway : Deploy push_gateway container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-push-gateway production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
