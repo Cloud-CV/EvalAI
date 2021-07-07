@@ -130,13 +130,13 @@ services:
       - '9125:9125'
       - '9102:9102'
   
-  node-exporter:
+  node_exporter:
     hostname: node_exporter
     image: prom/node-exporter
     ports:
       - '9100:9100'
 
-  pushgateway:
+  push_gateway:
     hostname: push_gateway
     image: prom/pushgateway
     command:
