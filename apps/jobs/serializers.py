@@ -24,6 +24,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
             challenge_phase = context.get("challenge_phase").pk
             kwargs["data"]["challenge_phase"] = challenge_phase
+        if context and context.get("request").method == "DELETE":
+            ignore_submission = context.get("ignore_submission")
+            kwargs["data"]["ignore_submission"] = ignore_submission
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
@@ -38,6 +41,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "created_by",
             "status",
             "input_file",
+            "submission_input_file",
             "stdout_file",
             "stderr_file",
             "started_at",
@@ -49,11 +53,13 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "publication_url",
             "is_public",
             "is_flagged",
+            "ignore_submission",
             "submission_result_file",
             "when_made_public",
             "is_baseline",
             "job_name",
             "submission_metadata",
+            "is_verified_by_host",
         )
 
     def get_participant_team_name(self, obj):
@@ -113,6 +119,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "submitted_at",
             "execution_time",
             "input_file",
+            "submission_input_file",
             "stdout_file",
             "stderr_file",
             "submission_result_file",
@@ -123,6 +130,10 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "method_name",
             "participant_team_members",
             "submission_metadata",
+            "method_description",
+            "publication_url",
+            "project_url",
+            "is_verified_by_host",
         )
 
     def get_participant_team(self, obj):

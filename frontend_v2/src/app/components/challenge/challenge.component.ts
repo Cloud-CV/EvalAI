@@ -17,10 +17,9 @@ import { EndpointsService } from '../../services/endpoints.service';
 @Component({
   selector: 'app-challenge',
   templateUrl: './challenge.component.html',
-  styleUrls: ['./challenge.component.scss']
+  styleUrls: ['./challenge.component.scss'],
 })
 export class ChallengeComponent implements OnInit {
-
   /**
    * Router local instance
    */
@@ -40,14 +39,6 @@ export class ChallengeComponent implements OnInit {
    * Is challenge host
    */
   isChallengeHost = false;
-
-  /**
-   * publish challenge state and it's icon
-   */
-  publishChallenge = {
-    'state': 'Not Published',
-    'icon': 'fa fa-eye-slash red-text'
-  };
 
   /**
    * Is participated in Challenge
@@ -95,62 +86,67 @@ export class ChallengeComponent implements OnInit {
    * @param challengeService  ChallengeService Injection.
    * @param DOCUMENT Document Injection
    */
-  constructor(@Inject(DOCUMENT) document: any, private router: Router, private route: ActivatedRoute,
-              private apiService: ApiService, private globalService: GlobalService,
-              private challengeService: ChallengeService, public authService: AuthService,
-              private endpointsService: EndpointsService, private meta: Meta,
-              private logger: NGXLogger) { }
+  constructor(
+    @Inject(DOCUMENT) document: any,
+    private router: Router,
+    private route: ActivatedRoute,
+    private apiService: ApiService,
+    private globalService: GlobalService,
+    private challengeService: ChallengeService,
+    public authService: AuthService,
+    private endpointsService: EndpointsService,
+    private meta: Meta,
+    private logger: NGXLogger
+  ) {}
 
   /**
    * Component on initialized
    */
   ngOnInit() {
+    this.globalService.startLoader('');
     const SELF = this;
     if (this.authService.isLoggedIn()) {
       this.isLoggedIn = true;
     }
     this.localRouter = this.router;
     this.globalService.scrollToTop();
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       if (params['id']) {
         // this.fetchChallenge(params['id']);
         this.id = params['id'];
         this.challengeService.fetchChallenge(params['id']);
       }
     });
-    this.challengeService.currentChallenge.subscribe(challenge => {
+    this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
       this.isForumEnabled = challenge.enable_forum;
       this.forumURL = challenge.forum_url;
       // update meta tag
       SELF.meta.updateTag({
         property: 'og:title',
-        content: SELF.challenge.title
+        content: SELF.challenge.title,
       });
       SELF.meta.updateTag({
         property: 'og:description',
-        content: SELF.challenge.short_description
+        content: SELF.challenge.short_description,
       });
       SELF.meta.updateTag({
         property: 'og:image',
-        content: SELF.challenge.image
+        content: SELF.challenge.image,
       });
       SELF.meta.updateTag({
         property: 'og:url',
-        content: document.location.href
+        content: document.location.href,
       });
     });
-    this.challengeService.currentStars.subscribe(stars => this.stars = stars);
-    this.challengeService.currentParticipationStatus.subscribe(status => {
+    this.challengeService.currentStars.subscribe((stars) => (this.stars = stars));
+    this.challengeService.currentParticipationStatus.subscribe((status) => {
       this.isParticipated = status;
     });
-    this.challengeService.isChallengeHost.subscribe(status => {
+    this.challengeService.isChallengeHost.subscribe((status) => {
       this.isChallengeHost = status;
     });
-    this.challengeService.currentChallengePublishState.subscribe(publishChallenge => {
-      this.publishChallenge.state = publishChallenge.state;
-      this.publishChallenge.icon = publishChallenge.icon;
-    });
+    this.globalService.stopLoader();
   }
 
   /**
@@ -163,55 +159,4 @@ export class ChallengeComponent implements OnInit {
       this.globalService.showToast('error', 'Please login to star the challenge!', 5);
     }
   }
-
-  /**
-   * Publish challenge click function
-   */
-  togglePublishChallengeState() {
-    const SELF = this;
-    let toggleChallengePublishState, isPublished;
-    if (this.publishChallenge.state === 'Published') {
-      toggleChallengePublishState = 'private';
-      isPublished = false;
-    } else {
-      toggleChallengePublishState = 'public';
-      isPublished = true;
-    }
-
-    SELF.apiCall = () => {
-      const BODY = JSON.stringify({
-        'published': isPublished
-      });
-      SELF.apiService.patchUrl(
-        SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
-        BODY
-        ).subscribe(
-        data => {
-          if (isPublished) {
-            this.publishChallenge.state = 'Published';
-            this.publishChallenge.icon = 'fa fa-eye green-text';
-          } else {
-            this.publishChallenge.state = 'Not Published';
-            this.publishChallenge.icon = 'fa fa-eye-slash red-text';
-          }
-          SELF.globalService.showToast('success', 'The challenge was successfully made ' + toggleChallengePublishState, 5);
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-          SELF.globalService.showToast('error', err);
-        },
-        () => this.logger.info('PUBLISH-CHALLENGE-UPDATE-FINISHED')
-      );
-    };
-
-    const PARAMS = {
-      title: 'Make this challenge ' + toggleChallengePublishState + '?',
-      content: '',
-      confirm: 'Yes, I\'m sure',
-      deny: 'No',
-      confirmCallback: SELF.apiCall
-    };
-    SELF.globalService.showConfirm(PARAMS);
-  }
-
 }

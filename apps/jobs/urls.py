@@ -51,7 +51,7 @@ urlpatterns = [
         name="update_partially_evaluated_submission",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/$",
         views.get_submissions_for_challenge,
         name="get_submissions_for_challenge",
     ),
@@ -85,4 +85,37 @@ urlpatterns = [
         views.get_github_badge_data,
         name="get_github_badge_data",
     ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/send_submission_message/(?P<submission_pk>[0-9]+)/$",
+        views.send_submission_message,
+        name="send_submission_message",
+    ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/submission_count_by_status/$",
+        views.challenge_phase_submission_count_by_status,
+        name="challenge_phase_submissions_by_status",
+    ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_submission_file_presigned_url/$",
+        views.get_submission_file_presigned_url,
+        name="get_submission_file_presigned_url",
+    ),
+    url(
+        r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_submission_file_upload/(?P<submission_pk>[0-9]+)/$",
+        views.finish_submission_file_upload,
+        name="finish_submission_file_upload",
+    ),
+    url(
+        r"^submission/(?P<submission_pk>[0-9]+)/update_started_at/$",
+        views.update_submission_started_at,
+        name="update_submission_started_at",
+    ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/"
+        r"submissions/(?P<submission_pk>[0-9]+)/update_submission_meta/$",
+        views.update_submission_meta,
+        name="update_submission_meta",
+    ),
 ]
+
+app_name = "jobs"

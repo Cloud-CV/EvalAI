@@ -714,6 +714,22 @@ input {
     }
 }
 
+.label-radio {
+    margin-top: 1.0em;
+    position: relative;
+    color: $light-gray;
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
+.label-checkbox {
+    margin-top: 1.0em;
+    position: relative;
+    color: $light-gray;
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
 .ev-spinner-dark {
     border-color: $light-link;
 }

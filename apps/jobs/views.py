@@ -2,6 +2,8 @@ import botocore
 import datetime
 import json
 import logging
+import os
+import uuid
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -11,13 +13,17 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 
+from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
+from django.db.models import Count
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_yasg import openapi
@@ -25,10 +31,10 @@ from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
-    paginated_queryset,
     StandardResultSetPagination,
-    get_or_create_sqs_queue_object,
     get_boto3_client,
+    get_or_create_sqs_queue_object,
+    paginated_queryset,
 )
 from challenges.models import (
     ChallengePhase,
@@ -38,6 +44,8 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import (
+    complete_s3_multipart_file_upload,
+    generate_presigned_url_for_multipart_upload,
     get_aws_credentials_for_challenge,
     get_challenge_model,
     get_challenge_phase_model,
@@ -70,6 +78,8 @@ from .utils import (
     get_submission_model,
     handle_submission_rerun,
     is_url_valid,
+    reorder_submissions_comparator,
+    reorder_submissions_comparator_to_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -118,7 +128,7 @@ logger = logging.getLogger(__name__)
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_submission(request, challenge_id, challenge_phase_id):
     """API Endpoint for making a submission to a challenge"""
 
@@ -156,12 +166,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         submission = Submission.objects.filter(
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,
+            ignore_submission=False,
         ).order_by("-submitted_at")
         filtered_submissions = SubmissionFilter(
             request.GET, queryset=submission
         )
+        # rerank in progress submissions in ascending order of submitted_at
+        reordered_submissions = sorted(
+            filtered_submissions.qs,
+            key=reorder_submissions_comparator_to_key(
+                reorder_submissions_comparator
+            ),
+        )
         paginator, result_page = paginated_queryset(
-            filtered_submissions.qs, request
+            reordered_submissions, request
         )
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
@@ -257,6 +275,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if not request.FILES:
+            if request.data.get("file_url") is None:
+                response_data = {"error": "The file URL is missing!"}
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
             if not is_url_valid(request.data["file_url"]):
                 response_data = {"error": "The file URL does not exists!"}
                 return Response(
@@ -281,6 +304,42 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "submission_meta_attributes"
             ] = submission_meta_attributes
 
+        if request.data.get("is_public") is None:
+            request.data["is_public"] = (
+                True if challenge_phase.is_submission_public else False
+            )
+        else:
+            request.data["is_public"] = json.loads(request.data["is_public"])
+            if (
+                request.data.get("is_public")
+                and challenge_phase.is_restricted_to_select_one_submission
+            ):
+                # Handle corner case for restrict one public lb submission
+                submissions_already_public = Submission.objects.filter(
+                    is_public=True,
+                    participant_team=participant_team,
+                    challenge_phase=challenge_phase,
+                )
+                # Make the existing public submission private before making the new submission public
+                if submissions_already_public.count() == 1:
+                    # Case when the phase is restricted to make only one submission as public
+                    submission_serializer = SubmissionSerializer(
+                        submissions_already_public[0],
+                        data={"is_public": False},
+                        context={
+                            "participant_team": participant_team,
+                            "challenge_phase": challenge_phase,
+                            "request": request,
+                        },
+                        partial=True,
+                    )
+                    if submission_serializer.is_valid():
+                        submission_serializer.save()
+
+        # Override submission visibility if leaderboard_public = False for a challenge phase
+        if not challenge_phase.leaderboard_public:
+            request.data["is_public"] = challenge_phase.is_submission_public
+
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -292,6 +351,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         message = {
             "challenge_pk": challenge_id,
             "phase_pk": challenge_phase_id,
+            "is_static_dataset_code_upload_submission": False,
         }
         if challenge.is_docker_based:
             try:
@@ -299,6 +359,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 message["submitted_image_uri"] = file_content[
                     "submitted_image_uri"
                 ]
+                if challenge.is_static_dataset_code_upload:
+                    message["is_static_dataset_code_upload_submission"] = True
             except Exception as ex:
                 response_data = {
                     "error": "Error {} in submitted_image_uri from submission file".format(
@@ -325,7 +387,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def change_submission_data_and_visibility(
     request, challenge_pk, challenge_phase_pk, submission_pk
 ):
@@ -484,6 +546,9 @@ def change_submission_data_and_visibility(
                                 "result": openapi.Schema(
                                     type=openapi.TYPE_ARRAY,
                                     description="Leaderboard Metrics values according to leaderboard schema",
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_OBJECT
+                                    ),
                                 ),
                                 "submission__submitted_at": openapi.Schema(
                                     type=openapi.TYPE_STRING,
@@ -535,10 +600,137 @@ def leaderboard(request, challenge_phase_split_id):
     return paginator.get_paginated_response(response_data)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_phase_split_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase Split Primary Key",
+            required=True,
+        )
+    ],
+    operation_id="get_all_entries_on_public_leaderboard",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "count": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Count of values on the leaderboard",
+                    ),
+                    "next": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL of next page of results",
+                    ),
+                    "previous": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL of previous page of results",
+                    ),
+                    "results": openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description="Array of results object",
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Result ID",
+                                ),
+                                "submission__participant_team": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team ID",
+                                ),
+                                "submission__participant_team__team_name": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team Name",
+                                ),
+                                "submission__participant_team__team_url": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team URL",
+                                ),
+                                "submission__is_baseline": openapi.Schema(
+                                    type=openapi.TYPE_BOOLEAN,
+                                    description="Boolean to decide if submission is baseline",
+                                ),
+                                "submission__is_public": openapi.Schema(
+                                    type=openapi.TYPE_BOOLEAN,
+                                    description="Boolean to decide if submission is public",
+                                ),
+                                "challenge_phase_split": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Challenge Phase Split ID",
+                                ),
+                                "result": openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    description="Leaderboard Metrics values according to leaderboard schema",
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_STRING
+                                    ),
+                                ),
+                                "error": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Error returned for the result",
+                                ),
+                                "leaderboard__schema": openapi.Schema(
+                                    type=openapi.TYPE_OBJECT,
+                                    description="Leaderboard Schema of the corresponding challenge",
+                                    properties={
+                                        "labels": openapi.Schema(
+                                            type=openapi.TYPE_ARRAY,
+                                            description="Labels of leaderboard schema",
+                                            items=openapi.Schema(
+                                                type=openapi.TYPE_STRING
+                                            ),
+                                        ),
+                                        "default_order_by": openapi.Schema(
+                                            type=openapi.TYPE_STRING,
+                                            description="Default ordering label for the leaderboard schema",
+                                        ),
+                                    },
+                                ),
+                                "submission__submitted_at": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Time stamp when submission was submitted at",
+                                ),
+                                "submission__method_name": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Method of submission",
+                                ),
+                                "submission__id": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="ID of submission",
+                                ),
+                                "submission__submission_metadata": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Metadata and other info about submission",
+                                ),
+                                "filtering_score": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Default filtering score for results",
+                                ),
+                                "filtering_error": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Default filtering error for results",
+                                ),
+                            },
+                        ),
+                    ),
+                },
+            ),
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     """
     Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
@@ -548,6 +740,43 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
 
     - Returns:
         All Leaderboard entry objects in a list
+
+    Below is the sample response returned by the API
+
+    ```
+    {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "submission__participant_team": 2,
+            "submission__participant_team__team_name": "Sanchezview Participant Team",
+            "submission__participant_team__team_url": "",
+            "submission__is_baseline": true,
+            "submission__is_public": true,
+            "challenge_phase_split": 1,
+            "result": [
+                26
+            ],
+            "error": null,
+            "leaderboard__schema": {
+                "labels": [
+                    "score"
+                ],
+                "default_order_by": "score"
+            },
+            "submission__submitted_at": "2021-01-12T10:14:58.764572Z",
+            "submission__method_name": "Vernon",
+            "submission__id": 10,
+            "submission__submission_metadata": null,
+            "filtering_score": 26.0,
+            "filtering_error": 0
+        }
+    ]
+    }
+    ```
     """
     # check if the challenge exists or not
     challenge_phase_split = get_challenge_phase_split_model(
@@ -586,7 +815,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_remaining_submissions(request, challenge_pk):
     """
     API to get the number of remaining submission for all phases.
@@ -657,10 +886,10 @@ def get_remaining_submissions(request, challenge_pk):
     return Response(phases_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["GET", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_by_pk(request, submission_id):
     """
     API endpoint to fetch the details of a submission.
@@ -675,19 +904,33 @@ def get_submission_by_pk(request, submission_id):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     host_team = submission.challenge_phase.challenge.creator
-
     if (
         request.user.id == submission.created_by.id
         or ChallengeHost.objects.filter(
             user=request.user.id, team_name__pk=host_team.pk
         ).exists()
     ):
-        serializer = SubmissionSerializer(
-            submission, context={"request": request}
-        )
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        if request.method == "GET":
+            serializer = SubmissionSerializer(
+                submission, context={"request": request}
+            )
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
 
+        elif request.method == "DELETE":
+            serializer = SubmissionSerializer(
+                submission,
+                data=request.data,
+                context={"ignore_submission": True, "request": request},
+                partial=True,
+            )
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_200_OK)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
     response_data = {
         "error": "Sorry, you are not authorized to access this submission."
     }
@@ -818,7 +1061,7 @@ def get_submission_by_pk(request, submission_id):
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_submission(request, challenge_pk):
     """
     API endpoint to update submission related attributes
@@ -916,8 +1159,8 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1005,9 +1248,38 @@ def update_submission(request, challenge_pk):
 
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
+        submission = get_submission_model(submission_pk)
+        # Update submission_input_file for is_static_dataset_code_upload submission evaluation
+        if (
+            request.FILES.get("submission_input_file")
+            and submission.challenge_phase.challenge.is_static_dataset_code_upload
+        ):
+            serializer = SubmissionSerializer(
+                submission,
+                data=request.data,
+                context={
+                    "request": request,
+                },
+                partial=True,
+            )
+            if serializer.is_valid():
+                serializer.save()
+                message = {
+                    "challenge_pk": challenge_pk,
+                    "phase_pk": submission.challenge_phase.pk,
+                    "submission_pk": submission_pk,
+                    "is_static_dataset_code_upload_submission": False,
+                }
+                # publish message in the queue
+                publish_submission_message(message)
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
         submission_status = request.data.get("submission_status", "").lower()
         job_name = request.data.get("job_name", "").lower()
-        submission = get_submission_model(submission_pk)
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
@@ -1153,7 +1425,7 @@ def update_submission(request, challenge_pk):
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_partially_evaluated_submission(request, challenge_pk):
     """
     API endpoint to update submission related attributes
@@ -1258,8 +1530,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1443,8 +1715,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
 
                 updated_result = leaderboard_data.result
-                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                    "labels"
+                leaderboard_metrics = (
+                    challenge_phase_split.leaderboard.schema.get("labels")
                 )
                 missing_metrics = []
                 malformed_metrics = []
@@ -1545,7 +1817,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def re_run_submission_by_host(request, submission_pk):
     """
     API endpoint to re-run a submission.
@@ -1586,7 +1858,7 @@ def re_run_submission_by_host(request, submission_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submissions_for_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
@@ -1680,7 +1952,7 @@ def get_submissions_for_challenge(request, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_submission_message_from_queue(request, queue_name):
     """
     API to fetch submission message from AWS SQS queue.
@@ -1713,7 +1985,7 @@ def get_submission_message_from_queue(request, queue_name):
         messages = queue.receive_messages()
         if len(messages):
             message_receipt_handle = messages[0].receipt_handle
-            message_body = eval(messages[0].body)
+            message_body = json.loads(messages[0].body)
             logger.info(
                 "A submission is received with pk {}".format(
                     message_body.get("submission_pk")
@@ -1768,7 +2040,7 @@ def get_submission_message_from_queue(request, queue_name):
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def delete_submission_message_from_queue(request, queue_name):
     """
     API to delete submission message from AWS SQS queue
@@ -1824,7 +2096,7 @@ def delete_submission_message_from_queue(request, queue_name):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_signed_url_for_submission_related_file(request):
     """Returns S3 signed URL for a particular file residing on S3 bucket
 
@@ -1885,7 +2157,7 @@ def get_signed_url_for_submission_related_file(request):
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_leaderboard_data(request, leaderboard_data_pk):
     """API endpoint to update a metric in leaderboard data
 
@@ -1981,7 +2253,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_bearer_token(request, challenge_pk):
     """API to generate and return bearer token AWS EKS requests
 
@@ -2031,7 +2303,7 @@ def get_bearer_token(request, challenge_pk):
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_github_badge_data(
     request, challenge_phase_split_pk, participant_team_pk
 ):
@@ -2068,8 +2340,491 @@ def get_github_badge_data(
         if team_data["submission__participant_team"] == int(
             participant_team_pk
         ):
-            data["message"] = f"{challenge_obj.title} Rank #{idx+1}"
+            data["message"] = "{} Rank #{}".format(
+                challenge_obj.title, idx + 1
+            )
             break
         else:
-            data["message"] = f"{challenge_obj.title}"
+            data["message"] = challenge_obj.title
     return Response(data, status=http_status_code)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
+    """
+    API for fetching count of submissions by status for a challenge phase
+
+    Arguments:
+        request {HttpRequest} -- request object
+        challenge_phase_pk {int} -- challenge phase pk
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/404)
+    """
+    # check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    challenge = challenge_phase.challenge
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    submissions = (
+        Submission.objects.filter(challenge_phase=challenge_phase)
+        .values("status")
+        .annotate(count=Count("id"))
+    )
+
+    response_data = {"status": submissions}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_submission_file_presigned_url(request, challenge_phase_pk):
+    """
+    API to generate a presigned url to upload a submission file
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+    Returns:
+         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+    """
+    if settings.DEBUG:
+        response_data = {
+            "error": "Sorry, this feature is not available in development or test environment."
+        }
+        return Response(response_data)
+
+    # Check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if challenge phase is active
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is a challenge host or a participant
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        # Check if challenge phase is public and accepting solutions
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        # if allowed email ids list exist, check if the user exist in that list or not
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    # Fetch the number of submissions under progress.
+    submissions_in_progress_status = [
+        Submission.SUBMITTED,
+        Submission.SUBMITTING,
+        Submission.RUNNING,
+    ]
+    submissions_in_progress = Submission.objects.filter(
+        participant_team=participant_team_id,
+        challenge_phase=challenge_phase,
+        status__in=submissions_in_progress_status,
+    ).count()
+
+    if (
+        submissions_in_progress
+        >= challenge_phase.max_concurrent_submissions_allowed
+    ):
+        message = "You have {} submissions that are being processed. \
+                   Please wait for them to finish and then try again."
+        response_data = {"error": message.format(submissions_in_progress)}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    file_ext = os.path.splitext(request.data["file_name"])[-1]
+    random_file_name = uuid.uuid4()
+    # This file shall be replaced with the one uploaded through the presigned url from the CLI
+    input_file = SimpleUploadedFile(
+        "{}{}".format(random_file_name, file_ext),
+        b"file_content",
+        content_type="text/plain",
+    )
+    submission_data = request.data.copy()
+    submission_data["input_file"] = input_file
+    serializer = SubmissionSerializer(
+        data=submission_data,
+        context={
+            "participant_team": participant_team,
+            "challenge_phase": challenge_phase,
+            "request": request,
+        },
+    )
+    # Set default num of chunks to 1 if num of chunks is not specified
+    num_file_chunks = 1
+    if request.data.get("num_file_chunks"):
+        num_file_chunks = int(request.data["num_file_chunks"])
+
+    response = {}
+    if serializer.is_valid():
+        serializer.save()
+        submission = serializer.instance
+
+        file_key_on_s3 = "{}/{}".format(
+            settings.MEDIAFILES_LOCATION, submission.input_file.name
+        )
+        response = generate_presigned_url_for_multipart_upload(
+            file_key_on_s3, challenge.pk, num_file_chunks
+        )
+        if response.get("error"):
+            response_data = response
+            response = Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            response_data = {
+                "presigned_urls": response.get("presigned_urls"),
+                "upload_id": response.get("upload_id"),
+                "submission_pk": submission.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+        return response
+    response_data = {"error": serializer.errors}
+    return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
+    """
+    API to complete multipart upload of presigned url submission
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+        submission_pk {int} -- Submission primary key
+    Returns:
+         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+    """
+    if settings.DEBUG:
+        response_data = {
+            "error": "Sorry, this feature is not available in development or test environment."
+        }
+        return Response(response_data)
+
+    # Check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if challenge phase is active
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is a challenge host or a participant
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        # Check if challenge phase is public and accepting solutions
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        # if allowed email ids list exist, check if the user exist in that list or not
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if request.data.get("parts") is None:
+        response_data = {"error": "Uploaded file Parts metadata is missing"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.data.get("upload_id") is None:
+        response_data = {"error": "Uploaded file UploadId is missing"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    file_parts = json.loads(request.data["parts"])
+    upload_id = request.data["upload_id"]
+    response = {}
+    try:
+        submission = get_submission_model(submission_pk)
+        file_key_on_s3 = "{}/{}".format(
+            settings.MEDIAFILES_LOCATION, submission.input_file.name
+        )
+        data = complete_s3_multipart_file_upload(
+            file_parts, upload_id, file_key_on_s3, challenge.pk
+        )
+        if data.get("error"):
+            response_data = data
+            response = Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            response_data = {
+                "upload_id": upload_id,
+                "submission_pk": submission.pk,
+            }
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return response
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def send_submission_message(request, challenge_phase_pk, submission_pk):
+    """
+    API to send a submisison message to the challenge specific SQS queue
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_phase_pk {int} -- Challenge phase primary key
+        submission_pk {int} -- Submission primary key
+    Returns:
+         Response Object -- An object containing an empty dict and having a HTTP_200_0k status
+    """
+    try:
+        challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {"error": "Challenge Phase does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = challenge_phase.challenge
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+
+    if not challenge.is_active:
+        response_data = {"error": "Challenge is not active"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge_phase.is_active:
+        response_data = {
+            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        if not challenge_phase.is_public:
+            response_data = {
+                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        if not challenge.approved_by_admin:
+            response_data = {
+                "error": "Challenge is not yet approved by admin."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+        if challenge_phase.allowed_email_ids:
+            if request.user.email not in challenge_phase.allowed_email_ids:
+                response_data = {
+                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                }
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    all_participants_email = participant_team.get_all_participants_email()
+    for participant_email in all_participants_email:
+        if participant_email in challenge.banned_email_ids:
+            message = "You're a part of {} team and it has been banned from this challenge. \
+            Please contact the challenge host.".format(
+                participant_team.team_name
+            )
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        get_submission_model(submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    submission_message = {
+        "submission_pk": submission_pk,
+        "phase_pk": challenge_phase_pk,
+        "challenge_pk": challenge.pk,
+    }
+
+    publish_submission_message(submission_message)
+    response_data = {}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_submission_started_at(request, submission_pk):
+    """
+    API Endpoint for updating the submission evaluation start time.
+    """
+    try:
+        submission = Submission.objects.get(
+            id=submission_pk,
+        )
+    except Submission.DoesNotExist:
+        response_data = {"error": "Submission does not exist"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = SubmissionSerializer(
+        submission,
+        data={"started_at": str(timezone.now())},
+        context={"request": request},
+        partial=True,
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_submission_meta(request, challenge_pk, submission_pk):
+    """
+    Common API Endpoint for updating the submission meta data for hosts and participants.
+    """
+
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        submission = get_submission_model(submission_pk)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={
+                "request": request,
+            },
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)

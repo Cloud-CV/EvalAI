@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChildren, QueryList, OnDestroy} from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, OnDestroy } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
@@ -13,10 +13,9 @@ import { EndpointsService } from '../../../services/endpoints.service';
 @Component({
   selector: 'app-teamlist',
   templateUrl: './teamlist.component.html',
-  styleUrls: ['./teamlist.component.scss']
+  styleUrls: ['./teamlist.component.scss'],
 })
 export class TeamlistComponent implements OnInit, OnDestroy {
-
   isnameFocused = false;
   isurlFocused = false;
   isTeamNameRequired = false;
@@ -86,7 +85,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   create_team = {
     team_name: '',
-    team_url: ''
+    team_url: '',
   };
 
   /**
@@ -169,6 +168,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    * Route path for create challenge
    */
   createChallengeRoutePath = '/challenge-create';
+  
+  /**
+   * Route path for create template challenge page
+   */
+  createTemplateChallengeRoutePath = '/template-challenge-create';
 
   /**
    * Filter query as participant team name
@@ -180,28 +184,49 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    */
   termsAndConditionContent = [
     'Participants can train their models with the released training set' +
-    ', also with other training images as long as they are disjoint with the test set' +
-    '(see <a class="blue-text" href="https://arxiv.org/pdf/1804.09691.pdf" target="_blank">arXiv paper</a>)',
+      ', also with other training images as long as they are disjoint with the test set' +
+      '(see <a class="blue-text" href="https://arxiv.org/pdf/1804.09691.pdf" target="_blank">arXiv paper</a>)',
 
     'We provide the evaluation codes, along with the released validation dataset, ' +
-    'for participants to validate their algorithms on validation set during the <strong>validation phase</strong>.' +
-    'The usage instruction is described in "readme.txt" released along with the train/validation data. ',
+      'for participants to validate their algorithms on validation set during the <strong>validation phase</strong>.' +
+      'The usage instruction is described in "readme.txt" released along with the train/validation data. ',
 
     'For <strong>testing phase</strong> of <strong>identification</strong> track, ' +
-    'we will release the test set where gallery set is fully labelled with idenitities, ' +
-    'and probe images with only pseudo labels (not related to identities). ' +
-    'Participants will submit a file reporting each probe image\'s ' +
-    'feature distance to the top-20 matching gallery identities and the corresponding identity indexes ' +
-    '(see "submission format" on the "Overview" page), and then their performance will be measured by our system.   ',
+      'we will release the test set where gallery set is fully labelled with idenitities, ' +
+      'and probe images with only pseudo labels (not related to identities). ' +
+      "Participants will submit a file reporting each probe image's " +
+      'feature distance to the top-20 matching gallery identities and the corresponding identity indexes ' +
+      '(see "submission format" on the "Overview" page), and then their performance will be measured by our system.   ',
 
     'For <strong>testing phase</strong> of <strong>verification</strong> track, ' +
-    'we will release the images with only pseudo labels and the constructed image pairs, ' +
-    'without indicating they are positive or negative. ' +
-    'Participants will submit a file reporting each image pair\'s matching socre, ' +
-    'and then their performance will be measured by our system.   '
+      'we will release the images with only pseudo labels and the constructed image pairs, ' +
+      'without indicating they are positive or negative. ' +
+      "Participants will submit a file reporting each image pair's matching socre, " +
+      'and then their performance will be measured by our system.   ',
   ];
 
   /**
+   * Team list route's query parameter subscription
+   */
+  teamListRouteQueryParamSub = null;
+
+  /**
+   * Is the team being selected for a template based challenge or not
+   */
+  isTemplateChallenge = false;
+
+  /**
+   * Id of the challenge template selected
+   */
+  templateId = null;
+
+  /**
+   * Number of phases in the challenge template
+   */
+  templatePhases = null;
+
+  /**
+
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.
@@ -211,13 +236,15 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    * @param challengeService  ChallengeService Injection.
    * @param endpointsService  EndpointsService Injection.
    */
-  constructor(private apiService: ApiService,
-              private authService: AuthService,
-              private globalService: GlobalService,
-              private router: Router,
-              private route: ActivatedRoute,
-              private challengeService: ChallengeService,
-              private endpointsService: EndpointsService) { }
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService,
+    private globalService: GlobalService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    private endpointsService: EndpointsService
+  ) {}
 
   /**
    * Component on initialized.
@@ -237,7 +264,17 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       }
     });
 
-    if (this.router.url === this.hostTeamRoutePath) {
+    this.teamListRouteQueryParamSub = this.route
+      .queryParams
+      .subscribe(params => {
+        this.isTemplateChallenge = params['template'] || false;
+        if(this.isTemplateChallenge){
+          this.templateId = params['templateId'];
+          this.templatePhases = params['templatePhases'];
+        }
+      });
+
+    if (this.router.url === this.hostTeamRoutePath || this.isTemplateChallenge) {
       this.isHost = true;
       this.fetchTeamsPath = 'hosts/challenge_host_team';
       this.createTeamsPath = 'hosts/create_challenge_host_team';
@@ -245,12 +282,12 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       this.deleteMembersPath = 'hosts/challenge_host_team/<team_id>/challenge_host/';
       this.fetchMyTeams(this.fetchTeamsPath);
       this.teamCreateTitle = 'Create a New Team';
-      this.teamSelectTitle = 'Select a Challenge Host Team';
+      this.teamSelectTitle = 'Please Select a Challenge Host Team';
       this.teamCreateButton = 'Create Host Team';
     } else {
       if (this.router.url !== this.participantTeamRoutePath) {
         this.isOnChallengePage = true;
-        this.challengeService.currentChallenge.subscribe(challenge => this.challenge = challenge);
+        this.challengeService.currentChallenge.subscribe((challenge) => (this.challenge = challenge));
       }
       this.fetchTeamsPath = 'participants/participant_team';
       this.createTeamsPath = this.fetchTeamsPath;
@@ -263,10 +300,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     if (this.authServiceSubscription) {
       this.authServiceSubscription.unsubscribe();
     }
+    this.teamListRouteQueryParamSub.unsubscribe();
   }
 
   /**
@@ -293,7 +331,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     if (reset) {
       this.seeMore = 1;
     }
-    this.filteredTeams = this.allTeams.slice(((this.seeMore - 1) * this.windowSize), (this.seeMore * this.windowSize));
+    this.filteredTeams = this.allTeams.slice((this.seeMore - 1) * this.windowSize, this.seeMore * this.windowSize);
     this.filteredTeamSource.next(this.filteredTeams);
   }
 
@@ -368,11 +406,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     const SELF = this;
     this.globalService.startLoader('Fetching Teams');
     this.apiService.getUrl(path).subscribe(
-      data => {
+      (data) => {
         this.globalService.stopLoader();
         SELF.updateTeamsData(data);
       },
-      err => {
+      (err) => {
         if (err.status === 403) {
           this.router.navigate(['permission-denied']);
         }
@@ -391,24 +429,24 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     const deleteTeam = (e) => {
       SELF.apiCall = () => {
         SELF.apiService.deleteUrl(SELF.deleteTeamsPath + '/' + e).subscribe(
-        data => {
-          // Success Message in data.message
-          SELF.globalService.showToast('success', 'You were removed from the team!', 5);
-          SELF.fetchMyTeams(SELF.fetchTeamsPath);
-          SELF.selectedTeam = null;
-        },
-        err => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => {}
+          (data) => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'You were removed from the team!', 5);
+            SELF.fetchMyTeams(SELF.fetchTeamsPath);
+            SELF.selectedTeam = null;
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {}
         );
       };
       const PARAMS = {
         title: 'Would you like to remove yourself ?',
-        content: 'Note: This action will remove you from the team.',
+        content: 'Note: This action will remove you from the team',
         confirm: 'Yes',
         deny: 'Cancel',
-        confirmCallback: SELF.apiCall
+        confirmCallback: SELF.apiCall,
       };
       SELF.globalService.showConfirm(PARAMS);
       return false;
@@ -423,28 +461,30 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     const SELF = this;
     let TeamUrl;
     const editTeam = (team) => {
-    const teamId = team['id'];
-    const teamName = team['team_name'];
-    const teamUrl = team['team_url'];
-    TeamUrl = (this.isHost) ? SELF.endpointsService.hostTeamURL(teamId) : SELF.endpointsService.participantTeamURL(teamId);
+      const teamId = team['id'];
+      const teamName = team['team_name'];
+      const teamUrl = team['team_url'];
+      TeamUrl = this.isHost
+        ? SELF.endpointsService.hostTeamURL(teamId)
+        : SELF.endpointsService.participantTeamURL(teamId);
       SELF.apiCall = (params) => {
         const BODY = JSON.stringify(params);
         SELF.apiService.patchUrl(TeamUrl, BODY).subscribe(
-        data => {
-          // Success Message in data.message
-          SELF.globalService.showToast('success', 'Team Updated', 5);
-          SELF.fetchMyTeams(SELF.fetchTeamsPath);
-          SELF.selectedTeam = null;
-        },
-        err => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => {}
+          (data) => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'Team Updated', 5);
+            SELF.fetchMyTeams(SELF.fetchTeamsPath);
+            SELF.selectedTeam = null;
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {}
         );
       };
       const PARAMS = {
-        title: 'Change Team Name',
-        content: 'Enter new team name',
+        title: 'Edit team details',
+        content: '',
         confirm: 'Confirm',
         deny: 'Cancel',
         form: [
@@ -453,18 +493,18 @@ export class TeamlistComponent implements OnInit, OnDestroy {
             label: 'team_name',
             placeholder: 'Team Name',
             value: teamName,
-            type: 'text'
+            type: 'text',
           },
           {
             isRequired: false,
             label: 'team_url',
             placeholder: 'Team URL',
             value: teamUrl,
-            type: 'text'
-          }
+            type: 'text',
+          },
         ],
         isButtonDisabled: true,
-        confirmCallback: SELF.apiCall
+        confirmCallback: SELF.apiCall,
       };
       SELF.globalService.showModal(PARAMS);
     };
@@ -484,33 +524,33 @@ export class TeamlistComponent implements OnInit, OnDestroy {
           apiPath = SELF.endpointsService.hostTeamInviteURL(team);
         }
         SELF.apiService.postUrl(apiPath, BODY).subscribe(
-        data => {
-          // Success Message in data.message
-          SELF.globalService.showToast('success', 'User added to the team successfully', 5);
-          SELF.fetchMyTeams(SELF.fetchTeamsPath);
-          SELF.selectedTeam = null;
-        },
-        err => {
-          SELF.globalService.handleApiError(err, true);
-        },
-        () => {}
+          (data) => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'User added to the team successfully', 5);
+            SELF.fetchMyTeams(SELF.fetchTeamsPath);
+            SELF.selectedTeam = null;
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+          },
+          () => {}
         );
       };
       const PARAMS = {
-        title: 'Add other members to this Team',
-        content: 'Enter the email address of the person',
+        title: 'Invite members to the team',
+        content: '',
         confirm: 'ADD',
         deny: 'Cancel',
         form: [
           {
             isRequired: true,
             label: 'email',
-            placeholder: 'Email',
-            type: 'email'
-          }
+            placeholder: 'Enter the email address',
+            type: 'email',
+          },
         ],
         isButtonDisabled: true,
-        confirmCallback: SELF.apiCall
+        confirmCallback: SELF.apiCall,
       };
       SELF.globalService.showModal(PARAMS);
     };
@@ -534,7 +574,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       const API_PATH = this.createTeamsPath;
       const url = this.create_team['team_url'];
       let TEAM_BODY: any = {
-        team_name: this.create_team['team_name']
+        team_name: this.create_team['team_name'],
       };
       if (url) {
         TEAM_BODY['team_url'] = url;
@@ -542,7 +582,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       TEAM_BODY = JSON.stringify(TEAM_BODY);
       this.globalService.startLoader('Creating Team');
       this.apiService.postUrl(API_PATH, TEAM_BODY).subscribe(
-        data => {
+        (data) => {
           this.globalService.stopLoader();
           // Success Message in data.message
           this.globalService.showToast('success', 'Team created successfully!', 5);
@@ -551,14 +591,14 @@ export class TeamlistComponent implements OnInit, OnDestroy {
           // Reset input
           this.create_team = {
             team_url: '',
-            team_name: ''
+            team_name: '',
           };
 
           this.isnameFocused = false;
           this.isurlFocused = false;
           this.isTeamNameRequired = false;
         },
-        err => {
+        (err) => {
           this.globalService.stopLoader();
           this.globalService.showToast('error', err.error.team_name, 5);
           this.globalService.handleFormError(this.components, err);
@@ -578,28 +618,9 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     this.router.navigate([this.createChallengeRoutePath]);
   }
 
-  /**
-   * Participate in the challenge using selected team.
-   */
-  participateInChallenge() {
-    const confirmCallback = () => { this.challengeService.participateInChallenge(this.challenge['id'], this.selectedTeam['id']); };
-
-    let content = '' + '<ol>';
-    this.termsAndConditionContent.forEach((item) => {
-      content += `<li>${item}</li>`;
-    });
-    content += '</ol>';
-
-    const PARAMS = {
-      title: 'Terms and Conditions',
-      content: content,
-      confirm: 'Participate',
-      deny: 'Cancel',
-      label: 'I accept terms and conditions',
-      confirmCallback: confirmCallback,
-      denyCallback: null
-    };
-    this.globalService.showTermsAndConditionsModal(PARAMS);
+  createChallengeFromTemplate() {
+    this.challengeService.changeCurrentHostTeam(this.selectedTeam);
+    this.router.navigate([this.createTemplateChallengeRoutePath, this.templateId, this.templatePhases]);
   }
 
   /**
@@ -611,24 +632,24 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       const deleteUrl = SELF.deleteMembersPath.replace('<team_id>', team.teamId);
       SELF.apiCall = (params) => {
         SELF.apiService.deleteUrl(deleteUrl + team.participantId).subscribe(
-        data => {
-          // Success Message in data.message
-          SELF.globalService.showToast('success', 'Member was removed from the team!', 5);
-          SELF.fetchMyTeams(SELF.fetchTeamsPath);
-          SELF.selectedTeam = null;
-        },
-        err => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => {}
+          (data) => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'Member was removed from the team!', 5);
+            SELF.fetchMyTeams(SELF.fetchTeamsPath);
+            SELF.selectedTeam = null;
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err);
+          },
+          () => {}
         );
       };
       const PARAMS = {
         title: 'Would you like to remove this member ?',
-        content: 'Note: This action will remove this member from the team.',
+        content: 'Note: This action will remove this member from the team',
         confirm: 'Yes',
         deny: 'Cancel',
-        confirmCallback: SELF.apiCall
+        confirmCallback: SELF.apiCall,
       };
       SELF.globalService.showConfirm(PARAMS);
       return false;
@@ -637,9 +658,9 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   }
 
   /**
-  * Filter teams by team name
-  * @param teamName Participant team name
-  */
+   * Filter teams by team name
+   * @param teamName Participant team name
+   */
   filterTeam(teamName) {
     const SELF = this;
     SELF.filterTeamsQuery = teamName;
@@ -649,11 +670,14 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     } else {
       API_PATH = SELF.endpointsService.FilteredParticipantTeamURL(teamName);
     }
+    let name = SELF.filterTeamsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
-      data => {
-        SELF.updateTeamsData(data);
+      (data) => {
+        if(name == SELF.filterTeamsQuery) {
+          SELF.updateTeamsData(data);
+        }
       },
-      err => {
+      (err) => {
         SELF.globalService.handleApiError(err, true);
       },
       () => {}

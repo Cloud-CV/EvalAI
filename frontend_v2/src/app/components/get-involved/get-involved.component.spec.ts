@@ -16,21 +16,15 @@ describe('GetInvolvedComponent', () => {
   let globalService;
   let globalServiceSpy;
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ GetInvolvedComponent, HeaderStaticComponent, FooterComponent ],
-      providers: [
-        GlobalService,
-        AuthService,
-        ApiService,
-        EndpointsService
-      ],
-      imports: [ RouterTestingModule, HttpClientModule ]
-    })
-    .compileComponents();
+      declarations: [GetInvolvedComponent, HeaderStaticComponent, FooterComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [RouterTestingModule, HttpClientModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -1,4 +1,5 @@
 /* Styles for Submission page */
+@import './variables.scss';
 
 .remaining-submission-clock {
 	padding-top: 55px;
@@ -44,16 +45,22 @@ li {
 
 code {
 	font-family: "Roboto";
+	display: inline-block;
 	font-size: 14px;
 	font-weight: 300;
 	background:#eff0f1; border:#eff0f1 dashed 1px; padding:6px;
 	border-radius: 10px;
+	max-width: 90%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .code-btn {
 	height: 100% !important;
 	padding: 0 0.5rem !important;
 	line-height: 200% !important;
+	margin-top: -25px;
 }
 
 .dashed-link {
@@ -65,7 +72,7 @@ code {
 }
 
 .submission-options {
-    margin-left: 10px;
+    margin-bottom: 10px;
 }
 
 md-radio-button.md-default-theme .md-on, md-radio-button .md-on {
@@ -89,4 +96,24 @@ md-radio-button .md-on {
 [type="checkbox"] + label:before, [type="checkbox"]:not(.filled-in) + label:after {
     width: 16px;
     height: 16px;
+}
+
+.color-orange {
+	color: $highlight;
+}
+
+.no-top-margin-p {
+	margin-top: 0px;
+}
+
+.submission-instructions {
+	padding-top: 0px;
+	padding-right: 30px;
+	padding-left: 30px;
+}
+
+.center-content {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
 }

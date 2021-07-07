@@ -49,7 +49,11 @@
                 if (status == 200) {
                     for (var i in result) {
                         if (result[i] === "" || result[i] === undefined || result[i] === null) {
-                            result[i] = "-";
+                            if (i === "linkedin_url" || i === "github_url" || i === "google_scholar_url") {
+                                result[i] = "";
+                            } else {
+                                result[i] = "-";
+                            }
                             vm.countLeft = vm.countLeft + 1;
                         }
                         count = count + 1;
@@ -135,6 +139,25 @@
                 // Fire event
                 anchor[0].dispatchEvent(ev);
 
+        };
+
+        vm.refreshToken = function() {
+            parameters.url = 'accounts/user/refresh_auth_token';
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.jsonResponse = response.data;
+                    vm.token = response.data['token'];
+                    utilities.storeData('refreshJWT', vm.token);
+                    $rootScope.notify("success", "Token generated successfully.");
+                },
+                onError: function(response) {
+                    var details = response.data;
+                    $rootScope.notify("error", details['detail']);
+                }
+            };
+            utilities.sendRequest(parameters);
         };
     }
 

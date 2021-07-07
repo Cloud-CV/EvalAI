@@ -2,13 +2,13 @@
 @import './mixins.scss';
 
 .ev-pad {
-	padding-left: 15px;
-	padding-right: 10px;
+  padding-left: 15px;
+  padding-right: 10px;
 }
 
 .tnc-pad {
-	padding-left: 10px;
-	padding-right: 15px;
+  padding-left: 10px;
+  padding-right: 15px;
 }
 
 .challenge-card {
@@ -21,12 +21,31 @@
   padding-right: 0px;
 }
 
-@include screen-small {
-	.ev-pad {
-		padding-right: 15px;
-	}
+.ev-action {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 35px;
+}
 
-	.tnc-pad {
-		padding-left: 15px;
-	}
+.ev-upload-action {
+  margin-right: 10px;
+}
+
+@include screen-small {
+  .ev-pad {
+    padding-right: 15px;
+  }
+
+  .tnc-pad {
+    padding-left: 15px;
+  }
+
+  .ev-action {
+    margin-top: 10px;
+    padding-left: 15px;
+    display: inline-block;
+  }
+
 }

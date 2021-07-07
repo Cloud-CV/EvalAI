@@ -2,23 +2,24 @@
 @import './styles/mixins.scss';
 
 .privacy-container {
+  width: 100%;
   * {
     transition: all 0.2s ease;
   }
   .privacy-nav-container {
     margin-top: 30px;
-    top: 10%;
+    top: 0;
     bottom: 0;
     max-height: 600px !important;
     overflow-y: scroll;
 
     .privacy-nav {
-      font-weight: $fw-regular;
+      font-weight: $fw-semibold;
     }
-    
-  position: relative;
-  position: -webkit-sticky;
-  position: sticky;
+
+    position: relative;
+    position: -webkit-sticky;
+    position: sticky;
     max-height: 65vh;
     ul {
       list-style-type: none;
@@ -31,7 +32,7 @@
         cursor: pointer;
         color: $gray-darker;
         font-size: $fs-16;
-        font-weight: $fw-regular;
+        font-weight: $fw-semibold;
 
         &:hover {
           border-left: 5px solid $gray-darker;
@@ -39,34 +40,23 @@
       }
 
       li.scroll-selected {
-        color: $yellow;
-        border-left: 5px solid $yellow;
+        color: $orange;
+        border-left: 5px solid $orange;
       }
     }
   }
   .privacy-content {
-    margin-top: 30px;
-    padding-right: 50px;
+    margin-top: 20px;
+    margin-left: 1%;
+    margin-right: 1%;
     a {
       color: $blue-lighter !important;
-      font-weight: $fw-regular;
-    }
-    .scroll-to-top {
-      position: fixed;
-      top: 80%;
-      right: 4%;
-      height: 50px;
-      cursor: pointer;
-      z-index: 4 !important;
-      &:hover {
-        height: 55px;
-      }
+      font-weight: $fw-semibold;
     }
     .privacy-title {
       margin-top: 10px;
       font-size: $fs-34;
       color: $med-black;
-      font-weight: $fw-semibold;
     }
     .privacy-section-content {
       font-weight: $fw-light;
@@ -82,16 +72,14 @@
     .privacy-section-title {
       font-size: $fs-20;
       color: $med-black;
-      font-weight: $fw-bold;
+      font-weight: $fw-semibold;
       margin-top: 20px;
       &.scroll-selected {
-        color: $yellow;
+        color: $orange;
       }
     }
   }
 }
-
-
 
 @include screen-small-medium {
   .privacy-nav-container,
@@ -103,5 +91,20 @@
 @include screen-medium {
   .privacy-nav-container {
     top: 20%;
+  }
+}
+
+@include screen-medium {
+  .privacy-container {
+    padding-top:100px !important;
+  }
+}
+
+@include screen-large {
+  .privacy-container {
+    padding-left:0;
+    padding-right: 0;
+    margin-right: auto;
+    margin-left: auto;
   }
 }

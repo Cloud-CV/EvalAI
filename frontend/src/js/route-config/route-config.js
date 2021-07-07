@@ -2,12 +2,15 @@
  * Config for the router
  */
 
-(function() {
+(function () {
+    'use strict';
     angular
         .module('evalai')
         .config(configure);
 
     var baseUrl = "dist/views";
+
+    configure.$inject = ['$stateProvider', '$urlRouterProvider', '$locationProvider', '$urlMatcherFactoryProvider'];
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
 
@@ -443,7 +446,7 @@
             title: 'Leaderboard'
         };
 
-        var challenge_invitation = {
+        var challengeInvitation = {
             name: "challenge-invitation",
             url: "/accept-invitation/:invitationKey",
             controller: "ChallengeInviteCtrl",
@@ -522,7 +525,7 @@
         $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
-        $stateProvider.state(challenge_invitation);
+        $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);
 
         $stateProvider.state(manage);
@@ -537,12 +540,16 @@
 })();
 
 // define run block here
-(function() {
+(function () {
+    
+    'use strict';
 
     angular
         .module('evalai')
         .run(runFunc);
 
+    runFunc.$inject = ['$rootScope', '$state', 'utilities', '$window', '$location', 'toaster'];
+    
     function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');

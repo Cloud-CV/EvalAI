@@ -16,6 +16,7 @@ RUN npm install phantomjs-prebuilt
 RUN npm link gulp
 RUN npm cache clean -f
 RUN npm install
+RUN npm install -g qs
 RUN bower install --allow-root
 ADD frontend /code/frontend
 
@@ -26,4 +27,4 @@ FROM nginx:1.13-alpine
 ARG NODE_ENV
 COPY docker/prod/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
 COPY --from=node /code /code
-COPY /ssl /code/ssl
+COPY /ssl /etc/ssl

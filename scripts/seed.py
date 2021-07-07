@@ -5,6 +5,7 @@ import os
 import random
 import string
 import uuid
+import yaml
 
 from datetime import timedelta
 
@@ -21,10 +22,12 @@ from challenges.models import (
     Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
     LeaderboardData,
 )
+from challenges.utils import get_file_content
 from hosts.models import ChallengeHostTeam, ChallengeHost
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
@@ -35,9 +38,17 @@ NUMBER_OF_CHALLENGES = 1
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
 DATASET_SPLIT_ITERATOR = 0
+CHALLENGE_IMAGE_PATH = "examples/example1/test_zip_file/logo.png"
+CHALLENGE_CONFIG_BASE_PATH = os.path.join(settings.BASE_DIR, "examples")
+CHALLENGE_CONFIG_DIRS = ["example1", "example2"]
+CHALLENGE_CONFIG_PATHS = [
+    os.path.join(CHALLENGE_CONFIG_BASE_PATH, config)
+    for config in CHALLENGE_CONFIG_DIRS
+]
+
 
 try:
-    xrange   # Python 2
+    xrange  # Python 2
 except NameError:
     xrange = range  # Python 3
 
@@ -116,7 +127,7 @@ def create_challenge_host_team(user):
     """
     team_name = "{} Host Team".format(fake.city())
     team = ChallengeHostTeam.objects.create(
-        team_name=team_name, created_by=user,
+        team_name=team_name, created_by=user
     )
     print(
         "Challenge Host Team created with team_name: {} created_by: {}".format(
@@ -139,69 +150,70 @@ def create_challenge_host_team(user):
 
 def create_challenge_host_participant_team(challenge_host_team):
     """
-        Creates challenge host participant team and returns it.
+    Creates challenge host participant team and returns it.
     """
     emails = challenge_host_team.get_all_challenge_host_email()
     team_name = "Host_{}_Team".format(random.randint(1, 100000))
     participant_host_team = ParticipantTeam(
-        team_name=team_name,
-        created_by=challenge_host_team.created_by,
+        team_name=team_name, created_by=challenge_host_team.created_by
     )
     participant_host_team.save()
     for email in emails:
         user = User.objects.get(email=email)
         host = Participant(
-            user=user,
-            status=Participant.ACCEPTED,
-            team=participant_host_team,
+            user=user, status=Participant.ACCEPTED, team=participant_host_team
         )
         host.save()
     return participant_host_team
 
 
-def create_challenges(number_of_challenges, host_team=None, participant_host_team=None):
+def create_challenges(
+    number_of_challenges, host_team=None, participant_host_team=None
+):
     """
     Creates past challenge, on-going challenge and upcoming challenge.
     """
     anon_counter = 0  # two private leaderboards
     for i in xrange(number_of_challenges):
-        is_leaderboard_anon = False
+        anonymous_leaderboard = False
+        is_featured = False
+        title = "{} Challenge".format(fake.first_name())
         if anon_counter < 2:
-            is_leaderboard_anon = True
+            anonymous_leaderboard = True
             anon_counter += 1
-        else:
-            is_leaderboard_anon = False
 
-        if i % 3 == 0:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-            )
-        elif i % 3 == 1:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=500),
-                timezone.now() - timedelta(days=100),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-            )
-        elif i % 3 == 2:
-            create_challenge(
-                "{} Challenge".format(fake.first_name()),
-                timezone.now() + timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team,
-                participant_host_team,
-                is_leaderboard_anon,
-            )
+        start_date = timezone.now() - timedelta(days=100)
+        end_date = timezone.now() + timedelta(days=500)
+
+        if i % 4 == 1:
+            start_date = timezone.now() - timedelta(days=100)
+            end_date = timezone.now() - timedelta(days=500)
+        elif i % 4 == 2:
+            start_date = timezone.now() + timedelta(days=100)
+            end_date = timezone.now() + timedelta(days=500)
+        elif i % 4 == 3:
+            is_featured = True
+
+        create_challenge(
+            title,
+            start_date,
+            end_date,
+            host_team,
+            participant_host_team,
+            anonymous_leaderboard,
+            is_featured=is_featured,
+        )
 
 
-def create_challenge(title, start_date, end_date, host_team, participant_host_team, anon_leaderboard):
+def create_challenge(
+    title,
+    start_date,
+    end_date,
+    host_team,
+    participant_host_team,
+    anon_leaderboard=False,
+    is_featured=False,
+):
     """
     Creates a challenge.
     """
@@ -220,6 +232,9 @@ def create_challenge(title, start_date, end_date, host_team, participant_host_te
     uuid_stamp = uuid.uuid4().hex[0:10]
     slug = "{t}-{y}-{z}".format(t=title, y=year, z=uuid_stamp)
     slug = slug.lower().replace(" ", "-")[:198]
+    image_file = ContentFile(
+        get_file_content(CHALLENGE_IMAGE_PATH, "rb"), "logo.png"
+    )
     challenge = Challenge(
         title=title,
         short_description=fake.paragraph(),
@@ -239,6 +254,8 @@ def create_challenge(title, start_date, end_date, host_team, participant_host_te
         start_date=start_date,
         end_date=end_date,
         queue=queue,
+        featured=is_featured,
+        image=image_file,
     )
     challenge.save()
 
@@ -305,10 +322,7 @@ def create_leaderboard():
     """
     Creates Leaderboard schema and returns it.
     """
-    schema = {
-        "labels": ["score", ],
-        "default_order_by": "score",
-    }
+    schema = {"labels": ["score"], "default_order_by": "score"}
     leaderboard = Leaderboard.objects.create(schema=schema)
     print("Leaderboard created")
     return leaderboard
@@ -336,7 +350,7 @@ def create_dataset_splits(number_of_splits):
         name = "Split {}".format(DATASET_SPLIT_ITERATOR + 1)
         codename = "{}{}".format("split", split + 1)
         dataset_split = DatasetSplit.objects.create(
-            name=name, codename=codename,
+            name=name, codename=codename
         )
         dataset_splits.append(dataset_split)
         DATASET_SPLIT_ITERATOR += 1
@@ -371,9 +385,7 @@ def create_participant_team(user):
     Creates participant team and returns it.
     """
     team_name = "{} Participant Team".format(fake.city())
-    team = ParticipantTeam.objects.create(
-        team_name=team_name, created_by=user,
-    )
+    team = ParticipantTeam.objects.create(team_name=team_name, created_by=user)
     print(
         "Participant Team created with team_name: {} created_by: {}".format(
             team_name, user.username
@@ -388,8 +400,13 @@ def create_participant_team(user):
     return team
 
 
-def create_submission(participant_user, participant_team, challenge_phase,
-                      dataset_splits, submission_status):
+def create_submission(
+    participant_user,
+    participant_team,
+    challenge_phase,
+    dataset_splits,
+    submission_status,
+):
     status = submission_status
     submitted_at = timezone.now()
     started_at = timezone.now()
@@ -423,6 +440,7 @@ def create_submission(participant_user, participant_team, challenge_phase,
         submission_result_file=ContentFile(submission_result),
         submission_metadata_file=None,
         is_baseline=True,
+        is_public=challenge_phase.is_submission_public,
     )
     submission.status = status
     submission.save()
@@ -435,6 +453,61 @@ def create_submission(participant_user, participant_team, challenge_phase,
     )
 
     return submission
+
+
+def create_challenge_template(challenge_config_path):
+    """
+    Creates a challenge template
+
+    Arguments:
+        challenge_config_path {str}: path to the challenge config location having the config files and zip
+    """
+    title = "{} template".format(fake.first_name())
+
+    template_file = open(
+        os.path.join(challenge_config_path, "test_zip_file.zip"), "rb"
+    )
+
+    challenge_config_yaml_file_path = os.path.join(
+        challenge_config_path, "test_zip_file", "zip_challenge.yaml"
+    )
+    with open(challenge_config_yaml_file_path, "r") as stream:
+        yaml_file_data = yaml.safe_load(stream)
+
+    challenge_image_file_path = os.path.join(
+        challenge_config_path, "test_zip_file", yaml_file_data["image"]
+    )
+    image_file = ContentFile(
+        get_file_content(challenge_image_file_path, "rb"), "logo.png"
+    )
+
+    dataset = fake.first_name()
+    phases = len(yaml_file_data["challenge_phases"])
+    splits = len(yaml_file_data["dataset_splits"])
+
+    year = datetime.date.today().year
+    uuid_stamp = uuid.uuid4().hex[0:10]
+    slug = "{t}-{y}-{z}".format(t=title, y=year, z=uuid_stamp)
+
+    challenge_template = ChallengeTemplate.objects.create(
+        title=title,
+        template_file=SimpleUploadedFile(
+            template_file.name, template_file.read()
+        ),
+        is_active=True,
+        image=image_file,
+        dataset=dataset,
+        eval_metrics=["Accuracy", "F1"],
+        phases=phases,
+        splits=splits,
+        slug=slug,
+    )
+
+    challenge_template.save()
+
+    print("Challenge template {} created.".format(challenge_template.title))
+
+    return challenge_template
 
 
 def run(*args):
@@ -452,12 +525,14 @@ def run(*args):
         # Create challenge host team with challenge host
         challenge_host_team = create_challenge_host_team(user=host_user)
         # Create challenge participant team for challenge host
-        participant_host_team = create_challenge_host_participant_team(challenge_host_team)
+        participant_host_team = create_challenge_host_participant_team(
+            challenge_host_team
+        )
         # Create challenge
         create_challenges(
             number_of_challenges=NUMBER_OF_CHALLENGES,
             host_team=challenge_host_team,
-            participant_host_team=participant_host_team
+            participant_host_team=participant_host_team,
         )
         participant_user = create_user(is_admin=False, username="participant")
         participant_team = create_participant_team(user=participant_user)
@@ -499,6 +574,9 @@ def run(*args):
                         challenge_phase, leaderboard, dataset_split
                     )
                     create_leaderboard_data(challenge_phase_split, submission)
+
+        for path in CHALLENGE_CONFIG_PATHS:
+            create_challenge_template(path)
 
         print("Database successfully seeded.")
     except Exception as e:

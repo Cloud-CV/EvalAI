@@ -45,8 +45,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     url(r"^$", views.home, name="home"),
-    url(r"^accounts/", include("allauth.urls")),
-    url(r"^admin/", admin.site.urls),
+    url(r"^api/allauth/accounts/", include("allauth.urls")),
+    url(r"^api/admin/", admin.site.urls),
     url(
         r"^api/auth/login",
         obtain_expiring_auth_token,
@@ -83,12 +83,12 @@ urlpatterns = [
     url(r"^api/web/", include("web.urls", namespace="web")),
     url(r"^email_reporting/", include("django_ses.urls")),
     url(
-        r"^api-docs/docs(?P<format>\.json|\.yaml)$",
+        r"^api/docs/docs(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),
         name="schema-yaml",
     ),
     url(
-        r"^api-docs/$",
+        r"^api/docs/$",
         schema_view.with_ui("redoc", cache_timeout=0),
         name="schema-redoc",
     ),
@@ -96,12 +96,15 @@ urlpatterns = [
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
 if settings.DEBUG:
-    urlpatterns += [
-        url(r"^dbschema/", include("django_spaghetti.urls")),
-        url(r"^docs/", include("rest_framework_docs.urls")),
-        url(
-            r"^api/admin-auth/",
-            include("rest_framework.urls", namespace="rest_framework"),
-        ),
-        url(r"^silk/", include("silk.urls", namespace="silk")),
-    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += (
+        [
+            url(r"^dbschema/", include("django_spaghetti.urls")),
+            url(
+                r"^api/admin-auth/",
+                include("rest_framework.urls", namespace="rest_framework"),
+            ),
+            url(r"^silk/", include("silk.urls", namespace="silk")),
+        ]
+        + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    )

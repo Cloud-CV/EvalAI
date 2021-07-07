@@ -9,7 +9,7 @@
         .module('evalai')
         .service('utilities', utilities);
 
-    utilities.$inject = ['$http', 'EnvironmentConfig', '$rootScope'];
+    utilities.$inject = ['$http', 'EnvironmentConfig'];
 
     function utilities($http, EnvironmentConfig) {
 

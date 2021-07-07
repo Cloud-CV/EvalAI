@@ -1,14 +1,18 @@
+import boto3
 import collections
 import json
+import mock
 import os
+import requests
 import shutil
 
 from datetime import timedelta
+from moto import mock_s3
 
-from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.urls import reverse_lazy
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -531,6 +535,26 @@ class BaseAPITestClass(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_challenge_submission_when_file_url_is_none(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        expected = {"error": "The file URL is missing!"}
+
+        response = self.client.post(
+            self.url, {"status": "submitting"}, format="multipart"
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
     def setUp(self):
@@ -645,6 +669,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "status": self.submission.status,
                 "input_file": "http://testserver%s"
                 % (self.submission.input_file.url),
+                "submission_input_file": None,
                 "method_name": self.submission.method_name,
                 "method_description": self.submission.method_description,
                 "project_url": self.submission.project_url,
@@ -659,10 +684,12 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission.is_public,
                 "is_flagged": self.submission.is_flagged,
+                "ignore_submission": False,
                 "when_made_public": self.submission.when_made_public,
                 "is_baseline": self.submission.is_baseline,
                 "job_name": self.submission.job_name,
                 "submission_metadata": None,
+                "is_verified_by_host": False,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -1351,6 +1378,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.data["method_name"],
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1365,12 +1393,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1400,6 +1430,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.private_submission.status,
             "input_file": "http://testserver%s"
             % (self.private_submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.data["method_name"],
             "method_description": self.private_submission.method_description,
             "project_url": self.private_submission.project_url,
@@ -1414,12 +1445,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.private_submission.is_public,
             "is_flagged": self.private_submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.private_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1467,6 +1500,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1479,14 +1513,16 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "is_public": self.submission.is_public,
+            "is_public": self.data["is_public"],
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1550,6 +1586,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.host_participant_team_submission.status,
             "input_file": "http://testserver%s"
             % (self.host_participant_team_submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.host_participant_team_submission.method_name,
             "method_description": self.host_participant_team_submission.method_description,
             "project_url": self.host_participant_team_submission.project_url,
@@ -1565,6 +1602,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.host_participant_team_submission.is_public,
             "is_flagged": self.host_participant_team_submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.host_participant_team_submission.when_made_public.isoformat(),
                 "Z",
@@ -1572,6 +1610,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_baseline": True,
             "job_name": self.host_participant_team_submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1629,6 +1668,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1643,12 +1683,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1673,6 +1715,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "status": self.submission.status,
             "input_file": "http://testserver%s"
             % (self.submission.input_file.url),
+            "submission_input_file": None,
             "method_name": self.submission.method_name,
             "method_description": self.submission.method_description,
             "project_url": self.submission.project_url,
@@ -1687,12 +1730,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
+            "ignore_submission": False,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
             "job_name": self.submission.job_name,
             "submission_metadata": None,
+            "is_verified_by_host": False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1735,11 +1780,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
         )
 
-        self.private_challenge_phase_split = ChallengePhaseSplit.objects.create(
-            challenge_phase=self.private_challenge_phase,
-            dataset_split=self.dataset_split,
-            leaderboard=self.private_leaderboard,
-            visibility=ChallengePhaseSplit.HOST,
+        self.private_challenge_phase_split = (
+            ChallengePhaseSplit.objects.create(
+                challenge_phase=self.private_challenge_phase,
+                dataset_split=self.dataset_split,
+                leaderboard=self.private_leaderboard,
+                visibility=ChallengePhaseSplit.HOST,
+            )
         )
 
         self.submission = Submission.objects.create(
@@ -1861,13 +1908,17 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             self.leaderboard.schema["default_order_by"]
         ]
 
-        self.filtering_score_host_participant_team = self.result_json_host_participant_team[
-            self.leaderboard.schema["default_order_by"]
-        ]
+        self.filtering_score_host_participant_team = (
+            self.result_json_host_participant_team[
+                self.leaderboard.schema["default_order_by"]
+            ]
+        )
 
-        self.filtering_score_host_participant_team_2 = self.result_json_host_participant_team_2[
-            self.leaderboard.schema["default_order_by"]
-        ]
+        self.filtering_score_host_participant_team_2 = (
+            self.result_json_host_participant_team_2[
+                self.leaderboard.schema["default_order_by"]
+            ]
+        )
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
@@ -1890,18 +1941,22 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             result=self.result_json,
         )
 
-        self.host_participant_leaderboard_data = LeaderboardData.objects.create(
-            challenge_phase_split=self.challenge_phase_split,
-            submission=self.host_participant_team_submission,
-            leaderboard=self.leaderboard,
-            result=self.result_json_host_participant_team,
+        self.host_participant_leaderboard_data = (
+            LeaderboardData.objects.create(
+                challenge_phase_split=self.challenge_phase_split,
+                submission=self.host_participant_team_submission,
+                leaderboard=self.leaderboard,
+                result=self.result_json_host_participant_team,
+            )
         )
 
-        self.host_participant_leaderboard_data_2 = LeaderboardData.objects.create(
-            challenge_phase_split=self.challenge_phase_split,
-            submission=self.host_participant_team_submission_2,
-            leaderboard=self.leaderboard,
-            result=self.result_json_host_participant_team_2,
+        self.host_participant_leaderboard_data_2 = (
+            LeaderboardData.objects.create(
+                challenge_phase_split=self.challenge_phase_split,
+                submission=self.host_participant_team_submission_2,
+                leaderboard=self.leaderboard,
+                result=self.result_json_host_participant_team_2,
+            )
         )
 
     def test_get_leaderboard(self):
@@ -1935,6 +1990,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.submission.id,
                     "submission__submission_metadata": self.submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 }
             ],
         }
@@ -1981,6 +2037,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.host_participant_team_submission.id,
                     "submission__submission_metadata": self.host_participant_team_submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2002,6 +2059,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.submission.id,
                     "submission__submission_metadata": self.submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
             ],
         }
@@ -2055,6 +2113,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.host_participant_team_submission.id,
                     "submission__submission_metadata": self.host_participant_team_submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -2076,6 +2135,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.submission.id,
                     "submission__submission_metadata": self.submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
@@ -2097,6 +2157,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.submission.is_public,
                     "submission__id": self.host_participant_team_submission_2.id,
                     "submission__submission_metadata": self.host_participant_team_submission_2.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 },
             ],
         }
@@ -2123,7 +2184,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         )
 
         expected = {
-            "detail": f"ChallengePhaseSplit {self.challenge_phase_split.id + 2} does not exist"
+            "detail": "ChallengePhaseSplit {} does not exist".format(
+                self.challenge_phase_split.id + 2
+            )
         }
 
         response = self.client.get(self.url, {})
@@ -2183,6 +2246,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__is_public": self.private_submission.is_public,
                     "submission__id": self.private_submission.id,
                     "submission__submission_metadata": self.private_submission.submission_metadata,
+                    "submission__is_verified_by_host": False,
                 }
             ],
         }
@@ -2499,3 +2563,119 @@ class UpdateSubmissionTest(BaseAPITestClass):
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+@mock_s3
+class PresignedURLSubmissionTest(BaseAPITestClass):
+    def setUp(self):
+        super(PresignedURLSubmissionTest, self).setUp()
+
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_get_submission_presigned_url(self, mock_get_aws_creds):
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+
+        expected = {
+            "presigned_urls": [
+                {
+                    "partNumber": 1,
+                    "url": "https://test-bucket.s3.amazonaws.com/media/submission_files/",
+                }
+            ]
+        }
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        client = boto3.client("s3")
+        client.create_bucket(Bucket="test-bucket")
+
+        num_file_chunks = 1
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": num_file_chunks,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+        self.assertEqual(
+            len(response.data["presigned_urls"]),
+            len(expected["presigned_urls"]),
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch("challenges.utils.get_aws_credentials_for_challenge")
+    def test_finish_submission_file_upload(self, mock_get_aws_creds):
+        # Create a submission using multipart upload
+        self.url = reverse_lazy(
+            "jobs:get_submission_file_presigned_url",
+            kwargs={"challenge_phase_pk": self.challenge_phase.pk},
+        )
+
+        self.client.force_authenticate(user=self.challenge_host.user)
+        mock_get_aws_creds.return_value = {
+            "AWS_ACCESS_KEY_ID": "dummy-key",
+            "AWS_SECRET_ACCESS_KEY": "dummy-access-key",
+            "AWS_STORAGE_BUCKET_NAME": "test-bucket",
+            "AWS_REGION": "us-east-1",
+        }
+        client = boto3.client("s3")
+        client.create_bucket(Bucket="test-bucket")
+
+        num_file_chunks = 1
+        response = self.client.post(
+            self.url,
+            data={
+                "status": "submitting",
+                "num_file_chunks": num_file_chunks,
+                "file_name": "media/submissions/dummy.txt",
+            },
+        )
+
+        expected = {
+            "upload_id": response.data["upload_id"],
+            "submission_pk": response.data["submission_pk"],
+        }
+
+        # Upload submission in parts to mocked S3 bucket
+        submission = Submission.objects.get(pk=expected["submission_pk"])
+        parts = []
+
+        presigned_url_object = response.data["presigned_urls"][0]
+        part = presigned_url_object["partNumber"]
+        url = presigned_url_object["url"]
+        file_data = submission.input_file.read()
+
+        response = requests.put(url, data=file_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        etag = response.headers["ETag"]
+        parts.append({"ETag": etag, "PartNumber": part})
+
+        # Finish multipart upload
+        self.url = reverse_lazy(
+            "jobs:finish_submission_file_upload",
+            kwargs={
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": expected["submission_pk"],
+            },
+        )
+
+        response = self.client.post(
+            self.url,
+            data={
+                "parts": json.dumps(parts),
+                "upload_id": expected["upload_id"],
+            },
+        )
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

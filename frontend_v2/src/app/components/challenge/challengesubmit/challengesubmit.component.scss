@@ -10,7 +10,7 @@
 }
 
 .guidelines-text-margin {
-  margin-top : 14px;
+  margin-top: 14px;
   margin-bottom: 14px;
 }
 
@@ -18,7 +18,9 @@
   padding-top: 55px;
 }
 
-table, th, td {
+table,
+th,
+td {
   border: none;
   border-collapse: collapse;
   border-spacing: 0;
@@ -40,7 +42,8 @@ tr {
   border-bottom: 1px solid #d0d0d0;
 }
 
-td, th {
+td,
+th {
   padding: 15px 5px;
   display: table-cell;
   vertical-align: middle;
@@ -53,7 +56,7 @@ td, th {
     padding-right: 36px;
   }
   ul {
-    padding-left: 40px;
+    padding-left: 70px;
   }
 }
 
@@ -67,7 +70,7 @@ td, th {
   font-weight: $fw-semibold;
 }
 
-::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle{
+::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
   border-color: black;
 }
 
@@ -75,23 +78,23 @@ td, th {
   border-color: black;
 }
 
-::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle{
+::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {
   border-color: black;
   background-color: black;
 }
 
-// overwrite the checkbox background
-::ng-deep .mat-checkbox-checked .mat-checkbox-background, .mat-checkbox-indeterminate .mat-checkbox-background {
-  background-color: black !important;
-}
-
-// overwrite the ripple overlay on hover and click
-::ng-deep .mat-checkbox:not(.mat-checkbox-disabled) .mat-checkbox-ripple .mat-ripple-element {
-  background-color: black !important;
-}
-
-::ng-deep .mat-checkbox .mat-checkbox-frame {
-  border-color: black;
+.input-message {
+  position: relative;
+  top: 2px;
+  left: 0;
+  text-align: left;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: $fw-light;
+  color: $yellow;
+  &.hidden {
+    opacity: 0;
+  }
 }
 
 @include screen-small {
@@ -99,26 +102,35 @@ td, th {
     padding-top: 0px;
   }
 }
-#radio_button_url {
-  margin-left: 40px;
-  margin-top: -30px;
-}
-#radio_button_file {
-  margin-left: 40px;
-  margin-top: -30px;
-}
+
 #Submission_option_hidden {
   display: none;
 }
+
 #form_hidden {
   display: none;
 }
+
 #uploadbutton {
   display: none;
 }
+
 #url_field {
   display: none;
 }
+
 #submission_option_style {
-  margin-left: 8px;
+  margin-left: 1em;
+}
+
+.numbered-list {
+  li {
+    list-style-type: decimal !important;
+  }
+}
+
+.center-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }

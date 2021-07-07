@@ -22,11 +22,12 @@ if [ -z ${TRAVIS_BRANCH} ]; then
 fi
 
 env=${TRAVIS_BRANCH}
+JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
-    HOSTNAME="evalai.cloudcv.org"
+    INSTANCE=${PRODUCTION_INSTANCE}
 elif [[ ${env} == "staging" ]]; then
-    HOSTNAME="evalai-staging.cloudcv.org"
+    INSTANCE=${STAGING_INSTANCE}
 else
     echo "Skipping deployment since commit not on staging or production branch."
     exit 0
@@ -35,14 +36,20 @@ fi
 case $opt in
         auto_deploy)
             chmod 400 scripts/deployment/evalai.pem
-            ssh ubuntu@${HOSTNAME} -i scripts/deployment/evalai.pem -o StrictHostKeyChecking=no \
-            "cd ~/Projects/evalai && \
-            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} && \
-            export COMMIT_ID=${COMMIT_ID} && \
-            eval $(aws ecr get-login --no-include-email) && \
-            aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env && \
-            docker-compose -f docker-compose-${env}.yml pull && \
-            docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery "
+            ssh-add scripts/deployment/evalai.pem
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
+				ssh ubuntu@${INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
+					source venv/bin/activate
+					cd ~/Projects/EvalAI
+					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+					export COMMIT_ID=${COMMIT_ID}
+					eval $(aws ecr get-login --no-include-email)
+					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+					docker-compose -f docker-compose-${env}.yml rm -s -v -f
+					docker-compose -f docker-compose-${env}.yml pull
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans statsd-exporter django nodejs nodejs_v2 celery
+				ENDSSH2
+			ENDSSH
             ;;
         pull)
             aws_login;
@@ -82,9 +89,9 @@ case $opt in
             fi
             echo "Pulling queue name for $env server challenge..."
             if [ ${env} == "staging" ]; then
-                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging-evalai.cloudcv.org/api/challenges/get_broker_url/$challenge/)
+                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging.eval.ai/api/challenges/get_broker_url/$challenge/)
             elif [ ${env} == "production" ]; then
-                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://evalapi.cloudcv.org/api/challenges/get_broker_url/$challenge/)
+                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://eval.ai/api/challenges/get_broker_url/$challenge/)
             fi
             echo "Completed pulling Queue name"
             # preprocess the python list to bash array
@@ -113,9 +120,9 @@ case $opt in
             token=${3}
             echo "Pulling queue names for $env server challenges..."
             if [ ${env} == "staging" ]; then
-                queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging-evalai.cloudcv.org/api/challenges/get_broker_urls/)
+                queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging.eval.ai/api/challenges/get_broker_urls/)
             elif [ ${env} == "production" ]; then
-                queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://evalapi.cloudcv.org/api/challenges/get_broker_urls/)
+                queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://eval.ai/api/challenges/get_broker_urls/)
             fi
             echo "Completed pulling Queue list"
             # preprocess the python list to bash array
@@ -127,6 +134,21 @@ case $opt in
                 docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -d worker
                 echo "Deployed worker docker container for queue: " $queue
              done
+            ;;
+        deploy-prometheus)
+            echo "Deploying prometheus docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d prometheus
+            echo "Completed deploy operation."
+            ;;
+        deploy-grafana)
+            echo "Deploying grafana docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d grafana
+            echo "Completed deploy operation."
+            ;;
+        deploy-statsd)
+            echo "Deploying statsd docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
+            echo "Completed deploy operation."
             ;;
         scale)
             service=${3}
@@ -165,6 +187,12 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-remote-worker production <auth_token> <queue_name>"   
         echo "    deploy-workers : Deploy worker containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy production <superuser_auth_token>"
+        echo "    deploy-prometheus : Deploy prometheus container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-prometheus production"
+        echo "    deploy-grafana : Deploy grafana container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
+        echo "    deploy-statsd : Deploy statsd container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."

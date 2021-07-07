@@ -4,8 +4,7 @@ import os
 import requests
 import tempfile
 import urllib.request
-
-from django.db.models import FloatField, Q
+from django.db.models import FloatField, Q, F, fields, ExpressionWrapper
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from rest_framework import status
@@ -166,7 +165,7 @@ def is_url_valid(url):
 
 
 def get_file_from_url(url):
-    """ Get file object from a url """
+    """Get file object from a url"""
 
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name = url.split("/")[-1]
@@ -212,6 +211,7 @@ def handle_submission_rerun(submission, updated_status):
         "challenge_pk": submission.challenge_phase.challenge.pk,
         "phase_pk": submission.challenge_phase.pk,
         "submission_pk": submission.pk,
+        "is_static_dataset_code_upload_submission": False,
     }
 
     if submission.challenge_phase.challenge.is_docker_based:
@@ -225,6 +225,11 @@ def handle_submission_rerun(submission, updated_status):
             message["submitted_image_uri"] = response.json()[
                 "submitted_image_uri"
             ]
+            if (
+                submission.challenge_phase.challenge.is_static_dataset_code_upload
+            ):
+                message["is_static_dataset_code_upload_submission"] = True
+
     return message
 
 
@@ -299,33 +304,70 @@ def calculate_distinct_sorted_leaderboard_data(
         submission__status__in=all_valid_submission_status,
     ).order_by("-created_at")
 
-    leaderboard_data = leaderboard_data.annotate(
-        filtering_score=RawSQL(
-            "result->>%s", (default_order_by,), output_field=FloatField()
-        ),
-        filtering_error=RawSQL(
-            "error->>%s",
-            ("error_{0}".format(default_order_by),),
-            output_field=FloatField(),
-        ),
-    ).values(
-        "id",
-        "submission__participant_team",
-        "submission__participant_team__team_name",
-        "submission__participant_team__team_url",
-        "submission__is_baseline",
-        "submission__is_public",
-        "challenge_phase_split",
-        "result",
-        "error",
-        "filtering_score",
-        "filtering_error",
-        "leaderboard__schema",
-        "submission__submitted_at",
-        "submission__method_name",
-        "submission__id",
-        "submission__submission_metadata",
-    )
+    if challenge_phase_split.show_execution_time:
+        time_diff_expression = ExpressionWrapper(
+            F("submission__completed_at") - F("submission__started_at"),
+            output_field=fields.DurationField(),
+        )
+        leaderboard_data = leaderboard_data.annotate(
+            filtering_score=RawSQL(
+                "result->>%s", (default_order_by,), output_field=FloatField()
+            ),
+            filtering_error=RawSQL(
+                "error->>%s",
+                ("error_{0}".format(default_order_by),),
+                output_field=FloatField(),
+            ),
+            submission__execution_time=time_diff_expression,
+        ).values(
+            "id",
+            "submission__participant_team",
+            "submission__participant_team__team_name",
+            "submission__participant_team__team_url",
+            "submission__is_baseline",
+            "submission__is_public",
+            "challenge_phase_split",
+            "result",
+            "error",
+            "filtering_score",
+            "filtering_error",
+            "leaderboard__schema",
+            "submission__submitted_at",
+            "submission__method_name",
+            "submission__id",
+            "submission__submission_metadata",
+            "submission__execution_time",
+            "submission__is_verified_by_host",
+        )
+    else:
+        leaderboard_data = leaderboard_data.annotate(
+            filtering_score=RawSQL(
+                "result->>%s", (default_order_by,), output_field=FloatField()
+            ),
+            filtering_error=RawSQL(
+                "error->>%s",
+                ("error_{0}".format(default_order_by),),
+                output_field=FloatField(),
+            ),
+        ).values(
+            "id",
+            "submission__participant_team",
+            "submission__participant_team__team_name",
+            "submission__participant_team__team_url",
+            "submission__is_baseline",
+            "submission__is_public",
+            "challenge_phase_split",
+            "result",
+            "error",
+            "filtering_score",
+            "filtering_error",
+            "leaderboard__schema",
+            "submission__submitted_at",
+            "submission__method_name",
+            "submission__id",
+            "submission__submission_metadata",
+            "submission__is_verified_by_host",
+        )
     if only_public_entries:
         if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
             leaderboard_data = leaderboard_data.filter(
@@ -347,7 +389,6 @@ def calculate_distinct_sorted_leaderboard_data(
             leaderboard_item.update(filtering_error=0)
         if leaderboard_item["filtering_score"] is None:
             leaderboard_item.update(filtering_score=0)
-
     if challenge_phase_split.show_leaderboard_by_latest_submission:
         sorted_leaderboard_data = leaderboard_data
     else:
@@ -361,7 +402,6 @@ def calculate_distinct_sorted_leaderboard_data(
             if challenge_phase_split.is_leaderboard_order_descending
             else False,
         )
-
     distinct_sorted_leaderboard_data = []
     team_list = []
     for data in sorted_leaderboard_data:
@@ -393,23 +433,88 @@ def calculate_distinct_sorted_leaderboard_data(
                 item["error"]["error_{0}".format(index)]
                 for index in leaderboard_labels
             ]
-
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
 
 
 def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     """
-        Function to calculate and return the sorted leaderboard data
+    Function to calculate and return the sorted leaderboard data
 
-        Arguments:
-            submission_pk {[int]} -- Submission object primary key
-            challenge_phase_split_pk {[int]} -- ChallengePhase object primary key
+    Arguments:
+        submission_pk {[int]} -- Submission object primary key
+        challenge_phase_split_pk {[int]} -- ChallengePhase object primary key
 
-        Returns:
-            [Class Object] -- LeaderboardData model object
+    Returns:
+        [Class Object] -- LeaderboardData model object
     """
     leaderboard_data = LeaderboardData.objects.get(
         submission=submission_pk,
         challenge_phase_split__pk=challenge_phase_split_pk,
     )
     return leaderboard_data
+
+
+def reorder_submissions_comparator(submission_1, submission_2):
+    """
+    Comparator for reordering my submissions page
+
+    Arguments:
+         submission_1 {[Class Object]} -- Submission object
+         submission_2 {[Class Object]} -- Submission object
+
+    Returns:
+        [int] -- comparison result
+    """
+    submissions_in_progress_status = [
+        Submission.SUBMITTED,
+        Submission.SUBMITTING,
+        Submission.RUNNING,
+    ]
+    if (
+        submission_1.status in submissions_in_progress_status
+        and submission_2.status in submissions_in_progress_status
+    ):
+        return submission_1.submitted_at > submission_2.submitted_at
+    return submission_1.submitted_at < submission_2.submitted_at
+
+
+def reorder_submissions_comparator_to_key(comparator):
+    """
+    Convert a cmp= function into a key= function for lambda
+
+    Arguments:
+         comparator {[function]} -- comparator function
+
+    Returns:
+        [class] -- key class object for lamdbda
+    """
+
+    class ComparatorToLambdaKey:
+        def __init__(self, obj, *args):
+            self.obj = obj
+
+        # Compares if first object is less than second object
+        def __lt__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        # Compares if first object is greater than second object
+        def __gt__(self, other):
+            return comparator(self.obj, other.obj) > 0
+
+        # Compares if first object is equal than second object
+        def __eq__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        # Compares if first object is less than equal to second object
+        def __le__(self, other):
+            return comparator(self.obj, other.obj) == 0
+
+        # Compares if first object is greater than equal to second object
+        def __ge__(self, other):
+            return comparator(self.obj, other.obj) >= 0
+
+        # Compares if first object is not equal to second object
+        def __ne__(self, other):
+            return comparator(self.obj, other.obj) != 0
+
+    return ComparatorToLambdaKey

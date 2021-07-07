@@ -187,35 +187,45 @@ class URLFormatTestCase(BaseTestClass):
         self.assertEqual(returned_url, expected_url)
 
 
-@mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
+@mock.patch(
+    "scripts.workers.remote_submission_worker.process_submission_message"
+)
 class ProcessSubmissionCallback(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.logger.info")
-    def test_process_submission_callback(self, mock_logger, mock_process_submission_message):
+    def test_process_submission_callback(
+        self, mock_logger, mock_process_submission_message
+    ):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
-            "submission_pk": self.submission_pk
+            "submission_pk": self.submission_pk,
         }
 
         process_submission_callback(message)
-        mock_logger.assert_called_with("[x] Received submission message {}".format(message))
+        mock_logger.assert_called_with(
+            "[x] Received submission message {}".format(message)
+        )
         mock_process_submission_message.assert_called_with(message)
 
     @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
-    def test_process_submission_callback_with_exception(self, mock_logger, mock_process_submission_message):
+    def test_process_submission_callback_with_exception(
+        self, mock_logger, mock_process_submission_message
+    ):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
-            "submission_pk": self.submission_pk
+            "submission_pk": self.submission_pk,
         }
 
         error = "Exception"
         mock_process_submission_message.side_effect = Exception(error)
 
         process_submission_callback(message)
-        mock_logger.assert_called_with("Exception while processing message from submission queue with error {}".format(
-            error
-        ))
+        mock_logger.assert_called_with(
+            "Exception while processing message from submission queue with error {}".format(
+                error
+            )
+        )
 
 
 class CreateDirAsPythonPackageTest(BaseTestClass):

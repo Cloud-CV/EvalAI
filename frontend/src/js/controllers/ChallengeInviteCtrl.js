@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeInviteCtrl', ChallengeInviteCtrl);
 
-    ChallengeInviteCtrl.$inject = ['utilities', 'loaderService', '$scope', '$rootScope', '$state', '$http', '$stateParams'];
+    ChallengeInviteCtrl.$inject = ['utilities', '$state', '$rootScope', '$stateParams'];
 
-    function ChallengeInviteCtrl(utilities, loaderService, $scope, $rootScope, $state, $http, $stateParams) {
+    function ChallengeInviteCtrl(utilities, $state, $rootScope, $stateParams) {
 
         var vm = this;
         vm.invitationKey = $stateParams.invitationKey;

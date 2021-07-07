@@ -155,11 +155,7 @@ class ChallengeParticipantSerializer(serializers.Serializer):
 
     class Meta:
         model = Challenge
-        fields = (
-            "team_name",
-            "team_members",
-            "team_members_email_ids",
-        )
+        fields = ("team_name", "team_members", "team_members_email_ids")
 
     def get_team_name(self, obj):
         return obj.team_name

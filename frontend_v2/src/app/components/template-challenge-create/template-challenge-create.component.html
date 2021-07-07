@@ -1,0 +1,72 @@
+<app-side-bar *ngIf="authService.isAuth"></app-side-bar>
+<app-header-static></app-header-static>
+
+<div class="web-container">
+  <div class="challenge-create-flex">
+    <div class="challenge-create-content">
+      <section class="ev-md-container text-center">
+      	<span class="fs-24 fw-light">
+          Create Challenge
+        </span>
+        <br />
+        <div class="form">
+        	<div class="row row-lr-margin">
+        		<div class="align-left col-sm-10 col-lr-pad">
+        			<span class="fw-regular fs-16 text-med-black">Challenge Title</span>
+        			<input
+                      type="text"
+                      [(ngModel)]="challengeData['title']"
+                      name="title"
+                      id="title"
+                    />
+                    <span class="form-icon"><i class="fa fa-text"></i></span>
+        		</div>
+        	</div>
+        	<div class="row row-lr-margin">
+        		<div class="align-left col-sm-10 col-lr-pad">
+        			<span class="fs-16 fw-regular text-med-black">Challenge Descripiton</span>
+        			<input
+                      type="text"
+                      [(ngModel)]="challengeData['description']"
+                      name="description"
+                      id="description"
+                    />
+                    <span class="form-icon"><i class="fa fa-text"></i></span>
+        		</div>
+        	</div>
+          <div class="row row-lr-margin">
+            <div class="align-left col-sm-10 col-lr-pad">
+              <span class="text-med-black fw-regular fs-16">Start date and time</span>
+              <input type="datetime-local" [(ngModel)]="challengeData['start_date']"/><br />
+              <span class="text-med-black fw-regular fs-16">End date and time</span>
+              <input type="datetime-local" [(ngModel)]="challengeData['end_date']"/>
+            </div>
+          </div>
+          <div class="row row-lr-margin">
+            <span class="fs-18 fw-light">Challenge Phases</span>
+          	<div class="row row-lr-margin" *ngFor="let phase of challenge_phases">
+              <div class="align-left col-sm-10 col-lr-pad">
+                <span class="text-med-black fw-regular fs-16">Name for Phase {{phase['id']}}</span>
+                <input
+                      type="text"
+                      [(ngModel)]="phase['name']"
+                      name="phase['id']"
+                      id="phase['id']"
+                    />
+                    <span class="form-icon"><i class="fa fa-text"></i></span>
+                <span class="text-med-black fw-regular fs-16">Start date and time</span>
+                <input type="datetime-local" [(ngModel)]="phase['start_date']"/><br />
+                <span class="text-med-black fw-regular fs-16">End date and time</span>
+                <input type="datetime-local" [(ngModel)]="phase['end_date']"/>
+            	</div>
+            </div>
+          </div>
+        	<button class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14" (click)="createTemplateChallenge()">
+        		Create
+            </button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<app-footer *ngIf="!authService.isAuth"></app-footer>

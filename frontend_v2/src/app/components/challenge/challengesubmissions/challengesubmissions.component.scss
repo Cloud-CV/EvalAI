@@ -2,7 +2,8 @@
 @import './mixins.scss';
 
 .ev-md-container {
-  padding-bottom: 0px;
+  padding: 0px 30px 30px 30px;
+
   .phase-title {
     margin-bottom: 20px;
   }
@@ -30,7 +31,7 @@
 }
 
 .add-line-height {
-	line-height: 51px;
+  line-height: 51px;
 }
 
 .result-wrn {
@@ -40,12 +41,12 @@
 
 .marker {
   margin-right: 10px;
-  font-size: 20px;
 }
 
 .pad-top {
   padding-top: 40px;
   padding-bottom: 10px;
+
   .show-on-leaderboard {
     color: rgb(169, 169, 169);
     font-size: 14px;
@@ -59,12 +60,12 @@
   margin-right: 55px;
 }
 
-.cbx:checked ~ .cbx-label {
-  background: #4CAF50;
+.cbx:checked~.cbx-label {
+  background: #4caf50;
 }
 
-.collapsible-table{
-  overflow: auto;
+.collapsible-table {
+  overflow: auto;  
 }
 
 tr.detail-row {
@@ -72,19 +73,35 @@ tr.detail-row {
   overflow: hidden;
 }
 
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
+}
+
 .cell-outside {
   padding: 8px;
+  color:rgba(0, 0, 0, 0.87);
 }
 
 tr.element-row:not(.expanded-row):hover {
-  td {
-    color: #efefef;
-  }
-  background: #252833;
+  cursor: pointer;
+  background: $grad-light-black;
 }
 
- tr.element-row:not(.expanded-row):active {
+tr.element-row.expanded-row {
+  cursor: pointer;
+}
+
+tr.element-row:not(.expanded-row):active {
   background: #efefef;
+  border-bottom-width: 0;
 }
 
 .expanded-row {
@@ -110,6 +127,16 @@ tr.element-row:not(.expanded-row):hover {
   padding-right: 80px;
 }
 
+.elements-status {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  padding: 0 20px;
+}
+
 .elements-action {
   overflow: hidden;
   display: flex;
@@ -133,23 +160,37 @@ tr.element-row:not(.expanded-row):hover {
   .elements {
     flex-direction: column;
   }
+
   .elements-action {
     margin-left: 0;
+    padding-left: 0;
     margin-top: 20px;
   }
+
   .elements-detail {
     border-right-style: none;
     padding-right: 0;
-
     border-bottom-style: solid;
     border-bottom-color: lightgrey;
     border-bottom-width: 1px;
     padding-bottom: 20px;
   }
+
+  .elements-status {
+    padding-left: 0;
+    border-right-style:none;
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+    margin-top: 20px;
+  }
+
   .element {
     display: flex;
     flex-direction: column;
   }
+
   .element-description {
     margin-left: 0;
   }

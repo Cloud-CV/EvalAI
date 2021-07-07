@@ -60,7 +60,7 @@ a.active-challenge {
 }
 
 .ev-challenge-card {
-    height: 415px;
+    height: 425px;
 }
 
 .ev-dashboard-card {
@@ -203,6 +203,10 @@ md-select .md-select-value span:first-child:after {
     background-color: #ffaf4b !important;
 }
 
+.green-background {
+    background-color: #28C146 !important;
+}
+
 #option-text-color {
     color: #252833;
 }
@@ -270,4 +274,13 @@ md-select .md-select-value span:first-child:after {
 .toggle-participation-text {
     display: inline-block;
     padding-left: 10px;
+}
+
+.ev-challenge-banner {
+    text-align: justify;
+    padding: 20px 20px 20px 20px;
+}
+
+.margin-bottom-cancel {
+    margin-bottom: 0px;
 }

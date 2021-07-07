@@ -23,6 +23,7 @@ Contents:
    evaluation_scripts
    approve_challenge
    participate
+   make_submission_public_private_baseline
    pull_request
    contribution
    architecture
@@ -41,5 +42,5 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _EvalAI: http://evalai.cloudcv.org/
-.. _EvalAI-CLI: http://evalai-cli.cloudcv.org/
+.. _EvalAI: http://eval.ai/
+.. _EvalAI-CLI: https://cli.eval.ai/

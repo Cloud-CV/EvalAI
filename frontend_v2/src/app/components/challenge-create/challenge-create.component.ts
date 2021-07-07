@@ -1,10 +1,10 @@
-import {Component, OnInit, ViewChildren, QueryList, Inject} from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList, Inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import {DOCUMENT} from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -12,15 +12,14 @@ import {DOCUMENT} from '@angular/common';
 @Component({
   selector: 'app-challenge-create',
   templateUrl: './challenge-create.component.html',
-  styleUrls: ['./challenge-create.component.scss']
+  styleUrls: ['./challenge-create.component.scss'],
 })
 export class ChallengeCreateComponent implements OnInit {
-
   isFormError = false;
   isSyntaxErrorInYamlFile = false;
   ChallengeCreateForm = {
     input_file: null,
-    file_path: null
+    file_path: null,
   };
   syntaxErrorInYamlFile = {};
 
@@ -55,6 +54,11 @@ export class ChallengeCreateComponent implements OnInit {
   hostTeamsRoute = '/teams/hosts';
 
   /**
+   * Route path for listing all challenge templates
+   */
+  challengeTemplatesListRoute = '/challenges/templates';
+
+  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.
@@ -64,9 +68,15 @@ export class ChallengeCreateComponent implements OnInit {
    * @param apiService  ApiService Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(public authService: AuthService, private router: Router, private route: ActivatedRoute,
-              private challengeService: ChallengeService, @Inject(DOCUMENT) private document,
-              private globalService: GlobalService, private apiService: ApiService) { }
+  constructor(
+    public authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private challengeService: ChallengeService,
+    @Inject(DOCUMENT) private document,
+    private globalService: GlobalService,
+    private apiService: ApiService
+  ) {}
 
   /**
    * Component on initialized.
@@ -80,9 +90,6 @@ export class ChallengeCreateComponent implements OnInit {
     this.challengeService.currentHostTeam.subscribe((hostTeam) => {
       this.hostTeam = hostTeam;
       if (!hostTeam) {
-        setTimeout(() => {
-          this.globalService.showToast('info', 'Please select a host team');
-        }, 1000);
         this.router.navigate([this.hostTeamsRoute]);
       }
     });
@@ -94,23 +101,20 @@ export class ChallengeCreateComponent implements OnInit {
       FORM_DATA.append('status', 'submitting');
       FORM_DATA.append('zip_configuration', this.ChallengeCreateForm['input_file']);
       this.globalService.startLoader('Creating Challenge');
-      this.challengeService.challengeCreate(
-        this.hostTeam['id'],
-        FORM_DATA,
-      ).subscribe(
-        data => {
+      this.challengeService.challengeCreate(this.hostTeam['id'], FORM_DATA).subscribe(
+        (data) => {
           this.globalService.stopLoader();
           this.globalService.showToast('success', 'Successfuly sent to EvalAI admin for approval.');
           this.router.navigate([this.hostedChallengesRoute]);
         },
-        err => {
+        (err) => {
           this.globalService.stopLoader();
           this.globalService.showToast('error', err.error.error);
           this.isSyntaxErrorInYamlFile = true;
           this.syntaxErrorInYamlFile = err.error.error;
         },
         () => {}
-        );
+      );
     } else {
       this.isFormError = true;
       this.globalService.showToast('error', 'Please Upload File');
@@ -129,5 +133,4 @@ export class ChallengeCreateComponent implements OnInit {
       this.isFormError = true;
     }
   }
-
 }

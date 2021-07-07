@@ -14,6 +14,8 @@ import datetime
 import os
 import sys
 
+from datetime import timedelta
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, "apps")
@@ -33,6 +35,9 @@ TEST = False
 
 ALLOWED_HOSTS = []
 
+EVALAI_API_SERVER = os.environ.get(
+    "EVALAI_API_SERVER", "http://localhost:8000"
+)
 
 # Application definition
 
@@ -60,6 +65,7 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
     "corsheaders",
     "django_ses",
     "import_export",
@@ -67,15 +73,16 @@ THIRD_PARTY_APPS = [
     "rest_auth.registration",
     "rest_framework.authtoken",
     "rest_framework",
-    "rest_framework_docs",
     "rest_framework_expiring_authtoken",
     "drf_yasg",
     "django_filters",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
+    "middleware.statsd.StatsdMetricsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -160,7 +167,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_expiring_authtoken.authentication.ExpiringTokenAuthentication"
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework_expiring_authtoken.authentication.ExpiringTokenAuthentication",
     ],
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DEFAULT_THROTTLE_CLASSES": (
@@ -193,8 +201,13 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID", "aws_account_id")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "aws_access_key_id")
+AWS_SECRET_ACCESS_KEY = os.environ.get(
+    "AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"
+)
+AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
 # Broker url for celery
 CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
@@ -285,6 +298,9 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
+# Expiry time of a presigned url for uploading files to AWS, in seconds.
+PRESIGNED_URL_EXPIRY_TIME = 3600
+
 # Slack web hook url
 SLACK_WEB_HOOK_URL = os.environ.get(
     "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"
@@ -314,6 +330,7 @@ SENDGRID_SETTINGS = {
         "CHALLENGE_APPROVAL_EMAIL": "d-45e0adc0597b4b60bd7c384aa903c488",
         "WORKER_RESTART_EMAIL": "d-3d9a474a5e2b4ac4ad5a45ba9c0b84bd",
         "CLUSTER_CREATION_TEMPLATE": "d-6de90fd760df4a41bb9bff1872eaab82",
+        "WORKER_START_EMAIL": "d-debd127cab2345e789538131501ff416",
     }
 }
 
@@ -321,3 +338,63 @@ SENDGRID_SETTINGS = {
 EKS_CLUSTER_ROLE_ARN = os.environ.get("EKS_CLUSTER_ROLE_ARN")
 
 EKS_NODEGROUP_ROLE_ARN = os.environ.get("EKS_NODEGROUP_ROLE_ARN")
+
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
+    "ROTATE_REFRESH_TOKENS": False,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.RefreshToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "JTI_CLAIM": "jti",
+}
+
+ECR_ALL_ACCESS_POLICY_DOCUMENT = {
+    "Version": "2012-10-17",
+    "Statement": [{"Effect": "Allow", "Action": "ecr:*", "Resource": "*"}],
+}
+
+EKS_NODE_GROUP_POLICIES = [
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+]
+
+EKS_CLUSTER_POLICY = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+
+EKS_NODE_GROUP_TRUST_RELATION = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {"Service": "ec2.amazonaws.com"},
+            "Action": "sts:AssumeRole",
+        }
+    ],
+}
+
+EKS_CLUSTER_TRUST_RELATION = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": [
+                    "eks-fargate-pods.amazonaws.com",
+                    "eks.amazonaws.com",
+                ]
+            },
+            "Action": "sts:AssumeRole",
+        }
+    ],
+}

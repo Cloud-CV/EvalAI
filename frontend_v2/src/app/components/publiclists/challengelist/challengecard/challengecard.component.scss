@@ -1,11 +1,11 @@
-@import "styles/variables";
+@import 'styles/variables';
 
 .ev-challenge-card {
   min-height: 415px;
 }
 
 .bg-img {
-  width: 100%;
+  object-fit: cover;
   height: 100%;
   margin: auto;
 }
@@ -24,7 +24,7 @@ p {
   word-wrap: break-word;
 }
 
-.card-content  {
+.card-content {
   height: 275px;
   overflow: hidden;
 }

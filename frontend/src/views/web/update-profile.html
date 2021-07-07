@@ -15,7 +15,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left">
-                        <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.first_name" ng-maxlength="30" ng-pattern="/^[A-Za-z]*$/" required focus-if="updateProfile.user.first_name">
+                        <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.first_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="updateProfile.user.first_name">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="first_name">First Name</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.first_name.$error" ng-if="updateProfileForm.first_name.$touched || updateProfileForm.$submitted">
@@ -24,7 +24,7 @@
                         </div>
                     </div>
                     <div class="input-field align-left">
-                        <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.last_name" ng-maxlength="30" ng-pattern="/^[A-Za-z]*$/" required focus-if="updateProfile.user.last_name">
+                        <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.last_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="updateProfile.user.last_name">
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="last_name">Last Name</label>
                         <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.last_name.$error" ng-if="updateProfileForm.last_name.$touched || updateProfileForm.$submitted">

@@ -4,10 +4,9 @@ import { GlobalService } from '../../../../services/global.service';
 @Component({
   selector: 'app-terms-and-conditions-modal',
   templateUrl: './terms-and-conditions-modal.component.html',
-  styleUrls: ['./terms-and-conditions-modal.component.scss']
+  styleUrls: ['./terms-and-conditions-modal.component.scss'],
 })
 export class TermsAndConditionsModalComponent implements OnInit {
-
   /**
    * Input parameters object
    */
@@ -53,7 +52,7 @@ export class TermsAndConditionsModalComponent implements OnInit {
    */
   denyCallback = () => {};
 
-  constructor(private globalService: GlobalService) { }
+  constructor(private globalService: GlobalService) {}
 
   ngOnInit() {
     if (this.params) {
@@ -90,5 +89,4 @@ export class TermsAndConditionsModalComponent implements OnInit {
     this.globalService.hideTermsAndConditionsModal();
     this.denyCallback();
   }
-
 }

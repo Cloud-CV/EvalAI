@@ -1,17 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+
+// import component
+import { PrivacyPolicyComponent } from './privacy-policy.component';
+import { HeaderStaticComponent } from '../../components/nav/header-static/header-static.component';
+import { FooterComponent } from '../../components/nav/footer/footer.component';
+
+// import service
 import { GlobalService } from '../../services/global.service';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { EndpointsService } from '../../services/endpoints.service';
-import { HttpClientModule } from '@angular/common/http';
-import { PrivacyPolicyComponent } from './privacy-policy.component';
-import { HeaderStaticComponent } from '../../components/nav/header-static/header-static.component';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FooterComponent } from '../../components/nav/footer/footer.component';
-import { RouterTestingModule } from '@angular/router/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
-
 
 describe('PrivacyPolicyComponent', () => {
   let component: PrivacyPolicyComponent;
@@ -21,21 +24,15 @@ describe('PrivacyPolicyComponent', () => {
   let ALL_TARGET;
 
   const fakeActivatedRoute = {
-    snapshot: { data: { } }
+    snapshot: { data: {} },
   } as ActivatedRoute;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PrivacyPolicyComponent, HeaderStaticComponent, FooterComponent ],
-      providers: [
-        GlobalService,
-        AuthService,
-        ApiService,
-        EndpointsService
-      ],
-      imports: [ HttpClientModule, RouterTestingModule ]
-    })
-    .compileComponents();
+      declarations: [PrivacyPolicyComponent, HeaderStaticComponent, FooterComponent],
+      providers: [GlobalService, AuthService, ApiService, EndpointsService],
+      imports: [HttpClientModule, RouterTestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -63,7 +60,6 @@ describe('PrivacyPolicyComponent', () => {
   });
 
   it('should have equal number of section-title elements as nav elements', () => {
-
     expect(ALL_NAV.length).toBeGreaterThan(0);
     expect(ALL_TARGET.length).toBeGreaterThan(0);
     expect(ALL_TARGET.length).toBe(ALL_NAV.length);
@@ -71,8 +67,6 @@ describe('PrivacyPolicyComponent', () => {
 
   it('should have same section title as nav element title', () => {
     ALL_NAV.forEach((ele, index) => {
-      console.log(`LOGE: TARGET: ${ALL_TARGET[index].nativeElement.innerText}`);
-      console.log(`LOGE: NAV: ${ele.nativeElement.innerText}`);
       expect(ALL_TARGET[index].nativeElement.innerText).toBe(ele.nativeElement.innerText);
     });
   });
@@ -87,5 +81,4 @@ describe('PrivacyPolicyComponent', () => {
       expect(component.highlightSectionTitle).toHaveBeenCalled();
     });
   });
-
 });

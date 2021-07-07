@@ -11,7 +11,7 @@ Once you have installed [docker] and [docker-compose], please follow these steps
 1. Get the source code on to your machine via git
 
    ```shell
-   git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+   git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd "$_"
    ```
 
 2. Build and run the Docker containers. This might take a while.
@@ -30,7 +30,7 @@ Once you have installed [docker] and [docker-compose], please follow these steps
 
 If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
-[evalai-cli]: http://evalai-cli.cloudcv.org
-[evalai]: http://evalai.cloudcv.org
+[evalai-cli]: https://cli.eval.ai/
+[evalai]: http://eval.ai
 [docker-compose]: https://docs.docker.com/compose/install/
 [docker]: https://docs.docker.com/install/linux/docker-ce/ubuntu/
