@@ -474,6 +474,13 @@ def cleanup_submission(
     """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
     Arguments:
         api_instance {[AWS EKS API object]} -- API object for deleting job
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+        job_name {[string]} -- Name of the job to be terminated
+        submission_pk {[int]} -- Submission id
+        challenge_pk {[int]} -- Challenge id
+        phase_pk {[int]} -- Challenge Phase id
+        stderr {[string]} -- Reason of failure for submission/job
+        message {[dict]} -- Submission message from AWS SQS queue
     """
     try:
         submission_data = {
