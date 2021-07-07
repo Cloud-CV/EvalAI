@@ -347,7 +347,11 @@ def extract_submission_data(submission_id):
         # does not exist
         return None
 
-    submission_input_file = submission.input_file.url
+    if submission.challenge_phase.challenge.is_static_dataset_code_upload:
+        input_file = submission.submission_input_file
+    else:
+        input_file = submission.input_file
+    submission_input_file = input_file.url
     submission_input_file = return_file_url_per_environment(
         submission_input_file
     )
@@ -355,7 +359,7 @@ def extract_submission_data(submission_id):
     submission_data_directory = SUBMISSION_DATA_DIR.format(
         submission_id=submission.id
     )
-    submission_input_file_name = os.path.basename(submission.input_file.name)
+    submission_input_file_name = os.path.basename(input_file.name)
     submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
         submission_id=submission.id, input_file=submission_input_file_name
     )
@@ -637,9 +641,15 @@ def process_submission_message(message):
         )
         raise
 
+    if (
+        submission_instance.challenge_phase.challenge.is_static_dataset_code_upload
+    ):
+        input_file_name = submission_instance.submission_input_file.name
+    else:
+        input_file_name = submission_instance.input_file.name
     user_annotation_file_path = join(
         SUBMISSION_DATA_DIR.format(submission_id=submission_id),
-        os.path.basename(submission_instance.input_file.name),
+        os.path.basename(input_file_name),
     )
     run_submission(
         challenge_id,
@@ -785,6 +795,10 @@ def main():
     queue = get_or_create_sqs_queue(queue_name)
     while True:
         for message in queue.receive_messages():
+            if json.loads(message.body).get(
+                "is_static_dataset_code_upload_submission"
+            ):
+                continue
             if settings.DEBUG or settings.TEST:
                 if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
                     current_running_submissions_count = (

@@ -3,7 +3,7 @@
   <div *ngIf="routerPublic.url === allChallengesRoutePathCommon" [@.disabled]="true">
     <h4 class="fw-light">All challenges</h4>
     <mat-tab-group>
-      <mat-tab label="Ongoing ({{ ongoingChallenges.length }})">
+      <mat-tab label="Ongoing ({{ ongoingChallenges.length }})" id="ongoing-challenges">
         <div *ngIf="ongoingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
           <div class="col s12 m4 l3" *ngFor="let challenge of ongoingChallenges">
