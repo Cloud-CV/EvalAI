@@ -31,6 +31,7 @@ EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
+script_config_map_name = "evalai-scripts-cm"
 
 
 def get_volume_mount_object(mount_path, name, read_only=False):
@@ -90,6 +91,18 @@ def create_config_map_object(config_map_name, file_paths):
         api_version="v1", kind="ConfigMap", data=config_data, metadata=metadata
     )
     return config_map
+
+
+def create_configmap(core_v1_api_instance, config_map):
+    try:
+        core_v1_api_instance.create_namespaced_config_map(
+            namespace="default",
+            body=config_map,
+        )
+    except Exception as e:
+        logger.exception(
+            "Exception while creating configmap with error {}".format(e)
+        )
 
 
 def create_script_config_map(config_map_name):
@@ -252,9 +265,6 @@ def create_static_code_upload_submission_job_object(message):
     # Get dataset volume and volume mounts
     volume_mount_list = get_volume_mount_list("/dataset", True)
     volume_list = get_volume_list()
-    # Create and Mount Script Volume
-    script_config_map_name = "evalai-scripts-cm"
-    create_script_config_map(script_config_map_name)
     script_volume_name = "evalai-scripts"
     script_volume = get_config_map_volume_object(
         script_config_map_name, script_volume_name
@@ -553,35 +563,40 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
-    api_instance = get_api_client(
+    api_instance_client = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
-    install_gpu_drivers(api_instance)
+    install_gpu_drivers(api_instance_client)
+    api_instance = get_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    core_v1_api_instance = get_core_v1_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    if challenge.get("is_static_dataset_code_upload"):
+        # Create and Mount Script Volume
+        script_config_map = create_script_config_map(script_config_map_name)
+        create_configmap(core_v1_api_instance, script_config_map)
     submission_meta = {}
-    submission_meta["submission_time_limit"] = challenge.submission_time_limit
+    submission_meta["submission_time_limit"] = challenge.get(
+        "submission_time_limit"
+    )
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
-        message_body["submission_meta"] = submission_meta
         if message_body:
-            if (
-                challenge.is_static_dataset_code_upload
-                and not message_body.get(
-                    "is_static_dataset_code_upload_submission"
-                )
+            if challenge.get(
+                "is_static_dataset_code_upload"
+            ) and not message_body.get(
+                "is_static_dataset_code_upload_submission"
             ):
                 continue
+            message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
-                core_v1_api_instance = get_core_v1_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
