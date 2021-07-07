@@ -76,7 +76,6 @@ services:
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    restart: unless-stopped
     ports:
       - '9090:9090'
   
