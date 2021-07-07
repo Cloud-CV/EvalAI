@@ -14,11 +14,11 @@ scrape_configs:
       - targets: ['staging.eval.ai']
 
   - job_name: 'node-exporter'
-    metrics_path: '/nodeexporter'
+    metrics_path: '/node_exporter'
     static_configs:
       - targets: ['staging.eval.ai']
   
   - job_name: 'pushgateway'
-    metrics_path: '/pushgateway/metrics'
+    metrics_path: '/push_gateway/metrics'
     static_configs:
       - targets: ['staging.eval.ai']

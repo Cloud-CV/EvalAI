@@ -15,9 +15,9 @@ scrape_configs:
   - job_name: 'node-exporter'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['nodeexporter:9100']
+      - targets: ['node_exporter:9100']
   
   - job_name: 'pushgateway'
-    metrics_path: '/pushgateway/metrics'
+    metrics_path: '/push_gateway/metrics'
     static_configs:
-      - targets: ['pushgateway:9091']
+      - targets: ['push_gateway:9091']
