@@ -225,14 +225,15 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     const SELF = this;
     return (phaseSplit) => {
        SELF.selectedPhaseSplit = phaseSplit;
-       SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility']
+       SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility'];
+       console.log(SELF.isPhaseSplitLeaderboardPublic);
        if(SELF.isPhaseSplitLeaderboardPublic == 3) {
          SELF.leaderboardVisibility.state = 'Public';
          SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
        }
        else {
         SELF.leaderboardVisibility.state = 'Private';
-        SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
+        SELF.leaderboardVisibility.icon = 'fa fa-eye-slash red-text';
        }
       }
   }
@@ -242,17 +243,17 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   toggleLeaderboardVisibility() {
     const SELF = this;
-    let toggleLeaderboardVisibilityState, isPublic;
+    let toggleLeaderboardVisibilityState, visibility;
     if (SELF.leaderboardVisibility.state === 'Public') {
       toggleLeaderboardVisibilityState = 'private';
-      isPublic = 3;
+      visibility = 1;
     } else {
       toggleLeaderboardVisibilityState = 'public';
-      isPublic = 1;
+      visibility = 3;
     }
     SELF.apiCall = () => {
       const BODY: FormData = new FormData();
-      BODY.append("visibility", isPublic);
+      BODY.append("visibility", visibility);
       SELF.apiService
       .patchFileUrl(
         SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']),
@@ -260,17 +261,20 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       )
         .subscribe(
           (data) => {
-            if (isPublic == 3) {
+            SELF.challengeService.fetchPhaseSplits(SELF.challenge['id']);
+            SELF.challengeService.changePhaseSplitSelected(true);
+            SELF.selectedPhaseSplit = false;
+            
+            if (visibility == 3) {
               SELF.leaderboardVisibility.state = 'Public';
               SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
             } else {
               SELF.leaderboardVisibility.state = 'Private';
               SELF.leaderboardVisibility.icon = 'fa fa-eye-slash red-text';
             }
-            SELF.selectedPhaseSplit = false;
             SELF.globalService.showToast(
               'success',
-              'The phase was successfully made ' + toggleLeaderboardVisibilityState,
+              'The phase split was successfully made ' + toggleLeaderboardVisibilityState,
               5
             );
           },

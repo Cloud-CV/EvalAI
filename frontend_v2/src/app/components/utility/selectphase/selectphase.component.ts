@@ -62,9 +62,20 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   splitName = '';
 
   /**
+   * Selected split name
+   */
+   settingsSplitName = '';
+
+
+  /**
    * Selected phase split
    */
   selectedPhaseSplit = '';
+
+  /**
+   * If phase selected
+   */
+  isPhaseSplitSelected : boolean = false;
 
   /**
    * Challenge object
@@ -91,7 +102,16 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * Component on changes detected in Input.
    * @param change  changes detected
    */
-  ngOnChanges(change) {}
+  ngOnChanges(change) {
+    this.challengeService.isPhaseSplitSelected.subscribe((isPhaseSplitSelected) => {
+      this.isPhaseSplitSelected = isPhaseSplitSelected;
+    });
+    console.log(this.settingsSplitName);
+    if(this.isPhaseSplitSelected == true) {
+      this.settingsSplitName = '';
+      this.challengeService.changePhaseSplitSelected(false);
+    }
+  }
 
   /**
    * Select a particular phase.
@@ -110,13 +130,9 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * @param phaseSelectionListType phase selection list type (phase or phase split)
    */
 
-  selectSettingsPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
-    this.phaseSelectionType = phaseSelectionType;
-    this.phaseSelectionListType = phaseSelectionListType;
-    this.selectedPhaseSplit = phaseSplit;
-    console.log(this.selectedPhaseSplit);
+  selectSettingsPhaseSplit(phaseSplit) {
+    this.settingsSplitName = phaseSplit.dataset_split_name;
     this.phaseName = phaseSplit.challenge_phase_name;
-    this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
     this.phaseSplitSelected(phaseSplit);
   }
@@ -125,7 +141,6 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseSelectionType = phaseSelectionType;
     this.phaseSelectionListType = phaseSelectionListType;
     this.selectedPhaseSplit = phaseSplit;
-    console.log(this.selectedPhaseSplit);
     this.phaseName = phaseSplit.challenge_phase_name;
     this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
