@@ -167,13 +167,13 @@ case $opt in
             echo "Completed deploy operation."
             ;;
         deploy-node-exporter)
-            echo "Deploying node-exporter docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d node-exporter
+            echo "Deploying node_exporter docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d node_exporter
             echo "Completed deploy operation."
             ;;
-        deploy-pushgateway)
-            echo "Deploying prometheus-pushgateway docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d pushgateway
+        deploy-push-gateway)
+            echo "Deploying push_gateway docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d push_gateway
             echo "Completed deploy operation."
             ;;
         deploy-node-exporter)
@@ -182,7 +182,7 @@ case $opt in
             echo "Completed deploy operation."
             ;;
         deploy-alertmanager)
-            echo "Deploying prometheus-alertmanager docker container..."
+            echo "Deploying alertmanager docker container..."
             docker-compose -f docker-compose-${env}.yml up -d alertmanager
             echo "Completed deploy operation."
             ;;
@@ -231,6 +231,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
+        echo "    deploy-alertmanager : Deploy alertmanager container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alertmanager production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
