@@ -3,6 +3,7 @@ import logging
 import os
 import signal
 import yaml
+import time
 
 
 from worker_utils import EvalAI_Interface
@@ -590,6 +591,8 @@ def main():
         "submission_time_limit"
     )
     while True:
+        if challenge.get("is_static_dataset_code_upload"):
+            time.sleep(2.1)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
