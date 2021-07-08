@@ -59,8 +59,8 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter
+					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alertmanager
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alertmanager
 				ENDSSH2
 			ENDSSH
             ;;
