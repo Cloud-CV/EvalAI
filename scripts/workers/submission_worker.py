@@ -766,6 +766,7 @@ def increment_and_push_metrics_to_pushgateway(body, queue_name):
         pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
         job_id = "submission_worker_{}".format(submission_pk)
         pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=pushgateway_registry)
+        num_processed_submissions.clear()
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to push gateway: {}".format(
