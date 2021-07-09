@@ -262,7 +262,7 @@ def create_static_code_upload_submission_job_object(message):
         value=str(submission_meta["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
-        name="SUBMISSION_TIME_DELTA", value="60"
+        name="SUBMISSION_TIME_DELTA", value="3600"
     )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
@@ -591,6 +591,7 @@ def main():
         "submission_time_limit"
     )
     while True:
+        # Equal distribution of queue messages among submission worker and code upload worker
         if challenge.get("is_static_dataset_code_upload"):
             time.sleep(2.1)
         message = evalai.get_message_from_sqs_queue()
