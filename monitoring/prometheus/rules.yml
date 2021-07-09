@@ -2,7 +2,7 @@ groups:
 - name: API-Threshold-Exceeded
   rules:
   - alert: API-Threshold-Exceeded-4XX
-    expr: increase(django_request_count{job="statsd",method="GET",status=~"2..",view=~"jobs:.*|challenges:.*"}[5m]) > 100
+    expr: rate(django_request_count{job="statsd",method="GET",status=~"4..",view=~"jobs:.*|challenges:.*"}[5m]) > 0.3
     for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 4XX'
@@ -12,7 +12,7 @@ groups:
       group: 'api'
 
   - alert: API-Threshold-Exceeded-5XX
-    expr: increase(django_request_counter{job="statsd",method="GET",status=~"5..",view=~"jobs:.*|challenges:.*"}[5m]) > 100
+    expr: rate(django_request_counter{job="statsd",method="GET",status=~"5..",view=~"jobs:.*|challenges:.*"}[5m]) > 0.3
     for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 5XX'
