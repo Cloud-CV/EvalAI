@@ -518,18 +518,14 @@ def cleanup_submission(
         )
 
 
-def is_submission_container_executed(
-    container_name, container_state, container_state_map
-):
+def is_submission_evaluation_done(container_state, container_state_map):
     """Function to check if submission container is successfully terminated and sidecar-container is running
     Arguments:
-        container_name {[string]} -- Name of the container
         container_state {[AWS EKS API Container state object]} -- State of the container
         container_state_map {[dict]} -- Map of container_name to container_state
     """
     if (
-        container_name == "submission"
-        and container_state.terminated.reason == "Completed"
+        container_state.terminated.reason == "Completed"
         and container_state_map.get("sidecar-container")
         and container_state_map.get("sidecar-container").terminated is None
     ):
@@ -547,6 +543,7 @@ def update_failed_jobs_and_send_logs(
     phase_pk,
     message,
 ):
+    clean_submission = False
     try:
         job_def = read_job(api_instance, job_name)
         controller_uid = job_def.metadata.labels["controller-uid"]
@@ -575,35 +572,27 @@ def update_failed_jobs_and_send_logs(
                                 )
                             )
                             pod_log = pod_log_response.data.decode("utf-8")
-                            cleanup_submission(
-                                api_instance,
-                                evalai,
-                                job_name,
-                                submission_pk,
-                                challenge_pk,
-                                phase_pk,
-                                pod_log,
-                                message,
-                            )
+                            clean_submission = True
+                            submission_error = pod_log
                         except client.rest.ApiException as e:
                             logger.exception(
                                 "Exception while reading Job logs {}".format(e)
                             )
-                    elif is_submission_container_executed(
-                        container_name, container_state, container_state_map
+                    elif (
+                        container_name == "submission"
+                        and is_submission_evaluation_done(
+                            container_state, container_state_map
+                        )
                     ):
-                        cleanup_submission(
-                            api_instance,
-                            evalai,
-                            job_name,
-                            submission_pk,
-                            challenge_pk,
-                            phase_pk,
-                            "submission.json/submission.csv file not found.",
-                            message,
+                        clean_submission = True
+                        submission_error = (
+                            "submission.json/submission.csv file not found."
                         )
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
+        clean_submission = True
+        submission_error = "Submission Job Failed."
+    if clean_submission:
         cleanup_submission(
             api_instance,
             evalai,
@@ -611,7 +600,7 @@ def update_failed_jobs_and_send_logs(
             submission_pk,
             challenge_pk,
             phase_pk,
-            pod_log,
+            submission_error,
             message,
         )
 
