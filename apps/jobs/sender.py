@@ -11,7 +11,7 @@ from django.conf import settings
 from base.utils import send_slack_notification
 from challenges.models import Challenge
 from .utils import get_submission_model
-from .metrics import push_metrics_to_pushgateway, num_submissions_in_queue
+from .metrics import push_metrics_to_pushgateway, num_submissions_in_queue, num_processed_submissions
 
 logger = logging.getLogger(__name__)
 
@@ -87,9 +87,13 @@ def publish_submission_message(message):
     # increase counter for submission pushed into queue
     submission_pk = message["submission_pk"]
     num_submissions_in_queue.labels(submission_pk, queue_name).inc()
+    num_processed_submissions.labels(submission_pk, queue_name).inc(0)
     # push metrics to pushgateway as a submission is pushed into queue
     job_id = "submission_{}".format(submission_pk)
     push_metrics_to_pushgateway(job_id)
+    # clear metrics after they are pushed to avoid duplication on next push
+    num_submissions_in_queue.clear()
+    num_processed_submissions.clear()
     response = queue.send_message(MessageBody=json.dumps(message))
     # send slack notification
     if slack_url:
