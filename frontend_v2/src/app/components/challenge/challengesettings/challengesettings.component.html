@@ -15,12 +15,18 @@
       <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9 challenge-detail">
         <div class="col-lg-5 col-md-12 col-sm-7 col-xs-12">
           <div class="image-container">
-            <a class="pointer" *ngIf="isChallengeHost" (click)="editChallengeImage()">
               <img *ngIf="challenge['image'] != null" [src]="challenge['image']" width="100%" />
               <img *ngIf="challenge['image'] == null" src="assets/images/404.png" width="80%" />
-            </a>
+          </div>
+            <div
+            class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+            (click)="editChallengeImage()"
+            >
+            <i class="fa fa-file" aria-hidden="true"> </i> 
+            <span> Upload New Image</span>
           </div>
         </div>
+        <div class="col-lg-6 col-md-12 col-sm-7 col-xs-12">
         <span class="fs-20 fw-semibold challenge-title">
           {{ challenge['title'] }}
         </span>
@@ -37,6 +43,16 @@
               <strong class="text-light-black">Challenge Overview </strong>
             </span>
             <a class="pointer fs-16" (click)="editChallengeOverview()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>
+            </a>
+          </div>
+        </div>        
+        <div class="ev-action">
+          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5">
+            <span class="fs-16 fw-light">
+              <strong class="text-light-black">Terms and Conditions </strong>
+            </span>
+            <a class="pointer fs-16" (click)="editTermsAndConditions()">
               <i class="fa fa-pencil" aria-hidden="true"> </i>
             </a>
           </div>
@@ -80,6 +96,7 @@
         </mat-checkbox>
       </div>
     </div>
+  </div>
     
     <!-- Phase Edit Section-->
     <div class="row settings-section">

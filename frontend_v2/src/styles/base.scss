@@ -2152,6 +2152,15 @@ tr {
   }
 
   .page-wrap {
+    max-width: 100% !important;
+    overflow: hidden;
+    margin: auto !important;
+    position: relative !important;
+    background: white;
+    zoom: 1 !important;
+  }
+
+  .page-wrap-challenge {
     max-width: 1440px !important;
     overflow: hidden;
     margin: auto !important;
