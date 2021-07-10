@@ -7,7 +7,6 @@ import { FeaturedChallengesComponent } from './featured-challenges/featured-chal
 import { HomemainComponent } from './homemain/homemain.component';
 import { PartnersComponent } from './partners/partners.component';
 import { RulesComponent } from './rules/rules.component';
-import { TestimonialsComponent } from './testimonials/testimonials.component';
 import { TwitterFeedComponent } from './twitter-feed/twitter-feed.component';
 import { HomeComponent } from './home.component';
 
@@ -21,7 +20,6 @@ import { HomeRoutingModule } from './home-routing.module';
     TwitterFeedComponent,
     PartnersComponent,
     RulesComponent,
-    TestimonialsComponent,
     HomemainComponent,
     FeaturedChallengesComponent,
   ],
@@ -31,7 +29,6 @@ import { HomeRoutingModule } from './home-routing.module';
     TwitterFeedComponent,
     PartnersComponent,
     RulesComponent,
-    TestimonialsComponent,
     HomemainComponent,
     FeaturedChallengesComponent,
   ],

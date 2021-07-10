@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChildren, QueryList, AfterViewInit, Inject } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { AuthService } from '../../services/auth.service';
@@ -6,6 +6,7 @@ import { GlobalService } from '../../services/global.service';
 import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 import { InputComponent } from '../../components/utility/input/input.component';
+import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -22,6 +23,37 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   public challengeList = [];
 
   /**
+   * Selected testimonial index
+   */
+  selected = 0;
+
+  /**
+  * Placeholder text Lorem Ipsum
+  */
+  ipsum: any =
+    'Lorem ipsum dolor sit amet,\
+  consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+
+  /**
+  * Sample testimonials till the API comes up
+  */
+  testimonials = [
+    { text: '1-' + this.ipsum, author: 'Lorem' },
+    { text: '2-' + this.ipsum, author: 'Octopus' },
+    { text: '3-' + this.ipsum, author: 'Penguin' },
+  ];
+
+  /**
+  * Selected testimonial text
+  */
+  testimonialbody = this.testimonials[this.selected]['text'];
+
+  /**
+  * Selected testimonial author
+  */
+  testimonialauthor = this.testimonials[this.selected]['author'];
+
+  /**
    * Subscribe Form
    */
 
@@ -32,12 +64,18 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   components: QueryList<InputComponent>;
 
   authServiceSubscription: any;
+  
+  /**
+   * Component constructor
+   * @param document  Window document Injection.
+   */
   constructor(
     private apiService: ApiService,
     private endpointService: EndpointsService,
     private authService: AuthService,
     private globalService: GlobalService,
-    private router: Router
+    private router: Router,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   ngOnInit() {
@@ -114,6 +152,112 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       () => {}
     );
   }
+
+  /**
+   * Right arrow clicked
+   */
+   testimonialRight() {
+    this.selected = this.selected + 1;
+    if (this.selected >= this.testimonials.length) {
+      this.selected = 0;
+    }
+  }
+
+  /**
+   * left arrow clicked
+   */
+  testimonialLeft() {
+    this.selected = this.selected - 1;
+    if (this.selected < 0) {
+      this.selected = this.testimonials.length - 1;
+    }
+  }
+
+  /**
+   * Testimonials navigated
+   */
+  testimonialNavigate(direction = 'left') {
+    const a = this.document.getElementsByClassName('testimonial-body')[0];
+    const b = this.document.getElementsByClassName('testimonial-author')[0];
+    const c = this.document.getElementsByClassName('testimonial-quotes')[0];
+    if (direction === 'left') {
+      this.testimonialLeft();
+    } else {
+      this.testimonialRight();
+    }
+    this.flyOut(a, direction, this);
+    this.disappearAppear(a, this);
+    this.disappearAppear(b, this);
+    this.disappearAppear(c, this);
+  }
+
+  /**
+   * Fly left animation
+   */
+  flyLeftRecursive = (element, temp) => {
+    const x = temp - 1;
+    if (x > -100) {
+      (function (scope) {
+        setTimeout(function () {
+          element.style.marginLeft = x + '%';
+          scope.flyLeftRecursive(element, x);
+        }, 5);
+      })(this);
+    }
+  };
+
+  /**
+   * Fly right animation
+   */
+  flyRightRecursive = (element, temp) => {
+    const x = temp + 1;
+    if (x < 100) {
+      (function (scope) {
+        setTimeout(function () {
+          element.style.marginLeft = x + '%';
+          scope.flyRightRecursive(element, x);
+        }, 5);
+      })(this);
+    }
+  };
+
+  /**
+   * Fly out animation
+   */
+  flyOut = (element, direction, scope) => {
+    const temp = 15;
+    setTimeout(function () {
+      scope.testimonialbody = scope.testimonials[scope.selected]['text'];
+      scope.testimonialauthor = scope.testimonials[scope.selected]['author'];
+      element.style.marginLeft = '15%';
+    }, 1000);
+  };
+
+  /**
+   * Disappear animation
+   */
+  disappearAppearRecursive = (element, temp) => {
+    const x = temp - 0.01;
+    if (x >= 0) {
+      (function (scope) {
+        setTimeout(function () {
+          element.style.opacity = x + '';
+          scope.disappearAppearRecursive(element, x);
+        }, 5);
+      })(this);
+    }
+  };
+
+  /**
+   * Disappear animation wrapper
+   */
+  disappearAppear = (element, scope) => {
+    const temp = 1.0;
+    this.disappearAppearRecursive(element, temp);
+    setTimeout(function () {
+      element.style.opacity = '1';
+    }, 1000);
+  };
 
   ngOnDestroy(): void {
     if (this.authServiceSubscription) {

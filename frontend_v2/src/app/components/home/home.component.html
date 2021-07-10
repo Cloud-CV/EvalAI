@@ -429,8 +429,30 @@
         </div>
       </div>
     </section>
-    <!-- Subscribe to newsletter -->
     <section class="ev-container text-med-black ev-super-light-bg">
+      <div class="grad-container text-med-black">
+        <div class="row">
+          <h3 class="fw-light center">Testimonials</h3>
+        </div>
+        <div class="testimonial-container">
+          <div class="card ev-card-panel ev-challenge-card z-depth-2 hoverable margin-bottom-cancel">
+          <div class="testimonial-body">
+            <span class="fs-24">{{ testimonialbody }}</span>
+          </div>
+          <div class="testimonial-author fs-20">- {{ testimonialauthor }}</div>
+          <img src="assets/images/testimonials/arrow.png" (click)="testimonialNavigate()" class="testimonial-arrow-left" />
+          <img
+            src="assets/images/testimonials/arrow.png"
+            (click)="testimonialNavigate('right')"
+            class="testimonial-arrow-right"
+          />
+          <img src="assets/images/testimonials/quotes.png" class="testimonial-quotes" />
+        </div>
+        </div>
+      </div>
+    </section>
+    <!-- Subscribe to newsletter -->
+    <section class="ev-container text-med-black">
       <div class="grad-container text-med-black">
         <div class="row">
           <h3 class="fw-light center">Subscribe to our newsletter</h3>

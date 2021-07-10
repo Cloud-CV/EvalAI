@@ -1,4 +1,6 @@
 @import 'styles/variables';
+@import './mixins.scss';
+
 
 .grad-container .row {
   margin-left: auto;
@@ -91,6 +93,81 @@ p {
     margin-bottom: auto;
   }
 }
+
+.testimonial-container {
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  padding-left: 5vw;
+  .testimonial-body {
+    width: 70%;
+    margin-left: 15%;
+    padding-top: 120px;
+    padding-bottom: 100px;
+    span {
+      color: #000;
+      font-weight: $fw-light;
+      font-style: italic;
+      padding: 15px;
+    }
+  }
+
+  .testimonial-author {
+    color: #000;
+    font-weight: $fw-regular;
+    padding-bottom: 70px;
+    text-align: right;
+    padding-right: 15vw;
+  }
+
+  .testimonial-arrow-left {
+    position: absolute;
+    top: 40%;
+    left: 0;
+    height: 100px;
+    cursor: pointer;
+  }
+
+  .testimonial-arrow-right {
+    position: absolute;
+    top: 40%;
+    right: 0;
+    height: 100px;
+    cursor: pointer;
+    transform: rotate(180deg);
+  }
+
+  .testimonial-quotes {
+    position: absolute;
+    top: 15%;
+    left: 10%;
+    height: 50px;
+  }
+}
+
+@include screen-medium {
+  .testimonial-container {
+    .testimonial-quotes {
+      top: 15% !important;
+      height: 40px !important;
+    }
+  }
+}
+
+@include screen-small {
+  .testimonial-container {
+    background-size: 80 !important;
+    padding-left: 0;
+    .testimonial-quotes {
+      height: 30px !important;
+      top: 12%;
+    }
+    .testimonial-author {
+      padding-bottom: 40px;
+    }
+  }
+}
+
 
 #gsoc {
   height: 45%;
