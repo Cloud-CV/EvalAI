@@ -125,16 +125,16 @@
           </div>
 
         <div class="row margin-bottom-cancel phase-card " *ngIf="selectedPhase">
-              <span class="fs-16 fw-light toggle-button">
-                <strong class="text-light-black">Phase Visibility </strong>
+              <span class="fs-16 fw-light">
+                <strong class="text-light-black">Is Public </strong>
               </span>
-              <a class="pointer fs-24" (click)="togglePhaseVisibility()">
+              <a class="pointer fs-20" (click)="togglePhaseVisibility()">
                 <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i>
               </a>&nbsp;&nbsp;&nbsp;&nbsp;
               <span class="fs-16 fw-light">
                 <strong class="text-light-black">Submission Visibility </strong>
               </span>
-              <a class="pointer fs-24" (click)="toggleSubmissionVisibility()">
+              <a class="pointer fs-20" (click)="toggleSubmissionVisibility()">
                 <i class="{{ submissionVisibility.icon }}" aria-hidden="true"> </i>
               </a>
         </div>
