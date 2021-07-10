@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnChanges } from '@angular/core';
+import { GlobalService } from '../../../services/global.service';
 
 @Component({
   selector: 'app-side-bar',
@@ -6,7 +7,24 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./side-bar.component.scss'],
 })
 export class SideBarComponent implements OnInit {
-  constructor() {}
 
-  ngOnInit() {}
+  /**
+   * Current name of tab which needs to be active
+   */
+  tabHighlight: string = "participatedChallenges";
+
+   /**
+   * Constructor
+   * @param globalService  GlobalService Injection.
+   */
+  constructor(
+    private globalService: GlobalService,
+  ) {}
+
+  ngOnInit() {
+    this.globalService.nameTabHighlight.subscribe((tabHighlight) => {
+      this.tabHighlight = tabHighlight;
+    });
+    console.log("HELLO" + this.tabHighlight);
+  }
 }
