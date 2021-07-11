@@ -106,16 +106,41 @@
       <br />
       <div class="ev-action">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
-          <app-selectphase
-            [phases]="phases"
-            [phaseSelectionListType]="phaseSelectionListType"
-            [phaseSelectionType]="phaseSelectionType"
-            [phaseSelected]="phaseSelected()"
-            #phaseselect
-          ></app-selectphase>
-         </div>
-      </div>
+          <div class="row margin-bottom-cancel phase-card">
+            <app-selectphase
+              [phases]="phases"
+              [phaseSelectionListType]="phaseSelectionListType"
+              [phaseSelectionType]="phaseSelectionType"
+              [phaseSelected]="phaseSelected()"
+              #phaseselect
+            ></app-selectphase>
+            <button
+              *ngIf="selectedPhase"
+              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12 phase-button"
+              (click)="editPhaseDetails()"
+            >
+            Phase Details
+            <i class="fa fa-pencil" aria-hidden="true"> </i>
+            </button>
+          </div>
+
+        <div class="row margin-bottom-cancel phase-card " *ngIf="selectedPhase">
+              <span class="fs-16 fw-light">
+                <strong class="text-light-black">Is Public </strong>
+              </span>
+              <a class="pointer fs-20" (click)="togglePhaseVisibility()">
+                <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i>
+              </a>&nbsp;&nbsp;&nbsp;&nbsp;
+              <span class="fs-16 fw-light">
+                <strong class="text-light-black">Submission Visibility </strong>
+              </span>
+              <a class="pointer fs-20" (click)="toggleSubmissionVisibility()">
+                <i class="{{ submissionVisibility.icon }}" aria-hidden="true"> </i>
+              </a>
+        </div>
+       </div>
     </div>
+  </div>
           
     <!-- Evaluations and Annotations -->
     <div class="row settings-section">

@@ -139,7 +139,7 @@
                 <div class="element">
                   <mat-checkbox
                     [checked]="element.is_public"
-                    [disabled]="element.status === 'failed' || element.status === 'cancelled' || !selectedPhase['leaderboard_public']"
+                    [disabled]="element.status === 'failed' || element.status === 'cancelled' || !selectedPhase['leaderboard_public'] || !selectedPhase['is_submission_public']"
                     (change)="changeSubmissionVisibility(element.id, element.is_public)"
                   >
                     <span class="fs-14 w-300">Show on leaderboard</span>

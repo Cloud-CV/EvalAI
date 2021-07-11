@@ -76,6 +76,7 @@
         </div>
       </div>
 
+      <div class="row row-lr-margin">
       <div class="col-lg-4 col-md-4 col-sm-12 col-lr-pad">
         <div class="input-field align-left">
           <span class="text-med-black fw-regular fs-16">Submissions/day</span>
@@ -134,6 +135,43 @@
           ></app-input>
         </div>
       </div>
+    </div>
+
+    <div class="row row-lr-margin">
+      <div class="col-lg-5 col-md-6 col-sm-6 col-lr-pad">
+        <div class="input-field align-left">
+          <span class="text-med-black fw-regular fs-16">Max Concurrent Submissions Allowed</span>
+          <app-input
+            class="mt-20"
+            [editPhaseDetails]="editPhaseDetails"
+            [name]="'max_concurrent_submissions_allowed'"
+            [isRequired]="true"
+            [label]="'max_concurrent_submissions_allowed'"
+            [placeholder]="''"
+            [type]="'number'"
+            [value]="maxConcurrentSubmissionsAllowed"
+            #formmodal
+          ></app-input>
+        </div>
+      </div>
+      
+      <div class="col-lg-6 col-md-6 col-sm-6 col-lr-pad">
+        <div class="input-field align-left">
+          <div class="fs-16 fw-regular text-med-black">Allowed Submission File Types</div>
+          <app-input
+            class="mt-20"
+            [isRequired]="true"
+            [editPhaseDetails]="editPhaseDetails"
+            [label]="'allowed_submission_file_types'"
+            [placeholder]="''"
+            [type]="'text'"
+            [icon]=""
+            [value]="allowedSubmissionFileTypes"
+            #formmodal
+          ></app-input>
+        </div>
+      </div>
+    </div>
 
       <div class="row row-lr-margin">
         <div class="col-lg-6 col-md-6 col-sm-12 col-lr-pad">
