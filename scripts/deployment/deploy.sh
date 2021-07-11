@@ -69,9 +69,6 @@ case $opt in
             echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
-            echo "Pulling alertmanager config file..."
-            aws s3 cp s3://cloudcv-secrets/evalai/${env}/alertmanager_${env}.env ./monitoring/prometheus/alertmanager_${env}.yml
-            echo "Alertmanager config file successfully downloaded."
             echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
@@ -176,6 +173,7 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d push_gateway
             echo "Completed deploy operation."
             ;;
+<<<<<<< HEAD
         deploy-node-exporter)
             echo "Deploying node_exporter docker container..."
             docker-compose -f docker-compose-${env}.yml up -d node_exporter
@@ -186,6 +184,8 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d alertmanager
             echo "Completed deploy operation."
             ;;
+=======
+>>>>>>> bfbb09f0 (revert changes for setting alertmanager on same instance)
         scale)
             service=${3}
             instances=${4}
@@ -231,8 +231,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
-        echo "    deploy-alertmanager : Deploy alertmanager container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alertmanager production"
+        echo "    deploy-push-gateway : Deploy push_gateway container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-push-gateway production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
