@@ -75,7 +75,7 @@ export class GlobalService {
   editPhaseModalParams = this.editPhasemodalSource.asObservable();
   private termsAndConditionsSource = new BehaviorSubject(this.termsAndConditionsModalDefault);
   termsAndConditionsModalParams = this.termsAndConditionsSource.asObservable();
-  private tabHighlight = new BehaviorSubject("participatedChallenges");
+  private tabHighlight = new BehaviorSubject("allChallenges");
   nameTabHighlight = this.tabHighlight.asObservable();
 
   @Output() toast: EventEmitter<Object> = new EventEmitter();

@@ -63,6 +63,11 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   isLoggedIn: any = false;
 
   /**
+   * Current name of tab which needs to be active
+   */
+  tabHighlight: string = "allChallenges";
+
+  /**
    * Inner width
    */
   public innerWidth: any;
@@ -107,6 +112,9 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.updateElements();
     this.checkInnerWidth();
+    this.globalService.nameTabHighlight.subscribe((tabHighlight) => {
+      this.tabHighlight = tabHighlight;
+    });
     this.authServiceSubscription = this.authService.change.subscribe((authState) => {
       this.authState = authState;
       if (this.authService.isLoggedIn()) {
