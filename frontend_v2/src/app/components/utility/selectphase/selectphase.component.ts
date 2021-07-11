@@ -47,6 +47,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   phaseVisibility = false;
 
   /**
+   * If phase selected
+   */
+  isPhaseSelected : boolean = false;
+
+  /**
    * Currently selected phase
    */
   selectedPhase: any = null;
@@ -86,7 +91,15 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * Component on changes detected in Input.
    * @param change  changes detected
    */
-  ngOnChanges(change) {}
+  ngOnChanges(change) {
+    this.challengeService.isPhaseSelected.subscribe((isPhaseSelected) => {
+      this.isPhaseSelected = isPhaseSelected;
+    });
+    if(this.isPhaseSelected == true) {
+      this.challengeService.changePhaseSelected(false);
+      this.phaseName = '';
+    }
+  }
 
   /**
    * Select a particular phase.

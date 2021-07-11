@@ -54,6 +54,11 @@ export class ChallengesubmitComponent implements OnInit {
   isPublicSubmission:boolean = true;
 
   /**
+   * Is submittion allowed by host
+   */
+   isSubmissionPublic:boolean = false;
+
+  /**
    * Challenge object
    */
   challenge: any;
@@ -467,6 +472,7 @@ export class ChallengesubmitComponent implements OnInit {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
+      SELF.isSubmissionPublic = phase['is_submission_public'];
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
