@@ -148,6 +148,7 @@ services:
       - '9091:9091'
   
   monitoring-nginx:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-monitoring-nginx:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/monitoring-nginx/Dockerfile
@@ -160,5 +161,3 @@ services:
     ports:
       - '80:80'
       - '443:443'
-    
-
