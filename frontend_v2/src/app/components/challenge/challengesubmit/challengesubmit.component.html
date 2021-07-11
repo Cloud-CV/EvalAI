@@ -286,13 +286,14 @@
                     <input 
                       type="radio" 
                       name="submissionVisibility" 
+                      *ngIf="isSubmissionPublic == true"
                       class="with-gap selectPhase" 
                       id="isPublicSubmission"
                       (change)="isPublicSubmission = true"
                       />
                     <label for="isPublicSubmission" class="radio-button-text pointer">
                       <div 
-                        class="show-member-title pointer">
+                        class="show-member-title pointer" *ngIf="isSubmissionPublic == true">
                         <strong class="text-med-black fs-16">Public</strong>
                       </div>
                     </label>

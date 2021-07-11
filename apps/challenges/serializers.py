@@ -46,6 +46,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "end_date",
             "creator",
             "published",
+            "submission_time_limit",
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
@@ -102,6 +103,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "is_submission_public",
         )
 
 
@@ -231,6 +233,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "submission_time_limit",
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
