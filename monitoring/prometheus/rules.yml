@@ -6,7 +6,7 @@ groups:
     for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 4XX'
-      description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* API calls with the response code of *4XX* in the last 5 minutes'
+      description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* QPS rate with the response code of *4XX* in the last 5 minutes'
     labels:
       severity: 'critical'
       group: 'api'
@@ -16,7 +16,7 @@ groups:
     for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 5XX'
-      description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* API calls with the response code of *5XX* in the last 5 minutes'
+      description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* QPS rate with the response code of *5XX* in the last 5 minutes'
     labels:
       severity: 'critical'
       group: 'api'
