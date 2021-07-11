@@ -25,6 +25,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from prometheus_client import pushadd_to_gateway, CollectorRegistry, Counter
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -40,6 +41,15 @@ handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+
+pushgateway_registry = CollectorRegistry()
+num_processed_submissions = Counter(
+    "num_processed_submissions",
+    "Counter for number of submissions processed from the queue",
+    ["submission_pk", "queue_name"],
+    registry=pushgateway_registry,
+)
+
 django.setup()
 
 # Load django app settings
@@ -347,7 +357,11 @@ def extract_submission_data(submission_id):
         # does not exist
         return None
 
-    submission_input_file = submission.input_file.url
+    if submission.challenge_phase.challenge.is_static_dataset_code_upload:
+        input_file = submission.submission_input_file
+    else:
+        input_file = submission.input_file
+    submission_input_file = input_file.url
     submission_input_file = return_file_url_per_environment(
         submission_input_file
     )
@@ -355,7 +369,7 @@ def extract_submission_data(submission_id):
     submission_data_directory = SUBMISSION_DATA_DIR.format(
         submission_id=submission.id
     )
-    submission_input_file_name = os.path.basename(submission.input_file.name)
+    submission_input_file_name = os.path.basename(input_file.name)
     submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
         submission_id=submission.id, input_file=submission_input_file_name
     )
@@ -637,9 +651,15 @@ def process_submission_message(message):
         )
         raise
 
+    if (
+        submission_instance.challenge_phase.challenge.is_static_dataset_code_upload
+    ):
+        input_file_name = submission_instance.submission_input_file.name
+    else:
+        input_file_name = submission_instance.input_file.name
     user_annotation_file_path = join(
         SUBMISSION_DATA_DIR.format(submission_id=submission_id),
-        os.path.basename(submission_instance.input_file.name),
+        os.path.basename(input_file_name),
     )
     run_submission(
         challenge_id,
@@ -739,6 +759,21 @@ def load_challenge_and_return_max_submissions(q_params):
     return maximum_concurrent_submissions, challenge
 
 
+def increment_and_push_metrics_to_pushgateway(body, queue_name):
+    try:
+        submission_pk = json.loads(body)["submission_pk"]
+        num_processed_submissions.labels(submission_pk, queue_name).inc()
+        pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
+        job_id = "submission_worker_{}".format(submission_pk)
+        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=pushgateway_registry)
+    except Exception as e:
+        logger.exception(
+            "{} Exception when pushing metrics to push gateway: {}".format(
+                SUBMISSION_LOGS_PREFIX, e
+            )
+        )
+
+
 def main():
     killer = GracefulKiller()
     logger.info(
@@ -785,6 +820,10 @@ def main():
     queue = get_or_create_sqs_queue(queue_name)
     while True:
         for message in queue.receive_messages():
+            if json.loads(message.body).get(
+                "is_static_dataset_code_upload_submission"
+            ):
+                continue
             if settings.DEBUG or settings.TEST:
                 if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
                     current_running_submissions_count = (
@@ -807,6 +846,7 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
+                        increment_and_push_metrics_to_pushgateway(message.body, queue_name)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -816,6 +856,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
+                    increment_and_push_metrics_to_pushgateway(message.body, queue_name)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -834,6 +875,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
+                    increment_and_push_metrics_to_pushgateway(message.body, queue_name)
         if killer.kill_now:
             break
         time.sleep(0.1)
