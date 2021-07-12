@@ -52,6 +52,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   phaseVisibility = false;
 
   /**
+   * If phase selected
+   */
+  isPhaseSelected : boolean = false;
+
+  /**
    * Currently selected phase
    */
   selectedPhase: any = null;
@@ -64,8 +69,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   /**
    * Selected split name
    */
-   settingsSplitName = '';
-
+  settingsSplitName = '';
 
   /**
    * Selected phase split
@@ -106,10 +110,18 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.challengeService.isPhaseSplitSelected.subscribe((isPhaseSplitSelected) => {
       this.isPhaseSplitSelected = isPhaseSplitSelected;
     });
-    console.log(this.settingsSplitName);
-    if(this.isPhaseSplitSelected == true) {
-      this.settingsSplitName = '';
+    if(this.isPhaseSplitSelected) {
       this.challengeService.changePhaseSplitSelected(false);
+      this.settingsSplitName = '';
+    }
+    console.log(this.settingsSplitName);
+    this.challengeService.isPhaseSelected.subscribe((isPhaseSelected) => {
+      this.isPhaseSelected = isPhaseSelected;
+    });
+
+    if(this.isPhaseSelected) {
+      this.challengeService.changePhaseSelected(false);
+      this.phaseName = '';
     }
   }
 
@@ -130,22 +142,25 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * @param phaseSelectionListType phase selection list type (phase or phase split)
    */
 
-  selectSettingsPhaseSplit(phaseSplit) {
-    this.settingsSplitName = phaseSplit.dataset_split_name;
-    this.phaseName = phaseSplit.challenge_phase_name;
-    this.phaseVisibility = phaseSplit.showPrivate;
-    this.phaseSplitSelected(phaseSplit);
-  }
-
-  selectPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+  selectSettingsPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
     this.phaseSelectionType = phaseSelectionType;
     this.phaseSelectionListType = phaseSelectionListType;
     this.selectedPhaseSplit = phaseSplit;
     this.phaseName = phaseSplit.challenge_phase_name;
-    this.splitName = phaseSplit.dataset_split_name;
+    this.settingsSplitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
-    this.selectedPhaseSplitUrlChange(phaseSplit);
+    this.phaseSplitSelected(phaseSplit);
   }
+
+  // selectPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+  //   this.phaseSelectionType = phaseSelectionType;
+  //   this.phaseSelectionListType = phaseSelectionListType;
+  //   this.selectedPhaseSplit = phaseSplit;
+  //   this.phaseName = phaseSplit.challenge_phase_name;
+  //   this.splitName = phaseSplit.dataset_split_name;
+  //   this.phaseVisibility = phaseSplit.showPrivate;
+  //   this.selectedPhaseSplitUrlChange(phaseSplit);
+  // }
 
   /**
    * Get 12Hour formatted date function.

@@ -31,6 +31,7 @@ EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
+script_config_map_name = "evalai-scripts-cm"
 
 
 def get_volume_mount_object(mount_path, name, read_only=False):
@@ -90,6 +91,18 @@ def create_config_map_object(config_map_name, file_paths):
         api_version="v1", kind="ConfigMap", data=config_data, metadata=metadata
     )
     return config_map
+
+
+def create_configmap(core_v1_api_instance, config_map):
+    try:
+        core_v1_api_instance.create_namespaced_config_map(
+            namespace="default",
+            body=config_map,
+        )
+    except Exception as e:
+        logger.exception(
+            "Exception while creating configmap with error {}".format(e)
+        )
 
 
 def create_script_config_map(config_map_name):
@@ -252,9 +265,6 @@ def create_static_code_upload_submission_job_object(message):
     # Get dataset volume and volume mounts
     volume_mount_list = get_volume_mount_list("/dataset", True)
     volume_list = get_volume_list()
-    # Create and Mount Script Volume
-    script_config_map_name = "evalai-scripts-cm"
-    create_script_config_map(script_config_map_name)
     script_volume_name = "evalai-scripts"
     script_volume = get_config_map_volume_object(
         script_config_map_name, script_volume_name
@@ -461,6 +471,53 @@ def read_job(api_instance, job_name):
     return api_response
 
 
+def cleanup_submission(
+    api_instance,
+    evalai,
+    job_name,
+    submission_pk,
+    challenge_pk,
+    phase_pk,
+    stderr,
+    message,
+):
+    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+        job_name {[string]} -- Name of the job to be terminated
+        submission_pk {[int]} -- Submission id
+        challenge_pk {[int]} -- Challenge id
+        phase_pk {[int]} -- Challenge Phase id
+        stderr {[string]} -- Reason of failure for submission/job
+        message {[dict]} -- Submission message from AWS SQS queue
+    """
+    try:
+        submission_data = {
+            "challenge_phase": phase_pk,
+            "submission": submission_pk,
+            "stdout": "",
+            "stderr": stderr,
+            "submission_status": "FAILED",
+            "result": "[]",
+            "metadata": "",
+        }
+        evalai.update_submission_data(submission_data, challenge_pk, phase_pk)
+        try:
+            delete_job(api_instance, job_name)
+        except Exception as e:
+            logger.exception("Failed to delete submission job: {}".format(e))
+        message_receipt_handle = message.get("receipt_handle")
+        if message_receipt_handle:
+            evalai.delete_message_from_sqs_queue(message_receipt_handle)
+    except Exception as e:
+        logger.exception(
+            "Exception while cleanup Submission {}:  {}".format(
+                submission_pk, e
+            )
+        )
+
+
 def update_failed_jobs_and_send_logs(
     api_instance,
     core_v1_api_instance,
@@ -469,48 +526,59 @@ def update_failed_jobs_and_send_logs(
     submission_pk,
     challenge_pk,
     phase_pk,
+    message,
 ):
-    job_def = read_job(api_instance, job_name)
-    controller_uid = job_def.metadata.labels["controller-uid"]
-    pod_label_selector = "controller-uid=" + controller_uid
-    pods_list = core_v1_api_instance.list_namespaced_pod(
-        namespace="default",
-        label_selector=pod_label_selector,
-        timeout_seconds=10,
-    )
-    for container in pods_list.items[0].status.container_statuses:
-        if container.name in ["agent", "submission"]:
-            if container.state.terminated is not None:
-                if container.state.terminated.reason == "Error":
-                    pod_name = pods_list.items[0].metadata.name
-                    try:
-                        pod_log_response = (
-                            core_v1_api_instance.read_namespaced_pod_log(
-                                name=pod_name,
-                                namespace="default",
-                                _return_http_data_only=True,
-                                _preload_content=False,
-                                container=container.name,
+    try:
+        job_def = read_job(api_instance, job_name)
+        controller_uid = job_def.metadata.labels["controller-uid"]
+        pod_label_selector = "controller-uid=" + controller_uid
+        pods_list = core_v1_api_instance.list_namespaced_pod(
+            namespace="default",
+            label_selector=pod_label_selector,
+            timeout_seconds=10,
+        )
+        for container in pods_list.items[0].status.container_statuses:
+            if container.name in ["agent", "submission"]:
+                if container.state.terminated is not None:
+                    if container.state.terminated.reason == "Error":
+                        pod_name = pods_list.items[0].metadata.name
+                        try:
+                            pod_log_response = (
+                                core_v1_api_instance.read_namespaced_pod_log(
+                                    name=pod_name,
+                                    namespace="default",
+                                    _return_http_data_only=True,
+                                    _preload_content=False,
+                                    container=container.name,
+                                )
                             )
-                        )
-                        pod_log = pod_log_response.data.decode("utf-8")
-                        submission_data = {
-                            "challenge_phase": phase_pk,
-                            "submission": submission_pk,
-                            "stdout": "",
-                            "stderr": pod_log,
-                            "submission_status": "FAILED",
-                            "result": "[]",
-                            "metadata": "",
-                        }
-                        response = evalai.update_submission_data(
-                            submission_data, challenge_pk, phase_pk
-                        )
-                        print(response)
-                    except client.rest.ApiException as e:
-                        logger.exception(
-                            "Exception while reading Job logs {}".format(e)
-                        )
+                            pod_log = pod_log_response.data.decode("utf-8")
+                            cleanup_submission(
+                                api_instance,
+                                evalai,
+                                job_name,
+                                submission_pk,
+                                challenge_pk,
+                                phase_pk,
+                                pod_log,
+                                message,
+                            )
+                        except client.rest.ApiException as e:
+                            logger.exception(
+                                "Exception while reading Job logs {}".format(e)
+                            )
+    except Exception as e:
+        logger.exception("Exception while reading Job {}".format(e))
+        cleanup_submission(
+            api_instance,
+            evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            pod_log,
+            message,
+        )
 
 
 def install_gpu_drivers(api_instance):
@@ -553,35 +621,40 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
-    api_instance = get_api_client(
+    api_instance_client = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
-    install_gpu_drivers(api_instance)
+    install_gpu_drivers(api_instance_client)
+    api_instance = get_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    core_v1_api_instance = get_core_v1_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    if challenge.get("is_static_dataset_code_upload"):
+        # Create and Mount Script Volume
+        script_config_map = create_script_config_map(script_config_map_name)
+        create_configmap(core_v1_api_instance, script_config_map)
     submission_meta = {}
-    submission_meta["submission_time_limit"] = challenge.submission_time_limit
+    submission_meta["submission_time_limit"] = challenge.get(
+        "submission_time_limit"
+    )
     while True:
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
-        message_body["submission_meta"] = submission_meta
         if message_body:
-            if (
-                challenge.is_static_dataset_code_upload
-                and not message_body.get(
-                    "is_static_dataset_code_upload_submission"
-                )
+            if challenge.get(
+                "is_static_dataset_code_upload"
+            ) and not message_body.get(
+                "is_static_dataset_code_upload_submission"
             ):
                 continue
+            message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
-                core_v1_api_instance = get_core_v1_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
@@ -613,6 +686,7 @@ def main():
                         submission_pk,
                         challenge_pk,
                         phase_pk,
+                        message,
                     )
                 else:
                     logger.info(
