@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from "rxjs/internal/operators";
 import { GlobalService } from '../../../services/global.service';
@@ -59,7 +59,6 @@ export class SideBarComponent implements OnInit {
             this.tabHighlight = "allChallenges";
             this.globalService.changeTabActiveStatus("allChallenges");
           }
-        console.log("HELLO WORLD" + this.tabHighlight);
         this.isChallengeComponent = isNaN(this.router.url.split('/')[length]);
       }
   });
