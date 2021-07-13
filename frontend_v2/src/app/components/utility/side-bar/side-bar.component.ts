@@ -15,6 +15,11 @@ export class SideBarComponent implements OnInit {
    */
   tabHighlight: string = "allChallenges";
 
+  /**
+   * Returns true if the string is not a number
+   */
+  isChallengeComponent : boolean = false;
+
    /**
    * Constructor
    * @param globalService  GlobalService Injection.
@@ -23,45 +28,40 @@ export class SideBarComponent implements OnInit {
   constructor(
     private globalService: GlobalService,
     private router: Router
-  ) {
-    router.events
-    .pipe(filter(event => event instanceof NavigationEnd))
-    .subscribe((event) => {
-      if(event) {
-        if(this.tabHighlight == "hostedChallenges" || this.tabHighlight == "createChallenge" || 
-        this.tabHighlight == "myParticipantTeams" ||  this.tabHighlight == "participatedChallenges" || 
-        this.tabHighlight == "allChallenges") {
-          if(this.router.url.split('/')[length] == "me") {
-            this.tabHighlight = "hostedChallenges";
-            this.globalService.changeTabActiveStatus("hostedChallenges");
-          }
-          else if(this.router.url.split('/')[length] == "hosts") {
-            this.tabHighlight = "createChallenge";
-            this.globalService.changeTabActiveStatus("createChallenge");
-          }
-          else if(this.router.url.split('/')[length] == "participants") {
-            this.tabHighlight = "myParticipantTeams";
-            this.globalService.changeTabActiveStatus("myParticipantTeams");
-          }
-          else if(this.router.url.split('/')[length] == "participated") {
-            this.tabHighlight = "participatedChallenges";
-            this.globalService.changeTabActiveStatus("participatedChallenges");
-          }
-          else if(this.router.url.split('/')[length] == "all") {
-            this.tabHighlight = "allChallenges";
-            this.globalService.changeTabActiveStatus("allChallenges");
-          }
-        }
-        console.log("HELLO URL CHANGED" + this.tabHighlight);
-      }
-  });
-
-  }
+  ) { }
 
   ngOnInit() {
     this.globalService.nameTabHighlight.subscribe((tabHighlight) => {
       this.tabHighlight = tabHighlight;
     });
-    console.log("HELLO WORLD" + this.tabHighlight);
+
+    this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    .subscribe((event) => {
+      if(event) {
+          if(this.router.url.split('/')[2] == "me") {
+            this.tabHighlight = "hostedChallenges";
+            this.globalService.changeTabActiveStatus("hostedChallenges");
+          }
+          else if(this.router.url.split('/')[2] == "hosts") {
+            this.tabHighlight = "createChallenge";
+            this.globalService.changeTabActiveStatus("createChallenge");
+          }
+          else if(this.router.url.split('/')[2] == "participants") {
+            this.tabHighlight = "myParticipantTeams";
+            this.globalService.changeTabActiveStatus("myParticipantTeams");
+          }
+          else if(this.router.url.split('/')[2] == "participated") {
+            this.tabHighlight = "participatedChallenges";
+            this.globalService.changeTabActiveStatus("participatedChallenges");
+          }
+          else if(this.router.url.split('/')[2] == "all") {
+            this.tabHighlight = "allChallenges";
+            this.globalService.changeTabActiveStatus("allChallenges");
+          }
+        console.log("HELLO WORLD" + this.tabHighlight);
+        this.isChallengeComponent = isNaN(this.router.url.split('/')[length]);
+      }
+  });
   }
 }

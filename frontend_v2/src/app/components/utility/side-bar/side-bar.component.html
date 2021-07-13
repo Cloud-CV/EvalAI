@@ -4,14 +4,14 @@
       <ul>
         <li>
           <a class="text-light-black" routerLink="/challenges/participated" routerLinkActive="side-active-link" 
-          [class.side-active-link]="tabHighlight == 'participatedChallenges'">
+          [class.side-active-link]="tabHighlight == 'participatedChallenges' && !isChallengeComponent == true">
             <i class="fa fa fa-id-card-o side-link-icon"></i>
             <div class="sidebar-title">Participated challenges</div>
           </a>
         </li>
         <li>
           <a class="text-light-black" routerLink="/challenges/me" routerLinkActive="side-active-link"
-          [ngClass] = "{'side-active-link': tabHighlight == 'hostedChallenges'}">
+          [ngClass] = "{'side-active-link': tabHighlight == 'hostedChallenges' && !isChallengeComponent == true}">
             <i class="fa fa fa-folder-open side-link-icon"></i>
             <div class="sidebar-title">Hosted challenges</div>
           </a>
