@@ -166,21 +166,12 @@ p {
       padding-bottom: 40px;
     }
   }
-}
-
-.grad-container-testimonial {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 60px 100px 40px 100px;
-  clear: both;
-}
-
-@media screen and (max-width: 992px){
-    .grad-container-testimonial {
-      padding: 10px;
+  .testimonial-wrapper {
+    .grad-container {
+      padding:0px;
+    }
   }
 }
-
 
 #gsoc {
   height: 45%;
