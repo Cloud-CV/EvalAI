@@ -192,36 +192,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Fly left animation
-   */
-  flyLeftRecursive = (element, temp) => {
-    const x = temp - 1;
-    if (x > -100) {
-      (function (scope) {
-        setTimeout(function () {
-          element.style.marginLeft = x + '%';
-          scope.flyLeftRecursive(element, x);
-        }, 5);
-      })(this);
-    }
-  };
-
-  /**
-   * Fly right animation
-   */
-  flyRightRecursive = (element, temp) => {
-    const x = temp + 1;
-    if (x < 100) {
-      (function (scope) {
-        setTimeout(function () {
-          element.style.marginLeft = x + '%';
-          scope.flyRightRecursive(element, x);
-        }, 5);
-      })(this);
-    }
-  };
-
-  /**
    * Fly out animation
    */
   flyOut = (element, direction, scope) => {
