@@ -3,6 +3,7 @@ import logging
 import os
 import signal
 import yaml
+import time
 
 
 from worker_utils import EvalAI_Interface
@@ -95,6 +96,14 @@ def create_config_map_object(config_map_name, file_paths):
 
 def create_configmap(core_v1_api_instance, config_map):
     try:
+        config_maps = core_v1_api_instance.list_namespaced_config_map(
+            namespace="default"
+        )
+        if (
+            len(config_maps.items)
+            and config_maps.items[0].metadata.name == script_config_map_name
+        ):
+            return
         core_v1_api_instance.create_namespaced_config_map(
             namespace="default",
             body=config_map,
@@ -664,6 +673,9 @@ def main():
         "submission_time_limit"
     )
     while True:
+        # Equal distribution of queue messages among submission worker and code upload worker
+        if challenge.get("is_static_dataset_code_upload"):
+            time.sleep(2.1)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
