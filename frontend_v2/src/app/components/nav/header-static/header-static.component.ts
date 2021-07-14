@@ -99,7 +99,7 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     @Inject(DOCUMENT) private document: Document
   ) {
-
+      this.authState = authService.authState;
   }
 
   /**
@@ -133,7 +133,7 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
           }
       }
     });
-    this.isChallengeComponent = isNaN(this.router.url.split('/')[length]);
+    this.isChallengeComponent = isNaN(parseInt(this.router.url.split('/')[length]));
     
     this.globalService.nameTabHighlight.subscribe((tabHighlight) => {
       this.tabHighlight = tabHighlight;

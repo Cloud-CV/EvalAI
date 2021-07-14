@@ -59,7 +59,7 @@ export class SideBarComponent implements OnInit {
             this.tabHighlight = "allChallenges";
             this.globalService.changeTabActiveStatus("allChallenges");
           }
-        this.isChallengeComponent = isNaN(this.router.url.split('/')[length]);
+        this.isChallengeComponent = isNaN(parseInt(this.router.url.split('/')[length]));
       }
   });
   }
