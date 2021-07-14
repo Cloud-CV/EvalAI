@@ -518,6 +518,21 @@ def cleanup_submission(
         )
 
 
+def is_submission_evaluation_done(container_state, container_state_map):
+    """Function to check if submission container is successfully terminated and sidecar-container is running
+    Arguments:
+        container_state {[AWS EKS API Container state object]} -- State of the container
+        container_state_map {[dict]} -- Map of container_name to container_state
+    """
+    if (
+        container_state.terminated.reason == "Completed"
+        and container_state_map.get("sidecar-container")
+        and container_state_map.get("sidecar-container").terminated is None
+    ):
+        return True
+    return False
+
+
 def update_failed_jobs_and_send_logs(
     api_instance,
     core_v1_api_instance,
@@ -528,6 +543,7 @@ def update_failed_jobs_and_send_logs(
     phase_pk,
     message,
 ):
+    clean_submission = False
     try:
         job_def = read_job(api_instance, job_name)
         controller_uid = job_def.metadata.labels["controller-uid"]
@@ -537,10 +553,13 @@ def update_failed_jobs_and_send_logs(
             label_selector=pod_label_selector,
             timeout_seconds=10,
         )
+        container_state_map = {}
         for container in pods_list.items[0].status.container_statuses:
-            if container.name in ["agent", "submission"]:
-                if container.state.terminated is not None:
-                    if container.state.terminated.reason == "Error":
+            container_state_map[container.name] = container.state
+        for container_name, container_state in container_state_map.items():
+            if container_name in ["agent", "submission"]:
+                if container_state.terminated is not None:
+                    if container_state.terminated.reason == "Error":
                         pod_name = pods_list.items[0].metadata.name
                         try:
                             pod_log_response = (
@@ -549,26 +568,31 @@ def update_failed_jobs_and_send_logs(
                                     namespace="default",
                                     _return_http_data_only=True,
                                     _preload_content=False,
-                                    container=container.name,
+                                    container=container_name,
                                 )
                             )
                             pod_log = pod_log_response.data.decode("utf-8")
-                            cleanup_submission(
-                                api_instance,
-                                evalai,
-                                job_name,
-                                submission_pk,
-                                challenge_pk,
-                                phase_pk,
-                                pod_log,
-                                message,
-                            )
+                            clean_submission = True
+                            submission_error = pod_log
                         except client.rest.ApiException as e:
                             logger.exception(
                                 "Exception while reading Job logs {}".format(e)
                             )
+                    elif (
+                        container_name == "submission"
+                        and is_submission_evaluation_done(
+                            container_state, container_state_map
+                        )
+                    ):
+                        clean_submission = True
+                        submission_error = (
+                            "submission.json/submission.csv file not found."
+                        )
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
+        clean_submission = True
+        submission_error = "Submission Job Failed."
+    if clean_submission:
         cleanup_submission(
             api_instance,
             evalai,
@@ -576,7 +600,7 @@ def update_failed_jobs_and_send_logs(
             submission_pk,
             challenge_pk,
             phase_pk,
-            pod_log,
+            submission_error,
             message,
         )
 
