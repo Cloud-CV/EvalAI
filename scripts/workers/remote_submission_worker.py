@@ -28,9 +28,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
-DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
-DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT", "8000")
-DJANGO_SERVER_PROTOCOL = os.environ.get("DJANGO_SERVER_PROTOCOL", "http")
+EVALAI_API_SERVER=os.environ.get("EVALAI_API_SERVER", "http://localhost:8000")
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 
 
@@ -168,8 +166,7 @@ def create_dir_as_python_package(directory):
 
 
 def return_url_per_environment(url):
-    base_url = "{0}://{1}:{2}".format(DJANGO_SERVER_PROTOCOL, DJANGO_SERVER, DJANGO_SERVER_PORT)
-    url = "{0}{1}".format(base_url, url)
+    url = "{0}{1}".format(EVALAI_API_SERVER, url)
     return url
 
 

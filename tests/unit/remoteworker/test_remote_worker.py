@@ -174,10 +174,7 @@ class APICallsTestClass(BaseTestClass):
 
 
 @mock.patch(
-    "scripts.workers.remote_submission_worker.DJANGO_SERVER_PORT", "80"
-)
-@mock.patch(
-    "scripts.workers.remote_submission_worker.DJANGO_SERVER", "testserver"
+    "scripts.workers.remote_submission_worker.EVALAI_API_SERVER", "http://testserver:80"
 )
 class URLFormatTestCase(BaseTestClass):
     def test_return_url_per_environment(self):
