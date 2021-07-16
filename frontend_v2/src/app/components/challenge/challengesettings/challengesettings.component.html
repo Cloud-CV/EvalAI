@@ -114,29 +114,27 @@
               [phaseSelected]="phaseSelected()"
               #phaseselect
             ></app-selectphase>
-            <button
-              *ngIf="selectedPhase"
-              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12 phase-button"
-              (click)="editPhaseDetails()"
-            >
-            Phase Details
-            <i class="fa fa-pencil" aria-hidden="true"> </i>
-            </button>
           </div>
 
         <div class="row margin-bottom-cancel phase-card " *ngIf="selectedPhase">
-              <span class="fs-16 fw-light">
-                <strong class="text-light-black">Is Public </strong>
-              </span>
-              <a class="pointer fs-20" (click)="togglePhaseVisibility()">
-                <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i>
-              </a>&nbsp;&nbsp;&nbsp;&nbsp;
-              <span class="fs-16 fw-light">
-                <strong class="text-light-black">Submission Visibility </strong>
-              </span>
-              <a class="pointer fs-20" (click)="toggleSubmissionVisibility()">
-                <i class="{{ submissionVisibility.icon }}" aria-hidden="true"> </i>
-              </a>
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Phase Details </strong>
+          </span>
+          <a class="pointer fs-16" (click)="editPhaseDetails()">
+            <i class="fa fa-pencil" aria-hidden="true"> </i>
+          </a>&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Is Public </strong>
+          </span>
+          <a class="pointer fs-20" (click)="togglePhaseVisibility()">
+            <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i>
+          </a>&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Submission Visibility </strong>
+          </span>
+          <a class="pointer fs-20" (click)="toggleSubmissionVisibility()">
+            <i class="{{ submissionVisibility.icon }}" aria-hidden="true"> </i>
+          </a>
         </div>
        </div>
     </div>
@@ -159,16 +157,15 @@
             #phasesplitselect
           >
           </app-selectphase>
-            <button
-            *ngIf = "selectedPhaseSplit"
-            class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12 phase-button"
-            (click)="editPhaseDetails()">
-            Leaderboard Schema
-            <i class="fa fa-pencil" aria-hidden="true"> </i>
-            </button>
           </div>
         <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">
           <div class="col s12">
+            <span class="fs-16 fw-light">
+              <strong class="text-light-black">Leaderboard Schema </strong>
+            </span>
+            <a class="pointer fs-16" (click)="editPhaseDetails()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>
+            </a>&nbsp;&nbsp;&nbsp;&nbsp;
             <span class="fs-16 fw-light">
               <strong class="text-light-black">Leaderboard Visibility </strong>
             </span>
