@@ -127,8 +127,8 @@ export class ChallengeService {
   }
 
   /**
-   * Update the status for selectPhase component after details are updated 
-   * @param selectedPhase  new updated phase details status
+   * Update the status for selectPhaseSplit component after details are updated 
+   * @param selectedPhase  new updated phase split details status
    */
    changePhaseSplitSelected(selectedPhaseSplit: boolean) {
     this.phaseSplitSelected.next(selectedPhaseSplit);
