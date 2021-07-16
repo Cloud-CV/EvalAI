@@ -52,7 +52,6 @@ case $opt in
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans statsd-exporter django nodejs nodejs_v2 celery node_exporter
 				ENDSSH2
                 ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
-					source venv/bin/activate
 					cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
@@ -60,7 +59,7 @@ case $opt in
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
 					docker-compose -f docker-compose-${env}.yml pull
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans monitoring-nginx prometheus grafana push_gateway
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana push_gateway
 				ENDSSH2
 			ENDSSH
             ;;
