@@ -163,6 +163,16 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   };
 
   /**
+   * Challenge phases filtered
+   */
+  filteredPhases = [];
+
+  /**
+   * Phase splits filtered
+   */
+  filteredPhaseSplits = [];
+
+  /**
    * Separator key codes
    */
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -196,6 +206,12 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
     this.challengeService.currentPhases.subscribe((phases) => {
       this.phases = phases;
+      for (let i = 0; i < this.phases.length; i++) {
+        if (this.phases[i].is_public === false) {
+          this.phases[i].showPrivate = true;
+        }
+      }
+      this.filteredPhases = this.phases;
     });  
 
     this.challengeService.isChallengeHost.subscribe((status) => {
@@ -209,6 +225,12 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
     this.challengeService.currentPhaseSplit.subscribe((phaseSplits) => {
       this.phaseSplits = phaseSplits;
+      for (let i = 0; i < this.phaseSplits.length; i++) {
+        if (this.phaseSplits[i].visibility !== 3) {
+          this.phaseSplits[i].showPrivate = true;
+        }
+      }
+      this.filteredPhaseSplits = this.phaseSplits;
     });
 
     if (!this.challenge["remote_evaluation"]) {
