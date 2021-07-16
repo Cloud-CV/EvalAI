@@ -62,7 +62,7 @@ th {
     padding-right: 36px;
   }
   ul {
-    padding-left: 70px;
+    padding-left: 60px;
   }
 }
 
@@ -139,4 +139,9 @@ th {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+.cli-card-container {
+  margin: 14.5px 0px;
+  padding: 0px 0px 0px 70px;
 }

@@ -1183,14 +1183,10 @@ code {
   padding: 6px;
   border-radius: 10px;
 	display: inline-block;
-	max-width: 100%;
+	max-width: 90%;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-code:hover {
-  overflow: visible;
 }
 
 .code-btn {
