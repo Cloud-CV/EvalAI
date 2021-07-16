@@ -297,13 +297,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.selectedPhaseSplit = false;
             SELF.challengeService.fetchPhaseSplits(SELF.challenge['id']);
             if (visibility == 3) {
-              SELF.isLeaderboardPublic = true;
-              SELF.leaderboardPublic(SELF.isLeaderboardPublic);
               SELF.leaderboardVisibility.state = 'Public';
               SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
             } else {
-              SELF.isLeaderboardPublic = false;
-              SELF.leaderboardPublic(SELF.isLeaderboardPublic);
               SELF.leaderboardVisibility.state = 'Private';
               SELF.leaderboardVisibility.icon = 'fa fa-eye-slash red-text';
             }
@@ -312,6 +308,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
               'The phase split was successfully made ' + toggleLeaderboardVisibilityState,
               5
             );
+            SELF.challengeService.changePhaseSplitSelected(true);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
@@ -327,26 +324,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           () => this.logger.info('PHASE-SPLIT-VISIBILITY-UPDATE-FINISHED')
         );
     }
-
-  leaderboardPublic(isPublic) {
-    const SELF = this;
-    const BODY: FormData = new FormData();
-    BODY.append("is_leaderboard_public", isPublic);
-    SELF.apiService
-    .patchFileUrl(
-      SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhaseSplit['leaderboard'], SELF.selectedPhaseSplit['challenge_phase']),
-      BODY
-    )
-      .subscribe(
-        (data) => {
-          SELF.challengeService.fetchPhases(SELF.selectedPhaseSplit['leaderboard']);
-        },
-        (err) => {
-          SELF.globalService.showToast('error', err);
-        },
-        () => this.logger.info('is_leaderboard_public of challenge phase updated')
-      );
-  }
 
   /**
    * Called when a phase is selected (from child component)

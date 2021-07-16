@@ -110,11 +110,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.challengeService.isPhaseSplitSelected.subscribe((isPhaseSplitSelected) => {
       this.isPhaseSplitSelected = isPhaseSplitSelected;
     });
+
     if(this.isPhaseSplitSelected) {
       this.challengeService.changePhaseSplitSelected(false);
       this.settingsSplitName = '';
     }
-    console.log(this.settingsSplitName);
     this.challengeService.isPhaseSelected.subscribe((isPhaseSelected) => {
       this.isPhaseSelected = isPhaseSelected;
     });
@@ -152,15 +152,15 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseSplitSelected(phaseSplit);
   }
 
-  // selectPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
-  //   this.phaseSelectionType = phaseSelectionType;
-  //   this.phaseSelectionListType = phaseSelectionListType;
-  //   this.selectedPhaseSplit = phaseSplit;
-  //   this.phaseName = phaseSplit.challenge_phase_name;
-  //   this.splitName = phaseSplit.dataset_split_name;
-  //   this.phaseVisibility = phaseSplit.showPrivate;
-  //   this.selectedPhaseSplitUrlChange(phaseSplit);
-  // }
+  selectPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+    this.phaseSelectionType = phaseSelectionType;
+    this.phaseSelectionListType = phaseSelectionListType;
+    this.selectedPhaseSplit = phaseSplit;
+    this.phaseName = phaseSplit.challenge_phase_name;
+    this.splitName = phaseSplit.dataset_split_name;
+    this.phaseVisibility = phaseSplit.showPrivate;
+    this.selectedPhaseSplitUrlChange(phaseSplit);
+  }
 
   /**
    * Get 12Hour formatted date function.
