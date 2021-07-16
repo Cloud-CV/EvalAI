@@ -40,10 +40,12 @@
     <mat-select class="rm-margin">
       <mat-select-trigger>
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{ phaseName }}
-          <mat-chip-list *ngIf="phaseVisibility">
-            <mat-chip>Private</mat-chip>
-          </mat-chip-list>
         </span>
+          <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+            <mat-chip-list *ngIf="phaseVisibility">
+              <mat-chip>Private</mat-chip>
+            </mat-chip-list>
+          </span>
       </mat-select-trigger>
       <mat-option (click)="selectPhase(key)" [value]="key" *ngFor="let key of phases">
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{ key.name }}           
