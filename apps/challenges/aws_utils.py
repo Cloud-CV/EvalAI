@@ -26,6 +26,7 @@ from .task_definations import (
     service_definition,
     update_service_args,
 )
+
 from base.utils import get_boto3_client, send_email
 from evalai.celery import app
 from accounts.models import JwtToken
