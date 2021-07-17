@@ -348,6 +348,15 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     }
 
   /**
+   * For edit leaderboard schema
+   */
+  editLeaderboardSchema() {
+    /**
+     * TODO
+     */
+    }
+
+  /**
    * Called when a phase is selected (from child component)
    */
   phaseSelected() {
