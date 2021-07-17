@@ -13,6 +13,14 @@
   }
 }
 
+.challenge-phase {
+  margin-top: 2rem;
+}
+
+::-webkit-calendar-picker-indicator:hover{
+  cursor:pointer;
+}
+
 @media only screen and (max-width: $med-screen) {
   .web-container {
     width: 100%;
