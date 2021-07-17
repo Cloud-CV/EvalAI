@@ -146,7 +146,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   leaderboardVisibility = {
     state: 'Private',
-    icon: 'fa fa-eye-slash red-text',
+    icon: 'fa fa-toggle-off',
   };
 
   /**
@@ -159,7 +159,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   publishChallenge = {
     state: 'Not Published',
-    icon: 'fa fa-toggle-off',
+    icon: 'fa fa-eye-slash red-text',
   };
 
   /**
@@ -320,10 +320,10 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.challengeService.fetchPhaseSplits(SELF.challenge['id']);
             if (visibility == 3) {
               SELF.leaderboardVisibility.state = 'Public';
-              SELF.leaderboardVisibility.icon = 'fa fa-eye green-text';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
             } else {
               SELF.leaderboardVisibility.state = 'Private';
-              SELF.leaderboardVisibility.icon = 'fa fa-eye-slash red-text';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off';
             }
             SELF.globalService.showToast(
               'success',
@@ -392,7 +392,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         )
         .subscribe(
           (data) => {
-            SELF.selectedPhase = data;
+            SELF.selectedPhase = false;
             SELF.challengeService.fetchPhases(SELF.challenge['id']);
             SELF.challengeService.changePhaseSelected(true);
             SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');

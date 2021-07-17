@@ -64,7 +64,7 @@
 <ng-container *ngIf="phaseSelectionType == 'selectBox' && phaseSelectionListType == 'settingsPhaseSplit'">
 <mat-form-field>
     <mat-label class="fs-16 phase-placeholder" [ngClass]="{'hide-label': settingsSplitName !== '' }">Select Phase Split</mat-label>
-    <mat-select class="rm-margin"  [(ngModel)]="selectedPhaseSplit">
+    <mat-select class="rm-margin">
       <mat-select-trigger>
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7 phase_name">
           <span class="fw-light">Phase:&nbsp;</span>{{ phaseName }}, <span class="fw-light">Split:&nbsp; </span
@@ -96,7 +96,7 @@
 <ng-container *ngIf="phaseSelectionType == 'selectBox' && phaseSelectionListType == 'phaseSplit'">
   <mat-form-field class="select_phase_form">
     <mat-label class="fs-16 phase-placeholder" [ngClass]="{ 'hide-label': selectedPhaseSplit !== '' }">Challenge Phase</mat-label>
-    <mat-select class="rm-margin" [(ngModel)]="selectedPhaseSplit">
+    <mat-select class="rm-margin">
       <mat-select-trigger>
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7 phase_name">
           <span class="fw-light">Phase:&nbsp;</span>{{ phaseName }}, <span class="fw-light">Split:&nbsp; </span
