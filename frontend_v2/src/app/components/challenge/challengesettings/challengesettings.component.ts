@@ -564,24 +564,25 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
-        SELF.apiCall = (params) => {
-          const FORM_DATA: FormData = new FormData();
-          FORM_DATA.append('test_annotation', params['test_annotation']);
-          SELF.apiService
-          .patchFileUrl(
-            SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhase['challenge'], SELF.selectedPhase['id']),
-            FORM_DATA
-          )
-            .subscribe(
-              (data) => {
-                SELF.globalService.showToast('success', 'The test annoation file is successfully uploaded!');
-              },
-              (err) => {
-                SELF.globalService.showToast('error', err);
-              },
-              () => this.logger.info('EDIT-TEST-ANNOTATION-FINISHED')
-            );
-        };
+      SELF.apiCall = (params) => {
+        const FORM_DATA: FormData = new FormData();
+        FORM_DATA.append('test_annotation', params['test_annotation']);
+        SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhase['challenge'], SELF.selectedPhase['id']),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.selectedPhase = false;
+            SELF.globalService.showToast('success', 'The test annoation file is successfully uploaded!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-TEST-ANNOTATION-FINISHED')
+        );
+      };
 
     /**
      * Parameters of the modal

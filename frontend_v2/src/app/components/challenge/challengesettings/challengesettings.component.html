@@ -103,11 +103,11 @@
     <!-- Evaluations and Annotations -->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-light fs-18">Evaluation and Annotations</span>
+        <span class="fw-light fs-18">Evaluations:</span>
       </div>
       <br />
       <div class="ev-action">
-        <div *ngIf="isChallengeHost" class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad ev-upload-action">
+        <div *ngIf="isChallengeHost" class="col-lg-7 col-md-7 col-sm-9 col-xs-9 col-lr-pad ev-upload-action">
           <!-- Evaluations Criteria Description -->
           <span class="fs-16 fw-light">
             <strong class="text-light-black">Evaluation Criteria </strong>
@@ -123,9 +123,16 @@
             <i class="fa fa-file" aria-hidden="true"> </i>
           </a>
           <br />
-          <span class="fs-16 fw-light">
-            <strong class="text-light-black">Test Annotation </strong>
-          </span>
+        </div>
+      </div>
+      <br />
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <br />
+        <span class="fw-light fs-18">Test Annotation:</span>
+      </div>
+      <br />
+      <div class="ev-action">
+        <div *ngIf="isChallengeHost" class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
           <app-selectphase
           [phases]="phases"
           [phaseSelectionListType]="phaseSelectionListType"
