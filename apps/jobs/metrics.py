@@ -12,13 +12,6 @@ num_submissions_in_queue = Counter(
     registry=pushgateway_registry,
 )
 
-num_processed_submissions = Counter(
-    "num_processed_submissions",
-    "Counter for number of submissions processed from the queue",
-    ["submission_pk", "queue_name"],
-    registry=pushgateway_registry,
-)
-
 
 def push_metrics_to_pushgateway(job_id):
     pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
