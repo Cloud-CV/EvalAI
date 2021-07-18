@@ -26,8 +26,10 @@ JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
     INSTANCE=${PRODUCTION_INSTANCE}
+    MONITORING_INSTANCE=${PRODUCTION_MONITORING_INSTANCE}
 elif [[ ${env} == "staging" ]]; then
     INSTANCE=${STAGING_INSTANCE}
+    MONITORING_INSTANCE=${STAGING_MONITORING_INSTANCE}
 else
     echo "Skipping deployment since commit not on staging or production branch."
     exit 0
@@ -47,7 +49,17 @@ case $opt in
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
 					docker-compose -f docker-compose-${env}.yml pull
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans statsd-exporter django nodejs nodejs_v2 celery node_exporter push_gateway
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans statsd-exporter django nodejs nodejs_v2 celery node_exporter
+				ENDSSH2
+				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
+					cd ~/Projects/EvalAI
+					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+					export COMMIT_ID=${COMMIT_ID}
+					eval $(aws ecr get-login --no-include-email)
+					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+					docker-compose -f docker-compose-${env}.yml rm -s -v -f
+					docker-compose -f docker-compose-${env}.yml pull
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana push_gateway
 				ENDSSH2
 			ENDSSH
             ;;

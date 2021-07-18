@@ -96,6 +96,7 @@ services:
       dockerfile: docker/prod/code-upload-worker/Dockerfile
 
   prometheus:
+    hostname: prometheus
     image: prom/prometheus:latest
     user: "1000"
     volumes:
@@ -105,10 +106,12 @@ services:
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=http://localhost:9090/prometheus'
     ports:
       - '9090:9090'
   
   grafana:
+    hostname: grafana
     image: grafana/grafana:latest
     user: "1000"
     env_file:
@@ -143,3 +146,18 @@ services:
       - '--web.route-prefix=/push_gateway'
     ports:
       - '9091:9091'
+  
+  nginx-ingress:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nginx-ingress:${COMMIT_ID}
+    build:
+      context: ./
+      dockerfile: docker/prod/nginx-ingress/Dockerfile
+      args:
+        MONITORING_ENV: staging
+    depends_on: 
+      - prometheus
+      - grafana
+      - push_gateway
+    ports:
+      - '80:80'
+      - '443:443'
