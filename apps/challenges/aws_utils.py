@@ -1146,7 +1146,10 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
+        if (
+            challenge.is_docker_based
+            and not challenge.is_static_dataset_code_upload
+        ):
             response = "Sorry. This feature is not available for code upload/docker based challenges."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
