@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import signal
+import sys
 import yaml
 import time
 
@@ -25,7 +26,16 @@ class GracefulKiller:
         self.kill_now = True
 
 
+formatter = logging.Formatter(
+    "[%(asctime)s] %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(formatter)
+
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
@@ -262,7 +272,7 @@ def create_static_code_upload_submission_job_object(message):
         value=str(submission_meta["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
-        name="SUBMISSION_TIME_DELTA", value="3600"
+        name="SUBMISSION_TIME_DELTA", value="1"
     )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
@@ -675,7 +685,7 @@ def main():
     while True:
         # Equal distribution of queue messages among submission worker and code upload worker
         if challenge.get("is_static_dataset_code_upload"):
-            time.sleep(2.1)
+            time.sleep(0.5)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
@@ -684,6 +694,7 @@ def main():
             ) and not message_body.get(
                 "is_static_dataset_code_upload_submission"
             ):
+                time.sleep(35)
                 continue
             message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
