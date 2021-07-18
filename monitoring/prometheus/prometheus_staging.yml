@@ -5,6 +5,7 @@ global:
 
 scrape_configs:
   - job_name: 'prometheus' 
+    metrics_path: '/prometheus/metrics'
     static_configs: 
       - targets: ['localhost:9090']
       
@@ -21,4 +22,4 @@ scrape_configs:
   - job_name: 'push_gateway'
     metrics_path: '/push_gateway/metrics'
     static_configs:
-      - targets: ['staging.eval.ai']
+      - targets: ['monitoring-staging.eval.ai']
