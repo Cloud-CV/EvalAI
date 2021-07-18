@@ -9,7 +9,8 @@
           /></a>
         </li>
         <li>
-          <a class="waves-effect waves-dark main-header-link" routerLink="/challenges">All Challenges</a>
+          <a class="waves-effect waves-dark main-header-link" routerLink="/challenges/all" routerLinkActive="active"
+          [ngClass] = "{'active': tabHighlight == 'allChallenges' && !isChallengeComponent == true}">All Challenges</a>
         </li>
         <!-- show after authenticate user -->
         <li>
