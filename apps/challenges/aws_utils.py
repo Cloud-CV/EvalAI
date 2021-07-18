@@ -16,9 +16,9 @@ from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
     construct_and_send_eks_cluster_creation_mail,
 )
-from .task_definations import (
-    container_defination_code_upload_worker,
-    container_defination_submission_worker,
+from .task_definitions import (
+    container_definition_code_upload_worker,
+    container_definition_submission_worker,
     delete_service_args,
     task_definition,
     task_definition_code_upload_worker,
@@ -196,7 +196,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             token = JwtToken.objects.get(user=challenge.creator.created_by)
             if challenge.is_static_dataset_code_upload:
                 code_upload_container = (
-                    container_defination_code_upload_worker.format(
+                    container_definition_code_upload_worker.format(
                         queue_name=queue_name,
                         code_upload_container_name=code_upload_container_name,
                         auth_token=token.refresh_token,
@@ -211,7 +211,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     )
                 )
                 submission_container = (
-                    container_defination_submission_worker.format(
+                    container_definition_submission_worker.format(
                         queue_name=queue_name,
                         container_name=container_name,
                         ENV=ENV,

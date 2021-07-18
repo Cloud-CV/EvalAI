@@ -237,7 +237,7 @@ task_definition_static_code_upload_worker = """
 }}
 """
 
-container_defination_submission_worker = """
+container_definition_submission_worker = """
 {{
     "name": "{container_name}",
     "image": "{WORKER_IMAGE}",
@@ -362,7 +362,7 @@ container_defination_submission_worker = """
 }}
 """
 
-container_defination_code_upload_worker = """
+container_definition_code_upload_worker = """
 {{
     "name": "{code_upload_container_name}",
     "image": "{CODE_UPLOAD_WORKER_IMAGE}",
