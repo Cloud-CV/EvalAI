@@ -75,6 +75,8 @@ export class GlobalService {
   editPhaseModalParams = this.editPhasemodalSource.asObservable();
   private termsAndConditionsSource = new BehaviorSubject(this.termsAndConditionsModalDefault);
   termsAndConditionsModalParams = this.termsAndConditionsSource.asObservable();
+  private tabHighlight = new BehaviorSubject(" ");
+  nameTabHighlight = this.tabHighlight.asObservable();
 
   @Output() toast: EventEmitter<Object> = new EventEmitter();
   @Output() loading: EventEmitter<boolean> = new EventEmitter();
@@ -254,6 +256,14 @@ export class GlobalService {
       const TEMP = { isTermsAndConditionsModalVisible: false };
       this.termsAndConditionsSource.next(Object.assign({}, this.termsAndConditionsModalDefault, TEMP));
     }
+  }
+
+  /**
+   * Update the status for highlighting the active tab
+   * @param activeTab  new updated name of tab
+   */
+   changeTabActiveStatus(activeTab: string) {
+    this.tabHighlight.next(activeTab);
   }
 
   /**
