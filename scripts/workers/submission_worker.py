@@ -361,7 +361,15 @@ def extract_submission_data(submission_id):
         input_file = submission.submission_input_file
     else:
         input_file = submission.input_file
-    submission_input_file = input_file.url
+    try:
+        submission_input_file = input_file.url
+    except Exception as e:
+        logger.exception(
+            "{} Submission input file does not exist for submission {}, error {}".format(
+                SUBMISSION_LOGS_PREFIX, submission_id, e
+            )
+        )
+        return None
     submission_input_file = return_file_url_per_environment(
         submission_input_file
     )
@@ -765,7 +773,9 @@ def increment_and_push_metrics_to_pushgateway(body, queue_name):
         num_processed_submissions.labels(submission_pk, queue_name).inc()
         pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
         job_id = "submission_worker_{}".format(submission_pk)
-        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=pushgateway_registry)
+        pushadd_to_gateway(
+            pushgateway_endpoint, job=job_id, registry=pushgateway_registry
+        )
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to push gateway: {}".format(
@@ -846,7 +856,9 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_pushgateway(message.body, queue_name)
+                        increment_and_push_metrics_to_pushgateway(
+                            message.body, queue_name
+                        )
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -856,7 +868,9 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_pushgateway(message.body, queue_name)
+                    increment_and_push_metrics_to_pushgateway(
+                        message.body, queue_name
+                    )
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -875,7 +889,9 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_pushgateway(message.body, queue_name)
+                    increment_and_push_metrics_to_pushgateway(
+                        message.body, queue_name
+                    )
         if killer.kill_now:
             break
         time.sleep(0.1)
