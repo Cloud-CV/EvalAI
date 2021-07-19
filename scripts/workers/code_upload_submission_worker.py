@@ -537,21 +537,6 @@ def cleanup_submission(
         )
 
 
-def is_submission_evaluation_done(container_state, container_state_map):
-    """Function to check if submission container is successfully terminated and sidecar-container is running
-    Arguments:
-        container_state {[AWS EKS API Container state object]} -- State of the container
-        container_state_map {[dict]} -- Map of container_name to container_state
-    """
-    if (
-        container_state.terminated.reason == "Completed"
-        and container_state_map.get("sidecar-container")
-        and container_state_map.get("sidecar-container").terminated is None
-    ):
-        return True
-    return False
-
-
 def update_failed_jobs_and_send_logs(
     api_instance,
     core_v1_api_instance,
@@ -597,16 +582,6 @@ def update_failed_jobs_and_send_logs(
                             logger.exception(
                                 "Exception while reading Job logs {}".format(e)
                             )
-                    elif (
-                        container_name == "submission"
-                        and is_submission_evaluation_done(
-                            container_state, container_state_map
-                        )
-                    ):
-                        clean_submission = True
-                        submission_error = (
-                            "submission.json/submission.csv file not found."
-                        )
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         clean_submission = True
