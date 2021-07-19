@@ -278,6 +278,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     const SELF = this;
     return (phaseSplit) => {
        SELF.selectedPhaseSplit = phaseSplit;
+       console.log(SELF.selectedPhaseSplit['visibility']);
        SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility'];
        if(SELF.isPhaseSplitLeaderboardPublic == 3) {
          SELF.leaderboardVisibility.state = 'Public';
@@ -316,8 +317,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       )
         .subscribe(
           (data) => {
-            SELF.selectedPhaseSplit = false;
-            SELF.challengeService.fetchPhaseSplits(SELF.challenge['id']);
+            SELF.selectedPhaseSplit['visibility'] = data.visibility;
             if (visibility == 3) {
               SELF.leaderboardVisibility.state = 'Public';
               SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
@@ -330,20 +330,19 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
               'The phase split was successfully made ' + toggleLeaderboardVisibilityState,
               5
             );
-            SELF.challengeService.changePhaseSplitSelected(true);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
             SELF.globalService.showToast('error', err);
             if (visibility == 3) {
-              SELF.phaseVisibility.state = 'Private';
-              SELF.phaseVisibility.icon = 'fa fa-toggle-off';
+              SELF.leaderboardVisibility.state = 'Private';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off';
             } else {
-              SELF.phaseVisibility.state = 'Public';
-              SELF.phaseVisibility.icon = 'fa fa-toggle-on green-text';
+              SELF.leaderboardVisibility.state = 'Public';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
             }
           },
-          () => this.logger.info('PHASE-SPLIT-VISIBILITY-UPDATE-FINISHED')
+          () => this.logger.info('LEADERBOARD-VISIBILITY-UPDATE-FINISHED')
         );
     }
 
@@ -351,9 +350,21 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * For edit leaderboard schema
    */
   editLeaderboardSchema() {
+    
+    const SELF = this;
     /**
-     * TODO
+     * Parameters of the modal
      */
+     const PARAMS = {
+      title: 'Edit Leaderboard Schema',
+      label: 'leaderboard_schema',
+      isEditorRequired: true,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+
     }
 
   /**
@@ -401,9 +412,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         )
         .subscribe(
           (data) => {
-            SELF.selectedPhase = false;
-            SELF.challengeService.fetchPhases(SELF.challenge['id']);
-            SELF.challengeService.changePhaseSelected(true);
+            for (var attrname in data) { 
+              SELF.selectedPhase[attrname] = data[attrname]; 
+            }
             SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
           },
           (err) => {
@@ -458,9 +469,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       )
         .subscribe(
           (data) => {
-            SELF.challengeService.fetchPhases(SELF.selectedPhase['challenge']);
-            SELF.challengeService.changePhaseSelected(true);
-            SELF.selectedPhase = false;
+            SELF.selectedPhase['is_public'] = data.is_public;
             SELF.globalService.showToast(
               'success',
               'The phase was successfully made ' + togglePhaseVisibilityState,
@@ -509,9 +518,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         )
           .subscribe(
             (data) => {
-              SELF.challengeService.fetchPhases(SELF.selectedPhase['challenge']);
-              SELF.challengeService.changePhaseSelected(true);
-              SELF.selectedPhase = false;
+              SELF.selectedPhase['is_submission_public'] = data.is_submission_public;
               SELF.globalService.showToast(
                 'success',
                 'The submissions were successfully made ' + toggleSubmissionVisibilityState,

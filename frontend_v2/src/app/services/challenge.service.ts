@@ -33,13 +33,8 @@ export class ChallengeService {
   currentHostTeam = this.hostTeamSource.asObservable();
   private challengeHostSource = new BehaviorSubject(false);
   isChallengeHost = this.challengeHostSource.asObservable();
-  private phaseSelected = new BehaviorSubject(false);
-  isPhaseSelected = this.phaseSelected.asObservable();
   private challengePublishSource = new BehaviorSubject(this.defaultPublishChallenge);
   currentChallengePublishState = this.challengePublishSource.asObservable();
-  private phaseSplitSelected = new BehaviorSubject(false);
-  isPhaseSplitSelected = this.phaseSplitSelected.asObservable();
-
   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
@@ -68,14 +63,6 @@ export class ChallengeService {
    */
   changeChallengeHostStatus(isChallengeHost: any) {
     this.challengeHostSource.next(isChallengeHost);
-  }
-
-  /**
-   * Update the status for selectPhase component after details are updated 
-   * @param selectedPhase  new updated phase details status
-   */
-  changePhaseSelected(selectedPhase: boolean) {
-    this.phaseSelected.next(selectedPhase);
   }
 
   /**
@@ -124,14 +111,6 @@ export class ChallengeService {
    */
   changeCurrentPhaseSplit(phaseSplits: any) {
     this.phaseSplitSource.next(phaseSplits);
-  }
-
-  /**
-   * Update the status for selectPhaseSplit component after details are updated 
-   * @param selectedPhase  new updated phase split details status
-   */
-   changePhaseSplitSelected(selectedPhaseSplit: boolean) {
-    this.phaseSplitSelected.next(selectedPhaseSplit);
   }
 
   /**

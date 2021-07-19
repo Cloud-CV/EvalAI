@@ -106,26 +106,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * Component on changes detected in Input.
    * @param change  changes detected
    */
-  ngOnChanges(change) {
-
-    this.challengeService.isPhaseSplitSelected.subscribe((isPhaseSplitSelected) => {
-      this.isPhaseSplitSelected = isPhaseSplitSelected;
-    });
-
-    if(this.phaseSplitSelected && this.isPhaseSplitSelected) {
-      this.challengeService.changePhaseSplitSelected(false);
-      this.settingsSplitName = '';
-    }
-
-    this.challengeService.isPhaseSelected.subscribe((isPhaseSelected) => {
-      this.isPhaseSelected = isPhaseSelected;
-    });
-
-    if(this.phaseSelected && this.isPhaseSelected) {
-      this.challengeService.changePhaseSelected(false);
-      this.phaseName = '';
-    }
-  }
+  ngOnChanges(change) { }
 
   /**
    * Select a particular phase.
