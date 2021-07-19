@@ -361,15 +361,7 @@ def extract_submission_data(submission_id):
         input_file = submission.submission_input_file
     else:
         input_file = submission.input_file
-    try:
-        submission_input_file = input_file.url
-    except Exception as e:
-        logger.exception(
-            "{} Submission input file does not exist for submission {}, error {}".format(
-                SUBMISSION_LOGS_PREFIX, submission_id, e
-            )
-        )
-        return None
+    submission_input_file = input_file.url
     submission_input_file = return_file_url_per_environment(
         submission_input_file
     )
