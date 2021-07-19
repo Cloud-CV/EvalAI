@@ -24,7 +24,6 @@ services:
       - db
       - sqs
       - statsd-exporter
-      - push_gateway
     volumes:
       - .:/code
 
@@ -107,11 +106,3 @@ services:
     image: prom/node-exporter
     ports:
       - '9100:9100'
-
-  push_gateway:
-    hostname: push_gateway
-    image: prom/pushgateway
-    command:
-      - '--web.route-prefix=/push_gateway'
-    ports:
-      - '9091:9091' 
