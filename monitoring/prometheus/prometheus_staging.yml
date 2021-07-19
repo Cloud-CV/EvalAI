@@ -18,8 +18,3 @@ scrape_configs:
     metrics_path: '/node_exporter'
     static_configs:
       - targets: ['staging.eval.ai']
-  
-  - job_name: 'push_gateway'
-    metrics_path: '/push_gateway/metrics'
-    static_configs:
-      - targets: ['monitoring-staging.eval.ai']

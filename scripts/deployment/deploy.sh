@@ -59,7 +59,7 @@ case $opt in
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
 					docker-compose -f docker-compose-${env}.yml pull
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana push_gateway
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana
 				ENDSSH2
 			ENDSSH
             ;;
@@ -167,11 +167,6 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d node_exporter
             echo "Completed deploy operation."
             ;;
-        deploy-push-gateway)
-            echo "Deploying push_gateway docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d push_gateway
-            echo "Completed deploy operation."
-            ;;
         scale)
             service=${3}
             instances=${4}
@@ -217,8 +212,6 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
-        echo "    deploy-push-gateway : Deploy push_gateway container in the respective environment."
-        echo "        Eg. ./scripts/deployment/deploy.sh deploy-push-gateway production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
