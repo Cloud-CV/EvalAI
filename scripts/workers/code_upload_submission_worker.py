@@ -671,6 +671,12 @@ def main():
             ):
                 time.sleep(35)
                 continue
+            api_instance = get_api_object(
+                cluster_name, cluster_endpoint, challenge, evalai
+            )
+            core_v1_api_instance = get_core_v1_api_object(
+                cluster_name, cluster_endpoint, challenge, evalai
+            )
             message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
