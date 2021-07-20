@@ -477,7 +477,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       )
         .subscribe(
           (data) => {
-            console.log(SELF.selectedPhase);
             SELF.selectedPhase['is_public'] = data.is_public;
             SELF.globalService.showToast(
               'success',
