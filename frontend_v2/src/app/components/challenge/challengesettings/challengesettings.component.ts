@@ -36,6 +36,22 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   phases = [];
 
   /**
+   * Phase split list
+   */
+  phaseSplits = [];
+
+  /**
+   * Challenge phases filtered
+   */
+  filteredPhases = [];
+
+   /**
+    * Phase splits filtered
+    */
+  filteredPhaseSplits = [];
+ 
+
+  /**
    * Phase selection type (radio button or select box)
    */
   phaseSelectionType = 'selectBox';
@@ -49,6 +65,21 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Currently selected phase
    */
   selectedPhase: any = null;
+
+  /**
+   * Phase selection type (radio button or select box)
+   */
+  phaseLeaderboardSelectionType = 'selectBox';
+
+   /**
+    * Select box list type
+    */
+  phaseLeaderboardSelectionListType = 'settingsPhaseSplit';
+
+  /**
+   * Currently selected phase split
+   */
+  selectedPhaseSplit: any = null;
   
   /**
    * store worker logs
@@ -106,11 +137,18 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   isLeaderboardPublic : boolean = false;
 
   /**
+   * If leaderboard of phase split is public
+   * 1 -> private
+   * 3 -> public
+   */
+  isPhaseSplitLeaderboardPublic: number = 1;
+
+  /**
    * phase visibility state and it's icon
    */
   phaseVisibility = {
     state: 'Private',
-    icon: 'fa fa-toggle-off',
+    icon: 'fa fa- text-darken-1',
   };
 
   /**
@@ -118,41 +156,16 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   submissionVisibility = {
     state: 'Private',
-    icon: 'fa fa-toggle-off',
+    icon: 'fa fa-toggle-off grey-text text-darken-1',
   };  
-
-  /**
-   * Phase split list
-   */
-  phaseSplits = [];
-
-  /**
-   * Phase selection type (radio button or select box)
-   */
-  phaseLeaderboardSelectionType = 'selectBox';
-
-   /**
-    * Select box list type
-    */
-  phaseLeaderboardSelectionListType = 'settingsPhaseSplit';
-
-  /**
-   * Currently selected phase split
-   */
-  selectedPhaseSplit: any = null;
 
   /**
    * phase visibility state and it's icon
    */
   leaderboardVisibility = {
     state: 'Private',
-    icon: 'fa fa-toggle-off',
+    icon: 'fa fa-toggle-off grey-text text-darken-1',
   };
-
-  /**
-   * If leaderboard of phase split is public
-   */
-   isPhaseSplitLeaderboardPublic: number = 1;
 
   /**
    * publish challenge state and it's icon
@@ -161,16 +174,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     state: 'Not Published',
     icon: 'fa fa-eye-slash red-text',
   };
-
-  /**
-   * Challenge phases filtered
-   */
-  filteredPhases = [];
-
-  /**
-   * Phase splits filtered
-   */
-  filteredPhaseSplits = [];
 
   /**
    * Separator key codes
@@ -210,6 +213,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
         }
+        else {
+          this.phases[i].showPrivate = false;
+        }
       }
       this.filteredPhases = this.phases;
     });  
@@ -228,6 +234,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       for (let i = 0; i < this.phaseSplits.length; i++) {
         if (this.phaseSplits[i].visibility !== 3) {
           this.phaseSplits[i].showPrivate = true;
+        }
+        else {
+          this.phaseSplits[i].showPrivate = false;
         }
       }
       this.filteredPhaseSplits = this.phaseSplits;
@@ -285,7 +294,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
        }
        else {
         SELF.leaderboardVisibility.state = 'Private';
-        SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off';
+        SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
        }
       }
   }
@@ -300,7 +309,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       toggleLeaderboardVisibilityState = 'private';
       visibility = 1;
       SELF.leaderboardVisibility.state = 'Private';
-      SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off';
+      SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
     } else {
       toggleLeaderboardVisibilityState = 'public';
       visibility = 3;
@@ -322,7 +331,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
               SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
             } else {
               SELF.leaderboardVisibility.state = 'Private';
-              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
             }
             SELF.globalService.showToast(
               'success',
@@ -335,7 +344,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.globalService.showToast('error', err);
             if (visibility == 3) {
               SELF.leaderboardVisibility.state = 'Private';
-              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
             } else {
               SELF.leaderboardVisibility.state = 'Public';
               SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
@@ -452,7 +461,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       togglePhaseVisibilityState = 'private';
       isPublic = false;
       SELF.phaseVisibility.state = 'Private';
-      SELF.phaseVisibility.icon = 'fa fa-toggle-off';
+      SELF.phaseVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
     } else {
       togglePhaseVisibilityState = 'public';
       isPublic = true;
@@ -481,7 +490,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.globalService.showToast('error', err);
             if (isPublic) {
               SELF.phaseVisibility.state = 'Private';
-              SELF.phaseVisibility.icon = 'fa fa-toggle-off';
+              SELF.phaseVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
             } else {
               SELF.phaseVisibility.state = 'Public';
               SELF.phaseVisibility.icon = 'fa fa-toggle-on green-text';
@@ -502,7 +511,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         toggleSubmissionVisibilityState = 'private';
         isSubmissionPublic = false;
         SELF.submissionVisibility.state = 'Private';
-        SELF.submissionVisibility.icon = 'fa fa-toggle-off';
+        SELF.submissionVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
       } else {
         toggleSubmissionVisibilityState = 'public';
         isSubmissionPublic = true;
@@ -530,7 +539,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
               SELF.globalService.showToast('error', err);
               if (isSubmissionPublic) {
                 SELF.submissionVisibility.state = 'Private';
-                SELF.submissionVisibility.icon = 'fa fa-toggle-off';
+                SELF.submissionVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
               } else {
                 SELF.submissionVisibility.state = 'Public';
                 SELF.submissionVisibility.icon = 'fa fa-toggle-on green-text';
