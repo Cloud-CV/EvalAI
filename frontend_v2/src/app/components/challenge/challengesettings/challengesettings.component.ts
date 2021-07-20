@@ -278,7 +278,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     const SELF = this;
     return (phaseSplit) => {
        SELF.selectedPhaseSplit = phaseSplit;
-       console.log(SELF.selectedPhaseSplit['visibility']);
        SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility'];
        if(SELF.isPhaseSplitLeaderboardPublic == 3) {
          SELF.leaderboardVisibility.state = 'Public';
