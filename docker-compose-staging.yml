@@ -149,6 +149,7 @@ services:
     depends_on: 
       - prometheus
       - grafana
+      - statsd-exporter
     ports:
       - '80:80'
       - '443:443'

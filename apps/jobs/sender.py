@@ -11,6 +11,7 @@ from django.conf import settings
 from base.utils import send_slack_notification
 from challenges.models import Challenge
 from .utils import get_submission_model
+from monitoring.statsd.metrics import statsd, NUM_SUBMISSIONS_IN_QUEUE
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,16 @@ def publish_submission_message(message):
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name)
+    # increase counter for submission pushed into queue
+    submission_pk = message["submission_pk"]
+    statsd.gauge(
+        NUM_SUBMISSIONS_IN_QUEUE,
+        1,
+        tags = [
+            "queue_name:%s" % queue_name,
+            "submission_pk:%s" % submission_pk,
+        ],
+    )
     response = queue.send_message(MessageBody=json.dumps(message))
     # send slack notification
     if slack_url:
