@@ -326,10 +326,13 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.selectedPhaseSplit['visibility'] = data.visibility;
+            SELF.challengeService.changePhaseSplitSelected(true);
             if (visibility == 3) {
+              SELF.selectedPhaseSplit['showPrivate'] = false;
               SELF.leaderboardVisibility.state = 'Public';
               SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
             } else {
+              SELF.selectedPhaseSplit['showPrivate'] = true;
               SELF.leaderboardVisibility.state = 'Private';
               SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
             }
@@ -478,6 +481,8 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.selectedPhase['is_public'] = data.is_public;
+            SELF.selectedPhase['showPrivate'] = !data.is_public;
+            SELF.challengeService.changePhaseSelected(true);
             SELF.globalService.showToast(
               'success',
               'The phase was successfully made ' + togglePhaseVisibilityState,
