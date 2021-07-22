@@ -286,17 +286,17 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   phaseSplitSelected () {
     const SELF = this;
     return (phaseSplit) => {
-       SELF.selectedPhaseSplit = phaseSplit;
-       SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility'];
-       if(SELF.isPhaseSplitLeaderboardPublic == 3) {
-         SELF.leaderboardVisibility.state = 'Public';
-         SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
-       }
-       else {
+      SELF.selectedPhaseSplit = phaseSplit;
+      SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility'];
+      if(SELF.isPhaseSplitLeaderboardPublic == 3) {
+        SELF.leaderboardVisibility.state = 'Public';
+        SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+      }
+      else {
         SELF.leaderboardVisibility.state = 'Private';
         SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
-       }
       }
+    }
   }
 
   /**
@@ -355,27 +355,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           },
           () => this.logger.info('LEADERBOARD-VISIBILITY-UPDATE-FINISHED')
         );
-    }
-
-  /**
-   * For edit leaderboard schema
-   */
-  editLeaderboardSchema() {
-    
-    const SELF = this;
-    /**
-     * Parameters of the modal
-     */
-     const PARAMS = {
-      title: 'Edit Leaderboard Schema',
-      label: 'leaderboard_schema',
-      isEditorRequired: true,
-      confirm: 'Submit',
-      deny: 'Cancel',
-      confirmCallback: SELF.apiCall,
-    };
-    SELF.globalService.showModal(PARAMS);
-
     }
 
   /**
