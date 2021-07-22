@@ -5,6 +5,12 @@
   padding: 10px 30px;
 }
 
+.ev-challenge-view {
+  margin-top: 0px;
+  padding-top: 30px;
+  margin-bottom: 20px;
+}
+
 .row .row-lr-margin {
   margin-bottom: 20px;
 }
@@ -56,7 +62,7 @@ th {
     padding-right: 36px;
   }
   ul {
-    padding-left: 70px;
+    padding-left: 60px;
   }
 }
 
@@ -133,4 +139,9 @@ th {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+.cli-card-container {
+  margin: 14.5px 0px;
+  padding: 0px 0px 0px 70px;
 }

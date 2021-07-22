@@ -83,6 +83,7 @@
     </div>
   </div>
 
+  <!-- If challenge is docker based -->
   <div *ngIf="challenge.is_docker_based" class="ev-md-container ev-card-panel">
     <span class="fs-20 fw-light"> Submission limits </span><br /><br />
     <span class="fs-16 fw-light">
@@ -154,13 +155,14 @@
     </table>
   </div>
 
-  <div *ngIf="!challenge.is_docker_based && isActive" class="ev-card-panel">
+  <!-- If challenge is not docker based -->
+  <div *ngIf="!challenge.is_docker_based && isActive" class="ev-md-container ev-card-panel z-depth-5 ev-challenge-view ">
     <div class="bottom-card-container bottom-hr-line">
       <div class="col s12">
         <h5 class="fw-light">Make Submission</h5>
       </div>
     </div>
-    <div class="row">
+    <div class="row margin-bottom-cancel">
       <div class="col-md-7 col-sm-7 col-xs-10">
         <div class="exist-team-card">
           <ul>
@@ -210,264 +212,8 @@
                   </label>
                 </span>
               </div>
-              <div *ngIf="isSubmissionUsingCli && !showForm">
-                <p class="fs-18 w-400 no-top-margin-p">Submission instructions</p>
-                <ol class="numbered-list">
-                  <li class="content"> Install evalai-cli<br />
-                    <code #install_evalai>$ pip install evalai{{ cliVersion }}</code>
-                    <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
-                      value="pip install &quot;evalai{{ cliVersion }}&quot;"
-                      (click)="copyTextToClipboard(install_evalai)">
-                      <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
-                            clipboard."></i>
-                    </button>
-                  </li>
-                  <li class="content"> Add your EvalAI account token to evalai-cli<br />
-                    <code #set_token>$ evalai set_token {{authToken}}</code>
-                    <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
-                      value="evalai set_token {{ authToken }}" (click)="copyTextToClipboard(set_token)">
-                      <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
-                            clipboard."></i>
-                    </button>
-                  </li>
-                  <li class="content"> Make Submission<br />
-                    <code
-                      #make_submission>$ evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
-                    <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
-                      value="evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large"
-                      (click)="copyTextToClipboard(make_submission)">
-                      <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
-                            clipboard."></i>
-                    </button>
-                  </li>
-                  <li class="content">
-                    <div class="center-content">Use &nbsp;<code> --private </code> &nbsp;or&nbsp; <code> --public </code>&nbsp; flag in the submission
-                    command to make the submission private or public respectively.<br />
-                    </div>
-                  </li>
-                  <li class="content"> For more commands, please refer to <a class="highlight-link"
-                      href="https://cli.eval.ai/" target="_blank">evalai-cli documentation.</a>
-                  </li>
-                </ol>
-              </div>
-              <div [hidden]="!showForm" class="form">
-                <div class="row row-lr-margin">
-                  <div class="col-md-10 col-sm-10 col-lr-pad submit-upload-file">
-                    <div [hidden]="isSubmissionUsingUrl">
-                      <app-input
-                        (input)="validateInput($event.target.value)"
-                        [label]="'input_file'"
-                        [accept]="'.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy'"
-                        [placeholder]="''"
-                        [type]="'file'"
-                        [value]="''"
-                        [message]="inputErrorMessage"
-                        #formsubmit
-                      ></app-input>
-                      <div class="input-message" #textValue [class.hidden]="validFileUrl">{{ inputErrorMessage }}</div>
-                    </div>
-                    <div [hidden]="!isSubmissionUsingUrl">
-                      <app-input
-                        (input)="validateInput($event.target.value)"
-                        [label]="'file_url'"
-                        [placeholder]="'Submission file URL'"
-                        [type]="'URL'"
-                        [icon]="''"
-                        [value]="''"
-                        [message]="inputErrorMessage"
-                        #formsubmit
-                      ></app-input>
-                    </div>
-                  </div>
-                </div>
-                <div class="row row-lr-margin">
-                  <div class="align-left col-sm-10 col-lr-pad">
-                    <p class="fs-14 w-400">Select submission visibility:</p>
-                    <input 
-                      type="radio" 
-                      name="submissionVisibility" 
-                      *ngIf="isSubmissionPublic == true"
-                      class="with-gap selectPhase" 
-                      id="isPublicSubmission"
-                      (change)="isPublicSubmission = true"
-                      />
-                    <label for="isPublicSubmission" class="radio-button-text pointer">
-                      <div 
-                        class="show-member-title pointer" *ngIf="isSubmissionPublic == true">
-                        <strong class="text-med-black fs-16">Public</strong>
-                      </div>
-                    </label>
-                    <div class="clearfix"></div>
-                    <input type="radio"
-                      name="submissionVisibility"
-                      class="with-gap selectPhase"
-                      id="isPrivateSubmission"
-                      (change)="isPublicSubmission = false"
-                      />
-                    <label for="isPrivateSubmission" class="radio-button-text pointer">
-                      <div 
-                        class="show-member-title pointer">
-                        <strong class="text-med-black fs-16">Private</strong>
-                      </div>
-                    </label>
-                    <div class="clearfix"></div>
-                  </div>
-                </div>
-                <div class="row row-lr-margin">
-                  <div class="align-left col-sm-10 col-lr-pad">
-                    <div class="input-field align-left">
-                      <app-input
-                        [label]="'method_name'"
-                        [placeholder]="'Method name (Optional)'"
-                        [type]="'text'"
-                        [icon]="''"
-                        [value]="''"
-                        #formsubmit
-                      ></app-input>
-                    </div>
-                  </div>
-                </div>
-                <div class="row row-lr-margin">
-                  <div class="align-left col-sm-10 col-lr-pad">
-                    <app-input
-                      [label]="'method_description'"
-                      [type]="'textarea'"
-                      [placeholder]="'Method description (Optional)'"
-                      #formsubmit
-                    ></app-input
-                    ><br />
-                  </div>
-                </div>
-                <div class="row row-lr-margin">
-                  <div class="align-left col-sm-10 col-lr-pad">
-                    <app-input
-                      [label]="'project_url'"
-                      [type]="'URL'"
-                      [placeholder]="'Project URL (Optional)'"
-                      [message]="' '"
-                      #formsubmit
-                    ></app-input>
-                  </div>
-                </div>
-                <div class="row row-lr-margin">
-                  <div class="align-left col-sm-10 col-lr-pad">
-                    <app-input
-                      [label]="'publication_url'"
-                      [type]="'URL'"
-                      [placeholder]="'Publication URL (Optional)'"
-                      [message]="' '"
-                      #formsubmit
-                    ></app-input>
-                  </div>
-                </div>
-                <div class="dynamicform" *ngIf="metaAttributesforCurrentSubmission != null">
-                  <div *ngFor="let attribute of metaAttributesforCurrentSubmission">
-                    <div class="row">
-                      <div *ngIf="attribute.type == 'text'">
-                        <div class="row row-lr-margin">
-                          <div class="align-left col-sm-10 col-lr-pad">
-                            <span
-                              ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
-                            ><br />
-                            <input
-                              type="text"
-                              [(ngModel)]="attribute.value"
-                              name="{{ attribute.name }}"
-                              id="{{ attribute.name }}"
-                            />
-                            <span class="form-icon"><i class="fa fa-text"></i></span>
-                          </div>
-                        </div>
-                      </div>
-                      <div *ngIf="attribute.type == 'radio'">
-                        <div class="row row-lr-margin">
-                          <div class="align-left col-sm-10 col-lr-pad">
-                            <span
-                              ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
-                            ><br />
-                            <br />
-                            <mat-radio-group [(ngModel)]="attribute.value" name="{{ attribute.name }}">
-                              <mat-radio-button *ngFor="let option of attribute.options" [value]="option">
-                                <label class="fw-semibold fs-16 meta-label">{{ option }}</label>
-                              </mat-radio-button>
-                            </mat-radio-group>
-                          </div>
-                        </div>
-                      </div>
-                      <div *ngIf="attribute.type == 'checkbox'">
-                        <div class="row row-lr-margin">
-                          <div class="align-left col-sm-10 col-lr-pad">
-                            <span
-                              ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
-                            ><br />
-                            <br />
-                            <mat-checkbox
-                              *ngFor="let option of attribute.options"
-                              class="checkbox-options"
-                              (change)="toggleSelection(attribute, option)"
-                              id="{{ option }}"
-                              [value]="option"
-                            >
-                              <label class="fw-semibold fs-16 meta-label" for="{{ option }}">{{ option }}</label>
-                            </mat-checkbox>
-                          </div>
-                        </div>
-                      </div>
-                      <div *ngIf="attribute.type == 'boolean'">
-                        <div class="row row-lr-margin">
-                          <div class="align-left col-sm-10 col-lr-pad">
-                            <span
-                              ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
-                            ><br />
-                            <br />
-                            <mat-radio-group [(ngModel)]="attribute.value" name="{{ attribute.name }}">
-                              <mat-radio-button [value]="'True'"
-                                ><label class="fw-light fs-16 meta-label">True</label></mat-radio-button
-                              >
-                              <br />
-                              <mat-radio-button [value]="'False'"
-                                ><label class="fw-light fs-16 meta-label">False</label></mat-radio-button
-                              >
-                            </mat-radio-group>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div *ngIf="submissionError" class="red-text col-lr-pad">
-                  <strong class="fw-semibold">{{ submissionError }}</strong
-                  ><br /><br />
-                </div>
-                <div class="pagination">
-                  <div class="row rm-gut row-lr-margin">
-                    <div class="col-sm-12 col-md-12 col-lr-pad">
-                      <div class="align-left">
-                        <button
-                          class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
-                          (click)="formValidate()"
-                        >
-                          Submit
-                        </button>
-                      </div>
-                      <br /><br />
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </ul>
-        </div>
-      </div>
-      <div *ngIf="selectedPhaseSubmissions.maxExceeded" class="col-md-5 col-sm-4 col-xs-12">
-        <div class="ev-submission-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
-          <div class="row row-lr-margin">
-            <span class="color-black">
-              <strong class="fw-light fs-16 red-text">
-                {{ selectedPhaseSubmissions.maxExceededMessage }}
-              </strong>
-            </span>
-          </div>
         </div>
       </div>
       <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails" class="col-md-5 col-sm-5 col-xs-12">
@@ -497,6 +243,266 @@
             <span class="color-black">
               <strong class="fw-light fs-16">
                 {{ selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_count }}
+              </strong>
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- cli instructions-->
+      <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad cli-card-container">
+        <div *ngIf="isSubmissionUsingCli && !showForm">
+          <p class="content fs-18">Submission instructions</p>
+          <ol class="numbered-list">
+            <li class="content fw-light fs-16"> Install evalai-cli<br />
+              <code #install_evalai>$ pip install evalai{{ cliVersion }}</code>
+              <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                value="pip install &quot;evalai{{ cliVersion }}&quot;"
+                (click)="copyTextToClipboard(install_evalai)">
+                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
+                      clipboard."></i>
+              </button>
+            </li>
+            <li class="cli-code content fw-light fs-16"> Add your EvalAI account token to evalai-cli<br />
+              <code #set_token> $ evalai set_token {{authToken}}</code>
+              <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                value="evalai set_token {{ authToken }}" (click)="copyTextToClipboard(set_token)">
+                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
+                      clipboard."></i>
+              </button>
+            </li>
+            <li class="content fw-light fs-16"> Make Submission<br />
+              <code
+                #make_submission>$ evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+              <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                value="evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large"
+                (click)="copyTextToClipboard(make_submission)">
+                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to
+                      clipboard."></i>
+              </button>
+            </li>
+            <li class="content fw-light fs-16">
+              <div class="center-content">Use &nbsp;<code> --private </code> &nbsp;or&nbsp; <code> --public </code>&nbsp; flag in the submission
+              command to make the submission private or public respectively.<br />
+              </div>
+            </li>
+            <li class="content fw-light fs-16"> For more commands, please refer to <a class="highlight-link"
+                href="https://cli.eval.ai/" target="_blank"><strong>evalai-cli documentation.</strong></a>
+            </li>
+          </ol>
+        </div>
+      </div>   
+      <!--Submission form-->
+      <div [hidden]="!showForm" class="form col-md-7 col-sm-7 col-xs-10 cli-card-container">
+        <div class="row row-lr-margin">
+          <div class="col-md-10 col-sm-10 col-lr-pad submit-upload-file">
+            <div [hidden]="isSubmissionUsingUrl">
+              <app-input
+                (input)="validateInput($event.target.value)"
+                [label]="'input_file'"
+                [accept]="'.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy'"
+                [placeholder]="''"
+                [type]="'file'"
+                [value]="''"
+                [message]="inputErrorMessage"
+                #formsubmit
+              ></app-input>
+              <div class="input-message" #textValue [class.hidden]="validFileUrl">{{ inputErrorMessage }}</div>
+            </div>
+            <div [hidden]="!isSubmissionUsingUrl">
+              <app-input
+                (input)="validateInput($event.target.value)"
+                [label]="'file_url'"
+                [placeholder]="'Submission file URL'"
+                [type]="'URL'"
+                [icon]="''"
+                [value]="''"
+                [message]="inputErrorMessage"
+                #formsubmit
+              ></app-input>
+            </div>
+          </div>
+        </div>
+        <div class="row row-lr-margin">
+          <div class="align-left col-sm-10 col-lr-pad">
+            <p class="fs-14 w-400">Select submission visibility:</p>
+            <input 
+              type="radio" 
+              name="submissionVisibility" 
+              class="with-gap selectPhase" 
+              id="isPublicSubmission"
+              (change)="isPublicSubmission = true"
+              />
+            <label for="isPublicSubmission" class="radio-button-text pointer">
+              <div 
+                class="show-member-title pointer">
+                <strong class="text-med-black fs-16">Public</strong>
+              </div>
+            </label>
+            <div class="clearfix"></div>
+            <input type="radio"
+              name="submissionVisibility"
+              class="with-gap selectPhase"
+              id="isPrivateSubmission"
+              (change)="isPublicSubmission = false"
+              />
+            <label for="isPrivateSubmission" class="radio-button-text pointer">
+              <div 
+                class="show-member-title pointer">
+                <strong class="text-med-black fs-16">Private</strong>
+              </div>
+            </label>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+        <div class="row row-lr-margin">
+          <div class="align-left col-sm-10 col-lr-pad">
+            <div class="input-field align-left">
+              <app-input
+                [label]="'method_name'"
+                [placeholder]="'Method name (Optional)'"
+                [type]="'text'"
+                [icon]="''"
+                [value]="''"
+                #formsubmit
+              ></app-input>
+            </div>
+          </div>
+        </div>
+        <div class="row row-lr-margin">
+          <div class="align-left col-sm-10 col-lr-pad">
+            <app-input
+              [label]="'method_description'"
+              [type]="'textarea'"
+              [placeholder]="'Method description (Optional)'"
+              #formsubmit
+            ></app-input
+            ><br />
+          </div>
+        </div>
+        <div class="row row-lr-margin">
+          <div class="align-left col-sm-10 col-lr-pad">
+            <app-input
+              [label]="'project_url'"
+              [type]="'URL'"
+              [placeholder]="'Project URL (Optional)'"
+              [message]="' '"
+              #formsubmit
+            ></app-input>
+          </div>
+        </div>
+        <div class="row row-lr-margin">
+          <div class="align-left col-sm-10 col-lr-pad">
+            <app-input
+              [label]="'publication_url'"
+              [type]="'URL'"
+              [placeholder]="'Publication URL (Optional)'"
+              [message]="' '"
+              #formsubmit
+            ></app-input>
+          </div>
+        </div>
+        <div class="dynamicform" *ngIf="metaAttributesforCurrentSubmission != null">
+          <div *ngFor="let attribute of metaAttributesforCurrentSubmission">
+            <div class="row">
+              <div *ngIf="attribute.type == 'text'">
+                <div class="row row-lr-margin">
+                  <div class="align-left col-sm-10 col-lr-pad">
+                    <span
+                      ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
+                    ><br />
+                    <input
+                      type="text"
+                      [(ngModel)]="attribute.value"
+                      name="{{ attribute.name }}"
+                      id="{{ attribute.name }}"
+                    />
+                    <span class="form-icon"><i class="fa fa-text"></i></span>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="attribute.type == 'radio'">
+                <div class="row row-lr-margin">
+                  <div class="align-left col-sm-10 col-lr-pad">
+                    <span
+                      ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
+                    ><br />
+                    <br />
+                    <mat-radio-group [(ngModel)]="attribute.value" name="{{ attribute.name }}">
+                      <mat-radio-button *ngFor="let option of attribute.options" [value]="option">
+                        <label class="fw-semibold fs-16 meta-label">{{ option }}</label>
+                      </mat-radio-button>
+                    </mat-radio-group>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="attribute.type == 'checkbox'">
+                <div class="row row-lr-margin">
+                  <div class="align-left col-sm-10 col-lr-pad">
+                    <span
+                      ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
+                    ><br />
+                    <br />
+                    <mat-checkbox
+                      *ngFor="let option of attribute.options"
+                      class="checkbox-options"
+                      (change)="toggleSelection(attribute, option)"
+                      id="{{ option }}"
+                      [value]="option"
+                    >
+                      <label class="fw-semibold fs-16 meta-label" for="{{ option }}">{{ option }}</label>
+                    </mat-checkbox>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="attribute.type == 'boolean'">
+                <div class="row row-lr-margin">
+                  <div class="align-left col-sm-10 col-lr-pad">
+                    <span
+                      ><strong>{{ attribute.name }}</strong> - {{ attribute.description }}</span
+                    ><br />
+                    <br />
+                    <mat-radio-group [(ngModel)]="attribute.value" name="{{ attribute.name }}">
+                      <mat-radio-button [value]="'True'"
+                        ><label class="fw-light fs-16 meta-label">True</label></mat-radio-button
+                      >
+                      <br />
+                      <mat-radio-button [value]="'False'"
+                        ><label class="fw-light fs-16 meta-label">False</label></mat-radio-button
+                      >
+                    </mat-radio-group>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="submissionError" class="red-text col-lr-pad">
+          <strong class="fw-semibold">{{ submissionError }}</strong
+          ><br /><br />
+        </div>
+        <div class="pagination">
+          <div class="row rm-gut row-lr-margin">
+            <div class="col-sm-12 col-md-12 col-lr-pad">
+              <div class="align-left">
+                <button
+                  class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                  (click)="formValidate()"
+                >
+                  Submit
+                </button>
+              </div>
+              <br /><br />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="selectedPhaseSubmissions.maxExceeded" class="col-md-5 col-sm-4 col-xs-12">
+        <div class="ev-submission-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+          <div class="row row-lr-margin">
+            <span class="color-black">
+              <strong class="fw-light fs-16 red-text">
+                {{ selectedPhaseSubmissions.maxExceededMessage }}
               </strong>
             </span>
           </div>
