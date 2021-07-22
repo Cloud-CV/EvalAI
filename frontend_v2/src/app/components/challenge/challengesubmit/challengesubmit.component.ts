@@ -34,6 +34,11 @@ export class ChallengesubmitComponent implements OnInit {
   isSubmissionUsingUrl: any;
 
   /**
+   * Is submission through CLI
+   */
+  isSubmissionUsingCli: any;
+
+  /**
    * Is user logged in
    */
   isLoggedIn = false;
@@ -42,6 +47,16 @@ export class ChallengesubmitComponent implements OnInit {
    * Is submittion submitted
    */
   isSubmitted = false;
+
+  /**
+   * Is submittion submitted
+   */
+  isPublicSubmission:boolean = true;
+
+  /**
+   * Is submittion allowed by host
+   */
+   isSubmissionPublic:boolean = false;
 
   /**
    * Challenge object
@@ -457,6 +472,7 @@ export class ChallengesubmitComponent implements OnInit {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
+      SELF.isSubmissionPublic = phase['is_submission_public'];
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
@@ -539,6 +555,7 @@ export class ChallengesubmitComponent implements OnInit {
     } else if (self.validFileUrl && self.isSubmissionUsingUrl) {
       FORM_DATA.append('file_url', self.globalService.formValueForLabel(self.components, 'file_url'));
     }
+    FORM_DATA.append('is_public', self.isPublicSubmission);
     FORM_DATA.append('method_name', self.globalService.formValueForLabel(self.components, 'method_name'));
     FORM_DATA.append('method_description', self.globalService.formValueForLabel(self.components, 'method_description'));
     FORM_DATA.append('project_url', self.globalService.formValueForLabel(self.components, 'project_url'));

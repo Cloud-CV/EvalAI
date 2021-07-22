@@ -52,7 +52,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "featured",
         "created_at",
         "is_docker_based",
+        "is_static_dataset_code_upload",
         "slug",
+        "submission_time_limit",
         "banned_email_ids",
         "workers",
         "task_def_arn",
@@ -262,6 +264,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "visibility",
         "leaderboard_decimal_precision",
         "is_leaderboard_order_descending",
+        "show_execution_time",
     )
     list_filter = ("visibility",)
     search_fields = (

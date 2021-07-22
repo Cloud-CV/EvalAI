@@ -2,8 +2,8 @@ import json
 import logging
 import os
 import signal
-import urllib.request
 import yaml
+import time
 
 
 from worker_utils import EvalAI_Interface
@@ -32,6 +32,147 @@ EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
+script_config_map_name = "evalai-scripts-cm"
+
+
+def get_volume_mount_object(mount_path, name, read_only=False):
+    volume_mount = client.V1VolumeMount(
+        mount_path=mount_path, name=name, read_only=read_only
+    )
+    logger.info("Volume mount created at path: %s" % str(mount_path))
+    return volume_mount
+
+
+def get_volume_mount_list(mount_path, read_only=False):
+    pvc_claim_name = "efs-claim"
+    volume_mount = get_volume_mount_object(
+        mount_path, pvc_claim_name, read_only
+    )
+    volume_mount_list = [volume_mount]
+    return volume_mount_list
+
+
+def get_volume_list():
+    pvc_claim_name = "efs-claim"
+    persistent_volume_claim = client.V1PersistentVolumeClaimVolumeSource(
+        claim_name=pvc_claim_name
+    )
+    volume = client.V1Volume(
+        persistent_volume_claim=persistent_volume_claim, name=pvc_claim_name
+    )
+    logger.info("Volume object created for '%s' pvc" % str(pvc_claim_name))
+    volume_list = [volume]
+    return volume_list
+
+
+def get_empty_volume_object(volume_name):
+    empty_dir = client.V1EmptyDirVolumeSource()
+    volume = client.V1Volume(empty_dir=empty_dir, name=volume_name)
+    return volume
+
+
+def get_config_map_volume_object(config_map_name, volume_name):
+    config_map = client.V1ConfigMapVolumeSource(name=config_map_name)
+    volume = client.V1Volume(config_map=config_map, name=volume_name)
+    return volume
+
+
+def create_config_map_object(config_map_name, file_paths):
+    # Configure ConfigMap metadata
+    metadata = client.V1ObjectMeta(
+        name=config_map_name,
+    )
+    config_data = {}
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_content = open(file_path, "r").read()
+        config_data[file_name] = file_content
+    # Instantiate the config_map object
+    config_map = client.V1ConfigMap(
+        api_version="v1", kind="ConfigMap", data=config_data, metadata=metadata
+    )
+    return config_map
+
+
+def create_configmap(core_v1_api_instance, config_map):
+    try:
+        config_maps = core_v1_api_instance.list_namespaced_config_map(
+            namespace="default"
+        )
+        if (
+            len(config_maps.items)
+            and config_maps.items[0].metadata.name == script_config_map_name
+        ):
+            return
+        core_v1_api_instance.create_namespaced_config_map(
+            namespace="default",
+            body=config_map,
+        )
+    except Exception as e:
+        logger.exception(
+            "Exception while creating configmap with error {}".format(e)
+        )
+
+
+def create_script_config_map(config_map_name):
+    submission_script_file_path = (
+        "/code/scripts/workers/code_upload_worker_utils/make_submission.sh"
+    )
+    monitor_submission_script_path = (
+        "/code/scripts/workers/code_upload_worker_utils/monitor_submission.sh"
+    )
+    script_config_map = create_config_map_object(
+        config_map_name,
+        [submission_script_file_path, monitor_submission_script_path],
+    )
+    return script_config_map
+
+
+def get_submission_meta_update_curl(submission_pk):
+    url = "{}/api/jobs/submission/{}/update_started_at/".format(
+        EVALAI_API_SERVER, submission_pk
+    )
+    curl_request = "curl --location --request PATCH '{}' --header 'Authorization: Bearer {}'".format(
+        url, AUTH_TOKEN
+    )
+    return curl_request
+
+
+def get_job_object(submission_pk, spec):
+    """Function to instantiate the AWS EKS Job object
+
+    Arguments:
+        submission_pk {[int]} -- Submission id
+        spec {[V1JobSpec]} -- Specification of deployment of job
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
+    job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=client.V1ObjectMeta(
+            name="submission-{0}".format(submission_pk)
+        ),
+        spec=spec,
+    )
+    return job
+
+
+def get_init_container(submission_pk):
+    curl_request = get_submission_meta_update_curl(submission_pk)
+    # Configure init container
+    init_container = client.V1Container(
+        name="init-container",
+        image="ubuntu",
+        command=[
+            "/bin/bash",
+            "-c",
+            "apt update && apt install -y curl && {}".format(curl_request),
+        ],
+    )
+    return init_container
 
 
 def create_job_object(message, environment_image):
@@ -52,11 +193,14 @@ def create_job_object(message, environment_image):
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
-    # Configureate Pod agent container
+    # Configure Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
-    # Configureate Pod environment container
+    volume_mount_list = get_volume_mount_list("/dataset")
+    # Get init container
+    init_container = get_init_container(submission_pk)
+    # Configure Pod environment container
     environment_container = client.V1Container(
         name="environment",
         image=environment_image,
@@ -69,26 +213,138 @@ def create_job_object(message, environment_image):
         resources=client.V1ResourceRequirements(
             limits={"nvidia.com/gpu": "1"}
         ),
+        volume_mounts=volume_mount_list,
     )
+    volume_list = get_volume_list()
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
         spec=client.V1PodSpec(
+            init_containers=[init_container],
             containers=[environment_container, agent_container],
             restart_policy="Never",
+            volumes=volume_list,
         ),
     )
     # Create the specification of deployment
     spec = client.V1JobSpec(backoff_limit=1, template=template)
     # Instantiate the job object
-    job = client.V1Job(
-        api_version="batch/v1",
-        kind="Job",
-        metadata=client.V1ObjectMeta(
-            name="submission-{0}".format(submission_pk)
-        ),
-        spec=spec,
+    job = get_job_object(submission_pk, spec)
+    return job
+
+
+def create_static_code_upload_submission_job_object(message):
+    """Function to create the static code upload pod AWS EKS Job object
+
+    Arguments:
+        message {[dict]} -- Submission message from AWS SQS queue
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
+    PYTHONUNBUFFERED_ENV = client.V1EnvVar(name="PYTHONUNBUFFERED", value="1")
+    # Used to create submission file by phase_pk and selecting dataset location
+    submission_pk = message["submission_pk"]
+    challenge_pk = message["challenge_pk"]
+    phase_pk = message["phase_pk"]
+    submission_meta = message["submission_meta"]
+    SUBMISSION_PK_ENV = client.V1EnvVar(
+        name="SUBMISSION_PK", value=str(submission_pk)
     )
+    CHALLENGE_PK_ENV = client.V1EnvVar(
+        name="CHALLENGE_PK", value=str(challenge_pk)
+    )
+    PHASE_PK_ENV = client.V1EnvVar(name="PHASE_PK", value=str(phase_pk))
+    # Using Default value 1 day = 86400s as Time Limit.
+    SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_LIMIT",
+        value=str(submission_meta["submission_time_limit"]),
+    )
+    SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_DELTA", value="3600"
+    )
+    AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
+    EVALAI_API_SERVER_ENV = client.V1EnvVar(
+        name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
+    )
+    image = message["submitted_image_uri"]
+    # Get init container
+    init_container = get_init_container(submission_pk)
+    # Get dataset volume and volume mounts
+    volume_mount_list = get_volume_mount_list("/dataset", True)
+    volume_list = get_volume_list()
+    script_volume_name = "evalai-scripts"
+    script_volume = get_config_map_volume_object(
+        script_config_map_name, script_volume_name
+    )
+    volume_list.append(script_volume)
+    script_volume_mount = get_volume_mount_object(
+        "/evalai_scripts", script_volume_name, True
+    )
+    volume_mount_list.append(script_volume_mount)
+    # Create and Mount submission Volume
+    submission_path = "/submission"
+    SUBMISSION_PATH_ENV = client.V1EnvVar(
+        name="SUBMISSION_PATH", value=submission_path
+    )
+    submission_volume_name = "submissions-dir"
+    submission_volume = get_empty_volume_object(submission_volume_name)
+    volume_list.append(submission_volume)
+    submission_volume_mount = get_volume_mount_object(
+        submission_path, submission_volume_name
+    )
+    volume_mount_list.append(submission_volume_mount)
+    # Configure Pod submission container
+    submission_container = client.V1Container(
+        name="submission",
+        image=image,
+        env=[
+            PYTHONUNBUFFERED_ENV,
+            SUBMISSION_PATH_ENV,
+            CHALLENGE_PK_ENV,
+            PHASE_PK_ENV,
+        ],
+        resources=client.V1ResourceRequirements(
+            limits={"nvidia.com/gpu": "1"}
+        ),
+        volume_mounts=volume_mount_list,
+    )
+    # Configure Pod sidecar container
+    sidecar_container = client.V1Container(
+        name="sidecar-container",
+        image="ubuntu:latest",
+        command=[
+            "/bin/sh",
+            "-c",
+            "apt update && apt install -y curl && sh /evalai_scripts/monitor_submission.sh",
+        ],
+        env=[
+            SUBMISSION_PATH_ENV,
+            CHALLENGE_PK_ENV,
+            PHASE_PK_ENV,
+            SUBMISSION_PK_ENV,
+            AUTH_TOKEN_ENV,
+            EVALAI_API_SERVER_ENV,
+            SUBMISSION_TIME_LIMIT_ENV,
+            SUBMISSION_TIME_DELTA_ENV,
+        ],
+        volume_mounts=volume_mount_list,
+    )
+    # Create and configurate a spec section
+    template = client.V1PodTemplateSpec(
+        metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
+        spec=client.V1PodSpec(
+            init_containers=[init_container],
+            containers=[sidecar_container, submission_container],
+            restart_policy="Never",
+            volumes=volume_list,
+        ),
+    )
+    # Create the specification of deployment
+    spec = client.V1JobSpec(backoff_limit=1, template=template)
+    # Instantiate the job object
+    job = get_job_object(submission_pk, spec)
     return job
 
 
@@ -136,8 +392,11 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
     """
     try:
         logger.info("[x] Received submission message %s" % body)
-        environment_image = challenge_phase.get("environment_image")
-        job = create_job_object(body, environment_image)
+        if body.get("is_static_dataset_code_upload_submission"):
+            job = create_static_code_upload_submission_job_object(body)
+        else:
+            environment_image = challenge_phase.get("environment_image")
+            job = create_job_object(body, environment_image)
         response = create_job(api_instance, job)
         submission_data = {
             "submission_status": "running",
@@ -221,6 +480,68 @@ def read_job(api_instance, job_name):
     return api_response
 
 
+def cleanup_submission(
+    api_instance,
+    evalai,
+    job_name,
+    submission_pk,
+    challenge_pk,
+    phase_pk,
+    stderr,
+    message,
+):
+    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+        job_name {[string]} -- Name of the job to be terminated
+        submission_pk {[int]} -- Submission id
+        challenge_pk {[int]} -- Challenge id
+        phase_pk {[int]} -- Challenge Phase id
+        stderr {[string]} -- Reason of failure for submission/job
+        message {[dict]} -- Submission message from AWS SQS queue
+    """
+    try:
+        submission_data = {
+            "challenge_phase": phase_pk,
+            "submission": submission_pk,
+            "stdout": "",
+            "stderr": stderr,
+            "submission_status": "FAILED",
+            "result": "[]",
+            "metadata": "",
+        }
+        evalai.update_submission_data(submission_data, challenge_pk, phase_pk)
+        try:
+            delete_job(api_instance, job_name)
+        except Exception as e:
+            logger.exception("Failed to delete submission job: {}".format(e))
+        message_receipt_handle = message.get("receipt_handle")
+        if message_receipt_handle:
+            evalai.delete_message_from_sqs_queue(message_receipt_handle)
+    except Exception as e:
+        logger.exception(
+            "Exception while cleanup Submission {}:  {}".format(
+                submission_pk, e
+            )
+        )
+
+
+def is_submission_evaluation_done(container_state, container_state_map):
+    """Function to check if submission container is successfully terminated and sidecar-container is running
+    Arguments:
+        container_state {[AWS EKS API Container state object]} -- State of the container
+        container_state_map {[dict]} -- Map of container_name to container_state
+    """
+    if (
+        container_state.terminated.reason == "Completed"
+        and container_state_map.get("sidecar-container")
+        and container_state_map.get("sidecar-container").terminated is None
+    ):
+        return True
+    return False
+
+
 def update_failed_jobs_and_send_logs(
     api_instance,
     core_v1_api_instance,
@@ -229,48 +550,68 @@ def update_failed_jobs_and_send_logs(
     submission_pk,
     challenge_pk,
     phase_pk,
+    message,
 ):
-    job_def = read_job(api_instance, job_name)
-    controller_uid = job_def.metadata.labels["controller-uid"]
-    pod_label_selector = "controller-uid=" + controller_uid
-    pods_list = core_v1_api_instance.list_namespaced_pod(
-        namespace="default",
-        label_selector=pod_label_selector,
-        timeout_seconds=10,
-    )
-    for container in pods_list.items[0].status.container_statuses:
-        if container.name == "agent":
-            if container.state.terminated is not None:
-                if container.state.terminated.reason == "Error":
-                    pod_name = pods_list.items[0].metadata.name
-                    try:
-                        pod_log_response = (
-                            core_v1_api_instance.read_namespaced_pod_log(
-                                name=pod_name,
-                                namespace="default",
-                                _return_http_data_only=True,
-                                _preload_content=False,
-                                container="agent",
+    clean_submission = False
+    try:
+        job_def = read_job(api_instance, job_name)
+        controller_uid = job_def.metadata.labels["controller-uid"]
+        pod_label_selector = "controller-uid=" + controller_uid
+        pods_list = core_v1_api_instance.list_namespaced_pod(
+            namespace="default",
+            label_selector=pod_label_selector,
+            timeout_seconds=10,
+        )
+        container_state_map = {}
+        for container in pods_list.items[0].status.container_statuses:
+            container_state_map[container.name] = container.state
+        for container_name, container_state in container_state_map.items():
+            if container_name in ["agent", "submission"]:
+                if container_state.terminated is not None:
+                    if container_state.terminated.reason == "Error":
+                        pod_name = pods_list.items[0].metadata.name
+                        try:
+                            pod_log_response = (
+                                core_v1_api_instance.read_namespaced_pod_log(
+                                    name=pod_name,
+                                    namespace="default",
+                                    _return_http_data_only=True,
+                                    _preload_content=False,
+                                    container=container_name,
+                                )
                             )
+                            pod_log = pod_log_response.data.decode("utf-8")
+                            clean_submission = True
+                            submission_error = pod_log
+                        except client.rest.ApiException as e:
+                            logger.exception(
+                                "Exception while reading Job logs {}".format(e)
+                            )
+                    elif (
+                        container_name == "submission"
+                        and is_submission_evaluation_done(
+                            container_state, container_state_map
                         )
-                        pod_log = pod_log_response.data.decode("utf-8")
-                        submission_data = {
-                            "challenge_phase": phase_pk,
-                            "submission": submission_pk,
-                            "stdout": "",
-                            "stderr": pod_log,
-                            "submission_status": "FAILED",
-                            "result": "[]",
-                            "metadata": "",
-                        }
-                        response = evalai.update_submission_data(
-                            submission_data, challenge_pk, phase_pk
+                    ):
+                        clean_submission = True
+                        submission_error = (
+                            "submission.json/submission.csv file not found."
                         )
-                        print(response)
-                    except client.rest.ApiException as e:
-                        logger.exception(
-                            "Exception while reading Job logs {}".format(e)
-                        )
+    except Exception as e:
+        logger.exception("Exception while reading Job {}".format(e))
+        clean_submission = True
+        submission_error = "Submission Job Failed."
+    if clean_submission:
+        cleanup_submission(
+            api_instance,
+            evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            submission_error,
+            message,
+        )
 
 
 def install_gpu_drivers(api_instance):
@@ -279,11 +620,12 @@ def install_gpu_drivers(api_instance):
         api_instance {[AWS EKS API object]} -- API object for creating deamonset
     """
     logging.info("Installing Nvidia-GPU Drivers ...")
-    link = "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml"  # pylint: disable=line-too-long
-    logging.info("Using daemonset file: %s", link)
-    nvidia_manifest = urllib.request.urlopen(link)
+    # Original manifest source: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+    manifest_path = "/code/scripts/workers/code_upload_worker_utils/nvidia-device-plugin.yml"
+    logging.info("Using daemonset file: %s", manifest_path)
+    nvidia_manifest = open(manifest_path).read()
     daemonset_spec = yaml.load(nvidia_manifest, yaml.FullLoader)
-    ext_client = client.ExtensionsV1beta1Api(api_instance)
+    ext_client = client.AppsV1Api(api_instance)
     try:
         namespace = daemonset_spec["metadata"]["namespace"]
         ext_client.create_namespaced_daemon_set(namespace, daemonset_spec)
@@ -312,37 +654,70 @@ def main():
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
-    api_instance = get_api_client(
+    api_instance_client = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
-    install_gpu_drivers(api_instance)
+    install_gpu_drivers(api_instance_client)
+    api_instance = get_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    core_v1_api_instance = get_core_v1_api_object(
+        cluster_name, cluster_endpoint, challenge, evalai
+    )
+    if challenge.get("is_static_dataset_code_upload"):
+        # Create and Mount Script Volume
+        script_config_map = create_script_config_map(script_config_map_name)
+        create_configmap(core_v1_api_instance, script_config_map)
+    submission_meta = {}
+    submission_meta["submission_time_limit"] = challenge.get(
+        "submission_time_limit"
+    )
     while True:
+        # Equal distribution of queue messages among submission worker and code upload worker
+        if challenge.get("is_static_dataset_code_upload"):
+            time.sleep(2.1)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
+            if challenge.get(
+                "is_static_dataset_code_upload"
+            ) and not message_body.get(
+                "is_static_dataset_code_upload_submission"
+            ):
+                continue
+            api_instance = get_api_object(
+                cluster_name, cluster_endpoint, challenge, evalai
+            )
+            core_v1_api_instance = get_core_v1_api_object(
+                cluster_name, cluster_endpoint, challenge, evalai
+            )
+            message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                api_instance = get_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
-                core_v1_api_instance = get_core_v1_api_object(
-                    cluster_name, cluster_endpoint, challenge, evalai
-                )
                 if (
                     submission.get("status") == "finished"
                     or submission.get("status") == "failed"
                     or submission.get("status") == "cancelled"
                 ):
-                    # Fetch the last job name from the list as it is the latest running job
-                    job_name = submission.get("job_name")[-1]
-                    delete_job(api_instance, job_name)
-                    message_receipt_handle = message.get("receipt_handle")
-                    evalai.delete_message_from_sqs_queue(
-                        message_receipt_handle
-                    )
+                    try:
+                        # Fetch the last job name from the list as it is the latest running job
+                        job_name = submission.get("job_name")[-1]
+                        delete_job(api_instance, job_name)
+                        message_receipt_handle = message.get("receipt_handle")
+                        evalai.delete_message_from_sqs_queue(
+                            message_receipt_handle
+                        )
+                    except Exception as e:
+                        logger.exception(
+                            "Failed to delete submission job: {}".format(e)
+                        )
+                        # Delete message from sqs queue to avoid re-triggering job delete
+                        evalai.delete_message_from_sqs_queue(
+                            message_receipt_handle
+                        )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(
@@ -353,6 +728,7 @@ def main():
                         submission_pk,
                         challenge_pk,
                         phase_pk,
+                        message,
                     )
                 else:
                     logger.info(

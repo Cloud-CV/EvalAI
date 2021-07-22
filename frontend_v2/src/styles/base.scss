@@ -346,6 +346,7 @@ mat-chip {
 
 .update-page {
   display: block;
+  z-index: 1;  
   background: $dark-gray;
   overflow: auto;
   padding: 10px;
@@ -845,7 +846,6 @@ label {
 
 .radio-button-text {
   width: calc(100% - 35px);
-  float: right;
 }
 
 /*icon colors*/
@@ -2160,7 +2160,20 @@ tr {
     zoom: 1 !important;
   }
 
+  .page-wrap-challenge {
+    max-width: 1440px !important;
+    overflow: hidden;
+    margin: auto !important;
+    position: relative !important;
+    background: white;
+    zoom: 1 !important;
+  }
+
   .web-container {
+    width: unset;
+  }
+
+  .dash-container {
     width: unset;
   }
 

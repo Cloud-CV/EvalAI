@@ -46,6 +46,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "end_date",
             "creator",
             "published",
+            "submission_time_limit",
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
@@ -57,10 +58,12 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "approved_by_admin",
             "forum_url",
             "is_docker_based",
+            "is_static_dataset_code_upload",
             "slug",
             "max_docker_image_size",
             "cli_version",
             "remote_evaluation",
+            "workers",
         )
 
 
@@ -100,6 +103,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "is_submission_public",
         )
 
 
@@ -150,6 +154,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "dataset_split_name",
             "visibility",
             "show_leaderboard_by_latest_submission",
+            "show_execution_time",
         )
 
     def get_dataset_split_name(self, obj):
@@ -228,6 +233,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "submission_time_limit",
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
@@ -241,6 +247,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "forum_url",
             "remote_evaluation",
             "is_docker_based",
+            "is_static_dataset_code_upload",
             "slug",
             "max_docker_image_size",
             "cli_version",
@@ -286,6 +293,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "leaderboard_decimal_precision",
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
+            "show_execution_time",
         )
 
 
@@ -330,6 +338,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "is_submission_public",
+            "annotations_uploaded_using_cli",
             "codename",
             "test_annotation",
             "slug",
@@ -428,6 +437,10 @@ class ChallengeEvaluationClusterSerializer(serializers.ModelSerializer):
             "security_group_id",
             "internet_gateway_id",
             "route_table_id",
+            "efs_id",
+            "efs_security_group_id",
+            "efs_creation_token",
+            "efs_mount_target_ids",
         )
 
 

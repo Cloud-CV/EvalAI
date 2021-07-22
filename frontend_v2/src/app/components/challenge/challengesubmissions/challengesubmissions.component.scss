@@ -2,7 +2,7 @@
 @import './mixins.scss';
 
 .ev-md-container {
-  padding-bottom: 0px;
+  padding: 0px 30px 30px 30px;
 
   .phase-title {
     margin-bottom: 20px;
@@ -41,7 +41,6 @@
 
 .marker {
   margin-right: 10px;
-  font-size: 20px;
 }
 
 .pad-top {
@@ -66,7 +65,7 @@
 }
 
 .collapsible-table {
-  overflow: auto;
+  overflow: auto;  
 }
 
 tr.detail-row {
@@ -74,17 +73,25 @@ tr.detail-row {
   overflow: hidden;
 }
 
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
+}
+
 .cell-outside {
   padding: 8px;
+  color:rgba(0, 0, 0, 0.87);
 }
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-
-  td {
-    font-weight: $fw-semibold;
-  }
-
   background: $grad-light-black;
 }
 
@@ -94,6 +101,7 @@ tr.element-row.expanded-row {
 
 tr.element-row:not(.expanded-row):active {
   background: #efefef;
+  border-bottom-width: 0;
 }
 
 .expanded-row {

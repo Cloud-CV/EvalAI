@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
+import { filter } from "rxjs/internal/operators";
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { ApiService } from '../../../services/api.service';
@@ -63,6 +64,16 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   isLoggedIn: any = false;
 
   /**
+   * Current name of tab which needs to be active
+   */
+  tabHighlight: string = "allChallenges";
+
+  /**
+   * Returns true if the string is not a number
+   */
+  isChallengeComponent : boolean = false;
+
+  /**
    * Inner width
    */
   public innerWidth: any;
@@ -88,7 +99,7 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     @Inject(DOCUMENT) private document: Document
   ) {
-    this.authState = authService.authState;
+      this.authState = authService.authState;
   }
 
   /**
@@ -107,6 +118,27 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.updateElements();
     this.checkInnerWidth();
+
+    this.router.events
+    .pipe(filter(event => event instanceof NavigationEnd))
+    .subscribe((event) => {
+      if(event) {
+          if(this.router.url.split('/')[length] == "all") {
+            this.tabHighlight = "allChallenges";
+            this.globalService.changeTabActiveStatus("allChallenges");
+          }
+          else if(this.router.url.split('/')[1] == "profile") {
+            this.tabHighlight = "profile";
+            this.globalService.changeTabActiveStatus("profile");
+          }
+      }
+    });
+    this.isChallengeComponent = isNaN(parseInt(this.router.url.split('/')[length]));
+    
+    this.globalService.nameTabHighlight.subscribe((tabHighlight) => {
+      this.tabHighlight = tabHighlight;
+    });
+
     this.authServiceSubscription = this.authService.change.subscribe((authState) => {
       this.authState = authState;
       if (this.authService.isLoggedIn()) {

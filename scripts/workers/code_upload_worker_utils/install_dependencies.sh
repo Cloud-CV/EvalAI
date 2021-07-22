@@ -31,10 +31,21 @@ echo "### Kubectl Installed"
 curl https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/quickstart/cwagent-fluentd-quickstart.yaml | sed "s/{{cluster_name}}/$CLUSTER_NAME/;s/{{region_name}}/$AWS_DEFAULT_REGION/" | kubectl apply -f -
 echo "### Container Insights Installed"
 
+# Setup EFS as persistent volume
+kubectl apply -k "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-1.1"
+cat /code/scripts/workers/code_upload_worker_utils/persistent_volume.yaml | sed "s/{{EFS_ID}}/$EFS_ID/" | kubectl apply -f -
+kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volume_claim.yaml
+kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volume_storage_class.yaml
+
 # Install cilium
 # Cilium is being used to provide networking and network policy
-kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
-echo "### Cilium Installed"
+# kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
+# echo "### Cilium Installed"
+
+sleep 120s;
+
+# Apply cilium network policy
+# cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
 
 # Set ssl-certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt

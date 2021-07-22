@@ -33,6 +33,8 @@ export class ChallengeService {
   currentHostTeam = this.hostTeamSource.asObservable();
   private challengeHostSource = new BehaviorSubject(false);
   isChallengeHost = this.challengeHostSource.asObservable();
+  private phaseSelected = new BehaviorSubject(false);
+  isPhaseSelected = this.phaseSelected.asObservable();
   private challengePublishSource = new BehaviorSubject(this.defaultPublishChallenge);
   currentChallengePublishState = this.challengePublishSource.asObservable();
 
@@ -64,6 +66,14 @@ export class ChallengeService {
    */
   changeChallengeHostStatus(isChallengeHost: any) {
     this.challengeHostSource.next(isChallengeHost);
+  }
+
+  /**
+   * Update the status for selectPhase component after details are updated 
+   * @param selectedPhase  new updated phase details status
+   */
+  changePhaseSelected(selectedPhase: boolean) {
+    this.phaseSelected.next(selectedPhase);
   }
 
   /**
@@ -267,7 +277,7 @@ export class ChallengeService {
    * Fetch Phases
    * @param id  id of the challenge.
    */
-  private fetchPhases(id) {
+  fetchPhases(id) {
     const API_PATH = this.endpointsService.challengePhaseURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(

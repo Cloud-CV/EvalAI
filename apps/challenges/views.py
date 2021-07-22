@@ -63,6 +63,7 @@ from challenges.utils import (
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    parse_submission_meta_attributes,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -1740,6 +1741,78 @@ def get_all_submissions_of_challenge(
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="challenge_phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge phase pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="file_type",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="File type",
+            required=True,
+        ),
+    ],
+    operation_id="download_all_submissions",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'The file type requested is not valid!'}"
+        ),
+        status.HTTP_404_NOT_FOUND: openapi.Response(
+            "{'error': 'Challenge Phase does not exist'}"
+        ),
+    },
+)
+@swagger_auto_schema(
+    methods=["post"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="challenge_phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge phase pk",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="file_type",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="File type",
+            required=True,
+        ),
+    ],
+    operation_id="download_all_submissions",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'The file type requested is not valid!'}"
+        ),
+        status.HTTP_401_UNAUTHORIZED: openapi.Response(
+            "{'error': 'Sorry, you do not belong to this Host Team!'}"
+        ),
+    },
+)
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1747,7 +1820,18 @@ def get_all_submissions_of_challenge(
 def download_all_submissions(
     request, challenge_pk, challenge_phase_pk, file_type
 ):
+    """
+    API endpoint to download all the submissions for a particular challenge as a csv
 
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+        challenge_phase_pk {[int]} -- Challenge phase primary key
+        file_type {[str]} -- File type
+
+    Returns:
+        Response Object -- An object containing api response
+    """
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
@@ -1802,11 +1886,15 @@ def download_all_submissions(
                         "Method Description",
                         "Publication URL",
                         "Project URL",
+                        "Submission Meta Attributes",
                     ]
                 )
                 # Issue: "#" isn't parsed by writer.writerow(), hence it is replaced by "-"
                 # TODO: Find a better way to solve the above issue.
                 for submission in submissions.data:
+                    submission_meta_attributes = (
+                        parse_submission_meta_attributes(submission)
+                    )
                     writer.writerow(
                         [
                             submission["id"],
@@ -1844,6 +1932,7 @@ def download_all_submissions(
                             submission["method_description"].replace("#", "-"),
                             submission["publication_url"],
                             submission["project_url"],
+                            submission_meta_attributes,
                         ]
                     )
                 return response
@@ -1936,6 +2025,7 @@ def download_all_submissions(
                     "method_description": "Method Description",
                     "publication_url": "Publication URL",
                     "project_url": "Project URL",
+                    "submission_meta_attributes": "Submission Meta Attributes",
                 }
                 submissions = Submission.objects.filter(
                     challenge_phase__challenge=challenge
@@ -1987,6 +2077,11 @@ def download_all_submissions(
                                     "%m/%d/%Y %H:%M:%S"
                                 )
                             )
+                        elif field == "submission_meta_attributes":
+                            submission_meta_attributes = (
+                                parse_submission_meta_attributes(submission)
+                            )
+                            row.append(submission_meta_attributes)
                         else:
                             row.append(submission[field])
                     writer.writerow(row)
@@ -2719,11 +2814,12 @@ def get_worker_logs(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def manage_worker(request, challenge_pk, action):
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if not request.user.is_staff:
+        if not is_user_a_host_of_challenge(request.user, challenge_pk):
+            response_data = {
+                "error": "Sorry, you are not authorized for access worker operations."
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
     if action not in ("start", "stop", "restart"):
@@ -2809,7 +2905,9 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         serializer = ChallengePhaseCreateSerializer(
             challenge_phase,
             data={"test_annotation": test_annotation_file},
-            context={"challenge": challenge_phase.challenge},
+            context={
+                "challenge": challenge_phase.challenge,
+            },
             partial=True,
         )
         if serializer.is_valid():
@@ -2878,7 +2976,9 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
     file_key_on_s3 = "{}/{}".format(
         settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
     )
-
+    annotations_uploaded_using_cli = request.data.get(
+        "annotations_uploaded_using_cli"
+    )
     response = {}
     try:
         data = complete_s3_multipart_file_upload(
@@ -2895,6 +2995,23 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
                 "challenge_phase_pk": challenge_phase.pk,
             }
             response = Response(response_data, status=status.HTTP_201_CREATED)
+
+            if annotations_uploaded_using_cli:
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data={"annotations_uploaded_using_cli": True},
+                    context={
+                        "challenge": challenge_phase.challenge,
+                    },
+                    partial=True,
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    response_data = {"error": serializer.errors}
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
     except Exception:
         response_data = {
             "error": "Error occurred while uploading annotations!"
@@ -3237,7 +3354,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase = ChallengePhase.objects.filter(
                     challenge__pk=challenge.pk, config_id=data["id"]
                 ).first()
-                if challenge_test_annotation_file:
+                if (
+                    challenge_test_annotation_file
+                    and not challenge_phase.annotations_uploaded_using_cli
+                ):
                     serializer = ChallengePhaseCreateSerializer(
                         challenge_phase,
                         data=data,
@@ -3246,6 +3366,20 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "test_annotation": challenge_test_annotation_file,
                             "config_id": data["config_id"],
                         },
+                    )
+                elif (
+                    challenge_test_annotation_file
+                    and challenge_phase.annotations_uploaded_using_cli
+                ):
+                    data.pop("test_annotation", None)
+                    serializer = ChallengePhaseCreateSerializer(
+                        challenge_phase,
+                        data=data,
+                        context={
+                            "challenge": challenge,
+                            "config_id": data["config_id"],
+                        },
+                        partial=True,
                     )
                 else:
                     serializer = ChallengePhaseCreateSerializer(

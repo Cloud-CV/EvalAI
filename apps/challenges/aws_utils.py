@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import string
+import uuid
 import yaml
 
 from botocore.exceptions import ClientError
@@ -226,7 +227,7 @@ task_definition_code_upload_worker = """
     "networkMode":"awsvpc",
     "containerDefinitions":[
         {{
-            "name": "{container_name}",
+            "name": "{code_upload_container_name}",
             "image": "{CODE_UPLOAD_WORKER_IMAGE}",
             "essential": True,
             "environment": [
@@ -275,6 +276,11 @@ task_definition_code_upload_worker = """
                 {{
                     "name": "EVALAI_DNS",
                     "value": "{EVALAI_DNS}"
+                }},
+
+                {{
+                    "name": "EFS_ID",
+                    "value": "{EFS_ID}"
                 }}
 
             ],
@@ -290,6 +296,214 @@ task_definition_code_upload_worker = """
                 }},
             }},
         }}
+    ],
+    "requiresCompatibilities":[
+        "FARGATE"
+    ],
+    "cpu": "{CPU}",
+    "memory": "{MEMORY}",
+}}
+"""
+
+task_definition_static_code_upload_worker = """
+{{
+    "family":"{queue_name}",
+    "executionRoleArn":"{EXECUTION_ROLE_ARN}",
+    "networkMode":"awsvpc",
+    "containerDefinitions":[
+        {{
+            "name": "{code_upload_container_name}",
+            "image": "{CODE_UPLOAD_WORKER_IMAGE}",
+            "essential": True,
+            "environment": [
+                {{
+                  "name": "AWS_DEFAULT_REGION",
+                  "value": "{AWS_REGION}"
+                }},
+                {{
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "value": "{AWS_ACCESS_KEY_ID}"
+                }},
+                {{
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "CLUSTER_NAME",
+                  "value": "{cluster_name}"
+                }},
+                {{
+                  "name": "CLUSTER_ENDPOINT",
+                  "value": "{cluster_endpoint}"
+                }},
+                {{
+                  "name": "CERTIFICATE",
+                  "value": "{certificate}"
+                }},
+                {{
+                  "name": "CIDR",
+                  "value": "{CIDR}"
+                }},
+                {{
+                  "name": "QUEUE_NAME",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "EVALAI_API_SERVER",
+                  "value": "{EVALAI_API_SERVER}"
+                }},
+
+                {{
+                    "name": "AUTH_TOKEN",
+                    "value": "{auth_token}"
+                }},
+
+                {{
+                    "name": "EVALAI_DNS",
+                    "value": "{EVALAI_DNS}"
+                }},
+
+                {{
+                    "name": "EFS_ID",
+                    "value": "{EFS_ID}"
+                }}
+
+            ],
+            "workingDirectory": "/code",
+            "readonlyRootFilesystem": False,
+            "logConfiguration": {{
+                "logDriver": "awslogs",
+                "options": {{
+                    "awslogs-group": "{log_group_name}",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
+                }},
+            }},
+        }},
+        {{
+            "name": "{container_name}",
+            "image": "{WORKER_IMAGE}",
+            "essential": True,
+            "environment": [
+                {{
+                  "name": "AWS_DEFAULT_REGION",
+                  "value": "{AWS_REGION}"
+                }},
+                {{
+                  "name": "AWS_ACCOUNT_ID",
+                  "value": "{AWS_ACCOUNT_ID}"
+                }},
+                {{
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "value": "{AWS_ACCESS_KEY_ID}"
+                }},
+                {{
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "AWS_STORAGE_BUCKET_NAME",
+                  "value": "{AWS_STORAGE_BUCKET_NAME}"
+                }},
+                {{
+                  "name": "CHALLENGE_PK",
+                  "value": "{challenge_pk}"
+                }},
+                {{
+                  "name": "CHALLENGE_QUEUE",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "DJANGO_SERVER",
+                  "value": "{DJANGO_SERVER}"
+                }},
+                {{
+                  "name": "DJANGO_SETTINGS_MODULE",
+                  "value": "settings.{ENV}"
+                }},
+                {{
+                  "name": "DEBUG",
+                  "value": "{DEBUG}"
+                }},
+                {{
+                  "name": "EMAIL_HOST",
+                  "value": "{EMAIL_HOST}"
+                }},
+                {{
+                  "name": "EMAIL_HOST_PASSWORD",
+                  "value": "{EMAIL_HOST_PASSWORD}"
+                }},
+                {{
+                  "name": "EMAIL_HOST_USER",
+                  "value": "{EMAIL_HOST_USER}"
+                }},
+                {{
+                  "name": "EMAIL_PORT",
+                  "value": "{EMAIL_PORT}"
+                }},
+                {{
+                  "name": "EMAIL_USE_TLS",
+                  "value": "{EMAIL_USE_TLS}"
+                }},
+                {{
+                  "name": "MEMCACHED_LOCATION",
+                  "value": "{MEMCACHED_LOCATION}"
+                }},
+                {{
+                    "name": "PYTHONUNBUFFERED",
+                    "value": "1"
+                }},
+                {{
+                  "name": "RDS_DB_NAME",
+                  "value": "{RDS_DB_NAME}"
+                }},
+                {{
+                  "name": "RDS_HOSTNAME",
+                  "value": "{RDS_HOSTNAME}"
+                }},
+                {{
+                  "name": "RDS_PASSWORD",
+                  "value": "{RDS_PASSWORD}"
+                }},
+                {{
+                  "name": "RDS_USERNAME",
+                  "value": "{RDS_USERNAME}"
+                }},
+                {{
+                  "name": "RDS_PORT",
+                  "value": "{RDS_PORT}"
+                }},
+                {{
+                  "name": "SECRET_KEY",
+                  "value": "{SECRET_KEY}"
+                }},
+                {{
+                  "name": "SENTRY_URL",
+                  "value": "{SENTRY_URL}"
+                }},
+                {{
+                    "name": "AWS_SES_REGION_NAME",
+                    "value": "{AWS_SES_REGION_NAME}"
+                }},
+                {{
+                    "name": "AWS_SES_REGION_ENDPOINT",
+                    "value": "{AWS_SES_REGION_ENDPOINT}"
+                }}
+            ],
+            "workingDirectory": "/code",
+            "readonlyRootFilesystem": False,
+            "logConfiguration": {{
+                "logDriver": "awslogs",
+                "options": {{
+                    "awslogs-group": "{log_group_name}",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "{queue_name}",
+                    "awslogs-create-group": "true",
+                }},
+            }},
+        }}
+
     ],
     "requiresCompatibilities":[
         "FARGATE"
@@ -324,6 +538,12 @@ service_definition = """
     "deploymentController":{{
         "type": "ECS"
     }},
+    "deploymentConfiguration":{{
+        "deploymentCircuitBreaker":{{
+            "enable": True,
+            "rollback": False
+        }}
+    }}
 }}
 """
 
@@ -418,6 +638,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
     """
     container_name = "worker_{}".format(queue_name)
+    code_upload_container_name = "code_upload_worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
     log_group_name = get_log_group_name(challenge.pk)
@@ -440,27 +661,51 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 cluster_name = cluster_details.name
                 cluster_endpoint = cluster_details.cluster_endpoint
                 cluster_certificate = cluster_details.cluster_ssl
+                efs_id = cluster_details.efs_id
             except ClientError as e:
                 logger.exception(e)
                 return e.response
             # challenge host auth token to be used by code-upload-worker
             token = JwtToken.objects.get(user=challenge.creator.created_by)
-            definition = task_definition_code_upload_worker.format(
-                queue_name=queue_name,
-                container_name=container_name,
-                ENV=ENV,
-                challenge_pk=challenge.pk,
-                auth_token=token.refresh_token,
-                cluster_name=cluster_name,
-                cluster_endpoint=cluster_endpoint,
-                certificate=cluster_certificate,
-                CPU=worker_cpu_cores,
-                MEMORY=worker_memory,
-                log_group_name=log_group_name,
-                EVALAI_DNS=EVALAI_DNS,
-                **COMMON_SETTINGS_DICT,
-                **challenge_aws_keys,
-            )
+            if challenge.is_static_dataset_code_upload:
+                definition = task_definition_static_code_upload_worker.format(
+                    queue_name=queue_name,
+                    container_name=container_name,
+                    code_upload_container_name=code_upload_container_name,
+                    ENV=ENV,
+                    challenge_pk=challenge.pk,
+                    auth_token=token.refresh_token,
+                    cluster_name=cluster_name,
+                    cluster_endpoint=cluster_endpoint,
+                    certificate=cluster_certificate,
+                    CPU=worker_cpu_cores,
+                    MEMORY=worker_memory,
+                    log_group_name=log_group_name,
+                    EVALAI_DNS=EVALAI_DNS,
+                    EFS_ID=efs_id,
+                    AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+                    AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+                    **COMMON_SETTINGS_DICT,
+                    **challenge_aws_keys,
+                )
+            else:
+                definition = task_definition_code_upload_worker.format(
+                    queue_name=queue_name,
+                    code_upload_container_name=code_upload_container_name,
+                    ENV=ENV,
+                    challenge_pk=challenge.pk,
+                    auth_token=token.refresh_token,
+                    cluster_name=cluster_name,
+                    cluster_endpoint=cluster_endpoint,
+                    certificate=cluster_certificate,
+                    CPU=worker_cpu_cores,
+                    MEMORY=worker_memory,
+                    log_group_name=log_group_name,
+                    EVALAI_DNS=EVALAI_DNS,
+                    EFS_ID=efs_id,
+                    **COMMON_SETTINGS_DICT,
+                    **challenge_aws_keys,
+                )
         else:
             definition = task_definition.format(
                 queue_name=queue_name,
@@ -701,12 +946,7 @@ def start_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
-            )
-        elif (challenge.workers == 0) or (challenge.workers is None):
+        if (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=1
             )
@@ -755,12 +995,7 @@ def stop_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
-            )
-        elif (challenge.workers is not None) and (challenge.workers > 0):
+        if (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
@@ -862,12 +1097,7 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
-            )
-        elif challenge.workers is not None:
+        if challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -916,7 +1146,10 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
+        if (
+            challenge.is_docker_based
+            and not challenge.is_static_dataset_code_upload
+        ):
             response = "Sorry. This feature is not available for code upload/docker based challenges."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
@@ -1035,7 +1268,7 @@ def get_logs_from_cloudwatch(
     logs = []
     if settings.DEBUG:
         logs = [
-            "The worker logs in the development environment are available on the terminal. Please use docker-compose worker -f to view the logs."
+            "The worker logs in the development environment are available on the terminal. Please use docker-compose logs -f worker to view the logs."
         ]
     else:
         try:
@@ -1082,8 +1315,9 @@ def create_eks_nodegroup(challenge, cluster_name):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    nodegroup_name = "{0}-nodegroup".format(
-        challenge_obj.title.replace(" ", "-")
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    nodegroup_name = "{}-{}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-"), environment_suffix
     )
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("eks", challenge_aws_keys)
@@ -1105,9 +1339,10 @@ def create_eks_nodegroup(challenge, cluster_name):
             amiType=challenge_obj.worker_ami_type,
             nodeRole=cluster_meta["EKS_NODEGROUP_ROLE_ARN"],
         )
+        logger.info("Nodegroup create: {}".format(response))
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     waiter = client.get_waiter("nodegroup_active")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     construct_and_send_eks_cluster_creation_mail(challenge_obj)
@@ -1147,7 +1382,7 @@ def setup_eks_cluster(challenge):
         eks_arn_role = response["Role"]["Arn"]
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     waiter = client.get_waiter("role_exists")
     waiter.wait(RoleName=eks_role_name)
 
@@ -1159,7 +1394,7 @@ def setup_eks_cluster(challenge):
         )
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
 
     node_group_role_name = "evalai-code-upload-nodegroup-role-{}".format(
         environment_suffix
@@ -1176,7 +1411,7 @@ def setup_eks_cluster(challenge):
         node_group_arn_role = response["Role"]["Arn"]
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     waiter = client.get_waiter("role_exists")
     waiter.wait(RoleName=node_group_role_name)
 
@@ -1190,7 +1425,7 @@ def setup_eks_cluster(challenge):
             )
         except ClientError as e:
             logger.exception(e)
-            return response
+            return
 
     # Create custom ECR all access policy and attach to node_group_role
     ecr_all_access_policy_name = "AWS-ECR-Full-Access-{}".format(
@@ -1211,7 +1446,7 @@ def setup_eks_cluster(challenge):
         )
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
     try:
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
@@ -1249,6 +1484,7 @@ def create_eks_cluster_subnets(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
     client = get_boto3_client("ec2", challenge_aws_keys)
     vpc_ids = []
     try:
@@ -1256,13 +1492,18 @@ def create_eks_cluster_subnets(challenge):
         vpc_ids.append(response["Vpc"]["VpcId"])
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
 
     waiter = client.get_waiter("vpc_available")
     waiter.wait(VpcIds=vpc_ids)
 
     # Create internet gateway and attach to vpc
     try:
+        # Enable DNS resolution for VPC
+        response = client.modify_vpc_attribute(
+            EnableDnsHostnames={"Value": True}, VpcId=vpc_ids[0]
+        )
+
         response = client.create_internet_gateway()
         internet_gateway_id = response["InternetGateway"]["InternetGatewayId"]
         client.attach_internet_gateway(
@@ -1327,6 +1568,39 @@ def create_eks_cluster_subnets(challenge):
         )
         security_group_id = response["GroupId"]
 
+        response = client.create_security_group(
+            GroupName="evalai-code-upload-challenge-efs-{}".format(
+                environment_suffix
+            ),
+            Description="EKS nodegroup EFS",
+            VpcId=vpc_ids[0],
+        )
+        efs_security_group_id = response["GroupId"]
+
+        response = client.authorize_security_group_ingress(
+            GroupId=efs_security_group_id,
+            IpPermissions=[
+                {
+                    "FromPort": 2049,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": challenge_obj.vpc_cidr,
+                        },
+                    ],
+                    "ToPort": 2049,
+                }
+            ],
+        )
+
+        # Create EFS
+        efs_client = get_boto3_client("efs", challenge_aws_keys)
+        efs_creation_token = str(uuid.uuid4())[:64]
+        response = efs_client.create_file_system(
+            CreationToken=efs_creation_token,
+        )
+        efs_id = response["FileSystemId"]
+
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
         )
@@ -1339,6 +1613,9 @@ def create_eks_cluster_subnets(challenge):
                 "security_group_id": security_group_id,
                 "subnet_1_id": subnet_1_id,
                 "subnet_2_id": subnet_2_id,
+                "efs_security_group_id": efs_security_group_id,
+                "efs_id": efs_id,
+                "efs_creation_token": efs_creation_token,
             },
             partial=True,
         )
@@ -1348,7 +1625,7 @@ def create_eks_cluster_subnets(challenge):
         create_eks_cluster.delay(challenge)
     except ClientError as e:
         logger.exception(e)
-        return response
+        return
 
 
 @app.task
@@ -1367,7 +1644,10 @@ def create_eks_cluster(challenge):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    cluster_name = "{}-{}-cluster".format(
+        challenge_obj.title.replace(" ", "-"), environment_suffix
+    )
     if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
         challenge_aws_keys = get_aws_credentials_for_challenge(
             challenge_obj.pk
@@ -1379,7 +1659,7 @@ def create_eks_cluster(challenge):
         try:
             response = client.create_cluster(
                 name=cluster_name,
-                version="1.15",
+                version="1.16",
                 roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
                     "subnetIds": [
@@ -1438,12 +1718,35 @@ def create_eks_cluster(challenge):
             challenge_evaluation_cluster = (
                 ChallengeEvaluationCluster.objects.get(challenge=challenge_obj)
             )
+
+            efs_client = get_boto3_client("efs", challenge_aws_keys)
+            # Create mount targets for subnets
+            mount_target_ids = []
+            response = efs_client.create_mount_target(
+                FileSystemId=challenge_evaluation_cluster.efs_id,
+                SubnetId=challenge_evaluation_cluster.subnet_1_id,
+                SecurityGroups=[
+                    challenge_evaluation_cluster.efs_security_group_id
+                ],
+            )
+            mount_target_ids.append(response["MountTargetId"])
+
+            response = efs_client.create_mount_target(
+                FileSystemId=challenge_evaluation_cluster.efs_id,
+                SubnetId=challenge_evaluation_cluster.subnet_2_id,
+                SecurityGroups=[
+                    challenge_evaluation_cluster.efs_security_group_id
+                ],
+            )
+            mount_target_ids.append(response["MountTargetId"])
+
             serializer = ChallengeEvaluationClusterSerializer(
                 challenge_evaluation_cluster,
                 data={
                     "name": cluster_name,
                     "cluster_endpoint": cluster_ep,
                     "cluster_ssl": cluster_cert,
+                    "efs_mount_target_ids": mount_target_ids,
                 },
                 partial=True,
             )

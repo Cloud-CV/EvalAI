@@ -39,6 +39,7 @@
         vm.isValid = {};
         vm.submissionVisibility = {};
         vm.baselineStatus = {};
+        vm.verifiedStatus = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -856,7 +857,9 @@
                 // sort teams alphabetically
                 return key.submission__participant_team__team_name;
             }
-
+            else if (vm.sortColumn == 'exec'){
+                return key.submission__execution_time;
+            }
             return 0;
         };
 
@@ -1076,6 +1079,7 @@
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                                 vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                                vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                             }
 
                             if (vm.submissionResult.results.length !== details.results.length) {
@@ -1167,6 +1171,7 @@
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                         // Set previous public submission id for phases with one public submission restriction
                         if (details.results[i].is_public) {
                             vm.previousPublicSubmissionId = details.results[i].id;
@@ -1317,6 +1322,7 @@
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                         vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                        vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
                     }
 
                     vm.submissionResult = details;
@@ -1618,11 +1624,17 @@
                     var details = response.data;
                     vm.submissionResult = details;
 
+                    if (Array.isArray(vm.submissionResult.results)) {
+                        for (var i = 0; i < details.results.length; i++) {
+                            vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                            vm.verifiedStatus[details.results[i].id] = details.results[i].is_verified_by_host;
+                        }
+                    }
+
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
-
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -1878,6 +1890,9 @@
         },{
             'label': 'Project URL',
             'id': 'project_url'
+        },{
+            'label': 'Submission Meta Attributes',
+            'id': 'submission_meta_attributes'
         }];
 
         vm.downloadChallengeSubmissions = function() {
@@ -2023,6 +2038,27 @@
             } else {
                 $mdDialog.hide();
             }
+        };
+
+        vm.verifySubmission = function(submissionId, isVerified) {
+            parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "is_verified_by_host": isVerified,
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if (status === 200) {
+                        $rootScope.notify("success", "Verification status updated successfully!");
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
         };
 
         vm.isStarred = function() {
