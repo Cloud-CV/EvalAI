@@ -757,7 +757,7 @@ def increment_and_push_metrics_to_statsd(body, queue_name):
         statsd.gauge(
             NUM_PROCESSED_SUBMISSIONS,
             1,
-            tags = [
+            tags=[
                 "queue_name:%s" % queue_name,
                 "submission_pk:%s" % submission_pk,
             ],

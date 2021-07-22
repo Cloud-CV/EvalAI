@@ -89,7 +89,7 @@ def publish_submission_message(message):
     statsd.gauge(
         NUM_SUBMISSIONS_IN_QUEUE,
         1,
-        tags = [
+        tags=[
             "queue_name:%s" % queue_name,
             "submission_pk:%s" % submission_pk,
         ],
