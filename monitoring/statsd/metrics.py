@@ -11,3 +11,11 @@ REQUEST_LATENCY_METRIC_NAME = "django_request_latency_seconds"
 REQUEST_COUNT_METRIC_NAME = "django_request_count"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
+
+
+def set_statsd_gauge(metric_name, tags, set_value):
+    statsd.gauge(metric_name, set_value, tags=tags)
+
+
+def increment_statsd_counter(metric_name, tags, inc_value):
+    statsd.increment(metric_name, inc_value, tags=tags)

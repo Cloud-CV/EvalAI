@@ -25,7 +25,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from monitoring.statsd.metrics import statsd, NUM_PROCESSED_SUBMISSIONS
+from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, set_statsd_gauge
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -753,15 +753,13 @@ def load_challenge_and_return_max_submissions(q_params):
 
 def increment_and_push_metrics_to_statsd(body, queue_name):
     try:
-        submission_pk = json.loads(body)["submission_pk"]
-        statsd.gauge(
-            NUM_PROCESSED_SUBMISSIONS,
-            1,
-            tags=[
-                "queue_name:%s" % queue_name,
-                "submission_pk:%s" % submission_pk,
-            ],
-        )
+        body = yaml.safe_load(body)
+        submission_pk = body["submission_pk"]
+        submission_metric_tags = [
+            "queue_name:%s" % queue_name,
+            "submission_pk:%s" % submission_pk,
+        ]
+        set_statsd_gauge(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to statsd: {}".format(
