@@ -44,14 +44,19 @@ export class ChallengesubmitComponent implements OnInit {
   isLoggedIn = false;
 
   /**
-   * Is submittion submitted
+   * Is submission submitted
    */
   isSubmitted = false;
 
   /**
-   * Is submittion submitted
+   * Is submission submitted
    */
   isPublicSubmission:boolean = true;
+
+  /**
+   * Is submission allowed by host
+   */
+  isLeaderboardPublic:boolean = false;
 
   /**
    * Challenge object
@@ -467,6 +472,7 @@ export class ChallengesubmitComponent implements OnInit {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
+      SELF.isLeaderboardPublic = phase['leaderboard_public'];
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
