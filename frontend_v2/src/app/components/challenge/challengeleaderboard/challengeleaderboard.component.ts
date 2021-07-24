@@ -271,6 +271,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
           this.phaseSplits[i].showPrivate = true;
           this.showPrivateIds.push(this.phaseSplits[i].id);
         }
+        else {
+          this.phaseSplits[i].showPrivate = false;
+        }
       }
       this.filteredPhaseSplits = this.phaseSplits;
       setTimeout(() => {
