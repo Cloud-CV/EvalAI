@@ -25,7 +25,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, set_statsd_gauge
+from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, increment_statsd_counter
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -751,15 +751,12 @@ def load_challenge_and_return_max_submissions(q_params):
     return maximum_concurrent_submissions, challenge
 
 
-def increment_and_push_metrics_to_statsd(body, queue_name):
+def increment_and_push_metrics_to_statsd(queue_name):
     try:
-        body = yaml.safe_load(body)
-        submission_pk = body["submission_pk"]
         submission_metric_tags = [
             "queue_name:%s" % queue_name,
-            "submission_pk:%s" % submission_pk,
         ]
-        set_statsd_gauge(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
+        increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to statsd: {}".format(
@@ -840,7 +837,7 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_statsd(message.body, queue_name)
+                        increment_and_push_metrics_to_statsd(queue_name)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -850,7 +847,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(message.body, queue_name)
+                    increment_and_push_metrics_to_statsd(queue_name)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -869,7 +866,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(message.body, queue_name)
+                    increment_and_push_metrics_to_statsd(queue_name)
         if killer.kill_now:
             break
         time.sleep(0.1)

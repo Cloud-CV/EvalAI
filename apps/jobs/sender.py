@@ -85,10 +85,8 @@ def publish_submission_message(message):
     slack_url = challenge.slack_webhook_url
     queue = get_or_create_sqs_queue(queue_name)
     # increase counter for submission pushed into queue
-    submission_pk = message["submission_pk"]
     submission_metric_tags = [
         "queue_name:%s" % queue_name,
-        "submission_pk:%s" % submission_pk,
     ]
     increment_statsd_counter(NUM_SUBMISSIONS_IN_QUEUE, submission_metric_tags, 1)
     response = queue.send_message(MessageBody=json.dumps(message))
