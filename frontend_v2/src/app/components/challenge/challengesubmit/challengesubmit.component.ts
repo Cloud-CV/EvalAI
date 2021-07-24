@@ -260,6 +260,9 @@ export class ChallengesubmitComponent implements OnInit {
         if (phases[j].is_public === false) {
           this.phases[j].showPrivate = true;
         }
+        else {
+          this.phases[j].showPrivate = false;
+        }
       }
     });
 
