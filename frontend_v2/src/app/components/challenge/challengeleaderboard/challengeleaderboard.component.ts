@@ -343,6 +343,19 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     phaseSplitSelected(phaseSplit) {
       const SELF = this;
       SELF.selectedPhaseSplit = phaseSplit;
+      
+      const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+      SELF.apiService.getUrl(API_PATH).subscribe(
+        (data) => {
+          SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
+          SELF.setLeaderboardPrecisionValue = `1.${ SELF.leaderboardPrecisionValue }-${ SELF.leaderboardPrecisionValue }`;
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+
       if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
         SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
@@ -620,7 +633,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
       (data) => {
         this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
-        this.plusDisabled = SELF.leaderboardPrecisionValue === 5 ? true : false;
+        this.plusDisabled = SELF.leaderboardPrecisionValue === 20 ? true : false;
       },
       (err) => {
         SELF.globalService.handleApiError(err, true);
