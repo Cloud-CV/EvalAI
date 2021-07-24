@@ -1,9 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { GlobalService } from '../../../../services/global.service';
-import { ApiService } from '../../../../services/api.service';
 import { AuthService } from '../../../../services/auth.service';
-import { ChallengeService } from '../../../../services/challenge.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 /**
  * Component Class
@@ -55,12 +53,7 @@ export class ChallengecardComponent implements OnInit {
   isLoggedIn = false;
 
   /**
-   * Tag list
-   */
-  tags = ['Aritificial Intelligence', 'Machine Learning'];
-
-  /**
-   * Challenge stars
+   * Current Route
    */
   routerPublic: Router;
 
@@ -71,20 +64,14 @@ export class ChallengecardComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param globalService  GlobalService Injection.
    * @param authService  AuthService Injection.
-   * @param apiService  ApiService Injection.
-   * @param challengeService  ChallengeService Injection.
+   * @param router  Router Injection.
    */
   constructor(
     private globalService: GlobalService,
-    private apiService: ApiService,
     private authService: AuthService,
-    private challengeService: ChallengeService,
-    private router: Router,
-    private route: ActivatedRoute
+    private router: Router
   ) {}
 
   /**
