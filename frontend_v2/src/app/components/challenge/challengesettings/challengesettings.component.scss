@@ -3,14 +3,27 @@
 
 .challenge-card {
   .bottom-card-container {
+    padding-top: 0px;
     .settings-section {
-      padding: 20px 30px;
+      padding: 50px;
       border: 1px solid;
       border-radius: 5px;
       min-height: 50px;
       color: rgb(101, 97, 97);
     }
   }
+  .row {
+    margin: 4% 0px 4% 0px;
+  }
+}
+
+input {
+  border-bottom: none;
+}
+
+::ng-deep .mat-tab-label {
+  font-weight: $fw-light;
+  font-size: $fs-16;
 }
 
 .phase-card {
@@ -21,9 +34,19 @@
   margin-left: 25px;
 }
 
+.upload-container {
+  text-align:center;
+}
+
 @include screen-medium {
   .settings-section {
     padding: 10px 20px !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .col-md-12 {
+    width: auto;
   }
 }
 
@@ -48,7 +71,6 @@
 }
 
 .challenge-detail {
-  margin-left: 25%;
   padding: 8px;
 }
 
