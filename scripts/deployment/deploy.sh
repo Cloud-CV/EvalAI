@@ -48,7 +48,7 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull
+					docker-compose -f docker-compose-${env}.yml pull django nodejs nodejs_v2 celery node_exporter
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery node_exporter
 				ENDSSH2
 				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
@@ -59,7 +59,7 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull
+					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter
 				ENDSSH2
 			ENDSSH
