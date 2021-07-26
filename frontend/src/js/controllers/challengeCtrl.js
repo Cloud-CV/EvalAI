@@ -87,6 +87,7 @@
         vm.refreshJWT = utilities.getData('refreshJWT');
 
         vm.subErrors = {};
+        vm.currentHighlightedLeaderboardEntry = null;
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
@@ -204,16 +205,18 @@
             $interval.cancel(vm.logs_poller);
         };
 
-         // scroll to the specific entry of the leaderboard
-        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
-            var newHash = elementId.toString();
-            if ($location.hash() !== newHash) {
-                $location.hash(elementId);
-            } else {
-                $anchorScroll();
+         // highlight the specific entry of the leaderboard
+        vm.highlightSpecificLeaderboardEntry = function (key) {
+            key = '#' + key;
+            // Remove highlight from previous clicked entry
+            if (vm.currentHighlightedLeaderboardEntry != null) {
+                let prevEntry = angular.element(vm.currentHighlightedLeaderboardEntry)[0];
+                prevEntry.setAttribute("class", "");
             }
+            let entry = angular.element(key)[0];
+            entry.setAttribute("class", "highlightLeaderboard");
+            vm.currentHighlightedLeaderboardEntry = key;
             $scope.isHighlight = false;
-            $anchorScroll.yOffset = 90;
         };
 
         // get names of the team that has participated in the current challenge
