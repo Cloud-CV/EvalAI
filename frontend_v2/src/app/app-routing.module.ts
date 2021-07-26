@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
 
 // import component
-import { NotFoundComponent } from './components/not-found/not-found.component';
 
 const routes: Routes = [
   {
@@ -70,7 +69,7 @@ const routes: Routes = [
   },
   {
     path: '404',
-    component: NotFoundComponent,
+    loadChildren: './components/not-found/not-found.module#NotFoundModule',
   },
   {
     path: '**',
