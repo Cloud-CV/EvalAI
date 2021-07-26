@@ -131,8 +131,7 @@
                         </tr>
                     </thead>
                     <tbody class="fs-16 w-300">
-                        <tr ng-class="{highlightLeaderboard:isHighlight == challenge.initial_ranking[key.id]}"
-                            ng-click="challenge.scrollToSpecificEntryLeaderboard('leaderboardrank-' + challenge.initial_ranking[key.id])"
+                        <tr ng-click="challenge.highlightSpecificLeaderboardEntry('leaderboardrank-' + challenge.initial_ranking[key.id])"
                             ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
                             class="fs-16" id="leaderboardrank-{{challenge.initial_ranking[key.id]}}">
                             <td>{{challenge.initial_ranking[key.id]}}</td>
