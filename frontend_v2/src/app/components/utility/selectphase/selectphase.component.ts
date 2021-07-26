@@ -27,6 +27,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() selectedPhaseSplitUrlChange: any;
 
   /**
+   * Selected phase split 
+   */
+  @Input() phaseSplitSelected: any;
+
+  /**
    * Phase selection type (radio button or select box)
    */
   @Input() phaseSelectionType: string;
@@ -62,9 +67,19 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   splitName = '';
 
   /**
+   * Selected split name
+   */
+  settingsSplitName = '';
+
+  /**
    * Selected phase split
    */
   selectedPhaseSplit = '';
+
+  /**
+   * If phase selected
+   */
+  isPhaseSplitSelected : boolean = false;
 
   /**
    * Challenge object
@@ -95,17 +110,28 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.challengeService.isPhaseSelected.subscribe((isPhaseSelected) => {
       this.isPhaseSelected = isPhaseSelected;
     });
-    if(this.isPhaseSelected == true) {
+
+    if(this.isPhaseSelected == true && this.phaseSelected) {
       this.challengeService.changePhaseSelected(false);
-      this.phaseName = '';
+      this.selectPhase(this.selectedPhase);
     }
-  }
+
+    this.challengeService.isPhaseSplitSelected.subscribe((isPhaseSplitSelected) => {
+      this.isPhaseSplitSelected = isPhaseSplitSelected;
+    });
+
+    if(this.phaseSplitSelected && this.isPhaseSplitSelected) {
+      this.challengeService.changePhaseSplitSelected(false);
+      this.selectSettingsPhaseSplit(this.selectedPhaseSplit, this.phaseSelectionType, this.phaseSelectionListType);
+    }
+   }
 
   /**
    * Select a particular phase.
    * @param phase  phase to be selected.
    */
   selectPhase(phase) {
+    this.selectedPhase = phase;
     this.phaseName = phase.name;
     this.phaseVisibility = phase.showPrivate;
     this.phaseSelected(phase);
@@ -117,6 +143,17 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * @param phaseSelectionType phase selection type (radio button or select box).
    * @param phaseSelectionListType phase selection list type (phase or phase split)
    */
+
+  selectSettingsPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+    this.phaseSelectionType = phaseSelectionType;
+    this.phaseSelectionListType = phaseSelectionListType;
+    this.selectedPhaseSplit = phaseSplit;
+    this.phaseName = phaseSplit.challenge_phase_name;
+    this.settingsSplitName = phaseSplit.dataset_split_name;
+    this.phaseVisibility = phaseSplit.showPrivate;
+    this.phaseSplitSelected(phaseSplit);
+  }
+
   selectPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
     this.phaseSelectionType = phaseSelectionType;
     this.phaseSelectionListType = phaseSelectionListType;
