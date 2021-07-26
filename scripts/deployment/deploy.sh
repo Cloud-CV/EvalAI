@@ -53,7 +53,7 @@ case $opt in
 				ENDSSH2
 				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
 					source venv/bin/activate
-                    cd ~/Projects/EvalAI
+                    			cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
 					eval $(aws ecr get-login --no-include-email)
