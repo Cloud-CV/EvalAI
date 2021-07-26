@@ -224,6 +224,9 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
         }
+        else {
+          this.phases[i].showPrivate = false;
+        }
       }
       this.filteredPhases = this.phases;
     });
