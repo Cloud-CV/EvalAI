@@ -21,9 +21,9 @@ input {
   border-bottom: none;
 }
 
-::ng-deep .mat-tab-label {
-  font-weight: $fw-light;
-  font-size: $fs-16;
+:host ::ng-deep .mat-tab-label .mat-tab-label-content{
+  font-weight: $fw-light !important;
+  font-size: $fs-16 !important;
 }
 
 .phase-card {
