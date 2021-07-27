@@ -360,7 +360,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       );
 
       if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
-        SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
+        if(this.getAllEntriesTextOption == 'Exclude private submissions') {
+          SELF.fetchAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id']);
+        } else {
+          SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
+        }
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
         let selectedPhase = SELF.phases.find((phase) => {
@@ -536,10 +540,17 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * @param phaseSplitId id of the phase split
    */
   startLeaderboard(phaseSplitId) {
-    const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
+    let API_PATH;
+    console.log(this.getAllEntriesTextOption);
+    if(this.getAllEntriesTextOption == 'Exclude private submissions') {
+      API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
+    } else {
+      API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
+    }
     const SELF = this;
     clearInterval(SELF.pollingInterval);
     SELF.pollingInterval = setInterval(function () {
+      console.log("HELLO");
       SELF.apiService.getUrl(API_PATH, true, false).subscribe(
         (data) => {
           if (SELF.leaderboard.length !== data['results'].length) {
