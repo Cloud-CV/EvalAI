@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './publiclists.component.html',
   styleUrls: ['./publiclists.component.scss'],
 })
-export class PubliclistsComponent implements AfterViewChecked {
+export class PubliclistsComponent implements OnInit, AfterViewChecked {
 
   isAuth = false;
 
@@ -32,7 +32,13 @@ export class PubliclistsComponent implements AfterViewChecked {
     private globalService: GlobalService,
     private cdRef : ChangeDetectorRef
   ) {}
-
+  
+  /**
+   * Component on Initialization.
+   */
+  ngOnInit() {
+    this.isAuth = this.authService.isAuth;
+  }
   /**
    * DEV MODE:
    * For resolving change in expression value after it is checked
