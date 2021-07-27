@@ -176,6 +176,17 @@ mat-slider {
   padding-top: 0px;
 }
 
+.legend-row{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.move-right{
+  margin-left: auto;
+}
+
 @media only screen and (max-width: $screen-sm) {
   mat-slider {
     width: 100%;
