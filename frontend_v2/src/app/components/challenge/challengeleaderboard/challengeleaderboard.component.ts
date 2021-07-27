@@ -541,7 +541,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    */
   startLeaderboard(phaseSplitId) {
     let API_PATH;
-    console.log(this.getAllEntriesTextOption);
     if(this.getAllEntriesTextOption == 'Exclude private submissions') {
       API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
     } else {
@@ -550,7 +549,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     const SELF = this;
     clearInterval(SELF.pollingInterval);
     SELF.pollingInterval = setInterval(function () {
-      console.log("HELLO");
       SELF.apiService.getUrl(API_PATH, true, false).subscribe(
         (data) => {
           if (SELF.leaderboard.length !== data['results'].length) {
