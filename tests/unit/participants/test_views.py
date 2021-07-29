@@ -815,6 +815,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "cli_version": self.challenge1.cli_version,
                         "remote_evaluation": self.challenge1.remote_evaluation,
                         "workers": self.challenge1.workers,
+                        "created_at": self.challenge1.created_at,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -883,6 +884,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "cli_version": self.challenge1.cli_version,
                 "remote_evaluation": self.challenge1.remote_evaluation,
                 "workers": self.challenge1.workers,
+                "created_at": self.challenge1.created_at,
             }
         ]
 

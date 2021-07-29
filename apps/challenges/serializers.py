@@ -64,6 +64,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "cli_version",
             "remote_evaluation",
             "workers",
+            "created_at",
         )
 
 
