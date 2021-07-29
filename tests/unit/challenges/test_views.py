@@ -174,7 +174,9 @@ class GetChallengeTest(BaseAPITestClass):
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
                 "workers": self.challenge.workers,
-                "created_at": self.challenge.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
 
@@ -324,7 +326,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "workers": self.challenge.workers,
-            "created_at": self.challenge.created_at,
+            "created_at": "{0}{1}".format(
+                self.challenge.created_at.isoformat(), "Z"
+            ).replace("+00:00", ""),
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -401,7 +405,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "workers": self.challenge.workers,
-            "created_at": self.challenge.created_at,
+            "created_at": "{0}{1}".format(
+                self.challenge.created_at.isoformat(), "Z"
+            ).replace("+00:00", ""),
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -504,7 +510,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "workers": self.challenge.workers,
-            "created_at": self.challenge.created_at,
+            "created_at": "{0}{1}".format(
+                self.challenge.created_at.isoformat(), "Z"
+            ).replace("+00:00", ""),
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -556,7 +564,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "workers": self.challenge.workers,
-            "created_at": self.challenge.created_at,
+            "created_at": "{0}{1}".format(
+                self.challenge.created_at.isoformat(), "Z"
+            ).replace("+00:00", ""),
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1069,7 +1079,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
                 "workers": self.challenge3.workers,
-                "created_at": self.challenge3.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge3.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1123,7 +1135,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "workers": self.challenge2.workers,
-                "created_at": self.challenge2.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1177,7 +1191,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
                 "workers": self.challenge4.workers,
-                "created_at": self.challenge4.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge4.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1230,7 +1246,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
                 "workers": self.challenge4.workers,
-                "created_at": self.challenge4.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge4.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             },
             {
                 "id": self.challenge3.pk,
@@ -1272,7 +1290,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
                 "workers": self.challenge3.workers,
-                "created_at": self.challenge3.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge3.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             },
             {
                 "id": self.challenge2.pk,
@@ -1314,7 +1334,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "workers": self.challenge2.workers,
-                "created_at": self.challenge2.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1417,7 +1439,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
                 "workers": self.challenge3.workers,
-                "created_at": self.challenge3.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge3.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1547,7 +1571,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "cli_version": self.challenge3.cli_version,
             "remote_evaluation": self.challenge3.remote_evaluation,
             "workers": self.challenge3.workers,
-            "created_at": self.challenge3.created_at,
+            "created_at": "{0}{1}".format(
+                self.challenge3.created_at.isoformat(), "Z"
+            ).replace("+00:00", ""),
         }
 
         response = self.client.get(self.url, {})
@@ -1613,7 +1639,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "cli_version": self.challenge4.cli_version,
             "remote_evaluation": self.challenge4.remote_evaluation,
             "workers": self.challenge4.workers,
-            "created_at": self.challenge4.created_at,
+            "created_at": "{0}{1}".format(
+                self.challenge4.created_at.isoformat(), "Z"
+            ).replace("+00:00", ""),
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1735,7 +1763,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "workers": self.challenge2.workers,
-                "created_at": self.challenge2.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
 
@@ -1789,7 +1819,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "workers": self.challenge2.workers,
-                "created_at": self.challenge2.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
 
@@ -1843,7 +1875,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "workers": self.challenge2.workers,
-                "created_at": self.challenge2.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
 
@@ -1895,7 +1929,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
                 "workers": self.challenge.workers,
-                "created_at": self.challenge.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             },
             {
                 "id": self.challenge2.pk,
@@ -1937,7 +1973,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "workers": self.challenge2.workers,
-                "created_at": self.challenge2.created_at,
+                "created_at": "{0}{1}".format(
+                    self.challenge2.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             },
         ]
 
