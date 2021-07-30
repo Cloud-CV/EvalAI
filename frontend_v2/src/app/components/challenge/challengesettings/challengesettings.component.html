@@ -6,7 +6,7 @@
       </div>
     </div>
     <mat-tab-group animationDuration="0ms">
-      <mat-tab label="Edit challenge details">
+      <mat-tab label="Challenge Details">
         <ng-template matTabContent>
           <!-- Edit Challenge details -->
           <div class="row settings-section">
@@ -135,8 +135,11 @@
       </mat-tab>
 
       <!-- Edit Phase Details -->
-      <mat-tab label="Edit phase details"> 
+      <mat-tab label="Phase and Leaderboard Details"> 
         <div class="row settings-section">
+          <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+            <span class="fw-light fs-18">Edit Phase</span>
+          </div>
           <div class="ev-action">
             <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
               <div class="row margin-bottom-cancel phase-card">
@@ -173,11 +176,11 @@
            </div>
           </div>
         </div>
-      </mat-tab>
 
-      <!-- Edit Leaderboard details -->
-      <mat-tab label="Edit leaderboard details">
         <div class="row settings-section">
+          <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+            <span class="fw-light fs-18">Edit Leaderboard</span>
+          </div>
           <div class="ev-action">
             <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
               <div class="row margin-bottom-cancel phase-card">
@@ -203,10 +206,11 @@
             </div>
           </div>
         </div>
+
       </mat-tab>
 
       <!-- Edit Evaluation Script and Criteria & Worker logs -->
-      <mat-tab label="Evaluation script and guidelines"> 
+      <mat-tab label="Evaluation"> 
         <ng-template matTabContent>
           <div class="row settings-section">
             <div class="ev-action">
