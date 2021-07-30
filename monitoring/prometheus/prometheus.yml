@@ -20,3 +20,9 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['node_exporter:9100']
+
+alerting:
+  alertmanagers:
+  - path_prefix: '/alerts'
+    static_configs:
+    - targets: ['alerts:9093']

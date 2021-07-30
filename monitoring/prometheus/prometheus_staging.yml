@@ -21,3 +21,9 @@ scrape_configs:
     metrics_path: '/node_exporter'
     static_configs:
       - targets: ['staging.eval.ai']
+
+alerting:
+  alertmanagers:
+  - path_prefix: '/alerts'
+    static_configs:
+    - targets: ['monitoring-staging.eval.ai']
