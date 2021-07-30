@@ -152,13 +152,13 @@ services:
       - prometheus
       - grafana
       - statsd-exporter
-      - alertmanager
+      - alert-manager
     ports:
       - '80:80'
       - '443:443'
     
-  alertmanager:
-    hostname: alerts
+  alert-manager:
+    hostname: alert_manager
     image: prom/alertmanager
     user: "1000"
     volumes:
@@ -168,6 +168,6 @@ services:
     command:
       - '--config.file=/prometheus/alertmanager.yml'
       - '--storage.path=/data'
-      - '--web.external-url=http://localhost:9093/alerts'
+      - '--web.external-url=http://localhost:9093/alert_manager'
     ports:
       - '9093:9093'

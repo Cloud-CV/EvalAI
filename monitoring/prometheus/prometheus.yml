@@ -23,6 +23,6 @@ scrape_configs:
 
 alerting:
   alertmanagers:
-  - path_prefix: '/alerts'
+  - path_prefix: '/alert_manager'
     static_configs:
-    - targets: ['alerts:9093']
+    - targets: ['alert_manager:9093']

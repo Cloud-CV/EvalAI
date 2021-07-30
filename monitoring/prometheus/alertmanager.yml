@@ -25,7 +25,6 @@ receivers:
         title: '{{ template "slack.apis.title" . }}'
         text: '{{ template "slack.apis.text" . }}'
         send_resolved: false
-
   - name: 'slack-instance-notifications'
     slack_configs:
       - channel: '#x'
