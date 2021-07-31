@@ -13,12 +13,6 @@ route:
     receiver: 'slack-instance-notifications'
 
 receivers:
-  - name: 'slack-default-notifications'
-    slack_configs:
-      - channel: '#x'
-        title: '{{ .commonAnnotations.title }}'
-        text: '{{ .commonAnnotations.description }}'
-        send_resolved: false
   - name: 'slack-apis-notifications'
     slack_configs:
       - channel: '#x'
