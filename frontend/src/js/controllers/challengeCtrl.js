@@ -876,6 +876,33 @@
             scope.sortColumn = column;
         };
 
+        vm.isMetricOrderedAscending = function(metric) {
+            let schema = vm.leaderboard[0].leaderboard__schema;
+            let metadata = schema.metadata;
+            if (metadata != null && metadata != undefined) {
+                // By default all metrics are considered higher is better
+                if (metadata[metric] == undefined) {
+                    return false;
+                }
+                return metadata[metric].order_ascending;
+            }
+            return false;
+        };
+
+        vm.getLabelDescription = function(metric) {
+            console.log("");
+            let schema = vm.leaderboard[0].leaderboard__schema;
+            let metadata = schema.metadata;
+            if (metadata != null && metadata != undefined) {
+                // By default all metrics are considered higher is better
+                if (metadata[metric] == undefined || metadata[metric].description == undefined) {
+                    return "";
+                }
+                return metadata[metric].description;
+            }
+            return "";
+        };
+
         // my submissions
         vm.isResult = false;
 
