@@ -884,13 +884,12 @@
                 if (metadata[metric] == undefined) {
                     return false;
                 }
-                return metadata[metric].order_ascending;
+                return metadata[metric].sort_ascending;
             }
             return false;
         };
 
         vm.getLabelDescription = function(metric) {
-            console.log("");
             let schema = vm.leaderboard[0].leaderboard__schema;
             let metadata = schema.metadata;
             if (metadata != null && metadata != undefined) {
