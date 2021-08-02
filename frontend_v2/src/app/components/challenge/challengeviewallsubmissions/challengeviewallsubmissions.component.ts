@@ -275,7 +275,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         if(name == SELF.filterSubmissionsQuery) {
-
           SELF.submissionCount = data['count'];
           SELF.submissions = data['results'];
           let index = 0;
