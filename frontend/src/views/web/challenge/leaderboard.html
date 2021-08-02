@@ -93,7 +93,8 @@
                             <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
                                 <a href="#"
                                     ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
-                                    <span class="w-300 fs-20">{{key}}</span>
+                                    <span class="w-300 fs-20 leaderboard-label" ng-if="challenge.isMetricOrderedAscending(key)">{{key}} (&#x2193;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
+                                    <span class="w-300 fs-20 leaderboard-label" ng-if="!challenge.isMetricOrderedAscending(key)">{{key}} (&#x2191;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
                                     <span class="fa-stack fa-1x">
                                         <i class="fa fa-sort-asc fa-stack-1x"
                                             ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-300'"></i>
