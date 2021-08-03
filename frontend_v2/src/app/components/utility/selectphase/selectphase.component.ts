@@ -17,6 +17,16 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phases: any;
 
   /**
+   * Phase Splits list
+   */
+  @Input() settingsPhaseSplits: any;  
+
+  /**
+   * Phase Splits list
+   */
+   @Input() phaseSplits: any;  
+
+  /**
    * Selected phase callback
    */
   @Input() phaseSelected: any;
@@ -86,6 +96,8 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    */
   challenge: any;
 
+  radioSelected: number;
+
   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
@@ -100,6 +112,20 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
+
+    if(this.phases) {
+      this.selectedPhase = this.phases[0];
+      this.radioSelected = this.phases[0].id;
+      this.selectPhase(this.phases[0]);
+    }
+    else if(this.settingsPhaseSplits) {
+      this.selectedPhaseSplit = this.settingsPhaseSplits[0];
+      this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], "selectBox", "settingsPhaseSplit");
+    }
+    else {
+      this.selectedPhaseSplit = this.phaseSplits[0];
+      this.selectPhaseSplit(this.phaseSplits[0], "selectBox", "phaseSplit");      
+    }
   }
 
   /**
