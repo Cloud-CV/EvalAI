@@ -130,7 +130,8 @@ services:
       - '--log.level=info'
       - '--web.telemetry-path=/statsd/metrics'
     ports:
-      - '9125:9125'
+      - '9125:9125/udp'
+      - '9125:9125/tcp'
       - '9102:9102'
   
   node_exporter:

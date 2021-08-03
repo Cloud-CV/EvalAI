@@ -36,6 +36,7 @@ handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+logger.propagate = False
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
@@ -487,6 +488,7 @@ def read_job(api_instance, job_name):
         api_response = api_instance.read_namespaced_job(job_name, namespace)
     except ApiException as e:
         logger.exception("Exception while reading Job with error {}".format(e))
+        return None
     return api_response
 
 
@@ -550,38 +552,60 @@ def update_failed_jobs_and_send_logs(
     clean_submission = False
     try:
         job_def = read_job(api_instance, job_name)
-        controller_uid = job_def.metadata.labels["controller-uid"]
-        pod_label_selector = "controller-uid=" + controller_uid
-        pods_list = core_v1_api_instance.list_namespaced_pod(
-            namespace="default",
-            label_selector=pod_label_selector,
-            timeout_seconds=10,
-        )
-        container_state_map = {}
-        for container in pods_list.items[0].status.container_statuses:
-            container_state_map[container.name] = container.state
-        for container_name, container_state in container_state_map.items():
-            if container_name in ["agent", "submission"]:
-                if container_state.terminated is not None:
-                    if container_state.terminated.reason == "Error":
-                        pod_name = pods_list.items[0].metadata.name
-                        try:
-                            pod_log_response = (
-                                core_v1_api_instance.read_namespaced_pod_log(
-                                    name=pod_name,
-                                    namespace="default",
-                                    _return_http_data_only=True,
-                                    _preload_content=False,
-                                    container=container_name,
-                                )
-                            )
-                            pod_log = pod_log_response.data.decode("utf-8")
-                            clean_submission = True
-                            submission_error = pod_log
-                        except client.rest.ApiException as e:
-                            logger.exception(
-                                "Exception while reading Job logs {}".format(e)
-                            )
+        if job_def:
+            controller_uid = job_def.metadata.labels["controller-uid"]
+            pod_label_selector = "controller-uid=" + controller_uid
+            pods_list = core_v1_api_instance.list_namespaced_pod(
+                namespace="default",
+                label_selector=pod_label_selector,
+                timeout_seconds=10,
+            )
+            # Prevents monitoring when Job created with pending pods state (not assigned to node)
+            if pods_list.items[0].status.container_statuses:
+                container_state_map = {}
+                for container in pods_list.items[0].status.container_statuses:
+                    container_state_map[container.name] = container.state
+                for (
+                    container_name,
+                    container_state,
+                ) in container_state_map.items():
+                    if container_name in ["agent", "submission"]:
+                        if container_state.terminated is not None:
+                            if container_state.terminated.reason == "Error":
+                                pod_name = pods_list.items[0].metadata.name
+                                try:
+                                    pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                                        name=pod_name,
+                                        namespace="default",
+                                        _return_http_data_only=True,
+                                        _preload_content=False,
+                                        container=container_name,
+                                    )
+                                    pod_log = pod_log_response.data.decode(
+                                        "utf-8"
+                                    )
+                                    clean_submission = True
+                                    submission_error = pod_log
+                                except client.rest.ApiException as e:
+                                    logger.exception(
+                                        "Exception while reading Job logs {}".format(
+                                            e
+                                        )
+                                    )
+            else:
+                logger.info(
+                    "Job pods in pending state, waiting for node assignment for submission {}".format(
+                        submission_pk
+                    )
+                )
+        else:
+            logger.exception(
+                "Exception while reading Job {}, does not exist.".format(
+                    job_name
+                )
+            )
+            clean_submission = True
+            submission_error = "Submission Job Failed."
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         clean_submission = True
