@@ -17,7 +17,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phases: any;
 
   /**
-   * Phase Splits list
+   * Phase Splits list for settings tab
    */
   @Input() settingsPhaseSplits: any;  
 
@@ -96,6 +96,9 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    */
   challenge: any;
 
+  /**
+   * Select default radio option if same as phase id
+   */
   radioSelected: number;
 
   /**

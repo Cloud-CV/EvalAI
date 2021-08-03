@@ -482,7 +482,6 @@ export class ChallengesubmitComponent implements OnInit {
       SELF.selectedPhase = phase;
       SELF.isPhaseSelected = true;
       SELF.isLeaderboardPublic = phase['leaderboard_public'];
-      console.log(this.isLeaderboardPublic);
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
