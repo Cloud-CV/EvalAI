@@ -25,7 +25,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from prometheus_client import pushadd_to_gateway, CollectorRegistry, Counter
+from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, increment_statsd_counter
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -41,14 +41,6 @@ handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-
-pushgateway_registry = CollectorRegistry()
-num_processed_submissions = Counter(
-    "num_processed_submissions",
-    "Counter for number of submissions processed from the queue",
-    ["submission_pk", "queue_name"],
-    registry=pushgateway_registry,
-)
 
 django.setup()
 
@@ -759,16 +751,15 @@ def load_challenge_and_return_max_submissions(q_params):
     return maximum_concurrent_submissions, challenge
 
 
-def increment_and_push_metrics_to_pushgateway(body, queue_name):
+def increment_and_push_metrics_to_statsd(queue_name):
     try:
-        submission_pk = json.loads(body)["submission_pk"]
-        num_processed_submissions.labels(submission_pk, queue_name).inc()
-        pushgateway_endpoint = os.environ.get("PUSHGATEWAY_ENDPOINT")
-        job_id = "submission_worker_{}".format(submission_pk)
-        pushadd_to_gateway(pushgateway_endpoint, job=job_id, registry=pushgateway_registry)
+        submission_metric_tags = [
+            "queue_name:%s" % queue_name,
+        ]
+        increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
     except Exception as e:
         logger.exception(
-            "{} Exception when pushing metrics to push gateway: {}".format(
+            "{} Exception when pushing metrics to statsd: {}".format(
                 SUBMISSION_LOGS_PREFIX, e
             )
         )
@@ -846,7 +837,7 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_pushgateway(message.body, queue_name)
+                        increment_and_push_metrics_to_statsd(queue_name)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -856,7 +847,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_pushgateway(message.body, queue_name)
+                    increment_and_push_metrics_to_statsd(queue_name)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -875,7 +866,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_pushgateway(message.body, queue_name)
+                    increment_and_push_metrics_to_statsd(queue_name)
         if killer.kill_now:
             break
         time.sleep(0.1)
