@@ -27,3 +27,6 @@ alerting:
   - path_prefix: '/alert_manager'
     static_configs:
     - targets: ['monitoring-staging.eval.ai']
+    basic_auth:
+      username: 'x'
+      password: 'x'
