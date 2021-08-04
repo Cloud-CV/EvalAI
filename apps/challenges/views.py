@@ -123,6 +123,7 @@ from .serializers import (
 )
 
 from .aws_utils import (
+    delete_workers,
     start_workers,
     stop_workers,
     restart_workers,
@@ -2822,11 +2823,18 @@ def manage_worker(request, challenge_pk, action):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
-    if action not in ("start", "stop", "restart"):
+    if action not in ("start", "stop", "restart", "delete"):
         response_data = {
             "error": "The action {} is invalid for worker".format(action)
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Only allow EvalAI admins to delete workers
+    if action == "delete" and not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
 
@@ -2838,6 +2846,8 @@ def manage_worker(request, challenge_pk, action):
         response = stop_workers([challenge])
     elif action == "restart":
         response = restart_workers([challenge])
+    elif action == "delete":
+        response = delete_workers([challenge])
 
     if response:
         count, failures = response["count"], response["failures"]

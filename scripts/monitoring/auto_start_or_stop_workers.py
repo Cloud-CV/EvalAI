@@ -36,8 +36,20 @@ def stop_worker(challenge_id):
     return response
 
 
-def get_all_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/present".format(
+def delete_worker(challenge_id):
+    delete_worker_endpoint = (
+        "{}/api/challenges/{}/manage_worker/delete/".format(
+            evalai_endpoint, challenge_id
+        )
+    )
+    response = requests.put(
+        delete_worker_endpoint, headers=authorization_header
+    )
+    return response
+
+
+def get_challenges():
+    all_challenge_endpoint = "{}/api/challenges/challenge/all".format(
         evalai_endpoint
     )
     response = requests.get(
@@ -46,20 +58,37 @@ def get_all_challenges():
     return response.json()
 
 
-def start_or_stop_workers_for_active_challenges(response):
+def is_unapproved_challenge(workers, approved_by_admin, created_at):
+    current_date = utc.localize(datetime.now())
+    return (
+        workers is not None
+        and not approved_by_admin
+        and (current_date - created_at).days >= 3
+    )
+
+
+def start_or_stop_workers_for_challenges(response):
     for challenge in response["results"]:
         challenge_id = challenge["id"]
         workers = challenge["workers"]
+        approved_by_admin = challenge["approved_by_admin"]
         is_docker_based = challenge["is_docker_based"]
         challenge_start_date = parser.parse(challenge["start_date"])
         challenge_end_date = parser.parse(challenge["end_date"])
+        created_at = parser.parse(challenge["created_at"])
         current_date = utc.localize(datetime.now())
 
         print(
-            "Start submission worker for challenge id {}".format(challenge_id)
+            "Start/Stop submission worker for challenge id {}".format(
+                challenge_id
+            )
         )
         if not is_docker_based:
-            if workers is None and challenge_start_date <= current_date:
+            if (
+                workers is None
+                and challenge_start_date <= current_date
+                and challenge_end_date > current_date
+            ):
                 response = start_worker(challenge_id)
                 if not response.ok:
                     print(
@@ -67,11 +96,16 @@ def start_or_stop_workers_for_active_challenges(response):
                             challenge_id
                         )
                     )
-            if workers is not None and challenge_end_date <= current_date:
-                response = stop_worker(challenge_id)
+            # Delete workers for challenges uploaded in last 3 days that are unapproved or inactive challenges
+            if (
+                workers is not None and challenge_end_date < current_date
+            ) or is_unapproved_challenge(
+                workers, approved_by_admin, created_at
+            ):
+                response = delete_worker(challenge_id)
                 if not response.ok:
                     print(
-                        "ERROR: Stop worker failed for challenge id {}!".format(
+                        "ERROR: Delete worker failed for challenge id {}!".format(
                             challenge_id
                         )
                     )
@@ -80,13 +114,13 @@ def start_or_stop_workers_for_active_challenges(response):
 
 
 def start_job():
-    response = get_all_challenges()
-    start_or_stop_workers_for_active_challenges(response)
+    response = get_challenges()
+    start_or_stop_workers_for_challenges(response)
 
     next_page = response["next"]
     while next_page is not None:
         response = execute_get_request(next_page)
-        start_or_stop_workers_for_active_challenges(response)
+        start_or_stop_workers_for_challenges(response)
         next_page = response["next"]
 
 
