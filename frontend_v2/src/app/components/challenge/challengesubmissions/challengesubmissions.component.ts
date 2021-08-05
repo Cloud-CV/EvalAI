@@ -249,7 +249,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       SELF.submissionCount = 0;
       if (SELF.challenge['id'] && phase['id']) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
-        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -265,6 +264,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        SELF.submissionCount = data['count'];
         SELF.submissions = data['results'];
         let index = 0;
         SELF.submissions.forEach((submission) => {
@@ -488,30 +488,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       );
     }
   }
-
-  /**
-   * Fetch number of submissions for a challenge phase.
-   * @param challenge  challenge id
-   * @param phase  phase id
-   */
-  fetchSubmissionCounts(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        if (data['participant_team_submission_count']) {
-          SELF.submissionCount = data['participant_team_submission_count'];
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {
-        this.logger.info('Fetched submission counts', challenge, phase);
-      }
-    );
-  }
-
+  
   /**
    * Display Edit Submission Modal.
    * @param submission  Submission being edited
