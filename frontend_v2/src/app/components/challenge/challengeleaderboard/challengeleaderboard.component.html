@@ -93,7 +93,7 @@
               </div>
                 <mat-checkbox
                   class="pull-right complete-leaderboard"
-                  *ngIf="isChallengeHost && showLeaderboardToggle"
+                  *ngIf="isChallengeHost && showLeaderboardToggle && numberOfAllEntries > 0"
                   (change)="toggleLeaderboard(getAllEntries)"
                   [(ngModel)]="getAllEntries"
                 >

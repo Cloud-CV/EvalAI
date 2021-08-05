@@ -146,6 +146,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   getAllEntries = false;
 
   /**
+   * Number of entries on complete leaderboard
+   */
+   numberOfAllEntries:number = 0;
+
+  /**
    * Current state of whether private leaderboard
    */
   showLeaderboardToggle = true;
@@ -346,8 +351,10 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     phaseSplitSelected(phaseSplit) {
       const SELF = this;
       SELF.selectedPhaseSplit = phaseSplit;
+
+      SELF.fetchNumberOfAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id']);
       
-      const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+      const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']);
       SELF.apiService.getUrl(API_PATH).subscribe(
         (data) => {
           SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
@@ -360,7 +367,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       );
 
       if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
-        if(this.getAllEntriesTextOption == 'Exclude private submissions') {
+        if(SELF.getAllEntriesTextOption == 'Exclude private submissions') {
           SELF.fetchAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id']);
         } else {
           SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
@@ -513,6 +520,24 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(phaseSplitId);
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  /**
+   * Fetch number of entries of complete leaderboard for a phase split public/private
+   * @param phaseSplitId id of the phase split
+   */
+  fetchNumberOfAllEnteriesOnPublicLeaderboard(phaseSplitId) {
+    const API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        this.numberOfAllEntries = data['results'].length;
       },
       (err) => {
         SELF.globalService.handleApiError(err);
