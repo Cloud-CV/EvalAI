@@ -42,9 +42,9 @@ input {
   text-align:center;
 }
 
-@include screen-medium {
+@media (max-width: 992px) {
   .settings-section {
-    padding: 10px 20px !important;
+    padding: 50px !important;
   }
 }
 
@@ -54,15 +54,9 @@ input {
   }
 }
 
-@include screen-small-medium {
+@media (max-width: 600px)  {
   .settings-section {
-    padding: 10px 10px !important;
-  }
-}
-
-@include screen-small {
-  .settings-section {
-    padding: 10px 5px !important;
+    padding: 25px !important;
   }
 }
 
