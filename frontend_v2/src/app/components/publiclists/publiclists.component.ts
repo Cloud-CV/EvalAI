@@ -39,11 +39,11 @@ export class PubliclistsComponent implements OnInit, AfterViewChecked {
   ngOnInit() {
     this.isAuth = this.authService.isAuth;
   }
+
   /**
    * DEV MODE:
    * For resolving change in expression value after it is checked
    */
-
   ngAfterViewChecked() {
     let isAuth = this.authService.isAuth;
     if(isAuth != this.isAuth) {
