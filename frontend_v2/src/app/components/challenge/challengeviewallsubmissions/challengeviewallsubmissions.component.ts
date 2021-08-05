@@ -247,7 +247,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.submissionCount = 0;
       if (SELF.challenge['id'] && phase['id']) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
-        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -276,6 +275,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         if(name == SELF.filterSubmissionsQuery) {
+          SELF.submissionCount = data['count'];
           SELF.submissions = data['results'];
           let index = 0;
           SELF.submissions.forEach((submission) => {
@@ -532,29 +532,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
-  }
-
-  /**
-   * Fetch number of submissions for a challenge phase.
-   * @param challenge  challenge id
-   * @param phase  phase id
-   */
-  fetchSubmissionCounts(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        if (data['participant_team_submission_count']) {
-          SELF.submissionCount = data['participant_team_submission_count'];
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {
-        this.logger.info('Fetched submission counts', challenge, phase);
-      }
-    );
   }
 
   /**
