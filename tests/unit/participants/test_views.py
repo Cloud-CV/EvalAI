@@ -797,6 +797,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "team_url": self.challenge_host_team.team_url,
                         },
                         "published": self.challenge1.published,
+                        "submission_time_limit": self.challenge1.submission_time_limit,
                         "is_registration_open": self.challenge1.is_registration_open,
                         "enable_forum": self.challenge1.enable_forum,
                         "leaderboard_description": self.challenge1.leaderboard_description,
@@ -814,6 +815,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "cli_version": self.challenge1.cli_version,
                         "remote_evaluation": self.challenge1.remote_evaluation,
                         "workers": self.challenge1.workers,
+                        "created_at": "{0}{1}".format(
+                            self.challenge1.created_at.isoformat(), "Z"
+                        ).replace("+00:00", ""),
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -864,6 +868,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "team_url": self.challenge_host_team.team_url,
                 },
                 "published": self.challenge1.published,
+                "submission_time_limit": self.challenge1.submission_time_limit,
                 "is_registration_open": self.challenge1.is_registration_open,
                 "enable_forum": self.challenge1.enable_forum,
                 "leaderboard_description": self.challenge1.leaderboard_description,
@@ -881,6 +886,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "cli_version": self.challenge1.cli_version,
                 "remote_evaluation": self.challenge1.remote_evaluation,
                 "workers": self.challenge1.workers,
+                "created_at": "{0}{1}".format(
+                    self.challenge1.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
 

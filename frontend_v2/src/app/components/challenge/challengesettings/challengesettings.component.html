@@ -9,18 +9,24 @@
     <!-- Edit challenge Detail -->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-light fs-18">Edit challenge details:</span>
+        <span class="fw-light fs-18">Edit challenge details</span>
       </div>
       <br />
       <div class="col-lg-7 col-md-7 col-sm-9 col-xs-9 challenge-detail">
         <div class="col-lg-5 col-md-12 col-sm-7 col-xs-12">
           <div class="image-container">
-            <a class="pointer" *ngIf="isChallengeHost" (click)="editChallengeImage()">
               <img *ngIf="challenge['image'] != null" [src]="challenge['image']" width="100%" />
               <img *ngIf="challenge['image'] == null" src="assets/images/404.png" width="80%" />
-            </a>
+          </div>
+            <div
+            class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+            (click)="editChallengeImage()"
+            >
+            <i class="fa fa-file" aria-hidden="true"> </i> 
+            <span> Upload New Image</span>
           </div>
         </div>
+        <div class="col-lg-6 col-md-12 col-sm-7 col-xs-12">
         <span class="fs-20 fw-semibold challenge-title">
           {{ challenge['title'] }}
         </span>
@@ -37,6 +43,16 @@
               <strong class="text-light-black">Challenge Overview </strong>
             </span>
             <a class="pointer fs-16" (click)="editChallengeOverview()">
+              <i class="fa fa-pencil" aria-hidden="true"> </i>
+            </a>
+          </div>
+        </div>        
+        <div class="ev-action">
+          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5">
+            <span class="fs-16 fw-light">
+              <strong class="text-light-black">Terms and Conditions </strong>
+            </span>
+            <a class="pointer fs-16" (click)="editTermsAndConditions()">
               <i class="fa fa-pencil" aria-hidden="true"> </i>
             </a>
           </div>
@@ -80,25 +96,81 @@
         </mat-checkbox>
       </div>
     </div>
+  </div>
     
     <!-- Phase Edit Section-->
     <div class="row settings-section">
       <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-light fs-18">Edit phase details:</span>
+        <span class="fw-light fs-18">Edit phase details</span>
       </div>
       <br />
       <div class="ev-action">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
-          <app-selectphase
-            [phases]="phases"
-            [phaseSelectionListType]="phaseSelectionListType"
-            [phaseSelectionType]="phaseSelectionType"
-            [phaseSelected]="phaseSelected()"
-            #phaseselect
-          ></app-selectphase>
-         </div>
-      </div>
+          <div class="row margin-bottom-cancel phase-card">
+            <app-selectphase
+              [phases]="filteredPhases"
+              [phaseSelectionListType]="phaseSelectionListType"
+              [phaseSelectionType]="phaseSelectionType"
+              [phaseSelected]="phaseSelected()"
+              #phaseselect
+            ></app-selectphase>
+          </div>
+
+        <div class="row margin-bottom-cancel phase-card " *ngIf="selectedPhase">
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Phase Details </strong>
+          </span>
+          <a class="pointer fs-16" (click)="editPhaseDetails()">
+            <i class="fa fa-pencil" aria-hidden="true"> </i>
+          </a>&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Is Public </strong>
+          </span>
+          <a class="pointer fs-20" (click)="togglePhaseVisibility()">
+            <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i>
+          </a>&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="fs-16 fw-light">
+            <strong class="text-light-black">Submission Visibility </strong>
+          </span>
+          <a class="pointer fs-20" (click)="toggleSubmissionVisibility()">
+            <i class="{{ submissionVisibility.icon }}" aria-hidden="true"> </i>
+          </a>
+        </div>
+       </div>
     </div>
+  </div>
+
+    <!-- Leaderboard Edit Section-->
+    <div class="row settings-section">
+      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
+        <span class="fw-light fs-18">Edit leaderboard details</span>
+      </div>
+      <br />
+      <div class="ev-action">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
+          <div class="row margin-bottom-cancel phase-card">
+          <app-selectphase
+            [phases]="filteredPhaseSplits"
+            [phaseSelectionType]="phaseLeaderboardSelectionType"
+            [phaseSelectionListType]="phaseLeaderboardSelectionListType"
+            [phaseSplitSelected]="phaseSplitSelected()"
+            #phasesplitselect
+          >
+          </app-selectphase>
+          </div>
+        <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">
+          <div class="col s12">
+            <span class="fs-16 fw-light">
+              <strong class="text-light-black">Leaderboard Visibility </strong>
+            </span>
+            <a class="pointer fs-20" (click)="toggleLeaderboardVisibility()">
+              <i class="{{ leaderboardVisibility.icon }}" aria-hidden="true"> </i>
+            </a>&nbsp;&nbsp;&nbsp;&nbsp;
+          </div>
+        </div>
+       </div>
+    </div>
+  </div>
           
     <!-- Evaluations and Annotations -->
     <div class="row settings-section">

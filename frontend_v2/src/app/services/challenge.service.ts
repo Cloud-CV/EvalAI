@@ -35,7 +35,10 @@ export class ChallengeService {
   isChallengeHost = this.challengeHostSource.asObservable();
   private challengePublishSource = new BehaviorSubject(this.defaultPublishChallenge);
   currentChallengePublishState = this.challengePublishSource.asObservable();
-
+  private phaseSelected = new BehaviorSubject(false);
+  isPhaseSelected = this.phaseSelected.asObservable();
+  private phaseSplitSelected = new BehaviorSubject(false);
+  isPhaseSplitSelected = this.phaseSplitSelected.asObservable();
   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
@@ -99,6 +102,14 @@ export class ChallengeService {
   }
 
   /**
+   * Update the status for selectPhase component after details are updated 
+   * @param selectedPhase  new updated phase details status
+   */
+  changePhaseSelected(selectedPhase: boolean) {
+    this.phaseSelected.next(selectedPhase);
+  }
+
+  /**
    * Update user's participation status for current Challenge.
    * @param participationStatus  new participation status.
    */
@@ -112,6 +123,14 @@ export class ChallengeService {
    */
   changeCurrentPhaseSplit(phaseSplits: any) {
     this.phaseSplitSource.next(phaseSplits);
+  }
+
+  /**
+   * Update the status for selectPhase component after details are updated 
+   * @param selectedPhase  new updated phase details status
+   */
+   changePhaseSplitSelected(selectedPhaseSplit: boolean) {
+    this.phaseSplitSelected.next(selectedPhaseSplit);
   }
 
   /**
@@ -291,7 +310,7 @@ export class ChallengeService {
    * Fetch Phase Splits
    * @param id  id of the challenge
    */
-  private fetchPhaseSplits(id) {
+  fetchPhaseSplits(id) {
     const API_PATH = this.endpointsService.challengePhaseSplitURL(id);
     const SELF = this;
     this.apiService.getUrl(API_PATH).subscribe(

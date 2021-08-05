@@ -37,6 +37,22 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   phases = [];
 
   /**
+   * Phase split list
+   */
+  phaseSplits = [];
+
+  /**
+   * Challenge phases filtered
+   */
+  filteredPhases = [];
+
+   /**
+    * Phase splits filtered
+    */
+  filteredPhaseSplits = [];
+ 
+
+  /**
    * Phase selection type (radio button or select box)
    */
   phaseSelectionType = 'selectBox';
@@ -50,6 +66,21 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Currently selected phase
    */
   selectedPhase: any = null;
+
+  /**
+   * Phase selection type (radio button or select box)
+   */
+  phaseLeaderboardSelectionType = 'selectBox';
+
+   /**
+    * Select box list type
+    */
+  phaseLeaderboardSelectionListType = 'settingsPhaseSplit';
+
+  /**
+   * Currently selected phase split
+   */
+  selectedPhaseSplit: any = null;
   
   /**
    * store worker logs
@@ -90,6 +121,52 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Email error message
    */
   message: string;
+  
+  /**
+   * If the submission is public
+   */
+  isSubmissionPublic : boolean = false;
+
+  /**
+   * If the phase is public
+   */
+  isPhasePublic : boolean = false;
+
+  /**
+   * If leaderboard is public
+   */
+  isLeaderboardPublic : boolean = false;
+
+  /**
+   * If leaderboard of phase split is public
+   * 1 -> private
+   * 3 -> public
+   */
+  isPhaseSplitLeaderboardPublic: number = 1;
+
+  /**
+   * phase visibility state and it's icon
+   */
+  phaseVisibility = {
+    state: 'Private',
+    icon: 'fa fa- text-darken-1',
+  };
+
+  /**
+   * submission visibility state and it's icon
+   */
+  submissionVisibility = {
+    state: 'Private',
+    icon: 'fa fa-toggle-off grey-text text-darken-1',
+  };  
+
+  /**
+   * phase visibility state and it's icon
+   */
+  leaderboardVisibility = {
+    state: 'Private',
+    icon: 'fa fa-toggle-off grey-text text-darken-1',
+  };
 
   /**
    * publish challenge state and it's icon
@@ -134,6 +211,15 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
     this.challengeService.currentPhases.subscribe((phases) => {
       this.phases = phases;
+      for (let i = 0; i < this.phases.length; i++) {
+        if (this.phases[i].is_public === false) {
+          this.phases[i].showPrivate = true;
+        }
+        else {
+          this.phases[i].showPrivate = false;
+        }
+      }
+      this.filteredPhases = this.phases;
     });  
 
     this.challengeService.isChallengeHost.subscribe((status) => {
@@ -143,6 +229,19 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     this.challengeService.currentChallengePublishState.subscribe((publishChallenge) => {
       this.publishChallenge.state = publishChallenge.state;
       this.publishChallenge.icon = publishChallenge.icon;
+    });
+
+    this.challengeService.currentPhaseSplit.subscribe((phaseSplits) => {
+      this.phaseSplits = phaseSplits;
+      for (let i = 0; i < this.phaseSplits.length; i++) {
+        if (this.phaseSplits[i].visibility !== 3) {
+          this.phaseSplits[i].showPrivate = true;
+        }
+        else {
+          this.phaseSplits[i].showPrivate = false;
+        }
+      }
+      this.filteredPhaseSplits = this.phaseSplits;
     });
 
     if (!this.challenge["remote_evaluation"]) {
@@ -184,55 +283,260 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * This is called when a phase split is selected (from child components)
+   */
+  phaseSplitSelected () {
+    const SELF = this;
+    return (phaseSplit) => {
+      SELF.selectedPhaseSplit = phaseSplit;
+      SELF.isPhaseSplitLeaderboardPublic = SELF.selectedPhaseSplit['visibility'];
+      if(SELF.isPhaseSplitLeaderboardPublic == 3) {
+        SELF.leaderboardVisibility.state = 'Public';
+        SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+      }
+      else {
+        SELF.leaderboardVisibility.state = 'Private';
+        SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
+      }
+    }
+  }
+
+  /**
+   * Leadeboard Visibility toggle function
+   */
+  toggleLeaderboardVisibility() {
+    const SELF = this;
+    let toggleLeaderboardVisibilityState, visibility;
+    if (SELF.leaderboardVisibility.state === 'Public') {
+      toggleLeaderboardVisibilityState = 'private';
+      visibility = 1;
+      SELF.leaderboardVisibility.state = 'Private';
+      SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
+    } else {
+      toggleLeaderboardVisibilityState = 'public';
+      visibility = 3;
+      SELF.leaderboardVisibility.state = 'Public';
+      SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+    }
+      const BODY: FormData = new FormData();
+      BODY.append("visibility", visibility);
+      SELF.apiService
+      .patchFileUrl(
+        SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']),
+        BODY
+      )
+        .subscribe(
+          (data) => {
+            SELF.selectedPhaseSplit['visibility'] = data.visibility;
+            SELF.challengeService.changePhaseSplitSelected(true);
+            if (visibility == 3) {
+              SELF.selectedPhaseSplit['showPrivate'] = false;
+              SELF.leaderboardVisibility.state = 'Public';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+            } else {
+              SELF.selectedPhaseSplit['showPrivate'] = true;
+              SELF.leaderboardVisibility.state = 'Private';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+            }
+            SELF.globalService.showToast(
+              'success',
+              'The phase split was successfully made ' + toggleLeaderboardVisibilityState,
+              5
+            );
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+            if (visibility == 3) {
+              SELF.leaderboardVisibility.state = 'Private';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+            } else {
+              SELF.leaderboardVisibility.state = 'Public';
+              SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+            }
+          },
+          () => this.logger.info('LEADERBOARD-VISIBILITY-UPDATE-FINISHED')
+        );
+    }
+
+  /**
    * Called when a phase is selected (from child component)
    */
   phaseSelected() {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
-
-      SELF.apiCall = (params) => {
-        const FORM_DATA: FormData = new FormData();
-        for (const key in params) {
-          if (params[key]) {
-            FORM_DATA.append(key, params[key]);
-          }
-        }
-        SELF.apiService
-          .patchFileUrl(
-            SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.selectedPhase['id']),
-            FORM_DATA
-          )
-          .subscribe(
-            (data) => {
-              SELF.selectedPhase = data;
-              SELF.challengeService.fetchPhases(SELF.challenge['id']);
-              SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
-            },
-            (err) => {
-              SELF.globalService.showToast('error', err);
-            },
-            () => {this.logger.info('PHASE-UPDATE-FINISHED')}
-          );
-      };
-
-      const PARAMS = {
-        title: 'Edit Challenge Phase Details',
-        name: SELF.selectedPhase['name'],
-        label: 'description',
-        description: SELF.selectedPhase['description'],
-        startDate: SELF.selectedPhase['start_date'],
-        endDate: SELF.selectedPhase['end_date'],
-        maxSubmissionsPerDay: SELF.selectedPhase['max_submissions_per_day'],
-        maxSubmissionsPerMonth: SELF.selectedPhase['max_submissions_per_month'],
-        maxSubmissions: SELF.selectedPhase['max_submissions'],
-        confirm: 'Submit',
-        deny: 'Cancel',
-        confirmCallback: SELF.apiCall,
-      };
-      SELF.globalService.showEditPhaseModal(PARAMS);
+      SELF.isPhasePublic = SELF.selectedPhase['is_public'];
+      SELF.isSubmissionPublic = SELF.selectedPhase['is_submission_public'];
+      SELF.isLeaderboardPublic = SELF.selectedPhase['leaderboard_public'];
+      if (SELF.isPhasePublic) {
+        SELF.phaseVisibility.state = 'Public';
+        SELF.phaseVisibility.icon = 'fa fa-toggle-on green-text';
+      }
+      else {
+        SELF.phaseVisibility.state = 'Private';
+        SELF.phaseVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+      }
+      if (SELF.isSubmissionPublic) {
+        SELF.submissionVisibility.state = 'Public';
+        SELF.submissionVisibility.icon = 'fa fa-toggle-on green-text';
+      }
+      else {
+        SELF.submissionVisibility.state = 'Private';
+        SELF.submissionVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+      }
     };
   } 
+
+  editPhaseDetails() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      for (const key in params) {
+        if (params[key]) {
+          FORM_DATA.append(key, params[key]);
+        }
+      }
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.selectedPhase['id']),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            for (var attrname in data) { 
+              SELF.selectedPhase[attrname] = data[attrname]; 
+            }
+            SELF.globalService.showToast('success', 'The challenge phase details are successfully updated!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => {this.logger.info('PHASE-UPDATE-FINISHED')}
+        );
+    };
+
+    const PARAMS = {
+      title: 'Edit Challenge Phase Details',
+      name: SELF.selectedPhase['name'],
+      label: 'description',
+      description: SELF.selectedPhase['description'],
+      startDate: SELF.selectedPhase['start_date'],
+      endDate: SELF.selectedPhase['end_date'],
+      maxSubmissionsPerDay: SELF.selectedPhase['max_submissions_per_day'],
+      maxSubmissionsPerMonth: SELF.selectedPhase['max_submissions_per_month'],
+      maxSubmissions: SELF.selectedPhase['max_submissions'],
+      maxConcurrentSubmissionsAllowed: SELF.selectedPhase['max_concurrent_submissions_allowed'],
+      allowedSubmissionFileTypes: SELF.selectedPhase['allowed_submission_file_types'], 
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showEditPhaseModal(PARAMS);
+}
+
+  /**
+   * Phase Visibility toggle function
+   */
+   togglePhaseVisibility() {
+    const SELF = this;
+    let togglePhaseVisibilityState, isPublic;
+    if (SELF.phaseVisibility.state === 'Public') {
+      togglePhaseVisibilityState = 'private';
+      isPublic = false;
+      SELF.phaseVisibility.state = 'Private';
+      SELF.phaseVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+    } else {
+      togglePhaseVisibilityState = 'public';
+      isPublic = true;
+      SELF.phaseVisibility.state = 'Public';
+      SELF.phaseVisibility.icon = 'fa fa-toggle-on green-text';
+    }
+      const BODY: FormData = new FormData();
+      BODY.append("is_public", isPublic);
+      SELF.apiService
+      .patchFileUrl(
+        SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhase['challenge'], SELF.selectedPhase['id']),
+        BODY
+      )
+        .subscribe(
+          (data) => {
+            SELF.selectedPhase['is_public'] = data.is_public;
+            SELF.selectedPhase['showPrivate'] = !data.is_public;
+            SELF.challengeService.changePhaseSelected(true);
+            SELF.globalService.showToast(
+              'success',
+              'The phase was successfully made ' + togglePhaseVisibilityState,
+              5
+            );
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+            if (isPublic) {
+              SELF.phaseVisibility.state = 'Private';
+              SELF.phaseVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+            } else {
+              SELF.phaseVisibility.state = 'Public';
+              SELF.phaseVisibility.icon = 'fa fa-toggle-on green-text';
+            }
+          },
+          () => this.logger.info('PHASE-VISIBILITY-UPDATE-FINISHED')
+        );
+  }
+
+  /**
+   * Submission Visibility toggle function
+   */
+   toggleSubmissionVisibility() {
+    const SELF = this;
+    if(SELF.isLeaderboardPublic == true) {
+      let toggleSubmissionVisibilityState, isSubmissionPublic;
+      if (SELF.submissionVisibility.state === 'Public') {
+        toggleSubmissionVisibilityState = 'private';
+        isSubmissionPublic = false;
+        SELF.submissionVisibility.state = 'Private';
+        SELF.submissionVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+      } else {
+        toggleSubmissionVisibilityState = 'public';
+        isSubmissionPublic = true;
+        SELF.submissionVisibility.state = 'Public';
+        SELF.submissionVisibility.icon = 'fa fa-toggle-on green-text';
+      }
+        const BODY: FormData = new FormData();
+        BODY.append("is_submission_public", isSubmissionPublic);
+        SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhase['challenge'], SELF.selectedPhase['id']),
+          BODY
+        )
+          .subscribe(
+            (data) => {
+              SELF.selectedPhase['is_submission_public'] = data.is_submission_public;
+              SELF.globalService.showToast(
+                'success',
+                'The submissions were successfully made ' + toggleSubmissionVisibilityState,
+                5
+              );
+            },
+            (err) => {
+              SELF.globalService.handleApiError(err, true);
+              SELF.globalService.showToast('error', err);
+              if (isSubmissionPublic) {
+                SELF.submissionVisibility.state = 'Private';
+                SELF.submissionVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+              } else {
+                SELF.submissionVisibility.state = 'Public';
+                SELF.submissionVisibility.icon = 'fa fa-toggle-on green-text';
+              }
+            },
+            () => this.logger.info('SUBMISSION-VISIBILITY-UPDATE-FINISHED')
+          );
+    }
+    else {
+      SELF.globalService.showToast('error', "Leaderboard is private, please make the leaderbaord public");
+    }
+  }
 
   /**
    * Remove banned email chip
@@ -376,6 +680,45 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     };
     SELF.globalService.showModal(PARAMS);
   }
+
+  /**
+   * Edit terms and conditions of the challenge
+   */
+  editTermsAndConditions() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.terms_and_conditions = data.terms_and_conditions;
+            this.updateView();
+            SELF.globalService.showToast('success', 'The terms and conditions are successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-TERMS-AND-CONDITIONS-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Terms And Conditions',
+      label: 'terms_and_conditions',
+      isEditorRequired: true,
+      editorContent: this.challenge.terms_and_conditions,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
 
   /**
    * Delete challenge
@@ -673,20 +1016,22 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
   // Get the logs from worker if submissions are failing.
   fetchWorkerLogs() {
-    const API_PATH = this.endpointsService.getLogsURL(this.challenge['id']);
-    const SELF = this;
-    SELF.apiService.getUrl(API_PATH, true, false).subscribe(
-      (data) => {
-        SELF.workerLogs = [];
-        for (let i = 0; i < data.logs.length; i++) {
-          SELF.workerLogs.push(data.logs[i]);
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {}
-    );
+    if(this.challenge['id']) {
+      const API_PATH = this.endpointsService.getLogsURL(this.challenge['id']);
+      const SELF = this;
+      SELF.apiService.getUrl(API_PATH, true, false).subscribe(
+        (data) => {
+          SELF.workerLogs = [];
+          for (let i = 0; i < data.logs.length; i++) {
+            SELF.workerLogs.push(data.logs[i]);
+          }
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+    }
   }
 
   // Get the logs from worker if submissions are failing at an interval of 5sec.
