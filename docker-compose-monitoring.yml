@@ -41,7 +41,7 @@ services:
       - ./monitoring/alertmanager/data:/data
       - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
     command:
-      - '--config.file=/prometheus/alertmanager.yml'
+      - '--config.file=/prometheus/alert_manager.yml'
       - '--storage.path=/data'
       - '--web.external-url=http://localhost:9093/alert_manager'
     ports:
