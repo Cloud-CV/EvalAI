@@ -254,6 +254,9 @@ def calculate_distinct_sorted_leaderboard_data(
 
     # Get the default order by key to rank the entries on the leaderboard
     default_order_by = None
+    is_leaderboard_order_descending = (
+        challenge_phase_split.is_leaderboard_order_descending
+    )
     try:
         default_order_by = leaderboard.schema["default_order_by"]
     except KeyError:
@@ -270,6 +273,19 @@ def calculate_distinct_sorted_leaderboard_data(
             "error": "Sorry, labels key is missing in leaderboard schema!"
         }
         return response_data, status.HTTP_400_BAD_REQUEST
+
+    leaderboard_schema = leaderboard.schema
+    if (
+        leaderboard_schema.get("metadata") is not None
+        and leaderboard_schema.get("metadata").get(default_order_by)
+        is not None
+    ):
+        is_leaderboard_order_descending = (
+            leaderboard_schema["metadata"][default_order_by].get(
+                "sort_ascending"
+            )
+            is False
+        )
 
     # Exclude the submissions done by members of the host team
     # while populating leaderboard
@@ -408,9 +424,7 @@ def calculate_distinct_sorted_leaderboard_data(
                 float(k["filtering_score"]),
                 float(-k["filtering_error"]),
             ),
-            reverse=True
-            if challenge_phase_split.is_leaderboard_order_descending
-            else False,
+            reverse=True if is_leaderboard_order_descending else False,
         )
     distinct_sorted_leaderboard_data = []
     team_list = []

@@ -40,7 +40,7 @@
                 </span>
             </div>
         </div>
-        <div class="row" ng-if="challenge.isMultiMetricLeaderboardEnabled">
+        <div class="row" ng-if="challenge.isMultiMetricLeaderboardEnabled[challenge.phaseSplitId]">
             <div class="col xs12 s6">
                 <span>
                     <md-select ng-model="challenge.orderLeaderboardBy" placeholder="Order by metric" class="rm-margin">

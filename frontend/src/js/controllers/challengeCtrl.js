@@ -24,7 +24,7 @@
         vm.projectUrl = "";
         vm.publicationUrl = "";
         vm.isPublicSubmission = null;
-        vm.isMultiMetricLeaderboardEnabled = false;
+        vm.isMultiMetricLeaderboardEnabled = {};
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -316,7 +316,6 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
-                vm.isMultiMetricLeaderboardEnabled = details.is_multi_metric_leaderboard;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
@@ -833,6 +832,7 @@
                         vm.phaseSplits[i].showPrivate = true;
                         vm.showPrivateIds.push(vm.phaseSplits[i].id);
                     }
+                    vm.isMultiMetricLeaderboardEnabled[vm.phaseSplits[i].id] = vm.phaseSplits[i].is_multi_metric_leaderboard;
                     vm.phaseSplitLeaderboardSchema[vm.phaseSplits[i].id] = vm.phaseSplits[i].leaderboard_schema;
                 }
                 utilities.hideLoader();

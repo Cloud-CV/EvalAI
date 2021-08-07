@@ -158,10 +158,10 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
             "leaderboard_schema",
+            "is_multi_metric_leaderboard",
         )
 
     def get_leaderboard_schema(self, obj):
-        print(obj.leaderboard.schema)
         return obj.leaderboard.schema
 
     def get_dataset_split_name(self, obj):
@@ -268,7 +268,6 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
-            "is_multi_metric_leaderboard",
         )
 
 
