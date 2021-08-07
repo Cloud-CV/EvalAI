@@ -103,7 +103,7 @@ p {
     width: 70%;
     margin-left: 15%;
     padding-top: 120px;
-    padding-bottom: 100px;
+    padding-bottom: 50px;
     span {
       color: #000;
       font-weight: $fw-light;
@@ -113,11 +113,22 @@ p {
   }
 
   .testimonial-author {
-    color: #000;
-    font-weight: $fw-regular;
     padding-bottom: 70px;
-    text-align: right;
-    padding-right: 15vw;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+      .logo {
+        height: 100px;
+        width: 100px;
+      }
+      .testimonial-details {
+        margin-left: 15px;
+      }
+      .name {
+        margin: 0;
+        padding-bottom: 5px;
+      }
   }
 
   .testimonial-arrow-left {

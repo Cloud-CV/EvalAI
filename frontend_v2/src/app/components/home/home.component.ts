@@ -38,9 +38,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   * Sample testimonials till the API comes up
   */
   testimonials = [
-    { text: '1-' + this.ipsum, author: 'Lorem' },
-    { text: '2-' + this.ipsum, author: 'Octopus' },
-    { text: '3-' + this.ipsum, author: 'Penguin' },
+    { text: '1-' + this.ipsum, author: 'Lorem', org: 'Georgia Tech', image:'' },
+    { text: '2-' + this.ipsum, author: 'Octopus', org: 'Google', image:'' },
+    { text: '3-' + this.ipsum, author: 'Penguin', org: 'Facebook', image:'' },
   ];
 
   /**
@@ -52,6 +52,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   * Selected testimonial author
   */
   testimonialauthor = this.testimonials[this.selected]['author'];
+
+  /**
+  * Selected testimonial orgName
+  */
+  testimonialorg = this.testimonials[this.selected]['org'];
 
   /**
    * Subscribe Form
@@ -180,6 +185,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const a = this.document.getElementsByClassName('testimonial-body')[0];
     const b = this.document.getElementsByClassName('testimonial-author')[0];
     const c = this.document.getElementsByClassName('testimonial-quotes')[0];
+    const d = this.document.getElementsByClassName('testimonial-org')[0];
     if (direction === 'left') {
       this.testimonialLeft();
     } else {
@@ -189,6 +195,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.disappearAppear(a, this);
     this.disappearAppear(b, this);
     this.disappearAppear(c, this);
+    this.disappearAppear(d, this);
   }
 
   /**
@@ -199,6 +206,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(function () {
       scope.testimonialbody = scope.testimonials[scope.selected]['text'];
       scope.testimonialauthor = scope.testimonials[scope.selected]['author'];
+      scope.testimonialorg = scope.testimonials[scope.selected]['org'];
       element.style.marginLeft = '15%';
     }, 1000);
   };

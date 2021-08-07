@@ -429,6 +429,7 @@
         </div>
       </div>
     </section>
+    <!-- Testimonials Section --> 
     <section class="ev-container testimonial-wrapper text-med-black ev-super-light-bg">
       <div class="grad-container text-med-black">
         <div class="row">
@@ -439,7 +440,15 @@
           <div class="testimonial-body">
             <span class="fs-24">{{ testimonialbody }}</span>
           </div>
-          <div class="testimonial-author fs-20">- {{ testimonialauthor }}</div>
+        <div class="row">
+          <div class="testimonial-author fs-20">
+            <img src="../../../assets/images/profile.png" class="logo"/>
+            <div class="testimonial-details">
+              <h5 class="name fs-20">{{ testimonialauthor}}</h5>
+              <span class="orgname fs-18">{{ testimonialorg }}</span>
+            </div>
+          </div>
+        </div>
           <img src="assets/images/testimonials/arrow.png" (click)="testimonialNavigate()" class="testimonial-arrow-left" />
           <img
             src="assets/images/testimonials/arrow.png"
