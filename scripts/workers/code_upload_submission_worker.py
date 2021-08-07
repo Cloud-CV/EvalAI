@@ -584,6 +584,7 @@ def update_failed_jobs_and_send_logs(
                                     pod_log = pod_log_response.data.decode(
                                         "utf-8"
                                     )
+                                    pod_log = pod_log[-1000:]
                                     clean_submission = True
                                     submission_error = pod_log
                                 except client.rest.ApiException as e:
