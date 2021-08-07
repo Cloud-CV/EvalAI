@@ -50,6 +50,7 @@ from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
+    get_participant_model,
 )
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
@@ -2828,15 +2829,7 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             request.user, challenge_pk
         )
 
-        try:
-            participant_team = ParticipantTeam.objects.get(
-                pk=participant_team_pk
-            )
-        except ParticipantTeam.DoesNotExist:
-            response_data = {
-                "error": "You haven't participated in the challenge"
-            }
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        participant_team = get_participant_model(participant_team_pk)
 
         try:
             submission = Submission.objects.get(
@@ -2845,7 +2838,7 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             )
         except Submission.DoesNotExist:
             response_data = {"error": "Submission does not exist"}
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         serializer = SubmissionSerializer(
             submission,
