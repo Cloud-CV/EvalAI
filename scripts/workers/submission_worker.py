@@ -348,6 +348,14 @@ def extract_submission_data(submission_id):
         # for message corresponding to which submission entry
         # does not exist
         return None
+    # Ignore submissions with status cancelled
+    if submission.status == Submission.CANCELLED:
+        logger.info(
+            "{} Submission {} was cancelled by the user".format(
+                SUBMISSION_LOGS_PREFIX, submission_id
+            )
+        )
+        return None
 
     if submission.challenge_phase.challenge.is_static_dataset_code_upload:
         input_file = submission.submission_input_file

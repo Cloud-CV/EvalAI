@@ -2,8 +2,8 @@
     <div class="row">
         <div class="col s12 m12">
             <div class="update-submission-visibility-card">
-                <form name="updateSubmissionVisibilityForm" ng-submit="challenge.changeSubmissionVisibility(challenge.submissionId, true)">
-                    <div class="pass-title">Are you sure you want to override your current public submission?</div>
+                <form name="cancelSubmissionForm" ng-submit="challenge.cancelSubmission(challenge.submissionId)">
+                    <div class="pass-title">Are you sure you want to cancel submission?</div>
 
                     <ul class="inline-list pointer">
                         <li><a class="dark-link" type="button" ng-click="challenge.hideDialog()"><strong>Cancel </strong></a></li>

@@ -70,6 +70,7 @@
                             <th class="fs-18 w-300" data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline
                             </th>
                             <th class="fs-18 w-300">Edit</th>
+                            <th class="fs-18 w-300">Cancel</th>
                         </thead>
                         <tbody>
                             <tr ng-repeat="key in challenge.submissionResult.results" class="result-val fs-16 w-300">
@@ -133,6 +134,8 @@
                                 </td>
                                 <td><a class="pointer" ng-click="challenge.showMdDialog($event, key.id)"><i
                                             class="fa fa-pencil" aria-hidden="true"></i></a></td>
+                                <td><a class="times" ng-click="challenge.showCancelSubmissionDialog(key.id, key.status)"><i
+                                    class="fa fa-times" aria-hidden="true"></i></a></td>
                             </tr>
                         </tbody>
                     </table>
