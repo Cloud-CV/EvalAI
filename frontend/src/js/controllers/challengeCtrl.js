@@ -2030,7 +2030,44 @@
             }
         };
 
-        vm.hideVisibilityDialog = function() {
+        vm.cancelSubmission = function(submissionId) {
+            parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "status": "cancelled",
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if (status === 200) {
+                        $mdDialog.hide();
+                        $rootScope.notify("success", "Submission cancelled successfully!");
+                    }
+                },
+                onError: function(response) {
+                    $mdDialog.hide();
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.showCancelSubmissionDialog = function(submissionId, status) {
+            if (status != "submitted") {
+                $rootScope.notify("error", "Only unproccessed submissions can be cancelled");
+                return;
+            }
+            vm.submissionId = submissionId;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                templateUrl: 'dist/views/web/challenge/cancel-submission.html'
+            });
+        };
+
+        vm.hideDialog = function() {
             $mdDialog.hide();
         };
 
