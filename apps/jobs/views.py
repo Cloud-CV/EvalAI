@@ -2837,7 +2837,9 @@ def update_submission_meta(request, challenge_pk, submission_pk):
                 participant_team=participant_team,
             )
         except Submission.DoesNotExist:
-            response_data = {"error": "Submission does not exist"}
+            response_data = {
+                "error": "Submission {} does not exist".format(submission_pk)
+            }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         serializer = SubmissionSerializer(
