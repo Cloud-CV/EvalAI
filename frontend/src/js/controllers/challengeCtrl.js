@@ -87,6 +87,7 @@
         vm.refreshJWT = utilities.getData('refreshJWT');
 
         vm.subErrors = {};
+        vm.currentHighlightedLeaderboardEntry = null;
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
@@ -204,16 +205,18 @@
             $interval.cancel(vm.logs_poller);
         };
 
-         // scroll to the specific entry of the leaderboard
-        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
-            var newHash = elementId.toString();
-            if ($location.hash() !== newHash) {
-                $location.hash(elementId);
-            } else {
-                $anchorScroll();
+         // highlight the specific entry of the leaderboard
+        vm.highlightSpecificLeaderboardEntry = function (key) {
+            key = '#' + key;
+            // Remove highlight from previous clicked entry
+            if (vm.currentHighlightedLeaderboardEntry != null) {
+                let prevEntry = angular.element(vm.currentHighlightedLeaderboardEntry)[0];
+                prevEntry.setAttribute("class", "");
             }
+            let entry = angular.element(key)[0];
+            entry.setAttribute("class", "highlightLeaderboard");
+            vm.currentHighlightedLeaderboardEntry = key;
             $scope.isHighlight = false;
-            $anchorScroll.yOffset = 90;
         };
 
         // get names of the team that has participated in the current challenge
@@ -871,6 +874,32 @@
                 scope.columnIndexSort = index;
             }
             scope.sortColumn = column;
+        };
+
+        vm.isMetricOrderedAscending = function(metric) {
+            let schema = vm.leaderboard[0].leaderboard__schema;
+            let metadata = schema.metadata;
+            if (metadata != null && metadata != undefined) {
+                // By default all metrics are considered higher is better
+                if (metadata[metric] == undefined) {
+                    return false;
+                }
+                return metadata[metric].sort_ascending;
+            }
+            return false;
+        };
+
+        vm.getLabelDescription = function(metric) {
+            let schema = vm.leaderboard[0].leaderboard__schema;
+            let metadata = schema.metadata;
+            if (metadata != null && metadata != undefined) {
+                // By default all metrics are considered higher is better
+                if (metadata[metric] == undefined || metadata[metric].description == undefined) {
+                    return "";
+                }
+                return metadata[metric].description;
+            }
+            return "";
         };
 
         // my submissions
@@ -2001,7 +2030,44 @@
             }
         };
 
-        vm.hideVisibilityDialog = function() {
+        vm.cancelSubmission = function(submissionId) {
+            parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "status": "cancelled",
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if (status === 200) {
+                        $mdDialog.hide();
+                        $rootScope.notify("success", "Submission cancelled successfully!");
+                    }
+                },
+                onError: function(response) {
+                    $mdDialog.hide();
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.showCancelSubmissionDialog = function(submissionId, status) {
+            if (status != "submitted") {
+                $rootScope.notify("error", "Only unproccessed submissions can be cancelled");
+                return;
+            }
+            vm.submissionId = submissionId;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                templateUrl: 'dist/views/web/challenge/cancel-submission.html'
+            });
+        };
+
+        vm.hideDialog = function() {
             $mdDialog.hide();
         };
 
