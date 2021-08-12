@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
@@ -46,7 +46,6 @@ export class ChallengediscussComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute,
     private challengeService: ChallengeService,
     private globalService: GlobalService,
     private apiService: ApiService,
