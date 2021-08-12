@@ -116,16 +116,16 @@ export class SelectphaseComponent implements OnInit, OnChanges {
       this.challenge = challenge;
     });
 
-    if(this.phases) {
+    if(Array.isArray(this.phases) && this.phases.length) {
       this.selectedPhase = this.phases[0];
       this.radioSelected = this.phases[0].id;
       this.selectPhase(this.phases[0]);
     }
-    else if(this.settingsPhaseSplits) {
+    else if(Array.isArray(this.settingsPhaseSplits) && this.settingsPhaseSplits.length) {
       this.selectedPhaseSplit = this.settingsPhaseSplits[0];
       this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], "selectBox", "settingsPhaseSplit");
     }
-    else {
+    else if(Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
       this.selectedPhaseSplit = this.phaseSplits[0];
       this.selectPhaseSplit(this.phaseSplits[0], "selectBox", "phaseSplit");      
     }
