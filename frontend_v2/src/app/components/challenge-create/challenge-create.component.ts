@@ -1,9 +1,8 @@
-import { Component, OnInit, ViewChildren, QueryList, Inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 
 /**
@@ -60,22 +59,18 @@ export class ChallengeCreateComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param authService  AuthService Injection.
+   * @param router  Router Injection.
+   * @param challengeService  ChallengeService Injection.
    * @param document
    * @param globalService  GlobalService Injection.
-   * @param apiService  ApiService Injection.
-   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     public authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute,
     private challengeService: ChallengeService,
     @Inject(DOCUMENT) private document,
-    private globalService: GlobalService,
-    private apiService: ApiService
+    private globalService: GlobalService
   ) {}
 
   /**

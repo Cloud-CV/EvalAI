@@ -226,7 +226,6 @@ export class TeamlistComponent implements OnInit, OnDestroy {
   templatePhases = null;
 
   /**
-
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.

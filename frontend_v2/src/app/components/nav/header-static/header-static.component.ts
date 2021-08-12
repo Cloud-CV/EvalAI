@@ -7,15 +7,12 @@ import {
   HostListener,
   ViewChild,
   ElementRef,
-  AfterViewInit,
 } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { filter } from "rxjs/internal/operators";
-import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
-import { ApiService } from '../../../services/api.service';
-import { el } from '@angular/platform-browser/testing/src/browser_util';
 
 /**
  * Component Class
@@ -82,21 +79,17 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
 
   /**
    * Constructor.
-   * @param document  Window document Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param globalService  GlobalService Injection.
-   * @param authService  AuthService Injection.
-   * @param apiService  ApiService Injection.
+   * @param router  Router Injection.
    * @param ref  Angular Change Detector Injection.
+   * @param authService  AuthService Injection.
+   * @param document  Window document Injection.
    */
   constructor(
     private globalService: GlobalService,
-    private route: ActivatedRoute,
     private router: Router,
     private ref: ChangeDetectorRef,
     public authService: AuthService,
-    private apiService: ApiService,
     @Inject(DOCUMENT) private document: Document
   ) {
       this.authState = authService.authState;

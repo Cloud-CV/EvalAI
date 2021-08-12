@@ -52,6 +52,10 @@ export class TermsAndConditionsModalComponent implements OnInit {
    */
   denyCallback = () => {};
 
+  /**
+   * Constructor.
+   * @param globalService  GlobalService Injection.
+   */  
   constructor(private globalService: GlobalService) {}
 
   ngOnInit() {

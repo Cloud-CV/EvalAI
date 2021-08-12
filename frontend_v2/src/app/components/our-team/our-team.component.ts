@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 
 // import service
 import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { EndpointsService } from '../../services/endpoints.service';
-import { AuthService } from '../../services/auth.service';
 
 /**
  * Component Class
@@ -19,19 +17,13 @@ import { AuthService } from '../../services/auth.service';
 export class OurTeamComponent implements OnInit {
   /**
    * Constructor.
-   * @param endpointsService  EndpointService Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
-   * @param authService  AuthService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param endpointsService  EndpointService Injection.
    */
   constructor(
     private apiService: ApiService,
-    private authService: AuthService,
     private globalService: GlobalService,
-    private router: Router,
-    private route: ActivatedRoute,
     private endpointsService: EndpointsService,
     private logger: NGXLogger
   ) {}

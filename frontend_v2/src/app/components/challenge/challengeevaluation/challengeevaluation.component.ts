@@ -1,12 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { NGXLogger } from 'ngx-logger';
 
 // import service
 import { ChallengeService } from '../../../services/challenge.service';
-import { ApiService } from '../../../services/api.service';
-import { EndpointsService } from '../../../services/endpoints.service';
-import { GlobalService } from '../../../services/global.service';
 
 /**
  * Component Class
@@ -38,12 +34,6 @@ export class ChallengeevaluationComponent implements OnInit {
   tncElement: any;
 
   /**
-   * To call the API inside modal for editing the challenge evaluation
-   * details, evaluation script and terms and conditions
-   */
-  apiCall: any;
-
-  /**
    * Constructor.
    * @param document  window document Injection.
    * @param challengeService  ChallengeService Injection.
@@ -51,10 +41,6 @@ export class ChallengeevaluationComponent implements OnInit {
   constructor(
     private challengeService: ChallengeService,
     @Inject(DOCUMENT) private document: Document,
-    private endpointsService: EndpointsService,
-    private apiService: ApiService,
-    private globalService: GlobalService,
-    private logger: NGXLogger
   ) {}
 
   /**

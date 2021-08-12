@@ -1,7 +1,4 @@
 import { Component, OnInit, OnChanges, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
-import { GlobalService } from '../../../../services/global.service';
-import { ApiService } from '../../../../services/api.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 
 /**
@@ -100,17 +97,10 @@ export class TeamcardComponent implements OnInit, OnChanges {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  ApiService Injection.
+   * @param authService AuthService Injection.
    */
   constructor(
-    private globalService: GlobalService,
-    private apiService: ApiService,
-    public authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
+    public authService: AuthService
   ) {}
 
   /**

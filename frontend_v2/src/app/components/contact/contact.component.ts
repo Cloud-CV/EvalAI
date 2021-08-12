@@ -1,11 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 
 import { InputComponent } from '../../components/utility/input/input.component';
-import { WindowService } from '../../services/window.service';
 import { ApiService } from '../../services/api.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { GlobalService } from '../../services/global.service';
@@ -41,20 +39,15 @@ export class ContactComponent implements OnInit, AfterViewInit {
   componentlist: any;
 
   /**
-   * Constructor.
-   * @param document  Window document Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
+   * Constructor..
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
+   * @param router  Router Injection.
    * @param endpointsService  EndpointsService Injection.
    */
   constructor(
-    @Inject(DOCUMENT) private document: Document,
-    private windowService: WindowService,
     private globalService: GlobalService,
     private apiService: ApiService,
-    private route: ActivatedRoute,
     private router: Router,
     private endpointsService: EndpointsService,
     private logger: NGXLogger

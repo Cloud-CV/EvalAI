@@ -1,9 +1,7 @@
-import { Component, HostListener, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
 
 
 /**
@@ -36,12 +34,14 @@ export class TemplateChallengeListComponent implements OnInit {
    */
   templateChallengesFetchPath = 'challenges/get_all_challenge_templates/'
 
-
+  /**
+   * Constructor.
+   * @param authService  AuthService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   */
   constructor(
     public authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-    @Inject(DOCUMENT) private document,
     private globalService: GlobalService,
     private apiService: ApiService
   ) {}

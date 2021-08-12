@@ -2,14 +2,11 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Meta } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { NGXLogger } from 'ngx-logger';
 
 // import services
 import { AuthService } from '../../services/auth.service';
-import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
-import { EndpointsService } from '../../services/endpoints.service';
 
 /**
  * Component Class
@@ -71,32 +68,21 @@ export class ChallengeComponent implements OnInit {
   isLoggedIn: any = false;
 
   /**
-   * To call the API inside modal for editing the challenge details
-   */
-  apiCall: any;
-
-  /**
    * Constructor.
+   * @param router  Router Injection.
    * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
-   * @param authService  AuthService Injection.
    * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
-   * @param endpointsService  EndpointsService Injection.
    * @param challengeService  ChallengeService Injection.
-   * @param DOCUMENT Document Injection
+   * @param authService  AuthService Injection.
    */
   constructor(
     @Inject(DOCUMENT) document: any,
     private router: Router,
     private route: ActivatedRoute,
-    private apiService: ApiService,
     private globalService: GlobalService,
     private challengeService: ChallengeService,
     public authService: AuthService,
-    private endpointsService: EndpointsService,
-    private meta: Meta,
-    private logger: NGXLogger
+    private meta: Meta
   ) {}
 
   /**

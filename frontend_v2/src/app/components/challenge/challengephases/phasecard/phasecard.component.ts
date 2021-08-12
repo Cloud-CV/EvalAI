@@ -1,8 +1,6 @@
-import { Component, OnInit, Input, Inject } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { GlobalService } from '../../../../services/global.service';
 import { ChallengeService } from '../../../../services/challenge.service';
-import { ApiService } from '../../../../services/api.service';
-import { EndpointsService } from '../../../../services/endpoints.service';
 
 /**
  * Component Class
@@ -46,12 +44,11 @@ export class PhasecardComponent implements OnInit {
   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
+   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     private globalService: GlobalService,
-    private challengeService: ChallengeService,
-    private apiService: ApiService,
-    private endpointsService: EndpointsService
+    private challengeService: ChallengeService
   ) {}
 
   /**

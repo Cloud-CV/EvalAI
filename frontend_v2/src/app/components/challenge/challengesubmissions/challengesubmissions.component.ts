@@ -166,13 +166,14 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
+   * @param challengeService  ChallengeService Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  Router Injection.
+   * @param windowService  WindowService Injection.
    * @param endpointsService  EndpointsService Injection.
-   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     private authService: AuthService,
