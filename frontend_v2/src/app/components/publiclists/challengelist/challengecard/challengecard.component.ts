@@ -1,9 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { GlobalService } from '../../../../services/global.service';
-import { ApiService } from '../../../../services/api.service';
 import { AuthService } from '../../../../services/auth.service';
-import { ChallengeService } from '../../../../services/challenge.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 /**
  * Component Class
@@ -55,17 +53,7 @@ export class ChallengecardComponent implements OnInit {
   isLoggedIn = false;
 
   /**
-   * Tag list
-   */
-  tags = ['Aritificial Intelligence', 'Machine Learning'];
-
-  /**
-   * Challenge stars
-   */
-  stars = { count: 0, is_starred: false };
-
-  /**
-   * Challenge stars
+   * Current Route
    */
   routerPublic: Router;
 
@@ -76,20 +64,14 @@ export class ChallengecardComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param globalService  GlobalService Injection.
    * @param authService  AuthService Injection.
-   * @param apiService  ApiService Injection.
-   * @param challengeService  ChallengeService Injection.
+   * @param router  Router Injection.
    */
   constructor(
     private globalService: GlobalService,
-    private apiService: ApiService,
     private authService: AuthService,
-    private challengeService: ChallengeService,
-    private router: Router,
-    private route: ActivatedRoute
+    private router: Router
   ) {}
 
   /**
@@ -114,7 +96,6 @@ export class ChallengecardComponent implements OnInit {
     this.checkType(START_DATE, END_DATE, PRESENT);
     this.startDate = this.globalService.formatDate12Hour(START_DATE);
     this.endDate = this.globalService.formatDate12Hour(END_DATE);
-    this.fetchStars();
   }
 
   /**
@@ -133,30 +114,6 @@ export class ChallengecardComponent implements OnInit {
     } else if (now < start) {
       this.isUpcoming = true;
       this.timeRemaining = this.globalService.getDateDifferenceString(now, start) + ' for the challenge to begin.';
-    }
-  }
-
-  /**
-   * Fetch Stars for the current challenge card.
-   */
-  fetchStars() {
-    this.challengeService.fetchStars(this.challenge['id'], (data) => {
-      this.stars = data;
-    });
-  }
-
-  /**
-   * Toggle stars for the current challenge card.
-   */
-  starToggle() {
-    if (this.isLoggedIn) {
-      this.challengeService.starToggle(
-        this.challenge['id'],
-        (data, self) => {
-          self.stars = data;
-        },
-        this
-      );
     }
   }
 
