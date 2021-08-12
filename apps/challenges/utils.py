@@ -352,9 +352,9 @@ def create_federated_user(name, repository, aws_keys):
 @mock_if_non_prod_aws(mock_sts)
 def get_aws_credentials_for_submission(challenge, participant_team):
     """
-    Method to generate AWS Credentails for CLI's Push
+    Method to generate AWS Credentials for CLI's Push
     Wrappers:
-        - mock_ecr: To mock ECR requests to generate ecr credemntials
+        - mock_ecr: To mock ECR requests to generate ecr credentials
         - mock_sts: To mock STS requests to generated federated user
     Args:
         - challenge: Challenge model
