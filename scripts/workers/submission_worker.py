@@ -14,6 +14,7 @@ import os
 import requests
 import signal
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -260,12 +261,41 @@ def extract_challenge_data(challenge, phases):
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.id
     )
+    # create challenge directory as package
+    create_dir_as_python_package(challenge_data_directory)
+    
+    if (challenge.requirements):
+        challenge_requirements_url = return_file_url_per_environment(challenge.requirements.url)
+        if (challenge_requirements_url and challenge_requirements_url.endswith(".txt")):
+            try:
+                response = requests.get(challenge_requirements_url, stream=True)
+                save_location = join(challenge_data_directory, "requirements_{}.txt".format(challenge.id))
+                if response and response.status_code == 200:
+                    with open(save_location, "wb") as f:
+                        for chunk in response.iter_content(chunk_size=1024):
+                            if chunk:
+                                f.write(chunk)
+                logger.info(save_location)
+                try:
+                    output = subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", save_location])
+                    logger.info(output)
+                except Exception as e:
+                    logger.error(e)
+                os.remove(save_location)
+            except Exception as e:
+                logger.error(
+                    "{} Failed to fetch file from {}, error {}".format(
+                        WORKER_LOGS_PREFIX, challenge_requirements_url, e
+                    )
+                )
+                response = None
+
+
     evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(
         evaluation_script_url
     )
-    # create challenge directory as package
-    create_dir_as_python_package(challenge_data_directory)
+
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}

@@ -14,6 +14,15 @@
         </div>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
+                <h5 class="w-300">Requirements</h5>
+            </div>
+        </div>
+
+        <div>
+            <div ng-repeat="requirement in challenge.requirements track by $index" class="ev-logs">{{requirement}}</div>
+        </div>
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
                 <h5 class="w-300">Submission worker logs</h5>
             </div>
         </div>

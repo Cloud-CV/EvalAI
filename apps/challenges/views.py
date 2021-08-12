@@ -1078,6 +1078,27 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             challenge_image_file = None
     else:
         challenge_image_file = None
+    
+    # Check for requirements in yaml file.
+    try:
+        requirements = yaml_file_data["requirements"]
+        if requirements.endswith(".txt"):
+            requirements_path = join(
+                BASE_LOCATION,
+                unique_folder_name,
+                extracted_folder_name,
+                requirements,
+            )
+            if isfile(requirements_path):
+                requirements_file = ContentFile(
+                    get_file_content(requirements_path, "rb"), 'requirements.txt'
+                )
+        else:
+            requirements_file = ""
+    except KeyError:
+        requirements_file = ""
+
+
 
     # check for challenge description file
     try:
@@ -1256,6 +1277,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "challenge_host_team": challenge_host_team,
                     "image": challenge_image_file,
                     "evaluation_script": challenge_evaluation_script_file,
+                    "requirements" : requirements_file,
                 },
             )
             if serializer.is_valid():
@@ -2602,6 +2624,23 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
 
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_requirements_by_challenge_pk(request, challenge_pk):
+    """
+    API endpoint to fetch all the requirements corresponding to a challenge using challenge pk
+    Arguments:
+        challenge_pk -- Challenge Id for which the requirements are to be fetched
+    Returns:
+        Response Object -- An object containing all requirements
+    """
+    challenge = get_challenge_model(challenge_pk)
+    requirement_data = []
+    if (challenge.requirements and challenge.requirements.name.endswith(".txt")):
+        requirement_data = challenge.requirements.read()
+        requirement_data = requirement_data.splitlines()
+    response_data = {"requirements": requirement_data}
+    return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
