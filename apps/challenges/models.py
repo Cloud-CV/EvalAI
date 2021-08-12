@@ -73,6 +73,9 @@ class Challenge(TimeStampedModel):
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts")
     )  # should be zip format
+    evaluation_reqs = models.FileField(
+        default=False, upload_to=RandomFileName("evaluation_reqs")
+    ) # should be txt format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
     )

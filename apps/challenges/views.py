@@ -499,6 +499,40 @@ def get_challenge_by_pk(request, pk):
 
 
 @api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_dependencies(request, pk):
+    """
+    Returns a list of pip dependencies for a challenge
+    Arguments:
+        pk (int) -- Challenge primary key
+    Returns:
+        {dict} -- List of pip dependencies for the challenge
+    """
+    try:
+        if is_user_a_host_of_challenge(request.user, pk):
+            challenge = Challenge.objects.get(pk=pk)
+        else:
+            challenge = Challenge.objects.get(
+                pk=pk, approved_by_admin=True, published=True
+            )
+        if challenge.is_disabled:
+            response_data = {"error": "Sorry, the challenge was removed!"}
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+        serializer = ChallengeSerializer(
+            challenge, context={"request": request}
+        )
+        get_challenge_res = serializer.data
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    response_data = get_challenge_res["evaluation_reqs"]
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
@@ -547,7 +581,7 @@ def get_challenges_based_on_teams(request):
         response_data = {"error": "Invalid url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # either mode should be there or one of paricipant team and host team
+    # either mode should be there or one of participant team and host team
     if mode and (participant_team_id or challenge_host_team_id):
         response_data = {"error": "Invalid url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -746,7 +780,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
         except ChallengeTemplate.DoesNotExist:
             response_data = {
-                "error": "Sorry, a server error occured while creating the challenge. Please try again!"
+                "error": "Sorry, a server error occurred while creating the challenge. Please try again!"
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -786,7 +820,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_file = open(challenge_template_download_location, "rb")
         except Exception:
             message = (
-                "A server error occured while processing zip file. "
+                "A server error occurred while processing zip file. "
                 "Please try again!"
             )
             response_data = {"error": message}
@@ -838,7 +872,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     except requests.exceptions.RequestException:
         message = (
-            "A server error occured while processing zip file. "
+            "A server error occurred while processing zip file. "
             "Please try again!"
         )
         response_data = {"error": message}
@@ -936,6 +970,28 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Checking for requirements.txt file in evaluation_script zip folder
+    try:
+        zip_eval = zipfile.ZipFile(join(BASE_LOCATION, unique_folder_name, extracted_folder_name, evaluation_script), "r")
+        zip_eval.extractall(join(BASE_LOCATION, unique_folder_name, extracted_folder_name, "evaluation_script"))
+        zip_eval.close()
+    except zipfile.BadZipfile:
+        message = (
+                "The evaluation script zip file contents cannot be extracted. "
+                "Please check the format!"
+            )
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if "requirements.txt" in zip_eval.namelist():
+        requirements_file_path = join(BASE_LOCATION, unique_folder_name, extracted_folder_name, "evaluation_script", "requirements.txt")
+        with open(requirements_file_path, "rb") as requirements_txt:
+            challenge_requirements_file = ContentFile(
+                requirements_txt.read(), requirements_file_path
+            )
+    else:
+        challenge_requirements_file = None
 
     # Check for test annotation file path in yaml file.
     try:
@@ -1122,7 +1178,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             yaml_file_data["evaluation_details"] = None
     except KeyError:
         message = (
-            "There is no key for evalutaion details. "
+            "There is no key for evaluation details. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
@@ -1256,6 +1312,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "challenge_host_team": challenge_host_team,
                     "image": challenge_image_file,
                     "evaluation_script": challenge_evaluation_script_file,
+                    "evaluation_reqs": challenge_requirements_file,
                 },
             )
             if serializer.is_valid():
@@ -1871,7 +1928,7 @@ def download_all_submissions(
                         "Team Name",
                         "Team Members",
                         "Team Members Email Id",
-                        "Team Members Affiliaton",
+                        "Team Members Affiliation",
                         "Challenge Phase",
                         "Status",
                         "Created By",
@@ -2365,7 +2422,7 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_aws_credentials_for_participant_team(request, phase_pk):
     """
-    Endpoint to generate AWS Credentails for CLI
+    Endpoint to generate AWS Credentials for CLI
     Args:
         - challenge: Challenge model
         - participant_team: Participant Team Model
@@ -2376,7 +2433,7 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             }
     Raises:
         - BadRequestException 400
-            - When participant_team has not participanted in challenge
+            - When participant_team has not participated in challenge
             - When Challenge is not Docker based
     """
     challenge_phase = get_challenge_phase_model(phase_pk)
@@ -2547,7 +2604,7 @@ def get_challenge_by_queue_name(request, queue_name):
     """
     API endpoint to fetch the challenge details by using pk
     Arguments:
-        queue_name -- Challenge queue name for which the challenge deatils are fetched
+        queue_name -- Challenge queue name for which the challenge details are fetched
     Returns:
         Response Object -- An object containing challenge details
     """
@@ -2875,7 +2932,7 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
     Returns:
-         Response Object -- An object containing the presignd url, or an error message if some failure occurs
+         Response Object -- An object containing the presigned url, or an error message if some failure occurs
     """
     if settings.DEBUG:
         response_data = {
@@ -2955,7 +3012,7 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
     Returns:
-         Response Object -- An object containing the presignd url, or an error message if some failure occurs
+         Response Object -- An object containing the presigned url, or an error message if some failure occurs
     """
     if settings.DEBUG:
         response_data = {

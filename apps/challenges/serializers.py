@@ -42,6 +42,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "submission_guidelines",
             "evaluation_details",
             "image",
+            "evaluation_reqs",
             "start_date",
             "end_date",
             "creator",
@@ -219,6 +220,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_repository = context.get("github_repository")
             if github_repository:
                 kwargs["data"]["github_repository"] = github_repository
+            evaluation_reqs = context.get("evaluation_reqs")
+            if evaluation_reqs:
+                kwargs["data"]["evaluation_reqs"] = evaluation_reqs
 
     class Meta:
         model = Challenge
@@ -242,6 +246,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "image",
             "is_active",
             "evaluation_script",
+            "evaluation_reqs",
             "allowed_email_domains",
             "blocked_email_domains",
             "banned_email_ids",

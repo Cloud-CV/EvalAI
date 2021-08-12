@@ -60,6 +60,11 @@ urlpatterns = [
         name="get_challenge_by_pk",
     ),
     url(
+        r"^challenge/(?P<pk>[0-9]+)/dependencies/$",
+        views.get_challenge_dependencies,
+        name="get_challenge_dependencies",
+    ),
+    url(
         r"^challenge$",
         views.get_challenges_based_on_teams,
         name="get_challenges_based_on_teams",

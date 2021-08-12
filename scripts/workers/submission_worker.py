@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import subprocess
 import boto3
 import botocore
 import contextlib
@@ -276,6 +277,13 @@ def extract_challenge_data(challenge, phases):
     download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
+
+    # pip installing dependencies
+    try:
+        requirements_path = join(challenge_data_directory, "requirements.txt")
+        subprocess.check_call(["pip", "install", "-r", requirements_path])
+    except:
+        print("No requirements.txt file detected")
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id

@@ -18,6 +18,7 @@
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
+        vm.dependencies = null;
         vm.fileUrl = "";
         vm.methodName = "";
         vm.methodDesc = "";
@@ -148,6 +149,19 @@
         if (typeof vm.refreshJWT != "string") {
             vm.fetchRefreshJWTToken();
         }
+
+        // retrieving dependencies file
+        vm.getDependencies = function() {
+            parameters.url = 'challenges/challenge/' + vm.challengeId + '/dependencies/';
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.dependencies = response.data;
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
 
         // API call to manage the worker from UI.
         // Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
