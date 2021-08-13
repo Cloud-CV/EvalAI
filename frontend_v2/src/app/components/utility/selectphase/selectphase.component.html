@@ -3,6 +3,7 @@
     <input
       [disabled]="challenge['currentDate'] < item.start_date || challenge['currentDate'] >= item.end_date"
       type="radio"
+      [checked]="radioSelected == item.id"
       name="selectPhase"
       class="with-gap selectPhase fw-light"
       id="{{ item.id }}"
@@ -37,11 +38,11 @@
 <ng-container *ngIf="phaseSelectionType == 'selectBox' && phaseSelectionListType == 'phase'">
   <mat-form-field>
     <mat-label class="fs-16 phase-placeholder" [ngClass]="{ 'hide-label': phaseName !== '' }">Select phase</mat-label>
-    <mat-select class="rm-margin">
+    <mat-select class="rm-margin" [(value)]="selectedPhase">
       <mat-select-trigger>
-        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{ phaseName }}
+        <span class="col-lg-9 col-md-9 col-sm-8">{{ phaseName }}
         </span>
-          <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+          <span class="col-lg-3 col-md-3 col-sm-4 col-xs-12">
             <mat-chip-list *ngIf="phaseVisibility">
               <mat-chip>Private</mat-chip>
             </mat-chip-list>
@@ -64,13 +65,13 @@
 <ng-container *ngIf="phaseSelectionType == 'selectBox' && phaseSelectionListType == 'settingsPhaseSplit'">
 <mat-form-field>
     <mat-label class="fs-16 phase-placeholder" [ngClass]="{'hide-label': settingsSplitName !== '' }">Select Phase Split</mat-label>
-    <mat-select class="rm-margin">
+    <mat-select class="rm-margin" [(value)]="selectedPhaseSplit">
       <mat-select-trigger>
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7 phase_name">
           <span class="fw-light">Phase:&nbsp;</span>{{ phaseName }}, <span class="fw-light">Split:&nbsp; </span
           >{{ settingsSplitName }} &nbsp;
         </span>
-        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-12">
           <span class="private-badge">
             <mat-chip-list *ngIf="phaseVisibility">
               <mat-chip>Private</mat-chip>
@@ -78,7 +79,7 @@
           </span>
         </span>
       </mat-select-trigger>
-      <mat-option (click)="selectSettingsPhaseSplit(key, 'selectBox', 'settingsPhaseSplit')" [value]="key" *ngFor="let key of phases">
+      <mat-option (click)="selectSettingsPhaseSplit(key, 'selectBox', 'settingsPhaseSplit')" [value]="key" *ngFor="let key of settingsPhaseSplits">
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">
           <span class="fw-light">Phase:</span>{{ key.challenge_phase_name }}, <span class="fw-light">Split: </span
           >{{ key.dataset_split_name }} &nbsp;
@@ -102,13 +103,13 @@
           <span class="fw-light">Phase:&nbsp;</span>{{ phaseName }}, <span class="fw-light">Split:&nbsp; </span
           >{{ splitName }} &nbsp;
         </span>
-        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-12">
           <mat-chip-list *ngIf="phaseVisibility">
             <mat-chip>Private</mat-chip>
           </mat-chip-list>
         </span>
       </mat-select-trigger>
-      <mat-option (click)="selectPhaseSplit(key, 'selectBox', 'phaseSplit')" [value]="key" *ngFor="let key of phases">
+      <mat-option (click)="selectPhaseSplit(key, 'selectBox', 'phaseSplit')" [value]="key" *ngFor="let key of phaseSplits">
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">
           <span class="fw-light">Phase:</span>{{ key.challenge_phase_name }}, <span class="fw-light">Split: </span
           >{{ key.dataset_split_name }} &nbsp;

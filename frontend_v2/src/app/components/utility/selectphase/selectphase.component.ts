@@ -17,6 +17,16 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phases: any;
 
   /**
+   * Phase Splits list for settings tab
+   */
+  @Input() settingsPhaseSplits: any;  
+
+  /**
+   * Phase Splits list
+   */
+   @Input() phaseSplits: any;  
+
+  /**
    * Selected phase callback
    */
   @Input() phaseSelected: any;
@@ -87,6 +97,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   challenge: any;
 
   /**
+   * Select default radio option if same as phase id
+   */
+  radioSelected: number;
+
+  /**
    * Constructor.
    * @param globalService  GlobalService Injection.
    * @param challengeService  ChallengeService Injection.
@@ -100,6 +115,20 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
+
+    if(Array.isArray(this.phases) && this.phases.length) {
+      this.selectedPhase = this.phases[0];
+      this.radioSelected = this.phases[0].id;
+      this.selectPhase(this.phases[0]);
+    }
+    else if(Array.isArray(this.settingsPhaseSplits) && this.settingsPhaseSplits.length) {
+      this.selectedPhaseSplit = this.settingsPhaseSplits[0];
+      this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], "selectBox", "settingsPhaseSplit");
+    }
+    else if(Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
+      this.selectedPhaseSplit = this.phaseSplits[0];
+      this.selectPhaseSplit(this.phaseSplits[0], "selectBox", "phaseSplit");      
+    }
   }
 
   /**
