@@ -1,7 +1,6 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatSliderChange } from '@angular/material';
 import { NGXLogger } from 'ngx-logger';
 
 // import component
@@ -211,12 +210,13 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   * @param endpointsService  EndPointsService Injection.
    */
   constructor(
     private authService: AuthService,

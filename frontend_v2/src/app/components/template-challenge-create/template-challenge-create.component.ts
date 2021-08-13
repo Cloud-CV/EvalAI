@@ -1,11 +1,9 @@
-import { Component, OnInit, ViewChildren, QueryList, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { AuthService } from '../../services/auth.service';
-import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -78,9 +76,7 @@ export class TemplateChallengeCreateComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private challengeService: ChallengeService,
-    @Inject(DOCUMENT) private document,
-    private globalService: GlobalService,
-    private apiService: ApiService
+    private globalService: GlobalService
   ) {}
 
   ngOnInit() {
