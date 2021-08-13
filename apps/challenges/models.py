@@ -74,7 +74,7 @@ class Challenge(TimeStampedModel):
         default=False, upload_to=RandomFileName("evaluation_scripts")
     )  # should be zip format
     requirements = models.FileField(
-        upload_to=RandomFileName("requirements"), blank=True
+        upload_to=RandomFileName("requirements"), blank=True, default=""
     )
 
     approved_by_admin = models.BooleanField(
