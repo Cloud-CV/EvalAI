@@ -39,6 +39,11 @@ export class ChallengesubmitComponent implements OnInit {
   isSubmissionUsingCli: any;
 
   /**
+   * If phase has been selected
+   */
+  isPhaseSelected:boolean = false;
+
+  /**
    * Is user logged in
    */
   isLoggedIn = false;
@@ -476,16 +481,19 @@ export class ChallengesubmitComponent implements OnInit {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
+      SELF.isPhaseSelected = true;
       SELF.isLeaderboardPublic = phase['leaderboard_public'];
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
         SELF.clearMetaAttributeValues();
         SELF.submissionError = '';
-        SELF.components['_results'].forEach((element) => {
-          element.value = '';
-          element.message = '';
-        });
+        if(SELF.components) {
+          SELF.components['_results'].forEach((element) => {
+            element.value = '';
+            element.message = '';
+          });
+        }
       }
     };
   }
