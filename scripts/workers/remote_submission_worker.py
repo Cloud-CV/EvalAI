@@ -503,7 +503,6 @@ def run_submission(
         "submission": submission_pk,
     }
     update_submission_status(submission_data, challenge_pk)
-    status = "running"
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, "run")
@@ -526,11 +525,6 @@ def run_submission(
                 challenge_phase.get("codename"),
                 submission_metadata=submission,
             )
-        # if remote_evaluation:
-        #     return
-    except Exception:
-        status = "failed"
-        stderr.write(traceback.format_exc())
         stdout.close()
         stderr.close()
 
@@ -540,31 +534,11 @@ def run_submission(
         submission_data = {
             "challenge_phase": phase_pk,
             "submission": submission_pk,
-            "submission_status": status,
+            "submission_status": "finished",
             "stdout": stdout_content,
             "stderr": stderr_content,
         }
-        update_submission_data(submission_data, challenge_pk, submission_pk)
 
-        shutil.rmtree(temp_run_dir)
-        return
-
-    stdout.close()
-    stderr.close()
-
-    stdout_content = read_file_content(stdout_file)
-    stderr_content = read_file_content(stderr_file)
-
-    submission_data = {
-        "challenge_phase": phase_pk,
-        "submission": submission_pk,
-        "submission_status": status,
-        "stdout": stdout_content,
-        "stderr": stderr_content,
-    }
-
-    if "result" in submission_output:
-        status = "finished"
         res = submission_output.get("result")
         new_res = []
         for item in res:
@@ -579,13 +553,28 @@ def run_submission(
         submission_data["metadata"] = json.dumps(
             submission_output.get("submission_metadata")
         )
-        submission_data["submission_status"] = status
-    else:
-        status = "failed"
-        submission_data["submission_status"] = status
-    update_submission_data(submission_data, challenge_pk, submission_pk)
-    shutil.rmtree(temp_run_dir)
-    return
+
+        update_submission_data(submission_data, challenge_pk, submission_pk)
+        shutil.rmtree(temp_run_dir)
+        return
+    except Exception:
+        stdout.close()
+        stderr.close()
+
+        stdout_content = read_file_content(stdout_file)
+        stderr_content = read_file_content(stderr_file)
+
+        submission_data = {
+            "challenge_phase": phase_pk,
+            "submission": submission_pk,
+            "submission_status": "failed",
+            "stdout": stdout_content,
+            "stderr": stderr_content + "\n" + traceback.format_exc(),
+        }
+        update_submission_data(submission_data, challenge_pk, submission_pk)
+
+        shutil.rmtree(temp_run_dir)
+        return
 
 
 def main():
