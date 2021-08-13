@@ -809,6 +809,37 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             SELF.selectedPhase['is_public'] = data.is_public;
             SELF.selectedPhase['showPrivate'] = !data.is_public;
             SELF.challengeService.changePhaseSelected(true);
+            if(!SELF.selectedPhase['is_public']) {
+              for(let i = 0; i < SELF.phaseSplits.length; i++) {
+                if(SELF.phaseSplits[i]['challenge_phase_name'] === SELF.selectedPhase['name'] && SELF.phaseSplits[i]['visibility'] == 3) {
+                  let visibility: any = 1;
+                  const BODY: FormData = new FormData();
+                  BODY.append("visibility", visibility);
+                  SELF.apiService
+                  .patchFileUrl(
+                    SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.phaseSplits[i]['id']),
+                    BODY
+                  )
+                    .subscribe(
+                      (data) => {
+                        SELF.phaseSplits[i]['visibility'] = data.visibility;
+                        SELF.challengeService.changePhaseSplitSelected(true);
+                        SELF.phaseSplits[i]['showPrivate'] = true;
+                        if(SELF.selectedPhaseSplit === SELF.phaseSplits[i]) {
+                          SELF.leaderboardVisibility.state = 'Private';
+                          SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+                        }
+                      },
+                      (err) => {
+                        SELF.globalService.handleApiError(err, true);
+                        SELF.globalService.showToast('error', err);
+                      },
+                      () => this.logger.info('Change leaderboard visibility after phase is updated')
+                    );
+                }
+              }
+            }
+
             SELF.globalService.showToast(
               'success',
               'The phase was successfully made ' + togglePhaseVisibilityState,
@@ -909,58 +940,65 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   toggleLeaderboardVisibility() {
     const SELF = this;
-    let toggleLeaderboardVisibilityState, visibility;
-    if (SELF.leaderboardVisibility.state === 'Public') {
-      toggleLeaderboardVisibilityState = 'private';
-      visibility = 1;
-      SELF.leaderboardVisibility.state = 'Private';
-      SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
-    } else {
-      toggleLeaderboardVisibilityState = 'public';
-      visibility = 3;
-      SELF.leaderboardVisibility.state = 'Public';
-      SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+    let toggleLeaderboardVisibilityState, visibility, phaseIsPublic;
+    for(let i = 0; i < SELF.filteredPhases.length; i++) {
+      if(SELF.filteredPhases[i]['name'] === SELF.selectedPhaseSplit['challenge_phase_name']) {
+        phaseIsPublic = SELF.filteredPhases[i]['is_public'];
+      }
     }
+    if(phaseIsPublic) {
+      if (SELF.leaderboardVisibility.state === 'Public') {
+        toggleLeaderboardVisibilityState = 'private';
+        visibility = 1;
+        SELF.leaderboardVisibility.state = 'Private';
+        SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
+      } else {
+        toggleLeaderboardVisibilityState = 'public';
+        visibility = 3;
+        SELF.leaderboardVisibility.state = 'Public';
+        SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+      }
       const BODY: FormData = new FormData();
       BODY.append("visibility", visibility);
       SELF.apiService
-      .patchFileUrl(
-        SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']),
-        BODY
-      )
-        .subscribe(
-          (data) => {
-            SELF.selectedPhaseSplit['visibility'] = data.visibility;
-            SELF.challengeService.changePhaseSplitSelected(true);
-            if (visibility == 3) {
-              SELF.selectedPhaseSplit['showPrivate'] = false;
-              SELF.leaderboardVisibility.state = 'Public';
-              SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
-            } else {
-              SELF.selectedPhaseSplit['showPrivate'] = true;
-              SELF.leaderboardVisibility.state = 'Private';
-              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
-            }
-            SELF.globalService.showToast(
-              'success',
-              'The phase split was successfully made ' + toggleLeaderboardVisibilityState,
-              5
-            );
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err, true);
-            SELF.globalService.showToast('error', err);
-            if (visibility == 3) {
-              SELF.leaderboardVisibility.state = 'Private';
-              SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
-            } else {
-              SELF.leaderboardVisibility.state = 'Public';
-              SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
-            }
-          },
-          () => this.logger.info('LEADERBOARD-VISIBILITY-UPDATE-FINISHED')
-        );
+      .patchFileUrl(SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']),BODY)
+      .subscribe(
+        (data) => {
+          SELF.selectedPhaseSplit['visibility'] = data.visibility;
+          SELF.challengeService.changePhaseSplitSelected(true);
+          if (visibility == 3) {
+            SELF.selectedPhaseSplit['showPrivate'] = false;
+            SELF.leaderboardVisibility.state = 'Public';
+            SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+          } else {
+            SELF.selectedPhaseSplit['showPrivate'] = true;
+            SELF.leaderboardVisibility.state = 'Private';
+            SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+          }
+          SELF.globalService.showToast(
+            'success',
+            'The phase split was successfully made ' + toggleLeaderboardVisibilityState,
+            5
+          );
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err, true);
+          SELF.globalService.showToast('error', err);
+          if (visibility == 3) {
+            SELF.leaderboardVisibility.state = 'Private';
+            SELF.leaderboardVisibility.icon = 'fa fa-toggle-off grey-text text-darken-1';
+          } else {
+            SELF.leaderboardVisibility.state = 'Public';
+            SELF.leaderboardVisibility.icon = 'fa fa-toggle-on green-text';
+          }
+        },
+        () => this.logger.info('LEADERBOARD-VISIBILITY-UPDATE-FINISHED')
+      );      
     }
+    else {
+      SELF.globalService.showToast('error', 'The phase is private, please make the phase public');
+    }
+  }
 
   // Edit Evaluation Script and Criteria ->
 
