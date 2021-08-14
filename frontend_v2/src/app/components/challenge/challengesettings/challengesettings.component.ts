@@ -707,7 +707,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   phaseSelected() {
     const SELF = this;
     return (phase) => {
-      console.log(phase);
       SELF.selectedPhase = phase;
       SELF.isPhasePublic = SELF.selectedPhase['is_public'];
       SELF.isSubmissionPublic = SELF.selectedPhase['is_submission_public'];
@@ -960,7 +959,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     };
     SELF.globalService.showModal(PARAMS);
   }
-
 
   // Edit Leaderboard Details ->
 
