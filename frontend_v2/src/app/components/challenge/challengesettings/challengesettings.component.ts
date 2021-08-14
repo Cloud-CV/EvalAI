@@ -707,6 +707,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   phaseSelected() {
     const SELF = this;
     return (phase) => {
+      console.log(phase);
       SELF.selectedPhase = phase;
       SELF.isPhasePublic = SELF.selectedPhase['is_public'];
       SELF.isSubmissionPublic = SELF.selectedPhase['is_submission_public'];
@@ -913,6 +914,53 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       SELF.globalService.showToast('error', "Leaderboard is private, please make the leaderbaord public");
     }
   }
+
+  /**
+   * Edit test annotations of the phase
+   */
+  editTestAnnotations() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('test_annotation', params['test_annotation']);
+        SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.selectedPhase['challenge'], SELF.selectedPhase['id']),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.globalService.showToast('success', 'The test annotations are successfully updated!');
+          },
+          (err) => {
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-TEST-ANNOTATION-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Test Annotations',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'testAnnotation',
+          isRequired: true,
+          label: 'test_annotation',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
 
   // Edit Leaderboard Details ->
 
