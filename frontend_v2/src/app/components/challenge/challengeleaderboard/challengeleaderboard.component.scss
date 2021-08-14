@@ -116,26 +116,6 @@
   display: inline-block;
 }
 
-.rangeslider {
-  width: 50%;
-  display: flex;
-  justify-content: space-around;
-}
-
-mat-slider {
-  width: 50%;
-  padding-right: 0px;
-}
-
-.rangeslider {
-  mat-chip {
-    background: #22857b !important;
-  }
-  .btn {
-    margin-right: 0px;
-  }
-}
-
 .ev-md-container {
   padding-bottom: 0px;
 }
@@ -174,12 +154,6 @@ mat-slider {
 
 .ev-card-body {
   padding-top: 0px;
-}
-
-@media only screen and (max-width: $screen-sm) {
-  mat-slider {
-    width: 100%;
-  }
 }
 
 @media only screen and (max-width: 485px) {

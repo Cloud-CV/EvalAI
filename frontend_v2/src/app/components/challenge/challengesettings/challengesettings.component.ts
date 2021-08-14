@@ -111,6 +111,26 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * 3 -> public
    */
   isPhaseSplitLeaderboardPublic: number = 1;
+
+  /**
+   * Leaderboard precision value
+   */
+  leaderboardPrecisionValue = 2;
+
+   /**
+    * Set leaderboard precision value
+    */
+  setLeaderboardPrecisionValue = '1.2-2';
+
+  /**
+   * If leaderboard precision value is equal to 0
+   */
+  minusDisabled = false;
+
+   /**
+    * If leaderboard precision value is equal to 20
+    */
+  plusDisabled = false;
   
   /**
    * store worker logs
@@ -932,6 +952,17 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         SELF.leaderboardVisibility.state = 'Private';
         SELF.leaderboardVisibility.icon = 'fa fa fa-toggle-off grey-text text-darken-1';
       }
+      const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+      SELF.apiService.getUrl(API_PATH).subscribe(
+        (data) => {
+          SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
+          SELF.setLeaderboardPrecisionValue = `1.${ SELF.leaderboardPrecisionValue }-${ SELF.leaderboardPrecisionValue }`;
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
     }
   }
 
@@ -998,6 +1029,30 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     else {
       SELF.globalService.showToast('error', 'The phase is private, please make the phase public');
     }
+  }
+
+  /**
+   * Update leaderboard decimal precision value
+   * @param updatedLeaderboardPrecisionValue new leaderboard precision value
+   */
+  updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue) {
+    const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+    const SELF = this;
+    SELF.leaderboardPrecisionValue = updatedLeaderboardPrecisionValue;
+    SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
+    const BODY = JSON.stringify({
+      leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
+    });
+    SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
+      (data) => {
+        this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
+        this.plusDisabled = SELF.leaderboardPrecisionValue === 20 ? true : false;
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err, true);
+      },
+      () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
+    );
   }
 
   // Edit Evaluation Script and Criteria ->
