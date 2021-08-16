@@ -3,7 +3,6 @@ import { ApiService } from '../../services/api.service';
 import { EndpointsService } from '../../services/endpoints.service';
 import { AuthService } from '../../services/auth.service';
 import { GlobalService } from '../../services/global.service';
-import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 import { InputComponent } from '../../components/utility/input/input.component';
 import { DOCUMENT } from '@angular/common';
@@ -69,11 +68,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   components: QueryList<InputComponent>;
 
   authServiceSubscription: any;
-  
+
   /**
-   * Component constructor
-   * @param document  Window document Injection.
+   * Constructor.
+   * @param apiService  ApiServiceInjection
+   * @param endpointService  EndPointServiceInjection.
+   * @param authService  AuthServiceInjection.
+   * @param globalService  GlobalService Injection.
+   * @param router  Router Injection.
    */
+
   constructor(
     private apiService: ApiService,
     private endpointService: EndpointsService,

@@ -1,11 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { AfterViewInit } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { WindowService } from '../../../services/window.service';
 import { ApiService } from '../../../services/api.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { GlobalService } from '../../../services/global.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 /**
@@ -37,22 +35,16 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
   /**
    * Constructor.
-   * @param document  window document Injection.
-   * @param windowService  ActivatedRoute Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
-   * @param authService
+   * @param authService AuthService Injection.
+   * @param endpointsService EndPointsService Injection.
    * @param router  Router Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param endpointsService
    */
   constructor(
-    @Inject(DOCUMENT) private document: Document,
-    private windowService: WindowService,
     private globalService: GlobalService,
     private apiService: ApiService,
     public authService: AuthService,
-    private route: ActivatedRoute,
     private endpointsService: EndpointsService,
     private router: Router
   ) {}

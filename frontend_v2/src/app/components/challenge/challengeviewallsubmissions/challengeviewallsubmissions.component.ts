@@ -165,13 +165,14 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
+   * @param challengeService  ChallengeService Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  Router Injection.
+   * @param windowService  WindowService Injection.
    * @param endpointsService  EndpointsService Injection.
-   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -224,6 +225,9 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
         }
+        else {
+          this.phases[i].showPrivate = false;
+        }
       }
       this.filteredPhases = this.phases;
     });
@@ -244,7 +248,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.submissionCount = 0;
       if (SELF.challenge['id'] && phase['id']) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
-        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -273,6 +276,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         if(name == SELF.filterSubmissionsQuery) {
+          SELF.submissionCount = data['count'];
           SELF.submissions = data['results'];
           let index = 0;
           SELF.submissions.forEach((submission) => {
@@ -529,29 +533,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
-  }
-
-  /**
-   * Fetch number of submissions for a challenge phase.
-   * @param challenge  challenge id
-   * @param phase  phase id
-   */
-  fetchSubmissionCounts(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        if (data['participant_team_submission_count']) {
-          SELF.submissionCount = data['participant_team_submission_count'];
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {
-        this.logger.info('Fetched submission counts', challenge, phase);
-      }
-    );
   }
 
   /**

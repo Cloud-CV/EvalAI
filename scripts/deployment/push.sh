@@ -18,7 +18,7 @@ build_and_push() {
         docker-compose -f docker-compose-$1.yml push
 
         # Get already built docker images
-        images=$(cat docker-compose-$1.yml | grep 'image: ' | cut -d':' -f 2 | tr -d '"')
+        images=$(cat docker-compose-$1.yml | grep 'image: ${AWS_ACCOUNT_ID' | cut -d':' -f 2 | tr -d '"')
 
         # Tag & push images with latest tag
         for image in $images
