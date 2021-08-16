@@ -1,7 +1,4 @@
-import { Component, OnInit, Inject, OnDestroy, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
-import { GlobalService } from '../../services/global.service';
+import { Component, OnInit, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -18,18 +15,11 @@ export class PubliclistsComponent implements OnInit, AfterViewChecked {
 
   /**
    * Constructor.
-   * @param document  Window document Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param authService
-   * @param globalService  GlobalService Injection.
+   * @param changeDetector
    */
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    @Inject(DOCUMENT) private document: Document,
     public authService: AuthService,
-    private globalService: GlobalService,
     private cdRef : ChangeDetectorRef
   ) {}
   
