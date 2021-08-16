@@ -207,7 +207,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       scope.testimonialbody = scope.testimonials[scope.selected]['text'];
       scope.testimonialauthor = scope.testimonials[scope.selected]['author'];
       scope.testimonialorg = scope.testimonials[scope.selected]['org'];
-      element.style.marginLeft = '15%';
     }, 1000);
   };
 
