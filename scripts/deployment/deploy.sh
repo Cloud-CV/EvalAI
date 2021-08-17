@@ -39,7 +39,7 @@ case $opt in
         auto_deploy)
             chmod 400 scripts/deployment/evalai.pem
             ssh-add scripts/deployment/evalai.pem
-			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
 				ssh ubuntu@${INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
 					source venv/bin/activate
 					cd ~/Projects/EvalAI
@@ -48,18 +48,20 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans statsd-exporter django nodejs nodejs_v2 celery node_exporter
+					docker-compose -f docker-compose-${env}.yml pull django nodejs nodejs_v2 celery node_exporter
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery node_exporter
 				ENDSSH2
 				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
-					cd ~/Projects/EvalAI
+					source venv/bin/activate
+                    			cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+                    			aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana
+					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
 				ENDSSH2
 			ENDSSH
             ;;
@@ -167,6 +169,11 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d node_exporter
             echo "Completed deploy operation."
             ;;
+        deploy-alert-manager)
+            echo "Deploying alertmanager docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d alert-manager
+            echo "Completed deploy operation."
+            ;;
         scale)
             service=${3}
             instances=${4}
@@ -212,6 +219,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
+        echo "    deploy-alert-manager : Deploy alertmanager container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alert-manager production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."
