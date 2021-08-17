@@ -138,11 +138,12 @@ export class ChallengeparticipateComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
    */
   constructor(
     private authService: AuthService,

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { ViewChildren, QueryList } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { InputComponent } from '../input/input.component';
 import { ChallengeService } from '../../../services/challenge.service';
