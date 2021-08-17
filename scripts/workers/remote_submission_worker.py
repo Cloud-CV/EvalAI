@@ -538,18 +538,18 @@ def run_submission(
             "stdout": stdout_content,
             "stderr": stderr_content,
         }
-
-        res = submission_output.get("result")
-        new_res = []
-        for item in res:
-            for key, value in item.items():
-                temp = {
-                    "split": key,
-                    "show_to_participant": True,
-                    "accuracies": value
-                }
-                new_res.append(temp)
-        submission_data["result"] = json.dumps(new_res)
+        if "result" in submission_output:
+            res = submission_output.get("result")
+            new_res = []
+            for item in res:
+                for key, value in item.items():
+                    temp = {
+                        "split": key,
+                        "show_to_participant": True,
+                        "accuracies": value
+                    }
+                    new_res.append(temp)
+            submission_data["result"] = json.dumps(new_res)
         submission_data["metadata"] = json.dumps(
             submission_output.get("submission_metadata")
         )
