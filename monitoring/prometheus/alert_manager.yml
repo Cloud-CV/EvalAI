@@ -1,0 +1,31 @@
+global:
+  resolve_timeout: 10s
+  slack_api_url: 'https://hooks.slack.com/services/x/x/x'
+
+route:
+  receiver: 'slack-apis-notifications'
+  group_interval: 10s
+  repeat_interval: 10s
+  routes:
+  - matchers: [group = api]
+    receiver: 'slack-apis-notifications'
+  - matchers: [group = instance]
+    receiver: 'slack-instance-notifications'
+
+receivers:
+  - name: 'slack-apis-notifications'
+    slack_configs:
+      - channel: '#x'
+        title: '{{ template "slack.apis.title" . }}'
+        text: '{{ template "slack.apis.text" . }}'
+        send_resolved: false
+  - name: 'slack-instance-notifications'
+    slack_configs:
+      - channel: '#x'
+        title: '{{ template "slack.instances.title" . }}'
+        text: '{{ template "slack.instances.text" . }}'
+        send_resolved: false
+
+templates:
+- '/etc/alertmanager/templates/instances.tmpl'
+- '/etc/alertmanager/templates/apis.tmpl'

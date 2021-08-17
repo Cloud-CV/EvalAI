@@ -5,6 +5,7 @@ services:
     user: "1000"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/rules.yml:/etc/rules/rules.yml
       - ./monitoring/prometheus/prometheus_db:/var/lib/prometheus
       - ./monitoring/prometheus/prometheus_db:/prometheus
       - ./monitoring/prometheus/prometheus_db:/etc/prometheus
@@ -30,3 +31,18 @@ services:
     image: prom/node-exporter
     ports:
       - "9100:9100"
+
+  alert-manager:
+    hostname: alert_manager
+    image: prom/alertmanager
+    user: "1000"
+    volumes:
+      - ./monitoring/prometheus:/prometheus
+      - ./monitoring/alertmanager/data:/data
+      - ./monitoring/alertmanager/templates:/etc/alertmanager/templates
+    command:
+      - '--config.file=/prometheus/alert_manager.yml'
+      - '--storage.path=/data'
+      - '--web.external-url=http://localhost:9093/alert_manager'
+    ports:
+      - 9093:9093

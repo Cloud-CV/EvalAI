@@ -2,6 +2,10 @@ global:
   scrape_interval: 30s
   external_labels:
     monitor: 'evalai-monitor'
+
+rule_files:
+  - /etc/rules/rules.yml
+
 scrape_configs:
   - job_name: 'prometheus' 
     static_configs: 
@@ -16,3 +20,9 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['node_exporter:9100']
+
+alerting:
+  alertmanagers:
+  - path_prefix: '/alert_manager'
+    static_configs:
+    - targets: ['alert_manager:9093']
