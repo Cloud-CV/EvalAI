@@ -50,6 +50,7 @@ from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
+    get_participant_model,
 )
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
@@ -2824,7 +2825,35 @@ def update_submission_meta(request, challenge_pk, submission_pk):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
     else:
-        response_data = {
-            "error": "Sorry, you are not authorized to make this request"
-        }
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+
+        participant_team = get_participant_model(participant_team_pk)
+
+        try:
+            submission = Submission.objects.get(
+                id=submission_pk,
+                participant_team=participant_team,
+            )
+        except Submission.DoesNotExist:
+            response_data = {
+                "error": "Submission {} does not exist".format(submission_pk)
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={"request": request},
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
