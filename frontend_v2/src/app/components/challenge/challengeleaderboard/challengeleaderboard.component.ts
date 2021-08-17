@@ -1,7 +1,6 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatSliderChange } from '@angular/material';
 import { NGXLogger } from 'ngx-logger';
 
 // import component
@@ -196,16 +195,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   pollingInterval: any;
 
   /**
-   * If leaderboard precision value is equal to 0
-   */
-  minusDisabled = false;
-
-  /**
-   * If leaderboard precision value is equal to 5
-   */
-  plusDisabled = false;
-
-  /**
    * Challenge phase visibility
    */
   challengePhaseVisibility = {
@@ -216,12 +205,13 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   * @param endpointsService  EndPointsService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -653,30 +643,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       });
     }
     SELF.openDialog(SELF.metaAttributesData);
-  }
-
-  /**
-   * Update leaderboard decimal precision value
-   * @param updatedLeaderboardPrecisionValue new leaderboard precision value
-   */
-  updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue) {
-    const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
-    const SELF = this;
-    SELF.leaderboardPrecisionValue = updatedLeaderboardPrecisionValue;
-    SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
-    const BODY = JSON.stringify({
-      leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
-    });
-    SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
-      (data) => {
-        this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
-        this.plusDisabled = SELF.leaderboardPrecisionValue === 20 ? true : false;
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err, true);
-      },
-      () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
-    );
   }
 
   /**
