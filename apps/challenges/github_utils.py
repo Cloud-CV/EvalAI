@@ -59,7 +59,9 @@ class Github_Interface:
         content_response = self.get_content_from_path(path)
         string_data = None
         if content_response and content_response.get("content"):
-            string_data = base64.b64decode(content_response["content"])
+            string_data = base64.b64decode(content_response["content"]).decode(
+                "utf-8"
+            )
         return string_data
 
     def update_content_from_path(self, path, content):
@@ -98,6 +100,7 @@ def github_challenge_sync(challenge):
     if not github.is_repo():
         return
     try:
+        # Challenge Non-file field Update
         non_file_fields = [
             "title",
             "short_description",
@@ -126,5 +129,21 @@ def github_challenge_sync(challenge):
         if update_challenge_config:
             content_str = yaml.dump(challenge_config_yaml, sort_keys=False)
             github.update_data_from_path("challenge_config.yaml", content_str)
+
+        # Challenge File fields Update
+        challenge_file_fields = [
+            "description",
+            "evaluation_details",
+            "terms_and_conditions",
+            "submission_guidelines",
+        ]
+        for field in challenge_file_fields:
+            if challenge_config_yaml.get(field) is None:
+                continue
+            field_path = challenge_config_yaml[field]
+            field_str = github.get_data_from_path(field_path)
+            if field_str is None or field_str == challenge[field]:
+                continue
+            github.update_data_from_path(field_path, challenge[field])
     except Exception as e:
         logger.info("Github Sync unsuccessful due to {}".format(e))
