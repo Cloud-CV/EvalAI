@@ -24,12 +24,15 @@
         vm.projectUrl = "";
         vm.publicationUrl = "";
         vm.isPublicSubmission = null;
+        vm.isMultiMetricLeaderboardEnabled = {};
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
+        vm.phaseSplitLeaderboardSchema = {};
         vm.submissionMetaAttributes = []; // Stores the attributes format and phase ID for all the phases of a challenge.
         vm.metaAttributesforCurrentSubmission = null; // Stores the attributes while making a submission for a selected phase.
         vm.selectedPhaseSplit = {};
@@ -829,6 +832,8 @@
                         vm.phaseSplits[i].showPrivate = true;
                         vm.showPrivateIds.push(vm.phaseSplits[i].id);
                     }
+                    vm.isMultiMetricLeaderboardEnabled[vm.phaseSplits[i].id] = vm.phaseSplits[i].is_multi_metric_leaderboard;
+                    vm.phaseSplitLeaderboardSchema[vm.phaseSplits[i].id] = vm.phaseSplits[i].leaderboard_schema;
                 }
                 utilities.hideLoader();
             },
@@ -909,8 +914,10 @@
             vm.stopLeaderboard();
             vm.poller = $interval(function() {
                 parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
-                parameters.method = 'GET';
-                parameters.data = {};
+                parameters.method = 'POST';
+                parameters.data = {
+                    "order_by": vm.orderLeaderboardBy
+                };
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
@@ -967,8 +974,10 @@
             // Show leaderboard
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
-            parameters.method = 'GET';
-            parameters.data = {};
+            parameters.method = 'POST';
+            parameters.data = {
+                "order_by": vm.orderLeaderboardBy
+            };
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -1389,8 +1398,10 @@
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
-            parameters.method = 'GET';
-            parameters.data = {};
+            parameters.method = 'POST';
+            parameters.data = {
+                "order_by": vm.orderLeaderboardBy
+            };
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -2729,6 +2740,10 @@
             } else {
                 $mdDialog.hide();
             }
+        };
+
+        vm.encodeMetricURI = function(metric) {
+            return encodeURIComponent(metric);
         };
 
     }

@@ -286,6 +286,15 @@
             title: 'Leaderboard'
         };
 
+        var challenge_phase_metric_leaderboard = {
+            name: "web.challenge-main.challenge-page.phase-metric-leaderboard",
+            url: "/leaderboard/:phaseSplitId/:metric",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
+            templateUrl: baseUrl + "/web/challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
         var profile = {
             name: "web.profile",
             parent: "web",
@@ -503,6 +512,7 @@
         $stateProvider.state(my_challenge_all_submission);
         $stateProvider.state(leaderboard);
         $stateProvider.state(challenge_phase_leaderboard);
+        $stateProvider.state(challenge_phase_metric_leaderboard);
 
         // featured challenge details
         $stateProvider.state(featured_challenge_page);
