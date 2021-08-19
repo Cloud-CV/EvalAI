@@ -1,7 +1,6 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatSliderChange } from '@angular/material';
 import { NGXLogger } from 'ngx-logger';
 
 // import component
@@ -146,6 +145,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   getAllEntries = false;
 
   /**
+   * Number of entries on complete leaderboard
+   */
+   numberOfAllEntries:number = 0;
+
+  /**
    * Current state of whether private leaderboard
    */
   showLeaderboardToggle = true;
@@ -191,16 +195,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   pollingInterval: any;
 
   /**
-   * If leaderboard precision value is equal to 0
-   */
-  minusDisabled = false;
-
-  /**
-   * If leaderboard precision value is equal to 5
-   */
-  plusDisabled = false;
-
-  /**
    * Challenge phase visibility
    */
   challengePhaseVisibility = {
@@ -211,12 +205,13 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   * @param endpointsService  EndPointsService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -346,8 +341,10 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     phaseSplitSelected(phaseSplit) {
       const SELF = this;
       SELF.selectedPhaseSplit = phaseSplit;
+
+      SELF.fetchNumberOfAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id']);
       
-      const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+      const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']);
       SELF.apiService.getUrl(API_PATH).subscribe(
         (data) => {
           SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
@@ -360,7 +357,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       );
 
       if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
-        SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
+        if(SELF.getAllEntriesTextOption == 'Exclude private submissions') {
+          SELF.fetchAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id']);
+        } else {
+          SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
+        }
         SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
         SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
         let selectedPhase = SELF.phases.find((phase) => {
@@ -518,6 +519,24 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   }
 
   /**
+   * Fetch number of entries of complete leaderboard for a phase split public/private
+   * @param phaseSplitId id of the phase split
+   */
+  fetchNumberOfAllEnteriesOnPublicLeaderboard(phaseSplitId) {
+    const API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
+    const SELF = this;
+    this.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        this.numberOfAllEntries = data['results'].length;
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+  }
+
+  /**
    * function for toggeling between public leaderboard and complete leaderboard [public/private]
    */
   toggleLeaderboard(getAllEntries) {
@@ -536,7 +555,12 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * @param phaseSplitId id of the phase split
    */
   startLeaderboard(phaseSplitId) {
-    const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
+    let API_PATH;
+    if(this.getAllEntriesTextOption == 'Exclude private submissions') {
+      API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
+    } else {
+      API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
+    }
     const SELF = this;
     clearInterval(SELF.pollingInterval);
     SELF.pollingInterval = setInterval(function () {
@@ -619,30 +643,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       });
     }
     SELF.openDialog(SELF.metaAttributesData);
-  }
-
-  /**
-   * Update leaderboard decimal precision value
-   * @param updatedLeaderboardPrecisionValue new leaderboard precision value
-   */
-  updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue) {
-    const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
-    const SELF = this;
-    SELF.leaderboardPrecisionValue = updatedLeaderboardPrecisionValue;
-    SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
-    const BODY = JSON.stringify({
-      leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
-    });
-    SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
-      (data) => {
-        this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
-        this.plusDisabled = SELF.leaderboardPrecisionValue === 20 ? true : false;
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err, true);
-      },
-      () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
-    );
   }
 
   /**

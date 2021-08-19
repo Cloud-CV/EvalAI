@@ -493,7 +493,7 @@ def change_submission_data_and_visibility(
 
 
 @swagger_auto_schema(
-    methods=["get"],
+    methods=["get", "post"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_phase_split_id",
@@ -563,7 +563,7 @@ def change_submission_data_and_visibility(
         )
     },
 )
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """
@@ -581,6 +581,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split_id
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
+    order_by = request.data.get("order_by")
     (
         response_data,
         http_status_code,
@@ -589,6 +590,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_obj,
         challenge_phase_split,
         only_public_entries=True,
+        order_by=order_by,
     )
     # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:

@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { ApiService } from '../../../services/api.service';
-import { GlobalService } from '../../../services/global.service';
 
 /**
  * Component Class
@@ -20,17 +17,9 @@ export class HomemainComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  ApiService Injection.
    * @param authService  AuthService Injection.
    */
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private apiService: ApiService,
-    private globalService: GlobalService,
     private authService: AuthService
   ) {}
 

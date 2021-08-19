@@ -1246,7 +1246,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 challenge_phase_data[
                     field
                 ] = challenge_phase_data_from_hosts.get(field)
-
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(

@@ -79,6 +79,11 @@
   }
 }
 
+.pull-right {
+  margin-left: auto;
+  margin-top: -3%;
+}
+
 .btn-switch {
   position: relative;
   display: block;
@@ -114,26 +119,6 @@
 .sort-leaderboard-switch {
   vertical-align: middle;
   display: inline-block;
-}
-
-.rangeslider {
-  width: 50%;
-  display: flex;
-  justify-content: space-around;
-}
-
-mat-slider {
-  width: 50%;
-  padding-right: 0px;
-}
-
-.rangeslider {
-  mat-chip {
-    background: #22857b !important;
-  }
-  .btn {
-    margin-right: 0px;
-  }
 }
 
 .ev-md-container {
@@ -174,12 +159,6 @@ mat-slider {
 
 .ev-card-body {
   padding-top: 0px;
-}
-
-@media only screen and (max-width: $screen-sm) {
-  mat-slider {
-    width: 100%;
-  }
 }
 
 @media only screen and (max-width: 485px) {
