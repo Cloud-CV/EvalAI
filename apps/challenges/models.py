@@ -15,7 +15,7 @@ from base.utils import RandomFileName, get_slug, is_model_field_changed
 
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
-from .github_utils import github_challenge_sync
+from .github_utils import github_challenge_sync, github_challenge_phase_sync
 
 
 @receiver(pre_save, sender="challenges.Challenge")
@@ -357,6 +357,16 @@ class ChallengePhase(TimeStampedModel):
             *args, **kwargs
         )
         return challenge_phase_instance
+
+
+@receiver(signals.post_save, sender="challenges.ChallengePhase")
+def github_sync_challenge_phase(sender, instance, created, **kwargs):
+    if (
+        instance.challenge.github_repository
+        and instance.challenge.github_token
+    ):
+        serialized_obj = serializers.serialize("json", [instance])
+        github_challenge_phase_sync.delay(serialized_obj)
 
 
 def post_save_connect(field_name, sender):

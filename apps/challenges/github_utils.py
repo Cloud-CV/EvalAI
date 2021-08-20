@@ -147,3 +147,89 @@ def github_challenge_sync(challenge):
             github.update_data_from_path(field_path, challenge[field])
     except Exception as e:
         logger.info("Github Sync unsuccessful due to {}".format(e))
+
+
+@app.task
+def github_challenge_phase_sync(challenge_phase):
+    from .serializers import ChallengePhaseSerializer
+
+    for obj in serializers.deserialize("json", challenge_phase):
+        challenge_phase_obj = obj.object
+    challenge = challenge_phase_obj.challenge
+    serializer = ChallengePhaseSerializer(challenge_phase_obj)
+    challenge_phase = serializer.data
+    github = Github_Interface(
+        GITHUB_REPOSITORY=challenge.github_repository,
+        GITHUB_AUTH_TOKEN=challenge.github_token,
+    )
+    if not github.is_repo():
+        return
+    try:
+        # Non-file field Update
+        challenge_phase_unique = "codename"
+        non_file_fields = [
+            "name",
+            "leaderboard_public",
+            "is_public",
+            "is_submission_public",
+            "start_date",
+            "end_date",
+            "max_submissions_per_day",
+            "max_submissions_per_month",
+            "max_submissions",
+            "is_restricted_to_select_one_submission",
+            "is_partial_submission_evaluation_enabled",
+            "allowed_submission_file_types",
+        ]
+        challenge_config_str = github.get_data_from_path(
+            "challenge_config.yaml"
+        )
+        challenge_config_yaml = yaml.safe_load(challenge_config_str)
+        update_challenge_config = False
+
+        for phase in challenge_config_yaml["challenge_phases"]:
+            if (
+                phase.get(challenge_phase_unique)
+                != challenge_phase[challenge_phase_unique]
+            ):
+                continue
+            for field in non_file_fields:
+                # Ignoring commits when no update in field value
+                if (
+                    phase.get(field) is not None
+                    and phase[field] == challenge_phase[field]
+                ):
+                    continue
+                update_challenge_config = True
+                phase[field] = challenge_phase[field]
+            break
+
+        if update_challenge_config:
+            content_str = yaml.dump(challenge_config_yaml, sort_keys=False)
+            github.update_data_from_path("challenge_config.yaml", content_str)
+
+        # File fields Update
+        file_fields = ["description"]
+
+        for phase in challenge_config_yaml["challenge_phases"]:
+            if (
+                phase.get(challenge_phase_unique)
+                != challenge_phase[challenge_phase_unique]
+            ):
+                continue
+            for field in file_fields:
+                if phase.get(field) is None:
+                    continue
+                field_path = phase[field]
+                field_str = github.get_data_from_path(field_path)
+                if field_str is None or field_str == challenge_phase[field]:
+                    continue
+                github.update_data_from_path(
+                    field_path, challenge_phase[field]
+                )
+            break
+
+    except Exception as e:
+        logger.info(
+            "Github Sync Challenge Phase unsuccessful due to {}".format(e)
+        )
