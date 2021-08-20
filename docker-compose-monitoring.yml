@@ -1,6 +1,7 @@
 version: "3"
 services:
   prometheus:
+    hostname: prometheus
     image: prom/prometheus:latest
     user: "1000"
     volumes:
@@ -14,6 +15,7 @@ services:
       - '--web.external-url=http://localhost:9090/prometheus'
 
   grafana:
+    hostname: grafana
     image: grafana/grafana:latest
     user: "1000"
     env_file:
