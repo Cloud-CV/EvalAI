@@ -25,6 +25,10 @@ input {
   border-bottom: none;
 }
 
+p {
+  margin:0px 0px 25px 0px;  
+}
+
 :host ::ng-deep .mat-tab-label .mat-tab-label-content{
   font-weight: $fw-light !important;
   font-size: $fs-16 !important;

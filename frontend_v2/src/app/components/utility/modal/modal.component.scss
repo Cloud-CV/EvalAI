@@ -1,4 +1,5 @@
 @import './variables.scss';
+@import './mixins.scss';
 
 .editor-validation-message {
   color: $highlight;
@@ -9,4 +10,12 @@
   ul {
     margin-right: 20px;
   }
+}
+
+code {
+  max-width: 700px;
+}
+
+.content {
+  width: 770px;
 }

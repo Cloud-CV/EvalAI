@@ -137,6 +137,15 @@
       <!-- Edit Phase Details -->
       <mat-tab label="Phase and Leaderboard Details"> 
         <div class="row settings-section">
+          <div class="col-md-11 col-sm-11 col-xs-10" *ngIf="isChallengeHost">
+            <div class="fw-light">
+              <p class="fs-16">
+                <strong> Note: </strong> For test annotations > 100MB, please use
+                <a href=" https://cli.eval.ai/#challenge-annotations"><strong class="blue-text"> evalai-cli </strong></a> to update the test annotations. 
+                <a (click)="showCliInstructions()"><strong class="blue-text">View Instructions</strong></a>
+              </p>
+            </div>
+          </div>
           <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
             <span class="fw-light fs-18">Edit Phase</span>
           </div>

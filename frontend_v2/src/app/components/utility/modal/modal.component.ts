@@ -51,6 +51,11 @@ export class ModalComponent implements OnInit {
   isEditorRequired = false;
 
   /**
+   * Is Cli instructions modal
+   */
+  isCliInstructions = false;
+
+  /**
    * Modal edit content
    */
   editorContent = '';
@@ -124,6 +129,16 @@ export class ModalComponent implements OnInit {
   };
 
   /**
+   * Cli version
+   */
+  cliVersion = '';
+
+   /**
+    * Auth token
+    */
+  authToken = '';
+
+  /**
    * Modal form items
    */
   @ViewChildren('formmodal')
@@ -187,6 +202,9 @@ export class ModalComponent implements OnInit {
       if (this.params['form'] && this.params['form'].length > 0) {
         this.form = this.params['form'];
       }
+      if (this.params['isCliInstructions']) {
+        this.isCliInstructions = this.params['isCliInstructions'];
+      }
     }
 
     this.authService.change.subscribe((details) => {
@@ -196,7 +214,13 @@ export class ModalComponent implements OnInit {
     if (this.isEditorRequired || this.isButtonDisabled) {
       this.isDisabled = false;
     }
-    this.challengeService.currentChallenge.subscribe((challenge) => (this.challenge = challenge));
+    this.challengeService.currentChallenge.subscribe((challenge) => {
+      this.challenge = challenge;
+      if (this.challenge.cli_version !== null) {
+        this.cliVersion = this.challenge.cli_version;
+      }
+    });
+    this.authToken = this.globalService.getData('refreshJWT');
   }
 
   /**
@@ -235,6 +259,25 @@ export class ModalComponent implements OnInit {
     }
     self.globalService.hideModal();
     self.confirmCallback(PARAMS);
+  }
+
+  /**
+   * Copy text to clipboard
+   */
+  copyTextToClipboard(ref: HTMLElement) {
+    const textBox = document.createElement('textarea');
+    textBox.style.position = 'fixed';
+    textBox.style.left = '0';
+    textBox.style.top = '0';
+    textBox.style.opacity = '0';
+    textBox.value = ref.innerText.split('$ ')[1];
+    document.body.appendChild(textBox);
+    textBox.focus();
+    textBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(textBox);
+
+    this.globalService.showToast('success', 'Command copied to clipboard');
   }
 
   /**

@@ -730,6 +730,19 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     };
   } 
 
+  showCliInstructions() {
+    const SELF = this;
+    /**
+     * Parameters of the modal
+    */
+      const PARAMS = {
+      title: 'Cli Instructions for updating test annotations',
+      label: 'evaluation_details',
+      isCliInstructions: true
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
   /**
    * Edit Phase Details function
    */
