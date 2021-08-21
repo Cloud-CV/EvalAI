@@ -25,5 +25,6 @@ scrape_configs:
 alerting:
   alertmanagers:
   - path_prefix: '/alert_manager'
+    scheme: 'https'
     static_configs:
     - targets: ['monitoring-staging.eval.ai']
