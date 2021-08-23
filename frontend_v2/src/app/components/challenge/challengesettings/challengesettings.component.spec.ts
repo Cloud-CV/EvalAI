@@ -4,21 +4,24 @@ import { ChallengesettingsComponent } from './challengesettings.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
-import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { WindowService } from '../../../services/window.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterTestingModule } from '@angular/router/testing';
+import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 describe('ChallengesettingsComponent', () => {
   let component: ChallengesettingsComponent;
   let fixture: ComponentFixture<ChallengesettingsComponent>;
 
+  let globalService, apiService, endpointsService, router;
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ChallengesettingsComponent],
-      providers: [ChallengeService, GlobalService, AuthService, ApiService, WindowService, EndpointsService],
+      providers: [ChallengeService, GlobalService, ApiService, WindowService, EndpointsService],
       imports: [RouterTestingModule, HttpClientModule],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -26,11 +29,357 @@ describe('ChallengesettingsComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ChallengesettingsComponent);
+    router = TestBed.get(Router);
+    globalService = TestBed.get(GlobalService);
+    apiService = TestBed.get(ApiService);
     component = fixture.componentInstance;
+
+    spyOn(router, 'navigate');
+    spyOn(globalService, 'handleApiError');
+    spyOn(globalService, 'showToast');
+    spyOn(globalService, 'showModal');
+    spyOn(globalService, 'showConfirm');
+    spyOn(endpointsService, 'editChallengeDetailsURL');
+
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('Global variables', () => {
+    expect(component.isChallengeHost).toBeFalsy();
+    expect(component.publishChallenge).toEqual({
+      state: 'Not Published',
+      icon: 'fa fa-eye-slash red-text',
+    });
+  });
+
+  it('should toggle the publish challenge state from public to private', async(() => {
+    component.publishChallenge = {
+      state: 'Published',
+      icon: 'fa fa-eye green-text',
+    };
+    const expectedSuccessMsg = 'The challenge was successfully made private';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+        spyOn(globalService, 'showModal');
+        spyOn(globalService, 'showToast');
+        spyOn(component, 'updateView');
+      })
+    );
+
+    component.togglePublishChallengeState();
+    fixture.detectChanges();
+    expect(globalService.showConfirm).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.publishChallenge.state).toEqual('Not Published');
+    expect(component.publishChallenge.icon).toEqual('fa fa-eye-slash red-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should toggle the publish challenge state from private to public', async(() => {
+    component.publishChallenge = {
+      state: 'Not Published',
+      icon: 'fa fa-eye-slash red-text',
+    };
+    const expectedSuccessMsg = 'The challenge was successfully made public';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.togglePublishChallengeState();
+    fixture.detectChanges();
+    expect(globalService.showConfirm).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.publishChallenge.state).toEqual('Published');
+    expect(component.publishChallenge.icon).toEqual('fa fa-eye green-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `togglePublishChallengeState` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.togglePublishChallengeState();
+    fixture.detectChanges();
+    expect(globalService.showConfirm).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should show the modal and successfully edit the title of a challenge', async(() => {
+    component.challenge = {
+      id: 1,
+      title: 'Challenge title',
+      creator: 'Host user',
+      description: 'Challenge description',
+    };
+    const expectedUpdateTitle = 'Updated challenge title';
+    const expectedSuccessMsg = 'The challenge title is  successfully updated!';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ title: expectedUpdateTitle });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editChallengeTitle();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.challenge.title).toEqual(expectedUpdateTitle);
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `editChallengeTitle` method', async(() => {
+    component.challenge = {
+      id: 1,
+      title: 'Challenge title',
+      creator: 'Host user',
+      description: 'Challenge description',
+    };
+    const expectedApiError = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editChallengeTitle();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should show the modal with the form fields and successfully delete the challenge', async(() => {
+    const expectedSuccessMsg = 'The Challenge is successfully deleted!';
+    spyOn(apiService, 'postUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.deleteChallenge();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.postUrl).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/challenges/all']);
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `deleteChallenge` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'postUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.deleteChallenge();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.postUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should show modal and successfully edit the evaluation details', () => {
+    const updatedEvaluationDetails = 'Updated challenge evaluation details';
+    const expectedSuccessMsg = 'The evaluation details is successfully updated!';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ evaluation_details: updatedEvaluationDetails });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editEvaluationCriteria();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(updatedEvaluationDetails);
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.challenge.evaluation_details).toEqual(updatedEvaluationDetails);
+    expect(component.updateView).toHaveBeenCalled();
+    expect(component.challenge.evaluation_details).toEqual(updatedEvaluationDetails);
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  });
+
+  it('should handle the API error for `editEvaluationCriteria` method', () => {
+    const updatedEvaluationDetails = 'Updated challenge evaluation details';
+    const expectedErrorMsg = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editEvaluationCriteria();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(updatedEvaluationDetails);
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
+  });
+
+  it('should show modal and successfully edit the terms and conditions', () => {
+    const updatedTermsAndConditions = 'Updated terms and conditions of challenge';
+    const expectedSuccessMsg = 'The terms and conditions are successfully updated!';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ terms_and_conditions: updatedTermsAndConditions });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editTermsAndConditions();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(updatedTermsAndConditions);
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.challenge.terms_and_conditions).toEqual(updatedTermsAndConditions);
+    expect(component.updateView).toHaveBeenCalled();
+    expect(component.challenge.terms_and_conditions).toEqual(updatedTermsAndConditions);
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  });
+
+  it('should handle the API error for `editTermsAndConditions` method', () => {
+    const updatedTermsAndConditions = 'Updated terms and conditions of challenge';
+    const expectedErrorMsg = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editTermsAndConditions();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(updatedTermsAndConditions);
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
+  });
+
+  it('should show modal and successfully edit evaluation script', () => {
+    const parameters = {
+      evaluation_script: 'evaluation_script',
+    };
+    const expectedSuccessMsg = 'The evaluation script is successfully updated!';
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editEvaluationScript();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(parameters);
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg);
+  });
+
+  it('should handle the API error for `editEvaluationScript` method', () => {
+    const parameters = {
+      evaluation_script: 'evaluation_script',
+    };
+    const expectedErrorMsg = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editEvaluationScript();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(parameters);
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
+  });
+  
+  it('should show modal and successfully edit the challenge description', () => {
+    const updatedDescription = 'Updated challenge description';
+    const expectedSuccessMsg = 'The description is successfully updated!';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editChallengeOverview();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(updatedDescription);
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  });
+
+  it('should handle the API error for `editChallengeOverview` method', () => {
+    const updatedDescription = 'Updated challenge description';
+    const expectedErrorMsg = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editChallengeOverview();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall(updatedDescription);
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
   });
 });
