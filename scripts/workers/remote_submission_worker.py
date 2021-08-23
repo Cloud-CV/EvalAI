@@ -351,8 +351,7 @@ def make_request(url, method, data=None):
             response.raise_for_status()
         except requests.exceptions.RequestException:
             logger.exception(
-                "The worker is not able to establish connection with EvalAI due to {}"
-                % (response.json())
+                f"The worker is not able to establish connection with EvalAI due to {response.json()}"
             )
             raise
         except requests.exceptions.HTTPError:
