@@ -8,6 +8,7 @@ spec:
       {}
   egress:
   - toFQDNs:
+    - matchName: archive.ubuntu.com
     - matchName: {{EVALAI_DNS}}
   - toEndpoints:
     - matchLabels:
