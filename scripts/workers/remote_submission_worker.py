@@ -536,7 +536,9 @@ def run_submission(
             "submission_status": "finished",
             "stdout": stdout_content,
             "stderr": stderr_content,
+            "metadata": submission_output.get("submission_metadata")
         }
+        # need to postprocess result to match api
         if "result" in submission_output:
             res = submission_output.get("result")
             new_res = []
@@ -549,10 +551,9 @@ def run_submission(
                     }
                     new_res.append(temp)
             submission_data["result"] = json.dumps(new_res)
-        submission_data["metadata"] = json.dumps(
-            submission_output.get("submission_metadata")
-        )
-
+            submission_data["submission_status"] = "finished"
+        else:
+            submission_data["submission_status"] = "failed"
         update_submission_data(submission_data, challenge_pk, submission_pk)
         shutil.rmtree(temp_run_dir)
         return
