@@ -536,7 +536,7 @@ def run_submission(
             "submission_status": "finished",
             "stdout": stdout_content,
             "stderr": stderr_content,
-            "metadata": submission_output.get("submission_metadata")
+            "metadata": json.dumps(submission_output.get("submission_metadata"))
         }
         # need to postprocess result to match api
         if "result" in submission_output:
