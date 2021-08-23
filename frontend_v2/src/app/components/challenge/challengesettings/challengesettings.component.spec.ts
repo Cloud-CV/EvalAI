@@ -54,6 +54,18 @@ describe('ChallengesettingsComponent', () => {
       state: 'Not Published',
       icon: 'fa fa-eye-slash red-text',
     });
+    expect(component.phaseVisibility).toEqual({
+      state: 'Private',
+      icon: 'fa fa-toggle-off grey-text text-darken-1',
+    });
+    expect(component.submissionVisibility).toEqual({
+      state: 'Private',
+      icon: 'fa fa-toggle-off grey-text text-darken-1',
+    });
+    expect(component.leaderboardVisibility).toEqual({
+      state: 'Private',
+      icon: 'fa fa-toggle-off grey-text text-darken-1',
+    });
   });
 
   it('should toggle the publish challenge state from public to private', async(() => {
@@ -382,4 +394,203 @@ describe('ChallengesettingsComponent', () => {
     expect(apiService.patchUrl).toHaveBeenCalled();
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
   });
+
+  it('should toggle the phase visibility state from public to private', async(() => {
+    component.phaseVisibility = {
+      state: 'Public',
+      icon: 'fa fa-toggle-on green-text',
+    };
+    const expectedSuccessMsg = 'The phase was successfully made private';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.togglePhaseVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.phaseVisibility.state).toEqual('Private');
+    expect(component.phaseVisibility.icon).toEqual('fa fa-toggle-off grey-text text-darken-1');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should toggle the phase visiblity state from private to public', async(() => {
+    component.phaseVisibility = {
+      state: 'Private',
+      icon: 'fa fa-toggle-off grey-text text-darken-1',
+    };
+    const expectedSuccessMsg = 'The phase was successfully made public';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.togglePhaseVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.phaseVisibility.state).toEqual('Public');
+    expect(component.phaseVisibility.icon).toEqual('fa fa-toggle-on green-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `togglePhaseVisiblity` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.togglePhaseVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should toggle the submission visibility state from public to private', async(() => {
+    component.submissionVisibility = {
+      state: 'Public',
+      icon: 'fa fa-toggle-on green-text',
+    };
+    const expectedSuccessMsg = 'The submissions were successfully made private';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.toggleSubmissionVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.submissionVisibility.state).toEqual('Private');
+    expect(component.submissionVisibility.icon).toEqual('fa fa-toggle-off grey-text text-darken-1');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should toggle the submission visibility state from private to public', async(() => {
+    component.submissionVisibility = {
+      state: 'Private',
+      icon: 'fa fa-toggle-off grey-text text-darken-1',
+    };
+    const expectedSuccessMsg = 'The submissions were successfully made public';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.toggleSubmissionVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.submissionVisibility.state).toEqual('Public');
+    expect(component.submissionVisibility.icon).toEqual('fa fa-toggle-on green-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `toggleSubmissionVisiblity` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.toggleSubmissionVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should toggle the leaderboard visibility state from public to private', async(() => {
+    component.leaderboardVisibility = {
+      state: 'Public',
+      icon: 'fa fa-toggle-on green-text',
+    };
+    const expectedSuccessMsg = 'The phase split was successfully made private';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.toggleLeaderboardVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.leaderboardVisibility.state).toEqual('Private');
+    expect(component.leaderboardVisibility.icon).toEqual('fa fa-toggle-off grey-text text-darken-1');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should toggle the leaderboard visibility state from private to public', async(() => {
+    component.leaderboardVisibility = {
+      state: 'Private',
+      icon: 'fa fa-toggle-off grey-text text-darken-1',
+    };
+    const expectedSuccessMsg = 'The phase split was successfully made public';
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.toggleLeaderboardVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.leaderboardVisibility.state).toEqual('Public');
+    expect(component.leaderboardVisibility.icon).toEqual('fa fa-toggle-on green-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `toggleLeaderboardVisiblity` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedApiError.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.toggleLeaderboardVisibility();
+    fixture.detectChanges();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
 });
