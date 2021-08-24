@@ -3,8 +3,13 @@ import logging
 import base64
 import yaml
 
-from django.core import serializers
-
+from base.utils import deserialize_object
+from .github_sync_config import (
+    challenge_non_file_fields,
+    challenge_file_fields,
+    challenge_phase_non_file_fields,
+    challenge_phase_file_fields,
+)
 from evalai.celery import app
 
 logger = logging.getLogger(__name__)
@@ -12,7 +17,7 @@ logger = logging.getLogger(__name__)
 URLS = {"contents": "/repos/{}/contents/{}", "repos": "/repos/{}"}
 
 
-class Github_Interface:
+class GithubInterface:
     def __init__(self, GITHUB_AUTH_TOKEN, GITHUB_REPOSITORY):
         self.GITHUB_AUTH_TOKEN = GITHUB_AUTH_TOKEN
         self.GITHUB_REPOSITORY = GITHUB_REPOSITORY
@@ -24,7 +29,7 @@ class Github_Interface:
         return headers
 
     def make_request(self, url, method, params={}, data={}):
-        url = self.return_github_url(url)
+        url = self.get_github_url(url)
         headers = self.get_request_headers()
         try:
             response = requests.request(
@@ -44,7 +49,7 @@ class Github_Interface:
             return None
         return response.json()
 
-    def return_github_url(self, url):
+    def get_github_url(self, url):
         base_url = "https://api.github.com"
         url = "{0}{1}".format(base_url, url)
         return url
@@ -79,7 +84,7 @@ class Github_Interface:
         content = base64.b64encode(bytes(data, "utf-8")).decode("utf-8")
         return self.update_content_from_path(path, content)
 
-    def is_repo(self):
+    def is_repository(self):
         url = URLS.get("repos").format(self.GITHUB_REPOSITORY)
         repo_response = self.make_request(url, "GET")
         return True if repo_response else False
@@ -89,35 +94,23 @@ class Github_Interface:
 def github_challenge_sync(challenge):
     from .serializers import ZipChallengeSerializer
 
-    for obj in serializers.deserialize("json", challenge):
-        challenge_obj = obj.object
+    challenge_obj = deserialize_object(challenge)
     serializer = ZipChallengeSerializer(challenge_obj)
     challenge = serializer.data
-    github = Github_Interface(
+    github = GithubInterface(
         GITHUB_REPOSITORY=challenge.get("github_repository"),
         GITHUB_AUTH_TOKEN=challenge.get("github_token"),
     )
-    if not github.is_repo():
+    if not github.is_repository():
         return
     try:
         # Challenge Non-file field Update
-        non_file_fields = [
-            "title",
-            "short_description",
-            "leaderboard_description",
-            "remote_evaluation",
-            "is_docker_based",
-            "is_static_dataset_code_upload",
-            "start_date",
-            "end_date",
-            "published",
-        ]
         challenge_config_str = github.get_data_from_path(
             "challenge_config.yaml"
         )
         challenge_config_yaml = yaml.safe_load(challenge_config_str)
         update_challenge_config = False
-        for field in non_file_fields:
+        for field in challenge_non_file_fields:
             # Ignoring commits when no update in field value
             if (
                 challenge_config_yaml.get(field) is not None
@@ -131,12 +124,6 @@ def github_challenge_sync(challenge):
             github.update_data_from_path("challenge_config.yaml", content_str)
 
         # Challenge File fields Update
-        challenge_file_fields = [
-            "description",
-            "evaluation_details",
-            "terms_and_conditions",
-            "submission_guidelines",
-        ]
         for field in challenge_file_fields:
             if challenge_config_yaml.get(field) is None:
                 continue
@@ -153,34 +140,19 @@ def github_challenge_sync(challenge):
 def github_challenge_phase_sync(challenge_phase):
     from .serializers import ChallengePhaseSerializer
 
-    for obj in serializers.deserialize("json", challenge_phase):
-        challenge_phase_obj = obj.object
+    challenge_phase_obj = deserialize_object(challenge_phase)
     challenge = challenge_phase_obj.challenge
     serializer = ChallengePhaseSerializer(challenge_phase_obj)
     challenge_phase = serializer.data
-    github = Github_Interface(
+    github = GithubInterface(
         GITHUB_REPOSITORY=challenge.github_repository,
         GITHUB_AUTH_TOKEN=challenge.github_token,
     )
-    if not github.is_repo():
+    if not github.is_repository():
         return
     try:
         # Non-file field Update
         challenge_phase_unique = "codename"
-        non_file_fields = [
-            "name",
-            "leaderboard_public",
-            "is_public",
-            "is_submission_public",
-            "start_date",
-            "end_date",
-            "max_submissions_per_day",
-            "max_submissions_per_month",
-            "max_submissions",
-            "is_restricted_to_select_one_submission",
-            "is_partial_submission_evaluation_enabled",
-            "allowed_submission_file_types",
-        ]
         challenge_config_str = github.get_data_from_path(
             "challenge_config.yaml"
         )
@@ -193,7 +165,7 @@ def github_challenge_phase_sync(challenge_phase):
                 != challenge_phase[challenge_phase_unique]
             ):
                 continue
-            for field in non_file_fields:
+            for field in challenge_phase_non_file_fields:
                 # Ignoring commits when no update in field value
                 if (
                     phase.get(field) is not None
@@ -209,15 +181,13 @@ def github_challenge_phase_sync(challenge_phase):
             github.update_data_from_path("challenge_config.yaml", content_str)
 
         # File fields Update
-        file_fields = ["description"]
-
         for phase in challenge_config_yaml["challenge_phases"]:
             if (
                 phase.get(challenge_phase_unique)
                 != challenge_phase[challenge_phase_unique]
             ):
                 continue
-            for field in file_fields:
+            for field in challenge_phase_file_fields:
                 if phase.get(field) is None:
                     continue
                 field_path = phase[field]

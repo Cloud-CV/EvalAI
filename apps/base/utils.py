@@ -12,6 +12,7 @@ import uuid
 from contextlib import contextmanager
 
 from django.conf import settings
+from django.core import serializers
 from django.utils.deconstruct import deconstructible
 
 from rest_framework.exceptions import NotFound
@@ -306,3 +307,10 @@ def is_model_field_changed(model_obj, field_name):
     if prev != curr:
         return True
     return False
+
+
+def deserialize_object(object):
+    deserialized_object = None
+    for obj in serializers.deserialize("json", object):
+        deserialized_object = obj.object
+    return deserialized_object
