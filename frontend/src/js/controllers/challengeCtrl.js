@@ -1461,8 +1461,10 @@
             // Show leaderboard
             vm.leaderboard = {};
             parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000";
-            parameters.method = 'GET';
-            parameters.data = {};
+            parameters.method = 'POST';
+            parameters.data = {
+                "order_by": vm.orderLeaderboardBy
+            };
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
