@@ -232,7 +232,7 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def github_sync_challenge(sender, instance, created, **kwargs):
+def challenge_sync(sender, instance, created, **kwargs):
     if instance.github_repository and instance.github_token:
         serialized_obj = serializers.serialize("json", [instance])
         github_challenge_sync.delay(serialized_obj)
@@ -360,7 +360,7 @@ class ChallengePhase(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.ChallengePhase")
-def github_sync_challenge_phase(sender, instance, created, **kwargs):
+def challenge_phase_sync(sender, instance, created, **kwargs):
     if (
         instance.challenge.github_repository
         and instance.challenge.github_token
