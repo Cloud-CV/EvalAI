@@ -55,12 +55,20 @@ class GithubInterface:
         return url
 
     def get_content_from_path(self, path):
+        """
+        Gets the file content, information in json format in the repository at particular path
+        Ref: https://docs.github.com/en/rest/reference/repos#contents
+        """
         url = URLS.get("contents").format(self.GITHUB_REPOSITORY, path)
         params = {"ref": self.BRANCH}
         response = self.make_request(url, "GET", params)
         return response
 
     def get_data_from_path(self, path):
+        """
+        Gets the file data in string format in the repository at particular path
+        Calls get_content_from_path and encode the base64 content
+        """
         content_response = self.get_content_from_path(path)
         string_data = None
         if content_response and content_response.get("content"):
@@ -70,6 +78,10 @@ class GithubInterface:
         return string_data
 
     def update_content_from_path(self, path, content):
+        """
+        Updates the file content, creates a commit in the repository at particular path
+        Ref: https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
+        """
         url = URLS.get("contents").format(self.GITHUB_REPOSITORY, path)
         data = {
             "message": self.COMMIT_PREFIX.format(path),
@@ -81,6 +93,10 @@ class GithubInterface:
         return response
 
     def update_data_from_path(self, path, data):
+        """
+        Updates the file data to the data(string) provided, at particular path
+        Call update_content_from_path with decoded base64 content
+        """
         content = base64.b64encode(bytes(data, "utf-8")).decode("utf-8")
         return self.update_content_from_path(path, content)
 
