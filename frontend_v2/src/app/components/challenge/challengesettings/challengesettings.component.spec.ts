@@ -401,7 +401,7 @@ describe('ChallengesettingsComponent', () => {
       icon: 'fa fa-toggle-on green-text',
     };
     const expectedSuccessMsg = 'The phase was successfully made private';
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.next({ results: [{}] });
         observer.complete();
@@ -411,8 +411,7 @@ describe('ChallengesettingsComponent', () => {
 
     component.togglePhaseVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(component.phaseVisibility.state).toEqual('Private');
     expect(component.phaseVisibility.icon).toEqual('fa fa-toggle-off grey-text text-darken-1');
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
@@ -424,7 +423,7 @@ describe('ChallengesettingsComponent', () => {
       icon: 'fa fa-toggle-off grey-text text-darken-1',
     };
     const expectedSuccessMsg = 'The phase was successfully made public';
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.next({ results: [{}] });
         observer.complete();
@@ -434,8 +433,7 @@ describe('ChallengesettingsComponent', () => {
 
     component.togglePhaseVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFIleUrl).toHaveBeenCalled();
     expect(component.phaseVisibility.state).toEqual('Public');
     expect(component.phaseVisibility.icon).toEqual('fa fa-toggle-on green-text');
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
@@ -445,7 +443,7 @@ describe('ChallengesettingsComponent', () => {
     const expectedApiError = {
       error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.error({ error: expectedApiError.error });
         observer.complete();
@@ -455,8 +453,7 @@ describe('ChallengesettingsComponent', () => {
 
     component.togglePhaseVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
   }));
@@ -466,8 +463,9 @@ describe('ChallengesettingsComponent', () => {
       state: 'Public',
       icon: 'fa fa-toggle-on green-text',
     };
+    component.isLeaderboardPublic = true;
     const expectedSuccessMsg = 'The submissions were successfully made private';
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.next({ results: [{}] });
         observer.complete();
@@ -477,8 +475,7 @@ describe('ChallengesettingsComponent', () => {
 
     component.toggleSubmissionVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(component.submissionVisibility.state).toEqual('Private');
     expect(component.submissionVisibility.icon).toEqual('fa fa-toggle-off grey-text text-darken-1');
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
@@ -489,8 +486,9 @@ describe('ChallengesettingsComponent', () => {
       state: 'Private',
       icon: 'fa fa-toggle-off grey-text text-darken-1',
     };
+    component.isLeaderboardPublic = true;
     const expectedSuccessMsg = 'The submissions were successfully made public';
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.next({ results: [{}] });
         observer.complete();
@@ -500,18 +498,32 @@ describe('ChallengesettingsComponent', () => {
 
     component.toggleSubmissionVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(component.submissionVisibility.state).toEqual('Public');
     expect(component.submissionVisibility.icon).toEqual('fa fa-toggle-on green-text');
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should not toggle the submission visibility state when leaderboard_public is false', async(() => {
+    component.submissionVisibility = {
+      state: 'Public',
+      icon: 'fa fa-toggle-on green-text',
+    };
+    component.isLeaderboardPublic = false;
+    const expectedErrorMsg = 'Leaderboard is private, please make the leaderbaord public';
+
+    component.toggleSubmissionVisibility();
+    fixture.detectChanges();
+    expect(component.submissionVisibility.state).toEqual('Public');
+    expect(component.submissionVisibility.icon).toEqual('fa fa-toggle-on green-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg, 5);
   }));
 
   it('should handle the API error for `toggleSubmissionVisiblity` method', async(() => {
     const expectedApiError = {
       error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.error({ error: expectedApiError.error });
         observer.complete();
@@ -521,7 +533,6 @@ describe('ChallengesettingsComponent', () => {
 
     component.toggleSubmissionVisibility();
     fixture.detectChanges();
-    component.apiCall();
     expect(apiService.patchUrl).toHaveBeenCalled();
     expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
@@ -533,7 +544,7 @@ describe('ChallengesettingsComponent', () => {
       icon: 'fa fa-toggle-on green-text',
     };
     const expectedSuccessMsg = 'The phase split was successfully made private';
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.next({ results: [{}] });
         observer.complete();
@@ -543,8 +554,7 @@ describe('ChallengesettingsComponent', () => {
 
     component.toggleLeaderboardVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(component.leaderboardVisibility.state).toEqual('Private');
     expect(component.leaderboardVisibility.icon).toEqual('fa fa-toggle-off grey-text text-darken-1');
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
@@ -556,7 +566,7 @@ describe('ChallengesettingsComponent', () => {
       icon: 'fa fa-toggle-off grey-text text-darken-1',
     };
     const expectedSuccessMsg = 'The phase split was successfully made public';
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.next({ results: [{}] });
         observer.complete();
@@ -566,8 +576,7 @@ describe('ChallengesettingsComponent', () => {
 
     component.toggleLeaderboardVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(component.leaderboardVisibility.state).toEqual('Public');
     expect(component.leaderboardVisibility.icon).toEqual('fa fa-toggle-on green-text');
     expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
@@ -577,7 +586,7 @@ describe('ChallengesettingsComponent', () => {
     const expectedApiError = {
       error: 'Api error',
     };
-    spyOn(apiService, 'patchUrl').and.returnValue(
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
       new Observable((observer) => {
         observer.error({ error: expectedApiError.error });
         observer.complete();
@@ -587,10 +596,122 @@ describe('ChallengesettingsComponent', () => {
 
     component.toggleLeaderboardVisibility();
     fixture.detectChanges();
-    component.apiCall();
-    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
     expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
   }));
+
+  it('should update leaderboard precision value', async(() => {
+    component.leaderboardPrecisionValue = 2;
+    const updatedLeaderboardPrecisionValue = 3;
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue);
+    fixture.detectChanges();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.leaderboardPrecisionValue).toEqual(updatedLeaderboardPrecisionValue);
+    expect(component.plusDisabled).toEqual(false);
+    expect(component.minusDisabled).toEqual(false);
+  }));
+
+  it('should disable plus button when leaderboard precision value is 20', async(() => {
+    component.leaderboardPrecisionValue = 19;
+    const updatedLeaderboardPrecisionValue = 20;
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue);
+    fixture.detectChanges();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.leaderboardPrecisionValue).toEqual(updatedLeaderboardPrecisionValue);
+    expect(component.plusDisabled).toEqual(true);
+  }));
+
+  it('should disable minus button when leaderboard precision value is 0', async(() => {
+    component.leaderboardPrecisionValue = 1;
+    const updatedLeaderboardPrecisionValue = 0;
+    spyOn(apiService, 'patchUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue);
+    fixture.detectChanges();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.leaderboardPrecisionValue).toEqual(updatedLeaderboardPrecisionValue);
+    expect(component.minusDisabled).toEqual(true);
+  }));
+
+  it('should show edit phase modal and successfully edit phase details', () => {
+    const updatedPhaseDetails = {
+      allowed_submission_file_types: ".json",
+      description: "<p>phase description</p>",
+      end_date: "2099-12-12T14:29:29.350Z",
+      max_concurrent_submissions_allowed: 3,
+      max_submissions: 100000,
+      max_submissions_per_day: 100000,
+      max_submissions_per_month: 100000,
+      name: "Phase Name",
+      start_date: "2021-04-21T14:29:29.350Z"
+    };
+    const expectedSuccessMsg = 'The challenge phase details are successfully updated!';
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.next({ results: [{}] });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editPhaseDetails();
+    expect(globalService.showEditPhaseModal).toHaveBeenCalled();
+    component.apiCall(updatedPhaseDetails);
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  });
+
+  it('should handle the API error for `editPhaseDetails` method', () => {
+    const updatedPhaseDetails = {
+      allowed_submission_file_types: ".json",
+      description: "<p>phase description</p>",
+      end_date: "2029-12-12T14:29:29.350Z",
+      max_concurrent_submissions_allowed: 3,
+      max_submissions: 100000,
+      max_submissions_per_day: 100000,
+      max_submissions_per_month: 100000,
+      name: "Phase Name",
+      start_date: "2021-04-21T14:29:29.350Z"
+    };
+    const expectedErrorMsg = {
+      error: 'Api error',
+    };
+    spyOn(apiService, 'patchFileUrl').and.returnValue(
+      new Observable((observer) => {
+        observer.error({ error: expectedErrorMsg.error });
+        observer.complete();
+        return { unsubscribe() {} };
+      })
+    );
+
+    component.editPhaseDetails();
+    expect(globalService.showEditPhaseModal).toHaveBeenCalled();
+    component.apiCall(updatedPhaseDetails);
+    expect(apiService.patchFileUrl).toHaveBeenCalled();
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
+  });
 
 });
