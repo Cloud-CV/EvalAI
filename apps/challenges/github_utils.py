@@ -108,14 +108,10 @@ class GithubInterface:
 
 @app.task
 def github_challenge_sync(challenge):
-    from .serializers import ZipChallengeSerializer
-
-    challenge_obj = deserialize_object(challenge)
-    serializer = ZipChallengeSerializer(challenge_obj)
-    challenge = serializer.data
+    challenge = deserialize_object(challenge)
     github = GithubInterface(
-        GITHUB_REPOSITORY=challenge.get("github_repository"),
-        GITHUB_AUTH_TOKEN=challenge.get("github_token"),
+        GITHUB_REPOSITORY=getattr(challenge, "github_repository"),
+        GITHUB_AUTH_TOKEN=getattr(challenge, "github_token"),
     )
     if not github.is_repository():
         return
@@ -128,13 +124,14 @@ def github_challenge_sync(challenge):
         update_challenge_config = False
         for field in challenge_non_file_fields:
             # Ignoring commits when no update in field value
-            if (
-                challenge_config_yaml.get(field) is not None
-                and challenge_config_yaml[field] == challenge[field]
+            if challenge_config_yaml.get(
+                field
+            ) is not None and challenge_config_yaml[field] == getattr(
+                challenge, field
             ):
                 continue
             update_challenge_config = True
-            challenge_config_yaml[field] = challenge[field]
+            challenge_config_yaml[field] = getattr(challenge, field)
         if update_challenge_config:
             content_str = yaml.dump(challenge_config_yaml, sort_keys=False)
             github.update_data_from_path("challenge_config.yaml", content_str)
@@ -145,24 +142,20 @@ def github_challenge_sync(challenge):
                 continue
             field_path = challenge_config_yaml[field]
             field_str = github.get_data_from_path(field_path)
-            if field_str is None or field_str == challenge[field]:
+            if field_str is None or field_str == getattr(challenge, field):
                 continue
-            github.update_data_from_path(field_path, challenge[field])
+            github.update_data_from_path(field_path, getattr(challenge, field))
     except Exception as e:
         logger.info("Github Sync unsuccessful due to {}".format(e))
 
 
 @app.task
 def github_challenge_phase_sync(challenge_phase):
-    from .serializers import ChallengePhaseSerializer
-
-    challenge_phase_obj = deserialize_object(challenge_phase)
-    challenge = challenge_phase_obj.challenge
-    serializer = ChallengePhaseSerializer(challenge_phase_obj)
-    challenge_phase = serializer.data
+    challenge_phase = deserialize_object(challenge_phase)
+    challenge = challenge_phase.challenge
     github = GithubInterface(
-        GITHUB_REPOSITORY=challenge.github_repository,
-        GITHUB_AUTH_TOKEN=challenge.github_token,
+        GITHUB_REPOSITORY=getattr(challenge, "github_repository"),
+        GITHUB_AUTH_TOKEN=getattr(challenge, "github_token"),
     )
     if not github.is_repository():
         return
@@ -176,20 +169,18 @@ def github_challenge_phase_sync(challenge_phase):
         update_challenge_config = False
 
         for phase in challenge_config_yaml["challenge_phases"]:
-            if (
-                phase.get(challenge_phase_unique)
-                != challenge_phase[challenge_phase_unique]
+            if phase.get(challenge_phase_unique) != getattr(
+                challenge_phase, challenge_phase_unique
             ):
                 continue
             for field in challenge_phase_non_file_fields:
                 # Ignoring commits when no update in field value
-                if (
-                    phase.get(field) is not None
-                    and phase[field] == challenge_phase[field]
+                if phase.get(field) is not None and phase[field] == getattr(
+                    challenge_phase, field
                 ):
                     continue
                 update_challenge_config = True
-                phase[field] = challenge_phase[field]
+                phase[field] = getattr(challenge_phase, field)
             break
 
         if update_challenge_config:
@@ -198,9 +189,8 @@ def github_challenge_phase_sync(challenge_phase):
 
         # File fields Update
         for phase in challenge_config_yaml["challenge_phases"]:
-            if (
-                phase.get(challenge_phase_unique)
-                != challenge_phase[challenge_phase_unique]
+            if phase.get(challenge_phase_unique) != getattr(
+                challenge_phase, challenge_phase_unique
             ):
                 continue
             for field in challenge_phase_file_fields:
@@ -208,10 +198,12 @@ def github_challenge_phase_sync(challenge_phase):
                     continue
                 field_path = phase[field]
                 field_str = github.get_data_from_path(field_path)
-                if field_str is None or field_str == challenge_phase[field]:
+                if field_str is None or field_str == getattr(
+                    challenge_phase, field
+                ):
                     continue
                 github.update_data_from_path(
-                    field_path, challenge_phase[field]
+                    field_path, getattr(challenge_phase, field)
                 )
             break
 
