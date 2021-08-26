@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { NGXLogger } from 'ngx-logger';
+import { Router } from '@angular/router';
 
 // import service
 import { ApiService } from './api.service';
@@ -50,7 +51,8 @@ export class ChallengeService {
     private globalService: GlobalService,
     private authService: AuthService,
     private endpointsService: EndpointsService,
-    private logger: NGXLogger
+    private logger: NGXLogger,
+    private router: Router
   ) {}
 
   /**
@@ -183,6 +185,9 @@ export class ChallengeService {
       },
       (err) => {
         SELF.globalService.handleApiError(err);
+        if(err.error.error == "Challenge does not exist!") {
+          this.router.navigate(['not-found']);
+        }
       },
       () => {
         this.logger.info('Challenge', id, 'fetched!');

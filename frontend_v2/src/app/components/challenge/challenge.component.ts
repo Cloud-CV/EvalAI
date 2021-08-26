@@ -38,6 +38,11 @@ export class ChallengeComponent implements OnInit {
   isChallengeHost = false;
 
   /**
+   * Is challenge approved by admin
+   */  
+  isApprovedByAdmin = false;
+
+  /**
    * Is participated in Challenge
    */
   isParticipated = false;
@@ -107,6 +112,7 @@ export class ChallengeComponent implements OnInit {
       this.challenge = challenge;
       this.isForumEnabled = challenge.enable_forum;
       this.forumURL = challenge.forum_url;
+      this.isApprovedByAdmin = challenge.approved_by_admin;
       // update meta tag
       SELF.meta.updateTag({
         property: 'og:title',

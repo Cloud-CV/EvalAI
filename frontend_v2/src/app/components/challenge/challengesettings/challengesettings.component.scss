@@ -17,6 +17,31 @@
   }
 }
 
+.rangeslider {
+  width: 50%;
+  display: flex;
+  margin-top: 15px 5px 0px 0px;
+}
+
+.btn-floating {
+  margin-top: 4%;
+  margin-right: 8%;
+}
+
+.plus-btn {
+  margin-left: 8%;
+}
+
+.rangeslider {
+  mat-chip {
+    margin-top: 6%;
+    background: #252833 !important;
+  }
+  .btn {
+    margin-right: 0px;
+  }
+}
+
 .row .col {
   padding: 0px;
 }
@@ -62,6 +87,12 @@ input {
   .settings-section {
     padding: 25px !important;
   }
+  .rangeslider {
+    justify-content: space-evenly;
+  }
+  .btn-floating {
+    margin: 0%
+  }  
 }
 
 .example-chip-list {
