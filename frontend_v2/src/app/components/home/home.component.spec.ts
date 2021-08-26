@@ -12,7 +12,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { HomemainComponent } from './homemain/homemain.component';
 import { PartnersComponent } from './partners/partners.component';
 import { RulesComponent } from './rules/rules.component';
-import { TestimonialsComponent } from './testimonials/testimonials.component';
 import { FeaturedChallengesComponent } from './featured-challenges/featured-challenges.component';
 import { TwitterFeedComponent } from './twitter-feed/twitter-feed.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -34,7 +33,6 @@ describe('HomeComponent', () => {
         HomemainComponent,
         PartnersComponent,
         RulesComponent,
-        TestimonialsComponent,
         FeaturedChallengesComponent,
         TwitterFeedComponent,
       ],
