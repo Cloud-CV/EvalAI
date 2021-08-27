@@ -104,7 +104,7 @@ export class ChallengeService {
   }
 
   /**
-   * Update the status for selectPhase component after details are updated 
+   * Update the status for selectPhase component after details are updated
    * @param selectedPhase  new updated phase details status
    */
   changePhaseSelected(selectedPhase: boolean) {
@@ -128,10 +128,10 @@ export class ChallengeService {
   }
 
   /**
-   * Update the status for selectPhase component after details are updated 
+   * Update the status for selectPhase component after details are updated
    * @param selectedPhase  new updated phase details status
    */
-   changePhaseSplitSelected(selectedPhaseSplit: boolean) {
+  changePhaseSplitSelected(selectedPhaseSplit: boolean) {
     this.phaseSplitSelected.next(selectedPhaseSplit);
   }
 
@@ -185,7 +185,7 @@ export class ChallengeService {
       },
       (err) => {
         SELF.globalService.handleApiError(err);
-        if(err.error.error == "Challenge does not exist!") {
+        if (err.error.error === 'Challenge does not exist!') {
           this.router.navigate(['not-found']);
         }
       },
