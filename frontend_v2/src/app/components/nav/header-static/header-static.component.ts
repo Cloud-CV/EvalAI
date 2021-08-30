@@ -1,18 +1,8 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectorRef,
-  Inject,
-  HostListener,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
-import { filter } from "rxjs/internal/operators";
+import { filter } from 'rxjs/internal/operators';
 import { Router, NavigationEnd } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -63,12 +53,12 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
   /**
    * Current name of tab which needs to be active
    */
-  tabHighlight: string = "allChallenges";
+  tabHighlight = 'allChallenges';
 
   /**
    * Returns true if the string is not a number
    */
-  isChallengeComponent : boolean = false;
+  isChallengeComponent = false;
 
   /**
    * Inner width
@@ -89,10 +79,9 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
     private globalService: GlobalService,
     private router: Router,
     private ref: ChangeDetectorRef,
-    public authService: AuthService,
-    @Inject(DOCUMENT) private document: Document
+    public authService: AuthService
   ) {
-      this.authState = authService.authState;
+    this.authState = authService.authState;
   }
 
   /**
@@ -112,22 +101,19 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
     this.updateElements();
     this.checkInnerWidth();
 
-    this.router.events
-    .pipe(filter(event => event instanceof NavigationEnd))
-    .subscribe((event) => {
-      if(event) {
-          if(this.router.url.split('/')[length] == "all") {
-            this.tabHighlight = "allChallenges";
-            this.globalService.changeTabActiveStatus("allChallenges");
-          }
-          else if(this.router.url.split('/')[1] == "profile") {
-            this.tabHighlight = "profile";
-            this.globalService.changeTabActiveStatus("profile");
-          }
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event) => {
+      if (event) {
+        if (this.router.url.split('/')[length] === 'all') {
+          this.tabHighlight = 'allChallenges';
+          this.globalService.changeTabActiveStatus('allChallenges');
+        } else if (this.router.url.split('/')[1] === 'profile') {
+          this.tabHighlight = 'profile';
+          this.globalService.changeTabActiveStatus('profile');
+        }
       }
     });
-    this.isChallengeComponent = isNaN(parseInt(this.router.url.split('/')[length]));
-    
+    this.isChallengeComponent = isNaN(parseInt(this.router.url.split('/')[length], 10));
+
     this.globalService.nameTabHighlight.subscribe((tabHighlight) => {
       this.tabHighlight = tabHighlight;
     });

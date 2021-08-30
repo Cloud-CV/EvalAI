@@ -229,7 +229,7 @@ export class ChallengelistComponent implements OnInit {
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    if(this.document.getElementById('ongoing-challenges')) {
+    if (this.document.getElementById('ongoing-challenges')) {
       const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
       this.isScrollbtnVisible = RECT.top < 0;
     }

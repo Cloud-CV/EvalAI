@@ -27,34 +27,34 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   selected = 0;
 
   /**
-  * Placeholder text Lorem Ipsum
-  */
+   * Placeholder text Lorem Ipsum
+   */
   ipsum: any =
     'Lorem ipsum dolor sit amet,\
   consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
   /**
-  * Sample testimonials till the API comes up
-  */
+   * Sample testimonials till the API comes up
+   */
   testimonials = [
-    { text: '1-' + this.ipsum, author: 'Lorem', org: 'Georgia Tech', image:'' },
-    { text: '2-' + this.ipsum, author: 'Octopus', org: 'Google', image:'' },
-    { text: '3-' + this.ipsum, author: 'Penguin', org: 'Facebook', image:'' },
+    { text: '1-' + this.ipsum, author: 'Lorem', org: 'Georgia Tech', image: '' },
+    { text: '2-' + this.ipsum, author: 'Octopus', org: 'Google', image: '' },
+    { text: '3-' + this.ipsum, author: 'Penguin', org: 'Facebook', image: '' },
   ];
 
   /**
-  * Selected testimonial text
-  */
+   * Selected testimonial text
+   */
   testimonialbody = this.testimonials[this.selected]['text'];
 
   /**
-  * Selected testimonial author
-  */
+   * Selected testimonial author
+   */
   testimonialauthor = this.testimonials[this.selected]['author'];
 
   /**
-  * Selected testimonial orgName
-  */
+   * Selected testimonial orgName
+   */
   testimonialorg = this.testimonials[this.selected]['org'];
 
   /**
@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   getChallenge() {
     this.apiService.getUrl(this.endpointService.featuredChallengesURL()).subscribe(
       (response) => {
-        this.challengeList = response.results.slice(0,4);
+        this.challengeList = response.results.slice(0, 4);
       },
       (err) => {
         this.globalService.handleApiError(err);
@@ -150,7 +150,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       // Show Form Error on Failure
       (err) => {
-        if(err.status == 400) {
+        if (err.status === 400) {
           setTimeout(() => self.globalService.showToast('info', err.error.message, 5), 1000);
         } else if (err.error.message) {
           setTimeout(() => self.globalService.showToast('error', err.error.message, 5), 1000);
@@ -165,7 +165,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Right arrow clicked
    */
-   testimonialRight() {
+  testimonialRight() {
     this.selected = this.selected + 1;
     if (this.selected >= this.testimonials.length) {
       this.selected = 0;

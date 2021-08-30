@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AfterViewInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { EndpointsService } from '../../../services/endpoints.service';

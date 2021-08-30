@@ -3,7 +3,6 @@ import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 
-
 /**
  * Component Class
  */
@@ -13,7 +12,6 @@ import { AuthService } from '../../../services/auth.service';
   styleUrls: ['./templatechallengelist.component.scss'],
 })
 export class TemplateChallengeListComponent implements OnInit {
-
   /**
    * Is the user logged in?
    */
@@ -32,7 +30,7 @@ export class TemplateChallengeListComponent implements OnInit {
   /**
    * Path to fetch all challenge templates
    */
-  templateChallengesFetchPath = 'challenges/get_all_challenge_templates/'
+  templateChallengesFetchPath = 'challenges/get_all_challenge_templates/';
 
   /**
    * Constructor.
@@ -40,11 +38,7 @@ export class TemplateChallengeListComponent implements OnInit {
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
    */
-  constructor(
-    public authService: AuthService,
-    private globalService: GlobalService,
-    private apiService: ApiService
-  ) {}
+  constructor(public authService: AuthService, private globalService: GlobalService, private apiService: ApiService) {}
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
@@ -66,15 +60,17 @@ export class TemplateChallengeListComponent implements OnInit {
      }
   */
   fetchChallengeTemplates(callback = null) {
-
     this.apiService.getUrl(this.templateChallengesFetchPath, true, false).subscribe(
       (data) => {
-        for(var i = 0; i<data.length; i++){
+        for (let i = 0; i < data.length; i++) {
           this.challengeTemplates.push(data[i]);
         }
       },
-      (err)=> {
-        this.globalService.showToast('error', 'Sorry, something went wrong when fetching the templates. Please try again later.');
+      (err) => {
+        this.globalService.showToast(
+          'error',
+          'Sorry, something went wrong when fetching the templates. Please try again later.'
+        );
       },
       () => {}
     );

@@ -41,7 +41,7 @@ export class ChallengesubmitComponent implements OnInit {
   /**
    * If phase has been selected
    */
-  isPhaseSelected:boolean = false;
+  isPhaseSelected = false;
 
   /**
    * Is user logged in
@@ -56,12 +56,12 @@ export class ChallengesubmitComponent implements OnInit {
   /**
    * Is submission submitted
    */
-  isPublicSubmission:boolean = true;
+  isPublicSubmission = true;
 
   /**
    * Is submission allowed by host
    */
-  isLeaderboardPublic:boolean = false;
+  isLeaderboardPublic = false;
 
   /**
    * Challenge object
@@ -265,8 +265,7 @@ export class ChallengesubmitComponent implements OnInit {
       for (let j = 0; j < this.phases.length; j++) {
         if (phases[j].is_public === false) {
           this.phases[j].showPrivate = true;
-        }
-        else {
+        } else {
           this.phases[j].showPrivate = false;
         }
       }
@@ -488,7 +487,7 @@ export class ChallengesubmitComponent implements OnInit {
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
         SELF.clearMetaAttributeValues();
         SELF.submissionError = '';
-        if(SELF.components) {
+        if (SELF.components) {
           SELF.components['_results'].forEach((element) => {
             element.value = '';
             element.message = '';
@@ -542,17 +541,17 @@ export class ChallengesubmitComponent implements OnInit {
     }
     if (self.metaAttributesforCurrentSubmission != null) {
       self.metaAttributesforCurrentSubmission.forEach((attribute) => {
-        if (attribute.required == true) {
-          if (attribute.type == "checkbox") {
-              if (attribute.values.length === 0) {
-                metaValue = false;
-              }
+        if (attribute.required === true) {
+          if (attribute.type === 'checkbox') {
+            if (attribute.values.length === 0) {
+              metaValue = false;
+            }
           } else {
-              if (attribute.value === null || attribute.value === undefined) {
-                metaValue = false;
-              }
+            if (attribute.value === null || attribute.value === undefined) {
+              metaValue = false;
+            }
           }
-      }
+        }
       });
     }
     if (metaValue !== true) {
