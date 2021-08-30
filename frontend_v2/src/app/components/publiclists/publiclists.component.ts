@@ -10,7 +10,6 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./publiclists.component.scss'],
 })
 export class PubliclistsComponent implements OnInit, AfterViewChecked {
-
   isAuth = false;
 
   /**
@@ -18,11 +17,8 @@ export class PubliclistsComponent implements OnInit, AfterViewChecked {
    * @param authService
    * @param changeDetector
    */
-  constructor(
-    public authService: AuthService,
-    private cdRef : ChangeDetectorRef
-  ) {}
-  
+  constructor(public authService: AuthService, private cdRef: ChangeDetectorRef) {}
+
   /**
    * Component on Initialization.
    */
@@ -35,8 +31,8 @@ export class PubliclistsComponent implements OnInit, AfterViewChecked {
    * For resolving change in expression value after it is checked
    */
   ngAfterViewChecked() {
-    let isAuth = this.authService.isAuth;
-    if(isAuth != this.isAuth) {
+    const isAuth = this.authService.isAuth;
+    if (isAuth !== this.isAuth) {
       this.isAuth = isAuth;
       this.cdRef.detectChanges();
     }
