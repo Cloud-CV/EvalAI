@@ -1,4 +1,5 @@
 @import 'styles/variables';
+@import './mixins.scss';
 
 .grad-container .row {
   margin-left: auto;
@@ -89,6 +90,111 @@ p {
     margin-right: auto;
     margin-top: auto;
     margin-bottom: auto;
+  }
+}
+
+.testimonial-container {
+  text-align: center;
+  width: 90%;
+  height: 30%;
+  padding-left: 5vw;
+
+  .testimonial-body {
+    padding-top: 150px;
+    padding-bottom: 70px;
+    width: 60%;
+
+    span {
+      color: #000;
+      font-weight: $fw-light;
+      font-style: italic;
+    }
+  }
+
+  .testimonial-author {
+    padding-top: 100px;
+    padding-bottom: 70px;
+    margin-left: 5%;
+
+    .logo {
+      height: 100px;
+      width: 100px;
+    }
+
+    .testimonial-details {
+      margin-top: 15px;
+      display: block;
+    }
+
+    .name {
+      margin: 0;
+      padding-bottom: 5px;
+    }
+  }
+
+  .testimonial-arrow-left {
+    position: absolute;
+    top: 40%;
+    left: 0;
+    height: 100px;
+    cursor: pointer;
+  }
+
+  .testimonial-arrow-right {
+    position: absolute;
+    top: 40%;
+    right: 0;
+    height: 100px;
+    cursor: pointer;
+    transform: rotate(180deg);
+  }
+
+  .testimonial-quotes {
+    position: absolute;
+    top: 22%;
+    left: 30%;
+    height: 50px;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .testimonial-container {
+    .testimonial-author {
+      margin-left: 0;
+    }
+    .testimonial-body {
+      padding-top: 35px;
+      width: 80%;
+      margin-left: 10%;
+    }
+    .testimonial-quotes {
+      top: 280px;
+      left: 17%;
+    }
+  }
+}
+
+@include screen-medium {
+  .testimonial-container {
+    .testimonial-quotes {
+      top: 15% !important;
+      height: 40px !important;
+    }
+  }
+}
+
+@include screen-small {
+  .testimonial-container {
+    background-size: 80 !important;
+    padding-left: 0;
+    .testimonial-author {
+      padding-bottom: 40px;
+    }
+  }
+  .testimonial-wrapper {
+    .grad-container {
+      padding: 0px;
+    }
   }
 }
 

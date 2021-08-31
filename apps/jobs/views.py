@@ -493,7 +493,7 @@ def change_submission_data_and_visibility(
 
 
 @swagger_auto_schema(
-    methods=["get"],
+    methods=["get", "post"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_phase_split_id",
@@ -563,7 +563,7 @@ def change_submission_data_and_visibility(
         )
     },
 )
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """
@@ -581,6 +581,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split_id
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
+    order_by = request.data.get("order_by")
     (
         response_data,
         http_status_code,
@@ -589,6 +590,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_obj,
         challenge_phase_split,
         only_public_entries=True,
+        order_by=order_by,
     )
     # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
@@ -602,7 +604,7 @@ def leaderboard(request, challenge_phase_split_id):
 
 
 @swagger_auto_schema(
-    methods=["get"],
+    methods=["get", "post"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_phase_split_pk",
@@ -728,7 +730,7 @@ def leaderboard(request, challenge_phase_split_id):
         ),
     },
 )
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
@@ -792,7 +794,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
             "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+    order_by = request.data.get("order_by")
     (
         response_data,
         http_status_code,
@@ -801,6 +803,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         challenge_obj,
         challenge_phase_split,
         only_public_entries=False,
+        order_by=order_by,
     )
     # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
@@ -1109,8 +1112,8 @@ def update_submission(request, challenge_pk):
         challenge_phase_pk = request.data.get("challenge_phase")
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
-        stdout_content = request.data.get("stdout", "")
-        stderr_content = request.data.get("stderr", "")
+        stdout_content = request.data.get("stdout", "").encode("utf-8")
+        stderr_content = request.data.get("stderr", "").encode("utf-8")
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
@@ -2333,6 +2336,7 @@ def get_github_badge_data(
         challenge_obj,
         challenge_phase_split,
         only_public_entries=True,
+        order_by=None,
     )
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)

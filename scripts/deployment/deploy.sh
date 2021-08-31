@@ -58,9 +58,10 @@ case $opt in
 					export COMMIT_ID=${COMMIT_ID}
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+                    			aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter
+					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
 				ENDSSH2
 			ENDSSH
             ;;
@@ -168,6 +169,11 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d node_exporter
             echo "Completed deploy operation."
             ;;
+        deploy-alert-manager)
+            echo "Deploying alertmanager docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d alert-manager
+            echo "Completed deploy operation."
+            ;;
         scale)
             service=${3}
             instances=${4}
@@ -213,6 +219,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
         echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
+        echo "    deploy-alert-manager : Deploy alertmanager container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alert-manager production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."

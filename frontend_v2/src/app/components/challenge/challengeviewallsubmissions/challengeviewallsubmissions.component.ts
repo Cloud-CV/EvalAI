@@ -133,8 +133,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   /**
    *Check whether team name is filtered
    */
-  isTeamFiltered: boolean = true;
-
+  isTeamFiltered = true;
 
   /**
    * @param showPagination Is pagination
@@ -159,7 +158,15 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     'submitted_file',
     'submission_result_file',
   ];
-  columnsHeadings = ['S.No.', 'Team Name', 'Created By', 'Status', 'Execution Time(sec)', 'Submitted File', 'Result File'];
+  columnsHeadings = [
+    'S.No.',
+    'Team Name',
+    'Created By',
+    'Status',
+    'Execution Time(sec)',
+    'Submitted File',
+    'Result File',
+  ];
 
   expandedElement: null;
 
@@ -224,8 +231,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       for (let i = 0; i < this.phases.length; i++) {
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
-        }
-        else {
+        } else {
           this.phases[i].showPrivate = false;
         }
       }
@@ -272,10 +278,10 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       this.isTeamFiltered = true;
     }
 
-    let name = SELF.filterSubmissionsQuery;
+    const name = SELF.filterSubmissionsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
-        if(name == SELF.filterSubmissionsQuery) {
+        if (name === SELF.filterSubmissionsQuery) {
           SELF.submissionCount = data['count'];
           SELF.submissions = data['results'];
           let index = 0;
@@ -293,11 +299,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
             SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
           }
-  
+
           SELF.paginationDetails.next = data.next;
           SELF.paginationDetails.previous = data.previous;
           SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
-  
+
           if (data.count === 0) {
             SELF.paginationDetails.showPagination = false;
             SELF.paginationDetails.paginationMessage = 'No results found';
@@ -311,12 +317,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = 1;
           } else {
             SELF.paginationDetails.isNext = '';
-              if(this.isTeamFiltered) {
-                SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
-              }
-              else {
-                SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
-              }
+            if (this.isTeamFiltered) {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
+            } else {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
+            }
           }
           if (data.previous === null) {
             SELF.paginationDetails.isPrev = 'disabled';
@@ -395,15 +400,14 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = Math.ceil(data.count / 100);
           } else {
             SELF.paginationDetails.isNext = '';
-            if(this.isTeamFiltered) {
-              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] -1);
-            }
-            else {
+            if (this.isTeamFiltered) {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
+            } else {
               SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
             }
           }
 
-          let index =  (SELF.paginationDetails.currentPage-1)*10;
+          let index = (SELF.paginationDetails.currentPage - 1) * 10;
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
             index += 1;
