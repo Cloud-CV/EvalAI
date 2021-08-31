@@ -561,7 +561,7 @@ a.view-more {
 
 .evalai-sponsor-logo {
     max-width: 100%;
-    height: 120px;
+    height: 300px;
     text-align: center;
     img {
         height: 55%;
@@ -584,5 +584,10 @@ a.view-more {
 }
 
 #gsoc {
-    height: 45%;
+    height: 55%;
+    margin-left: 16.667%;
+}
+
+#aws {
+    margin-top: 2%;
 }
