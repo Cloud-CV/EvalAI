@@ -12,7 +12,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { HomemainComponent } from './homemain/homemain.component';
 import { PartnersComponent } from './partners/partners.component';
 import { RulesComponent } from './rules/rules.component';
-import { TestimonialsComponent } from './testimonials/testimonials.component';
 import { FeaturedChallengesComponent } from './featured-challenges/featured-challenges.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { WindowService } from '../../services/window.service';
@@ -33,7 +32,6 @@ describe('HomeComponent', () => {
         HomemainComponent,
         PartnersComponent,
         RulesComponent,
-        TestimonialsComponent,
         FeaturedChallengesComponent,
       ],
       providers: [GlobalService, AuthService, ApiService, EndpointsService, WindowService],
