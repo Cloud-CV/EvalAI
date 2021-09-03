@@ -632,6 +632,13 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             verified=True,
         )
 
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@example2.com",
+            primary=True,
+            verified=True,
+        )
+
         self.challenge_host_team2 = ChallengeHostTeam.objects.create(
             team_name="Some Test Challenge Host Team", created_by=self.user2
         )
@@ -693,6 +700,16 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             user=self.user4,
             status=Participant.SELF,
             team=self.participant_team3,
+        )
+
+        self.participant_team4 = ParticipantTeam.objects.create(
+            team_name="Some Participant Team 2 by User 2", created_by=self.user2
+        )
+
+        self.participant5 = Participant.objects.create(
+            user=self.user3,
+            status=Participant.ACCEPTED,
+            team=self.participant_team4,
         )
 
     def test_registration_is_closed_for_a_particular_challenge(self):
@@ -781,7 +798,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             "challenges:add_participant_team_to_challenge",
             kwargs={
                 "challenge_pk": self.challenge.pk,
-                "participant_team_pk": self.participant_team.pk + 3,
+                "participant_team_pk": self.participant_team.pk + 4,
             },
         )
         expected = {"error": "ParticipantTeam does not exist"}
@@ -853,7 +870,28 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, {})
-        message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+        message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
+                    to participate in this challenge."
+        expected = {"error": message.format("example1/example2")}
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_team_member_is_not_in_allowed_list(self):
+        self.client.force_authenticate(user=self.participant_team4.created_by)
+        self.challenge2.allowed_email_domains.extend(["example1", "example2"])
+        self.challenge2.save()
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team4.pk,
+            },
+        )
+
+        response = self.client.post(self.url, {})
+        message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
+                    to participate in this challenge."
         expected = {"error": message.format("example1/example2")}
 
         self.assertEqual(response.data, expected)
