@@ -45,17 +45,19 @@ case $opt in
 					cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
+					export AWS_DEFAULT_REGION=us-east-1
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull django nodejs nodejs_v2 celery node_exporter
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery node_exporter
+					docker-compose -f docker-compose-${env}.yml pull django nodejs celery
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery
 				ENDSSH2
 				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
 					source venv/bin/activate
                     			cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
+					export AWS_DEFAULT_REGION=us-east-1
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
                     			aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml

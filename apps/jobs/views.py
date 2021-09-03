@@ -493,7 +493,7 @@ def change_submission_data_and_visibility(
 
 
 @swagger_auto_schema(
-    methods=["get", "post"],
+    methods=["get"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_phase_split_id",
@@ -563,7 +563,7 @@ def change_submission_data_and_visibility(
         )
     },
 )
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """
@@ -581,7 +581,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split_id
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
-    order_by = request.data.get("order_by")
+    order_by = request.GET.get("order_by")
     (
         response_data,
         http_status_code,
@@ -604,7 +604,7 @@ def leaderboard(request, challenge_phase_split_id):
 
 
 @swagger_auto_schema(
-    methods=["get", "post"],
+    methods=["get"],
     manual_parameters=[
         openapi.Parameter(
             name="challenge_phase_split_pk",
@@ -730,7 +730,7 @@ def leaderboard(request, challenge_phase_split_id):
         ),
     },
 )
-@api_view(["GET", "POST"])
+@api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
@@ -794,7 +794,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
             "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    order_by = request.data.get("order_by")
+    order_by = request.GET.get("order_by")
     (
         response_data,
         http_status_code,
