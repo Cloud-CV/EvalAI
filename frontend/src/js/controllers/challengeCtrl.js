@@ -913,11 +913,8 @@
         vm.startLeaderboard = function() {
             vm.stopLeaderboard();
             vm.poller = $interval(function() {
-                parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
-                parameters.method = 'POST';
-                parameters.data = {
-                    "order_by": vm.orderLeaderboardBy
-                };
+                parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+                parameters.method = 'GET';
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
@@ -973,11 +970,8 @@
 
             // Show leaderboard
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
-            parameters.method = 'POST';
-            parameters.data = {
-                "order_by": vm.orderLeaderboardBy
-            };
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -1397,11 +1391,8 @@
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
-            parameters.method = 'POST';
-            parameters.data = {
-                "order_by": vm.orderLeaderboardBy
-            };
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -1460,11 +1451,8 @@
 
             // Show leaderboard
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000";
-            parameters.method = 'POST';
-            parameters.data = {
-                "order_by": vm.orderLeaderboardBy
-            };
+            parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
+            parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
