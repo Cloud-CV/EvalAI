@@ -876,7 +876,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-    
+
     def test_participation_when_participant_team_member_is_not_in_allowed_list(self):
         self.client.force_authenticate(user=self.participant_team4.created_by)
         self.challenge2.allowed_email_domains.extend(["example1", "example2"])
