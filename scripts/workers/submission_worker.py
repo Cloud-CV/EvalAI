@@ -264,32 +264,6 @@ def extract_challenge_data(challenge, phases):
     # create challenge directory as package
     create_dir_as_python_package(challenge_data_directory)
     
-    if (challenge.requirements):
-        challenge_requirements_url = return_file_url_per_environment(challenge.requirements.url)
-        if (challenge_requirements_url and challenge_requirements_url.endswith(".txt")):
-            try:
-                response = requests.get(challenge_requirements_url, stream=True)
-                save_location = join(challenge_data_directory, "requirements_{}.txt".format(challenge.id))
-                if response and response.status_code == 200:
-                    with open(save_location, "wb") as f:
-                        for chunk in response.iter_content(chunk_size=1024):
-                            if chunk:
-                                f.write(chunk)
-                logger.info(save_location)
-                try:
-                    output = subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", save_location])
-                    logger.info(output)
-                except Exception as e:
-                    logger.error(e)
-                os.remove(save_location)
-            except Exception as e:
-                logger.error(
-                    "{} Failed to fetch file from {}, error {}".format(
-                        WORKER_LOGS_PREFIX, challenge_requirements_url, e
-                    )
-                )
-                response = None
-
 
     evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(
@@ -306,6 +280,17 @@ def extract_challenge_data(challenge, phases):
     download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
+
+
+    try:
+        requirements_location = join(challenge_data_directory, "requirements.txt");
+        if os.path.isfile(requirements_location):
+            subprocess_output = subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
+            print(subprocess_output)
+        else:
+            logger.info("No requirements for challenge {}".format(challenge.id))
+    except Exception as e:
+        logger.error(e)
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id
@@ -448,7 +433,7 @@ def run_submission(
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, "run")
-    create_dir(temp_run_dir)
+    create_dir(temp_run_dir)    
 
     stdout_file = join(temp_run_dir, "temp_stdout.txt")
     stderr_file = join(temp_run_dir, "temp_stderr.txt")

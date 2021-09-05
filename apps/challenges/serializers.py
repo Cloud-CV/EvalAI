@@ -65,7 +65,6 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "remote_evaluation",
             "workers",
             "created_at",
-            "requirements"
         )
 
 
@@ -220,9 +219,6 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_repository = context.get("github_repository")
             if github_repository:
                 kwargs["data"]["github_repository"] = github_repository
-            requirements = context.get("requirements")
-            if requirements:
-                kwargs["data"]["requirements"] = requirements
 
     class Meta:
         model = Challenge
@@ -266,7 +262,6 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
-            "requirements",
         )
 
 
