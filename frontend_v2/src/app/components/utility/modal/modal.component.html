@@ -1,11 +1,10 @@
 <div class="modal-container">
   <div class="modal-card">
     <div class="modal-wrapper">
-      <div *ngIf="isCliInstructions">
-        <i class="fa fa-times fs-22 pointer" aria-hidden="true" (click)="denied()"> </i>
-      </div>
       <div class="title">
         {{ title }}
+        <i class="fa fa-times fs-22 pointer cross-icon" aria-hidden="true" *ngIf="isCliInstructions" (click)="denied()">
+        </i>
       </div>
       <div class="modal-content" *ngIf="!isCliInstructions">
         <div class="content">
@@ -69,7 +68,7 @@
         </ul>
       </div>
       <div class="row row-lr-margin" *ngIf="isCliInstructions">
-        <div class="modal-content">
+        <div class="modal-content" [ngClass]="{ 'content-instructions': isCliInstructions == true }">
           <ol>
             <li class="content">
               Install evalai-cli<br />
