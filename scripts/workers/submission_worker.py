@@ -263,13 +263,11 @@ def extract_challenge_data(challenge, phases):
     )
     # create challenge directory as package
     create_dir_as_python_package(challenge_data_directory)
-    
 
     evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(
         evaluation_script_url
     )
-
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
@@ -281,9 +279,8 @@ def extract_challenge_data(challenge, phases):
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
 
-
     try:
-        requirements_location = join(challenge_data_directory, "requirements.txt");
+        requirements_location = join(challenge_data_directory, "requirements.txt")
         if os.path.isfile(requirements_location):
             subprocess_output = subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
             print(subprocess_output)
@@ -433,7 +430,7 @@ def run_submission(
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, "run")
-    create_dir(temp_run_dir)    
+    create_dir(temp_run_dir)
 
     stdout_file = join(temp_run_dir, "temp_stdout.txt")
     stderr_file = join(temp_run_dir, "temp_stderr.txt")
