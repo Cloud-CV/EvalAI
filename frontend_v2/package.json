@@ -42,7 +42,6 @@
     "ngx-logger": "^4.1.9",
     "ngx-quill": "^6.3.1",
     "ngx-textarea-autosize": "^2.0.3",
-    "ngx-twitter-timeline": "^0.1.5",
     "normalize.css": "^8.0.0",
     "quill": "^1.3.7",
     "rxjs": "^6.5.2",

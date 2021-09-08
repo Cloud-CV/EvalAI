@@ -6,6 +6,22 @@
   margin-right: auto;
 }
 
+.twitter-container {
+  text-align: center;
+  margin-left: 23%;
+  width: 55%;
+  box-shadow: 0px 0px 12px $shadow-black;
+  border: 1px solid;
+  border-radius: 5px;
+  color: rgb(101, 97, 97);
+}
+
+@media (max-width: 400px) {
+  .grad-container {
+    padding: 25px 25px 25px 10px;
+  }
+}
+
 .org-logo {
   max-width: 100%;
   height: 120px;
