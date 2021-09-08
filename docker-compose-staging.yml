@@ -49,7 +49,6 @@ services:
         NODE_ENV: staging
     ports:
       - '80:80'
-      - "443:443"
     volumes:
       - /code/node_modules
       - /code/bower_components
@@ -61,7 +60,7 @@ services:
         awslogs-create-group: 'true'
 
   nodejs_v2:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-frontend-v2:${COMMIT_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend-v2:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/nodejs_v2/Dockerfile
@@ -69,13 +68,14 @@ services:
         NODE_ENV: staging
     ports:
       - "9999:80"
+      - "443:443"
     volumes:
       - /code/node_modules
     logging:
       driver: awslogs
       options:
         awslogs-region: us-east-1
-        awslogs-group: nodejs_production_v2
+        awslogs-group: nodejs_staging_v2
         awslogs-create-group: "true"
 
   remote-worker:
