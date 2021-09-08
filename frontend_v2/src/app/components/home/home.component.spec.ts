@@ -13,7 +13,6 @@ import { HomemainComponent } from './homemain/homemain.component';
 import { PartnersComponent } from './partners/partners.component';
 import { RulesComponent } from './rules/rules.component';
 import { FeaturedChallengesComponent } from './featured-challenges/featured-challenges.component';
-import { TwitterFeedComponent } from './twitter-feed/twitter-feed.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { WindowService } from '../../services/window.service';
 
@@ -34,7 +33,6 @@ describe('HomeComponent', () => {
         PartnersComponent,
         RulesComponent,
         FeaturedChallengesComponent,
-        TwitterFeedComponent,
       ],
       providers: [GlobalService, AuthService, ApiService, EndpointsService, WindowService],
       imports: [RouterTestingModule, HttpClientModule],
