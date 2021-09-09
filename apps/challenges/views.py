@@ -2629,7 +2629,7 @@ def get_challenge_requirements_by_challenge_pk(request, challenge_pk):
     zip_ref.close()
     try:
         os.remove(zip_location)
-    except:
+    except Exception as e:
         logger.exception(
             "Temporary directory {} for challenge {} not removed. Error: {}".format(
                 zip_location, challenge_pk, e
