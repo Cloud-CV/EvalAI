@@ -2631,8 +2631,8 @@ def get_challenge_requirements_by_challenge_pk(request, challenge_pk):
         os.remove(zip_location)
     except:
         logger.exception(
-            "Temporary directory {} for challenge {} not removed".format(
-                zip_location, challenge_pk
+            "Temporary directory {} for challenge {} not removed. Error: {}".format(
+                zip_location, challenge_pk, e
             )
         )
 
@@ -2646,10 +2646,10 @@ def get_challenge_requirements_by_challenge_pk(request, challenge_pk):
 
     try:
         shutil.rmtree(base_location)
-    except:  # noqa: E722
+    except Exception as e:
         logger.exception(
-            "Temporary directory {} for challenge {} not removed".format(
-                base_location, challenge_pk
+            "Temporary directory {} for challenge {} not removed. Error: {}".format(
+                base_location, challenge_pk, e
             )
         )
 

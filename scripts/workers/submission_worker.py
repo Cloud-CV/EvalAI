@@ -283,7 +283,6 @@ def extract_challenge_data(challenge, phases):
         requirements_location = join(challenge_data_directory, "requirements.txt")
         if os.path.isfile(requirements_location):
             subprocess_output = subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
-            print(subprocess_output)
         else:
             logger.info("No requirements for challenge {}".format(challenge.id))
     except Exception as e:
