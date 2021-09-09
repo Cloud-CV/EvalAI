@@ -51,7 +51,6 @@ export class AppComponent implements OnInit, OnDestroy {
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const HEADER_ELE = document.getElementById('header-static');
     if (this.document.documentElement.scrollTop > 50) {
       if (this.scrolledState === false) {
         this.globalService.scrolledStateChange(true);

@@ -40,6 +40,17 @@
                 </span>
             </div>
         </div>
+        <div class="row" ng-if="challenge.isMultiMetricLeaderboardEnabled[challenge.phaseSplitId]">
+            <div class="col xs12 s6">
+                <span>
+                    <md-select ng-model="challenge.orderLeaderboardBy" placeholder="Order by metric" class="rm-margin">
+                        <md-option value="{{key}}" ui-sref="web.challenge-main.challenge-page.phase-metric-leaderboard({phaseSplitId:challenge.phaseSplitId, metric:challenge.encodeMetricURI(key)})"
+                         ng-repeat="key in challenge.phaseSplitLeaderboardSchema[challenge.phaseSplitId].labels">
+                            <span class="fs-16 w-300">{{key}}</span>
+                    </md-select>
+                </span>
+            </div>
+        </div>
         <div class="row">
             <div class="horizontal-scroll">
                 <div class="col s12">
@@ -93,8 +104,10 @@
                             <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
                                 <a href="#"
                                     ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
-                                    <span class="w-300 fs-20 leaderboard-label" ng-if="challenge.isMetricOrderedAscending(key)">{{key}} (&#x2193;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
-                                    <span class="w-300 fs-20 leaderboard-label" ng-if="!challenge.isMetricOrderedAscending(key)">{{key}} (&#x2191;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
+                                    <span class="w-300 fs-20 leaderboard-label" ng-if="challenge.isMetricOrderedAscending(key) && key != challenge.orderLeaderboardBy ">{{key}} (&#x2193;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
+                                    <span class="w-300 fs-20 leaderboard-label" ng-if="!challenge.isMetricOrderedAscending(key) && key != challenge.orderLeaderboardBy">{{key}} (&#x2191;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
+                                    <span class="w-400 fs-20 leaderboard-label" ng-if="challenge.isMetricOrderedAscending(key) && key == challenge.orderLeaderboardBy ">{{key}} (&#x2193;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
+                                    <span class="w-400 fs-20 leaderboard-label" ng-if="!challenge.isMetricOrderedAscending(key) && key == challenge.orderLeaderboardBy">{{key}} (&#x2191;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
                                     <span class="fa-stack fa-1x">
                                         <i class="fa fa-sort-asc fa-stack-1x"
                                             ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-300'"></i>
@@ -150,7 +163,8 @@
                                     ng-if="key.submission__is_verified_by_host"></span>
                             </td>
                             <td ng-repeat="(i, score) in key.result track by $index">
-                                {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
+                                <span class="w-400 fs-16" ng-if="challenge.leaderboard[0].leaderboard__schema.labels[i] == challenge.orderLeaderboardBy">{{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
+                                <span class="w-300 fs-16" ng-if="challenge.leaderboard[0].leaderboard__schema.labels[i] != challenge.orderLeaderboardBy">{{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                                 <span class="new badge orange-background fs-16 w-300 partial-evaluation"
                                       data-badge-caption="E" ng-if="score === '#'"></span>
                                 <span ng-if="key.error != nil"> ±
