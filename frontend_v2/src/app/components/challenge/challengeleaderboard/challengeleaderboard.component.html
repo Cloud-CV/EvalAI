@@ -20,41 +20,13 @@
       <div class="row">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box col-lr-margin">
           <app-selectphase
-            [phases]="filteredPhaseSplits"
+            [phaseSplits]="filteredPhaseSplits"
             [phaseSelectionType]="phaseSelectionType"
             [phaseSelectionListType]="phaseSelectionListType"
             [selectedPhaseSplitUrlChange]="selectedPhaseSplitUrlChange"
             #phasesplitselect
           >
           </app-selectphase>
-        </div>
-        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
-          <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
-            <div class="col-sm-12 col-xs-12 col-lr-pad" class="leaderboard-precison">
-              <span class="fw-semibold"> Leaderboard precision value:</span><br />
-              <span class="fw-light"
-                >Changing the precision value will show the results with that precision value to the participants.
-              </span>
-            </div>
-            <div class="rangeslider fa-stack fa-2x">
-              <button
-                [disabled]="minusDisabled"
-                class="btn-floating btn-pagination waves-effect waves-light"
-                (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue - 1)"
-              >
-                <i class="fa fa-minus"></i>
-              </button>
-              &nbsp;<mat-chip class="btn">{{ leaderboardPrecisionValue }}</mat-chip
-              >&nbsp;
-              <button
-                [disabled]="plusDisabled"
-                class="btn-floating btn-pagination waves-effect waves-light"
-                (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue + 1)"
-              >
-                <i class="fa fa-plus"></i>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -65,11 +37,14 @@
             <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit == null" class="fw-light result-wrn">
               No phase selected.
             </div>
-            <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="result-wrn content fw-light">
-              <mat-chip-list> <mat-chip>B</mat-chip> - Baseline submission </mat-chip-list>
-              <mat-chip-list class="leaderboard-description-span private">
-                <mat-chip>P</mat-chip> - Private submission
-              </mat-chip-list>
+            <div *ngIf="selectedPhaseSplit" class="result-wrn content fw-light">
+              <div *ngIf="leaderboard.length > 0">
+                <mat-chip-list> 
+                  <mat-chip>B</mat-chip> - Baseline submission 
+                </mat-chip-list>
+                <mat-chip-list class="leaderboard-description-span private">
+                  <mat-chip>P</mat-chip> - Private submission
+                </mat-chip-list>
               <!-- <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
                 <div
                   (click)="showLeaderboardByLatestOrBest()"
@@ -87,14 +62,15 @@
                 </div>
                 <span class="w-400"> {{ sortLeaderboardTextOption }}</span>
               </mat-chip-list> -->
-              <mat-checkbox
-                class="pull-right complete-leaderboard"
-                *ngIf="isChallengeHost && showLeaderboardToggle"
-                (change)="toggleLeaderboard(getAllEntries)"
-                [(ngModel)]="getAllEntries"
-              >
-                <label class="fw-light complete-leaderboard-text"> {{ getAllEntriesTextOption }}</label>
-              </mat-checkbox>
+              </div>
+                <mat-checkbox
+                  class="pull-right complete-leaderboard"
+                  *ngIf="isChallengeHost && showLeaderboardToggle && numberOfAllEntries > 0"
+                  (change)="toggleLeaderboard(getAllEntries)"
+                  [(ngModel)]="getAllEntries"
+                >
+                  <label class="fw-light complete-leaderboard-text"> {{ getAllEntriesTextOption }}</label>
+                </mat-checkbox>
             </div>
 
             <table *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="centered highlight fw-light">
@@ -189,7 +165,7 @@
                     <span *ngIf="key.submission__is_public === false && isSelectedPhaseLeaderboardPublic" class="private">
                       <mat-chip-list>
                         <mat-chip>P</mat-chip>
-                      </mat-chip-list>
+                      </mat-chip-list>&nbsp;
                     </span>
                     <span *ngIf="key.submission__is_baseline">
                       <mat-chip-list>
