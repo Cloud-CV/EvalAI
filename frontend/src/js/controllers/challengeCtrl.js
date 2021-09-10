@@ -93,7 +93,6 @@
         vm.previousPublicSubmissionId = null;
 
         vm.workerLogs = [];
-        vm.requirements = [];
 
         utilities.showLoader();
 
@@ -501,28 +500,7 @@
                 utilities.hideLoader();
             }
         };
-        
-        utilities.sendRequest(parameters);
 
-
-        parameters.method = 'GET';
-        parameters.url = 'challenges/challenge/requirements/' + vm.challengeId + '/';
-        parameters.data = {};
-        parameters.callback = {
-            onSuccess: function(response) {
-                var details = response.data;
-                vm.requirements = [];
-                for (var i = 0; i<details.requirements.length; i++){
-                    vm.requirements.push(details.requirements[i]);
-                }
-            },
-            onError: function(response) {
-                var error = response.data;
-                $rootScope.notify("error", error.error);
-                $state.go('web.dashboard');
-                utilities.hideLoader();
-            }
-        };
         utilities.sendRequest(parameters);
 
         vm.toggleParticipation = function (ev, isRegistrationOpen) {
