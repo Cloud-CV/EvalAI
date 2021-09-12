@@ -1,6 +1,4 @@
-import requests
 import logging
-import base64
 import yaml
 
 from base.utils import deserialize_object
@@ -10,100 +8,10 @@ from .github_sync_config import (
     challenge_phase_non_file_fields,
     challenge_phase_file_fields,
 )
+from .github_interface import GithubInterface
 from evalai.celery import app
 
 logger = logging.getLogger(__name__)
-
-URLS = {"contents": "/repos/{}/contents/{}", "repos": "/repos/{}"}
-
-
-class GithubInterface:
-    def __init__(self, GITHUB_AUTH_TOKEN, GITHUB_REPOSITORY):
-        self.GITHUB_AUTH_TOKEN = GITHUB_AUTH_TOKEN
-        self.GITHUB_REPOSITORY = GITHUB_REPOSITORY
-        self.BRANCH = "challenge"
-        self.COMMIT_PREFIX = "evalai_bot: Update {}"
-
-    def get_request_headers(self):
-        headers = {"Authorization": "token {}".format(self.GITHUB_AUTH_TOKEN)}
-        return headers
-
-    def make_request(self, url, method, params={}, data={}):
-        url = self.get_github_url(url)
-        headers = self.get_request_headers()
-        try:
-            response = requests.request(
-                method=method,
-                url=url,
-                headers=headers,
-                params=params,
-                json=data,
-            )
-            response.raise_for_status()
-        except requests.exceptions.RequestException:
-            logger.info(
-                "EvalAI is not able to establish connection with github {}".format(
-                    response.json()
-                )
-            )
-            return None
-        return response.json()
-
-    def get_github_url(self, url):
-        base_url = "https://api.github.com"
-        url = "{0}{1}".format(base_url, url)
-        return url
-
-    def get_content_from_path(self, path):
-        """
-        Gets the file content, information in json format in the repository at particular path
-        Ref: https://docs.github.com/en/rest/reference/repos#contents
-        """
-        url = URLS.get("contents").format(self.GITHUB_REPOSITORY, path)
-        params = {"ref": self.BRANCH}
-        response = self.make_request(url, "GET", params)
-        return response
-
-    def get_data_from_path(self, path):
-        """
-        Gets the file data in string format in the repository at particular path
-        Calls get_content_from_path and encode the base64 content
-        """
-        content_response = self.get_content_from_path(path)
-        string_data = None
-        if content_response and content_response.get("content"):
-            string_data = base64.b64decode(content_response["content"]).decode(
-                "utf-8"
-            )
-        return string_data
-
-    def update_content_from_path(self, path, content):
-        """
-        Updates the file content, creates a commit in the repository at particular path
-        Ref: https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
-        """
-        url = URLS.get("contents").format(self.GITHUB_REPOSITORY, path)
-        data = {
-            "message": self.COMMIT_PREFIX.format(path),
-            "branch": self.BRANCH,
-            "sha": self.get_content_from_path(path).get("sha"),
-            "content": content,
-        }
-        response = self.make_request(url, "PUT", data=data)
-        return response
-
-    def update_data_from_path(self, path, data):
-        """
-        Updates the file data to the data(string) provided, at particular path
-        Call update_content_from_path with decoded base64 content
-        """
-        content = base64.b64encode(bytes(data, "utf-8")).decode("utf-8")
-        return self.update_content_from_path(path, content)
-
-    def is_repository(self):
-        url = URLS.get("repos").format(self.GITHUB_REPOSITORY)
-        repo_response = self.make_request(url, "GET")
-        return True if repo_response else False
 
 
 @app.task
@@ -116,7 +24,7 @@ def github_challenge_sync(challenge):
     if not github.is_repository():
         return
     try:
-        # Challenge Non-file field Update
+        # Challenge non-file field update
         challenge_config_str = github.get_data_from_path(
             "challenge_config.yaml"
         )
@@ -136,7 +44,7 @@ def github_challenge_sync(challenge):
             content_str = yaml.dump(challenge_config_yaml, sort_keys=False)
             github.update_data_from_path("challenge_config.yaml", content_str)
 
-        # Challenge File fields Update
+        # Challenge file fields update
         for field in challenge_file_fields:
             if challenge_config_yaml.get(field) is None:
                 continue
@@ -146,7 +54,7 @@ def github_challenge_sync(challenge):
                 continue
             github.update_data_from_path(field_path, getattr(challenge, field))
     except Exception as e:
-        logger.info("Github Sync unsuccessful due to {}".format(e))
+        logger.error("Github Sync unsuccessful due to {}".format(e))
 
 
 @app.task
@@ -160,7 +68,7 @@ def github_challenge_phase_sync(challenge_phase):
     if not github.is_repository():
         return
     try:
-        # Non-file field Update
+        # Challenge phase non-file field update
         challenge_phase_unique = "codename"
         challenge_config_str = github.get_data_from_path(
             "challenge_config.yaml"
@@ -182,12 +90,11 @@ def github_challenge_phase_sync(challenge_phase):
                 update_challenge_config = True
                 phase[field] = getattr(challenge_phase, field)
             break
-
         if update_challenge_config:
             content_str = yaml.dump(challenge_config_yaml, sort_keys=False)
             github.update_data_from_path("challenge_config.yaml", content_str)
 
-        # File fields Update
+        # Challenge phase file fields update
         for phase in challenge_config_yaml["challenge_phases"]:
             if phase.get(challenge_phase_unique) != getattr(
                 challenge_phase, challenge_phase_unique
@@ -206,8 +113,7 @@ def github_challenge_phase_sync(challenge_phase):
                     field_path, getattr(challenge_phase, field)
                 )
             break
-
     except Exception as e:
-        logger.info(
+        logger.error(
             "Github Sync Challenge Phase unsuccessful due to {}".format(e)
         )
