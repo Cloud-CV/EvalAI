@@ -2121,8 +2121,6 @@ def create_leaderboard(request):
 
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_or_update_leaderboard(request, leaderboard_pk):
     """
     Returns or Updates a leaderboard

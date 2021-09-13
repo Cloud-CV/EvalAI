@@ -31,6 +31,11 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   challenge: any;
 
   /**
+   * Leaderboard object
+   */
+  leaderboard: any;
+
+  /**
    * Challenge phase list
    */
   phases = [];
@@ -241,7 +246,20 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       }
       this.filteredPhaseSplits = this.phaseSplits;
     });
-
+    this.apiService
+      .getUrl(
+        this.endpointsService.getOrUpdateLeaderboardScehmaURL(75)
+      )
+      .subscribe(
+        (data) => {
+          this.leaderboard = data;
+        },
+        (err) => {
+            this.globalService.showToast('error', this.endpointsService.getOrUpdateLeaderboardScehmaURL(75));
+        },
+        () => {}
+    );
+    // TODO REMOVE
     if (!this.challenge["remote_evaluation"]) {
       this.fetchWorkerLogs();
       this.startLoadingLogs();
@@ -532,7 +550,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           );
     }
     else {
-      SELF.globalService.showToast('error', "Leaderboard is private, please make the leaderbaord public");
+      SELF.globalService.showToast('error', "Leaderboard is private, please make the leaderboard public");
     }
   }
 
@@ -786,7 +804,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             () => {}
           );
       } else {
-        SELF.globalService.showToast('error', 'The challenge start date cannot be same or greater than end date.', 5);
+        SELF.globalService.showToast('error', 'The challenge   cannot be same or greater than end date.', 5);
       }
     };
     const PARAMS = {
@@ -983,6 +1001,88 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
+  }
+
+  editLeaderboardSchema() {
+    const SELF = this;
+
+    // TODO: REPLACE 75 WITH GETTING THE LEADERBOARD ID
+    SELF.apiCall = (params) => {
+      SELF.globalService.showToast('success', 'CALL WENT OFF!', 5);
+      let currentLeaderboard = this.leaderboard;
+      this.logger.info(params);
+      currentLeaderboard.schema = params.schema;
+      const BODY = JSON.stringify(currentLeaderboard);
+      this.logger.info(BODY);
+
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.getOrUpdateLeaderboardScehmaURL(75), BODY)
+        .subscribe(
+          (data) => {
+            SELF.leaderboard = data;
+            SELF.globalService.showToast('success', 'The leaderboard schema is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-LEADERBOARD-SCHEMA-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Edit Leaderboard Schema',
+      content: '',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: false,
+          label: 'schema',
+          placeholder: 'schema',
+          type: 'text',
+          value: this.leaderboard.schema,
+        },
+      ],
+      isButtonDisabled: true,
+      confirmCallback: SELF.apiCall,
+    };
+
+    /* does not display schema
+    const PARAMS = {
+      title: 'Edit Leaderboard Schema',
+      content: '',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: false,
+          label: 'schema',
+          placeholder: 'schema',
+          type: 'text',
+          value: JSON.stringify(this.leaderboard.schema),
+        },
+      ],
+      isButtonDisabled: true,
+      confirmCallback: SELF.apiCall,
+    };
+    */
+
+
+   /* using editor: adds <p> around schema
+    const PARAMS = {
+      title: 'Edit Leaderboard Schema',
+      label: 'Schema',
+      isEditorRequired: true,
+      editorContent: this.leaderboard.schema,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    */
+
+    SELF.globalService.showModal(PARAMS);
+  
   }
 
   /**
