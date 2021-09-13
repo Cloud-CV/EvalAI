@@ -1008,7 +1008,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
     // TODO: REPLACE 75 WITH GETTING THE LEADERBOARD ID
     SELF.apiCall = (params) => {
-      SELF.globalService.showToast('success', 'CALL WENT OFF!', 5);
+      SELF.globalService.showToast('success', 'IS THIS UPDATED', 5);
       let currentLeaderboard = this.leaderboard;
       this.logger.info(params);
       currentLeaderboard.schema = params.schema;
@@ -1020,7 +1020,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.leaderboard = data;
-            SELF.globalService.showToast('success', 'The leaderboard schema is successfully updated!', 5);
+            SELF.globalService.showToast('success', 'update!', 5);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
