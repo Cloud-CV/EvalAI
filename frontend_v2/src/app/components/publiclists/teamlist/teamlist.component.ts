@@ -168,7 +168,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
    * Route path for create challenge
    */
   createChallengeRoutePath = '/challenge-create';
-  
+
   /**
    * Route path for create template challenge page
    */
@@ -263,15 +263,13 @@ export class TeamlistComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.teamListRouteQueryParamSub = this.route
-      .queryParams
-      .subscribe(params => {
-        this.isTemplateChallenge = params['template'] || false;
-        if(this.isTemplateChallenge){
-          this.templateId = params['templateId'];
-          this.templatePhases = params['templatePhases'];
-        }
-      });
+    this.teamListRouteQueryParamSub = this.route.queryParams.subscribe((params) => {
+      this.isTemplateChallenge = params['template'] || false;
+      if (this.isTemplateChallenge) {
+        this.templateId = params['templateId'];
+        this.templatePhases = params['templatePhases'];
+      }
+    });
 
     if (this.router.url === this.hostTeamRoutePath || this.isTemplateChallenge) {
       this.isHost = true;
@@ -669,10 +667,10 @@ export class TeamlistComponent implements OnInit, OnDestroy {
     } else {
       API_PATH = SELF.endpointsService.FilteredParticipantTeamURL(teamName);
     }
-    let name = SELF.filterTeamsQuery;
+    const name = SELF.filterTeamsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
-        if(name == SELF.filterTeamsQuery) {
+        if (name === SELF.filterTeamsQuery) {
           SELF.updateTeamsData(data);
         }
       },
