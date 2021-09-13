@@ -315,7 +315,7 @@ describe('ChallengesettingsComponent', () => {
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
   });
 
-  it('should show modal and successfully edit evaluation script', () => {
+  it('should show modal and successfully update evaluation script', () => {
     const parameters = {
       evaluation_script: 'evaluation_script',
     };
@@ -357,7 +357,7 @@ describe('ChallengesettingsComponent', () => {
     expect(globalService.showToast).toHaveBeenCalledWith('error', expectedErrorMsg);
   });
   
-  it('should show modal and successfully edit the challenge description', () => {
+  it('should show modal and successfully edit challenge description', () => {
     const updatedDescription = 'Updated challenge description';
     const expectedSuccessMsg = 'The description is successfully updated!';
     spyOn(apiService, 'patchUrl').and.returnValue(
