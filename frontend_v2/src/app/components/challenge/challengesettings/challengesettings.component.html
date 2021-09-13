@@ -134,8 +134,26 @@
         </ng-template>
       </mat-tab>
 
-      <!-- Edit Phase Details -->
-      <mat-tab label="Phase and Leaderboard Details"> 
+      <!-- Edit Phase and Leaderboard Details -->
+      <mat-tab label="Phase and Leaderboard">
+        <div class="row margin-bottom-cancel">
+          <div class="col s12">
+            <button
+              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12"
+              (click)="editSubmissionGuidelines()"
+            >
+            Submission Guidelines
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-12"
+              (click)="editLeaderboardDescription()"
+            >
+            Leaderboard Description
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
         <div class="row settings-section">
           <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
             <span class="fw-light fs-18">Edit Phase</span>
@@ -200,7 +218,7 @@
                   </span>
                   <a class="pointer fs-20" (click)="toggleLeaderboardVisibility()">
                     <i class="{{ leaderboardVisibility.icon }}" aria-hidden="true"> </i>
-                  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  </a>
                 </div>
               </div>
               <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">

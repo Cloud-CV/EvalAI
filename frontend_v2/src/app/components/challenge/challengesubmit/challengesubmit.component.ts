@@ -94,11 +94,6 @@ export class ChallengesubmitComponent implements OnInit {
   submissionError = '';
 
   /**
-   * Guidelines text
-   */
-  submissionGuidelines = '';
-
-  /**
    * Stores the attributes format and phase ID for all the phases of a challenge.
    */
   submissionMetaAttributes = [];
@@ -248,7 +243,6 @@ export class ChallengesubmitComponent implements OnInit {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
       this.isActive = this.challenge['is_active'];
-      this.submissionGuidelines = this.challenge['submission_guidelines'];
       if (this.challenge.cli_version !== null) {
         this.cliVersion = this.challenge.cli_version;
       }
@@ -600,40 +594,6 @@ export class ChallengesubmitComponent implements OnInit {
     document.body.removeChild(textBox);
 
     this.globalService.showToast('success', 'Command copied to clipboard');
-  }
-
-  /**
-   * Edit submission guidelines
-   */
-  editSubmissionGuideline() {
-    const SELF = this;
-    SELF.apiCall = (params) => {
-      const BODY = JSON.stringify(params);
-      SELF.apiService
-        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
-        .subscribe(
-          (data) => {
-            SELF.submissionGuidelines = data.submission_guidelines;
-            SELF.globalService.showToast('success', 'The submission guidelines is successfully updated!', 5);
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err, true);
-            SELF.globalService.showToast('error', err);
-          },
-          () => {}
-        );
-    };
-
-    const PARAMS = {
-      title: 'Edit Submission Guidelines',
-      label: 'submission_guidelines',
-      isEditorRequired: true,
-      editorContent: this.challenge.submission_guidelines,
-      confirm: 'Submit',
-      deny: 'Cancel',
-      confirmCallback: SELF.apiCall,
-    };
-    SELF.globalService.showModal(PARAMS);
   }
 
   validateInput(inputValue) {

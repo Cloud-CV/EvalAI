@@ -929,6 +929,40 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Edit submission guidelines
+   */
+  editSubmissionGuidelines() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.submission_guidelines = data.submission_guidelines;
+            SELF.globalService.showToast('success', 'The submission guidelines are successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
+    };
+
+    const PARAMS = {
+      title: 'Edit Submission Guidelines',
+      label: 'submission_guidelines',
+      isEditorRequired: true,
+      editorContent: this.challenge.submission_guidelines,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
   // Edit Leaderboard Details ->
 
   /**
@@ -1047,7 +1081,44 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
     );
   }
+  
+  /**
+   * Edit leaderboard description of the challenge
+   */
+  editLeaderboardDescription() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.challenge.leaderboard_description = data.leaderboard_description;
+            SELF.globalService.showToast('success', 'The leaderboard description is successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('Edit Leaderboard Description')
+        );
+    };
 
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Leaderboard Description',
+      label: 'leaderboard_description',
+      isEditorRequired: true,
+      editorContent: this.challenge.leaderboard_description,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+  
   // Edit Evaluation Script and Criteria ->
 
   /**
