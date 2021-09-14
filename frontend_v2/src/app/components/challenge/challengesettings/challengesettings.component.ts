@@ -35,6 +35,11 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   leaderboard: any;
 
   /**
+   * 
+   */
+  leaderboardId: any = null;
+
+  /**
    * Is challenge host
    */
   isChallengeHost = false;
@@ -108,7 +113,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Select box list type
    */
   phaseLeaderboardSelectionListType = 'settingsPhaseSplit';
-
+  
   /**
    * If leaderboard of phase split is public
    * 1 -> private
@@ -267,19 +272,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       }
       this.filteredPhaseSplits = this.phaseSplits;
     });
-    this.apiService
-      .getUrl(
-        this.endpointsService.getOrUpdateLeaderboardScehmaURL(75)
-      )
-      .subscribe(
-        (data) => {
-          this.leaderboard = data;
-        },
-        (err) => {
-            this.globalService.showToast('error', this.endpointsService.getOrUpdateLeaderboardScehmaURL(75));
-        },
-        () => {}
-    );
+
     // TODO REMOVE
     if (!this.challenge["remote_evaluation"]) {
       this.fetchWorkerLogs();
@@ -948,7 +941,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           () => this.logger.info('SUBMISSION-VISIBILITY-UPDATE-FINISHED')
         );
     } else {
-      SELF.globalService.showToast('error', 'Leaderboard is private, please make the leaderbaord public');
+      SELF.globalService.showToast('error', 'Leaderboard is private, please make the leaderboard public');
     }
   }
 
@@ -974,11 +967,26 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         (data) => {
           SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
           SELF.setLeaderboardPrecisionValue = `1.${SELF.leaderboardPrecisionValue}-${SELF.leaderboardPrecisionValue}`;
+          SELF.leaderboardId = data.leaderboard;
         },
         (err) => {
           SELF.globalService.handleApiError(err);
         },
-        () => {}
+        () => {
+          SELF.apiService
+            .getUrl(
+              this.endpointsService.getOrUpdateLeaderboardSchemaURL(SELF.leaderboardId)
+            )
+          .subscribe(
+            (data) => {
+              SELF.leaderboard = data;
+            },
+            (err) => {
+                SELF.globalService.showToast('error', "Could not fetch leaderboard schema");
+            },
+            () => {}
+          );
+        }
       );
     };
   }
@@ -1162,9 +1170,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   editLeaderboardSchema() {
     const SELF = this;
 
+
     // TODO: REPLACE 75 WITH GETTING THE LEADERBOARD ID
     SELF.apiCall = (params) => {
-      SELF.globalService.showToast('success', 'IS THIS UPDATED', 5);
       let currentLeaderboard = this.leaderboard;
       this.logger.info(params);
       currentLeaderboard.schema = params.schema;
@@ -1172,7 +1180,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       this.logger.info(BODY);
 
       SELF.apiService
-        .patchUrl(SELF.endpointsService.getOrUpdateLeaderboardScehmaURL(75), BODY)
+        .patchUrl(SELF.endpointsService.getOrUpdateLeaderboardSchemaURL(SELF.leaderboard.id), BODY)
         .subscribe(
           (data) => {
             SELF.leaderboard = data;

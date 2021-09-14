@@ -206,6 +206,16 @@
               <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">
                 <div class="col s12">
                   <span class="fs-16 fw-light">
+                    <strong class="text-light-black">Leaderboard Schema </strong>
+                  </span>
+                  <a class="pointer fs-16" (click)="editLeaderboardSchema()">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+                </div>
+              </div>
+              <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">
+                <div class="col s12">
+                  <span class="fs-16 fw-light">
                     <strong class="text-light-black">Leaderboard Precision Value </strong>
                   </span>
                   <br />
@@ -232,77 +242,6 @@
             </div>
           </div>
         </div>
-<<<<<<< HEAD
-        <div class="ev-action">
-          <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
-            <span class="fs-16 fw-light">
-              <strong class="text-light-black">Leaderboard Schema </strong>
-            </span>
-            <a class="pointer fs-16" (click)="editLeaderboardSchema()">
-              <i class="fa fa-pencil" aria-hidden="true"> </i>
-            </a>
-          </div>
-        </div>        
-        <!-- Start date -->
-        <span class="fs-16 fw-light">
-          <strong class="text-light-black">Starts on:</strong>
-          {{ challenge['start_date'] | date: 'medium' }} {{ challenge['start_zone'] }}
-        </span>
-        <span *ngIf="isChallengeHost" class="fs-16 fw-light">
-          <a class="pointer fs-16" (click)="challengeDateDialog()">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
-          </a>
-        </span>
-        <br />
-        <!-- End date -->
-        <span class="fs-16 fw-light">
-          <strong class="text-light-black">Ends on:</strong>
-          {{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}
-        </span>
-        <span *ngIf="isChallengeHost" class="fs-16 fw-light">
-          <a class="pointer fs-16" (click)="challengeDateDialog()">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
-          </a>
-        </span>
-        <br />
-        <span class="fs-16 fw-light" *ngIf="isChallengeHost">
-            <a class="pointer" (click)="togglePublishChallengeState()">
-              <strong class="text-light-black">{{ publishChallenge.state }} </strong>
-              <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
-            </a>
-        </span>
-        <br />
-        <mat-checkbox
-          color="primary"
-          class="fw-semibold"
-          *ngIf="isChallengeHost"
-          [checked]="!challenge['is_registration_open']"
-          (click)="stopParticipation($event)"
-          ><strong class="text-light-black fs-15">Close Participation</strong>
-        </mat-checkbox>
-      </div>
-    </div>
-  </div>
-    
-    <!-- Phase Edit Section-->
-    <div class="row settings-section">
-      <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
-        <span class="fw-light fs-18">Edit phase details</span>
-      </div>
-      <br />
-      <div class="ev-action">
-        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box" *ngIf="isChallengeHost">
-          <div class="row margin-bottom-cancel phase-card">
-            <app-selectphase
-              [phases]="filteredPhases"
-              [phaseSelectionListType]="phaseSelectionListType"
-              [phaseSelectionType]="phaseSelectionType"
-              [phaseSelected]="phaseSelected()"
-              #phaseselect
-            ></app-selectphase>
-          </div>
-=======
->>>>>>> 1c375491220745d47e2509f8d66b5eff7ab53ef3
 
       </mat-tab>
 

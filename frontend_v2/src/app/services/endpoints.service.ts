@@ -352,7 +352,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
     return `${this.challenges}challenge_host_team/${hostTeam}/${this.challenge}${challenge}`;
   }
 
-  getOrUpdateLeaderboardScehmaURL(leaderboard) {
+  getOrUpdateLeaderboardSchemaURL(leaderboard) {
     return `${this.challenges}${this.challenge}create/leaderboard/${leaderboard}/`;
   }
 
