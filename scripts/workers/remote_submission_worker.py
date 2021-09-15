@@ -533,7 +533,6 @@ def run_submission(
         submission_data = {
             "challenge_phase": phase_pk,
             "submission": submission_pk,
-            "submission_status": "finished",
             "stdout": stdout_content,
             "stderr": stderr_content,
             "metadata": json.dumps(submission_output.get("submission_metadata"))
