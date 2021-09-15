@@ -541,14 +541,13 @@ def run_submission(
         if "result" in submission_output:
             res = submission_output.get("result")
             new_res = []
-            for item in res:
-                for key, value in item.items():
-                    temp = {
-                        "split": key,
-                        "show_to_participant": True,
-                        "accuracies": value
-                    }
-                    new_res.append(temp)
+            for key, value in res.items():
+                temp = {
+                    "split": key,
+                    "show_to_participant": True,
+                    "accuracies": value
+                }
+                new_res.append(temp)
             submission_data["result"] = json.dumps(new_res)
             submission_data["submission_status"] = "finished"
         else:
