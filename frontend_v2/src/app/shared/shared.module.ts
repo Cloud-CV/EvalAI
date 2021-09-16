@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 // import directive
 import { PasswordMismatchValidatorDirective } from '../Directives/password.validator';
 import { EmailValidatorDirective } from '../Directives/email.validator';
+import { LazyImageDirective } from '../Directives/image.lazyload';
 
 // import component
 import { HeaderStaticComponent } from '../components/nav/header-static/header-static.component';
@@ -19,6 +20,7 @@ import { UtilityModule } from '../components/utility/utility.module';
   declarations: [
     PasswordMismatchValidatorDirective,
     EmailValidatorDirective,
+    LazyImageDirective,
     HeaderStaticComponent,
     FooterComponent,
     NotFoundComponent,
@@ -27,6 +29,7 @@ import { UtilityModule } from '../components/utility/utility.module';
   exports: [
     PasswordMismatchValidatorDirective,
     EmailValidatorDirective,
+    LazyImageDirective,
     CommonModule,
     RouterModule,
     FormsModule,
