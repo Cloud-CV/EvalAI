@@ -284,7 +284,7 @@ def extract_challenge_data(challenge, phases):
         if os.path.isfile(requirements_location):
             subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
         else:
-            logger.info("No requirements for challenge {}".format(challenge.id))
+            logger.info("No custom requirements for challenge {}".format(challenge.id))
     except Exception as e:
         logger.error(e)
 

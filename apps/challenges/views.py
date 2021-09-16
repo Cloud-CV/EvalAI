@@ -2605,60 +2605,6 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def get_challenge_requirements_by_challenge_pk(request, challenge_pk):
-    """
-    API endpoint to fetch all the requirements corresponding to a challenge using challenge pk
-    Arguments:
-        challenge_pk -- Challenge Id for which the requirements are to be fetched
-    Returns:
-        Response Object -- An object containing all requirements
-    """
-    requirement_data = []
-
-    challenge = get_challenge_model(challenge_pk)
-    base_location = tempfile.mkdtemp()
-    zip_location = join(
-        base_location, "{}.zip".format(challenge_pk)
-    )
-    extract_location = join(
-        base_location, "data{}".format(challenge_pk)
-    )
-
-    zip_ref = zipfile.ZipFile(challenge.evaluation_script, "r")
-    zip_ref.extractall(extract_location)
-    zip_ref.close()
-    try:
-        os.remove(zip_location)
-    except Exception as e:
-        logger.exception(
-            "Temporary directory {} for challenge {} not removed. Error: {}".format(
-                zip_location, challenge_pk, e
-            )
-        )
-
-    requirements_location = join(extract_location, "requirements.txt")
-
-    if os.path.isfile(requirements_location):
-        f = open(requirements_location, "r")
-        requirement_data = f.read()
-        requirement_data = requirement_data.splitlines()
-        f.close()
-
-    try:
-        shutil.rmtree(base_location)
-    except Exception as e:
-        logger.exception(
-            "Temporary directory {} for challenge {} not removed. Error: {}".format(
-                base_location, challenge_pk, e
-            )
-        )
-
-    response_data = {"requirements": requirement_data}
-    return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-@throttle_classes([AnonRateThrottle])
 def get_challenge_phase_by_pk(request, pk):
     """
     Returns a particular challenge phase details by pk
