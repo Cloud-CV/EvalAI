@@ -17,6 +17,10 @@
   }
 }
 
+p {
+  margin: 6px 0px 25px 0px;
+}
+
 .rangeslider {
   width: 50%;
   display: flex;
@@ -50,13 +54,13 @@ input {
   border-bottom: none;
 }
 
-:host ::ng-deep .mat-tab-label .mat-tab-label-content{
+:host ::ng-deep .mat-tab-label .mat-tab-label-content {
   font-weight: $fw-light !important;
   font-size: $fs-16 !important;
 }
 
 .phase-card {
-  width:50vw; 
+  width: 50vw;
 }
 
 .phase-button {
@@ -68,7 +72,7 @@ input {
 }
 
 .upload-container {
-  text-align:center;
+  text-align: center;
 }
 
 @media (max-width: 992px) {
@@ -83,7 +87,7 @@ input {
   }
 }
 
-@media (max-width: 600px)  {
+@media (max-width: 600px) {
   .settings-section {
     padding: 25px !important;
   }
@@ -91,8 +95,8 @@ input {
     justify-content: space-evenly;
   }
   .btn-floating {
-    margin: 0%
-  }  
+    margin: 0%;
+  }
 }
 
 .example-chip-list {
