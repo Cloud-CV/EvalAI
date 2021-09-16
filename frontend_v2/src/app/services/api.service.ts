@@ -118,7 +118,6 @@ export class ApiService {
    * @param body  stringified json body.
    */
   loadingWrapper(httpCall, isLoader = true) {
-    const SELF = this;
     if (isLoader) {
       setTimeout(() => {
         this.globalService.toggleLoading(true);
