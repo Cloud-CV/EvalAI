@@ -273,7 +273,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       this.filteredPhaseSplits = this.phaseSplits;
     });
 
-    // TODO REMOVE
     if (!this.challenge["remote_evaluation"]) {
       this.fetchWorkerLogs();
       this.startLoadingLogs();
@@ -1169,9 +1168,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
 
   editLeaderboardSchema() {
     const SELF = this;
-
-
-    // TODO: REPLACE 75 WITH GETTING THE LEADERBOARD ID
     SELF.apiCall = (params) => {
       let currentLeaderboard = this.leaderboard;
       this.logger.info(params);
@@ -1211,39 +1207,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       isButtonDisabled: true,
       confirmCallback: SELF.apiCall,
     };
-
-    /* does not display schema
-    const PARAMS = {
-      title: 'Edit Leaderboard Schema',
-      content: '',
-      confirm: 'Confirm',
-      deny: 'Cancel',
-      form: [
-        {
-          isRequired: false,
-          label: 'schema',
-          placeholder: 'schema',
-          type: 'text',
-          value: JSON.stringify(this.leaderboard.schema),
-        },
-      ],
-      isButtonDisabled: true,
-      confirmCallback: SELF.apiCall,
-    };
-    */
-
-
-   /* using editor: adds <p> around schema
-    const PARAMS = {
-      title: 'Edit Leaderboard Schema',
-      label: 'Schema',
-      isEditorRequired: true,
-      editorContent: this.leaderboard.schema,
-      confirm: 'Submit',
-      deny: 'Cancel',
-      confirmCallback: SELF.apiCall,
-    };
-    */
 
     SELF.globalService.showModal(PARAMS);
   
