@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 
 /**
@@ -32,14 +31,10 @@ export class VerifyEmailComponent implements OnInit {
    * Constructor.
    * @param authService  AuthService Injection.
    * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
    * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    */
   constructor(
-    private router: Router,
     private route: ActivatedRoute,
-    private apiService: ApiService,
     private globalService: GlobalService,
     private authService: AuthService
   ) {}

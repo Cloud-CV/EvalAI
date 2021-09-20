@@ -1,4 +1,4 @@
-import { Injectable, Component, OnInit, Input, Inject } from '@angular/core';
+import { Component, OnInit, Input, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { GlobalService } from '../../../services/global.service';
 

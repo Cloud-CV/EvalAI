@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, ViewChild, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, Input, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 
@@ -152,9 +152,16 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   apiCall: any;
 
-  columnsToDisplay = ['s_no', 'status', 'execution_time', 'submission_result_file', 'stdout_file', 'stderr_file', 'submitted_at'];
+  columnsToDisplay = [
+    's_no',
+    'status',
+    'execution_time',
+    'submission_result_file',
+    'stdout_file',
+    'stderr_file',
+    'submitted_at',
+  ];
   columnsHeadings = ['S.No.', 'Status', 'Execution Time', 'Result File', 'Stdout File', 'Stderr File', 'Submitted At'];
-
 
   expandedElement: null;
 
@@ -166,13 +173,14 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
+   * @param challengeService  ChallengeService Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  Router Injection.
+   * @param windowService  WindowService Injection.
    * @param endpointsService  EndpointsService Injection.
-   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -225,8 +233,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       for (let i = 0; i < this.phases.length; i++) {
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
-        }
-        else {
+        } else {
           this.phases[i].showPrivate = false;
         }
       }
@@ -261,7 +268,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   fetchSubmissions(challenge, phase) {
     const SELF = this;
     let API_PATH;
-      API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
+    API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.submissionCount = data['count'];
@@ -359,7 +366,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
             SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
           }
 
-          let index =  (SELF.paginationDetails.currentPage-1)*10;
+          let index = (SELF.paginationDetails.currentPage - 1) * 10;
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
             index += 1;
@@ -488,7 +495,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       );
     }
   }
-  
+
   /**
    * Display Edit Submission Modal.
    * @param submission  Submission being edited
@@ -569,7 +576,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   fetchParticipated_team(challengeId) {
     const SELF = this;
-    if(challengeId != undefined){
+    if (challengeId !== undefined) {
       const API_PATH = SELF.endpointsService.getParticipatedTeamNameURL(challengeId);
       this.apiService.getUrl(API_PATH, true, false).subscribe(
         (data) => {
@@ -581,5 +588,5 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         () => {}
       );
     }
-  }    
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, OnChanges } from '@angular/core';
+import { Component, OnInit, Input, OnChanges } from '@angular/core';
 import { ChallengeService } from '../../../services/challenge.service';
 import { GlobalService } from '../../../services/global.service';
 
@@ -17,6 +17,16 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phases: any;
 
   /**
+   * Phase Splits list for settings tab
+   */
+  @Input() settingsPhaseSplits: any;
+
+  /**
+   * Phase Splits list
+   */
+  @Input() phaseSplits: any;
+
+  /**
    * Selected phase callback
    */
   @Input() phaseSelected: any;
@@ -27,7 +37,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() selectedPhaseSplitUrlChange: any;
 
   /**
-   * Selected phase split 
+   * Selected phase split
    */
   @Input() phaseSplitSelected: any;
 
@@ -54,7 +64,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   /**
    * If phase selected
    */
-  isPhaseSelected : boolean = false;
+  isPhaseSelected = false;
 
   /**
    * Currently selected phase
@@ -79,12 +89,17 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   /**
    * If phase selected
    */
-  isPhaseSplitSelected : boolean = false;
+  isPhaseSplitSelected = false;
 
   /**
    * Challenge object
    */
   challenge: any;
+
+  /**
+   * Select default radio option if same as phase id
+   */
+  radioSelected: number;
 
   /**
    * Constructor.
@@ -100,6 +115,18 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
     });
+
+    if (Array.isArray(this.phases) && this.phases.length) {
+      this.selectedPhase = this.phases[0];
+      this.radioSelected = this.phases[0].id;
+      this.selectPhase(this.phases[0]);
+    } else if (Array.isArray(this.settingsPhaseSplits) && this.settingsPhaseSplits.length) {
+      this.selectedPhaseSplit = this.settingsPhaseSplits[0];
+      this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], 'selectBox', 'settingsPhaseSplit');
+    } else if (Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
+      this.selectedPhaseSplit = this.phaseSplits[0];
+      this.selectPhaseSplit(this.phaseSplits[0], 'selectBox', 'phaseSplit');
+    }
   }
 
   /**
@@ -111,7 +138,7 @@ export class SelectphaseComponent implements OnInit, OnChanges {
       this.isPhaseSelected = isPhaseSelected;
     });
 
-    if(this.isPhaseSelected == true && this.phaseSelected) {
+    if (this.isPhaseSelected === true && this.phaseSelected) {
       this.challengeService.changePhaseSelected(false);
       this.selectPhase(this.selectedPhase);
     }
@@ -120,11 +147,11 @@ export class SelectphaseComponent implements OnInit, OnChanges {
       this.isPhaseSplitSelected = isPhaseSplitSelected;
     });
 
-    if(this.phaseSplitSelected && this.isPhaseSplitSelected) {
+    if (this.phaseSplitSelected && this.isPhaseSplitSelected) {
       this.challengeService.changePhaseSplitSelected(false);
       this.selectSettingsPhaseSplit(this.selectedPhaseSplit, this.phaseSelectionType, this.phaseSelectionListType);
     }
-   }
+  }
 
   /**
    * Select a particular phase.
