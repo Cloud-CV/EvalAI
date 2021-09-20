@@ -14,6 +14,7 @@ import os
 import requests
 import signal
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -260,12 +261,13 @@ def extract_challenge_data(challenge, phases):
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.id
     )
+    # create challenge directory as package
+    create_dir_as_python_package(challenge_data_directory)
+
     evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(
         evaluation_script_url
     )
-    # create challenge directory as package
-    create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
@@ -276,6 +278,15 @@ def extract_challenge_data(challenge, phases):
     download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
+
+    try:
+        requirements_location = join(challenge_data_directory, "requirements.txt")
+        if os.path.isfile(requirements_location):
+            subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
+        else:
+            logger.info("No custom requirements for challenge {}".format(challenge.id))
+    except Exception as e:
+        logger.error(e)
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id
