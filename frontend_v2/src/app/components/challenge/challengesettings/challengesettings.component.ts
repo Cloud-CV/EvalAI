@@ -35,9 +35,9 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   leaderboard: any;
 
   /**
-   * 
+   * Id of the currently selected leaderboard
    */
-  leaderboardId: any = null;
+   selectedLeaderboardId: any = null;
 
   /**
    * Is challenge host
@@ -272,11 +272,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       }
       this.filteredPhaseSplits = this.phaseSplits;
     });
-
-    if (!this.challenge["remote_evaluation"]) {
-      this.fetchWorkerLogs();
-      this.startLoadingLogs();
-    }
   }
 
   // Edit Challenge Details ->
@@ -966,7 +961,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         (data) => {
           SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
           SELF.setLeaderboardPrecisionValue = `1.${SELF.leaderboardPrecisionValue}-${SELF.leaderboardPrecisionValue}`;
-          SELF.leaderboardId = data.leaderboard;
+          SELF.selectedLeaderboardId = data.leaderboard;
         },
         (err) => {
           SELF.globalService.handleApiError(err);
@@ -974,7 +969,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         () => {
           SELF.apiService
             .getUrl(
-              this.endpointsService.getOrUpdateLeaderboardSchemaURL(SELF.leaderboardId)
+              this.endpointsService.getOrUpdateLeaderboardSchemaURL(SELF.selectedLeaderboardId)
             )
           .subscribe(
             (data) => {
