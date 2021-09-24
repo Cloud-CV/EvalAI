@@ -113,7 +113,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Select box list type
    */
   phaseLeaderboardSelectionListType = 'settingsPhaseSplit';
-  
+
   /**
    * If leaderboard of phase split is public
    * 1 -> private
