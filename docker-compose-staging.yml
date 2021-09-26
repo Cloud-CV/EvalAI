@@ -108,8 +108,6 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.external-url=http://localhost:9090/prometheus'
-    ports:
-      - '9090:9090'
   
   grafana:
     hostname: grafana
@@ -119,10 +117,6 @@ services:
       - docker/prod/docker_staging.env
     volumes:
       - ./monitoring/grafana/grafana_db:/var/lib/grafana
-    depends_on:
-      - prometheus
-    ports:
-      - '3000:3000'
 
   statsd-exporter:
     hostname: statsd
@@ -130,10 +124,6 @@ services:
     command:
       - '--log.level=info'
       - '--web.telemetry-path=/statsd/metrics'
-    ports:
-      - '9125:9125/udp'
-      - '9125:9125/tcp'
-      - '9102:9102'
   
   node_exporter:
     hostname: node_exporter
@@ -156,6 +146,8 @@ services:
     ports:
       - '80:80'
       - '443:443'
+      - '9125:9125/tcp'
+      - '9125:9125/udp'
     
   alert-manager:
     hostname: alert_manager
@@ -169,5 +161,3 @@ services:
       - '--config.file=/prometheus/alert_manager.yml'
       - '--storage.path=/data'
       - '--web.external-url=http://localhost:9093/alert_manager'
-    ports:
-      - '9093:9093'
