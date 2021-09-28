@@ -416,7 +416,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challenge.description = data.description;
-            SELF.globalService.showToast('success', 'The description is successfully updated!', 5);
+            SELF.globalService.showToast('success', 'Challenge description updated successfully!', 5);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
@@ -465,7 +465,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challenge.terms_and_conditions = data.terms_and_conditions;
-            SELF.globalService.showToast('success', 'The terms and conditions are successfully updated!', 5);
+            SELF.globalService.showToast('success', 'Terms and conditions updated successfully!', 5);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
@@ -479,7 +479,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
      * Parameters of the modal
      */
     const PARAMS = {
-      title: 'Edit Challenge Terms and Descriptions',
+      title: 'Edit Terms and Conditions',
       content: '',
       confirm: 'Submit',
       deny: 'Cancel',
@@ -514,7 +514,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.challenge.evaluation_details = data.evaluation_details;
-            SELF.globalService.showToast('success', 'The evaluation details is successfully updated!', 5);
+            SELF.globalService.showToast('success', 'Evaluation details updated successfully!', 5);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
@@ -528,13 +528,13 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
      * Parameters of the modal
      */
     const PARAMS = {
-      title: 'Edit Challenge Evaluation Criteria',
+      title: 'Edit Evaluation Criteria',
       content: '',
       confirm: 'Submit',
       deny: 'Cancel',
       form: [
         {
-          name: 'Challenge Evaluation Criteria',
+          name: 'Edit Evaluation Criteria',
           isRequired: true,
           label: 'evaluation_criteria_file',
           placeholder: '',
@@ -566,7 +566,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
             for (const attrname of Object.keys(data)) {
               SELF.selectedPhase[attrname] = data[attrname];
             }
-            SELF.globalService.showToast('success', 'The challenge phase description is successfully updated!');
+            SELF.globalService.showToast('success', 'Challenge phase description updated successfully!');
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
