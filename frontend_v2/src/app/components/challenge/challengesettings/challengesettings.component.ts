@@ -1196,7 +1196,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           label: 'schema',
           placeholder: 'schema',
           type: 'text',
-          value: this.leaderboard.schema,
+          value: JSON.stringify(this.leaderboard.schema),
         },
       ],
       isButtonDisabled: true,
