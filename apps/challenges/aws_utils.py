@@ -165,7 +165,6 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
     """
     container_name = "worker_{}".format(queue_name)
-    code_upload_container_name = "code_upload_worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
     log_group_name = get_log_group_name(challenge.pk)
@@ -194,61 +193,23 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 return e.response
             # challenge host auth token to be used by code-upload-worker
             token = JwtToken.objects.get(user=challenge.creator.created_by)
-            if challenge.is_static_dataset_code_upload:
-                code_upload_container = (
-                    container_definition_code_upload_worker.format(
-                        queue_name=queue_name,
-                        code_upload_container_name=code_upload_container_name,
-                        auth_token=token.refresh_token,
-                        cluster_name=cluster_name,
-                        cluster_endpoint=cluster_endpoint,
-                        certificate=cluster_certificate,
-                        log_group_name=log_group_name,
-                        EVALAI_DNS=EVALAI_DNS,
-                        EFS_ID=efs_id,
-                        **COMMON_SETTINGS_DICT,
-                        **challenge_aws_keys,
-                    )
-                )
-                submission_container = (
-                    container_definition_submission_worker.format(
-                        queue_name=queue_name,
-                        container_name=container_name,
-                        ENV=ENV,
-                        challenge_pk=challenge.pk,
-                        log_group_name=log_group_name,
-                        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
-                        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                        **COMMON_SETTINGS_DICT,
-                        **aws_keys,
-                    )
-                )
-                definition = task_definition_static_code_upload_worker.format(
-                    queue_name=queue_name,
-                    code_upload_container=code_upload_container,
-                    submission_container=submission_container,
-                    CPU=worker_cpu_cores,
-                    MEMORY=worker_memory,
-                    **COMMON_SETTINGS_DICT,
-                )
-            else:
-                definition = task_definition_code_upload_worker.format(
-                    queue_name=queue_name,
-                    code_upload_container_name=code_upload_container_name,
-                    ENV=ENV,
-                    challenge_pk=challenge.pk,
-                    auth_token=token.refresh_token,
-                    cluster_name=cluster_name,
-                    cluster_endpoint=cluster_endpoint,
-                    certificate=cluster_certificate,
-                    CPU=worker_cpu_cores,
-                    MEMORY=worker_memory,
-                    log_group_name=log_group_name,
-                    EVALAI_DNS=EVALAI_DNS,
-                    EFS_ID=efs_id,
-                    **COMMON_SETTINGS_DICT,
-                    **challenge_aws_keys,
-                )
+            definition = task_definition_code_upload_worker.format(
+                queue_name=queue_name,
+                container_name=container_name,
+                ENV=ENV,
+                challenge_pk=challenge.pk,
+                auth_token=token.refresh_token,
+                cluster_name=cluster_name,
+                cluster_endpoint=cluster_endpoint,
+                certificate=cluster_certificate,
+                CPU=worker_cpu_cores,
+                MEMORY=worker_memory,
+                log_group_name=log_group_name,
+                EVALAI_DNS=EVALAI_DNS,
+                EFS_ID=efs_id,
+                **COMMON_SETTINGS_DICT,
+                **challenge_aws_keys,
+            )
         else:
             definition = task_definition.format(
                 queue_name=queue_name,
@@ -332,6 +293,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+                challenge.service_name = response["service"]["serviceName"]
                 challenge.workers = 1
                 challenge.save()
             return response
@@ -489,7 +451,12 @@ def start_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers == 0) or (challenge.workers is None):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=1
             )
@@ -538,7 +505,12 @@ def stop_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
@@ -640,7 +612,12 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.workers is not None:
+        if challenge.is_docker_based:
+            response = "Sorry. This feature is not available for code upload/docker based challenges."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+        elif challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -689,10 +666,7 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (
-            challenge.is_docker_based
-            and not challenge.is_static_dataset_code_upload
-        ):
+        if challenge.is_docker_based:
             response = "Sorry. This feature is not available for code upload/docker based challenges."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
@@ -835,6 +809,74 @@ def get_logs_from_cloudwatch(
     return logs
 
 
+def get_all_tasks(service_name):
+    """
+    To fetch all tasks for the given service name
+    """
+    if settings.DEBUG:
+        return {
+            "error": False,
+            "details": "Not available for development environment"
+        }
+    else:
+        client = get_boto3_client("ecs", aws_keys)
+        try:
+            tasks_response = client.list_tasks(
+                serviceName=service_name
+            )
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"Error fetching list of all tasks for the service: {e}"
+            }
+        return {
+            "error": False,
+            "details": tasks_response
+        }
+
+
+def get_all_tasks_status(task_arns):
+    """
+    To fetch status of all containers for the array of task arns
+    """
+    if settings.DEBUG:
+        return {
+            "error": False,
+            "details": "Not available for development environment"
+        }
+    else:
+        try:
+            client = get_boto3_client("ecs", aws_keys)
+            response = client.describe_tasks(
+                tasks=task_arns
+            )
+            tasks_status = {
+                "error": False,
+                "details": []
+            }
+            task_details = response["tasks"]
+            for task_detail in task_details:
+                containers = []
+                for container in task_detail["containers"]:
+                    containers.append({
+                        "container_arn": container["containerArn"],
+                        "status": container["lastStatus"]
+                    })
+                task_detail = {
+                    "task_arn_def": task_detail["taskArn"],
+                    "containers": containers
+                }
+                tasks_status['details'].append(task_detail)
+            return tasks_status
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"Error fetching worker status: {e}"
+            }
+
+
 def delete_log_group(log_group_name):
     if settings.DEBUG:
         pass
@@ -858,9 +900,8 @@ def create_eks_nodegroup(challenge, cluster_name):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
-    nodegroup_name = "{}-{}-nodegroup".format(
-        challenge_obj.title.replace(" ", "-"), environment_suffix
+    nodegroup_name = "{0}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-")
     )
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("eks", challenge_aws_keys)
@@ -1187,10 +1228,7 @@ def create_eks_cluster(challenge):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
-    cluster_name = "{}-{}-cluster".format(
-        challenge_obj.title.replace(" ", "-"), environment_suffix
-    )
+    cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
     if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
         challenge_aws_keys = get_aws_credentials_for_challenge(
             challenge_obj.pk
@@ -1202,7 +1240,7 @@ def create_eks_cluster(challenge):
         try:
             response = client.create_cluster(
                 name=cluster_name,
-                version="1.16",
+                version="1.15",
                 roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
                     "subnetIds": [
