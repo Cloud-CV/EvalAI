@@ -1175,7 +1175,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             SELF.leaderboard = data;
-            SELF.globalService.showToast('success', 'update!', 5);
+            SELF.globalService.showToast('success', 'Schema Succesfully Updated!', 5);
           },
           (err) => {
             SELF.globalService.handleApiError(err, true);
