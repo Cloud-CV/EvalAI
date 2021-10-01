@@ -2131,6 +2131,7 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
+        request.data['schema'] = json.loads(request.data['schema'])
         serializer = LeaderboardSerializer(
             leaderboard, data=request.data, partial=True
         )
