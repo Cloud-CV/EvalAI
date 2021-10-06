@@ -4005,6 +4005,7 @@ class GetOrUpdateLeaderboardTest(BaseAPITestClass):
             "challenges:get_or_update_leaderboard",
             kwargs={"leaderboard_pk": self.leaderboard.pk},
         )
+        self.data["schema"] = json.dumps(self.data["schema"])
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
