@@ -316,6 +316,14 @@
             </div>
             <div class="row margin-bottom-cancel">
               <div class="col s12">
+                <h5 class="w-300">Worker status</h5>
+              </div>
+            </div>
+            <div class="ev-logs-card">
+              <div *ngFor="let status of workerStatus; index as i" class="ev-logs">{{status["container_arn"]}} {{ status["status"]}}</div>
+            </div>
+            <div class="row margin-bottom-cancel">
+              <div class="col s12">
                 <h5 class="w-300">Submission worker logs</h5>
               </div>
             </div>

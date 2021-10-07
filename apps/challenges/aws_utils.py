@@ -822,6 +822,7 @@ def get_all_tasks(service_name):
         client = get_boto3_client("ecs", aws_keys)
         try:
             tasks_response = client.list_tasks(
+                cluster=COMMON_SETTINGS_DICT["CLUSTER"],
                 serviceName=service_name
             )
         except Exception as e:
@@ -849,6 +850,7 @@ def get_all_tasks_status(task_arns):
         try:
             client = get_boto3_client("ecs", aws_keys)
             response = client.describe_tasks(
+                cluster=COMMON_SETTINGS_DICT["CLUSTER"],
                 tasks=task_arns
             )
             tasks_status = {

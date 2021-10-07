@@ -421,6 +421,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
+   * Manage worker
+   * @param challengeId challenge id
+   */
+  getStatusURL(challengeId) {
+    return `${this.challenges}${challengeId}/get_worker_status/`;
+  }
+
+  /**
    * Refresh auth token
    */
   refreshAuthTokenURL() {
