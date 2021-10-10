@@ -8,8 +8,8 @@ spec:
       {}
   egress:
   - toFQDNs:
-    - matchName: archive.ubuntu.com
     - matchName: {{EVALAI_DNS}}
+    - matchPattern: "*.ubuntu.com"
   - toEndpoints:
     - matchLabels:
         "k8s:io.kubernetes.pod.namespace": kube-system
