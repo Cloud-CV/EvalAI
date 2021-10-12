@@ -9,4 +9,5 @@ CORS_ORIGIN_WHITELIST = (
     "https://staging-evalai.s3.amazonaws.com",
     "https://staging.eval.ai",
     "https://monitoring-staging.eval.ai",
+    "https://monitoring.eval.ai",
 )
