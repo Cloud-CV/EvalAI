@@ -14,6 +14,5 @@ NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 
 
 def increment_statsd_counter(metric_name, tags, inc_value):
-    # TODO: Enable statsd metric increment once production docker setup is ready
-    # statsd.increment(metric_name, inc_value, tags=tags)
+    statsd.increment(metric_name, inc_value, tags=tags)
     return
