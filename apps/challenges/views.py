@@ -481,6 +481,7 @@ def get_challenge_by_pk(request, pk):
     try:
         if is_user_a_host_of_challenge(request.user, pk):
             challenge = Challenge.objects.get(pk=pk)
+            logger.info("IS HOST")
         else:
             challenge = Challenge.objects.get(
                 pk=pk, approved_by_admin=True, published=True
@@ -494,6 +495,7 @@ def get_challenge_by_pk(request, pk):
             challenge, context={"request": request}
         )
         response_data = serializer.data
+        logger.info(response_data)
         return Response(response_data, status=status.HTTP_200_OK)
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist!"}
