@@ -137,7 +137,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   workerLogs = [];
 
   /**
-   * store worker statuses
+   * Store worker statuses
    */
   workerStatus = [];
 

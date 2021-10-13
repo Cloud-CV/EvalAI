@@ -137,7 +137,7 @@ from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
     get_challenge_template_data,
-    send_emails,    
+    send_emails,
 )
 
 logger = logging.getLogger(__name__)

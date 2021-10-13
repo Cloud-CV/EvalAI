@@ -193,23 +193,61 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 return e.response
             # challenge host auth token to be used by code-upload-worker
             token = JwtToken.objects.get(user=challenge.creator.created_by)
-            definition = task_definition_code_upload_worker.format(
-                queue_name=queue_name,
-                container_name=container_name,
-                ENV=ENV,
-                challenge_pk=challenge.pk,
-                auth_token=token.refresh_token,
-                cluster_name=cluster_name,
-                cluster_endpoint=cluster_endpoint,
-                certificate=cluster_certificate,
-                CPU=worker_cpu_cores,
-                MEMORY=worker_memory,
-                log_group_name=log_group_name,
-                EVALAI_DNS=EVALAI_DNS,
-                EFS_ID=efs_id,
-                **COMMON_SETTINGS_DICT,
-                **challenge_aws_keys,
-            )
+            if challenge.is_static_dataset_code_upload:
+                code_upload_container = (
+                    container_definition_code_upload_worker.format(
+                        queue_name=queue_name,
+                        code_upload_container_name=code_upload_container_name,
+                        auth_token=token.refresh_token,
+                        cluster_name=cluster_name,
+                        cluster_endpoint=cluster_endpoint,
+                        certificate=cluster_certificate,
+                        log_group_name=log_group_name,
+                        EVALAI_DNS=EVALAI_DNS,
+                        EFS_ID=efs_id,
+                        **COMMON_SETTINGS_DICT,
+                        **challenge_aws_keys,
+                    )
+                )
+                submission_container = (
+                    container_definition_submission_worker.format(
+                        queue_name=queue_name,
+                        container_name=container_name,
+                        ENV=ENV,
+                        challenge_pk=challenge.pk,
+                        log_group_name=log_group_name,
+                        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+                        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+                        **COMMON_SETTINGS_DICT,
+                        **aws_keys,
+                    )
+                )
+                definition = task_definition_static_code_upload_worker.format(
+                    queue_name=queue_name,
+                    code_upload_container=code_upload_container,
+                    submission_container=submission_container,
+                    CPU=worker_cpu_cores,
+                    MEMORY=worker_memory,
+                    **COMMON_SETTINGS_DICT,
+                )
+            else:
+                definition = task_definition_code_upload_worker.format(
+                    queue_name=queue_name,
+                    code_upload_container_name=code_upload_container_name,
+                    ENV=ENV,
+                    challenge_pk=challenge.pk,
+                    auth_token=token.refresh_token,
+                    cluster_name=cluster_name,
+                    cluster_endpoint=cluster_endpoint,
+                    certificate=cluster_certificate,
+                    CPU=worker_cpu_cores,
+                    MEMORY=worker_memory,
+                    log_group_name=log_group_name,
+                    EVALAI_DNS=EVALAI_DNS,
+                    EFS_ID=efs_id,
+                    **COMMON_SETTINGS_DICT,
+                    **challenge_aws_keys,
+                )
         else:
             definition = task_definition.format(
                 queue_name=queue_name,
@@ -451,12 +489,7 @@ def start_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
-            )
-        elif (challenge.workers == 0) or (challenge.workers is None):
+        if (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=1
             )
@@ -505,12 +538,7 @@ def stop_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
-            )
-        elif (challenge.workers is not None) and (challenge.workers > 0):
+        if (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(
                 client, challenge=challenge, num_of_tasks=0
             )
@@ -612,12 +640,7 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
-            failures.append(
-                {"message": response, "challenge_pk": challenge.pk}
-            )
-        elif challenge.workers is not None:
+        if challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -816,7 +839,7 @@ def get_all_tasks(service_name):
     if settings.DEBUG:
         return {
             "error": False,
-            "details": "Not available for development environment"
+            "details": "ECS tasks cannot be fetched in the development environment"
         }
     else:
         client = get_boto3_client("ecs", aws_keys)
@@ -829,7 +852,7 @@ def get_all_tasks(service_name):
             logger.exception(e)
             return {
                 "error": True,
-                "details": f"Error fetching list of all tasks for the service: {e}"
+                "details": f"ECS tasks fetch failed for service {service_name} with error: {e}"
             }
         return {
             "error": False,
@@ -844,7 +867,7 @@ def get_all_tasks_status(task_arns):
     if settings.DEBUG:
         return {
             "error": False,
-            "details": "Not available for development environment"
+            "details": "ECS task status cannot be fetched in the development environment"
         }
     else:
         try:
@@ -1242,7 +1265,7 @@ def create_eks_cluster(challenge):
         try:
             response = client.create_cluster(
                 name=cluster_name,
-                version="1.15",
+                version="1.1",
                 roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
                     "subnetIds": [
