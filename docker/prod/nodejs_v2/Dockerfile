@@ -6,7 +6,6 @@ RUN npm install -g @angular/cli@7.3.9
 WORKDIR /code
 COPY frontend_v2/package.json frontend_v2/yarn.lock /code/
 RUN npm update
-RUN npm install --save-dev @angular-devkit/build-angular
 RUN yarn install
 ENV PATH="/code/node_modules/.bin:$PATH" 
 COPY frontend_v2/ /code
