@@ -73,6 +73,6 @@
     "pretty-quick": "^2.0.1",
     "protractor": "~5.1.2",
     "ts-node": "~4.1.0",
-    "tslint": "^5.9.1",
+    "tslint": "^5.9.1"
   }
 }
