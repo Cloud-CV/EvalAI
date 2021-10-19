@@ -84,6 +84,8 @@ COMMON_SETTINGS_DICT = {
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
+    "STATSD_ENDPOINT": os.environ.get("STATSD_ENDPOINT"),
+    "STATSD_PORT": os.environ.get("STATSD_PORT"),
 }
 
 VPC_DICT = {
