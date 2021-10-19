@@ -14,7 +14,7 @@ groups:
 - name: Instance-Status
   rules:
   - alert: InstanceDown
-    expr: up == 0
+    expr: up{job="node_exporter"} == 0
     for: 5m
     annotations:
       title: "Instance(s) Down"
