@@ -690,8 +690,10 @@ def restart_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if challenge.is_docker_based:
-            response = "Sorry. This feature is not available for code upload/docker based challenges."
+        if (
+            challenge.is_docker_based
+            and not challenge.is_static_dataset_code_upload
+        ):            response = "Sorry. This feature is not available for code upload/docker based challenges."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
             )
@@ -1266,7 +1268,7 @@ def create_eks_cluster(challenge):
         try:
             response = client.create_cluster(
                 name=cluster_name,
-                version="1.1",
+                version="1.16",
                 roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
                     "subnetIds": [

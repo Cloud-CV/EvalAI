@@ -2823,12 +2823,6 @@ def get_worker_status(request, challenge_pk):
             "error": "Sorry, you are not authorized to access the worker logs."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    # remove
-    """
-    response_data = {"tasks_status": [{'task_arn_def': 'arn:aws:ecs:us-east-1:937891341272:task/evalai-production-workers/502024d7af144b358f119db76652d05f', 'containers': [{'container_arn': 'arn:aws:ecs:us-east-1:937891341272:container/evalai-production-workers/502024d7af144b358f119db76652d05f/45ef3f42-e7df-4448-9fe0-11339c2f636e', 'status': 'RUNNING'}]}]}
-    return Response(response_data, status=status.HTTP_200_OK)
-    """
-    # remove
     challenge = get_challenge_model(challenge_pk)
     service_name = challenge.service_name
     tasks = get_all_tasks(service_name)
