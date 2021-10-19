@@ -112,6 +112,14 @@ task_definition = """
                 {{
                     "name": "AWS_SES_REGION_ENDPOINT",
                     "value": "{AWS_SES_REGION_ENDPOINT}"
+                }},
+                {{
+                    "name": "STATSD_ENDPOINT",
+                    "value: "{STATSD_ENDPOINT}"
+                }},
+                {{
+                    "name": "STATSD_PORT",
+                    "value: "{STATSD_PORT}"
                 }}
             ],
             "workingDirectory": "/code",
@@ -346,6 +354,14 @@ container_definition_submission_worker = """
         {{
             "name": "AWS_SES_REGION_ENDPOINT",
             "value": "{AWS_SES_REGION_ENDPOINT}"
+        }},
+        {{
+            "name": "STATSD_ENDPOINT",
+            "value: "{STATSD_ENDPOINT}"
+        }},
+        {{
+            "name": "STATSD_PORT",
+            "value: "{STATSD_PORT}"
         }}
     ],
     "workingDirectory": "/code",
@@ -414,10 +430,17 @@ container_definition_code_upload_worker = """
             "name": "EVALAI_DNS",
             "value": "{EVALAI_DNS}"
         }},
-
         {{
             "name": "EFS_ID",
             "value": "{EFS_ID}"
+        }},
+        {{
+            "name": "STATSD_ENDPOINT",
+            "value: "{STATSD_ENDPOINT}"
+        }},
+        {{
+            "name": "STATSD_PORT",
+            "value: "{STATSD_PORT}"
         }}
 
     ],
