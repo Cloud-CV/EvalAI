@@ -6,6 +6,8 @@ import string
 import uuid
 import yaml
 
+import boto3
+
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
@@ -94,6 +96,38 @@ VPC_DICT = {
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
 
+def scale_resources(client, challenge, new_cores, new_memory):
+    queue_name = challenge.queue
+    
+    container_name = "worker_{}".format(queue_name)
+    code_upload_container_name = "code_upload_worker_{}".format(queue_name)
+    worker_cpu_cores = challenge.worker_cpu_cores
+    worker_memory = challenge.worker_memory
+    if worker_cpu_cores == new_cores and worker_memory == new_memory:
+        message = "Error. Worker cores and memory were not modified.".
+            return {
+                "Error": message,
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            }
+    challenge.worker_cpu_cores = new_cores
+    challenge.worker_memory = new_memory
+    
+    challenge.task_def_arn = None
+    challenge.save()
+    response = register_task_def_by_challenge_pk(client, queue_name, challenge)
+
+    service_name = service_name = "{}_service".format(queue_name)
+    num_of_tasks = challenge.workers # hardcoded in task_definitions.py
+    task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+
+    kwargs = update_service_args.format(
+        CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+        service_name=service_name,
+        task_def_arn=response["taskDefinition"]["taskDefinitionArn"],
+        force_new_deployment=false, # verify this
+    )
+    kwargs = eval(kwargs)
+    response = client.update_service(**kwargs)
 
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
     """
