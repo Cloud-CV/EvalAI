@@ -123,11 +123,18 @@ def scale_resources(client, challenge, new_cores, new_memory):
     kwargs = update_service_args.format(
         CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
         service_name=service_name,
-        task_def_arn=response["taskDefinition"]["taskDefinitionArn"],
+        task_def_arn=response["taskDefinition"]["taskDefinitionArn"], # I believe we said we need the full object but it looks like the api works
         force_new_deployment=false, # verify this
     )
     kwargs = eval(kwargs)
     response = client.update_service(**kwargs)
+    if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+            challenge.workers = num_of_tasks
+            challenge.save()
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
 
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
     """
