@@ -115,12 +115,12 @@ task_definition = """
                 }},
                 {{
                     "name": "STATSD_ENDPOINT",
-                    "value: "{STATSD_ENDPOINT}"
+                    "value": "{STATSD_ENDPOINT}"
                 }},
                 {{
                     "name": "STATSD_PORT",
-                    "value: "{STATSD_PORT}"
-                }}
+                    "value": "{STATSD_PORT}"
+                }},
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -357,7 +357,7 @@ container_definition_submission_worker = """
         }},
         {{
             "name": "STATSD_ENDPOINT",
-            "value: "{STATSD_ENDPOINT}"
+            "value": "{STATSD_ENDPOINT}"
         }},
         {{
             "name": "STATSD_PORT",
@@ -436,7 +436,7 @@ container_definition_code_upload_worker = """
         }},
         {{
             "name": "STATSD_ENDPOINT",
-            "value: "{STATSD_ENDPOINT}"
+            "value": "{STATSD_ENDPOINT}"
         }},
         {{
             "name": "STATSD_PORT",
