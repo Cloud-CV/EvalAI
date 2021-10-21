@@ -6,19 +6,31 @@ groups:
     for: 5m
     annotations:
       title: 'API-Threshold-Exceeded - 5XX'
-      description: '•*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* QPS rate with the response code of *5XX* in the last 5 minutes'
+      description: '*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* QPS rate with the response code of *5XX* in the last 5 minutes'
     labels:
       severity: 'critical'
       group: 'api'
 
-- name: Instance-Status
+- name: Monitoring-Instance-Status
   rules:
-  - alert: InstanceDown
+  - alert: MonitoringInstanceDown
     expr: up{job="node_exporter"} == 0
     for: 5m
     annotations:
-      title: "Instance(s) Down"
-      description: "•*{{ $labels.instance }}* of prometheus job *{{ $labels.job }}* has been down for more than 5 minutes"
+      title: "Monitoring instance(s) down"
+      description: "*{{ $labels.job }}* on *{{ $labels.instance }}* has been down for more than 5 minutes"
+    labels:
+      severity: major
+      group: 'instance'
+
+- name: EvalAI-Instance-Status
+  rules:
+  - alert: InstanceDown
+    expr: up{job="evalai"} == 0
+    for: 5m
+    annotations:
+      title: "EvalAI is down"
+      description: "*{{ $labels.job }}* on *{{ $labels.instance }}* has been down for more than 5 minutes"
     labels:
       severity: major
       group: 'instance'
