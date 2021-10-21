@@ -22,7 +22,7 @@ scrape_configs:
     static_configs:
       - targets: ['staging.eval.ai']
 
-  - job_name: 'evalai'
+  - job_name: 'staging-evalai'
     metrics_path: '/'
     static_configs:
       - targets: ['staging.eval.ai']
