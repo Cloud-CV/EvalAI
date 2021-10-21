@@ -26,7 +26,7 @@ groups:
 - name: EvalAI-Instance-Status
   rules:
   - alert: InstanceDown
-    expr: up{job="EvalAI"} == 0
+    expr: up{job="evalai"} == 0
     for: 5m
     annotations:
       title: "EvalAI is down"
