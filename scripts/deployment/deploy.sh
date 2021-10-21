@@ -61,7 +61,6 @@ case $opt in
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
-					aws s3 cp s3://cloudcv-secrets/evalai/${env}/rules.yml ./monitoring/prometheus/rules.yml
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
 					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
