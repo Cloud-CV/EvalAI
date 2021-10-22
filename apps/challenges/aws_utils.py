@@ -104,15 +104,17 @@ def scale_resources(client, challenge, new_cores, new_memory):
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
     if worker_cpu_cores == new_cores and worker_memory == new_memory:
-        message = "Error. Worker cores and memory were not modified.".
-            return {
-                "Error": message,
-                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-            }
+        message = "Error. Worker cores and memory were not modified."
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+    # deregister
     challenge.worker_cpu_cores = new_cores
     challenge.worker_memory = new_memory
-    
     challenge.task_def_arn = None
+    #
+
     challenge.save()
     response = register_task_def_by_challenge_pk(client, queue_name, challenge)
 
@@ -129,12 +131,9 @@ def scale_resources(client, challenge, new_cores, new_memory):
     kwargs = eval(kwargs)
     response = client.update_service(**kwargs)
     if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-            challenge.workers = num_of_tasks
-            challenge.save()
+        challenge.workers = num_of_tasks
+        challenge.save()
         return response
-    except ClientError as e:
-        logger.exception(e)
-        return e.response
 
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
     """
