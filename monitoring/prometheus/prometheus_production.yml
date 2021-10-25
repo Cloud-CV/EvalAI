@@ -22,6 +22,11 @@ scrape_configs:
     static_configs:
       - targets: ['eval.ai']
 
+  - job_name: 'evalai'
+    metrics_path: '/'
+    static_configs:
+      - targets: ['eval.ai']
+
 alerting:
   alertmanagers:
   - path_prefix: '/alert_manager'
