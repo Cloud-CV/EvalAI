@@ -177,6 +177,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
 
