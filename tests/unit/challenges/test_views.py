@@ -330,6 +330,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -409,6 +410,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -514,6 +516,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -568,6 +571,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1121,6 +1125,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1177,6 +1182,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1233,6 +1239,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1288,6 +1295,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             },
             {
                 "id": self.challenge3.pk,
@@ -1332,6 +1340,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             },
             {
                 "id": self.challenge2.pk,
@@ -1376,6 +1385,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1481,6 +1491,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1613,6 +1624,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge3.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
         }
 
         response = self.client.get(self.url, {})
@@ -1681,6 +1693,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge4.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1805,6 +1818,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
 
@@ -1861,6 +1875,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
 
@@ -1917,6 +1932,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             }
         ]
 
@@ -1971,6 +1987,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             },
             {
                 "id": self.challenge2.pk,
@@ -2015,6 +2032,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
             },
         ]
 
