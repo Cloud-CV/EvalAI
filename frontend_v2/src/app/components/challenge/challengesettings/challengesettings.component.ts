@@ -1241,6 +1241,80 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  scaleWorkerResources() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .postUrl(SELF.endpointsService.scaleWorkerResourcesUrl(SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            console.log(SELF.challenge);
+            SELF.globalService.showToast('success', "Successfully scaled challenge worker");
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
+    };
+
+    console.log(SELF.challenge);
+    const PARAMS = {
+      title: 'Scale Worker Resources',
+      content: 'Enter new cores and memory',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: true,
+          label: 'cores',
+          placeholder: 'New Cores',
+          type: 'number',
+          value: '',
+        },
+        {
+          isRequired: true,
+          label: 'memory',
+          placeholder: 'New Memory',
+          type: 'number',
+          value: '',
+        },
+      ],
+      isButtonDisabled: true,
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+    /*
+    const PARAMS = {
+      title: 'Scale Worker Resources',
+      content: 'Enter new cores and memory',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: true,
+          label: 'cores',
+          placeholder: 'New Cores',
+          value: '',
+          type: 'text',
+        },
+        {
+          isRequired: true,
+          label: 'memory',
+          placeholder: 'New Memory',
+          type: 'text',
+          value: '',
+        },
+      ],
+      isButtonDisabled: true,
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+    */
+  }
+
   // Get the logs from worker if submissions are failing at an interval of 5sec.
   startLoadingLogs() {
     const SELF = this;

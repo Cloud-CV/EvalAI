@@ -96,44 +96,94 @@ VPC_DICT = {
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
 
-def scale_resources(client, challenge, new_cores, new_memory):
-    queue_name = challenge.queue
-    
-    container_name = "worker_{}".format(queue_name)
-    code_upload_container_name = "code_upload_worker_{}".format(queue_name)
-    worker_cpu_cores = challenge.worker_cpu_cores
-    worker_memory = challenge.worker_memory
-    if worker_cpu_cores == new_cores and worker_memory == new_memory:
+def scale_resources(challenge, new_cores, new_memory):
+    client = get_boto3_client("ecs", aws_keys)
+    if challenge.worker_cpu_cores == new_cores and challenge.worker_memory == new_memory:
         message = "Error. Worker cores and memory were not modified."
         return {
             "Error": message,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
+    if not challenge.task_def_arn:
+        message = "Error. Task definition not yet registered for challenge{}.".format(
+            challenge.pk
+        )
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }   
     # deregister
-    challenge.worker_cpu_cores = new_cores
-    challenge.worker_memory = new_memory
-    challenge.task_def_arn = None
-    #
+    try:
+        response = client.deregister_task_definition(
+            taskDefinition=json_values['taskDefinitionArn']
+        )
+        if (
+            response["ResponseMetadata"]["HTTPStatusCode"]
+            == HTTPStatus.OK
+        ):
+            challenge.worker_cpu_cores = new_cores
+            challenge.worker_memory = new_memory
+            challenge.task_def_arn = None
+            challenge.save()
+        else:
+            return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+    
+    #register
+    queue_name = challenge.queue
+    container_name = "worker_{}".format(queue_name)
+    code_upload_container_name = "code_upload_worker_{}".format(queue_name)
+    worker_cpu_cores = challenge.worker_cpu_cores
+    worker_memory = challenge.worker_memory
+    log_group_name = get_log_group_name(challenge.pk)
+    execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
+    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
+    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
-    challenge.save()
-    response = register_task_def_by_challenge_pk(client, queue_name, challenge)
-
-    service_name = service_name = "{}_service".format(queue_name)
-    num_of_tasks = challenge.workers # hardcoded in task_definitions.py
-    task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
-
-    kwargs = update_service_args.format(
-        CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
-        service_name=service_name,
-        task_def_arn=response["taskDefinition"]["taskDefinitionArn"], # I believe we said we need the full object but it looks like the api works
-        force_new_deployment=false, # verify this
+    definition = task_definition.format(
+        queue_name=queue_name,
+        container_name=container_name,
+        ENV=ENV,
+        challenge_pk=challenge.pk,
+        CPU=worker_cpu_cores,
+        MEMORY=worker_memory,
+        log_group_name=log_group_name,
+        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+        **COMMON_SETTINGS_DICT,
+        **challenge_aws_keys,
     )
-    kwargs = eval(kwargs)
-    response = client.update_service(**kwargs)
-    if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-        challenge.workers = num_of_tasks
-        challenge.save()
+    definition = eval(definition)
+    try:
+        response = client.register_task_definition(**definition)
+        # if we successfully register a new task definition, update the service
+        if (
+            response["ResponseMetadata"]["HTTPStatusCode"]
+            == HTTPStatus.OK
+        ):
+            task_def_arn = response["taskDefinition"][
+                "taskDefinitionArn"
+            ]
+            challenge.task_def_arn = task_def_arn
+            challenge.save()
+            force_new_deployment=False # check this
+            service_name = "{}_service".format(queue_name)
+            num_of_tasks = challenge.workers
+            kwargs = update_service_args.format(
+                CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+                service_name=service_name,
+                task_def_arn=task_def_arn,
+                force_new_deployment=force_new_deployment,
+            )
+            kwargs = eval(kwargs)
+            response = client.update_service(**kwargs)
         return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
 
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
     """
