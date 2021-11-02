@@ -2840,7 +2840,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     try:
         cores = int(cores)
         memory = int(memory)
-    except:
+    except Exception:
         response_data = {
             "error": "Enter integer numbers for cores and memory."
         }
@@ -2854,8 +2854,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         or cores == 2048 and memory >= 4096 and memory <= 16384 and memory % 1024 == 0
         or cores == 4096 and memory >= 8192 and memory <= 30720 and memory % 1024 == 0
     ):
-        response = scale_resources(challenge, new_cores, new_memory)
-        response = {"ResponseMetadata":{"HTTPStatusCode":status.HTTP_200_OK}}
+        response = scale_resources(challenge, cores, memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
             response_data = {
                 "error": "Issue with ECS."
