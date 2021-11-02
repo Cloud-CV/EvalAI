@@ -6,8 +6,6 @@ import string
 import uuid
 import yaml
 
-import boto3
-
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
@@ -96,6 +94,7 @@ VPC_DICT = {
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
 
+
 def scale_resources(challenge, new_cores, new_memory):
     client = get_boto3_client("ecs", aws_keys)
     if challenge.worker_cpu_cores == new_cores and challenge.worker_memory == new_memory:
@@ -111,11 +110,11 @@ def scale_resources(challenge, new_cores, new_memory):
         return {
             "Error": message,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
-        }   
+        }
     # deregister
     try:
         response = client.deregister_task_definition(
-            taskDefinition=json_values['taskDefinitionArn']
+            taskDefinition=challenge.task_def_arn
         )
         if (
             response["ResponseMetadata"]["HTTPStatusCode"]
@@ -130,18 +129,16 @@ def scale_resources(challenge, new_cores, new_memory):
     except ClientError as e:
         logger.exception(e)
         return e.response
-    
-    #register
+
+    # register
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
-    code_upload_container_name = "code_upload_worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
     log_group_name = get_log_group_name(challenge.pk)
-    execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
-
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
     definition = task_definition.format(
         queue_name=queue_name,
         container_name=container_name,
@@ -168,7 +165,7 @@ def scale_resources(challenge, new_cores, new_memory):
             ]
             challenge.task_def_arn = task_def_arn
             challenge.save()
-            force_new_deployment=False # check this
+            force_new_deployment = False
             service_name = "{}_service".format(queue_name)
             num_of_tasks = challenge.workers
             kwargs = update_service_args.format(
