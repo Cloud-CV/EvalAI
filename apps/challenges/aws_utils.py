@@ -133,7 +133,7 @@ def scale_resources(challenge, new_cores, new_memory):
     # register
 
     from .utils import get_aws_credentials_for_challenge
-    
+
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
