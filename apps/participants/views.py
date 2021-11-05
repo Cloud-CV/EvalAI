@@ -179,7 +179,6 @@ def participant_team_detail(request, pk):
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
