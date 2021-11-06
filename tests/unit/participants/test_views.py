@@ -249,9 +249,10 @@ class DeleteParticularParticipantTeam(BaseAPITestClass):
             kwargs={"pk": self.participant_team.pk},
         )
 
-    def test_particular_participant_team_delete(self):
-        response = self.client.delete(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    # TODO: Add the test back with the API
+    # def test_particular_participant_team_delete(self):
+    #     response = self.client.delete(self.url, {})
+    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class InviteParticipantToTeamTest(BaseAPITestClass):

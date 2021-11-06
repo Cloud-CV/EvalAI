@@ -250,9 +250,10 @@ class DeleteParticularChallengeHostTeam(BaseAPITestClass):
             kwargs={"pk": self.challenge_host_team.pk},
         )
 
-    def test_particular_challenge_host_team_delete(self):
-        response = self.client.delete(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    # TODO: Add test back with API
+    # def test_particular_challenge_host_team_delete(self):
+    #     response = self.client.delete(self.url, {})
+    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class GetChallengeHostTest(BaseAPITestClass):
