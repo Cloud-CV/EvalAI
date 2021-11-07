@@ -3,12 +3,26 @@ global:
   external_labels:
     monitor: 'evalai-monitor'
 
+rule_files:
+  - /etc/rules/rules.yml
+
 scrape_configs:
   - job_name: 'prometheus' 
     static_configs: 
       - targets: ['localhost:9090']
-
-  - job_name: 'django-prometheus'
-    metrics_path: '/api/prometheus/metrics'
+      
+  - job_name: 'statsd'
+    metrics_path: '/statsd/metrics'
     static_configs:
-      - targets: ['django:8000']
+      - targets: ['statsd:9102']
+  
+  - job_name: 'node_exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['node_exporter:9100']
+
+alerting:
+  alertmanagers:
+  - path_prefix: '/alert_manager'
+    static_configs:
+    - targets: ['alert_manager:9093']

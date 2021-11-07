@@ -39,19 +39,29 @@ export class ChallengesubmitComponent implements OnInit {
   isSubmissionUsingCli: any;
 
   /**
+   * If phase has been selected
+   */
+  isPhaseSelected = false;
+
+  /**
    * Is user logged in
    */
   isLoggedIn = false;
 
   /**
-   * Is submittion submitted
+   * Is submission submitted
    */
   isSubmitted = false;
 
   /**
-   * Is submittion submitted
+   * Is submission submitted
    */
-  isPublicSubmission:boolean = true;
+  isPublicSubmission = true;
+
+  /**
+   * Is submission allowed by host
+   */
+  isLeaderboardPublic = false;
 
   /**
    * Challenge object
@@ -208,12 +218,13 @@ export class ChallengesubmitComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  ApiService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  Router Injection.
+   * @param endpointsService  EndpointsService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -254,6 +265,8 @@ export class ChallengesubmitComponent implements OnInit {
       for (let j = 0; j < this.phases.length; j++) {
         if (phases[j].is_public === false) {
           this.phases[j].showPrivate = true;
+        } else {
+          this.phases[j].showPrivate = false;
         }
       }
     });
@@ -467,15 +480,19 @@ export class ChallengesubmitComponent implements OnInit {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
+      SELF.isPhaseSelected = true;
+      SELF.isLeaderboardPublic = phase['leaderboard_public'];
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
         SELF.clearMetaAttributeValues();
         SELF.submissionError = '';
-        SELF.components['_results'].forEach((element) => {
-          element.value = '';
-          element.message = '';
-        });
+        if (SELF.components) {
+          SELF.components['_results'].forEach((element) => {
+            element.value = '';
+            element.message = '';
+          });
+        }
       }
     };
   }
@@ -524,17 +541,17 @@ export class ChallengesubmitComponent implements OnInit {
     }
     if (self.metaAttributesforCurrentSubmission != null) {
       self.metaAttributesforCurrentSubmission.forEach((attribute) => {
-        if (attribute.required == true) {
-          if (attribute.type == "checkbox") {
-              if (attribute.values.length === 0) {
-                metaValue = false;
-              }
+        if (attribute.required === true) {
+          if (attribute.type === 'checkbox') {
+            if (attribute.values.length === 0) {
+              metaValue = false;
+            }
           } else {
-              if (attribute.value === null || attribute.value === undefined) {
-                metaValue = false;
-              }
+            if (attribute.value === null || attribute.value === undefined) {
+              metaValue = false;
+            }
           }
-      }
+        }
       });
     }
     if (metaValue !== true) {

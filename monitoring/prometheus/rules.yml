@@ -1,0 +1,36 @@
+groups:
+- name: API-Threshold-Exceeded
+  rules:
+  - alert: API-Threshold-Exceeded-5XX
+    expr: rate(django_request_count{job="statsd",method="GET",status=~"5..",view=~"jobs:.*|challenges:.*"}[5m]) > 0.3
+    for: 5m
+    annotations:
+      title: 'API-Threshold-Exceeded - 5XX'
+      description: '*{{ $labels.view }}* had *{{ $value | printf "%.1f" }}* QPS rate with the response code of *5XX* in the last 5 minutes'
+    labels:
+      severity: 'critical'
+      group: 'api'
+
+- name: Monitoring-Instance-Status
+  rules:
+  - alert: MonitoringInstanceDown
+    expr: up{job="node_exporter"} == 0
+    for: 5m
+    annotations:
+      title: "Monitoring instance(s) down"
+      description: "*{{ $labels.job }}* on *{{ $labels.instance }}* has been down for more than 5 minutes"
+    labels:
+      severity: major
+      group: 'instance'
+
+- name: EvalAI-Instance-Status
+  rules:
+  - alert: InstanceDown
+    expr: up{job="evalai"} == 0
+    for: 5m
+    annotations:
+      title: "EvalAI is down"
+      description: "*{{ $labels.job }}* on *{{ $labels.instance }}* has been down for more than 5 minutes"
+    labels:
+      severity: major
+      group: 'instance'

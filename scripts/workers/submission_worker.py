@@ -14,6 +14,7 @@ import os
 import requests
 import signal
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -25,6 +26,7 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, increment_statsd_counter
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -40,6 +42,7 @@ handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+
 django.setup()
 
 # Load django app settings
@@ -258,12 +261,13 @@ def extract_challenge_data(challenge, phases):
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.id
     )
+    # create challenge directory as package
+    create_dir_as_python_package(challenge_data_directory)
+
     evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(
         evaluation_script_url
     )
-    # create challenge directory as package
-    create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
@@ -274,6 +278,15 @@ def extract_challenge_data(challenge, phases):
     download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
+
+    try:
+        requirements_location = join(challenge_data_directory, "requirements.txt")
+        if os.path.isfile(requirements_location):
+            subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
+        else:
+            logger.info("No custom requirements for challenge {}".format(challenge.id))
+    except Exception as e:
+        logger.error(e)
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id
@@ -346,8 +359,20 @@ def extract_submission_data(submission_id):
         # for message corresponding to which submission entry
         # does not exist
         return None
+    # Ignore submissions with status cancelled
+    if submission.status == Submission.CANCELLED:
+        logger.info(
+            "{} Submission {} was cancelled by the user".format(
+                SUBMISSION_LOGS_PREFIX, submission_id
+            )
+        )
+        return None
 
-    submission_input_file = submission.input_file.url
+    if submission.challenge_phase.challenge.is_static_dataset_code_upload:
+        input_file = submission.submission_input_file
+    else:
+        input_file = submission.input_file
+    submission_input_file = input_file.url
     submission_input_file = return_file_url_per_environment(
         submission_input_file
     )
@@ -355,7 +380,7 @@ def extract_submission_data(submission_id):
     submission_data_directory = SUBMISSION_DATA_DIR.format(
         submission_id=submission.id
     )
-    submission_input_file_name = os.path.basename(submission.input_file.name)
+    submission_input_file_name = os.path.basename(input_file.name)
     submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
         submission_id=submission.id, input_file=submission_input_file_name
     )
@@ -637,9 +662,15 @@ def process_submission_message(message):
         )
         raise
 
+    if (
+        submission_instance.challenge_phase.challenge.is_static_dataset_code_upload
+    ):
+        input_file_name = submission_instance.submission_input_file.name
+    else:
+        input_file_name = submission_instance.input_file.name
     user_annotation_file_path = join(
         SUBMISSION_DATA_DIR.format(submission_id=submission_id),
-        os.path.basename(submission_instance.input_file.name),
+        os.path.basename(input_file_name),
     )
     run_submission(
         challenge_id,
@@ -739,6 +770,20 @@ def load_challenge_and_return_max_submissions(q_params):
     return maximum_concurrent_submissions, challenge
 
 
+def increment_and_push_metrics_to_statsd(queue_name):
+    try:
+        submission_metric_tags = [
+            "queue_name:%s" % queue_name,
+        ]
+        increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
+    except Exception as e:
+        logger.exception(
+            "{} Exception when pushing metrics to statsd: {}".format(
+                SUBMISSION_LOGS_PREFIX, e
+            )
+        )
+
+
 def main():
     killer = GracefulKiller()
     logger.info(
@@ -785,6 +830,10 @@ def main():
     queue = get_or_create_sqs_queue(queue_name)
     while True:
         for message in queue.receive_messages():
+            if json.loads(message.body).get(
+                "is_static_dataset_code_upload_submission"
+            ):
+                continue
             if settings.DEBUG or settings.TEST:
                 if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
                     current_running_submissions_count = (
@@ -807,6 +856,7 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
+                        increment_and_push_metrics_to_statsd(queue_name)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -816,6 +866,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
+                    increment_and_push_metrics_to_statsd(queue_name)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -834,6 +885,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
+                    increment_and_push_metrics_to_statsd(queue_name)
         if killer.kill_now:
             break
         time.sleep(0.1)

@@ -2,7 +2,9 @@ import json
 import logging
 import os
 import signal
+import sys
 import yaml
+import time
 
 
 from worker_utils import EvalAI_Interface
@@ -24,7 +26,17 @@ class GracefulKiller:
         self.kill_now = True
 
 
+formatter = logging.Formatter(
+    "[%(asctime)s] %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(formatter)
+
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
@@ -95,6 +107,14 @@ def create_config_map_object(config_map_name, file_paths):
 
 def create_configmap(core_v1_api_instance, config_map):
     try:
+        config_maps = core_v1_api_instance.list_namespaced_config_map(
+            namespace="default"
+        )
+        if (
+            len(config_maps.items)
+            and config_maps.items[0].metadata.name == script_config_map_name
+        ):
+            return
         core_v1_api_instance.create_namespaced_config_map(
             namespace="default",
             body=config_map,
@@ -468,7 +488,55 @@ def read_job(api_instance, job_name):
         api_response = api_instance.read_namespaced_job(job_name, namespace)
     except ApiException as e:
         logger.exception("Exception while reading Job with error {}".format(e))
+        return None
     return api_response
+
+
+def cleanup_submission(
+    api_instance,
+    evalai,
+    job_name,
+    submission_pk,
+    challenge_pk,
+    phase_pk,
+    stderr,
+    message,
+):
+    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+        job_name {[string]} -- Name of the job to be terminated
+        submission_pk {[int]} -- Submission id
+        challenge_pk {[int]} -- Challenge id
+        phase_pk {[int]} -- Challenge Phase id
+        stderr {[string]} -- Reason of failure for submission/job
+        message {[dict]} -- Submission message from AWS SQS queue
+    """
+    try:
+        submission_data = {
+            "challenge_phase": phase_pk,
+            "submission": submission_pk,
+            "stdout": "",
+            "stderr": stderr,
+            "submission_status": "FAILED",
+            "result": "[]",
+            "metadata": "",
+        }
+        evalai.update_submission_data(submission_data, challenge_pk, phase_pk)
+        try:
+            delete_job(api_instance, job_name)
+        except Exception as e:
+            logger.exception("Failed to delete submission job: {}".format(e))
+        message_receipt_handle = message.get("receipt_handle")
+        if message_receipt_handle:
+            evalai.delete_message_from_sqs_queue(message_receipt_handle)
+    except Exception as e:
+        logger.exception(
+            "Exception while cleanup Submission {}:  {}".format(
+                submission_pk, e
+            )
+        )
 
 
 def update_failed_jobs_and_send_logs(
@@ -479,48 +547,81 @@ def update_failed_jobs_and_send_logs(
     submission_pk,
     challenge_pk,
     phase_pk,
+    message,
 ):
-    job_def = read_job(api_instance, job_name)
-    controller_uid = job_def.metadata.labels["controller-uid"]
-    pod_label_selector = "controller-uid=" + controller_uid
-    pods_list = core_v1_api_instance.list_namespaced_pod(
-        namespace="default",
-        label_selector=pod_label_selector,
-        timeout_seconds=10,
-    )
-    for container in pods_list.items[0].status.container_statuses:
-        if container.name in ["agent", "submission"]:
-            if container.state.terminated is not None:
-                if container.state.terminated.reason == "Error":
-                    pod_name = pods_list.items[0].metadata.name
-                    try:
-                        pod_log_response = (
-                            core_v1_api_instance.read_namespaced_pod_log(
-                                name=pod_name,
-                                namespace="default",
-                                _return_http_data_only=True,
-                                _preload_content=False,
-                                container=container.name,
-                            )
-                        )
-                        pod_log = pod_log_response.data.decode("utf-8")
-                        submission_data = {
-                            "challenge_phase": phase_pk,
-                            "submission": submission_pk,
-                            "stdout": "",
-                            "stderr": pod_log,
-                            "submission_status": "FAILED",
-                            "result": "[]",
-                            "metadata": "",
-                        }
-                        response = evalai.update_submission_data(
-                            submission_data, challenge_pk, phase_pk
-                        )
-                        print(response)
-                    except client.rest.ApiException as e:
-                        logger.exception(
-                            "Exception while reading Job logs {}".format(e)
-                        )
+    clean_submission = False
+    try:
+        job_def = read_job(api_instance, job_name)
+        if job_def:
+            controller_uid = job_def.metadata.labels["controller-uid"]
+            pod_label_selector = "controller-uid=" + controller_uid
+            pods_list = core_v1_api_instance.list_namespaced_pod(
+                namespace="default",
+                label_selector=pod_label_selector,
+                timeout_seconds=10,
+            )
+            # Prevents monitoring when Job created with pending pods state (not assigned to node)
+            if pods_list.items[0].status.container_statuses:
+                container_state_map = {}
+                for container in pods_list.items[0].status.container_statuses:
+                    container_state_map[container.name] = container.state
+                for (
+                    container_name,
+                    container_state,
+                ) in container_state_map.items():
+                    if container_name in ["agent", "submission"]:
+                        if container_state.terminated is not None:
+                            if container_state.terminated.reason == "Error":
+                                pod_name = pods_list.items[0].metadata.name
+                                try:
+                                    pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                                        name=pod_name,
+                                        namespace="default",
+                                        _return_http_data_only=True,
+                                        _preload_content=False,
+                                        container=container_name,
+                                    )
+                                    pod_log = pod_log_response.data.decode(
+                                        "utf-8"
+                                    )
+                                    pod_log = pod_log[-1000:]
+                                    clean_submission = True
+                                    submission_error = pod_log
+                                except client.rest.ApiException as e:
+                                    logger.exception(
+                                        "Exception while reading Job logs {}".format(
+                                            e
+                                        )
+                                    )
+            else:
+                logger.info(
+                    "Job pods in pending state, waiting for node assignment for submission {}".format(
+                        submission_pk
+                    )
+                )
+        else:
+            logger.exception(
+                "Exception while reading Job {}, does not exist.".format(
+                    job_name
+                )
+            )
+            clean_submission = True
+            submission_error = "Submission Job Failed."
+    except Exception as e:
+        logger.exception("Exception while reading Job {}".format(e))
+        clean_submission = True
+        submission_error = "Submission Job Failed."
+    if clean_submission:
+        cleanup_submission(
+            api_instance,
+            evalai,
+            job_name,
+            submission_pk,
+            challenge_pk,
+            phase_pk,
+            submission_error,
+            message,
+        )
 
 
 def install_gpu_drivers(api_instance):
@@ -582,6 +683,9 @@ def main():
         "submission_time_limit"
     )
     while True:
+        # Equal distribution of queue messages among submission worker and code upload worker
+        if challenge.get("is_static_dataset_code_upload"):
+            time.sleep(0.5)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
@@ -590,7 +694,14 @@ def main():
             ) and not message_body.get(
                 "is_static_dataset_code_upload_submission"
             ):
+                time.sleep(35)
                 continue
+            api_instance = get_api_object(
+                cluster_name, cluster_endpoint, challenge, evalai
+            )
+            core_v1_api_instance = get_core_v1_api_object(
+                cluster_name, cluster_endpoint, challenge, evalai
+            )
             message_body["submission_meta"] = submission_meta
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
@@ -628,6 +739,7 @@ def main():
                         submission_pk,
                         challenge_pk,
                         phase_pk,
+                        message,
                     )
                 else:
                     logger.info(

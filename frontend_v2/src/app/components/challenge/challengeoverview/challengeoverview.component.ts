@@ -1,11 +1,7 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { NGXLogger } from 'ngx-logger';
+import { Component, OnInit } from '@angular/core';
 
 // import service
-import { GlobalService } from '../../../services/global.service';
 import { ChallengeService } from '../../../services/challenge.service';
-import { EndpointsService } from '../../../services/endpoints.service';
 
 /**
  * Component Class
@@ -28,16 +24,9 @@ export class ChallengeoverviewComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param document  Window document Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(
-    private challengeService: ChallengeService,
-    @Inject(DOCUMENT) private document: Document,
-    private globalService: GlobalService,
-    private endpointsService: EndpointsService,
-    private logger: NGXLogger
-  ) {}
+  constructor(private challengeService: ChallengeService) {}
 
   /**
    * Component on initialized.

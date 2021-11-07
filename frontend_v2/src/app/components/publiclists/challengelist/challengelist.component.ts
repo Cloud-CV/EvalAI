@@ -3,7 +3,7 @@ import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 
 /**
@@ -179,12 +179,11 @@ export class ChallengelistComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
-   * @param authService  AuthService Injection.
    * @param apiService  ApiService Injection.
+   * @param authService  AuthService Injection.
+   * @param globalService  GlobalService Injection.
    * @param endpointsService  EndpointsService Injection.
+   * @param router  Router Injection.
    * @param document
    */
   constructor(
@@ -193,8 +192,7 @@ export class ChallengelistComponent implements OnInit {
     private globalService: GlobalService,
     private endpointsService: EndpointsService,
     private router: Router,
-    @Inject(DOCUMENT) private document,
-    private route: ActivatedRoute
+    @Inject(DOCUMENT) private document
   ) {}
 
   /**
@@ -231,8 +229,10 @@ export class ChallengelistComponent implements OnInit {
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
-    this.isScrollbtnVisible = RECT.top < 0;
+    if (this.document.getElementById('ongoing-challenges')) {
+      const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
+      this.isScrollbtnVisible = RECT.top < 0;
+    }
   }
 
   /**

@@ -123,6 +123,7 @@ from .serializers import (
 )
 
 from .aws_utils import (
+    delete_workers,
     start_workers,
     stop_workers,
     restart_workers,
@@ -335,16 +336,18 @@ def add_participant_team_to_challenge(
     # Check if user is in allowed list.
     user_email = request.user.email
     if len(challenge.allowed_email_domains) > 0:
-        if not is_user_in_allowed_email_domains(user_email, challenge_pk):
-            message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
-            domains = ""
-            for domain in challenge.allowed_email_domains:
-                domains = "{}{}{}".format(domains, "/", domain)
-            domains = domains[1:]
-            response_data = {"error": message.format(domains)}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+        domains = ""
+        for domain in challenge.allowed_email_domains:
+            domains = "{}{}{}".format(domains, "/", domain)
+        domains = domains[1:]
+        for participant_email in participant_team.get_all_participants_email():
+            if not is_user_in_allowed_email_domains(participant_email, challenge_pk):
+                message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
+                    to participate in this challenge."
+                response_data = {"error": message.format(domains)}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
     # Check if user is in blocked list.
     if is_user_in_blocked_email_domains(user_email, challenge_pk):
@@ -1245,7 +1248,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 challenge_phase_data[
                     field
                 ] = challenge_phase_data_from_hosts.get(field)
-
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(
@@ -2129,6 +2131,8 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
+        if "schema" in request.data.keys():
+            request.data['schema'] = json.loads(request.data['schema'])
         serializer = LeaderboardSerializer(
             leaderboard, data=request.data, partial=True
         )
@@ -2822,11 +2826,18 @@ def manage_worker(request, challenge_pk, action):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
-    if action not in ("start", "stop", "restart"):
+    if action not in ("start", "stop", "restart", "delete"):
         response_data = {
             "error": "The action {} is invalid for worker".format(action)
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Only allow EvalAI admins to delete workers
+    if action == "delete" and not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
 
@@ -2838,6 +2849,8 @@ def manage_worker(request, challenge_pk, action):
         response = stop_workers([challenge])
     elif action == "restart":
         response = restart_workers([challenge])
+    elif action == "delete":
+        response = delete_workers([challenge])
 
     if response:
         count, failures = response["count"], response["failures"]

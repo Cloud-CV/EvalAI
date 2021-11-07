@@ -24,12 +24,15 @@
         vm.projectUrl = "";
         vm.publicationUrl = "";
         vm.isPublicSubmission = null;
+        vm.isMultiMetricLeaderboardEnabled = {};
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
+        vm.phaseSplitLeaderboardSchema = {};
         vm.submissionMetaAttributes = []; // Stores the attributes format and phase ID for all the phases of a challenge.
         vm.metaAttributesforCurrentSubmission = null; // Stores the attributes while making a submission for a selected phase.
         vm.selectedPhaseSplit = {};
@@ -87,6 +90,7 @@
         vm.refreshJWT = utilities.getData('refreshJWT');
 
         vm.subErrors = {};
+        vm.currentHighlightedLeaderboardEntry = null;
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
@@ -204,16 +208,18 @@
             $interval.cancel(vm.logs_poller);
         };
 
-         // scroll to the specific entry of the leaderboard
-        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
-            var newHash = elementId.toString();
-            if ($location.hash() !== newHash) {
-                $location.hash(elementId);
-            } else {
-                $anchorScroll();
+         // highlight the specific entry of the leaderboard
+        vm.highlightSpecificLeaderboardEntry = function (key) {
+            key = '#' + key;
+            // Remove highlight from previous clicked entry
+            if (vm.currentHighlightedLeaderboardEntry != null) {
+                let prevEntry = angular.element(vm.currentHighlightedLeaderboardEntry)[0];
+                prevEntry.setAttribute("class", "");
             }
+            let entry = angular.element(key)[0];
+            entry.setAttribute("class", "highlightLeaderboard");
+            vm.currentHighlightedLeaderboardEntry = key;
             $scope.isHighlight = false;
-            $anchorScroll.yOffset = 90;
         };
 
         // get names of the team that has participated in the current challenge
@@ -826,6 +832,8 @@
                         vm.phaseSplits[i].showPrivate = true;
                         vm.showPrivateIds.push(vm.phaseSplits[i].id);
                     }
+                    vm.isMultiMetricLeaderboardEnabled[vm.phaseSplits[i].id] = vm.phaseSplits[i].is_multi_metric_leaderboard;
+                    vm.phaseSplitLeaderboardSchema[vm.phaseSplits[i].id] = vm.phaseSplits[i].leaderboard_schema;
                 }
                 utilities.hideLoader();
             },
@@ -873,15 +881,40 @@
             scope.sortColumn = column;
         };
 
+        vm.isMetricOrderedAscending = function(metric) {
+            let schema = vm.leaderboard[0].leaderboard__schema;
+            let metadata = schema.metadata;
+            if (metadata != null && metadata != undefined) {
+                // By default all metrics are considered higher is better
+                if (metadata[metric] == undefined) {
+                    return false;
+                }
+                return metadata[metric].sort_ascending;
+            }
+            return false;
+        };
+
+        vm.getLabelDescription = function(metric) {
+            let schema = vm.leaderboard[0].leaderboard__schema;
+            let metadata = schema.metadata;
+            if (metadata != null && metadata != undefined) {
+                // By default all metrics are considered higher is better
+                if (metadata[metric] == undefined || metadata[metric].description == undefined) {
+                    return "";
+                }
+                return metadata[metric].description;
+            }
+            return "";
+        };
+
         // my submissions
         vm.isResult = false;
 
         vm.startLeaderboard = function() {
             vm.stopLeaderboard();
             vm.poller = $interval(function() {
-                parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+                parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
                 parameters.method = 'GET';
-                parameters.data = {};
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
@@ -937,9 +970,8 @@
 
             // Show leaderboard
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
             parameters.method = 'GET';
-            parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -1359,9 +1391,8 @@
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
             parameters.method = 'GET';
-            parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -1420,9 +1451,8 @@
 
             // Show leaderboard
             vm.leaderboard = {};
-            parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000";
+            parameters.url = "jobs/" + "phase_split/" + vm.phaseSplitId + "/public_leaderboard_all_entries/?page_size=1000&order_by=" + vm.orderLeaderboardBy;
             parameters.method = 'GET';
-            parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -2001,7 +2031,44 @@
             }
         };
 
-        vm.hideVisibilityDialog = function() {
+        vm.cancelSubmission = function(submissionId) {
+            parameters.url = "jobs/challenges/" + vm.challengeId + "/submissions/" + submissionId + "/update_submission_meta/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "status": "cancelled",
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if (status === 200) {
+                        $mdDialog.hide();
+                        $rootScope.notify("success", "Submission cancelled successfully!");
+                    }
+                },
+                onError: function(response) {
+                    $mdDialog.hide();
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.showCancelSubmissionDialog = function(submissionId, status) {
+            if (status != "submitted") {
+                $rootScope.notify("error", "Only unproccessed submissions can be cancelled");
+                return;
+            }
+            vm.submissionId = submissionId;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                templateUrl: 'dist/views/web/challenge/cancel-submission.html'
+            });
+        };
+
+        vm.hideDialog = function() {
             $mdDialog.hide();
         };
 
@@ -2663,6 +2730,10 @@
             } else {
                 $mdDialog.hide();
             }
+        };
+
+        vm.encodeMetricURI = function(metric) {
+            return encodeURIComponent(metric);
         };
 
     }

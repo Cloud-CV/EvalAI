@@ -249,9 +249,10 @@ class DeleteParticularParticipantTeam(BaseAPITestClass):
             kwargs={"pk": self.participant_team.pk},
         )
 
-    def test_particular_participant_team_delete(self):
-        response = self.client.delete(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    # TODO: Add the test back with the API
+    # def test_particular_participant_team_delete(self):
+    #     response = self.client.delete(self.url, {})
+    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class InviteParticipantToTeamTest(BaseAPITestClass):
@@ -815,6 +816,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "cli_version": self.challenge1.cli_version,
                         "remote_evaluation": self.challenge1.remote_evaluation,
                         "workers": self.challenge1.workers,
+                        "created_at": "{0}{1}".format(
+                            self.challenge1.created_at.isoformat(), "Z"
+                        ).replace("+00:00", ""),
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -883,6 +887,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "cli_version": self.challenge1.cli_version,
                 "remote_evaluation": self.challenge1.remote_evaluation,
                 "workers": self.challenge1.workers,
+                "created_at": "{0}{1}".format(
+                    self.challenge1.created_at.isoformat(), "Z"
+                ).replace("+00:00", ""),
             }
         ]
 

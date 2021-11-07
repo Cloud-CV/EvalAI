@@ -64,6 +64,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "cli_version",
             "remote_evaluation",
             "workers",
+            "created_at",
         )
 
 
@@ -103,6 +104,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "is_submission_public",
         )
 
 
@@ -142,6 +144,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     dataset_split_name = serializers.SerializerMethodField()
     challenge_phase_name = serializers.SerializerMethodField()
+    leaderboard_schema = serializers.SerializerMethodField()
 
     class Meta:
         model = ChallengePhaseSplit
@@ -154,7 +157,12 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "leaderboard_schema",
+            "is_multi_metric_leaderboard",
         )
+
+    def get_leaderboard_schema(self, obj):
+        return obj.leaderboard.schema
 
     def get_dataset_split_name(self, obj):
         return obj.dataset_split.name
