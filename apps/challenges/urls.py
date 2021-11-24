@@ -219,6 +219,11 @@ urlpatterns = [
         views.scale_resources_by_challenge_pk,
         name="scale_resources_by_challenge_pk",
     ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/convert_to_github_challenge/$",
+        views.convert_to_github_challenge,
+        name="convert_to_github_challenge",
+    ),
 ]
 
 app_name = "challenges"
