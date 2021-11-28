@@ -17,10 +17,10 @@
                   <img *ngIf="challenge['image'] == null" src="assets/images/404.png" width="80%" />
                 </div>
                 <div
-                class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16 upload-button"
-                (click)="editChallengeImage()"
+                  class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark fs-16 upload-button"
+                  (click)="editChallengeImage()"
                 >
-                  <i class="fa fa-file" aria-hidden="true"> </i> 
+                  <i class="fa fa-file" aria-hidden="true"> </i>
                   <span> Upload New Image</span>
                 </div>
               </div>
@@ -28,7 +28,12 @@
                 <span class="fs-20 fw-semibold challenge-title">
                   {{ challenge['title'] }}
                 </span>
-                <a style="padding-right: 4px;" class="pointer fs-16" *ngIf="isChallengeHost" (click)="editChallengeTitle()">
+                <a
+                  style="padding-right: 4px;"
+                  class="pointer fs-16"
+                  *ngIf="isChallengeHost"
+                  (click)="editChallengeTitle()"
+                >
                   <i class="fa fa-pencil" aria-hidden="true"></i>
                 </a>
                 <a class="pointer fs-16" *ngIf="isChallengeHost" (click)="deleteChallenge()">
@@ -44,7 +49,7 @@
                       <i class="fa fa-pencil" aria-hidden="true"> </i>
                     </a>
                   </div>
-                </div>        
+                </div>
                 <div class="ev-action">
                   <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5">
                     <span class="fs-16 fw-light">
@@ -78,10 +83,10 @@
                 </span>
                 <br />
                 <span class="fs-16 fw-light" *ngIf="isChallengeHost">
-                    <a class="pointer" (click)="togglePublishChallengeState()">
-                      <strong class="text-light-black">{{ publishChallenge.state }} </strong>
-                      <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
-                    </a>
+                  <a class="pointer" (click)="togglePublishChallengeState()">
+                    <strong class="text-light-black">{{ publishChallenge.state }} </strong>
+                    <i class="{{ publishChallenge.icon }}" aria-hidden="true"></i>
+                  </a>
                 </span>
                 <br />
                 <mat-checkbox
@@ -94,8 +99,8 @@
                 </mat-checkbox>
               </div>
             </div>
-          </div>  
-      
+          </div>
+
           <!-- Banned Email Ids -->
           <div class="row settings-section">
             <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
@@ -135,7 +140,7 @@
       </mat-tab>
 
       <!-- Edit Phase Details -->
-      <mat-tab label="Phase and Leaderboard Details"> 
+      <mat-tab label="Phase and Leaderboard Details">
         <div class="row settings-section">
           <div class="col-lg-3 col-md-4 col-sm-3 col-xs-3">
             <span class="fw-light fs-18">Edit Phase</span>
@@ -151,29 +156,45 @@
                   #phaseselect
                 ></app-selectphase>
               </div>
-    
-              <div class="row margin-bottom-cancel phase-card " *ngIf="selectedPhase">
+
+              <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhase">
                 <span class="fs-16 fw-light">
                   <strong class="text-light-black">Phase Details </strong>
                 </span>
                 <a class="pointer fs-16" (click)="editPhaseDetails()">
-                  <i class="fa fa-pencil" aria-hidden="true"> </i>
-                </a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <i class="fa fa-pencil" aria-hidden="true"> </i> </a
+                >&nbsp;&nbsp;&nbsp;&nbsp;
                 <span class="fs-16 fw-light">
                   <strong class="text-light-black">Is Public </strong>
                 </span>
                 <a class="pointer fs-20" (click)="togglePhaseVisibility()">
-                  <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i>
-                </a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <i class="{{ phaseVisibility.icon }}" aria-hidden="true"> </i> </a
+                >&nbsp;&nbsp;&nbsp;&nbsp;
                 <span class="fs-16 fw-light">
                   <strong class="text-light-black">Submission Visibility </strong>
                 </span>
                 <a class="pointer fs-20" (click)="toggleSubmissionVisibility()">
                   <i class="{{ submissionVisibility.icon }}" aria-hidden="true"> </i>
                 </a>
+                <br /><br />
+                <span class="fs-16 fw-light">
+                  <strong class="text-light-black">Test Annotations </strong>
+                </span>
+                <a class="pointer fs-15" (click)="editTestAnnotations()">
+                  <i class="fa fa-upload" aria-hidden="true"> </i>
+                </a>
               </div>
-
-           </div>
+              <div class="col-s12" *ngIf="selectedPhase">
+                <p class="fw-light">
+                  <strong> Note: </strong> For test annotations > 100MB, please use
+                  <a href=" https://cli.eval.ai/#challenge-annotations" target="_blank"
+                    ><strong class="blue-text"> evalai-cli </strong></a
+                  >
+                  to update the test annotations.
+                  <a (click)="showCliInstructions()"><strong class="blue-text">View Instructions</strong></a>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -199,8 +220,8 @@
                     <strong class="text-light-black">Leaderboard Visibility </strong>
                   </span>
                   <a class="pointer fs-20" (click)="toggleLeaderboardVisibility()">
-                    <i class="{{ leaderboardVisibility.icon }}" aria-hidden="true"> </i>
-                  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <i class="{{ leaderboardVisibility.icon }}" aria-hidden="true"> </i> </a
+                  >&nbsp;&nbsp;&nbsp;&nbsp;
                 </div>
               </div>
               <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">
@@ -216,14 +237,16 @@
                     <button
                       [disabled]="minusDisabled"
                       class="btn-floating btn-pagination waves-effect waves-light"
-                      (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue - 1)">
+                      (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue - 1)"
+                    >
                       <i class="fa fa-minus"></i>
                     </button>
                     <mat-chip class="btn">{{ leaderboardPrecisionValue }}</mat-chip>
                     <button
                       [disabled]="plusDisabled"
                       class="btn-floating plus-btn btn-pagination waves-effect waves-light"
-                      (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue + 1)">
+                      (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue + 1)"
+                    >
                       <i class="fa fa-plus"></i>
                     </button>
                   </div>
@@ -232,11 +255,10 @@
             </div>
           </div>
         </div>
-
       </mat-tab>
 
       <!-- Edit Evaluation Script and Criteria & Worker logs -->
-      <mat-tab label="Evaluation"> 
+      <mat-tab label="Evaluation">
         <ng-template matTabContent>
           <div class="row settings-section">
             <div class="margin-bottom-cancel">
@@ -251,8 +273,8 @@
                   <strong class="text-light-black">Evaluation Criteria </strong>
                 </span>
                 <a class="pointer fs-16" (click)="editEvaluationCriteria()">
-                  <i class="fa fa-pencil" aria-hidden="true"> </i>
-                </a>&nbsp;&nbsp;
+                  <i class="fa fa-pencil" aria-hidden="true"> </i> </a
+                >&nbsp;&nbsp;
                 <!-- Evaluation Script -->
                 <span class="fs-16 fw-light">
                   <strong class="text-light-black">Evaluation Script </strong>
@@ -303,7 +325,6 @@
           </div>
         </ng-template>
       </mat-tab>
-
     </mat-tab-group>
   </div>
 </div>

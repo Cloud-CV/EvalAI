@@ -3,8 +3,10 @@
     <div class="modal-wrapper">
       <div class="title">
         {{ title }}
+        <i class="fa fa-times fs-22 pointer cross-icon" aria-hidden="true" *ngIf="isCliInstructions" (click)="denied()">
+        </i>
       </div>
-      <div class="modal-content">
+      <div class="modal-content" *ngIf="!isCliInstructions">
         <div class="content">
           {{ content }}
         </div>
@@ -46,7 +48,7 @@
           ><br />
         </div>
       </div>
-      <div class="buttons">
+      <div class="buttons" *ngIf="!isCliInstructions">
         <ul class="inline-list pointer">
           <li>
             <a appClickstop (click)="denied()" class="dark-link pointer">
@@ -64,6 +66,64 @@
             </button>
           </li>
         </ul>
+      </div>
+      <div class="row row-lr-margin" *ngIf="isCliInstructions">
+        <div class="modal-content" [ngClass]="{ 'content-instructions': isCliInstructions == true }">
+          <ol>
+            <li class="content">
+              Install evalai-cli<br />
+              <code #install_evalai>$ pip install evalai{{ cliVersion }}</code>
+              <button
+                class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                value="pip install &quot;evalai{{ cliVersion }}&quot;"
+                (click)="copyTextToClipboard(install_evalai)"
+              >
+                <i
+                  class="fa fa-clipboard"
+                  aria-hidden="true"
+                  alt="Copy to
+                  clipboard."
+                ></i>
+              </button>
+            </li>
+            <li class="content">
+              Add your EvalAI account token to evalai-cli<br />
+              <code #configure_token>$ evalai set_token {{ authToken }}</code>
+              <button
+                class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                (click)="copyTextToClipboard(configure_token)"
+              >
+                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."> </i>
+              </button>
+            </li>
+            <li class="content">
+              Upload challenge phase annotations<br />
+              <code #evalai_annotation
+                >$ evalai challenge &lt;challenge_id&gt; phase &lt;phase_id&gt; submit --file annotation.json
+                --annotation</code
+              >
+              <button
+                class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                (click)="copyTextToClipboard(evalai_annotation)"
+              >
+                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."> </i>
+              </button>
+            </li>
+            <li class="content">
+              Upload challenge phase annotations > 400MB<br />
+              <code #evalai_annotation_large
+                >$ evalai challenge &lt;challenge_id&gt; phase &lt;phase_id&gt; submit --file annotation.json --large
+                --annotation</code
+              >
+              <button
+                class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
+                (click)="copyTextToClipboard(evalai_annotation_large)"
+              >
+                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."> </i>
+              </button>
+            </li>
+          </ol>
+        </div>
       </div>
     </div>
   </div>
