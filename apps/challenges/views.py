@@ -1390,12 +1390,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     str(data["dataset_split_id"])
                 ]
                 visibility = data["visibility"]
+                leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
+                is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
 
                 data = {
                     "challenge_phase": challenge_phase,
                     "leaderboard": leaderboard,
                     "dataset_split": dataset_split,
                     "visibility": visibility,
+                    "leaderboard_decimal_precision": leaderboard_decimal_precision,
+                    "is_leaderboard_order_descending": is_leaderboard_order_descending
                 }
 
                 serializer = ZipChallengePhaseSplitSerializer(data=data)
@@ -3214,12 +3218,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["dataset_split_id"])
                         ]
                         visibility = data["visibility"]
+                        leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
+                        is_leaderboard_order_descending = data["leaderboard_decimal_precision"]
 
                         data = {
                             "challenge_phase": challenge_phase,
                             "leaderboard": leaderboard,
                             "dataset_split": dataset_split,
                             "visibility": visibility,
+                            "is_leaderboard_order_descending": is_leaderboard_order_descending,
+                            "leaderboard_decimal_precision": leaderboard_decimal_precision
                         }
 
                         serializer = ZipChallengePhaseSplitSerializer(
