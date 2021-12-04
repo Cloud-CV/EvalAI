@@ -6,7 +6,7 @@ services:
       - "5432:5432"
 
   sqs:
-    image: pakohan/elasticmq
+    image: softwaremill/elasticmq
     hostname: sqs
     ports:
       - 9324:9324
