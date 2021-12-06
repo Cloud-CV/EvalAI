@@ -864,7 +864,7 @@ def get_all_tasks(service_name):
         }
 
 
-def get_all_tasks_status(task_arns):
+def get_all_tasks_status(task_arns, service_name):
     """
     To fetch status of all containers for the array of task arns
     """
@@ -902,7 +902,7 @@ def get_all_tasks_status(task_arns):
             logger.exception(e)
             return {
                 "error": True,
-                "details": f"Error fetching worker status: {e}"
+                "details": f"ECS task status fetch failed for service {service_name} with error: {e}"
             }
 
 

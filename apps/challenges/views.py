@@ -2823,16 +2823,15 @@ def get_worker_status(request, challenge_pk):
             "error": "Sorry, you are not authorized to access the worker logs."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     challenge = get_challenge_model(challenge_pk)
     service_name = challenge.service_name
     tasks = get_all_tasks(service_name)
     if tasks["error"]:
         response_data = {"error": tasks["details"]}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    if isinstance(tasks["details"], str):
-        response_data = {"tasks_status": tasks["details"]}
-        return Response(response_data, status=status.HTTP_200_OK)
-    tasks_status = get_all_tasks_status(tasks["details"]["taskArns"])
+
+    tasks_status = get_all_tasks_status(tasks["details"]["taskArns"], service_name)
     if tasks_status["error"]:
         response_data = {"error": tasks_status["details"]}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
