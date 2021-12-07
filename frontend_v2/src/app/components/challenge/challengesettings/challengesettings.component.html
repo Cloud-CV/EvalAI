@@ -220,8 +220,14 @@
                     <strong class="text-light-black">Leaderboard Visibility </strong>
                   </span>
                   <a class="pointer fs-20" (click)="toggleLeaderboardVisibility()">
-                    <i class="{{ leaderboardVisibility.icon }}" aria-hidden="true"> </i> </a
-                  >&nbsp;&nbsp;&nbsp;&nbsp;
+                    <i class="{{ leaderboardVisibility.icon }}" aria-hidden="true"> </i>
+                  </a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <span class="fs-16 fw-light">
+                    <strong class="text-light-black">Leaderboard Schema </strong>
+                  </span>
+                  <a class="pointer fs-16" (click)="editLeaderboardSchema()">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                  </a>&nbsp;&nbsp;&nbsp;&nbsp;
                 </div>
               </div>
               <div class="row margin-bottom-cancel phase-card" *ngIf="selectedPhaseSplit">
