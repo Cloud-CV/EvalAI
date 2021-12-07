@@ -120,7 +120,7 @@ def get_participant_team_challenge_list(request, participant_team_pk):
         return paginator.get_paginated_response(response_data)
 
 
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@api_view(["GET", "PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
@@ -177,10 +177,6 @@ def participant_team_detail(request, pk):
         else:
             errors = "\n".join(serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == "DELETE":
-        participant_team.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
