@@ -352,6 +352,10 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
     return `${this.challenges}challenge_host_team/${hostTeam}/${this.challenge}${challenge}`;
   }
 
+  getOrUpdateLeaderboardSchemaURL(leaderboard) {
+    return `${this.challenges}${this.challenge}create/leaderboard/${leaderboard}/`;
+  }
+
   /**
    * Delete challenge
    * @param challenge challenge id
