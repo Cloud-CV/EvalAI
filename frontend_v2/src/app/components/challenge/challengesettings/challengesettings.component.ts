@@ -30,6 +30,16 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   challenge: any;
 
   /**
+   * Leaderboard object
+   */
+  leaderboard: any;
+
+  /**
+   * Id of the currently selected leaderboard
+   */
+   selectedLeaderboardId: any = null;
+
+  /**
    * Is challenge host
    */
   isChallengeHost = false;
@@ -1123,7 +1133,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
           () => this.logger.info('SUBMISSION-VISIBILITY-UPDATE-FINISHED')
         );
     } else {
-      SELF.globalService.showToast('error', 'Leaderboard is private, please make the leaderbaord public');
+      SELF.globalService.showToast('error', 'Leaderboard is private, please make the leaderboard public');
     }
   }
 
@@ -1211,11 +1221,26 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
         (data) => {
           SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
           SELF.setLeaderboardPrecisionValue = `1.${SELF.leaderboardPrecisionValue}-${SELF.leaderboardPrecisionValue}`;
+          SELF.selectedLeaderboardId = data.leaderboard;
         },
         (err) => {
           SELF.globalService.handleApiError(err);
         },
-        () => {}
+        () => {
+          SELF.apiService
+            .getUrl(
+              this.endpointsService.getOrUpdateLeaderboardSchemaURL(SELF.selectedLeaderboardId)
+            )
+          .subscribe(
+            (data) => {
+              SELF.leaderboard = data;
+            },
+            (err) => {
+                SELF.globalService.showToast('error', "Could not fetch leaderboard schema");
+            },
+            () => {}
+          );
+        }
       );
     };
   }
@@ -1395,6 +1420,52 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   // Worker logs ->
+
+  editLeaderboardSchema() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      let currentLeaderboard = this.leaderboard;
+      this.logger.info(params);
+      currentLeaderboard.schema = params.schema;
+      const BODY = JSON.stringify(currentLeaderboard);
+      this.logger.info(BODY);
+
+      SELF.apiService
+        .patchUrl(SELF.endpointsService.getOrUpdateLeaderboardSchemaURL(SELF.leaderboard.id), BODY)
+        .subscribe(
+          (data) => {
+            SELF.leaderboard = data;
+            SELF.globalService.showToast('success', 'Schema Succesfully Updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-LEADERBOARD-SCHEMA-FINISHED')
+        );
+    };
+
+    const PARAMS = {
+      title: 'Edit Leaderboard Schema',
+      content: '',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: false,
+          label: 'schema',
+          placeholder: 'schema',
+          type: 'text',
+          value: JSON.stringify(this.leaderboard.schema),
+        },
+      ],
+      isButtonDisabled: true,
+      confirmCallback: SELF.apiCall,
+    };
+
+    SELF.globalService.showModal(PARAMS);
+  
+  }
 
   /**
    * API call to manage the worker from UI.
