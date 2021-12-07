@@ -37,3 +37,5 @@ challenge_phase_splits:
     leaderboard_id: 1
     dataset_split_id: 1
     visibility: 3
+    leaderboard_decimal_precision: 2
+    is_leaderboard_order_descending: True
