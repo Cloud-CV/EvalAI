@@ -225,15 +225,68 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
-            serializer = ZipChallengeSerializer(
-                challenge,
-                data=request.data,
-                context={
-                    "challenge_host_team": challenge_host_team,
-                    "request": request,
-                },
-                partial=True,
-            )
+            if "overview_file" in request.FILES:
+                overview_file = request.FILES["overview_file"]
+                overview = overview_file.read()
+                request.data["description"] = overview
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            elif "terms_and_conditions_file" in request.FILES:
+                terms_and_conditions_file = request.FILES["terms_and_conditions_file"]
+                terms_and_conditions = terms_and_conditions_file.read()
+                request.data["terms_and_conditions"] = terms_and_conditions
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            elif "submission_guidelines_file" in request.FILES:
+                submission_guidelines_file = request.FILES["submission_guidelines_file"]
+                submission_guidelines = submission_guidelines_file.read()
+                request.data["submission_guidelines"] = submission_guidelines
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            elif "evaluation_criteria_file" in request.FILES:
+                evaluation_criteria_file = request.FILES["evaluation_criteria_file"]
+                evaluation_criteria = evaluation_criteria_file.read()
+                request.data["evaluation_details"] = evaluation_criteria
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            else:
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
         else:
             serializer = ZipChallengeSerializer(
                 challenge,
@@ -663,12 +716,23 @@ def challenge_phase_detail(request, challenge_pk, pk):
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
-            serializer = ChallengePhaseCreateSerializer(
-                challenge_phase,
-                data=request.data.copy(),
-                context={"challenge": challenge},
-                partial=True,
-            )
+            if "phase_description_file" in request.FILES:
+                phase_description_file = request.FILES["phase_description_file"]
+                phase_description = phase_description_file.read()
+                request.data["description"] = phase_description
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data=request.data.copy(),
+                    context={"challenge": challenge},
+                    partial=True,
+                )
+            else:
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data=request.data.copy(),
+                    context={"challenge": challenge},
+                    partial=True,
+                )
         else:
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,

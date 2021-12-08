@@ -47,6 +47,9 @@
                     </span>
                     <a class="pointer fs-16" (click)="editChallengeOverview()">
                       <i class="fa fa-pencil" aria-hidden="true"> </i>
+                    </a>&nbsp;&nbsp;&nbsp;
+                    <a class="pointer fs-16" (click) = "editChallengeOverviewUpload()">
+                      <i class="fa fa-upload" aria-hidden="true"> </i>
                     </a>
                   </div>
                 </div>
@@ -57,6 +60,9 @@
                     </span>
                     <a class="pointer fs-16" (click)="editTermsAndConditions()">
                       <i class="fa fa-pencil" aria-hidden="true"> </i>
+                    </a>&nbsp;&nbsp;&nbsp;
+                    <a class="pointer fs-16" (click) = "editChallengeTermsAndConditionsUpload()">
+                      <i class="fa fa-upload" aria-hidden="true"> </i>
                     </a>
                   </div>
                 </div>
@@ -162,8 +168,11 @@
                   <strong class="text-light-black">Phase Details </strong>
                 </span>
                 <a class="pointer fs-16" (click)="editPhaseDetails()">
-                  <i class="fa fa-pencil" aria-hidden="true"> </i> </a
-                >&nbsp;&nbsp;&nbsp;&nbsp;
+                  <i class="fa fa-pencil" aria-hidden="true"> </i> 
+                </a>&nbsp;&nbsp;&nbsp;
+                <a class="pointer fs-16" (click) = "editPhaseDetailsUpload()">
+                  <i class="fa fa-upload" aria-hidden="true"> </i></a
+                >&nbsp;&nbsp;&nbsp;
                 <span class="fs-16 fw-light">
                   <strong class="text-light-black">Is Public </strong>
                 </span>
@@ -279,8 +288,11 @@
                   <strong class="text-light-black">Evaluation Criteria </strong>
                 </span>
                 <a class="pointer fs-16" (click)="editEvaluationCriteria()">
-                  <i class="fa fa-pencil" aria-hidden="true"> </i> </a
-                >&nbsp;&nbsp;
+                  <i class="fa fa-pencil" aria-hidden="true"> </i> 
+                </a>&nbsp;&nbsp;&nbsp;
+                <a class="pointer fs-16" (click) = "editEvaluationCriteriaUpload()">
+                  <i class="fa fa-upload" aria-hidden="true"> </i>
+                </a>&nbsp;&nbsp;
                 <!-- Evaluation Script -->
                 <span class="fs-16 fw-light">
                   <strong class="text-light-black">Evaluation Script </strong>

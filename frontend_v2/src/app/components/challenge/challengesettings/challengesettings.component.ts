@@ -411,9 +411,207 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Edit challenge overview with file function
+   */
+  editChallengeOverviewUpload() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('overview_file', params['overview_file']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.challenge.description = data.description;
+            SELF.globalService.showToast('success', 'Challenge description updated successfully!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Challenge Overview',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Challenge Overview',
+          isRequired: true,
+          label: 'overview_file',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+  
+  /**
+   * Edit challenge terms and conditions with file function
+   */
+  editChallengeTermsAndConditionsUpload() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('terms_and_conditions_file', params['terms_and_conditions_file']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.challenge.terms_and_conditions = data.terms_and_conditions;
+            SELF.globalService.showToast('success', 'Terms and conditions updated successfully!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-TERMS-AND-CONDITIONS-FINISHED')
+        );
+    };
+    
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Terms and Conditions',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Challenge Terms and Descriptions',
+          isRequired: true,
+          label: 'terms_and_conditions_file',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Edit challenge evaluation criteria with file function
+   */ 
+  editEvaluationCriteriaUpload() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('evaluation_criteria_file', params['evaluation_criteria_file']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.challenge.evaluation_details = data.evaluation_details;
+            SELF.globalService.showToast('success', 'Evaluation details updated successfully!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-EVALUATION-DETAILS-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Evaluation Criteria',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Edit Evaluation Criteria',
+          isRequired: true,
+          label: 'evaluation_criteria_file',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+ 
+  }
+
+  /**
+   * Edit phase details criteria with file function
+   */ 
+  editPhaseDetailsUpload() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('phase_description_file', params['phase_description_file']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.updateChallengePhaseDetailsURL(SELF.challenge.id, SELF.selectedPhase['id']),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            for (const attrname of Object.keys(data)) {
+              SELF.selectedPhase[attrname] = data[attrname];
+            }
+            SELF.globalService.showToast('success', 'Challenge phase description updated successfully!');
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('PHASE-DESCRIPTION-UPDATE-FINISHED')
+        );
+    };
+    
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Phase Description',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Phase Description',
+          isRequired: true,
+          label: 'phase_description_file',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
    * Edit challenge overview function
    */
-
   editChallengeOverview() {
     const SELF = this;
 

@@ -636,6 +636,55 @@ export class ChallengesubmitComponent implements OnInit {
     SELF.globalService.showModal(PARAMS);
   }
 
+  /**
+   * Edit challenge overview with file function
+   */
+   editSubmissionGuidelineUpload() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('submission_guidelines_file', params['submission_guidelines_file']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.challenge.submission_guidelines = data.submission_guidelines;   
+            SELF.globalService.showToast('success', 'The submission guidelines are successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Submission Guidelines',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Submission Guidelines',
+          isRequired: true,
+          label: 'submission_guidelines_file',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
   validateInput(inputValue) {
     const regex = new RegExp(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/);
     const validExtensions = ['json', 'zip', 'txt', 'tsv', 'gz', 'csv', 'h5', 'npy'];
