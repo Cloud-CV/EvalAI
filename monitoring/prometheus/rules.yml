@@ -38,7 +38,7 @@ groups:
 - name: Worker-Down
   rules:
   - alert: WorkerDown
-    expr: (count by (queue_name) (num_submissions_in_queue{is_remote=0}) - count by (queue_name) (num_processed_submissions{is_remote=0}))  >= 5
+    expr: ((count by (queue_name) (num_submissions_in_queue{is_remote="0"})) - (count by (queue_name) (num_processed_submissions{is_remote="0"})))  >= 5
     for: 120m
     annotations:
       title: "Worker is down"
