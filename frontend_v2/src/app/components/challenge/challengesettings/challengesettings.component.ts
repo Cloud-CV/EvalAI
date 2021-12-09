@@ -1263,6 +1263,6 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   copyQueueName() {
     this.windowService.copyToClipboard(this.challenge.queue);
-    this.globalService.showToast('success', 'Copied to clipboard', 5);  
+    this.globalService.showToast('success', 'Copied to clipboard', 5);
   }
 }

@@ -97,13 +97,10 @@
                     {{ challenge['queue'] }}
                   </span>
                   <span *ngIf="challenge.queue.length > 25" class="fs-16 fw-light">
-                    ...&nbsp;&nbsp;
-                    <button
-                    class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
-                    (click)="copyQueueName()"
-                    >
-                    Copy
-                    </button>
+                    ...&nbsp;
+                    <a class="pointer fs-16" (click)="editTermsAndConditions()">
+                      <i class="fa fa-clipboard" aria-hidden="true"> </i>
+                    </a>
                   </span>
                 </span>
                 <br />
