@@ -89,6 +89,23 @@
                   </a>
                 </span>
                 <br />
+                <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+                  <strong class="text-light-black">Challenge ID:</strong>
+                  {{ challenge['id'] }}
+                </span>
+                <br />
+                <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+                  <strong class="text-light-black">SQS Queue Name:</strong>
+                </span>&nbsp;&nbsp;&nbsp;&nbsp;
+                <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+                  <button
+                    class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+                    (click)="copyQueueName()"
+                  >
+                    SQS Queue Name
+                  </button>
+                </span>
+                <br />
                 <mat-checkbox
                   color="primary"
                   class="fw-semibold"
@@ -133,25 +150,6 @@
                 (click)="reflectChange()"
               >
                 <span>Update</span>
-              </div>
-            </div>
-          </div>
-          <!-- Challenge Info -->
-          <div class="row settings-section">
-            <div class="col-s12 challenge-detail">
-              <div class="col-lg-6 col-md-12 col-sm-7 col-xs-12">
-                <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
-                  <span class="fs-16 fw-light">
-                    <strong class="text-light-black">Challenge ID: </strong>
-                    {{ challenge['id'] }}
-                  </span>
-                </div>
-                <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
-                  <span class="fs-16 fw-light">
-                    <strong class="text-light-black">SQS Queue Name: </strong>
-                    {{ challenge['queue'] }}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
