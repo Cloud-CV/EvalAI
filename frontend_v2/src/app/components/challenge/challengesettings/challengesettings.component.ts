@@ -1262,26 +1262,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    * Copy auth token to clipboard.
    */
   copyQueueName() {
-    const SELF = this;
-    const copyQueueNameToClipboard = (params) => {
-      this.windowService.copyToClipboard(this.challenge.queue);
-      this.globalService.showToast('success', 'Copied to clipboard', 5);  
-    };
-    const PARAMS = {
-      title: 'Challenge Queue',
-      confirm: 'Submit',
-      deny: 'Cancel',
-      form: [
-        {
-          isRequired: true,
-          label: 'queue',
-          placeholder: 'Challenge Queue',
-          type: 'text',
-          value: this.challenge.queue,
-        },
-      ],
-      confirmCallback: copyQueueNameToClipboard,
-    };
-    SELF.globalService.showModal(PARAMS);
+    this.windowService.copyToClipboard(this.challenge.queue);
+    this.globalService.showToast('success', 'Copied to clipboard', 5);  
   }
 }

@@ -91,20 +91,25 @@
                 <br />
                 <span *ngIf="isChallengeHost" class="fs-16 fw-light">
                   <strong class="text-light-black">Challenge ID:</strong>
-                  {{ challenge['id'] }}
+                </span>
+                <span *ngIf="isChallengeHost" class="fs-16 fw-light">
+                  <span *ngIf="challenge.queue.length <= 25" class="fs-16 fw-light">
+                    {{ challenge['queue'] }}
+                  </span>
+                  <span *ngIf="challenge.queue.length > 25" class="fs-16 fw-light">
+                    ...&nbsp;&nbsp;
+                    <button
+                    class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+                    (click)="copyQueueName()"
+                    >
+                    Copy
+                    </button>
+                  </span>
                 </span>
                 <br />
                 <span *ngIf="isChallengeHost" class="fs-16 fw-light">
                   <strong class="text-light-black">SQS Queue Name:</strong>
-                </span>&nbsp;&nbsp;&nbsp;&nbsp;
-                <span *ngIf="isChallengeHost" class="fs-16 fw-light">
-                  <button
-                    class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
-                    (click)="copyQueueName()"
-                  >
-                    SQS Queue Name
-                  </button>
-                </span>
+                </span>&nbsp;&nbsp;
                 <br />
                 <mat-checkbox
                   color="primary"
