@@ -23,18 +23,6 @@ groups:
       severity: major
       group: 'instance'
 
-- name: EvalAI-Instance-Status
-  rules:
-  - alert: InstanceDown
-    expr: up{job="evalai"} == 0
-    for: 5m
-    annotations:
-      title: "EvalAI is down"
-      description: "*{{ $labels.job }}* on *{{ $labels.instance }}* has been down for more than 5 minutes"
-    labels:
-      severity: major
-      group: 'instance'
-
 - name: Worker-Down
   rules:
   - alert: WorkerDown
