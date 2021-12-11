@@ -89,8 +89,14 @@
                   </a>
                 </span>
                 <br />
+                <div *ngIf="isChallengeHost" class="col-sm-1.5 col-xs-1.5 ev-upload-action">
+                  <span class="fs-16 fw-light">
+                    <strong class="text-light-black">Challenge ID: </strong>
+                    {{ challenge['id'] }}
+                  </span>
+                </div>
                 <span *ngIf="isChallengeHost" class="fs-16 fw-light">
-                  <strong class="text-light-black">Challenge ID:</strong>
+                  <strong class="text-light-black">SQS Queue Name:</strong>
                 </span>
                 <span *ngIf="isChallengeHost" class="fs-16 fw-light">
                   <span *ngIf="challenge.queue.length <= 25" class="fs-16 fw-light">
@@ -98,15 +104,11 @@
                   </span>
                   <span *ngIf="challenge.queue.length > 25" class="fs-16 fw-light">
                     ...&nbsp;
-                    <a class="pointer fs-16" (click)="editTermsAndConditions()">
+                    <a class="pointer fs-16" (click)="copyQueueName()">
                       <i class="fa fa-clipboard" aria-hidden="true"> </i>
                     </a>
                   </span>
                 </span>
-                <br />
-                <span *ngIf="isChallengeHost" class="fs-16 fw-light">
-                  <strong class="text-light-black">SQS Queue Name:</strong>
-                </span>&nbsp;&nbsp;
                 <br />
                 <mat-checkbox
                   color="primary"
