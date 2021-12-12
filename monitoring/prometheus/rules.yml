@@ -23,26 +23,14 @@ groups:
       severity: major
       group: 'instance'
 
-- name: EvalAI-Instance-Status
-  rules:
-  - alert: InstanceDown
-    expr: up{job="evalai"} == 0
-    for: 5m
-    annotations:
-      title: "EvalAI is down"
-      description: "*{{ $labels.job }}* on *{{ $labels.instance }}* has been down for more than 5 minutes"
-    labels:
-      severity: major
-      group: 'instance'
-
 - name: Worker-Down
   rules:
   - alert: WorkerDown
-    expr: ((count by (queue_name) (num_submissions_in_queue{is_remote="0"})) - (count by (queue_name) (num_processed_submissions{is_remote="0"})))  >= 5
+    expr: ((sum by (queue_name) (num_submissions_in_queue{is_remote="0"})) - (sum by (queue_name) (num_processed_submissions{is_remote="0"}))) or sum by(queue_name)(num_submissions_in_queue{is_remote="0"})  >= 5
     for: 120m
     annotations:
       title: "Worker is down"
-      description: "*{{ $labels.queue_name }}* worker is not processing submissions"
+      description: "*{{ $labels.queue_name }}* worker on *{{ $labels.instance }}* is not processing submissions"
     labels:
       severity: major
       group: 'queue_name'
