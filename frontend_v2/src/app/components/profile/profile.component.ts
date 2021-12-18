@@ -28,7 +28,7 @@ export class ProfileComponent implements OnInit {
   /**
    * Profile completion score
    */
-  pcomp: any;
+  profileComplete: any;
 
   /**
    * Auth token string
@@ -144,6 +144,9 @@ export class ProfileComponent implements OnInit {
     for (const i in this.user) {
       if (this.user.hasOwnProperty(i)) {
         if (this.user[i] === '' || this.user[i] === undefined || this.user[i] === null) {
+          if(i === "linkedin_url" ||  i === "github_url" || i === "google_scholar_url"){
+            this.user[i] = "";
+          }
           this.user[i] = '-';
           countLeft = countLeft + 1;
         }
@@ -151,7 +154,7 @@ export class ProfileComponent implements OnInit {
       }
     }
     const TEMP = ((countLeft / count) * 100).toString();
-    this.pcomp = (100 - parseInt(TEMP, 10)).toString() + '%';
+    this.profileComplete = (100 - parseInt(TEMP, 10)).toString() + '%';
   }
 
   /**
