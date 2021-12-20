@@ -569,6 +569,13 @@ export class ChallengesubmitComponent implements OnInit {
             if (attribute.values.length === 0) {
               metaValue = false;
             }
+          } else if (attribute.type == 'text') {
+            // Fetch value of text attributes manually as we are using modular components
+            let value = self.globalService.formValueForLabel(self.components, attribute.name);
+            if (value === null || value === undefined || value.length === 0) {
+              metaValue = false;
+            }
+            attribute.value = value;
           } else {
             if (attribute.value === null || attribute.value === undefined) {
               metaValue = false;
