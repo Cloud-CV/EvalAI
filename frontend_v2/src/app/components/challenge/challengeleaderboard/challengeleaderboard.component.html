@@ -173,7 +173,14 @@
                       </mat-chip-list>
                     </span>
                   </td>
-                  <td *ngFor="let score of key.result">{{ score | number: setLeaderboardPrecisionValue }}</td>
+                  <td *ngFor="let score of key.result">
+                    <span class="fa-stack fa-1x partial-evaluation" *ngIf="score == '#'">
+                      <mat-chip-list>
+                        <mat-chip>E</mat-chip>
+                      </mat-chip-list>
+                    </span>
+                    <span *ngIf="score !== '#'">{{ score | number: setLeaderboardPrecisionValue }}</span>
+                  </td>
                   <td>
                     <div>{{ key.submission__submitted_at_formatted }}</div>
                   </td>
