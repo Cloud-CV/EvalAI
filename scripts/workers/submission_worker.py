@@ -770,10 +770,11 @@ def load_challenge_and_return_max_submissions(q_params):
     return maximum_concurrent_submissions, challenge
 
 
-def increment_and_push_metrics_to_statsd(queue_name):
+def increment_and_push_metrics_to_statsd(queue_name, is_remote):
     try:
         submission_metric_tags = [
             "queue_name:%s" % queue_name,
+            "is_remote:%d" % is_remote,
         ]
         increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
     except Exception as e:
@@ -828,6 +829,7 @@ def main():
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
+    is_remote = int(challenge.remote_evaluation)
     while True:
         for message in queue.receive_messages():
             if json.loads(message.body).get(
@@ -856,7 +858,7 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_statsd(queue_name)
+                        increment_and_push_metrics_to_statsd(queue_name, is_remote)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
@@ -866,7 +868,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(queue_name)
+                    increment_and_push_metrics_to_statsd(queue_name, is_remote)
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
@@ -885,7 +887,7 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-                    increment_and_push_metrics_to_statsd(queue_name)
+                    increment_and_push_metrics_to_statsd(queue_name, is_remote)
         if killer.kill_now:
             break
         time.sleep(0.1)
