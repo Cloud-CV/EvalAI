@@ -141,7 +141,8 @@
                     class="align-center fw-light"
                   >
                     <a (click)="sortMetricsColumn(i)">
-                      <span class="fw-light fs-18">{{ key }}</span>
+                      <span class="fw-light fs-18 leaderboard-label" *ngIf="isMetricOrderedAscending(key)">{{ key }} (&#x2191;)  <span class="description" *ngIf="getLabelDescription(key).length != 0">{{getLabelDescription(key)}}</span> </span>
+                      <span class="fw-light fs-18 leaderboard-label" *ngIf="!isMetricOrderedAscending(key)">{{ key }} (&#x2193;) <span class="description" *ngIf="getLabelDescription(key).length != 0">{{getLabelDescription(key)}}</span> </span>
                       <span class="fa-stack fa-1x">
                         <i
                           class="fa fa-sort-asc fa-stack-1x"
