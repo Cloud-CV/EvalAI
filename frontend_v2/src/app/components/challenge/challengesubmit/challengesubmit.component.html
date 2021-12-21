@@ -357,7 +357,7 @@
             <div class="clearfix"></div>
           </div>
         </div>
-        <div class="row row-lr-margin">
+        <div class="row row-lr-margin" *ngIf="defaultMetaAttributesforCurrentPhase !== null && defaultMetaAttributesforCurrentPhase['method_name']['is_visible'] == true">
           <div class="align-left col-sm-10 col-lr-pad">
             <div class="input-field align-left">
               <app-input
@@ -371,7 +371,7 @@
             </div>
           </div>
         </div>
-        <div class="row row-lr-margin">
+        <div class="row row-lr-margin" *ngIf="defaultMetaAttributesforCurrentPhase !== null && defaultMetaAttributesforCurrentPhase['method_description']['is_visible'] == true">
           <div class="align-left col-sm-10 col-lr-pad">
             <app-input
               [label]="'method_description'"
@@ -382,7 +382,7 @@
             ><br />
           </div>
         </div>
-        <div class="row row-lr-margin">
+        <div class="row row-lr-margin" *ngIf="defaultMetaAttributesforCurrentPhase !== null && defaultMetaAttributesforCurrentPhase['project_url']['is_visible'] == true">
           <div class="align-left col-sm-10 col-lr-pad">
             <app-input
               [label]="'project_url'"
@@ -393,7 +393,7 @@
             ></app-input>
           </div>
         </div>
-        <div class="row row-lr-margin">
+        <div class="row row-lr-margin" *ngIf="defaultMetaAttributesforCurrentPhase !== null && defaultMetaAttributesforCurrentPhase['publication_url']['is_visible'] == true">
           <div class="align-left col-sm-10 col-lr-pad">
             <app-input
               [label]="'publication_url'"

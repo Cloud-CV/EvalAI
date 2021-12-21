@@ -109,6 +109,15 @@ export class ChallengesubmitComponent implements OnInit {
   metaAttributesforCurrentSubmission = null;
 
   /**
+   * Stores the default meta attributes for all the phases of a challenge.
+   */
+   defaultMetaAttributes = [];
+
+  /**
+   * Stores the default meta attributes for a selected phase.
+   */
+  defaultMetaAttributesforCurrentPhase = null;
+  /**
    * Form fields name
    */
   submitForm = 'formsubmit';
@@ -425,11 +434,23 @@ export class ChallengesubmitComponent implements OnInit {
             attribute['value'] = null;
           }
         });
-        data = { phaseId: data.results[i].id, attributes: attributes };
-        this.submissionMetaAttributes.push(data);
+        const detail = { phaseId: data.results[i].id, attributes: attributes };
+        this.submissionMetaAttributes.push(detail);
       } else {
         const detail = { phaseId: data.results[i].id, attributes: null };
         this.submissionMetaAttributes.push(detail);
+      }
+      if (data.results[i].default_submission_meta_attributes) {
+        const attributes = data.results[i].default_submission_meta_attributes;
+        var attributeDict = {};
+        attributes.forEach(function (attribute) {
+          attributeDict[attribute["name"]] = attribute;
+        });
+        const detail = { phaseId: data.results[i].id, attributes: attributeDict };
+        this.defaultMetaAttributes.push(detail);
+      } else {
+        const detail = { phaseId: data.results[i].id, attributes: {} };
+        this.defaultMetaAttributes.push(detail);
       }
     }
   }
@@ -449,7 +470,11 @@ export class ChallengesubmitComponent implements OnInit {
         this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
           return element['phaseId'] === phaseId;
         }).attributes;
-        this.metaAttributesforCurrentSubmission = [];
+        console.log(this.defaultMetaAttributes);
+        this.defaultMetaAttributesforCurrentPhase = this.defaultMetaAttributes.find(function (element) {
+          return element['phaseId'] === phaseId;
+        }).attributes;
+        console.log(this.defaultMetaAttributesforCurrentPhase);
       },
       (err) => {
         SELF.globalService.handleApiError(err);
