@@ -3,6 +3,8 @@ from challenges.models import Challenge
 
 from .models import ChallengeHost, ChallengeHostTeam
 
+get_challenge_host_team_model = get_model_object(ChallengeHostTeam)
+
 
 def get_challenge_host_teams_for_user(user):
     """Returns challenge host team ids for a particular user"""
@@ -26,6 +28,3 @@ def is_user_part_of_host_team(user, host_team):
     return ChallengeHost.objects.filter(
         user=user, team_name=host_team
     ).exists()
-
-
-get_challenge_host_team_model = get_model_object(ChallengeHostTeam)

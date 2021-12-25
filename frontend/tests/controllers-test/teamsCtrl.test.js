@@ -327,6 +327,31 @@ describe('Unit tests for teams controller', function () {
         });
     });
 
+    describe('Unit tests for confirmMemberDelete function', function () {
+        beforeEach(function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+        });
+
+        it('open dialog to confirm delete', function () {
+            var participantTeamId = 1;
+            var participantId = 1;
+            var ev = new Event('$click');
+            var confirm = $mdDialog.confirm()
+                .title('Would you like to remove this member?')
+                .textContent('Note: This action will remove the member from team.')
+                .ariaLabel('Lucky day')
+                .targetEvent(ev)
+                .ok('Yes')
+                .cancel("No");
+            vm.confirmMemberDelete(ev, participantTeamId, participantId);
+            expect($mdDialog.show).toHaveBeenCalledWith(confirm);
+        });
+    });
+
+
     describe('Unit tests for inviteOthers function', function () {
         beforeEach(function () {
             spyOn($mdDialog, 'show').and.callFake(function () {

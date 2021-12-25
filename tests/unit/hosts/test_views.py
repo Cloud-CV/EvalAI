@@ -380,10 +380,10 @@ class GetParticularChallengeHost(BaseAPITestClass):
                 "pk": self.challenge_host.pk,
             },
         )
-        expected = {"error": "ChallengeHostTeam does not exist"}
+        expected = {"detail": "ChallengeHostTeam " + str(self.challenge_host_team.pk + 1) + " does not exist"}
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class UpdateParticularChallengeHost(BaseAPITestClass):
@@ -435,6 +435,76 @@ class UpdateParticularChallengeHost(BaseAPITestClass):
 class DeleteParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticularChallengeHost, self).setUp()
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+        self.user2 = User.objects.create(
+            username="user2",
+            email="user2@platform.com",
+            password="user2_password",
+        )
+
+        self.challenge_host2 = ChallengeHost.objects.create(
+            user=self.user2,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ACCEPTED,
+        )
+
+        self.user3 = User.objects.create(
+            username="user3",
+            email="user3@platform.com",
+            password="user3_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email="user3@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host3 = ChallengeHost.objects.create(
+            user=self.user3,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ACCEPTED,
+        )
+
+    def test_delete_challenge_host_when_challenge_host_does_not_exist(self):
+        self.url = reverse_lazy(
+            "hosts:get_challenge_host_details",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "pk": self.challenge_host3.pk + 1,
+            },
+        )
+
+        expected = {"detail": "ChallengeHost " + str(self.challenge_host3.pk + 1) + " does not exist"}
+
+        response = self.client.delete(self.url, {})
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
+        self.url = reverse_lazy(
+            "hosts:get_challenge_host_details",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk + 1,
+                "pk": self.challenge_host2.pk,
+            },
+        )
+
+        expected = {"detail": "ChallengeHostTeam " + str(self.challenge_host_team.pk + 1) + " does not exist"}
+        response = self.client.delete(self.url, {})
+        self.assertDictEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_challenge_host_when_admin_tries_to_delete_himself(self):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_details",
             kwargs={
@@ -443,7 +513,55 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             },
         )
 
+        expected = {
+            "error": "You are not allowed to remove yourself since you are the team admin. Please delete the team if you want to do so!"  # noqa: ignore=E501
+        }
+
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_delete_challenge_host_when_challenge_host_does_not_have_permission(
+        self
+    ):
+
+        self.url = reverse_lazy(
+            "hosts:get_challenge_host_details",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "pk": self.challenge_host2.pk,
+            },
+        )
+
+        self.client.force_authenticate(user=self.user3)
+
+        expected = {
+            "error": "Sorry, you do not have permissions to remove this challenge host"
+        }
+
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_challenge_host_success(self):
+        self.url = reverse_lazy(
+            "hosts:get_challenge_host_details",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "pk": self.challenge_host2.pk,
+            },
+        )
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
     def test_particular_challenge_host_delete(self):
+        self.url = reverse_lazy(
+            "hosts:get_challenge_host_details",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "pk": self.challenge_host2.pk,
+            },
+        )
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 

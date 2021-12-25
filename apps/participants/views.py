@@ -328,7 +328,7 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
         ):  # when the user tries to remove himself
             response_data = {
                 "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
-            }  # noqa: ignore=E501
+            }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )

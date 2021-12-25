@@ -16,6 +16,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
+from hosts.utils import get_challenge_host_team_model
 from .filters import HostTeamsFilter
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
@@ -162,14 +163,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
-    try:
-        challenge_host_team = ChallengeHostTeam.objects.get(
-            pk=challenge_host_team_pk
-        )
-    except ChallengeHostTeam.DoesNotExist:
-        response_data = {"error": "ChallengeHostTeam does not exist"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
+    challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
     challenge_host = get_challenge_host_model(pk)
 
     if request.method == "GET":
@@ -202,13 +196,24 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
-        challenge_host.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if challenge_host_team.created_by == request.user:
+
+            if (challenge_host.user == request.user):  # when the user tries to remove himself
+                response_data = {
+                    "error": "You are not allowed to remove yourself since you are the team admin. Please delete the team if you want to do so!"
+                }
+                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            else:
+                challenge_host.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            response_data = {
+                "error": "Sorry, you do not have permissions to remove this challenge host"
+            }
+            return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(["POST"])
