@@ -827,7 +827,7 @@ def main():
         ) = load_challenge_and_return_max_submissions(q_params)
 
     # create submission base data directory
-    # create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
+    create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
     is_remote = int(challenge.remote_evaluation)

@@ -713,7 +713,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       const SELF = this;
       let schema = SELF.leaderboard[0].leaderboard__schema;
       let metadata = schema.metadata;
-      console.log(metadata);
       if (metadata != null && metadata != undefined) {
           // By default all metrics are considered higher is better
           if (metadata[metric] == undefined || metadata[metric].description == undefined) {
