@@ -158,7 +158,9 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let key of leaderboard" class="content">
+                <tr *ngFor="let key of leaderboard"
+                    (click)="updateHighlightedEntry(initial_ranking[key.id])" class="content"
+                    [ngClass]="highlightedEntry == initial_ranking[key.id] ? 'content highlight-leaderboard' : 'content'">
                   <td>{{ initial_ranking[key.id] }}</td>
                   <td class="fw-light">
                     {{ key.submission__participant_team__team_name }}

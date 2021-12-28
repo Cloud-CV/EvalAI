@@ -168,7 +168,7 @@
   }
 }
 
-partial-evaluation {
+.partial-evaluation {
   min-width: 3rem;
   padding: 0 6px;
   text-align: center;
@@ -176,4 +176,12 @@ partial-evaluation {
   line-height: inherit;
   float: left;
   box-sizing: border-box;
+}
+
+.highlight-leaderboard {
+	border-color: #fff3e0;
+	box-shadow: 0 0 0 0.2em #ffcc80 !important;
+	border: 1px solid #d1d5da;
+	border-radius: 3px;
+	background-color: #f2f2f2;
 }

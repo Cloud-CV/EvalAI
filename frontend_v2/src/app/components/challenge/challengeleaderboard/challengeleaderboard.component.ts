@@ -203,6 +203,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   };
 
   /**
+   *  Highlighted row in leaderboard
+   */
+  highlightedEntry = null;
+
+  /**
    * Constructor.
    * @param authService  AuthService Injection.
    * @param router  Router Injection.
@@ -338,6 +343,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   phaseSplitSelected(phaseSplit) {
     const SELF = this;
     SELF.selectedPhaseSplit = phaseSplit;
+    SELF.highlightedEntry = null;
 
     SELF.fetchNumberOfAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id']);
 
@@ -640,6 +646,16 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
       });
     }
     SELF.openDialog(SELF.metaAttributesData);
+  }
+
+  /**
+   * Update highlighted entry
+   */
+  updateHighlightedEntry(entryId) {
+    const SELF = this;
+    if (entryId !== null) {
+      SELF.highlightedEntry = entryId;
+    }
   }
 
   /**
