@@ -1,27 +1,63 @@
 <section class="ev-md-container text-center ">
     <div class="row">
-        <div class="col s12 m9 offset-m3">
-            <div class="zip-file-title">Please upload zip file to create a challenge!</div>
-                <div class="file-field input-field col s6">
-                <form name="ChallengeCreateForm" ng-submit="challengeCreate.challengeCreate(ChallengeCreateForm.$valid)" novalidate>
-                    <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
-                        <span>Upload File</span>
-                        <input name="challengeCreate.input_file" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="challengeCreate.input_file">
+        <div class="col s12 m9 offset-m2">
+            <div class=" ev-card-panel ev-z-depth-5 create-card">
+                <div class="ev-md-container ev-panel-title text-med-black fs-18"><i class="fa fa-github fa-lg"></i> Challenge creation using GitHub</div>
+                <div class="ev-md-container ev-card-body exist-team-card">
+                    <div class="col">
+                        <ol>
+                            <li>Use this repository as <a href="https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template" class="highlight-link" target="_blank">template</a>.</li>
+                            <li>Generate your <a href="https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token" class="highlight-link" target="_blank">github personal acccess token</a> and copy it in clipboard.</li>
+                            <li>Add the github personal access token in the forked repository's <a href="https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository">secrets</a> with the name <b>AUTH_TOKEN</b>.</li>
+                            <li> Now, go to <a href="https://eval.ai" class="highlight-link" target="_blank">EvalAI</a> to fetch the following details -</li>
+                            <ol>
+                                <li>evalai_user_auth_token - Go to <a href="https://eval.ai/web/profile" class="highlight-link" target="_blank">profile page</a> after logging in and click on <b>Get your Auth Token</b> to copy your auth token.</li>
+                                <li>host_team_pk - Go to <a href="https://eval.ai/web/challenge-host-teams" class="highlight-link" target="_blank">host team page</a> and copy the <b>ID</b> for the team you want to use for challenge creation.</li>
+                                <li>evalai_host_url - Use <b><a href="https://eval.ai" class="highlight-link" target="_blank">https://eval.ai</a></b> for production server and <b><a href="https://staging.eval.ai" class="highlight-link" target="_blank">https://staging.eval.ai</a></b> for staging server.</li>
+                            </ol>
+                            <li>Create a branch with name <b>challenge</b> in the forked repository from the `master` branch.
+                                <br>
+                            <span><strong>Note</strong>: Only changes to <b>challenge</b> branch will be synchronized with challenge on EvalAI.</span></li>
+                            <li>Add <b>evalai_user_auth_token</b> and <b>host_team_pk</b> in <b>github/host_config.json</b>.</li>
+                            <li>Read <a href="https://evalai.readthedocs.io/en/latest/configuration.html" class="highlight-link" target="_blank">EvalAI challenge creation documentation</a> to know more about how you want to structure your challenge. Once you are ready, start making changes in the yaml file, HTML templates, evaluation script according to your need.</li>
+                            <li>Commit the changes and push the <b>challenge</b> branch in the repository and wait for the build to complete. View the <a href="https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/using-workflow-run-logs#viewing-logs-to-diagnose-failures" class="highlight-link" target="_blank">logs of your build</a>.</li>
+                            <li>If challenge config contains errors then a <b>issue</b> will be opened automatically in the repository with the errors otherwise the challenge will be created on EvalAI.</li>
+                            <li>Go to <a href="https://eval.ai/web/hosted-challenges" class="highlight-link" target="_blank">Hosted Challenges</a> to view your challenge. The challenge will be publicly available once EvalAI admin approves the challenge.</li>
+                            <li>To update the challenge on EvalAI, make changes in the repository and push to the <b>challenge</b> branch and wait for the build to complete. </li>
+                        </ol>
                     </div>
-                    <div class="file-path-wrapper">
-                        <input class="file-path validate" type="text">
-                    </div>
-                    <div class="align-left reg-control">
-                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
-                    </div>
-                    <div ng-if="challengeCreate.isFormError" class="wrn-msg text-highlight align-right"> {{challengeCreate.formError}}
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col s12 m9 offset-m3">
+        <div class="col s12 m9 offset-m2">
+            <div class=" ev-card-panel ev-z-depth-5 create-card">
+                <div class="ev-md-container ev-panel-title text-med-black fs-18"> <i class="fa fa-upload"></i> Challenge creation using zip</div>
+                <div class="ev-md-container ev-card-body exist-team-card">
+
+                    <div class="file-field input-field col s6 offset-m3">
+                        <form name="ChallengeCreateForm" ng-submit="challengeCreate.challengeCreate(ChallengeCreateForm.$valid)" novalidate>
+                            <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                <span>Upload File</span>
+                                <input name="challengeCreate.input_file" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="challengeCreate.input_file">
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text">
+                            </div>
+                            <div class="align-left reg-control">
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                            </div>
+                            <div ng-if="challengeCreate.isFormError" class="wrn-msg text-highlight align-right"> {{challengeCreate.formError}}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m9 offset-m2">
             <i class="fa fa-info-circle"></i>
             To know how to create a challenge using zip file configuration, please see our documentation
             <a href="https://evalai.readthedocs.io/en/latest/configuration.html#challenge-configuration" class="highlight-link" target="_blank">here.</a>.

@@ -571,6 +571,52 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Display Cancel Submission Modal.
+   * @param submission  Submission being cancelled
+   */
+   cancelSubmission(submission) {
+    const SELF = this;
+    if (submission.status != "submitted") {
+      SELF.globalService.showToast('error', 'Only unproccessed submissions can be cancelled', 5);
+      return;
+    }
+    SELF.apiCall = () => {
+      const BODY = JSON.stringify({
+        "status": "cancelled"
+      });
+      SELF.apiService
+        .patchUrl(
+          SELF.endpointsService.updateSubmissionMetaURL(
+            SELF.challenge.id,
+            submission.id
+          ),
+          BODY
+        )
+        .subscribe(
+          () => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'Submission status updated successfully', 5);
+            SELF.fetchSubmissions(SELF.challenge.id, SELF.selectedPhase.id);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+          },
+          () => this.logger.info('SUBMISSION-CANCELLED')
+        );
+    };
+    const PARAMS = {
+      title: 'Are you sure you want to cancel submission?',
+      content: '',
+      isButtonDisabled: true,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [],
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
    * Get participated team name API
    * @param challengeId Challenge Id
    */
