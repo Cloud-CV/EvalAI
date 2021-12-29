@@ -72,21 +72,37 @@ th {
 
 .meta-label {
   margin-right: 10px;
-  color: black;
+  color: #adb4d0;
   font-weight: $fw-semibold;
 }
 
-::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
-  border-color: black;
+:host ::ng-deep .mat-radio-container{
+  height: 16px;
+  width: 16px;
 }
 
-::ng-deep .mat-radio-outer-circle {
-  border-color: black;
+:host ::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
+  height: 16px;
+  width: 16px;
+  border-color: rgba(0,0,0,0.54);
 }
 
-::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {
-  border-color: black;
-  background-color: black;
+:host ::ng-deep .mat-radio-outer-circle {
+  height: 16px;
+  width: 16px;
+  border-color: rgba(0,0,0,0.54);
+}
+
+:host ::ng-deep .mat-radio-inner-circle {
+  height: 16px;
+  width: 16px;
+}
+
+:host ::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {
+  height: 16px;
+  width: 16px;
+  border-color: rgba(0,0,0,0.54);
+  background-color: rgba(0,0,0,0.54);
 }
 
 .input-message {
@@ -144,4 +160,22 @@ th {
 .cli-card-container {
   margin: 14.5px 0px;
   padding: 0px 0px 0px 70px;
+}
+
+.mat-label-radio {
+  margin-top: 1.0em;
+  position: relative;
+  color: $light-gray;
+  font-size: 0.8em;
+  font-weight: 400;
+}
+
+.element {
+  margin-bottom: 10px;
+  border-color: #adb4d0;
+  color: #adb4d0;
+}
+
+:host ::ng-deep .mat-checkbox-layout {
+  margin-bottom: 5px;
 }
