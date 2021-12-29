@@ -214,6 +214,16 @@ urlpatterns = [
         views.update_allowed_email_ids,
         name="get_or_update_allowed_email_ids",
     ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/scale_resources/$",
+        views.scale_resources_by_challenge_pk,
+        name="scale_resources_by_challenge_pk",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/convert_to_github_challenge/$",
+        views.convert_to_github_challenge,
+        name="convert_to_github_challenge",
+    ),
 ]
 
 app_name = "challenges"
