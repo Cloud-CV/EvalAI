@@ -818,7 +818,6 @@ def main():
         else:
             challenges = Challenge.objects.filter(**q_params)
             for challenge in challenges:
-                print(challenge)
                 load_challenge(challenge)
     else:
         (
