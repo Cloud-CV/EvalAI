@@ -232,16 +232,16 @@ export class EndpointsService {
    * Challenge Leaderboard fetch
    * @param phaseSplitId  phase split id
    */
-  challengeLeaderboardURL(phaseSplitId) {
-    return `${this.jobs}challenge_phase_split/${phaseSplitId}/leaderboard/?page_size=1000`;
+  challengeLeaderboardURL(phaseSplitId, orderByMetric) {
+    return `${this.jobs}challenge_phase_split/${phaseSplitId}/leaderboard/?page_size=1000&order_by=${orderByMetric}`;
   }
 
   /**
    * Challenge Complete Leaderboard fetch for challenge host
    * @param phaseSplitId  phase split id
    */
-  challengeCompleteLeaderboardURL(phaseSplitId) {
-    return `${this.jobs}phase_split/${phaseSplitId}/public_leaderboard_all_entries/?page_size=1000`;
+  challengeCompleteLeaderboardURL(phaseSplitId, orderByMetric) {
+    return `${this.jobs}phase_split/${phaseSplitId}/public_leaderboard_all_entries/?page_size=1000&order_by=${orderByMetric}`;
   }
 
   /**
@@ -436,5 +436,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   getAuthTokenURL() {
     return `accounts/user/get_auth_token`;
+  }
+
+  /**
+   * Cancel submission
+   * @param challengeId challenge id
+   * @param submissionId submission id
+   */
+   updateSubmissionMetaURL(challengeId, submissionId) {
+    return `${this.jobs}challenges/${challengeId}/submissions/${submissionId}/update_submission_meta/`;
   }
 }
