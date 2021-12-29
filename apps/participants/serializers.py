@@ -3,6 +3,8 @@ from django.utils import timezone
 
 from rest_framework import serializers
 
+from accounts.models import Profile
+from accounts.serializers import UserProfileSerializer
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
 from .models import Participant, ParticipantTeam
@@ -65,17 +67,38 @@ class ParticipantSerializer(serializers.ModelSerializer):
     """Serializer class for Participants."""
 
     member_name = serializers.SerializerMethodField()
-    member_id = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    profile = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
 
     class Meta:
         model = Participant
-        fields = ("member_name", "status", "member_id")
+        fields = (
+            "member_name",
+            "first_name",
+            "last_name",
+            "email",
+            "status",
+            "profile",
+        )
 
     def get_member_name(self, obj):
         return obj.user.username
 
-    def get_member_id(self, obj):
-        return obj.user.id
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+    def get_email(self, obj):
+        return obj.user.email
+
+    def get_profile(self, obj):
+        user_profile = Profile.objects.get(user=obj.user)
+        serializer = UserProfileSerializer(user_profile)
+        return serializer.data
 
 
 class ParticipantTeamDetailSerializer(serializers.ModelSerializer):

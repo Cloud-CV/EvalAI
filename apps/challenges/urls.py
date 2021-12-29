@@ -214,6 +214,11 @@ urlpatterns = [
         views.update_allowed_email_ids,
         name="get_or_update_allowed_email_ids",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/get_participant_teams/$",
+        views.get_participant_teams_for_challenge,
+        name="get_participant_teams_for_challenge",
+    ),
 ]
 
 app_name = "challenges"

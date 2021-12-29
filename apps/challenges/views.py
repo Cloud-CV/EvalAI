@@ -340,6 +340,56 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge pk",
+            required=True,
+        )
+    ],
+    operation_id="get_participant_teams_for_challenge",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_403_FORBIDDEN: openapi.Response(
+            "{'error': 'You are not authorized to make this request'}"
+        ),
+    },
+)
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_participant_teams_for_challenge(request, challenge_pk):
+    """
+    API to get all participant team detail
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+
+    Returns:
+        {dict} -- Participant team detail that has participated in the challenge
+    """
+
+    challenge = get_challenge_model(challenge_pk)
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        participant_teams = challenge.participant_teams
+        serializer = ParticipantTeamDetailSerializer(
+            participant_teams, many=True
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": "You are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
