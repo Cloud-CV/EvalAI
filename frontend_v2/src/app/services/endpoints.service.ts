@@ -437,4 +437,13 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   getAuthTokenURL() {
     return `accounts/user/get_auth_token`;
   }
+
+  /**
+   * Cancel submission
+   * @param challengeId challenge id
+   * @param submissionId submission id
+   */
+   updateSubmissionMetaURL(challengeId, submissionId) {
+    return `${this.jobs}challenges/${challengeId}/submissions/${submissionId}/update_submission_meta/`;
+  }
 }
