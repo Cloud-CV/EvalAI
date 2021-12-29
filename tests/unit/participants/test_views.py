@@ -9,6 +9,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
+from accounts.models import Profile
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
@@ -43,6 +44,8 @@ class BaseAPITestClass(APITestCase):
             user=self.user, team=self.participant_team, status=Participant.SELF
         )
 
+        self.participant_profile = Profile.objects.get(user=self.user)
+
         self.client.force_authenticate(user=self.user)
 
 
@@ -72,6 +75,8 @@ class GetParticipantTeamTest(BaseAPITestClass):
             team=self.participant_team,
         )
 
+        self.participant2_profile = Profile.objects.get(user=self.user2)
+
     def test_get_challenge(self):
         expected = [
             {
@@ -83,12 +88,28 @@ class GetParticipantTeamTest(BaseAPITestClass):
                     {
                         "member_name": self.participant.user.username,
                         "status": self.participant.status,
-                        "member_id": self.participant.user.id,
+                        "first_name": self.participant.user.first_name,
+                        "last_name": self.participant.user.last_name,
+                        "email": self.participant.user.email,
+                        "profile": {
+                            "affiliation": self.participant_profile.affiliation,
+                            "github_url": self.participant_profile.github_url,
+                            "google_scholar_url": self.participant_profile.google_scholar_url,
+                            "linkedin_url": self.participant_profile.linkedin_url
+                        }
                     },
                     {
                         "member_name": self.participant2.user.username,
                         "status": self.participant2.status,
-                        "member_id": self.participant2.user.id,
+                        "first_name": self.participant2.user.first_name,
+                        "last_name": self.participant2.user.last_name,
+                        "email": self.participant2.user.email,
+                        "profile": {
+                            "affiliation": self.participant2_profile.affiliation,
+                            "github_url": self.participant2_profile.github_url,
+                            "google_scholar_url": self.participant2_profile.google_scholar_url,
+                            "linkedin_url": self.participant2_profile.linkedin_url
+                        }
                     },
                 ],
             }
@@ -161,6 +182,8 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             team=self.participant_team,
         )
 
+        self.participant2_profile = Profile.objects.get(user=self.user2)
+
     def test_get_particular_participant_team(self):
         expected = {
             "id": self.participant_team.pk,
@@ -171,12 +194,28 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                 {
                     "member_name": self.participant.user.username,
                     "status": self.participant.status,
-                    "member_id": self.participant.user.id,
+                    "first_name": self.participant.user.first_name,
+                    "last_name": self.participant.user.last_name,
+                    "email": self.participant.user.email,
+                    "profile": {
+                        "affiliation": self.participant_profile.affiliation,
+                        "github_url": self.participant_profile.github_url,
+                        "google_scholar_url": self.participant_profile.google_scholar_url,
+                        "linkedin_url": self.participant_profile.linkedin_url
+                    }
                 },
                 {
                     "member_name": self.participant2.user.username,
                     "status": self.participant2.status,
-                    "member_id": self.participant2.user.id,
+                    "first_name": self.participant2.user.first_name,
+                    "last_name": self.participant2.user.last_name,
+                    "email": self.participant2.user.email,
+                    "profile": {
+                        "affiliation": self.participant2_profile.affiliation,
+                        "github_url": self.participant2_profile.github_url,
+                        "google_scholar_url": self.participant2_profile.google_scholar_url,
+                        "linkedin_url": self.participant2_profile.linkedin_url
+                    }
                 },
             ],
         }
