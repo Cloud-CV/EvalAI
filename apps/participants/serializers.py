@@ -85,16 +85,16 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
     def get_member_name(self, obj):
         return obj.user.username
-    
+
     def get_first_name(self, obj):
         return obj.user.first_name
-    
+
     def get_last_name(self, obj):
         return obj.user.last_name
-    
+
     def get_email(self, obj):
         return obj.user.email
-    
+
     def get_profile(self, obj):
         user_profile = Profile.objects.get(user=obj.user)
         serializer = UserProfileSerializer(user_profile)

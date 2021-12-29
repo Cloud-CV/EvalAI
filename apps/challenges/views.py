@@ -83,7 +83,7 @@ from jobs.serializers import (
     ChallengeSubmissionManagementSerializer,
 )
 from participants.models import Participant, ParticipantTeam
-from participants.serializers import ParticipantTeamDetailSerializer, ParticipantTeamSerializer
+from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
@@ -340,7 +340,6 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-
 @swagger_auto_schema(
     methods=["get"],
     manual_parameters=[
@@ -389,7 +388,6 @@ def get_participant_teams_for_challenge(request, challenge_pk):
             "error": "You are not authorized to make this request"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
 
 
 @api_view(["POST"])
