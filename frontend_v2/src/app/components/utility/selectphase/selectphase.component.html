@@ -110,7 +110,7 @@
         </span>
       </mat-select-trigger>
       <mat-option (click)="selectPhaseSplit(key, 'selectBox', 'phaseSplit')" [value]="key" *ngFor="let key of phaseSplits">
-        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">
+        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7 phase_name">
           <span class="fw-light">Phase:</span>{{ key.challenge_phase_name }}, <span class="fw-light">Split: </span
           >{{ key.dataset_split_name }} &nbsp;
         </span>

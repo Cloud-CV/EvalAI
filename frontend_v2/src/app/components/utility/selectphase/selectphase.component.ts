@@ -125,7 +125,9 @@ export class SelectphaseComponent implements OnInit, OnChanges {
       this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], 'selectBox', 'settingsPhaseSplit');
     } else if (Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
       this.selectedPhaseSplit = this.phaseSplits[0];
-      this.selectPhaseSplit(this.phaseSplits[0], 'selectBox', 'phaseSplit');
+      this.phaseName = this.selectedPhaseSplit.challenge_phase_name;
+      this.splitName = this.selectedPhaseSplit.dataset_split_name;
+      //this.selectPhaseSplit(this.phaseSplits[0], 'selectBox', 'phaseSplit');
     }
   }
 
@@ -189,6 +191,15 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.splitName = phaseSplit.dataset_split_name;
     this.phaseVisibility = phaseSplit.showPrivate;
     this.selectedPhaseSplitUrlChange(phaseSplit);
+  }
+
+  selectPhaseSplitNoURLChange(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+    this.phaseSelectionType = phaseSelectionType;
+    this.phaseSelectionListType = phaseSelectionListType;
+    this.selectedPhaseSplit = phaseSplit;
+    this.phaseName = phaseSplit.challenge_phase_name;
+    this.splitName = phaseSplit.dataset_split_name;
+    this.phaseVisibility = phaseSplit.showPrivate;
   }
 
   /**

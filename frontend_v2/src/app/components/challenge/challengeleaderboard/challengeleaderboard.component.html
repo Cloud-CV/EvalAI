@@ -29,6 +29,27 @@
           </app-selectphase>
         </div>
       </div>
+      <div class="row">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box col-lr-margin">
+          <ng-container *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
+            <mat-form-field class="select_phase_form">
+              <mat-label class="fs-16 phase-placeholder" [ngClass]="{ 'hide-label': selectedMetric !== '' }">Metric as</mat-label>
+              <mat-select class="rm-margin" [(ngModel)]="selectedMetric">
+                <mat-select-trigger>
+                  <span class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+                    <span class="fw-light">Metric:</span> {{ selectedMetric }} &nbsp;
+                  </span>
+                </mat-select-trigger>
+                <mat-option (click)="selectedMetricUrlChange(selectedPhaseSplit, key)" [value]="key" *ngFor="let key of selectedPhaseSplit.leaderboard_schema.labels">
+                  <span class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+                    <span class="fw-light">Metric:</span> {{ key }} &nbsp;
+                  </span>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+        </div>
+      </div>
     </div>
     <div class="ev-card-body exist-team-card">
       <div class="row row-lr-margin">
