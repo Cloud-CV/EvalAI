@@ -125,8 +125,8 @@ export class SelectphaseComponent implements OnInit, OnChanges {
       this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], 'selectBox', 'settingsPhaseSplit');
     } else if (Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
       this.selectedPhaseSplit = this.phaseSplits[0];
-      this.phaseName = this.selectedPhaseSplit.challenge_phase_name;
-      this.splitName = this.selectedPhaseSplit.dataset_split_name;
+      this.phaseName = this.selectedPhaseSplit['challenge_phase_name'];
+      this.splitName = this.selectedPhaseSplit['dataset_split_name'];
       //this.selectPhaseSplit(this.phaseSplits[0], 'selectBox', 'phaseSplit');
     }
   }
