@@ -690,6 +690,40 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   }
 
   /**
+   *  Fetch leaderboard metric order by flag
+   */
+  isMetricOrderedAscending(metric) {
+    const SELF = this;
+    let schema = SELF.leaderboard[0].leaderboard__schema;
+    let metadata = schema.metadata;
+    if (metadata != null && metadata != undefined) {
+        // By default all metrics are considered higher is better
+        if (metadata[metric] == undefined) {
+            return false;
+        }
+        return metadata[metric].sort_ascending;
+    }
+    return false;
+  };
+
+  /**
+   *  Fetch leaderboard metric description for tooltip
+   */
+  getLabelDescription(metric) {
+      const SELF = this;
+      let schema = SELF.leaderboard[0].leaderboard__schema;
+      let metadata = schema.metadata;
+      if (metadata != null && metadata != undefined) {
+          // By default all metrics are considered higher is better
+          if (metadata[metric] == undefined || metadata[metric].description == undefined) {
+              return "";
+          }
+          return metadata[metric].description;
+      }
+      return "";
+  };
+
+  /**
    *  Clear the polling interval
    */
   ngOnDestroy() {
