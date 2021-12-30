@@ -1,5 +1,5 @@
 <div class="input-group">
-  <div *ngIf="type != 'file' && type != 'textarea' && type != 'datetime'">
+  <div *ngIf="type != 'file' && type != 'textarea' && type != 'datetime' && type != 'textattribute'">
     <input
       class="input-field"
       (input)="validateInput($event.target.value)"
@@ -51,6 +51,22 @@
     <i class="input-icon {{ icon }}" *ngIf="isIconPresent"></i>
     <div class="input-message" #textValue [class.hidden]="toggleErrorMessage()">{{ message }}</div>
   </div>
+
+  <div *ngIf="type == 'textattribute'">
+    <input
+      class="input-field"
+      name="{{ name }}"
+      type="{{ type }}"
+      [(ngModel)]="value"
+      [value]="value"
+      [readonly]="isReadonly"
+    />
+    <span class="input-bar"></span>
+    <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme == 'dark'">{{ attributeName }} - ({{ attributeDescription }}) <span *ngIf="attributeRequired === true" class="color-orange">*</span></label>
+    <i class="input-icon {{ icon }}" *ngIf="isIconPresent"></i>
+    <div class="input-message" #textValue [class.hidden]="toggleErrorMessage()">{{ message }}</div>
+  </div>
+
 
   <div class="file-field file-upload" *ngIf="type == 'file'">
     <div class="btn btn-waves-effect ev-file-btn-dark waves-dark grad-btn grad-btn-transparent fs-14">
