@@ -190,3 +190,23 @@
   display: none;
 }
 
+.leaderboard-label .description {
+  visibility: hidden;
+  width: auto;
+  max-width: 250px;
+  height: auto;
+  background-color: #f2f2f2;
+  color: #000000;
+  text-align: center;
+  border-radius: 6px;
+  padding: 10px 10px 10px 10px;
+  font-size: 1.05rem;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+
+.leaderboard-label:hover .description {
+  visibility: visible;
+}
