@@ -372,10 +372,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.selectedPhaseSplit = phaseSplit;
     SELF.highlightedEntry = null;
 
-    // if (SELF.isChallengeHost) {
-    //   SELF.fetchNumberOfAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id'], SELF.selectedMetric);
-    // }
-
     const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']);
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
@@ -544,24 +540,6 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(phaseSplitId, metricName);
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {}
-    );
-  }
-
-  /**
-   * Fetch number of entries of complete leaderboard for a phase split public/private
-   * @param phaseSplitId id of the phase split
-   */
-  fetchNumberOfAllEnteriesOnPublicLeaderboard(phaseSplitId, metricName) {
-    const API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId, metricName);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        this.numberOfAllEntries = data['results'].length;
       },
       (err) => {
         SELF.globalService.handleApiError(err);
