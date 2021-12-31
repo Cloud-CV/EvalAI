@@ -482,6 +482,20 @@ export class ChallengesubmitComponent implements OnInit {
   }
 
   /**
+   * Get current phase default meta attributes dict
+   */
+  isAttributeVisible(attributeName) {
+    if (this.defaultMetaAttributesforCurrentPhase != null && this.defaultMetaAttributes != undefined) {
+      if (this.defaultMetaAttributesforCurrentPhase[attributeName] != null && this.defaultMetaAttributesforCurrentPhase[attributeName] != undefined) {
+        return this.defaultMetaAttributesforCurrentPhase[attributeName]['is_visible'];
+      }
+    }
+    // All attributes are visible by default
+    return true;
+  }
+
+
+  /**
    * Clear the data of metaAttributesforCurrentSubmission
    */
   clearMetaAttributeValues() {
