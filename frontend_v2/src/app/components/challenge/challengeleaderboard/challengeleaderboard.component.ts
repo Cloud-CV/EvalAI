@@ -372,7 +372,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.selectedPhaseSplit = phaseSplit;
     SELF.highlightedEntry = null;
 
-    SELF.fetchNumberOfAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id'], SELF.selectedMetric);
+    // if (SELF.isChallengeHost) {
+    //   SELF.fetchNumberOfAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id'], SELF.selectedMetric);
+    // }
 
     const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']);
     SELF.apiService.getUrl(API_PATH).subscribe(
@@ -514,6 +516,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        SELF.numberOfAllEntries = data['count'];
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.startLeaderboard(phaseSplitId, metricName);
       },
@@ -536,6 +539,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        SELF.numberOfAllEntries = data['count'];
         this.challengePhaseSplitId = data.results[0].challenge_phase_split;
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.updateLeaderboardResults(data['results'], SELF);
