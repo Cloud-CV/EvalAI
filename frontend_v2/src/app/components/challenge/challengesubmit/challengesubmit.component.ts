@@ -473,9 +473,6 @@ export class ChallengesubmitComponent implements OnInit {
         this.defaultMetaAttributesforCurrentPhase = this.defaultMetaAttributes.find(function (element) {
           return element['phaseId'] === phaseId;
         }).attributes;
-        console.log("meta");
-        console.log(this.defaultMetaAttributesforCurrentPhase);
-        console.log(this.defaultMetaAttributesforCurrentPhase["method_name"]);
       },
       (err) => {
         SELF.globalService.handleApiError(err);
