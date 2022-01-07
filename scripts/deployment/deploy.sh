@@ -35,6 +35,28 @@ else
     exit 0
 fi
 
+deploy-challenge-worker () {
+    token=${1}
+    challenge=${2}
+    if [ -z "$2" ]; then
+        echo "Please input Challenge ID"
+        exit 0
+    fi
+    echo "Pulling queue name for $env server challenge $challenge"
+    if [ ${env} == "staging" ]; then
+        queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging.eval.ai/api/challenges/get_broker_url/$challenge/)
+    elif [ ${env} == "production" ]; then
+        queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://eval.ai/api/challenges/get_broker_url/$challenge/)
+    fi
+    echo "Completed pulling Queue name"
+    # preprocess the python list to bash array
+    queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
+    queue=$(echo $queue_name | tr -d '"')
+    echo "Deploying worker for queue: " $queue
+    docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
+    echo "Deployed worker docker container for queue: " $queue
+}
+
 case $opt in
         auto_deploy)
             chmod 400 scripts/deployment/evalai.pem
@@ -97,25 +119,27 @@ case $opt in
             echo "Completed deploy operation."
             ;;
         deploy-worker)
+            deploy-challenge-worker "${3}" "${4}"
+            ;;
+        deploy-active-challenge-workers)
             token=${3}
-            challenge=${4}
-            if [ -z "$4" ]; then
-               echo "Please input Challenge ID"
+            if [ -z "$3" ]; then
+               echo "Please input Auth Token"
                exit 0
             fi
-            echo "Pulling queue name for $env server challenge..."
+            echo "Pulling all active challenges for $env server..."
             if [ ${env} == "staging" ]; then
-                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging.eval.ai/api/challenges/get_broker_url/$challenge/)
+                active_challenges=$(curl -k -L -X GET https://staging.eval.ai/api/challenges/challenge/present | jq -r '.results[].id')
             elif [ ${env} == "production" ]; then
-                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://eval.ai/api/challenges/get_broker_url/$challenge/)
+                active_challenges=$(curl -k -L -X GET https://eval.ai/api/challenges/challenge/present | jq -r '.results[].id')
             fi
-            echo "Completed pulling Queue name"
-            # preprocess the python list to bash array
-            queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
-            queue=$(echo $queue_name | tr -d '"')
-            echo "Deploying worker for queue: " $queue
-            docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
-            echo "Deployed worker docker container for queue: " $queue
+            echo "Completed pulling active challenges"
+            for challenge in "${active_challenges[@]}"
+            do
+                challenge_id=$(echo $challenge | tr -d '"')
+                deploy-challenge-worker "$token" "$challenge_id"
+            done
+            echo "Deployed workers for all active challeneges."
             ;;
         deploy-remote-worker)
             token=${3}
@@ -209,6 +233,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-celery production"
         echo "    deploy-worker : Deploy worker container for a challenge using challenge pk."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-worker production <superuser_auth_token> <challenge_pk>"
+        echo "    deploy-active-challenge-workers : Deploy workers for all active challenges"
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-active-challenge-workers production <superuser_auth_token>"
         echo "    deploy-remote-worker : Deploy remote worker container for a challenge using host auth token and challenge queue name."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-remote-worker production <auth_token> <queue_name>"   
         echo "    deploy-workers : Deploy worker containers in the respective environment."

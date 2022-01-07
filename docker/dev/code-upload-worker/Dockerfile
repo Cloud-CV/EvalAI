@@ -6,7 +6,7 @@ RUN mkdir /code
 WORKDIR /code
 
 RUN apt-get update && \
-  apt-get install --no-install-recommends -y unzip && \
+  apt-get install --no-install-recommends -y unzip jq && \
   rm -rf /var/lib/apt/lists/*
 
 ADD requirements/* /code/
