@@ -47,7 +47,7 @@ We categorize the challenges in two categories:
 
 ### Step 1: Use template
 
-Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template.
+Use [EvalAI-Starters] repository as template.
 
    <img src="_static/img/github_based_setup/use_template_1.png"><br />
    <img src="_static/img/github_based_setup/use_template_2.png"><br />
