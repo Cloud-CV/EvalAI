@@ -97,7 +97,7 @@
                         <i class="fa fa-level-up"></i> Phases</a
                       >
                     </li>
-                    <li *ngIf="!isParticipated">
+                    <li *ngIf="!isParticipated && !isPast">
                       <a
                         [class.selected]="localRouter.url.endsWith('participate')"
                         [routerLink]="['./participate']"
@@ -136,7 +136,7 @@
                     </li>
                     <li>
                       <a
-                        [class.selected]="localRouter.url.endsWith('leaderboard')"
+                        [class.selected]="localRouter.url.includes('leaderboard')"
                         [routerLink]="['./leaderboard']"
                         class="text-light-black fw-light fs-15"
                       >

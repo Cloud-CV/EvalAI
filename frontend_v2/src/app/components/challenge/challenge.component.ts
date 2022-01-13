@@ -73,6 +73,11 @@ export class ChallengeComponent implements OnInit {
   isLoggedIn: any = false;
 
   /**
+   * Is past challenge
+   */
+  isPast: any = false;
+
+  /**
    * Constructor.
    * @param router  Router Injection.
    * @param route  ActivatedRoute Injection.
@@ -113,6 +118,7 @@ export class ChallengeComponent implements OnInit {
       this.isForumEnabled = challenge.enable_forum;
       this.forumURL = challenge.forum_url;
       this.isApprovedByAdmin = challenge.approved_by_admin;
+      this.isPast = this.isPastChallenge();
       // update meta tag
       SELF.meta.updateTag({
         property: 'og:title',
@@ -150,5 +156,12 @@ export class ChallengeComponent implements OnInit {
     } else {
       this.globalService.showToast('error', 'Please login to star the challenge!', 5);
     }
+  }
+
+  isPastChallenge() {
+    const PRESENT = new Date();
+    const START_DATE = new Date(Date.parse(this.challenge['start_date']));
+    const END_DATE = new Date(Date.parse(this.challenge['end_date']));
+    return (PRESENT > END_DATE);
   }
 }
