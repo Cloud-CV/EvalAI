@@ -1,10 +1,11 @@
 import { mergeMap, map, filter } from 'rxjs/operators';
-import { Component, OnInit, OnDestroy, HostListener, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, Inject, ChangeDetectorRef } from '@angular/core';
 import { GlobalService } from './services/global.service';
 import { AuthService } from './services/auth.service';
 import { Router, NavigationEnd, ActivatedRoute, Event } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Title } from '@angular/platform-browser';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +28,8 @@ export class AppComponent implements OnInit, OnDestroy {
   globalTermsAndConditionsModalSubscription: any;
   globalServiceSubscriptionScrollTop: any;
   currentRoutePath: any;
+  isAuthSubscrption: any;
+  isAuth = new BehaviorSubject(false);
 
   /**
    * Constructor.
@@ -43,7 +46,8 @@ export class AppComponent implements OnInit, OnDestroy {
     public activatedRoute: ActivatedRoute,
     public titleService: Title,
     private globalService: GlobalService,
-    private authService: AuthService
+    private authService: AuthService,
+    private changeDetector: ChangeDetectorRef,
   ) {}
 
   /**
@@ -72,6 +76,9 @@ export class AppComponent implements OnInit, OnDestroy {
       if (event instanceof NavigationEnd) {
         this.currentRoutePath = event.url; // current url path
       }
+    });
+    this.isAuthSubscrption = this.authService.change.subscribe((authState) => {
+      this.isAuth.next(authState.isLoggedIn);
     });
     const SELF = this;
     this.globalServiceSubscription = this.globalService.currentScrolledState.subscribe((scrolledState) => {
@@ -148,6 +155,10 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.globalServiceSubscriptionScrollTop) {
       this.globalServiceSubscriptionScrollTop.unsubscribe();
     }
+  }
+
+  ngAfterViewChecked() {
+    this.changeDetector.detectChanges();
   }
 
   scrollUp() {

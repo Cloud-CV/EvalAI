@@ -1,3 +1,4 @@
+<div class="page-wrap-challenge">
 <app-side-bar *ngIf="authService.isAuth"></app-side-bar>
 <app-header-static></app-header-static>
 <div class="dash-container">
@@ -180,5 +181,6 @@
     </div>
     <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
   </div>
+</div>
 </div>
 <app-footer *ngIf="!authService.isAuth"></app-footer>
