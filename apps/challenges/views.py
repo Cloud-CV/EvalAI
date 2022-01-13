@@ -225,15 +225,68 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
-            serializer = ZipChallengeSerializer(
-                challenge,
-                data=request.data,
-                context={
-                    "challenge_host_team": challenge_host_team,
-                    "request": request,
-                },
-                partial=True,
-            )
+            if "overview_file" in request.FILES:
+                overview_file = request.FILES["overview_file"]
+                overview = overview_file.read()
+                request.data["description"] = overview
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            elif "terms_and_conditions_file" in request.FILES:
+                terms_and_conditions_file = request.FILES["terms_and_conditions_file"]
+                terms_and_conditions = terms_and_conditions_file.read()
+                request.data["terms_and_conditions"] = terms_and_conditions
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            elif "submission_guidelines_file" in request.FILES:
+                submission_guidelines_file = request.FILES["submission_guidelines_file"]
+                submission_guidelines = submission_guidelines_file.read()
+                request.data["submission_guidelines"] = submission_guidelines
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            elif "evaluation_criteria_file" in request.FILES:
+                evaluation_criteria_file = request.FILES["evaluation_criteria_file"]
+                evaluation_criteria = evaluation_criteria_file.read()
+                request.data["evaluation_details"] = evaluation_criteria
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
+            else:
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=request.data,
+                    context={
+                        "challenge_host_team": challenge_host_team,
+                        "request": request,
+                    },
+                    partial=True,
+                )
         else:
             serializer = ZipChallengeSerializer(
                 challenge,
@@ -287,6 +340,56 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_NUMBER,
+            description="Challenge pk",
+            required=True,
+        )
+    ],
+    operation_id="get_participant_teams_for_challenge",
+    responses={
+        status.HTTP_200_OK: openapi.Response(""),
+        status.HTTP_403_FORBIDDEN: openapi.Response(
+            "{'error': 'You are not authorized to make this request'}"
+        ),
+    },
+)
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_participant_teams_for_challenge(request, challenge_pk):
+    """
+    API to get all participant team detail
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {[int]} -- Challenge primary key
+
+    Returns:
+        {dict} -- Participant team detail that has participated in the challenge
+    """
+
+    challenge = get_challenge_model(challenge_pk)
+    if is_user_a_host_of_challenge(request.user, challenge_pk):
+        participant_teams = challenge.participant_teams
+        serializer = ParticipantTeamDetailSerializer(
+            participant_teams, many=True
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": "You are not authorized to make this request"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -336,16 +439,18 @@ def add_participant_team_to_challenge(
     # Check if user is in allowed list.
     user_email = request.user.email
     if len(challenge.allowed_email_domains) > 0:
-        if not is_user_in_allowed_email_domains(user_email, challenge_pk):
-            message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
-            domains = ""
-            for domain in challenge.allowed_email_domains:
-                domains = "{}{}{}".format(domains, "/", domain)
-            domains = domains[1:]
-            response_data = {"error": message.format(domains)}
-            return Response(
-                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+        domains = ""
+        for domain in challenge.allowed_email_domains:
+            domains = "{}{}{}".format(domains, "/", domain)
+        domains = domains[1:]
+        for participant_email in participant_team.get_all_participants_email():
+            if not is_user_in_allowed_email_domains(participant_email, challenge_pk):
+                message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
+                    to participate in this challenge."
+                response_data = {"error": message.format(domains)}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
     # Check if user is in blocked list.
     if is_user_in_blocked_email_domains(user_email, challenge_pk):
@@ -661,12 +766,23 @@ def challenge_phase_detail(request, challenge_pk, pk):
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
-            serializer = ChallengePhaseCreateSerializer(
-                challenge_phase,
-                data=request.data.copy(),
-                context={"challenge": challenge},
-                partial=True,
-            )
+            if "phase_description_file" in request.FILES:
+                phase_description_file = request.FILES["phase_description_file"]
+                phase_description = phase_description_file.read()
+                request.data["description"] = phase_description
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data=request.data.copy(),
+                    context={"challenge": challenge},
+                    partial=True,
+                )
+            else:
+                serializer = ChallengePhaseCreateSerializer(
+                    challenge_phase,
+                    data=request.data.copy(),
+                    context={"challenge": challenge},
+                    partial=True,
+                )
         else:
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
@@ -1388,12 +1504,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     str(data["dataset_split_id"])
                 ]
                 visibility = data["visibility"]
+                leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
+                is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
 
                 data = {
                     "challenge_phase": challenge_phase,
                     "leaderboard": leaderboard,
                     "dataset_split": dataset_split,
                     "visibility": visibility,
+                    "leaderboard_decimal_precision": leaderboard_decimal_precision,
+                    "is_leaderboard_order_descending": is_leaderboard_order_descending
                 }
 
                 serializer = ZipChallengePhaseSplitSerializer(data=data)
@@ -2129,6 +2249,8 @@ def get_or_update_leaderboard(request, leaderboard_pk):
     leaderboard = get_leaderboard_model(leaderboard_pk)
 
     if request.method == "PATCH":
+        if "schema" in request.data.keys():
+            request.data['schema'] = json.loads(request.data['schema'])
         serializer = LeaderboardSerializer(
             leaderboard, data=request.data, partial=True
         )
@@ -3210,12 +3332,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["dataset_split_id"])
                         ]
                         visibility = data["visibility"]
+                        leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
+                        is_leaderboard_order_descending = data["leaderboard_decimal_precision"]
 
                         data = {
                             "challenge_phase": challenge_phase,
                             "leaderboard": leaderboard,
                             "dataset_split": dataset_split,
                             "visibility": visibility,
+                            "is_leaderboard_order_descending": is_leaderboard_order_descending,
+                            "leaderboard_decimal_precision": leaderboard_decimal_precision
                         }
 
                         serializer = ZipChallengePhaseSplitSerializer(

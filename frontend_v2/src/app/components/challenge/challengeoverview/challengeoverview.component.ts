@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 // import service
 import { ChallengeService } from '../../../services/challenge.service';
@@ -26,9 +26,7 @@ export class ChallengeoverviewComponent implements OnInit {
    * Constructor.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(
-    private challengeService: ChallengeService
-  ) {}
+  constructor(private challengeService: ChallengeService) {}
 
   /**
    * Component on initialized.

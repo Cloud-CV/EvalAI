@@ -15,3 +15,4 @@ NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 
 def increment_statsd_counter(metric_name, tags, inc_value):
     statsd.increment(metric_name, inc_value, tags=tags)
+    return

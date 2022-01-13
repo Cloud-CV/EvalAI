@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 
-from .models import JwtToken
+from .models import JwtToken, Profile
 from rest_framework import serializers
 
 
@@ -70,6 +70,21 @@ class ProfileSerializer(UserDetailsSerializer):
             profile.linkedin_url = linkedin_url
             profile.save()
         return instance
+
+
+class UserProfileSerializer(UserDetailsSerializer):
+    """
+    Serializer to fetch the user profile.
+    """
+
+    class Meta:
+        model = Profile
+        fields = (
+            "affiliation",
+            "github_url",
+            "google_scholar_url",
+            "linkedin_url",
+        )
 
 
 class JwtTokenSerializer(serializers.ModelSerializer):

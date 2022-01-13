@@ -37,5 +37,4 @@ class StatsdMetricsMiddleware(MiddlewareMixin):
                 "view:%s" % self.get_view_name(request),
             ],
         )
-
         return response

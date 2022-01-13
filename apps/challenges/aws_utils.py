@@ -84,6 +84,8 @@ COMMON_SETTINGS_DICT = {
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
+    "STATSD_ENDPOINT": os.environ.get("STATSD_ENDPOINT"),
+    "STATSD_PORT": os.environ.get("STATSD_PORT"),
 }
 
 VPC_DICT = {
@@ -1202,7 +1204,7 @@ def create_eks_cluster(challenge):
         try:
             response = client.create_cluster(
                 name=cluster_name,
-                version="1.16",
+                version="1.21",
                 roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
                     "subnetIds": [
