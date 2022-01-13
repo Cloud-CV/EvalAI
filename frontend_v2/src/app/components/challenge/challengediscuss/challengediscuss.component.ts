@@ -77,8 +77,7 @@ export class ChallengediscussComponent implements OnInit {
             SELF.globalService.showToast('success', 'The challenge forum url is successfully updated!', 5);
           },
           (err) => {
-            SELF.globalService.handleApiError(err, true);
-            SELF.globalService.showToast('error', err);
+            SELF.globalService.showToast('error', 'Please enter a valid URL', 5);
           },
           () => {}
         );
@@ -89,7 +88,7 @@ export class ChallengediscussComponent implements OnInit {
      */
     const PARAMS = {
       title: 'Change Forum URL',
-      content: 'Enter new forum url',
+      content: '',
       confirm: 'Confirm',
       deny: 'Cancel',
       form: [
