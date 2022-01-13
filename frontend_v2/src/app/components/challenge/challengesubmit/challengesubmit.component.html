@@ -15,14 +15,6 @@
         </div>
         <div [innerHTML]="submissionGuidelines" class="submission-guidelines fw-light fs-16"></div>
       </div>
-      <div *ngIf="isChallengeHost" class="col-md-1 col-sm-1 col-xs-2 col-lr-pad">
-        <a class="pointer fs-16" (click)="editSubmissionGuideline()">
-          <i class="fa fa-pencil" aria-hidden="true"> </i>&nbsp;edit
-        </a>
-        <a class="pointer fs-16" (click) = "editSubmissionGuidelineUpload()">
-          <i class="fa fa-upload" aria-hidden="true"> </i>
-        </a>
-      </div>
     </div>
   </div>
   <div *ngIf="challenge.is_docker_based" class="ev-md-container ev-card-panel card-bt-margin">

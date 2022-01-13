@@ -297,7 +297,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.submissions[i].submissionVisibilityText = SELF.submissions[i].is_public ? 'Public' : 'Private';
             // Update view for flag submission setting
             SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
-            SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
           }
 
           SELF.paginationDetails.next = data.next;
@@ -505,7 +504,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
         () => {
           submission.submissionFlagIcon = is_flagged ? 'flag' : 'outlined_flag';
-          submission.submissionFlagText = is_flagged ? 'Flagged' : 'Unflagged';
           const toastMessage = is_flagged ? 'Submission flagged successfully!' : 'Submission unflagged successfully!';
           SELF.globalService.showToast('success', toastMessage);
         },
@@ -613,6 +611,52 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       isButtonDisabled: true,
       confirm: 'Yes',
       deny: 'No',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Display Cancel Submission Modal.
+   * @param submission  Submission being cancelled
+   */
+  cancelSubmission(submission) {
+    const SELF = this;
+    if (submission.status != "submitted") {
+      SELF.globalService.showToast('error', 'Only unproccessed submissions can be cancelled', 5);
+      return;
+    }
+    SELF.apiCall = () => {
+      const BODY = JSON.stringify({
+        "status": "cancelled"
+      });
+      SELF.apiService
+        .patchUrl(
+          SELF.endpointsService.updateSubmissionMetaURL(
+            SELF.challenge.id,
+            submission.id
+          ),
+          BODY
+        )
+        .subscribe(
+          () => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'Submission status updated successfully', 5);
+            SELF.fetchSubmissions(SELF.challenge.id, SELF.selectedPhase.id);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+          },
+          () => this.logger.info('SUBMISSION-CANCELLED')
+        );
+    };
+    const PARAMS = {
+      title: 'Are you sure you want to cancel submission?',
+      content: '',
+      isButtonDisabled: true,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [],
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
