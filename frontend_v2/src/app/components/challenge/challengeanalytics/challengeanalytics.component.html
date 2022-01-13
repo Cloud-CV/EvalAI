@@ -43,50 +43,51 @@
           </div>
         </div>
       </div>
-      <div class="fw-light fs-16">
-        <div class="analytics-challenge-card">
-          <div class="analytics-phases-card" *ngFor="let item of currentPhase">
-            <h5 class="no-top-para fw-light phase-detail">
-              {{ item.name }}
-            </h5>
-            <div [innerHTML]="challenge['short_description']"></div>
-            <br />
-            <div class="text-light-black fw-semibold phase-duration phase-detail">
-              Challenge Phase Duration
+      
+    </div>
+  </div>
+  <div class="fw-light fs-16">
+    <div class="analytics-challenge-card">
+      <div class="analytics-phases-card ev-card-panel ev-md-container card-bt-margin" *ngFor="let item of currentPhase">
+        <h5 class="no-top-para fw-light phase-detail">
+          {{ item.name }}
+        </h5>
+        <div [innerHTML]="challenge['short_description']"></div>
+        <br />
+        <div class="text-light-black fw-semibold phase-duration phase-detail">
+          Challenge Phase Duration
+        </div>
+        <p class="no-top-para phase-detail">
+          {{ item.start_date | date: 'medium' }} - {{ item.end_date | date: 'medium' }}
+        </p>
+        <br />
+        <div class="row center">
+          <div class="col m3">
+            <div class="text-light-black fw-semibold">
+              Total Submissions
             </div>
-            <p class="no-top-para phase-detail">
-              {{ item.start_date | date: 'medium' }} - {{ item.end_date | date: 'medium' }}
+            <p class="analytics-content no-top-para mb-5">
+              {{ totalSubmission[item.id] || 0 }}
             </p>
-            <br />
-            <div class="row center">
-              <div class="col m3">
-                <div class="text-light-black fw-semibold">
-                  Total Submissions
-                </div>
-                <p class="analytics-content no-top-para mb-5">
-                  {{ totalSubmission[item.id] || 0 }}
-                </p>
-              </div>
-              <div class="col m3">
-                <div class="text-light-black fw-semibold">
-                  Participant Teams
-                </div>
-                <p class="analytics-content no-top-para mb-5">
-                  {{ totalParticipatedTeams[item.id] || 0 }}
-                </p>
-              </div>
-              <div class="col m3">
-                <div class="text-light-black fw-semibold">
-                  Latest Submission At
-                </div>
-                <p *ngIf="lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
-                  {{ lastSubmissionTime[item.id] | date: 'medium' }}
-                </p>
-                <p *ngIf="!lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
-                  None
-                </p>
-              </div>
+          </div>
+          <div class="col m3">
+            <div class="text-light-black fw-semibold">
+              Participant Teams
             </div>
+            <p class="analytics-content no-top-para mb-5">
+              {{ totalParticipatedTeams[item.id] || 0 }}
+            </p>
+          </div>
+          <div class="col m3">
+            <div class="text-light-black fw-semibold">
+              Latest Submission At
+            </div>
+            <p *ngIf="lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
+              {{ lastSubmissionTime[item.id] | date: 'medium' }}
+            </p>
+            <p *ngIf="!lastSubmissionTime[item.id]" class="analytics-content no-top-para mb-5">
+              None
+            </p>
           </div>
         </div>
       </div>
