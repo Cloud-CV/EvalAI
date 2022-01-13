@@ -156,12 +156,12 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     's_no',
     'status',
     'execution_time',
+    'input_file',
     'submission_result_file',
     'stdout_file',
     'stderr_file',
-    'submitted_at',
   ];
-  columnsHeadings = ['S.No.', 'Status', 'Execution Time', 'Result File', 'Stdout File', 'Stderr File', 'Submitted At'];
+  columnsHeadings = ['S.No.', 'Status', 'Execution Time', 'Submission File', 'Result File', 'Stdout File', 'Stderr File'];
 
   expandedElement: null;
 
