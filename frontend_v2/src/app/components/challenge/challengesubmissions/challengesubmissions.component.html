@@ -74,8 +74,8 @@
         class="mat-elevation-z0 ev-md-container"
       >
         <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
-          <th class="cell-outside fw-regular fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
-          <td class="cell-outside fw-light" mat-cell *matCellDef="let element">
+          <th class="cell-outside table-header fs-16 fw-regular" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
+          <td class="cell-outside fw-light align-center" mat-cell *matCellDef="let element">
             <span *ngIf="column === 's_no'" class="{{ element[column] }} fs-12"> {{ element[column] }}</span>
             <span *ngIf="column === 'submitted_at'" class="{{ element[column] }} fs-12"> {{ element[column] | date: 'medium' }}</span>
             <span *ngIf="element[column] !== 'None' && column === 'execution_time'" class="{{ element[column] }} fs-12"> {{ element[column] }} sec</span>
@@ -104,59 +104,44 @@
             >
               <div class="elements-detail">
                 <div class="element">
-                  <span class="element-description-attribution">Team Name</span>
-                  <span class="fw-light element-description"> {{ element.participant_team_name }} </span>
-                </div>
-                <div class="element">
-                  <span class="element-description-attribution">Method Name</span>
-                  <span class="fw-light element-description"> {{ element.method_name }} </span>
-                </div>
-                <div class="element">
-                  <span class="element-description-attribution">Method Description</span>
-                  <span class="fw-light element-description"> {{ element.method_description }} </span>
-                </div>
-                <div class="element">
-                  <span class="element-description-attribution">Project URL</span>
-                  <span class="fw-light element-description"> {{ element.project_url }} </span>
+                  <strong class="element-description-attribution">Submitted At: </strong>&nbsp;
+                  <strong class="fw-light fs-14">
+                    {{ element.submitted_at | date: 'medium' }}
+                  </strong>
                 </div>
               </div>
-
               <div class="elements-status">
                 <div class="element">
-                  <span class="element-description-attribution">Publication URL</span>
-                  <span class="fw-light element-description"> {{ element.publication_url }} </span>
-                </div>
-                <div class="element">
-                  <span class="element-description-attribution">Status</span>
-                  <span class="fw-light element-description fs-12" [ngClass]="element.status">
-                    {{ element.status | uppercase }}
-                  </span>
-                </div>
-              </div>
-              <div class="elements-action">
-                <div class="element">
                   <mat-checkbox
+                    class="element-icon fw-light"
                     [checked]="element.is_public"
                     [disabled]="element.status === 'failed' || element.status === 'cancelled' || !selectedPhase['leaderboard_public'] || !selectedPhase['is_submission_public']"
                     (change)="changeSubmissionVisibility(element.id, element.is_public)"
                   >
-                    <span class="fs-14 w-300">Show on leaderboard</span>
+                    <strong class="fs-14">Show on leaderboard</strong>
                   </mat-checkbox>
                 </div>
                 <div class="element" *ngIf="isChallengeHost">
                   <mat-checkbox
+                    class="element-icon fw-light"
                     [checked]="element.is_baseline"
                     [disabled]="element.status !== 'finished' && element.status !== 'partially_evaluated'"
                     (change)="changeBaselineStatus(element.id, element.is_baseline)"
                   >
-                    <span class="fs-14 w-300">Baseline</span>
+                  <strong class="fs-14">Baseline</strong>
                   </mat-checkbox>
                 </div>
-                <div class="element fs-14 pointer">
-                  <a class ="w-300" (click)="editSubmission(element)"><i class="fa fa-pencil"></i> Edit submission detail &nbsp; </a>
+              </div>
+              <div class="elements-action">
+                <div class="element">
+                  <div class="element-icon fw-light">
+                    <a class ="fs-14" (click)="editSubmission(element)"><i class="fa fa-pencil"></i> &nbsp; <strong class="element-description-attribution">Edit submission detail &nbsp;</strong> </a>
+                  </div>
                 </div>
-                <div class="element fs-14 pointer">
-                  <a class ="w-300" (click)="cancelSubmission(element)"><i class="fa fa-times"></i> Cancel submission &nbsp; </a>
+                <div class="element">
+                  <div class="element-icon fw-light">
+                    <a class ="fs-14 w-300" (click)="cancelSubmission(element)"><i class="fa fa-times"></i> &nbsp; <strong class="element-description-attribution">Cancel submission &nbsp;</strong> </a>
+                  </div>
                 </div>
               </div>
             </div>
