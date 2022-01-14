@@ -4,7 +4,7 @@
     (currentRoutePath == '/' || currentRoutePath == '/auth/login' || currentRoutePath == '/auth/signup')
       ? '' : (currentRoutePath == '/about' || currentRoutePath == '/contact' || currentRoutePath == '/our-team' ||
       currentRoutePath == '/get-involved' || currentRoutePath == '/privacy-policy')
-      ? 'page-wrap' : (!isAuth._value) ? 'page-wrap' : 'page-wrap-challenge'
+      ? 'page-wrap' : (!isAuth.getValue()) ? 'page-wrap' : 'page-wrap-challenge'
       " >
   <router-outlet></router-outlet>
 </div>
