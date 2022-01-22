@@ -9,7 +9,7 @@
   <div class="row row-lr-margin">
     <div class="col-sm-12 col-lr-pad">
       <div class="row rm-margin">
-        <div class="col-md-8 col-lg-8 no-pad-lr element">
+        <div class="col-md-4 col-lg-4 no-pad-lr element">
           <p>
             <strong class="text-light-black fw-regular text-med-black fs-16">Starts on</strong> <br />
             <strong class="fw-light fs-14 phase-value">{{ startDate }} {{ phase['start_zone'] }}</strong>
@@ -21,7 +21,12 @@
             <strong class="fw-light fs-14 phase-value">{{ endDate }} {{ phase['end_zone'] }}</strong>
           </p>
         </div>
-        <div [innerHTML]="phase['description']" class="phase-description content fw-light"></div>
+        
+        <div class="row rm-margin">
+          <div class="col-md-11 col-lg-11 no-pad-lr element">
+            <div [innerHTML]="phase['description']" class="phase-description content fw-light"></div>
+          </div>
+        </div>
 
         <div class="row rm-margin">
           <div class="col-lg-4 no-pad-lr element">
