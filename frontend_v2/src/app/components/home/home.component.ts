@@ -94,7 +94,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Set SUBSCRIBE_FORM to this.components after view initialization
-   * (<any>window).twttr.widgets.load() this load Twitter Feed
    */
   ngAfterViewInit() {
     this.SUBSCRIBE_FORM[this.subscribeForm] = this.components;
