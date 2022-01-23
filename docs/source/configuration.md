@@ -91,7 +91,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   Dataset splits define the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have two splits:
 
-  1. **test-dev** (Allow participants to make large number of submissions, let them see how they are doing, and let them overfit)
+  1. **test-dev** (Allow participants to make a large number of submissions, let them see how they are doing, and let them overfit)
   2. **test-challenge** (Allow small number of submissions so that they cannot mimic test-set. Use this split to decide the winners for the challenge)
 
   A dataset split has the following subfields:

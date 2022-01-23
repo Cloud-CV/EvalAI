@@ -46,17 +46,19 @@ Use the following commands in order to solve the error:
 #### Q. While using `pip install -r dev/requirement.txt`
 
 ```
-Command “python setup.py egg_info” failed with error code 1 in
+Command "python setup.py egg_info" failed with error code 1 in
 /private/var/folders/c7/b45s17816zn_b1dh3g7yzxrm0000gn/T/pip-build- GM2AG/psycopg2/
 ```
 
-Firstly check that you have installed all the mentioned dependencies.
-Then, Upgrade the version of postgresql to 10.1 in order to solve it.
+Firstly, check that you have installed all the mentioned dependencies.
+Then, upgrade the version of postgresql to 10.1 in order to solve it.
 
 #### Q. Getting an import error
 
+If you got an import error like below while using command `python manage.py migrate`,
+
 ```
-Couldn't import Django,"when using command python manage.py migrate
+ImportError: Couldn't import Django
 ```
 
 Firstly, check that you have activated the virtualenv.
@@ -70,7 +72,7 @@ pip install -r requirements/dev.txt
 #### Q. Getting Mocha Error
 
 ```
-Can not load reporter “mocha”,it is not registered
+Can not load reporter "mocha", it is not registered
 ```
 
 Uninstall karma and then install
