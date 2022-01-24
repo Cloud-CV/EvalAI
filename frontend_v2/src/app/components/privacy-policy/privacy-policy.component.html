@@ -1,7 +1,58 @@
 <div id="header-static">
   <app-header-static></app-header-static>
 </div>
+<div id="navbar">
+  <style>
+    /* Style the navbar */
+#navbar {
+  overflow: hidden;
+  background-color: #333;
+}
 
+/* Navbar links */
+#navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px;
+  text-decoration: none;
+}
+
+/* Page content */
+.content {
+  padding: 16px;
+}
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.sticky + .content {
+  padding-top: 60px;
+}
+  </style>
+  <script>
+window.onscroll = function() {myFunction()};
+
+var navbar = document.getElementById("navbar");
+
+var sticky = navbar.offsetTop;
+
+function myFunction() {
+  if (window.pageYOffset >= sticky) {
+    navbar.classList.add("sticky")
+  } else {
+    navbar.classList.remove("sticky");
+  }
+}
+  </script>
+  <a href="#AllChallenges">All Challenges</a>
+  <a href="#Docs">Docs</a>
+  <a href="#Discuss">Discuss</a>
+</div>
 <div class="container-top container row-lr-margin privacy-container">
   <div class="row rm-margin">
     <div class="privacy-nav-container col-lg-2 col-md-3 col-sm-5 col-xs-5">
