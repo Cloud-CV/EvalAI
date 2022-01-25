@@ -36,7 +36,7 @@
             </mat-form-field>
           </div>
           <div class="col-md-2 col-sm-2 col-xs-6 col-lg-6 col-lr-pad download-submissions">
-            <a class="waves-effect waves-dark btn ev-btn-dark fw-light fs-16" (click)="downloadSubmission()">Download </a>
+            <a class="waves-effect waves-dark btn grad-btn ev-btn-dark fw-light fs-16" (click)="downloadSubmission()">Download </a>
           </div>
         </div>
       </div>
@@ -104,18 +104,18 @@
             >
               <div class="elements-detail">
                 <div class="element">
-                  <strong class="element-description-attribution">Submitted At: </strong>&nbsp;
+                  <strong class="element-description-attribution">Submitted at: </strong>&nbsp;
                   <strong class="fw-light fs-14">
                     {{ element.submitted_at | date: 'medium' }}
                   </strong>
                 </div>
               </div>
               <div class="elements-status">
-                <div class="element">
+                <div class="element" *ngIf="!selectedPhase['leaderboard_public'] || !selectedPhase['is_submission_public']">
                   <mat-checkbox
                     class="element-icon fw-light"
                     [checked]="element.is_public"
-                    [disabled]="element.status === 'failed' || element.status === 'cancelled' || !selectedPhase['leaderboard_public'] || !selectedPhase['is_submission_public']"
+                    [disabled]="element.status === 'failed' || element.status === 'cancelled'"
                     (change)="changeSubmissionVisibility(element.id, element.is_public)"
                   >
                     <strong class="fs-14">Show on leaderboard</strong>

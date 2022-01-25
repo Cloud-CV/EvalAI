@@ -1,6 +1,6 @@
 <div class="challenge-card">
   <div class="ev-card-panel card-bt-margin">
-    <div class="ev-md-container ev-panel-title" *ngIf="challenge.leaderboard_description">
+    <div class="ev-md-container ev-panel-title">
       <div class="row row-lr-margin">
         <div class="col-sm-12 col-xs-12 col-lr-pad">
           <h5 class="fw-light">Leaderboard</h5>
@@ -8,6 +8,7 @@
         <div
           class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light"
           [innerHTML]="challenge.leaderboard_description"
+          *ngIf="challenge.leaderboard_description"
         ></div>
       </div>
     </div>
