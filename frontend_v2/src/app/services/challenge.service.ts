@@ -157,6 +157,7 @@ export class ChallengeService {
         SELF.isLoggedIn = true;
         SELF.fetchStars(id);
         SELF.fetchParticipantTeams(id);
+        SELF.changeParticipationStatus(true);
       } else if (!authState['isLoggedIn']) {
         SELF.isLoggedIn = false;
         SELF.changeParticipationStatus(false);
