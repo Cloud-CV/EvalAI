@@ -114,21 +114,20 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   ngOnInit() {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
+      if (Array.isArray(this.phases) && this.phases.length) {
+        this.selectedPhase = this.phases[0];
+        this.radioSelected = this.phases[0].id;
+        this.selectPhase(this.phases[0]);
+      } else if (Array.isArray(this.settingsPhaseSplits) && this.settingsPhaseSplits.length) {
+        this.selectedPhaseSplit = this.settingsPhaseSplits[0];
+        this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], 'selectBox', 'settingsPhaseSplit');
+      } else if (Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
+        this.selectedPhaseSplit = this.phaseSplits[0];
+        this.phaseName = this.selectedPhaseSplit['challenge_phase_name'];
+        this.splitName = this.selectedPhaseSplit['dataset_split_name'];
+        this.selectPhaseSplit(this.phaseSplits[0], 'selectBox', 'phaseSplit');
+      }
     });
-
-    if (Array.isArray(this.phases) && this.phases.length) {
-      this.selectedPhase = this.phases[0];
-      this.radioSelected = this.phases[0].id;
-      this.selectPhase(this.phases[0]);
-    } else if (Array.isArray(this.settingsPhaseSplits) && this.settingsPhaseSplits.length) {
-      this.selectedPhaseSplit = this.settingsPhaseSplits[0];
-      this.selectSettingsPhaseSplit(this.settingsPhaseSplits[0], 'selectBox', 'settingsPhaseSplit');
-    } else if (Array.isArray(this.phaseSplits) && this.phaseSplits.length) {
-      this.selectedPhaseSplit = this.phaseSplits[0];
-      this.phaseName = this.selectedPhaseSplit['challenge_phase_name'];
-      this.splitName = this.selectedPhaseSplit['dataset_split_name'];
-      this.selectPhaseSplit(this.phaseSplits[0], 'selectBox', 'phaseSplit');
-    }
   }
 
   /**
