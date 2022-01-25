@@ -128,11 +128,25 @@
         <ng-container matColumnDef="expandedDetail">
           <td mat-cell class="collapsed-td" *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
             <div
-              class="elements"
+              class="elements elements-margin"
               [class.detail-row]="element != expandedElement"
               [class.expanded-row]="element == expandedElement"
               [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
             >
+              <div class="elements-detail">
+                <div class="element">
+                    <strong class="element-description-attribution">Submission Id :</strong> &nbsp;
+                    <strong class="fw-light fs-14">
+                      {{ element.id }}
+                    </strong>
+                </div>
+                <div class="element">
+                    <strong class="element-description-attribution">Submitted At :</strong> &nbsp;
+                    <strong class="fw-light fs-14">
+                      {{ element.created_at | date: 'medium' }}
+                    </strong>
+                </div>
+              </div>
               <div class="elements-status">
                   <div class="element">
                       <strong class="element-description-attribution"
@@ -179,20 +193,6 @@
                         None
                       </strong>
                   </div>
-              </div>
-              <div class="elements-status">
-                <div class="element">
-                    <strong class="element-description-attribution">Submission Id :</strong> &nbsp;
-                    <strong class="fw-light fs-14">
-                      {{ element.id }}
-                    </strong>
-                </div>
-                <div class="element">
-                    <strong class="element-description-attribution">Submitted At :</strong> &nbsp;
-                    <strong class="fw-light fs-14">
-                      {{ element.created_at | date: 'medium' }}
-                    </strong>
-                </div>
               </div>
               <div class="elements-action">
                 <div class="element element-description-attribution">
