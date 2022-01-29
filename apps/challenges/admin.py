@@ -214,7 +214,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete all selected challenge workers."
     )
 
-
     def delete_selected_workers_and_start_selected_workers(self, request, queryset):
         self.delete_selected_workers(request, queryset)
         self.start_selected_workers(request, queryset)
@@ -222,6 +221,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     delete_selected_workers_and_start_selected_workers.short_description = (
         "Delete and Start all selected challenge workers."
     )
+    
 
 @admin.register(ChallengeConfiguration)
 class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
