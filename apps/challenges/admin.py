@@ -222,6 +222,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete and Start all selected challenge workers."
     )
     
+    
 @admin.register(ChallengeConfiguration)
 class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
     list_display = (
