@@ -431,7 +431,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       };
       const PARAMS = {
         title: 'Update Submission Visibility',
-        content: 'Challenge host can still see your submission. Do u still want to continue?',
+        content: 'Challenge host can still see your submission. Do you still want to continue?',
         isButtonDisabled: true,
         confirm: 'Yes',
         deny: 'No',
