@@ -406,7 +406,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             }
           }
 
-          let index = (SELF.paginationDetails.currentPage - 1) * 10;
+          let index = (SELF.paginationDetails.currentPage - 1) * 100;
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
             index += 1;
