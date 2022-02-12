@@ -373,7 +373,7 @@ export class ModalComponent implements OnInit {
       this.convertFieldArrayIntoText(this.invalidFields);
       this.isDisabled = true;
     }
-    if (e.target.name === 'update_team_url') {
+    if (e.target.name === 'team_url') {
       if ( (this.validURL(e.target.value)) || e.target.value === ''){
         this.isDisabled = false;
       }
