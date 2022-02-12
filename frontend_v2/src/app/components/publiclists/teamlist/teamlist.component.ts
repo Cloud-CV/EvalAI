@@ -498,7 +498,7 @@ export class TeamlistComponent implements OnInit, OnDestroy {
             label: 'team_url',
             placeholder: 'Team URL',
             value: teamUrl,
-            type: 'url',
+            type: 'text',
           },
         ],
         isButtonDisabled: true,
