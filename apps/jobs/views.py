@@ -1837,7 +1837,7 @@ def re_run_submission_by_host(request, submission_pk):
 
     if submission.ignore_submission:
         response_data = {
-            "error": "Deleted submissions can't be re-run".format(submission_pk)
+            "error": "Deleted {} submissions can't be re-run".format(submission_pk)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
