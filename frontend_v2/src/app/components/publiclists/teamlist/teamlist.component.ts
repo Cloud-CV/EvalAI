@@ -494,10 +494,11 @@ export class TeamlistComponent implements OnInit, OnDestroy {
           },
           {
             isRequired: false,
+            name: 'update_team_url',
             label: 'team_url',
             placeholder: 'Team URL',
             value: teamUrl,
-            type: 'text',
+            type: 'url',
           },
         ],
         isButtonDisabled: true,
