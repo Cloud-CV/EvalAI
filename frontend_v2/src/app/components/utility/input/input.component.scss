@@ -205,6 +205,12 @@
   }
 }
 
+.zero-padding {
+  top: 0px !important;
+  left: 0px !important;
+  position: relative !important;
+}
+
 ::ng-deep .owl-dt-timer-content .owl-dt-timer-input {
   margin: 0.2rem;
 }
