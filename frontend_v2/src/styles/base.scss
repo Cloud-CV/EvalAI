@@ -230,7 +230,7 @@ mat-label {
   color: rgba(0, 0, 0, 0.87);
 }
 
-@include screen-medium {
+@media screen and (min-width: 1030px) and (max-width: 1285px) {
   .phase-select-box {
     .mat-form-field-infix {
       width: 400px !important;
@@ -238,7 +238,7 @@ mat-label {
   }
 }
 
-@include screen-small-medium {
+@media screen and (max-width: 1030px) {
   .phase-select-box {
     .mat-form-field-infix {
       width: 300px !important;

@@ -201,3 +201,13 @@ tr.element-row:not(.expanded-row):active {
     margin-left: 0;
   }
 }
+@media (min-width: 1000px) { 
+  .col-lg-6 {
+    width: 50%;
+  }
+}
+@media (min-width: 768px) {
+  .col-sm-2 {
+    width: 50%;
+  }
+}
