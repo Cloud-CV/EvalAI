@@ -144,6 +144,10 @@ tr.element-row.expanded-row {
   opacity: 0.5;
 }
 
+.delete-submission-label {
+  color: red;
+}
+
 @include screen-small {
   .elements {
     flex-direction: column;
