@@ -191,15 +191,6 @@
                   </label>
                 </span>
                 <span class="submission-option">
-                  <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
-                    (click)="isSubmissionUsingUrl = true; showForm = true;" />
-                  <label for="fileUrl" class="radio-button-text pointer">
-                    <div id="radio_button_url" class="show-member-title pointer">
-                      <strong class="text-med-black fw-light fs-16">Enter file URL (for file size > 400MB) </strong>
-                    </div>
-                  </label>
-                </span>
-                <span class="submission-option">
                   <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUpload"
                     (click)="isSubmissionUsingUrl = false; showForm = true;" />
                   <label for="fileUpload" class="radio-button-text pointer">
@@ -482,7 +473,7 @@
             <div class="col-sm-12 col-md-12 col-lr-pad">
               <div class="align-left">
                 <button
-                  class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                  class="btn btn-waves-effect grad-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
                   (click)="formValidate()"
                 >
                   Submit

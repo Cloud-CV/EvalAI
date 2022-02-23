@@ -418,7 +418,9 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredPastChallenges = SELF.pastChallenges;
       },
       (err) => {
-        SELF.globalService.handleApiError(err);
+        if (err.status === 403) {
+          this.router.navigate(['permission-denied']);
+        }
       },
       () => {}
     );

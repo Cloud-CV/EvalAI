@@ -67,6 +67,22 @@
     <div class="input-message" #textValue [class.hidden]="toggleErrorMessage()">{{ message }}</div>
   </div>
 
+  <div *ngIf="type == 'checkbox'">
+      <label for="{{name}}" class="mat-label-radio" for="{{name}}">{{name}} </label>
+      <br>
+      <br>
+      <div *ngFor="let option of attributeOptions">
+        <mat-checkbox
+          (change)="toggleSelection(option)"
+          id="{{ option }}"
+          [value]="option"
+        >
+          <label class="fs-16" for="{{ option }}" class="zero-padding">{{ option }}</label>
+        </mat-checkbox>
+        <br/>
+      </div>
+      <br/>
+  </div>
 
   <div class="file-field file-upload" *ngIf="type == 'file'">
     <div class="btn btn-waves-effect ev-file-btn-dark waves-dark grad-btn grad-btn-transparent fs-14">
@@ -79,6 +95,7 @@
         (change)="handleFileInput($event.target.files)"
         type="file"
         [readonly]="isReadonly"
+        class="btn btn-waves-effect ev-file-btn-dark waves-dark grad-btn grad-btn-transparent fs-14"
       />
     </div>
     <div class="file-path-wrapper">
