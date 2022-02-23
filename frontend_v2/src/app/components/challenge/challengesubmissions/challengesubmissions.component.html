@@ -104,6 +104,12 @@
             >
               <div class="elements-detail">
                 <div class="element">
+                  <strong class="element-description-attribution">Submission id :</strong> &nbsp;
+                  <strong class="fw-light fs-14">
+                    {{ element.id }}
+                  </strong>
+                </div>
+                <div class="element">
                   <strong class="element-description-attribution">Submitted at: </strong>&nbsp;
                   <strong class="fw-light fs-14">
                     {{ element.submitted_at | date: 'medium' }}

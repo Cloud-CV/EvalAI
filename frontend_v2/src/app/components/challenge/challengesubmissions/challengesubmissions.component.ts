@@ -431,7 +431,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       };
       const PARAMS = {
         title: 'Update Submission Visibility',
-        content: 'Challenge host can still see your submission. Do u still want to continue?',
+        content: 'Challenge host can still see your submission. Do you still want to continue?',
         isButtonDisabled: true,
         confirm: 'Yes',
         deny: 'No',
@@ -567,6 +567,31 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       ],
       confirmCallback: SELF.apiCall,
     };
+    let attributeDict = {};
+    for (let i=0; i < this.selectedPhase.submission_meta_attributes.length; i++) {
+      let metaAttribute = this.selectedPhase.submission_meta_attributes[i];
+      attributeDict[metaAttribute["name"]] = metaAttribute;
+    }
+    if (submission.submission_metadata !== undefined && submission.submission_metadata !== null) {
+      for (let idx=0; idx < submission.submission_metadata.length; idx++) {
+        let metaAttribute = submission.submission_metadata[idx];
+        let data = {
+          isRequired: metaAttribute["required"] == true,
+          label: metaAttribute["name"],
+          placeholder: metaAttribute["description"],
+          type: metaAttribute["type"],
+          value: metaAttribute["value"],
+          icon: 'fa fa-pencil',
+        }
+        if (metaAttribute["type"] !== "text") {
+          data["attributeOptions"] = attributeDict[metaAttribute["name"]]["options"];
+        }
+        //TODO: add support for radio button fields
+        if (metaAttribute["type"] !== "radio" && metaAttribute["type"] !== "boolean") {
+          PARAMS["form"].push(data);
+        }
+      }
+    }
     SELF.globalService.showModal(PARAMS);
   }
 
