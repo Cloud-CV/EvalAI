@@ -117,7 +117,7 @@
                 </div>
               </div>
               <div class="elements-status">
-                <div class="element" *ngIf="!selectedPhase['leaderboard_public'] || !selectedPhase['is_submission_public']">
+                <div class="element" *ngIf="selectedPhase['leaderboard_public']">
                   <mat-checkbox
                     class="element-icon fw-light"
                     [checked]="element.is_public"

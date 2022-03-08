@@ -78,6 +78,11 @@ export class ChallengeComponent implements OnInit {
   isPast: any = false;
 
   /**
+   * Challenge phases
+   */
+  phases: any = [];
+
+  /**
    * Constructor.
    * @param router  Router Injection.
    * @param route  ActivatedRoute Injection.
@@ -136,6 +141,9 @@ export class ChallengeComponent implements OnInit {
         property: 'og:url',
         content: document.location.href,
       });
+    });
+    this.challengeService.currentPhases.subscribe((phases) => {
+      this.phases = phases;
     });
     this.challengeService.currentStars.subscribe((stars) => (this.stars = stars));
     this.challengeService.currentParticipationStatus.subscribe((status) => {
