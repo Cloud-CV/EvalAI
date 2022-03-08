@@ -107,7 +107,7 @@
                         Participate</a
                       >
                     </li>
-                    <li *ngIf="isParticipated">
+                    <li *ngIf="isParticipated && phases.length > 0">
                       <a
                         [class.selected]="localRouter.url.endsWith('submit')"
                         [routerLink]="['./submit']"
@@ -116,7 +116,7 @@
                         <i class="fa fa-upload"></i> Submit</a
                       >
                     </li>
-                    <li *ngIf="isParticipated">
+                    <li *ngIf="isParticipated && phases.length > 0">
                       <a
                         [class.selected]="localRouter.url.endsWith('my-submissions')"
                         [routerLink]="['./my-submissions']"
@@ -134,7 +134,7 @@
                         <i class="fa fa-list"></i> All Submissions</a
                       >
                     </li>
-                    <li>
+                    <li *ngIf="phases.length > 0">
                       <a
                         [class.selected]="localRouter.url.includes('leaderboard')"
                         [routerLink]="['./leaderboard']"

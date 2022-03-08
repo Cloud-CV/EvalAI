@@ -64,12 +64,12 @@ export class InputComponent implements OnInit {
   /**
    * Value of input field
    */
-  @Input() value: string;
+  @Input() value: any;
 
   /**
    * Value of checkbox input field
    */
-   @Input() values: any;
+   @Input() values: any = [];
 
   /**
    * Is field read-only
@@ -285,11 +285,22 @@ export class InputComponent implements OnInit {
 
   // unchecking checked options
   toggleSelection(value) {
-    const idx = this.values.indexOf(value);
-    if (idx > -1) {
-      this.values.splice(idx, 1);
-    } else {
-      this.values.push(value);
+    if (!Array.isArray(this.value)) {
+      this.value = [];
     }
+    const idx = this.value.indexOf(value);
+    if (idx > -1) {
+      this.value.splice(idx, 1);
+    } else {
+      this.value.push(value);
+    }
+  }
+
+  isChecked(value) {
+    if (!Array.isArray(this.value)) {
+      this.value = [];
+    }
+    const idx = this.value.indexOf(value);
+    return idx != -1;
   }
 }

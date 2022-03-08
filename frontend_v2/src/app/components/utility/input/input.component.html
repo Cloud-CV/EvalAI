@@ -76,6 +76,7 @@
           (change)="toggleSelection(option)"
           id="{{ option }}"
           [value]="option"
+          [checked]="isChecked(option)"
         >
           <label class="fs-16" for="{{ option }}" class="zero-padding">{{ option }}</label>
         </mat-checkbox>
