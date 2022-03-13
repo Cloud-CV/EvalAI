@@ -254,7 +254,16 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       SELF.selectedPhase = phase;
       SELF.isPhaseSelected = true;
       SELF.submissionCount = 0;
-      if (SELF.challenge['id'] && phase['id']) {
+
+      // Handle incorrect state change. In some cases phase selected here is not correct one
+      let isValidPhase = false;
+      for (let phaseIdx in this.phases) {
+        if (this.phases[phaseIdx]['id'] == phase['id']) {
+          isValidPhase = true;
+          break;
+        }
+      }
+      if (SELF.challenge['id'] && phase['id'] && isValidPhase) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
       }
     };
