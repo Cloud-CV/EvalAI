@@ -183,7 +183,7 @@ export class ChallengesubmitComponent implements OnInit {
   /**
    * Phase remaining submissions for docker based challenge
    */
-  phaseRemainingSubmissions: any;
+  phaseRemainingSubmissions: any = {};
 
   /**
    * Flog for phase if submissions max exceeded, details, clock
@@ -395,6 +395,9 @@ export class ChallengesubmitComponent implements OnInit {
             phaseDetails = data.phases[i].limits;
             break;
           }
+        }
+        if (phaseDetails == undefined) {
+          return;
         }
         if (phaseDetails.submission_limit_exceeded) {
           this.selectedPhaseSubmissions.maxExceeded = true;

@@ -116,7 +116,7 @@
                   </strong>
                 </div>
               </div>
-              <div class="elements-status">
+              <div class="elements-status" *ngIf="selectedPhase['leaderboard_public'] || isChallengeHost">
                 <div class="element" *ngIf="selectedPhase['leaderboard_public']">
                   <mat-checkbox
                     class="element-icon fw-light"
