@@ -1,3 +1,4 @@
+from tokenize import Token
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
@@ -97,6 +98,7 @@ def refresh_auth_token(request):
         token = JwtToken.objects.get(user=user)
         existing_token = RefreshToken(token.refresh_token)
         existing_token.blacklist()
+        token.delete()
     except JwtToken.DoesNotExist:
         token = JwtToken(user=user)
 
