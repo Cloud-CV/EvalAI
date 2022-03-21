@@ -1500,7 +1500,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
-                if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:    
+                if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
                     message = (
                         "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
                     )
@@ -1630,7 +1630,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
 
-    except Exception as e:  # noqa: E722
+    except:  # noqa: E722
         try:
             if response_data:
                 response_data = {"error": json.dumps(response_data)}
