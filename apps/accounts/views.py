@@ -1,3 +1,4 @@
+from shutil import ExecError
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
@@ -22,6 +23,8 @@ from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
 
 from .throttles import ResendEmailThrottle
+
+from datetime import datetime
 
 
 @api_view(["POST"])
@@ -63,8 +66,11 @@ def get_auth_token(request):
         if token_serializer.is_valid():
             token_serializer.save()
         token = token_serializer.instance
-
-    response_data = {"token": "{}".format(token.refresh_token)}
+    jwt_refresh_token = RefreshToken.for_user(user)
+    response_data = {
+        "token": "{}".format(token.refresh_token),
+        "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+    }
     return Response(response_data, status=status.HTTP_200_OK)
 
 
