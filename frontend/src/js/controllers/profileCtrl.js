@@ -10,7 +10,7 @@
 
     profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog'];
 
-    function profileCtrl(utilities, $rootScope, $scope, $mdDialog) {
+    function profileCtrl(utilities, $rootScope, $scope, $mdDialog, moment) {
         var vm = this;
 
         vm.user = {};
