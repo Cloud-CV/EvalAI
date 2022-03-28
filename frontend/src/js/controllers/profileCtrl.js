@@ -8,7 +8,7 @@
         .module('evalai')
         .controller('profileCtrl', profileCtrl);
 
-    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog'];
+    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog', 'moment'];
 
     function profileCtrl(utilities, $rootScope, $scope, $mdDialog, moment) {
         var vm = this;
