@@ -2,6 +2,8 @@ import os
 
 from accounts.models import JwtToken
 
+
+from datetime import datetime
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 
@@ -65,7 +67,11 @@ class GetAuthTokenTest(BaseAPITestClass):
     def test_get_auth_token(self):
         response = self.client.get(self.url, {})
         token = JwtToken.objects.get(user=self.user)
-        expected_data = {"token": "{}".format(token.refresh_token)}
+        jwt_refresh_token = RefreshToken.for_user(self.user)
+        expected_data = {
+            "token": "{}".format(token.refresh_token),
+            "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+        }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
@@ -108,7 +114,11 @@ class RefreshAuthTokenTest(BaseAPITestClass):
         url = reverse_lazy("accounts:get_auth_token")
         response = self.client.get(url, {})
         token = JwtToken.objects.get(user=self.user)
-        expected_data = {"token": "{}".format(token.refresh_token)}
+        jwt_refresh_token = RefreshToken.for_user(self.user)
+        expected_data = {
+            "token": "{}".format(token.refresh_token),
+            "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+        }
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
