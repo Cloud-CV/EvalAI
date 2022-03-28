@@ -23,6 +23,8 @@ from .serializers import JwtTokenSerializer
 
 from .throttles import ResendEmailThrottle
 
+from datetime import datetime
+
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
@@ -63,8 +65,11 @@ def get_auth_token(request):
         if token_serializer.is_valid():
             token_serializer.save()
         token = token_serializer.instance
-
-    response_data = {"token": "{}".format(token.refresh_token)}
+    jwt_refresh_token = RefreshToken.for_user(user)
+    response_data = {
+        "token": "{}".format(token.refresh_token),
+        "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+    }
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -97,6 +102,7 @@ def refresh_auth_token(request):
         token = JwtToken.objects.get(user=user)
         existing_token = RefreshToken(token.refresh_token)
         existing_token.blacklist()
+        token.delete()
     except JwtToken.DoesNotExist:
         token = JwtToken(user=user)
 

@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('profileCtrl', profileCtrl);
 
-    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog'];
+    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog', 'moment'];
 
-    function profileCtrl(utilities, $rootScope, $scope, $mdDialog) {
+    function profileCtrl(utilities, $rootScope, $scope, $mdDialog, moment) {
         var vm = this;
 
         vm.user = {};
@@ -20,6 +20,7 @@
         vm.inputType = 'password';
         vm.status = 'Show';
         vm.token = '';
+        vm.expiresAt = '';
 
         utilities.hideLoader();
 
@@ -80,6 +81,10 @@
             onSuccess: function(response) {
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
+                vm.expiresAt = response.data['expires_at'];
+                let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
+                var timezone = moment.tz.guess();
+                vm.expiresAtTimezone = moment.tz.zone(timezone).abbr(expiresAtOffset);
             },
             onError: function(response) {
                 var details = response.data;
