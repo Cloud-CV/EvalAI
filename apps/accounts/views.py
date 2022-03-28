@@ -1,4 +1,3 @@
-from shutil import ExecError
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
