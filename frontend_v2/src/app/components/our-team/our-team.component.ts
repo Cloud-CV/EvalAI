@@ -152,7 +152,7 @@ export class OurTeamComponent implements OnInit {
               github_url: 'http://github.com/trojan',
               linkedin_url: 'https://www.linkedin.com/in/taranjeet-singh-1577b858/',
               personal_website: 'http://trojan.github.io/',
-              team_type: 'Contributor',
+              team_type: 'Contributors',
             },
             {
               name: 'Prithvijit Chattopadhyay',
@@ -164,7 +164,7 @@ export class OurTeamComponent implements OnInit {
               github_url: 'https://github.com/prithv1',
               linkedin_url: 'https://www.linkedin.com/in/prithvijit-chattopadhyay-260b2b54/',
               personal_website: 'https://prithv1.github.io/',
-              team_type: 'Contributor',
+              team_type: 'Contributors',
             },
             {
               name: 'Akash Jain',
@@ -178,7 +178,7 @@ export class OurTeamComponent implements OnInit {
               github_url: 'https://github.com/aka-jain',
               linkedin_url: 'https://www.linkedin.com/in/jainakashin/',
               personal_website: 'http://www.jainakash.in/',
-              team_type: 'Contributor',
+              team_type: 'Contributors',
             },
             {
               name: 'Shiv Baran',
@@ -190,7 +190,7 @@ export class OurTeamComponent implements OnInit {
               github_url: 'https://github.com/spyshiv',
               linkedin_url: 'https://www.linkedin.com/in/shivbaran1/',
               personal_website: 'http://spyshiv.github.io/',
-              team_type: 'Contributor',
+              team_type: 'Contributors',
             }
           ];
         }
@@ -201,7 +201,7 @@ export class OurTeamComponent implements OnInit {
             if (results[i].team_type === 'Core Team') {
               SELF.coreTeamType = results[i].team_type;
               SELF.coreTeamList = CORE_TEAM_LIST.push(results[i]);
-            } else if (results[i].team_type === 'Contributor') {
+            } else if (results[i].team_type === 'Contributors') {
               SELF.contributingTeamType = results[i].team_type;
               SELF.contributingTeamList = CONTRIBUTING_TEAM_LIST.push(results[i]);
             }
