@@ -1,4 +1,3 @@
-from tokenize import Token
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
@@ -19,13 +18,12 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
 
 from .throttles import ResendEmailThrottle
-
-from datetime import datetime
 
 
 @api_view(["POST"])
@@ -61,16 +59,17 @@ def get_auth_token(request):
             data={
                 "refresh_token": str(jwt_refresh_token),
                 "access_token": str(jwt_refresh_token.access_token),
-                "expires_at": int(jwt_refresh_token.payload["exp"]),
             },
             partial=True,
         )
         if token_serializer.is_valid():
             token_serializer.save()
         token = token_serializer.instance
+
+    outstanding_token = OutstandingToken.objects.filter(user=user).order_by("-created_at")[0]
     response_data = {
         "token": "{}".format(token.refresh_token),
-        "expires_at": datetime.fromtimestamp(token.expires_at)
+        "expires_at": outstanding_token.expires_at
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -118,7 +117,6 @@ def refresh_auth_token(request):
         data={
             "refresh_token": str(jwt_refresh_token),
             "access_token": str(jwt_refresh_token.access_token),
-            "expires_at": int(jwt_refresh_token.payload["exp"]),
         },
         partial=True,
     )

@@ -98,5 +98,4 @@ class JwtTokenSerializer(serializers.ModelSerializer):
             "user",
             "refresh_token",
             "access_token",
-            "expires_at",
         )
