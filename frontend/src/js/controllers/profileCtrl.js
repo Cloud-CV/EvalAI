@@ -81,7 +81,7 @@
             onSuccess: function(response) {
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
-                vm.expiresAt = response.data['expires_at'];
+                vm.expiresAt = moment.utc(response.data['expires_at']).local().format("MMM D, YYYY h:mm:ss A");
                 let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
                 var timezone = moment.tz.guess();
                 vm.expiresAtTimezone = moment.tz.zone(timezone).abbr(expiresAtOffset);

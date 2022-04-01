@@ -2,8 +2,6 @@ import os
 
 from accounts.models import JwtToken
 
-
-from datetime import datetime
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 
@@ -12,6 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 
 class BaseAPITestClass(APITestCase):
@@ -67,10 +66,10 @@ class GetAuthTokenTest(BaseAPITestClass):
     def test_get_auth_token(self):
         response = self.client.get(self.url, {})
         token = JwtToken.objects.get(user=self.user)
-        jwt_refresh_token = RefreshToken.for_user(self.user)
+        outstanding_token = OutstandingToken.objects.filter(user=self.user).order_by("-created_at")[0]
         expected_data = {
             "token": "{}".format(token.refresh_token),
-            "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+            "expires_at": outstanding_token.expires_at
         }
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
@@ -114,10 +113,10 @@ class RefreshAuthTokenTest(BaseAPITestClass):
         url = reverse_lazy("accounts:get_auth_token")
         response = self.client.get(url, {})
         token = JwtToken.objects.get(user=self.user)
-        jwt_refresh_token = RefreshToken.for_user(self.user)
+        outstanding_token = OutstandingToken.objects.filter(user=self.user).order_by("-created_at")[0]
         expected_data = {
             "token": "{}".format(token.refresh_token),
-            "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+            "expires_at": outstanding_token.expires_at
         }
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
