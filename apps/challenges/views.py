@@ -3333,7 +3333,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         ]
                         visibility = data["visibility"]
                         leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
-                        is_leaderboard_order_descending = data["leaderboard_decimal_precision"]
+                        is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
 
                         data = {
                             "challenge_phase": challenge_phase,
