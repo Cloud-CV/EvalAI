@@ -17,13 +17,13 @@ from rest_framework_expiring_authtoken.authentication import (
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
 
 from .throttles import ResendEmailThrottle
-
-from datetime import datetime
 
 
 @api_view(["POST"])
@@ -65,10 +65,11 @@ def get_auth_token(request):
         if token_serializer.is_valid():
             token_serializer.save()
         token = token_serializer.instance
-    jwt_refresh_token = RefreshToken.for_user(user)
+
+    outstanding_token = OutstandingToken.objects.filter(user=user).order_by("-created_at")[0]
     response_data = {
         "token": "{}".format(token.refresh_token),
-        "expires_at": datetime.fromtimestamp(jwt_refresh_token.payload["exp"])
+        "expires_at": outstanding_token.expires_at
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -100,9 +101,13 @@ def refresh_auth_token(request):
     token = None
     try:
         token = JwtToken.objects.get(user=user)
-        existing_token = RefreshToken(token.refresh_token)
-        existing_token.blacklist()
-        token.delete()
+        try:
+            existing_token = RefreshToken(token.refresh_token)
+            existing_token.blacklist()
+            token.delete()
+        except TokenError:
+            # No need to blacklist when token is expired
+            pass
     except JwtToken.DoesNotExist:
         token = JwtToken(user=user)
 
