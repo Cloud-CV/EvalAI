@@ -5,9 +5,7 @@
   .bottom-card-container {
     padding: 0px 30px;
     .settings-section {
-      padding: 50px;
-      border: 1px solid;
-      border-radius: 5px;
+      padding: 10px 50px 10px 50px;
       min-height: 50px;
       color: rgb(101, 97, 97);
     }
@@ -77,7 +75,7 @@ input {
 
 @media (max-width: 992px) {
   .settings-section {
-    padding: 50px !important;
+    padding: 10px 30px 10px 30px !important;
   }
 }
 
