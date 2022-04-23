@@ -9,7 +9,7 @@ django-allauth==0.43.0
 django-filter==2.4.0
 django-import-export==2.4.0
 djangorestframework==3.10.3
-djangorestframework-expiring-authtoken==0.1.4
+djangorestframework-expiring-authtoken==0.1.3
 djangorestframework-simplejwt==4.6.0
 django-cors-headers==3.5.0
 django-rest-auth[with_social]==0.9.5
