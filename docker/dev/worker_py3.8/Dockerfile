@@ -1,4 +1,12 @@
-FROM evalai_django
+FROM python:3.8
+
+ENV PYTHONUNBUFFERED 1
+
+RUN mkdir /code
+WORKDIR /code
+
+ADD requirements/* /code/
+RUN pip install -r dev.txt
 
 RUN apt-get update && \
   apt-get install --no-install-recommends -q -y default-jdk && \

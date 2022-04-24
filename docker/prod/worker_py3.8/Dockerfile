@@ -2,7 +2,16 @@ ARG AWS_ACCOUNT_ID
 ARG COMMIT_ID
 ARG TRAVIS_BRANCH
 
-FROM ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-${TRAVIS_BRANCH}-backend:${COMMIT_ID}
+FROM python:3.8
+
+ENV PYTHONUNBUFFERED 1
+
+RUN mkdir /code
+WORKDIR /code
+ADD requirements/* /code/
+RUN pip install -r prod.txt
+
+ADD . /code
 
 RUN apt-get update && \
   apt-get --no-install-recommends install -q -y default-jre default-jdk \
