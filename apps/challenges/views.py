@@ -1381,7 +1381,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 challenge.save()
             else:
                 response_data = serializer.errors
-                raise RuntimeError("Challenge validation failed")
+                raise RuntimeError()
                 # transaction.set_rollback(True)
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -1397,7 +1397,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     leaderboard_ids[str(data["id"])] = serializer.instance.pk
                 else:
                     response_data = serializer.errors
-                    raise RuntimeError("Leaderboard validation failed")
+                    raise RuntimeError()
 
             # Create Challenge Phase
             challenge_phase_ids = {}
@@ -1469,7 +1469,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     ] = serializer.instance.pk
                 else:
                     response_data = serializer.errors
-                    raise RuntimeError("Challenge phase validation failed")
+                    raise RuntimeError()
 
             # Create Dataset Splits
             yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
@@ -1484,7 +1484,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     # Return error when dataset split name is not unique.
                     response_data = serializer.errors
-                    raise RuntimeError("Dataset split validation failed")
+                    raise RuntimeError()
 
             # Create Challenge Phase Splits
             try:
@@ -1506,10 +1506,22 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     )
                     response_data = {"error": message}
                     return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                    message = (
+                        "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
+                if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                    message = (
+                        "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                 challenge_phase = challenge_phase_ids[
                     str(data["challenge_phase_id"])
                 ]
-                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
                 dataset_split = dataset_split_ids[
                     str(data["dataset_split_id"])
                 ]
@@ -1531,7 +1543,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     serializer.save()
                 else:
                     response_data = serializer.errors
-                    raise RuntimeError("Challenge phase split validation failed")
+                    print(response_data)
+                    raise RuntimeError()
 
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk
@@ -3275,7 +3288,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             serializer.save()
                         else:
                             error_messages = serializer.errors
-                            raise RuntimeError("Leaderboard validation failed")
+                            raise RuntimeError()
                         leaderboard_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -3315,7 +3328,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             serializer.save()
                         else:
                             error_messages = serializer.errors
-                            raise RuntimeError("Challenge phase validation failed")
+                            raise RuntimeError()
                         challenge_phase_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -3333,7 +3346,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             serializer.save()
                         else:
                             error_messages = serializer.errors
-                            raise RuntimeError("Dataset split validation failed")
+                            raise RuntimeError()
                         dataset_split_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -3343,6 +3356,24 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "challenge_phase_splits"
                     ]
                     for data in challenge_phase_splits_data:
+                        if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
+                            message = (
+                                "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                            )
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                            message = (
+                                "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                            )
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                            message = (
+                                "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                            )
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                         challenge_phase = challenge_phase_ids[
                             str(data["challenge_phase_id"])
                         ]
@@ -3372,7 +3403,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             serializer.save()
                         else:
                             error_messages = serializer.errors
-                            raise RuntimeError("Challenge phase split validation failed")
+                            raise RuntimeError()
 
                 zip_config = ChallengeConfiguration.objects.get(
                     pk=uploaded_zip_file.pk
@@ -3484,7 +3515,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     serializer.save()
                 else:
                     error_messages = serializer.errors
-                    raise RuntimeError("Challenge validation failed")
+                    raise RuntimeError()
                 challenge = serializer.instance
 
                 # Updating Leaderboard object
@@ -3512,7 +3543,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         leaderboard_ids[str(data["id"])] = serializer.instance.pk
                     else:
                         error_messages = serializer.errors
-                        raise RuntimeError("Leaderboard validation failed")
+                        raise RuntimeError()
 
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
@@ -3566,7 +3597,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         ] = serializer.instance.pk
                     else:
                         error_messages = serializer.errors
-                        raise RuntimeError("Challenge phase validation failed")
+                        raise RuntimeError()
 
                 # Updating DatasetSplit objects
                 yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
@@ -3593,13 +3624,31 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         dataset_split_ids[str(data["id"])] = serializer.instance.pk
                     else:
                         error_messages = serializer.errors
-                        raise RuntimeError("Dataset split validation failed")
+                        raise RuntimeError()
 
                 # Update ChallengePhaseSplit objects
                 challenge_phase_splits_data = yaml_file_data[
                     "challenge_phase_splits"
                 ]
                 for data in challenge_phase_splits_data:
+                    if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
+                        message = (
+                            "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                        message = (
+                            "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                        message = (
+                            "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                     challenge_phase = challenge_phase_ids[
                         str(data["challenge_phase_id"])
                     ]
@@ -3631,7 +3680,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         serializer.save()
                     else:
                         error_messages = serializer.errors
-                        raise RuntimeError("Challenge phase split validation failed")
+                        raise RuntimeError()
 
                 response_data = {
                     "Success": "The challenge {} has been updated successfully".format(
