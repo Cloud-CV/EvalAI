@@ -40,6 +40,14 @@ services:
     env_file:
       - docker/prod/docker_production.env
 
+  worker_py3.8:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker-py3.8:${COMMIT_ID}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker_py3.8/Dockerfile
+    env_file:
+      - docker/prod/docker_production.env
+
   nodejs:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-frontend:${COMMIT_ID}
     build:
