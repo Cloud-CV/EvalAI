@@ -1381,6 +1381,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 challenge.save()
             else:
                 response_data = serializer.errors
+                raise RuntimeError()
                 # transaction.set_rollback(True)
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -1396,6 +1397,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     leaderboard_ids[str(data["id"])] = serializer.instance.pk
                 else:
                     response_data = serializer.errors
+                    raise RuntimeError()
 
             # Create Challenge Phase
             challenge_phase_ids = {}
@@ -1467,6 +1469,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     ] = serializer.instance.pk
                 else:
                     response_data = serializer.errors
+                    raise RuntimeError()
 
             # Create Dataset Splits
             yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
@@ -1481,6 +1484,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     # Return error when dataset split name is not unique.
                     response_data = serializer.errors
+                    raise RuntimeError()
 
             # Create Challenge Phase Splits
             try:
@@ -1496,10 +1500,28 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
+                if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
+                    message = (
+                        "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                    message = (
+                        "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
+                if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                    message = (
+                        "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                    )
+                    response_data = {"error": message}
+                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                 challenge_phase = challenge_phase_ids[
                     str(data["challenge_phase_id"])
                 ]
-                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
                 dataset_split = dataset_split_ids[
                     str(data["dataset_split_id"])
                 ]
@@ -1521,6 +1543,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     serializer.save()
                 else:
                     response_data = serializer.errors
+                    print(response_data)
+                    raise RuntimeError()
 
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk
@@ -1622,7 +1646,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     except:  # noqa: E722
         try:
             if response_data:
-                response_data = {"error": response_data}
+                response_data = {"error": json.dumps(response_data)}
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
@@ -3227,6 +3251,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
     if not len(error_messages):
         if not challenge_queryset:
+            error_messages = None
             try:
                 with transaction.atomic():
                     serializer = ZipChallengeSerializer(
@@ -3261,6 +3286,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         if serializer.is_valid():
                             serializer.save()
+                        else:
+                            error_messages = serializer.errors
+                            raise RuntimeError()
                         leaderboard_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -3298,6 +3326,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             )
                         if serializer.is_valid():
                             serializer.save()
+                        else:
+                            error_messages = serializer.errors
+                            raise RuntimeError()
                         challenge_phase_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -3313,6 +3344,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         if serializer.is_valid():
                             serializer.save()
+                        else:
+                            error_messages = serializer.errors
+                            raise RuntimeError()
                         dataset_split_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
@@ -3322,6 +3356,24 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "challenge_phase_splits"
                     ]
                     for data in challenge_phase_splits_data:
+                        if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
+                            message = (
+                                "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                            )
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                            message = (
+                                "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                            )
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                            message = (
+                                "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                            )
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                         challenge_phase = challenge_phase_ids[
                             str(data["challenge_phase_id"])
                         ]
@@ -3349,6 +3401,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         if serializer.is_valid():
                             serializer.save()
+                        else:
+                            error_messages = serializer.errors
+                            raise RuntimeError()
 
                 zip_config = ChallengeConfiguration.objects.get(
                     pk=uploaded_zip_file.pk
@@ -3412,6 +3467,8 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 response_data = {
                     "error": "Error in creating challenge. Please check the yaml configuration!"
                 }
+                if error_messages:
+                    response_data["error_message"] = json.dumps(error_messages)
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -3427,175 +3484,219 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     )
 
         else:
-            # Updating ChallengeConfiguration object
-            challenge_configuration = ChallengeConfiguration.objects.filter(
-                challenge=challenge.pk
-            ).first()
-            serializer = ChallengeConfigSerializer(
-                challenge_configuration,
-                data=request.data,
-                context={"request": request},
-            )
-            if serializer.is_valid():
-                serializer.save()
-
-            # Updating Challenge object
-            serializer = ZipChallengeSerializer(
-                challenge,
-                data=yaml_file_data,
-                context={
-                    "request": request,
-                    "challenge_host_team": challenge_host_team,
-                    "image": files["challenge_image_file"],
-                    "evaluation_script": files[
-                        "challenge_evaluation_script_file"
-                    ],
-                },
-            )
-            if serializer.is_valid():
-                serializer.save()
-            challenge = serializer.instance
-
-            # Updating Leaderboard object
-            leaderboard_ids = {}
-            yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
-            for data in yaml_file_data_of_leaderboard:
-                challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                    challenge_phase__challenge__pk=challenge.pk,
-                    leaderboard__config_id=data["config_id"],
-                )
-                if challenge_phase_split_qs:
-                    challenge_phase_split = challenge_phase_split_qs.first()
-                    leaderboard = challenge_phase_split.leaderboard
-                    serializer = LeaderboardSerializer(
-                        leaderboard,
-                        data=data,
-                        context={"config_id": data["id"]},
-                    )
-                else:
-                    serializer = LeaderboardSerializer(
-                        data=data, context={"config_id": data["id"]}
-                    )
-                if serializer.is_valid():
-                    serializer.save()
-                    leaderboard_ids[str(data["id"])] = serializer.instance.pk
-
-            # Updating ChallengePhase objects
-            challenge_phase_ids = {}
-            challenge_phases_data = yaml_file_data["challenge_phases"]
-            for data, challenge_test_annotation_file in zip(
-                challenge_phases_data, files["challenge_test_annotation_files"]
-            ):
-                challenge_phase = ChallengePhase.objects.filter(
-                    challenge__pk=challenge.pk, config_id=data["id"]
+            try:
+                error_messages = None
+                # Updating ChallengeConfiguration object
+                challenge_configuration = ChallengeConfiguration.objects.filter(
+                    challenge=challenge.pk
                 ).first()
-                if (
-                    challenge_test_annotation_file
-                    and not challenge_phase.annotations_uploaded_using_cli
-                ):
-                    serializer = ChallengePhaseCreateSerializer(
-                        challenge_phase,
-                        data=data,
-                        context={
-                            "challenge": challenge,
-                            "test_annotation": challenge_test_annotation_file,
-                            "config_id": data["config_id"],
-                        },
-                    )
-                elif (
-                    challenge_test_annotation_file
-                    and challenge_phase.annotations_uploaded_using_cli
-                ):
-                    data.pop("test_annotation", None)
-                    serializer = ChallengePhaseCreateSerializer(
-                        challenge_phase,
-                        data=data,
-                        context={
-                            "challenge": challenge,
-                            "config_id": data["config_id"],
-                        },
-                        partial=True,
-                    )
-                else:
-                    serializer = ChallengePhaseCreateSerializer(
-                        challenge_phase,
-                        data=data,
-                        context={
-                            "challenge": challenge,
-                            "config_id": data["config_id"],
-                        },
-                    )
-                if serializer.is_valid():
-                    serializer.save()
-                    challenge_phase_ids[
-                        str(data["id"])
-                    ] = serializer.instance.pk
-
-            # Updating DatasetSplit objects
-            yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
-            dataset_split_ids = {}
-            for data in yaml_file_data_of_dataset_split:
-                challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                    challenge_phase__challenge__pk=challenge.pk,
-                    dataset_split__config_id=data["id"],
+                serializer = ChallengeConfigSerializer(
+                    challenge_configuration,
+                    data=request.data,
+                    context={"request": request},
                 )
-                if challenge_phase_split_qs:
-                    challenge_phase_split = challenge_phase_split_qs.first()
-                    dataset_split = challenge_phase_split.dataset_split
-                    serializer = DatasetSplitSerializer(
-                        dataset_split,
-                        data=data,
-                        context={"config_id": data["id"]},
-                    )
-                else:
-                    serializer = DatasetSplitSerializer(
-                        data=data, context={"config_id": data["id"]}
-                    )
                 if serializer.is_valid():
                     serializer.save()
-                    dataset_split_ids[str(data["id"])] = serializer.instance.pk
 
-            # Update ChallengePhaseSplit objects
-            challenge_phase_splits_data = yaml_file_data[
-                "challenge_phase_splits"
-            ]
-            for data in challenge_phase_splits_data:
-                challenge_phase = challenge_phase_ids[
-                    str(data["challenge_phase_id"])
-                ]
-                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                dataset_split = dataset_split_ids[
-                    str(data["dataset_split_id"])
-                ]
-                visibility = data["visibility"]
+                # Updating Challenge object
+                serializer = ZipChallengeSerializer(
+                    challenge,
+                    data=yaml_file_data,
+                    context={
+                        "request": request,
+                        "challenge_host_team": challenge_host_team,
+                        "image": files["challenge_image_file"],
+                        "evaluation_script": files[
+                            "challenge_evaluation_script_file"
+                        ],
+                    },
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    error_messages = serializer.errors
+                    raise RuntimeError()
+                challenge = serializer.instance
 
-                data = {
-                    "challenge_phase": challenge_phase,
-                    "leaderboard": leaderboard,
-                    "dataset_split": dataset_split,
-                    "visibility": visibility,
+                # Updating Leaderboard object
+                leaderboard_ids = {}
+                yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
+                for data in yaml_file_data_of_leaderboard:
+                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
+                        challenge_phase__challenge__pk=challenge.pk,
+                        leaderboard__config_id=data["config_id"],
+                    )
+                    if challenge_phase_split_qs:
+                        challenge_phase_split = challenge_phase_split_qs.first()
+                        leaderboard = challenge_phase_split.leaderboard
+                        serializer = LeaderboardSerializer(
+                            leaderboard,
+                            data=data,
+                            context={"config_id": data["id"]},
+                        )
+                    else:
+                        serializer = LeaderboardSerializer(
+                            data=data, context={"config_id": data["id"]}
+                        )
+                    if serializer.is_valid():
+                        serializer.save()
+                        leaderboard_ids[str(data["id"])] = serializer.instance.pk
+                    else:
+                        error_messages = serializer.errors
+                        raise RuntimeError()
+
+                # Updating ChallengePhase objects
+                challenge_phase_ids = {}
+                challenge_phases_data = yaml_file_data["challenge_phases"]
+                for data, challenge_test_annotation_file in zip(
+                    challenge_phases_data, files["challenge_test_annotation_files"]
+                ):
+                    challenge_phase = ChallengePhase.objects.filter(
+                        challenge__pk=challenge.pk, config_id=data["id"]
+                    ).first()
+                    if (
+                        challenge_test_annotation_file
+                        and not challenge_phase.annotations_uploaded_using_cli
+                    ):
+                        serializer = ChallengePhaseCreateSerializer(
+                            challenge_phase,
+                            data=data,
+                            context={
+                                "challenge": challenge,
+                                "test_annotation": challenge_test_annotation_file,
+                                "config_id": data["config_id"],
+                            },
+                        )
+                    elif (
+                        challenge_test_annotation_file
+                        and challenge_phase.annotations_uploaded_using_cli
+                    ):
+                        data.pop("test_annotation", None)
+                        serializer = ChallengePhaseCreateSerializer(
+                            challenge_phase,
+                            data=data,
+                            context={
+                                "challenge": challenge,
+                                "config_id": data["config_id"],
+                            },
+                            partial=True,
+                        )
+                    else:
+                        serializer = ChallengePhaseCreateSerializer(
+                            challenge_phase,
+                            data=data,
+                            context={
+                                "challenge": challenge,
+                                "config_id": data["config_id"],
+                            },
+                        )
+                    if serializer.is_valid():
+                        serializer.save()
+                        challenge_phase_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
+                    else:
+                        error_messages = serializer.errors
+                        raise RuntimeError()
+
+                # Updating DatasetSplit objects
+                yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
+                dataset_split_ids = {}
+                for data in yaml_file_data_of_dataset_split:
+                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
+                        challenge_phase__challenge__pk=challenge.pk,
+                        dataset_split__config_id=data["id"],
+                    )
+                    if challenge_phase_split_qs:
+                        challenge_phase_split = challenge_phase_split_qs.first()
+                        dataset_split = challenge_phase_split.dataset_split
+                        serializer = DatasetSplitSerializer(
+                            dataset_split,
+                            data=data,
+                            context={"config_id": data["id"]},
+                        )
+                    else:
+                        serializer = DatasetSplitSerializer(
+                            data=data, context={"config_id": data["id"]}
+                        )
+                    if serializer.is_valid():
+                        serializer.save()
+                        dataset_split_ids[str(data["id"])] = serializer.instance.pk
+                    else:
+                        error_messages = serializer.errors
+                        raise RuntimeError()
+
+                # Update ChallengePhaseSplit objects
+                challenge_phase_splits_data = yaml_file_data[
+                    "challenge_phase_splits"
+                ]
+                for data in challenge_phase_splits_data:
+                    if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
+                        message = (
+                            "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                        message = (
+                            "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                        message = (
+                            "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                        )
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    challenge_phase = challenge_phase_ids[
+                        str(data["challenge_phase_id"])
+                    ]
+                    leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
+                    dataset_split = dataset_split_ids[
+                        str(data["dataset_split_id"])
+                    ]
+                    visibility = data["visibility"]
+
+                    data = {
+                        "challenge_phase": challenge_phase,
+                        "leaderboard": leaderboard,
+                        "dataset_split": dataset_split,
+                        "visibility": visibility,
+                    }
+
+                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
+                        challenge_phase__pk=challenge_phase,
+                        dataset_split__pk=dataset_split,
+                    )
+                    if challenge_phase_split_qs:
+                        challenge_phase_split = challenge_phase_split_qs.first()
+                        serializer = ZipChallengePhaseSplitSerializer(
+                            challenge_phase_split, data=data
+                        )
+                    else:
+                        serializer = ZipChallengePhaseSplitSerializer(data=data)
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        error_messages = serializer.errors
+                        raise RuntimeError()
+
+                response_data = {
+                    "Success": "The challenge {} has been updated successfully".format(
+                        challenge.title
+                    )
                 }
-
-                challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                    challenge_phase__pk=challenge_phase,
-                    dataset_split__pk=dataset_split,
+                return Response(response_data, status=status.HTTP_200_OK)
+            except:  # noqa: E722
+                response_data = {
+                    "error": "Error in creating challenge. Please check the yaml configuration!"
+                }
+                if error_messages:
+                    response_data["error_message"] = json.dumps(error_messages)
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
                 )
-                if challenge_phase_split_qs:
-                    challenge_phase_split = challenge_phase_split_qs.first()
-                    serializer = ZipChallengePhaseSplitSerializer(
-                        challenge_phase_split, data=data
-                    )
-                else:
-                    serializer = ZipChallengePhaseSplitSerializer(data=data)
-                if serializer.is_valid():
-                    serializer.save()
-
-            response_data = {
-                "Success": "The challenge {} has been updated successfully".format(
-                    challenge.title
-                )
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
     else:
         shutil.rmtree(BASE_LOCATION)
         logger.info("Challenge config validation failed. Zip folder removed")
