@@ -681,11 +681,12 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     if (metadata != null && metadata != undefined) {
         // By default all metrics are considered higher is better
         if (metadata[metric] == undefined) {
-            return false;
+            return true;
         }
         return metadata[metric].sort_ascending;
     }
-    return false;
+    // By default all metrics are considered higher is better
+    return true;
   };
 
   /**

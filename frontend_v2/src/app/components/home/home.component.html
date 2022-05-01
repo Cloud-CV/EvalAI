@@ -454,14 +454,14 @@
         <div class="card ev-card-panel ev-challenge-card z-depth-2 hoverable margin-bottom-cancel">
           <div class="row">
             <div class="testimonial-author col s12 m3 l3 center fs-20">
-              <img src="../../../assets/images/profile.png" class="logo"/>
+              <img src="{{ testimonialAuthorImage }}" class="logo" width="100px" height="100px"/>
               <div class="  testimonial-details">
-                <h5 class="name fs-20">{{ testimonialauthor}}</h5>
-                <span class="orgname fs-18">{{ testimonialorg }}</span>
+                <h5 class="name fs-20">{{ testimonialAuthor}}</h5>
+                <span class="orgname fs-18">{{ testimonialOrg }}</span>
               </div>
             </div>
             <div class="col s12 m6 l9 testimonial-body">
-              <span class="fs-24">{{ testimonialbody }}</span>
+              <span class="fs-24">{{ testimonialBody }}</span>
             </div>
           </div>
             <img src="assets/images/testimonials/arrow.png" (click)="testimonialNavigate()" class="testimonial-arrow-left" />
