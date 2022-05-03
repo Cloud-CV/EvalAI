@@ -1001,7 +1001,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def setUp(self):
         super(GetAllChallengesTest, self).setUp()
         self.url = reverse_lazy(
-            "challenges:get_all_challenges", kwargs={"challenge_time": "PAST"}
+            "challenges:get_all_challenges", kwargs={
+                "challenge_time": "PAST",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            }
         )
 
         # Present challenge
@@ -1129,7 +1133,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def test_get_present_challenges(self):
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
-            kwargs={"challenge_time": "PRESENT"},
+            kwargs={
+                "challenge_time": "PRESENT",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
 
         expected = [
@@ -1185,7 +1193,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def test_get_future_challenges(self):
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
-            kwargs={"challenge_time": "FUTURE"},
+            kwargs={
+                "challenge_time": "FUTURE",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
 
         expected = [
@@ -1240,7 +1252,11 @@ class GetAllChallengesTest(BaseAPITestClass):
 
     def test_get_all_challenges(self):
         self.url = reverse_lazy(
-            "challenges:get_all_challenges", kwargs={"challenge_time": "ALL"}
+            "challenges:get_all_challenges", kwargs={
+                "challenge_time": "ALL",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            }
         )
 
         expected = [
@@ -1384,7 +1400,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def test_incorrent_url_pattern_challenges(self):
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
-            kwargs={"challenge_time": "INCORRECT"},
+            kwargs={
+                "challenge_time": "INCORRECT",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
         expected = {"error": "Wrong url pattern!"}
         response = self.client.get(self.url, {}, format="json")

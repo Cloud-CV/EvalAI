@@ -338,7 +338,7 @@ export class ChallengelistComponent implements OnInit {
           SELF.allTeams.forEach((team) => {
             SELF.fetchUnapprovedChallengesFromApi(team);
           });
-          SELF.fetchChallenges();
+          SELF.fetchChallenges(null, null, "all", "all");
         }
       },
       (err) => {
@@ -352,21 +352,32 @@ export class ChallengelistComponent implements OnInit {
   }
 
   /**
+   * Append visibility to challenge API
+   * @param approved_status 
+   * @param visibility 
+   */
+  getFetchChallengeApiPathWithVisibility(path, approved_status = "approved", visibility = "public") {
+    return path + "/" + approved_status + "/" + visibility;
+  }
+
+  /**
    * Fetch Challenges function.
    * @param filter  selected filter
    * @param callback  callback function
    */
-  fetchChallenges(filter = null, callback = null) {
+  fetchChallenges(filter = null, callback = null, approved_status = "approved", visibility = "public") {
     if (!filter) {
       const ALL_PATHS = Object.values(this.apiPathMapping);
       const ALL_KEYS = Object.keys(this.apiPathMapping);
       for (let i = 0; i < ALL_PATHS.length; i++) {
         if (this[ALL_KEYS[i]]) {
-          this.fetchChallengesFromApi(ALL_PATHS[i], callback);
+          let apiPath = this.getFetchChallengeApiPathWithVisibility(ALL_PATHS[i], approved_status, visibility);
+          this.fetchChallengesFromApi(apiPath, callback);
         }
       }
     } else {
-      this.fetchChallengesFromApi(this.apiPathMapping[filter], callback);
+      let apiPath = this.getFetchChallengeApiPathWithVisibility(this.apiPathMapping[filter], approved_status, visibility);
+      this.fetchChallengesFromApi(apiPath, callback);
     }
   }
 
@@ -379,11 +390,11 @@ export class ChallengelistComponent implements OnInit {
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
       (data) => {
-        if (path.endsWith('future')) {
+        if (path.includes('future')) {
           SELF.upcomingChallenges = data['results'];
-        } else if (path.endsWith('present')) {
+        } else if (path.includes('present')) {
           SELF.ongoingChallenges = data['results'];
-        } else if (path.endsWith('past')) {
+        } else if (path.includes('past')) {
           SELF.pastChallenges = data['results'];
         }
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);

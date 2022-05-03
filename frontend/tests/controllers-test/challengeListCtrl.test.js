@@ -44,15 +44,15 @@ describe('Unit tests for challenge list controller', function () {
             spyOn(utilities, 'storeData');
 
             utilities.sendRequest = function (parameters) {
-                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present') ||
-                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future') ||
-                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past')) {
+                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present/approved/public') ||
+                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future/approved/public') ||
+                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past/approved/public')) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
-                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present') ||
-                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future') ||
-                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past')){
+                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present/approved/public') ||
+                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future/approved/public') ||
+                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past/approved/public')){
                     parameters.callback.onError({
                         data: errorResponse
                     });
@@ -60,7 +60,7 @@ describe('Unit tests for challenge list controller', function () {
             };
         });
 
-        it('when no ongoing challenge found `challenges/challenge/present`', function () {
+        it('when no ongoing challenge found `challenges/challenge/present/approved/public`', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -72,7 +72,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.noneCurrentChallenge).toBeTruthy();
         });
 
-        it('check description length and calculate timezone of ongoing challenge `challenges/challenge/present`', function () {
+        it('check description length and calculate timezone of ongoing challenge `challenges/challenge/present/approved/public`', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -120,7 +120,7 @@ describe('Unit tests for challenge list controller', function () {
             }
         });
 
-        it('ongoing challenge backend error `challenges/challenge/present`', function () {
+        it('ongoing challenge backend error `challenges/challenge/present/approved/public`', function () {
             isPresentChallengeSuccess = false; 
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -131,7 +131,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('when no upcoming `challenges/challenge/present`challenge found `challenges/challenge/future`', function () {
+        it('when no upcoming `challenges/challenge/present/approved/public`challenge found `challenges/challenge/future/approved/public`', function () {
             isUpcomingChallengeSucess = true;
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
@@ -191,7 +191,7 @@ describe('Unit tests for challenge list controller', function () {
             }
         });
 
-        it('upcoming challenge backend error `challenges/challenge/future`', function () {
+        it('upcoming challenge backend error `challenges/challenge/future/approved/public`', function () {
             isUpcomingChallengeSucess = false;
             isPresentChallengeSuccess = true; 
             isPastChallengeSuccess = null;
@@ -204,7 +204,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('when no past challenge found `challenges/challenge/past`', function () {
+        it('when no past challenge found `challenges/challenge/past/approved/public`', function () {
             isPastChallengeSuccess = true;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
@@ -216,7 +216,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.nonePastChallenge).toBeTruthy();
         });
 
-        it('check description length and calculate timezone of past challenge `challenges/challenge/past`', function () {
+        it('check description length and calculate timezone of past challenge `challenges/challenge/past/approved/public`', function () {
             isPastChallengeSuccess = true;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
@@ -265,7 +265,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('past challenge backend error `challenges/challenge/past`', function () {
+        it('past challenge backend error `challenges/challenge/past/approved/public`', function () {
             isPastChallengeSuccess = false;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
