@@ -44,7 +44,7 @@ describe('Unit tests for dashboard controller', function () {
 
             utilities.sendRequest = function (parameters) {
                 if ((isUserDetails == true && parameters.url == 'auth/user/') ||
-                (isPresentChallenge == true && parameters.url == 'challenges/challenge/present') ||
+                (isPresentChallenge == true && parameters.url == 'challenges/challenge/present/approved/public') ||
                 (isHostTeam == true && parameters.url == 'hosts/challenge_host_team/') ||
                 (isParticipantTeam == true && parameters.url == 'participants/participant_team')) {
                     parameters.callback.onSuccess({
@@ -52,7 +52,7 @@ describe('Unit tests for dashboard controller', function () {
                         status: 200
                     });
                 } else if ((isUserDetails == false && parameters.url == 'auth/user/') ||
-                (isPresentChallenge == false && parameters.url == 'challenges/challenge/present') ||
+                (isPresentChallenge == false && parameters.url == 'challenges/challenge/present/approved/public') ||
                 (isHostTeam == false && parameters.url == 'hosts/challenge_host_team/') ||
                 (isParticipantTeam == false && parameters.url == 'participants/participant_team')){
                     parameters.callback.onError({
@@ -108,7 +108,7 @@ describe('Unit tests for dashboard controller', function () {
             expect($rootScope.isAuth).toBeFalsy();
         });
 
-        it('get all ongoing challenges `challenges/challenge/present`', function () {
+        it('get all ongoing challenges `challenges/challenge/present/approved/public`', function () {
             isUserDetails = null;
             isPresentChallenge = true;
             isHostTeam = null;
@@ -132,7 +132,7 @@ describe('Unit tests for dashboard controller', function () {
             expect(vm.hostTeamExist).toBeFalsy();
         });
 
-        it('403 backend error on getting all ongoing challenges `challenges/challenge/present`', function () {
+        it('403 backend error on getting all ongoing challenges `challenges/challenge/present/approved/public`', function () {
             isUserDetails = null;
             isPresentChallenge = false;
             isHostTeam = null;
@@ -146,7 +146,7 @@ describe('Unit tests for dashboard controller', function () {
             expect(vm.isPrivileged).toEqual(false);
         });
 
-        it('401 backend error on getting all ongoing challenges `challenges/challenge/present`', function () {
+        it('401 backend error on getting all ongoing challenges `challenges/challenge/present/approved/public`', function () {
             isUserDetails = null;
             isPresentChallenge = false;
             isHostTeam = null;
