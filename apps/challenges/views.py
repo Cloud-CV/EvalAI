@@ -522,7 +522,7 @@ def disable_challenge(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def get_all_challenges(request, challenge_time):
+def get_all_challenges(request, challenge_time, challenge_approved, challenge_published):
     """
     Returns the list of all challenges
     """
@@ -531,7 +531,21 @@ def get_all_challenges(request, challenge_time):
         response_data = {"error": "Wrong url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    q_params = {"published": True, "approved_by_admin": True}
+    if challenge_approved.lower() not in ("all", "approved", "unapproved"):
+        response_data = {"error": "Wrong challenge approval status!"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if challenge_published.lower() not in ("all", "public", "private"):
+        response_data = {"error": "Wrong challenge published status!"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    q_params = {}
+    if challenge_approved.lower() != "all":
+        q_params["approved_by_admin"] = (challenge_approved.lower() == "approved")
+
+    if challenge_published.lower() != "all":
+        q_params["published"] = (challenge_published.lower() == "public")
+
     if challenge_time.lower() == "past":
         q_params["end_date__lt"] = timezone.now()
 
