@@ -38,17 +38,6 @@ services:
     volumes:
       - .:/code
 
-  worker_py3_8:
-    env_file:
-      - docker/dev/docker.env
-    build:
-      context: ./
-      dockerfile: docker/dev/worker_py3.8/Dockerfile
-    depends_on:
-      - django
-    volumes:
-      - .:/code
-
   nodejs:
     hostname: nodejs
     build:
