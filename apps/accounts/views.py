@@ -66,10 +66,12 @@ def get_auth_token(request):
             token_serializer.save()
         token = token_serializer.instance
 
-    outstanding_token = OutstandingToken.objects.filter(user=user).order_by("-created_at")[0]
+    outstanding_token = OutstandingToken.objects.filter(user=user).order_by(
+        "-created_at"
+    )[0]
     response_data = {
         "token": "{}".format(token.refresh_token),
-        "expires_at": outstanding_token.expires_at
+        "expires_at": outstanding_token.expires_at,
     }
     return Response(response_data, status=status.HTTP_200_OK)
 

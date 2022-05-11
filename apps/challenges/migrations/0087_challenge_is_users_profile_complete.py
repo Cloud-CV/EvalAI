@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0086_add_is_multi_metric_leaderboard_field'),
+        ("challenges", "0086_add_is_multi_metric_leaderboard_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='is_users_profile_complete',
+            model_name="challenge",
+            name="is_users_profile_complete",
             field=models.BooleanField(default=False),
         ),
     ]

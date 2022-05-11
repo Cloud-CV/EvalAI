@@ -39,6 +39,7 @@ from jobs.serializers import ChallengeSubmissionManagementSerializer
 
 from accounts.models import Profile
 
+
 class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
@@ -630,14 +631,24 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.user_complete = User.objects.create(
             username="someuser_complete",
             email="user@test.com",
-            password="some_secret_password"
+            password="some_secret_password",
         )
 
-        list(Profile.objects.filter(user=self.user_complete))[0].contact_number = "5551237890"
-        list(Profile.objects.filter(user=self.user_complete))[0].affiliation = "X University"
-        list(Profile.objects.filter(user=self.user_complete))[0].github_url = "https://www.github.com/someuser5"
-        list(Profile.objects.filter(user=self.user_complete))[0].google_scholar_url = "https://scholar.google.com/someruser5"
-        list(Profile.objects.filter(user=self.user_complete))[0].linkedin_url = "https://www.linkedin.com/someuser5"
+        list(Profile.objects.filter(user=self.user_complete))[
+            0
+        ].contact_number = "5551237890"
+        list(Profile.objects.filter(user=self.user_complete))[
+            0
+        ].affiliation = "X University"
+        list(Profile.objects.filter(user=self.user_complete))[
+            0
+        ].github_url = "https://www.github.com/someuser5"
+        list(Profile.objects.filter(user=self.user_complete))[
+            0
+        ].google_scholar_url = "https://scholar.google.com/someruser5"
+        list(Profile.objects.filter(user=self.user_complete))[
+            0
+        ].linkedin_url = "https://www.linkedin.com/someuser5"
 
         EmailAddress.objects.create(
             user=self.user4,
@@ -704,13 +715,14 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.participant_team3 = ParticipantTeam.objects.create(
             team_name="Some Participant Team by User 4", created_by=self.user4
         )
-        
+
         self.participant_team_complete = ParticipantTeam.objects.create(
-            team_name="Some Participant Team by Profile-Complete User", created_by=self.user_complete
+            team_name="Some Participant Team by Profile-Complete User",
+            created_by=self.user_complete,
         )
 
         # self.participant_team_multi_incomplete.part
-        
+
         # self.participant_complete = Participant.objects.create(
         #     user=self.user_complete,
         #     status=Participant.ACCEPTED,
@@ -736,7 +748,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         )
 
         self.participant_team4 = ParticipantTeam.objects.create(
-            team_name="Some Participant Team 2 by User 2", created_by=self.user2
+            team_name="Some Participant Team 2 by User 2",
+            created_by=self.user2,
         )
 
         self.participant5 = Participant.objects.create(
@@ -747,13 +760,13 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         self.participant_team_multi_incomplete = ParticipantTeam.objects.create(
             team_name="Some Participant Team with one Profile-Complete User and one Incomplete User",
-            created_by=self.user_complete
+            created_by=self.user_complete,
         )
 
         self.participant_incomplete = Participant.objects.create(
             user=self.user4,
             status=Participant.ACCEPTED,
-            team=self.participant_team_multi_incomplete
+            team=self.participant_team_multi_incomplete,
         )
 
     def test_registration_is_closed_for_a_particular_challenge(self):
@@ -922,7 +935,9 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_participation_when_participant_team_member_is_not_in_allowed_list(self):
+    def test_participation_when_participant_team_member_is_not_in_allowed_list(
+        self,
+    ):
         self.client.force_authenticate(user=self.participant_team4.created_by)
         self.challenge2.allowed_email_domains.extend(["example1", "example2"])
         self.challenge2.save()
@@ -956,7 +971,9 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_participation_when_all_member_profile_not_filled_and_challenge_requires_filled_profile(self):
+    def test_participation_when_all_member_profile_not_filled_and_challenge_requires_filled_profile(
+        self,
+    ):
         self.client.force_authenticate(user=self.participant_team4.created_by)
         self.challenge2.is_users_profile_complete = True
         self.challenge2.save()
@@ -975,8 +992,12 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_participation_when_all_member_profile_filled_and_challenge_requires_filled_profile(self):
-        self.client.force_authenticate(user=self.participant_team_complete.created_by)
+    def test_participation_when_all_member_profile_filled_and_challenge_requires_filled_profile(
+        self,
+    ):
+        self.client.force_authenticate(
+            user=self.participant_team_complete.created_by
+        )
         self.challenge2.is_users_profile_complete = True
         self.challenge2.save()
         self.url = reverse_lazy(
@@ -989,8 +1010,12 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_participation_when_some_member_profile_not_filled_and_challenge_requires_filled_profile(self):
-        self.client.force_authenticate(user=self.participant_team_multi_incomplete.created_by)
+    def test_participation_when_some_member_profile_not_filled_and_challenge_requires_filled_profile(
+        self,
+    ):
+        self.client.force_authenticate(
+            user=self.participant_team_multi_incomplete.created_by
+        )
         self.challenge2.is_users_profile_complete = True
         self.challenge2.save()
         self.url = reverse_lazy(
@@ -1007,6 +1032,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
 
 class DisableChallengeTest(BaseAPITestClass):
     def setUp(self):
@@ -1097,11 +1123,12 @@ class GetAllChallengesTest(BaseAPITestClass):
     def setUp(self):
         super(GetAllChallengesTest, self).setUp()
         self.url = reverse_lazy(
-            "challenges:get_all_challenges", kwargs={
+            "challenges:get_all_challenges",
+            kwargs={
                 "challenge_time": "PAST",
                 "challenge_approved": "APPROVED",
                 "challenge_published": "PUBLIC",
-            }
+            },
         )
 
         # Present challenge
@@ -1348,11 +1375,12 @@ class GetAllChallengesTest(BaseAPITestClass):
 
     def test_get_all_challenges(self):
         self.url = reverse_lazy(
-            "challenges:get_all_challenges", kwargs={
+            "challenges:get_all_challenges",
+            kwargs={
                 "challenge_time": "ALL",
                 "challenge_approved": "APPROVED",
                 "challenge_published": "PUBLIC",
-            }
+            },
         )
 
         expected = [

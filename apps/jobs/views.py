@@ -1836,9 +1836,7 @@ def re_run_submission_by_host(request, submission_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if submission.ignore_submission:
-        response_data = {
-            "error": "Deleted submissions can't be re-run"
-        }
+        response_data = {"error": "Deleted submissions can't be re-run"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # get the challenge and challenge phase object

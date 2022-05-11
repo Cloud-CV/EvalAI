@@ -26,9 +26,7 @@ from .models import (
     ParticipantTeam,
 )
 
-from accounts.models import (
-    Profile
-)
+from accounts.models import Profile
 
 logger = logging.getLogger(__name__)
 
@@ -412,10 +410,16 @@ def is_user_profile_filled(user):
         return False
     else:
         user_profile = users_list[0]
-        if not user_profile.contact_number or user_profile.affiliation == "" or \
-                not user_profile.github_url or user_profile.github_url == "" or \
-                not user_profile.google_scholar_url or user_profile.google_scholar_url == "" or \
-                not user_profile.linkedin_url or user_profile.linkedin_url == "":
+        if (
+            not user_profile.contact_number
+            or user_profile.affiliation == ""
+            or not user_profile.github_url
+            or user_profile.github_url == ""
+            or not user_profile.google_scholar_url
+            or user_profile.google_scholar_url == ""
+            or not user_profile.linkedin_url
+            or user_profile.linkedin_url == ""
+        ):
             return False
         else:
             return True
