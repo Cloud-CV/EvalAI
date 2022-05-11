@@ -58,6 +58,12 @@ class ParticipantTeam(TimeStampedModel):
         )
         return list(email_ids)
 
+    def get_all_participants(self):
+        email_ids = Participant.objects.filter(team=self).values_list(
+            "user", flat=True
+        )
+        return list(email_ids)
+
     class Meta:
         app_label = "participants"
         db_table = "participant_team"
