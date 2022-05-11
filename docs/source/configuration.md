@@ -30,6 +30,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
 
+- **is_users_profile_complete**: True/False (specify whether all participants must have a complete profile (Contact Number, Affiliation, etc...))
+
 - **leaderboard**:
   A leaderboard for a challenge on EvalAI consists of following subfields:
 
