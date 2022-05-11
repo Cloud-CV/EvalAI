@@ -173,6 +173,9 @@ class Challenge(TimeStampedModel):
     desired_worker_instance = models.IntegerField(
         null=True, blank=True, default=1
     )
+    is_users_profile_complete = models.BooleanField(
+        default=False, verbose_name="Is Users Profile Complete"
+    )
 
     class Meta:
         app_label = "challenges"

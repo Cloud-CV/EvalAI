@@ -71,3 +71,16 @@ def get_list_of_challenges_participated_by_a_user(user):
     """Returns list of challenges participated by a user"""
     participant_teams = get_participant_teams_for_user(user)
     return get_list_of_challenges_for_participant_team(participant_teams)
+
+
+def is_user_profile_complete(user):
+    """Returns boolean if the user has completed their profile"""
+    return (
+        user.profile.contact_number
+        and user.profile.affiliation
+        and user.profile.receive_participated_challenge_updates
+        and user.profile.recieve_newsletter
+        and user.profile.github_url
+        and user.profile.google_scholar_url
+        and user.profile.linkedin_url
+    )

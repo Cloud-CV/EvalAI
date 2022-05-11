@@ -268,6 +268,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
+            "is_users_profile_complete",
         )
 
 

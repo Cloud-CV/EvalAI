@@ -91,6 +91,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
     is_user_creator_of_participant_team,
+    is_user_profile_complete,
 )
 
 from .models import (
@@ -239,7 +240,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
             elif "terms_and_conditions_file" in request.FILES:
-                terms_and_conditions_file = request.FILES["terms_and_conditions_file"]
+                terms_and_conditions_file = request.FILES[
+                    "terms_and_conditions_file"
+                ]
                 terms_and_conditions = terms_and_conditions_file.read()
                 request.data["terms_and_conditions"] = terms_and_conditions
                 serializer = ZipChallengeSerializer(
@@ -252,7 +255,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
             elif "submission_guidelines_file" in request.FILES:
-                submission_guidelines_file = request.FILES["submission_guidelines_file"]
+                submission_guidelines_file = request.FILES[
+                    "submission_guidelines_file"
+                ]
                 submission_guidelines = submission_guidelines_file.read()
                 request.data["submission_guidelines"] = submission_guidelines
                 serializer = ZipChallengeSerializer(
@@ -265,7 +270,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
             elif "evaluation_criteria_file" in request.FILES:
-                evaluation_criteria_file = request.FILES["evaluation_criteria_file"]
+                evaluation_criteria_file = request.FILES[
+                    "evaluation_criteria_file"
+                ]
                 evaluation_criteria = evaluation_criteria_file.read()
                 request.data["evaluation_details"] = evaluation_criteria
                 serializer = ZipChallengeSerializer(
@@ -444,7 +451,9 @@ def add_participant_team_to_challenge(
             domains = "{}{}{}".format(domains, "/", domain)
         domains = domains[1:]
         for participant_email in participant_team.get_all_participants_email():
-            if not is_user_in_allowed_email_domains(participant_email, challenge_pk):
+            if not is_user_in_allowed_email_domains(
+                participant_email, challenge_pk
+            ):
                 message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
                     to participate in this challenge."
                 response_data = {"error": message.format(domains)}
@@ -490,6 +499,17 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    # Check if user profile is complete if needed
+    if challenge.is_users_profile_complete and not is_user_profile_complete(
+        request.user
+    ):
+        response_data = {
+            "error": "Please complete your EvalAI profile to participate in the challenge",
+            "challenge_id": int(challenge_pk),
+            "participant_team_id": int(participant_team_pk),
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     if participant_team.challenge_set.filter(id=challenge_pk).exists():
         response_data = {
             "error": "Team already exists",
@@ -522,7 +542,9 @@ def disable_challenge(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def get_all_challenges(request, challenge_time, challenge_approved, challenge_published):
+def get_all_challenges(
+    request, challenge_time, challenge_approved, challenge_published
+):
     """
     Returns the list of all challenges
     """
@@ -541,10 +563,12 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
 
     q_params = {}
     if challenge_approved.lower() != "all":
-        q_params["approved_by_admin"] = (challenge_approved.lower() == "approved")
+        q_params["approved_by_admin"] = (
+            challenge_approved.lower() == "approved"
+        )
 
     if challenge_published.lower() != "all":
-        q_params["published"] = (challenge_published.lower() == "public")
+        q_params["published"] = challenge_published.lower() == "public"
 
     if challenge_time.lower() == "past":
         q_params["end_date__lt"] = timezone.now()
@@ -781,7 +805,9 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
             if "phase_description_file" in request.FILES:
-                phase_description_file = request.FILES["phase_description_file"]
+                phase_description_file = request.FILES[
+                    "phase_description_file"
+                ]
                 phase_description = phase_description_file.read()
                 request.data["description"] = phase_description
                 serializer = ChallengePhaseCreateSerializer(
@@ -1514,25 +1540,37 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
-                if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
-                    message = (
-                        "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                if (
+                    challenge_phase_ids.get(str(data["challenge_phase_id"]))
+                    is None
+                ):
+                    message = "Challenge phase with phase id {} doesn't exist.".format(
+                        data["challenge_phase_id"]
                     )
                     response_data = {"error": message}
-                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response(
+                        response_data, status.HTTP_406_NOT_ACCEPTABLE
+                    )
                 if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
-                    message = (
-                        "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                    message = "Leaderboard with id {} doesn't exist.".format(
+                        data["leaderboard_id"]
                     )
                     response_data = {"error": message}
-                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response(
+                        response_data, status.HTTP_406_NOT_ACCEPTABLE
+                    )
                 leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
-                    message = (
-                        "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                if (
+                    dataset_split_ids.get(str(data["dataset_split_id"]))
+                    is None
+                ):
+                    message = "Dataset split with id {} doesn't exist.".format(
+                        data["dataset_split_id"]
                     )
                     response_data = {"error": message}
-                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response(
+                        response_data, status.HTTP_406_NOT_ACCEPTABLE
+                    )
                 challenge_phase = challenge_phase_ids[
                     str(data["challenge_phase_id"])
                 ]
@@ -1540,8 +1578,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     str(data["dataset_split_id"])
                 ]
                 visibility = data["visibility"]
-                leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
-                is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
+                leaderboard_decimal_precision = data[
+                    "leaderboard_decimal_precision"
+                ]
+                is_leaderboard_order_descending = data[
+                    "is_leaderboard_order_descending"
+                ]
 
                 data = {
                     "challenge_phase": challenge_phase,
@@ -1549,7 +1591,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "dataset_split": dataset_split,
                     "visibility": visibility,
                     "leaderboard_decimal_precision": leaderboard_decimal_precision,
-                    "is_leaderboard_order_descending": is_leaderboard_order_descending
+                    "is_leaderboard_order_descending": is_leaderboard_order_descending,
                 }
 
                 serializer = ZipChallengePhaseSplitSerializer(data=data)
@@ -2288,7 +2330,7 @@ def get_or_update_leaderboard(request, leaderboard_pk):
 
     if request.method == "PATCH":
         if "schema" in request.data.keys():
-            request.data['schema'] = json.loads(request.data['schema'])
+            request.data["schema"] = json.loads(request.data["schema"])
         serializer = LeaderboardSerializer(
             leaderboard, data=request.data, partial=True
         )
@@ -3370,24 +3412,45 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "challenge_phase_splits"
                     ]
                     for data in challenge_phase_splits_data:
-                        if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
-                            message = (
-                                "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                        if (
+                            challenge_phase_ids.get(
+                                str(data["challenge_phase_id"])
+                            )
+                            is None
+                        ):
+                            message = "Challenge phase with phase id {} doesn't exist.".format(
+                                data["challenge_phase_id"]
                             )
                             response_data = {"error": message}
-                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                        if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                            return Response(
+                                response_data, status.HTTP_406_NOT_ACCEPTABLE
+                            )
+                        if (
+                            leaderboard_ids.get(str(data["leaderboard_id"]))
+                            is None
+                        ):
                             message = (
-                                "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                                "Leaderboard with id {} doesn't exist.".format(
+                                    data["leaderboard_id"]
+                                )
                             )
                             response_data = {"error": message}
-                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                        if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
-                            message = (
-                                "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                            return Response(
+                                response_data, status.HTTP_406_NOT_ACCEPTABLE
+                            )
+                        if (
+                            dataset_split_ids.get(
+                                str(data["dataset_split_id"])
+                            )
+                            is None
+                        ):
+                            message = "Dataset split with id {} doesn't exist.".format(
+                                data["dataset_split_id"]
                             )
                             response_data = {"error": message}
-                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            return Response(
+                                response_data, status.HTTP_406_NOT_ACCEPTABLE
+                            )
                         challenge_phase = challenge_phase_ids[
                             str(data["challenge_phase_id"])
                         ]
@@ -3398,8 +3461,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["dataset_split_id"])
                         ]
                         visibility = data["visibility"]
-                        leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
-                        is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
+                        leaderboard_decimal_precision = data[
+                            "leaderboard_decimal_precision"
+                        ]
+                        is_leaderboard_order_descending = data[
+                            "is_leaderboard_order_descending"
+                        ]
 
                         data = {
                             "challenge_phase": challenge_phase,
@@ -3407,7 +3474,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "dataset_split": dataset_split,
                             "visibility": visibility,
                             "is_leaderboard_order_descending": is_leaderboard_order_descending,
-                            "leaderboard_decimal_precision": leaderboard_decimal_precision
+                            "leaderboard_decimal_precision": leaderboard_decimal_precision,
                         }
 
                         serializer = ZipChallengePhaseSplitSerializer(
@@ -3501,9 +3568,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
             try:
                 error_messages = None
                 # Updating ChallengeConfiguration object
-                challenge_configuration = ChallengeConfiguration.objects.filter(
-                    challenge=challenge.pk
-                ).first()
+                challenge_configuration = (
+                    ChallengeConfiguration.objects.filter(
+                        challenge=challenge.pk
+                    ).first()
+                )
                 serializer = ChallengeConfigSerializer(
                     challenge_configuration,
                     data=request.data,
@@ -3536,12 +3605,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 leaderboard_ids = {}
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
                 for data in yaml_file_data_of_leaderboard:
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__challenge__pk=challenge.pk,
-                        leaderboard__config_id=data["config_id"],
+                    challenge_phase_split_qs = (
+                        ChallengePhaseSplit.objects.filter(
+                            challenge_phase__challenge__pk=challenge.pk,
+                            leaderboard__config_id=data["config_id"],
+                        )
                     )
                     if challenge_phase_split_qs:
-                        challenge_phase_split = challenge_phase_split_qs.first()
+                        challenge_phase_split = (
+                            challenge_phase_split_qs.first()
+                        )
                         leaderboard = challenge_phase_split.leaderboard
                         serializer = LeaderboardSerializer(
                             leaderboard,
@@ -3554,7 +3627,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        leaderboard_ids[str(data["id"])] = serializer.instance.pk
+                        leaderboard_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
                     else:
                         error_messages = serializer.errors
                         raise RuntimeError()
@@ -3563,7 +3638,8 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
                 for data, challenge_test_annotation_file in zip(
-                    challenge_phases_data, files["challenge_test_annotation_files"]
+                    challenge_phases_data,
+                    files["challenge_test_annotation_files"],
                 ):
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]
@@ -3614,15 +3690,21 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         raise RuntimeError()
 
                 # Updating DatasetSplit objects
-                yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
+                yaml_file_data_of_dataset_split = yaml_file_data[
+                    "dataset_splits"
+                ]
                 dataset_split_ids = {}
                 for data in yaml_file_data_of_dataset_split:
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__challenge__pk=challenge.pk,
-                        dataset_split__config_id=data["id"],
+                    challenge_phase_split_qs = (
+                        ChallengePhaseSplit.objects.filter(
+                            challenge_phase__challenge__pk=challenge.pk,
+                            dataset_split__config_id=data["id"],
+                        )
                     )
                     if challenge_phase_split_qs:
-                        challenge_phase_split = challenge_phase_split_qs.first()
+                        challenge_phase_split = (
+                            challenge_phase_split_qs.first()
+                        )
                         dataset_split = challenge_phase_split.dataset_split
                         serializer = DatasetSplitSerializer(
                             dataset_split,
@@ -3635,7 +3717,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        dataset_split_ids[str(data["id"])] = serializer.instance.pk
+                        dataset_split_ids[
+                            str(data["id"])
+                        ] = serializer.instance.pk
                     else:
                         error_messages = serializer.errors
                         raise RuntimeError()
@@ -3645,24 +3729,45 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     "challenge_phase_splits"
                 ]
                 for data in challenge_phase_splits_data:
-                    if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
-                        message = (
-                            "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                    if (
+                        challenge_phase_ids.get(
+                            str(data["challenge_phase_id"])
+                        )
+                        is None
+                    ):
+                        message = "Challenge phase with phase id {} doesn't exist.".format(
+                            data["challenge_phase_id"]
                         )
                         response_data = {"error": message}
-                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                    if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                        return Response(
+                            response_data, status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                    if (
+                        leaderboard_ids.get(str(data["leaderboard_id"]))
+                        is None
+                    ):
                         message = (
-                            "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                            "Leaderboard with id {} doesn't exist.".format(
+                                data["leaderboard_id"]
+                            )
                         )
                         response_data = {"error": message}
-                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                    if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                        return Response(
+                            response_data, status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                    if (
+                        dataset_split_ids.get(str(data["dataset_split_id"]))
+                        is None
+                    ):
                         message = (
-                            "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                            "Dataset split with id {} doesn't exist.".format(
+                                data["dataset_split_id"]
+                            )
                         )
                         response_data = {"error": message}
-                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response(
+                            response_data, status.HTTP_406_NOT_ACCEPTABLE
+                        )
                     challenge_phase = challenge_phase_ids[
                         str(data["challenge_phase_id"])
                     ]
@@ -3679,17 +3784,23 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "visibility": visibility,
                     }
 
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__pk=challenge_phase,
-                        dataset_split__pk=dataset_split,
+                    challenge_phase_split_qs = (
+                        ChallengePhaseSplit.objects.filter(
+                            challenge_phase__pk=challenge_phase,
+                            dataset_split__pk=dataset_split,
+                        )
                     )
                     if challenge_phase_split_qs:
-                        challenge_phase_split = challenge_phase_split_qs.first()
+                        challenge_phase_split = (
+                            challenge_phase_split_qs.first()
+                        )
                         serializer = ZipChallengePhaseSplitSerializer(
                             challenge_phase_split, data=data
                         )
                     else:
-                        serializer = ZipChallengePhaseSplitSerializer(data=data)
+                        serializer = ZipChallengePhaseSplitSerializer(
+                            data=data
+                        )
                     if serializer.is_valid():
                         serializer.save()
                     else:

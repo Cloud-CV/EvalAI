@@ -8,6 +8,7 @@ submission_guidelines: submission_guidelines.html
 evaluation_script: evaluation_script.zip
 start_date: 2017-06-09 20:00:00
 end_date: 2017-06-19 20:00:00
+is_users_profile_complete: False
 
 leaderboard:
   - id: 1
