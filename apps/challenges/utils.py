@@ -26,6 +26,10 @@ from .models import (
     ParticipantTeam,
 )
 
+from accounts.models import (
+    Profile
+)
+
 logger = logging.getLogger(__name__)
 
 get_challenge_model = get_model_object(Challenge)
@@ -399,6 +403,22 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
         if domain.lower() in email.lower():
             return True
     return False
+
+
+def is_user_profile_filled(user):
+    users_list = list(Profile.objects.filter(user=user))
+    if len(users_list) == 0:
+        # This shouldn't happen, it means the user doesn't exist
+        return False
+    else:
+        user_profile = users_list[0]
+        if not user_profile.contact_number or user_profile.affiliation == "" or \
+                not user_profile.github_url or user_profile.github_url == "" or \
+                not user_profile.google_scholar_url or user_profile.google_scholar_url == "" or \
+                not user_profile.linkedin_url or user_profile.linkedin_url == "":
+            return False
+        else:
+            return True
 
 
 def get_unique_alpha_numeric_key(length):
