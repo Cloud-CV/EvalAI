@@ -3596,6 +3596,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             partial=True,
                         )
                     else:
+                        # Override the submission_meta_attributes when they are missing
+                        submission_meta_attributes = data.get("submission_meta_attributes")
+                        if submission_meta_attributes is None:
+                            data["submission_meta_attributes"] = None
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
                             data=data,
