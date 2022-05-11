@@ -61,6 +61,7 @@ from challenges.utils import (
     get_leaderboard_model,
     get_participant_model,
     get_unique_alpha_numeric_key,
+    is_user_profile_filled,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
@@ -468,6 +469,16 @@ def add_participant_team_to_challenge(
         .filter(team__id=participant_team_pk)
         .values_list("user", flat=True)
     )
+
+    # check to disallow the user if they have not filled out their user profile
+    if challenge.is_users_profile_complete:
+        # placeholder, assumes user hasn't filled it out
+        # user_email.
+        for user in participant_team.get_all_participants():
+            if not is_user_profile_filled(user):
+                message = "Please complete your EvalAI profile to participate in the challenge."
+                response_data = {"error": message}
+                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for user in participant_team_user_ids:
         if has_user_participated_in_challenge(user, challenge_pk):

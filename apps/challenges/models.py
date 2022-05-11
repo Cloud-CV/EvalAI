@@ -64,6 +64,7 @@ class Challenge(TimeStampedModel):
     )
     submission_time_limit = models.PositiveIntegerField(default=86400)
     is_registration_open = models.BooleanField(default=True)
+    is_users_profile_complete = models.BooleanField(default=False)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
     leaderboard_description = models.TextField(null=True, blank=True)
