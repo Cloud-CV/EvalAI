@@ -187,6 +187,7 @@
                   <td>{{ initial_ranking[key.id] }}</td>
                   <td class="fw-light">
                     {{ key.submission__participant_team__team_name }}
+                    <span *ngIf="key.submission__method_name">({{key.submission__method_name | slice:0:30}})</span>
                     <span *ngIf="key.submission__is_public === false && isSelectedPhaseLeaderboardPublic" class="private">
                       <mat-chip-list>
                         <mat-chip>P</mat-chip>
