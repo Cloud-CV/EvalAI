@@ -189,7 +189,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   entryHighlighted: any = null;
 
   /**
-   * An interval for fetching the leaderboard data in every 5 seconds
+   * An interval for fetching the leaderboard data in every 1 minute
    */
   pollingInterval: any;
 
@@ -587,7 +587,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         },
         () => {}
       );
-    }, 5000);
+    }, 60000);
   }
 
   /**

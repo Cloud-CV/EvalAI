@@ -564,7 +564,7 @@ def change_submission_data_and_visibility(
     },
 )
 @api_view(["GET"])
-@throttle_classes([AnonRateThrottle])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """
     Returns leaderboard for a corresponding Challenge Phase Split
