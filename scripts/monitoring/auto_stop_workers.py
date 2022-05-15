@@ -63,7 +63,7 @@ def is_unapproved_challenge(workers, approved_by_admin, created_at):
     return (
         workers is not None
         and not approved_by_admin
-        and (current_date - created_at).days >= 3
+        and (current_date - created_at).days >= 2
     )
 
 
