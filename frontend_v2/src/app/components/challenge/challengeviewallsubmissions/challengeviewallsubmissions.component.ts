@@ -284,7 +284,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         if (name === SELF.filterSubmissionsQuery) {
           SELF.submissionCount = data['count'];
           SELF.submissions = data['results'];
-          console.log(SELF.submissions);
           let index = 0;
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
