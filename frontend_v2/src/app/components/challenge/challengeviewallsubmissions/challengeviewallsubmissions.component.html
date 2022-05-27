@@ -104,7 +104,7 @@
               *ngIf="
                 column !== 'status' &&
                 element[column] !== null &&
-                column !== 'submitted_file' &&
+                column !== 'input_file' &&
                 column !== 'submission_result_file' &&
                 column !== 's_no'
               "
@@ -115,7 +115,7 @@
               target="_blank"
               class="blue-text"
               [href]="element[column]"
-              *ngIf="element[column] !== null && (column === 'submitted_file' || column === 'submission_result_file')"
+              *ngIf="element[column] !== null && (column === 'input_file' || column === 'submission_result_file')"
             >
               <i class="fa fa-external-link"></i>
               Link
