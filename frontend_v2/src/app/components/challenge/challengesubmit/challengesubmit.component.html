@@ -260,7 +260,7 @@
             </li>
             <li class="content fw-light fs-16"> Make Submission<br />
               <code
-                #make_submission>$ evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+                #make_submission>$ evalai challenge {{challenge.id}} phase {{selectedPhase.id}} submit --file &lt;submission_file_path&gt; --large</code>
               <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
                 value="evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large"
                 (click)="copyTextToClipboard(make_submission)">
