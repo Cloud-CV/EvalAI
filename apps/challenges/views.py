@@ -3151,6 +3151,7 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
         response = Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return response
 
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -3209,6 +3210,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return Response(response_data, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])

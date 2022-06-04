@@ -94,6 +94,7 @@ VPC_DICT = {
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg"),
 }
 
+
 def scale_resources(challenge, new_cores, new_memory):
     client = get_boto3_client("ecs", aws_keys)
     if challenge.worker_cpu_cores == new_cores and challenge.worker_memory == new_memory:
@@ -166,7 +167,6 @@ def scale_resources(challenge, new_cores, new_memory):
             challenge.save()
             force_new_deployment = False
             service_name = "{}_service".format(queue_name)
-            num_of_tasks = challenge.workers
             kwargs = update_service_args.format(
                 CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
                 service_name=service_name,
