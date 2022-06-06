@@ -97,7 +97,7 @@ To update the challenge on EvalAI, make changes in the repository and push on `c
 
 ### Step 1: Setup challenge configuration
 
-We have created a sample challenge configuration that we recommend you to use to get started. Fork and clone [EvalAI-Starters] repository to start.
+We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template to start.
 
 ### Step 2: Edit challenge configuration
 
@@ -116,10 +116,10 @@ Please refer to the [writing evaluation script](evaluation_scripts.html) to comp
 Almost there. You just need to update the HTML templates in the `templates/` directory of the bundle that you cloned.
 
 EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
-
+<!-- 
 ### Step 5: Upload configuration on EvalAI
 
-Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`. -->
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
@@ -131,7 +131,7 @@ If you have issues in creating a challenge on EvalAI, please feel free to contac
 
 Steps to create a Code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
 
-We have created a sample challenge configuration that we recommend you to use to get started. Fork and clone [EvalAI-Starters] repository to start.
+We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template to start.
 
 ### Step 2: Edit challenge configuration
 
@@ -156,9 +156,9 @@ Almost there. You just need to update the HTML templates in the `templates/` dir
 
 EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
 
-### Step 5: Upload configuration on EvalAI
+<!-- ### Step 5: Upload configuration on EvalAI
 
-Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`. -->
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
