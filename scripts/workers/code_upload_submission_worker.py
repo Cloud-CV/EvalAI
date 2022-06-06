@@ -683,9 +683,7 @@ def main():
         "submission_time_limit"
     )
     while True:
-        # Equal distribution of queue messages among submission worker and code upload worker
-        if challenge.get("is_static_dataset_code_upload"):
-            time.sleep(0.5)
+        time.sleep(2)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
