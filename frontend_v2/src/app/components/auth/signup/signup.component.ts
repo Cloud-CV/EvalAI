@@ -62,10 +62,11 @@ export class SignupComponent implements OnInit, AfterViewInit {
   // Function to signup
   userSignUp(signupFormValid) {
     if (signupFormValid) {
+      let email = this.authService.regUser['email'];
       this.globalService.startLoader('Setting up your details!');
       const SIGNUP_BODY = JSON.stringify({
         username: this.authService.regUser['name'],
-        email: this.authService.regUser['email'],
+        email: email.toLowerCase(),
         password1: this.authService.regUser['password'],
         password2: this.authService.regUser['confirm_password'],
       });
