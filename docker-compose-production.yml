@@ -54,6 +54,7 @@ services:
         NODE_ENV: production
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /code/node_modules
       - /code/bower_components
@@ -73,7 +74,6 @@ services:
         NODE_ENV: production
     ports:
       - "9999:80"
-      - "443:443"
     volumes:
       - /code/node_modules
     logging:
