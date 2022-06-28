@@ -137,6 +137,10 @@ class Challenge(TimeStampedModel):
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
+    # Challenge evaluation worker service name
+    service_name = models.CharField(
+        null=True, blank=True, max_length=2048, default=""
+    )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
     # Identifier for the github repository of a challenge in format: account_name/repository_name
     github_repository = models.CharField(

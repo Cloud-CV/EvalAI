@@ -147,6 +147,11 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   workerLogs = [];
 
   /**
+   * Store worker statuses
+   */
+  workerStatus = [];
+
+  /**
    * An interval for fetching the leaderboard data in every 5 seconds
    */
   pollingInterval: any;
@@ -1510,11 +1515,33 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  fetchWorkerStatus() {
+    if (this.challenge['id']) {
+      const API_PATH = this.endpointsService.getStatusURL(this.challenge['id']);
+      const SELF = this;
+      SELF.apiService.getUrl(API_PATH, true, false).subscribe(
+        (data) => {
+          SELF.workerStatus = [];
+          for (let i = 0; i < data["tasks_status"].length; i++) {
+            for (let j = 0; j < data["tasks_status"][i].containers.length;j++) {
+              SELF.workerStatus.push(data["tasks_status"][i].containers[j]);
+            }
+          }
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+    }
+  }
+
   // Get the logs from worker if submissions are failing at an interval of 5sec.
   startLoadingLogs() {
     const SELF = this;
     SELF.pollingInterval = setInterval(function () {
       SELF.fetchWorkerLogs();
+      SELF.fetchWorkerStatus();
     }, 5000);
   }
 

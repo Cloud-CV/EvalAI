@@ -334,6 +334,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+                challenge.service_name = response["service"]["serviceName"]
                 challenge.workers = 1
                 challenge.save()
             return response
@@ -837,6 +838,76 @@ def get_logs_from_cloudwatch(
     return logs
 
 
+def get_all_tasks(service_name):
+    """
+    To fetch all tasks for the given service name
+    """
+    if settings.DEBUG:
+        return {
+            "error": False,
+            "details": "ECS tasks cannot be fetched in the development environment"
+        }
+    else:
+        client = get_boto3_client("ecs", aws_keys)
+        try:
+            tasks_response = client.list_tasks(
+                cluster=COMMON_SETTINGS_DICT["CLUSTER"],
+                serviceName=service_name
+            )
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"ECS tasks fetch failed for service {service_name} with error: {e}"
+            }
+        return {
+            "error": False,
+            "details": tasks_response
+        }
+
+
+def get_all_tasks_status(task_arns, service_name):
+    """
+    To fetch status of all containers for the array of task arns
+    """
+    if settings.DEBUG:
+        return {
+            "error": False,
+            "details": "ECS task status cannot be fetched in the development environment"
+        }
+    else:
+        try:
+            client = get_boto3_client("ecs", aws_keys)
+            response = client.describe_tasks(
+                cluster=COMMON_SETTINGS_DICT["CLUSTER"],
+                tasks=task_arns
+            )
+            tasks_status = {
+                "error": False,
+                "details": []
+            }
+            task_details = response["tasks"]
+            for task_detail in task_details:
+                containers = []
+                for container in task_detail["containers"]:
+                    containers.append({
+                        "container_arn": container["containerArn"],
+                        "status": container["lastStatus"]
+                    })
+                task_detail = {
+                    "task_arn_def": task_detail["taskArn"],
+                    "containers": containers
+                }
+                tasks_status['details'].append(task_detail)
+            return tasks_status
+        except Exception as e:
+            logger.exception(e)
+            return {
+                "error": True,
+                "details": f"ECS task status fetch failed for service {service_name} with error: {e}"
+            }
+
+
 def delete_log_group(log_group_name):
     if settings.DEBUG:
         pass
@@ -860,9 +931,8 @@ def create_eks_nodegroup(challenge, cluster_name):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
-    nodegroup_name = "{}-{}-nodegroup".format(
-        challenge_obj.title.replace(" ", "-"), environment_suffix
+    nodegroup_name = "{0}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-")
     )
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     client = get_boto3_client("eks", challenge_aws_keys)
@@ -1189,10 +1259,7 @@ def create_eks_cluster(challenge):
 
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
-    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
-    cluster_name = "{}-{}-cluster".format(
-        challenge_obj.title.replace(" ", "-"), environment_suffix
-    )
+    cluster_name = "{0}-cluster".format(challenge_obj.title.replace(" ", "-"))
     if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
         challenge_aws_keys = get_aws_credentials_for_challenge(
             challenge_obj.pk
