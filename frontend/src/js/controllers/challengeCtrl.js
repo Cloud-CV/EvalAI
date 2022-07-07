@@ -931,7 +931,7 @@
                 };
 
                 utilities.sendRequest(parameters);
-            }, 5000);
+            }, 10000);
         };
 
         vm.getLeaderboard = function(phaseSplitId) {
@@ -1134,7 +1134,7 @@
                     };
 
                     utilities.sendRequest(parameters);
-                }, 5000);
+                }, 10000);
             };
 
             vm.stopFetchingSubmissions = function() {

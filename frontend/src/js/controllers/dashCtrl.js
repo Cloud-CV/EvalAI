@@ -59,7 +59,7 @@
         utilities.sendRequest(parameters);
 
         // get all ongoing challenges.
-        parameters.url = 'challenges/challenge/present';
+        parameters.url = 'challenges/challenge/present/approved/public';
         parameters.method = 'GET';
         parameters.token = userKey;
         parameters.callback = {

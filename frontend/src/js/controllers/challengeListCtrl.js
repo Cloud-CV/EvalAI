@@ -32,7 +32,7 @@
         } else {
             parameters.token = null;
         }
-        parameters.url = 'challenges/challenge/present';
+        parameters.url = 'challenges/challenge/present/approved/public';
 
         parameters.callback = {
             onSuccess: function(response) {
@@ -66,7 +66,7 @@
 
                 // dependent api
                 // calls for upcoming challneges
-                parameters.url = 'challenges/challenge/future';
+                parameters.url = 'challenges/challenge/future/approved/public';
                 parameters.method = 'GET';
 
                 parameters.callback = {
@@ -104,7 +104,7 @@
 
                         // dependent api
                         // calls for past challneges
-                        parameters.url = 'challenges/challenge/past';
+                        parameters.url = 'challenges/challenge/past/approved/public';
                         parameters.method = 'GET';
 
                         parameters.callback = {

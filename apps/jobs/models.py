@@ -72,8 +72,8 @@ class Submission(TimeStampedModel):
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
-    is_public = models.BooleanField(default=True)
-    is_flagged = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True, db_index=True)
+    is_flagged = models.BooleanField(default=False, db_index=True)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
@@ -119,7 +119,7 @@ class Submission(TimeStampedModel):
     method_description = models.TextField(blank=True, default="")
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
-    is_baseline = models.BooleanField(default=False)
+    is_baseline = models.BooleanField(default=False, db_index=True)
     job_name = ArrayField(
         models.TextField(null=True, blank=True),
         default=list,

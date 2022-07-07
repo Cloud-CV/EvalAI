@@ -155,7 +155,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     'created_by',
     'status',
     'execution_time',
-    'submitted_file',
+    'input_file',
     'submission_result_file',
   ];
   columnsHeadings = [

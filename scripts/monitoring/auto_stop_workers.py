@@ -49,7 +49,7 @@ def delete_worker(challenge_id):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all".format(
+    all_challenge_endpoint = "{}/api/challenges/challenge/all/unapproved/all".format(
         evalai_endpoint
     )
     response = requests.get(
@@ -63,17 +63,16 @@ def is_unapproved_challenge(workers, approved_by_admin, created_at):
     return (
         workers is not None
         and not approved_by_admin
-        and (current_date - created_at).days >= 3
+        and (current_date - created_at).days >= 2
     )
 
 
-def start_or_stop_workers_for_challenges(response):
+def stop_workers_for_challenges(response):
     for challenge in response["results"]:
         challenge_id = challenge["id"]
         workers = challenge["workers"]
         approved_by_admin = challenge["approved_by_admin"]
         is_docker_based = challenge["is_docker_based"]
-        challenge_start_date = parser.parse(challenge["start_date"])
         challenge_end_date = parser.parse(challenge["end_date"])
         created_at = parser.parse(challenge["created_at"])
         current_date = utc.localize(datetime.now())
@@ -84,18 +83,6 @@ def start_or_stop_workers_for_challenges(response):
             )
         )
         if not is_docker_based:
-            if (
-                workers is None
-                and challenge_start_date <= current_date
-                and challenge_end_date > current_date
-            ):
-                response = start_worker(challenge_id)
-                if not response.ok:
-                    print(
-                        "ERROR: Start worker failed for challenge id {}!".format(
-                            challenge_id
-                        )
-                    )
             # Delete workers for challenges uploaded in last 3 days that are unapproved or inactive challenges
             if (
                 workers is not None and challenge_end_date < current_date
@@ -115,12 +102,12 @@ def start_or_stop_workers_for_challenges(response):
 
 def start_job():
     response = get_challenges()
-    start_or_stop_workers_for_challenges(response)
+    stop_workers_for_challenges(response)
 
     next_page = response["next"]
     while next_page is not None:
         response = execute_get_request(next_page)
-        start_or_stop_workers_for_challenges(response)
+        stop_workers_for_challenges(response)
         next_page = response["next"]
 
 

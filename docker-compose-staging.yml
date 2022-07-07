@@ -1,5 +1,10 @@
 version: '3'
 services:
+  memcached:
+    image: memcached:1.6.15
+    ports:
+      - "11211:11211"
+
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${COMMIT_ID}
     env_file:
