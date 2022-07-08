@@ -305,6 +305,12 @@
           </div>
 
           <div class="row settings-section" *ngIf="!challenge['remote_evaluation']">
+            <div class="col s12">
+                <div class="w-300 fs-16"><strong>Note:</strong> By default, we allocate 0.25 vCPU and 0.5 GB memory
+                  to each challenge evaluation worker. In case your evaluation requires additional resources,
+                  please email us at <a href="mailto:admin@cloudcv.org" class="blue-text">admin@cloudcv.org</a>.
+                </div>
+            </div>
             <div class="margin-bottom-cancel">
               <div class="col s12 worker-title">
                 <h5 class="w-300">Submission worker actions</h5>
