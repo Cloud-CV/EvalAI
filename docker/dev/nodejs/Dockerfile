@@ -1,4 +1,4 @@
-FROM node:14-slim
+FROM node:14.20.0
 
 # install chrome for protractor tests
 RUN apt-get update && apt-get install -y wget gnupg
