@@ -10,17 +10,10 @@ import boto3
 from django.conf import settings
 import botocore
 
-# from botocore.exceptions import ClientError
-# from http import HTTPStatus
+# from auto_stop_workers import start_worker, stop_worker
 
 utc = pytz.UTC
 
-# TODO: Check if need some kind of logging/logger here.
-#
-# TO CODE
-# Fetch all challenges from EvalAI
-# BOTO3 to get number of pending submissions in the queue.
-# SQS to set the number of workers to 1 or 0.
 
 # Eval AI related credentials
 evalai_endpoint = os.environ.get("API_HOST_URL")
@@ -52,24 +45,16 @@ def get_sqs_queue_by_name(queue_name):
     Returns:
         Returns the SQS Queue object
     """
-    if settings.DEBUG or settings.TEST:
-        sqs = boto3.resource(
-            "sqs",
-            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
-    else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+
+    sqs = boto3.resource(
+        "sqs",
+        region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+    )
     if queue_name == "":
-        queue_name = "evalai_submission_queue"
-    # Check if the queue exists. If no, then create one
+        raise ValueError("Queue Name cannot be empty")
+
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
@@ -106,12 +91,6 @@ def get_queue_name(param, challenge_pk):
     return queue_name
 
 
-def get_queue_name_by_challenge(challenge):
-    challenge_id = challenge["id"]
-    challenge_title = challenge["title"]
-    return get_queue_name(challenge_id, challenge_title)
-
-
 def get_queue_length(queue):
     # TODO: Check if we should use approximate number of messages
     # https://github.com/boto/boto3/issues/599
@@ -122,7 +101,7 @@ def get_queue_length(queue):
 
 
 def get_queue_length_by_challenge(challenge):
-    queue_name = get_queue_name_by_challenge(challenge)
+    queue_name = challenge["queue"]
     queue = get_sqs_queue_by_name(queue_name)
     return get_queue_length(queue)
 
@@ -135,15 +114,7 @@ def get_aws_credentials_for_challenge(challenge):
     Returns:
         aws_key {dict} -- Dict containing aws keys for a challenge
     """
-    if challenge["use_host_credentials"]:
-        aws_keys = {
-            "AWS_ACCOUNT_ID": challenge["aws_account_id"],
-            "AWS_ACCESS_KEY_ID": challenge["aws_access_key_id"],
-            "AWS_SECRET_ACCESS_KEY": challenge["aws_secret_access_key"],
-            "AWS_REGION": challenge["aws_region"],
-            "AWS_STORAGE_BUCKET_NAME": "",
-        }
-    else:
+    if not challenge["use_host_credentials"]:
         aws_keys = {
             "AWS_ACCOUNT_ID": settings.AWS_ACCOUNT_ID,
             "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
@@ -175,50 +146,6 @@ def get_boto3_client(resource, aws_keys):
         raise e
 
 
-# def update_service_by_challenge_pk(
-#     queue_name,
-#     challenge_aws_keys,
-#     challenge_task_def_arn,
-#     num_of_tasks,
-#     force_new_deployment=False,
-# ):
-#     """
-#     Updates the worker service for a challenge, and scales the number of workers to num_of_tasks.
-
-#     Parameters:
-#     queue_name (str): the queue name for the challenge
-#     challenge_aws_keys (dict): The challenge aws keys for which the task definition is being registered.
-#     challenge_task_def_arn (str): The challenge task_def_arn attribute.
-#     num_of_tasks (int): Number of workers to scale to for the challenge.
-#     force_new_deployment (bool): Set True (mainly for restarting) to specify if you want to redploy with the latest image from ECR. Default is False.
-
-#     Returns:
-#     dict: The response returned by the update_service method from boto3. If unsuccesful, returns an error dictionary
-#     """
-
-#     service_name = "{}_service".format(queue_name)
-#     cluster = os.environ.get("CLUSTER", "evalai-prod-cluster")
-
-#     kwargs = """{{
-#             "cluster":"{cluster}",
-#             "service":"{service_name}",
-#             "desiredCount":num_of_tasks,
-#             "taskDefinition":"{challenge_task_def_arn}",
-#             "forceNewDeployment":{force_new_deployment}
-#         }}"""
-#     kwargs = eval(kwargs)
-#     client = get_boto3_client("ec2", challenge_aws_keys)
-
-#     try:
-#         response = client.update_service(**kwargs)
-#         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-#             challenge.workers = num_of_tasks
-#             challenge.save()
-#         return response
-#     except ClientError as e:
-#         raise e
-
-
 def increase_or_decrease_workers(challenge):
     # challenge_aws_keys = get_aws_credentials_for_challenge(challenge)
     queue_length = get_queue_length_by_challenge(challenge)
@@ -235,8 +162,9 @@ def increase_or_decrease_workers(challenge):
 # TODO: Factor in limits for the APIs
 def increase_or_decrease_workers_for_challenges(response):
     for challenge in response["results"]:
-        increase_or_decrease_workers(challenge)
-        time.sleep(2)
+        if not challenge["use_host_credentials"]:
+            increase_or_decrease_workers(challenge)
+            time.sleep(2)
 
 
 # Cron Job
