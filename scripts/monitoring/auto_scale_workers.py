@@ -1,16 +1,13 @@
 import os
-import re
 import time
-import uuid
 import pytz
 import requests
 
 import boto3
 
-from django.conf import settings
 import botocore
 
-# from auto_stop_workers import start_worker, stop_worker
+from auto_stop_workers import start_worker, stop_worker
 
 utc = pytz.UTC
 
@@ -28,18 +25,14 @@ def execute_get_request(url):
 
 
 def get_challenges():
-    all_challenge_endpoint = (
-        "{}/api/challenges/challenge/all/unapproved/all".format(
-            evalai_endpoint  # Gets all unapproved challenges
-        )
+    all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
+        evalai_endpoint  # Gets all challenges
     )
     response = execute_get_request(all_challenge_endpoint)
 
     return response.json()
 
 
-# TODO: Check if we can use challenge["queue"] directly to get queue name.
-# TODO: Understand if all the attributes are exposed in the API calls, or are they done selectively.
 def get_sqs_queue_by_name(queue_name):
     """
     Returns:
@@ -66,31 +59,6 @@ def get_sqs_queue_by_name(queue_name):
     return queue
 
 
-def get_queue_name(param, challenge_pk):
-    """
-    Generate unique SQS queue name of max length 80 for a challenge
-
-    Arguments:
-        param {string} -- challenge title
-        challenge_pk {int} -- challenge primary key
-
-    Returns:
-        {string} -- unique queue name
-    """
-    # The max-length for queue-name is 80 in SQS
-    max_len = 80
-    max_challenge_title_len = 50
-
-    env = settings.ENVIRONMENT
-    queue_name = param.replace(" ", "-").lower()[:max_challenge_title_len]
-    queue_name = re.sub(r"\W+", "-", queue_name)
-
-    queue_name = "{}-{}-{}-{}".format(
-        queue_name, challenge_pk, env, uuid.uuid4()
-    )[:max_len]
-    return queue_name
-
-
 def get_queue_length(queue):
     # TODO: Check if we should use approximate number of messages
     # https://github.com/boto/boto3/issues/599
@@ -104,25 +72,6 @@ def get_queue_length_by_challenge(challenge):
     queue_name = challenge["queue"]
     queue = get_sqs_queue_by_name(queue_name)
     return get_queue_length(queue)
-
-
-def get_aws_credentials_for_challenge(challenge):
-    """
-    Return the AWS credentials for a challenge using challenge pk
-    Arguments:
-        challenge {dict} -- challenge json for which credentials are to be fetched
-    Returns:
-        aws_key {dict} -- Dict containing aws keys for a challenge
-    """
-    if not challenge["use_host_credentials"]:
-        aws_keys = {
-            "AWS_ACCOUNT_ID": settings.AWS_ACCOUNT_ID,
-            "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
-            "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
-            "AWS_REGION": settings.AWS_REGION,
-            "AWS_STORAGE_BUCKET_NAME": settings.AWS_STORAGE_BUCKET_NAME,
-        }
-    return aws_keys
 
 
 def get_boto3_client(resource, aws_keys):
@@ -147,15 +96,16 @@ def get_boto3_client(resource, aws_keys):
 
 
 def increase_or_decrease_workers(challenge):
-    # challenge_aws_keys = get_aws_credentials_for_challenge(challenge)
     queue_length = get_queue_length_by_challenge(challenge)
     if queue_length > 0:
-        # set instances to 1
-        # print statement
+        # start worker
+        start_worker(challenge["id"])
+        print("Started worker for challenge: {}".format(challenge["id"]))
         pass
     else:
-        # set instances to 0
-        # print statement
+        # stop worker
+        stop_worker(challenge["id"])
+        print("Stopped worker for challenge: {}".format(challenge["id"]))
         pass
 
 
