@@ -30,7 +30,7 @@ def get_challenges():
     )
     response = execute_get_request(all_challenge_endpoint)
 
-    return response.json()
+    return response
 
 
 def get_sqs_queue_by_name(queue_name):
@@ -66,7 +66,7 @@ def get_queue_length(queue):
     # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Queue.attributes
     return (
         queue.attributes["ApproximateNumberOfMessages"]
-        + queue.attributes["ApproximateNumberOfMessages"]
+        + queue.attributes["ApproximateNumberOfMessagesNotVisible"]
     )
 
 
@@ -103,18 +103,19 @@ def increase_or_decrease_workers(challenge):
         # start worker
         start_worker(challenge["id"])
         print("Started worker for challenge: {}".format(challenge["id"]))
-        pass
     else:
         # stop worker
         stop_worker(challenge["id"])
         print("Stopped worker for challenge: {}".format(challenge["id"]))
-        pass
 
 
 # TODO: Factor in limits for the APIs
 def increase_or_decrease_workers_for_challenges(response):
     for challenge in response["results"]:
-        if not challenge["use_host_credentials"]:
+        if (
+            not challenge["use_host_credentials"]
+            and not challenge["remote_evaluation"]
+        ):
             increase_or_decrease_workers(challenge)
             time.sleep(2)
 
