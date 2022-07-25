@@ -63,9 +63,11 @@ def get_queue_length(queue):
     # TODO: Check if we should use approximate number of messages
     # https://github.com/boto/boto3/issues/599
     # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/sqs.html#using-an-existing-queue
-    count = 0
-    for message in queue.receive_messages():
-        count += 1
+    # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Queue.attributes
+    return (
+        queue.attributes["ApproximateNumberOfMessages"]
+        + queue.attributes["ApproximateNumberOfMessages"]
+    )
 
 
 def get_queue_length_by_challenge(challenge):
