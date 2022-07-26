@@ -65,6 +65,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "remote_evaluation",
             "workers",
             "created_at",
+            "queue",
         )
 
 
@@ -105,7 +106,6 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "is_submission_public",
-            "queue",
         )
 
 
