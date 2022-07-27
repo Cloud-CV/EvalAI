@@ -872,7 +872,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     try:
         response = client.create_nodegroup(
             clusterName=cluster_name,
-            nodegroupName=nodegroup_name[:60],
+            nodegroupName=nodegroup_name,
             scalingConfig={
                 "minSize": challenge_obj.min_worker_instance,
                 "maxSize": challenge_obj.max_worker_instance,
