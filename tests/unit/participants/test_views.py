@@ -858,6 +858,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "created_at": "{0}{1}".format(
                             self.challenge1.created_at.isoformat(), "Z"
                         ).replace("+00:00", ""),
+                        "queue": self.challenge1.queue,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -929,6 +930,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge1.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge1.queue,
             }
         ]
 

@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { ApiService } from '../../../services/api.service';
+import { WindowService } from '../../../services/window.service';
 import { GlobalService } from '../../../services/global.service';
 
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
@@ -224,6 +225,7 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   constructor(
     private challengeService: ChallengeService,
     private globalService: GlobalService,
+    private windowService: WindowService,
     private apiService: ApiService,
     private endpointsService: EndpointsService,
     private router: Router,
@@ -1184,15 +1186,15 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
       title: 'Edit Test Annotations',
       confirm: 'Submit',
       deny: 'Cancel',
-      form: [
-        {
-          name: 'testAnnotation',
-          isRequired: true,
-          label: 'test_annotation',
-          placeholder: '',
-          type: 'file',
-          value: '',
-        },
+        form: [
+          {
+            name: 'testAnnotation',
+            isRequired: true,
+            label: 'test_annotation',
+            placeholder: '',
+            type: 'file',
+            value: '',
+          },
       ],
       confirmCallback: SELF.apiCall,
     };
@@ -1523,5 +1525,13 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
    */
   ngOnDestroy() {
     clearInterval(this.pollingInterval);
+  }
+
+  /**
+   * Copy auth token to clipboard.
+   */
+  copyQueueName() {
+    this.windowService.copyToClipboard(this.challenge.queue);
+    this.globalService.showToast('success', 'Copied to clipboard', 5);
   }
 }
