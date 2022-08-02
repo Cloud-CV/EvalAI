@@ -833,7 +833,7 @@ def challenge_phase_split_list(request, challenge_pk):
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(
         challenge_phase__challenge=challenge
-    )
+    ).order_by("pk")
 
     # Check if user is a challenge host or participant
     challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
