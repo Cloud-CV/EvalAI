@@ -1,6 +1,6 @@
 ## Setup challenge using github
 
-1. Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template.
+1. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
    <img src="_static/img/github_based_setup/use_template_1.png"><br />
    <img src="_static/img/github_based_setup/use_template_2.png"><br />
