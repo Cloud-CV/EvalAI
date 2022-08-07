@@ -232,18 +232,9 @@ def create_job_object(message, environment_image, challenge):
             EVALAI_API_SERVER_ENV,
             MESSAGE_BODY_ENV,
         ],
-<<<<<<< Updated upstream
-        resources=client.V1ResourceRequirements(
-            limits={"nvidia.com/gpu": "1"}
-        ),
-=======
-<<<<<<< Updated upstream
-=======
         resources=client.V1ResourceRequirements(
             limits=job_constraints
         ),
->>>>>>> Stashed changes
->>>>>>> Stashed changes
         volume_mounts=volume_mount_list,
     )
     volume_list = get_volume_list()
