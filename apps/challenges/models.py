@@ -173,6 +173,14 @@ class Challenge(TimeStampedModel):
     desired_worker_instance = models.IntegerField(
         null=True, blank=True, default=1
     )
+    cpu_only_jobs = models.BooleanField(default=False)
+    # The number of vCPU for a code upload submission kubernetes job. Default value is 2 vCPU.
+    job_cpu_cores = models.CharField(
+        max_length=256, null=True, blank=True, default="2000m"
+    )
+    job_memory = models.CharField(
+        max_length=256, null=True, blank=True, default="8Gi"
+    )
 
     class Meta:
         app_label = "challenges"
