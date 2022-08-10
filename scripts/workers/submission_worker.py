@@ -26,7 +26,10 @@ from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, increment_statsd_counter
+from monitoring.statsd.metrics import (
+    NUM_PROCESSED_SUBMISSIONS,
+    increment_statsd_counter,
+)
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -100,6 +103,15 @@ class GracefulKiller:
 
 class ExecutionTimeLimitExceeded(Exception):
     pass
+
+
+class MultiOut(object):
+    def __init__(self, *args):
+        self.handles = args
+
+    def write(self, s):
+        for f in self.handles:
+            f.write(s)
 
 
 @contextlib.contextmanager
@@ -280,11 +292,24 @@ def extract_challenge_data(challenge, phases):
     )
 
     try:
-        requirements_location = join(challenge_data_directory, "requirements.txt")
+        requirements_location = join(
+            challenge_data_directory, "requirements.txt"
+        )
         if os.path.isfile(requirements_location):
-            subprocess.check_output([sys.executable, "-m", "pip", "install", "-r", requirements_location])
+            subprocess.check_output(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    requirements_location,
+                ]
+            )
         else:
-            logger.info("No custom requirements for challenge {}".format(challenge.id))
+            logger.info(
+                "No custom requirements for challenge {}".format(challenge.id)
+            )
     except Exception as e:
         logger.error(e)
 
@@ -446,9 +471,11 @@ def run_submission(
                     SUBMISSION_LOGS_PREFIX, submission.id
                 )
             )
-            with stdout_redirect(stdout) as new_stdout, stderr_redirect(
-                stderr
-            ) as new_stderr:
+            with stdout_redirect(
+                MultiOut(stdout, sys.__stdout__)
+            ) as new_stdout, stderr_redirect(  # noqa
+                MultiOut(stderr, sys.__stderr__)
+            ) as new_stderr:  # noqa
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                     annotation_file_path,
                     user_annotation_file_path,
@@ -481,8 +508,10 @@ def run_submission(
     # call `main` from globals and set `status` to running and hence `started_at`
     try:
         successful_submission_flag = True
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(  # noqa
-            stderr
+        with stdout_redirect(
+            MultiOut(stdout, sys.__stdout__)
+        ) as new_stdout, stderr_redirect(  # noqa
+            MultiOut(stderr, sys.__stderr__)
         ) as new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
@@ -776,7 +805,9 @@ def increment_and_push_metrics_to_statsd(queue_name, is_remote):
             "queue_name:%s" % queue_name,
             "is_remote:%d" % is_remote,
         ]
-        increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
+        increment_statsd_counter(
+            NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1
+        )
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to statsd: {}".format(
@@ -858,7 +889,9 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_statsd(queue_name, is_remote)
+                        increment_and_push_metrics_to_statsd(
+                            queue_name, is_remote
+                        )
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
