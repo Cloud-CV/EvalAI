@@ -284,3 +284,11 @@ md-select .md-select-value span:first-child:after {
 .margin-bottom-cancel {
     margin-bottom: 0px;
 }
+
+.watermarked {
+    background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),url(../images/evalai-logo-centered.png);
+    background-blend-mode: lighten;
+    background-size: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
