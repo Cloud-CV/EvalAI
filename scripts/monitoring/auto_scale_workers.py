@@ -114,7 +114,7 @@ def increase_or_decrease_workers(challenge):
         return
 
     if queue_length == 0:
-        if int(challenge["workers"]) > 0:
+        if challenge["workers"] is not None and int(challenge["workers"]) > 0:
             # Worker > 0 and Queue = 0 - Stop
             # stop worker
             stop_worker(challenge["id"])
@@ -149,6 +149,8 @@ def increase_or_decrease_workers_for_challenges(response):
             not challenge["is_docker_based"]
             and not challenge["remote_evaluation"]
         ):
+            if str(challenge["id"]) == "683":
+                print(challenge)
             increase_or_decrease_workers(challenge)
             time.sleep(2)
 
