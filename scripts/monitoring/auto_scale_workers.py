@@ -114,7 +114,7 @@ def increase_or_decrease_workers(challenge):
         return
 
     if queue_length == 0:
-        if int(stop_worker(challenge["id"])) > 0:
+        if int(challenge["workers"]) > 0:
             # Worker > 0 and Queue = 0 - Stop
             # stop worker
             stop_worker(challenge["id"])
