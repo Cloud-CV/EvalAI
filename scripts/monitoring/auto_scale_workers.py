@@ -54,8 +54,9 @@ def get_sqs_queue_by_name(queue_name):
             ex.response["Error"]["Code"]
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            # raise Exception("Cannot get queue: {}".format(queue_name))
-            print("Cannot get queue: {}".format(queue_name))
+            raise Exception(
+                "Unable to fetch {} queue details.".format(queue_name)
+            )
     return queue
 
 
@@ -112,48 +113,33 @@ def increase_or_decrease_workers(challenge):
         )
         return
 
-    # NOTE: What should be done when workers is None?
-    if challenge["workers"] is None:
-        if queue_length > 0:
+    if queue_length == 0:
+        if int(stop_worker(challenge["id"])) > 0:
+            # Worker > 0 and Queue = 0 - Stop
+            # stop worker
+            stop_worker(challenge["id"])
+            print("Stopped worker for challenge: {}".format(challenge["id"]))
+        else:
+            # Worker = 0 and Queue = 0
+            print(
+                "No workers and queue messages found for challenge: {}. Skipping.".format(
+                    challenge["id"]
+                )
+            )
+
+    else:
+        # Worker = 0, Queue > 0
+        if challenge["workers"] is None or int(challenge["workers"]) == 0:
             # start worker
             start_worker(challenge["id"])
             print("Started worker for challenge: {}".format(challenge["id"]))
         else:
-            # stop worker
-            stop_worker(challenge["id"])
-            print("Stopped worker for challenge: {}".format(challenge["id"]))
-    else:
-        num_workers = int(challenge["workers"])
-        if queue_length == 0:
-            if num_workers > 0:
-                # Worker > 0 and Queue = 0 - Stop
-                # stop worker
-                stop_worker(challenge["id"])
-                print(
-                    "Stopped worker for challenge: {}".format(challenge["id"])
+            # Worker > 0 and Queue > 0
+            print(
+                "Existing workers and pending queue messages found for challenge: {}. Skipping.".format(
+                    challenge["id"]
                 )
-            else:
-                # Worker = 0 and Queue = 0
-                print(
-                    "No workers and queue messages found for challenge: {}. Skipping.".format(
-                        challenge["id"]
-                    )
-                )
-        else:
-            if num_workers == 0:
-                # Worker = 0 and Queue > 0 - Start
-                # start worker
-                start_worker(challenge["id"])
-                print(
-                    "Started worker for challenge: {}".format(challenge["id"])
-                )
-            else:
-                # Worker > 0 and Queue > 0
-                print(
-                    "Existing workers and pending queue messages found for challenge: {}. Skipping.".format(
-                        challenge["id"]
-                    )
-                )
+            )
 
 
 # TODO: Factor in limits for the APIs
