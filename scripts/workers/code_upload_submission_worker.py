@@ -216,7 +216,7 @@ def create_job_object(message, environment_image, challenge):
     image = message["submitted_image_uri"]
     submission_meta = message["submission_meta"]
     SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
-        name="EVAL_TIMEOUT",
+        name="SUBMISSION_TIME_LIMIT",
         value=str(submission_meta["submission_time_limit"]),
     )
     # Configure Pod agent container
