@@ -214,6 +214,11 @@ def create_job_object(message, environment_image, challenge):
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
+    submission_meta = message["submission_meta"]
+    SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_LIMIT",
+        value=str(submission_meta["submission_time_limit"]),
+    )
     # Configure Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
@@ -231,6 +236,7 @@ def create_job_object(message, environment_image, challenge):
             AUTH_TOKEN_ENV,
             EVALAI_API_SERVER_ENV,
             MESSAGE_BODY_ENV,
+            SUBMISSION_TIME_LIMIT_ENV,
         ],
         resources=client.V1ResourceRequirements(
             limits=job_constraints
