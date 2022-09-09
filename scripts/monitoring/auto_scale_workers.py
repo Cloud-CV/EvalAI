@@ -2,15 +2,18 @@ import os
 import time
 import pytz
 import requests
+import warnings
 
 from auto_stop_workers import start_worker, stop_worker
 from prometheus_api_client import PrometheusConnect
+
+warnings.filterwarnings("ignore")
 
 utc = pytz.UTC
 
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
-PROMETHEUS_URL = "https://monitoring.eval.ai/prometheus/"
+PROMETHEUS_URL = "https://monitoring-staging.eval.ai/prometheus/"
 
 # Eval AI related credentials
 evalai_endpoint = os.environ.get("API_HOST_URL")
@@ -36,21 +39,32 @@ def get_challenges():
 
 
 def get_queue_length(queue_name):
-    num_processed_submissions = int(
-        prom.custom_query(
-            f"num_processed_submissions{{queue_name='{queue_name}'}}"
-        )[0]["value"][1]
-    )
-    num_submissions_in_queue = int(
-        prom.custom_query(
-            f"num_submissions_in_queue{{queue_name='{queue_name}'}}"
-        )[0]["value"][1]
-    )
+    try:
+        num_processed_submissions = int(
+            prom.custom_query(
+                f"num_processed_submissions{{queue_name='{queue_name}'}}"
+            )[0]["value"][1]
+        )
+    except Exception as _e:  # noqa: F841
+        # If we are unable to fetch num_processes_submissions, we assume they are zero
+        num_processed_submissions = 0
+
+    try:
+        num_submissions_in_queue = int(
+            prom.custom_query(
+                f"num_submissions_in_queue{{queue_name='{queue_name}'}}"
+            )[0]["value"][1]
+        )
+    except Exception as _e:  # noqa: F841
+        # If we are unable to fetch num_submissions_in_queue, we assume they are zero
+        num_submissions_in_queue = 0
+
     return num_submissions_in_queue - num_processed_submissions
 
 
 def get_queue_length_by_challenge(challenge):
     queue_name = challenge["queue"]
+    print(queue_name)
     return get_queue_length(queue_name)
 
 
@@ -64,7 +78,7 @@ def increase_or_decrease_workers(challenge):
             )
         )
         return
-    print(challenge["workers"], queue_length)
+
     if queue_length == 0:
         if challenge["workers"] is not None and int(challenge["workers"]) > 0:
             # Worker > 0 and Queue = 0 - Stop
@@ -101,9 +115,8 @@ def increase_or_decrease_workers_for_challenges(response):
             not challenge["is_docker_based"]
             and not challenge["remote_evaluation"]
         ):
-            if str(challenge["id"]) == "683":
-                increase_or_decrease_workers(challenge)
-                time.sleep(2)
+            increase_or_decrease_workers(challenge)
+            time.sleep(2)
 
 
 # Cron Job
