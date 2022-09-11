@@ -10,10 +10,17 @@ from prometheus_api_client import PrometheusConnect
 warnings.filterwarnings("ignore")
 
 utc = pytz.UTC
-
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
-PROMETHEUS_URL = "https://monitoring-staging.eval.ai/prometheus/"
+PROMETHEUS_URL = os.getenv(
+    "MONITORING_API_URL"
+)  # "https://monitoring-staging.eval.ai/prometheus/"
+PROD_CHALLENGE_QUEUES = [
+    "vqa-challenge-2021-744-production-8228992d-b6c6-4e18-b6c4-ce2e8dbe9a57",
+    "kilt-69d368bc-a5e8-4952-bd68-21c3ba61eb65",
+    "nuscenes-detection-challenge-510c8c6d-a0d2-40bd-95dd-b7c8ea593d03",
+]
+ENV = os.getenv("ENV")
 
 # Eval AI related credentials
 evalai_endpoint = os.environ.get("API_HOST_URL")
@@ -115,8 +122,13 @@ def increase_or_decrease_workers_for_challenges(response):
             not challenge["is_docker_based"]
             and not challenge["remote_evaluation"]
         ):
-            increase_or_decrease_workers(challenge)
-            time.sleep(2)
+            if ENV == "prod":
+                if challenge["queue"] in PROD_CHALLENGE_QUEUES:
+                    increase_or_decrease_workers(challenge)
+                    time.sleep(2)
+            else:
+                increase_or_decrease_workers(challenge)
+                time.sleep(2)
 
 
 # Cron Job
