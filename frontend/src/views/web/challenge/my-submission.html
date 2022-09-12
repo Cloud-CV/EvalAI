@@ -74,7 +74,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="key in challenge.submissionResult.results" class="result-val fs-16 w-300">
-                                <td>{{$index+1}}</td>
+                                <td>{{$index + 1 + (challenge.currentRefPage - 1) * 150}}</td>
                                 <td ng-if="key.method_name != '' && challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">{{key.method_name}}</td>
                                 <td ng-if="key.method_name == '' && challenge.currentPhaseMetaAttributesVisibility['method_name'] != false"> None </td>
 
