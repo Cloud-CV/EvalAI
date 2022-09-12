@@ -12,17 +12,16 @@ warnings.filterwarnings("ignore")
 utc = pytz.UTC
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
-PROMETHEUS_URL = os.getenv(
-    "MONITORING_API_URL"
-)  # "https://monitoring-staging.eval.ai/prometheus/"
+PROMETHEUS_URL = os.environ.get(
+    "MONITORING_API_URL", "https://monitoring-staging.eval.ai/prometheus/"
+)
 PROD_CHALLENGE_QUEUES = [
     "vqa-challenge-2021-744-production-8228992d-b6c6-4e18-b6c4-ce2e8dbe9a57",
     "kilt-69d368bc-a5e8-4952-bd68-21c3ba61eb65",
     "nuscenes-detection-challenge-510c8c6d-a0d2-40bd-95dd-b7c8ea593d03",
 ]
-ENV = os.getenv("ENV")
+ENV = os.environ.get("ENV", "dev")
 
-# Eval AI related credentials
 evalai_endpoint = os.environ.get("API_HOST_URL")
 authorization_header = {
     "Authorization": "Bearer {}".format(os.environ.get("AUTH_TOKEN"))
@@ -38,7 +37,7 @@ def execute_get_request(url):
 
 def get_challenges():
     all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
-        evalai_endpoint  # Gets all challenges
+        evalai_endpoint
     )
     response = execute_get_request(all_challenge_endpoint)
 
@@ -52,8 +51,7 @@ def get_queue_length(queue_name):
                 f"num_processed_submissions{{queue_name='{queue_name}'}}"
             )[0]["value"][1]
         )
-    except Exception as _e:  # noqa: F841
-        # If we are unable to fetch num_processes_submissions, we assume they are zero
+    except Exception:  # noqa: F841
         num_processed_submissions = 0
 
     try:
@@ -62,8 +60,7 @@ def get_queue_length(queue_name):
                 f"num_submissions_in_queue{{queue_name='{queue_name}'}}"
             )[0]["value"][1]
         )
-    except Exception as _e:  # noqa: F841
-        # If we are unable to fetch num_submissions_in_queue, we assume they are zero
+    except Exception:  # noqa: F841
         num_submissions_in_queue = 0
 
     return num_submissions_in_queue - num_processed_submissions
@@ -71,14 +68,13 @@ def get_queue_length(queue_name):
 
 def get_queue_length_by_challenge(challenge):
     queue_name = challenge["queue"]
-    print(queue_name)
     return get_queue_length(queue_name)
 
 
 def increase_or_decrease_workers(challenge):
     try:
         queue_length = get_queue_length_by_challenge(challenge)
-    except Exception as _e:  # noqa: F841
+    except Exception:  # noqa: F841
         print(
             "Unable to get the queue length for challenge ID: {}. Skipping.".format(
                 challenge["id"]
@@ -88,12 +84,9 @@ def increase_or_decrease_workers(challenge):
 
     if queue_length == 0:
         if challenge["workers"] is not None and int(challenge["workers"]) > 0:
-            # Worker > 0 and Queue = 0 - Stop
-            # stop worker
             stop_worker(challenge["id"])
             print("Stopped worker for challenge: {}".format(challenge["id"]))
         else:
-            # Worker = 0 and Queue = 0
             print(
                 "No workers and queue messages found for challenge: {}. Skipping.".format(
                     challenge["id"]
@@ -101,13 +94,10 @@ def increase_or_decrease_workers(challenge):
             )
 
     else:
-        # Worker = 0, Queue > 0
         if challenge["workers"] is None or int(challenge["workers"]) == 0:
-            # start worker
             start_worker(challenge["id"])
             print("Started worker for challenge: {}".format(challenge["id"]))
         else:
-            # Worker > 0 and Queue > 0
             print(
                 "Existing workers and pending queue messages found for challenge: {}. Skipping.".format(
                     challenge["id"]
