@@ -36,8 +36,10 @@ def execute_get_request(url):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
-        evalai_endpoint
+    all_challenge_endpoint = (
+        "{}/api/challenges/challenge/present/approved/all".format(
+            evalai_endpoint
+        )
     )
     response = execute_get_request(all_challenge_endpoint)
 
@@ -115,10 +117,10 @@ def increase_or_decrease_workers_for_challenges(response):
             if ENV == "prod":
                 if challenge["queue"] in PROD_CHALLENGE_QUEUES:
                     increase_or_decrease_workers(challenge)
-                    time.sleep(2)
+                    time.sleep(1)
             else:
                 increase_or_decrease_workers(challenge)
-                time.sleep(2)
+                time.sleep(1)
 
 
 # Cron Job
