@@ -95,6 +95,96 @@ VPC_DICT = {
 }
 
 
+def scale_resources(challenge, new_cores, new_memory):
+    client = get_boto3_client("ecs", aws_keys)
+    if challenge.worker_cpu_cores == new_cores and challenge.worker_memory == new_memory:
+        message = "Error. Worker cores and memory were not modified."
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+    if not challenge.task_def_arn:
+        message = "Error. Task definition not yet registered for challenge{}.".format(
+            challenge.pk
+        )
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+    # deregister
+    try:
+        response = client.deregister_task_definition(
+            taskDefinition=challenge.task_def_arn
+        )
+        if (
+                response["ResponseMetadata"]["HTTPStatusCode"]
+                == HTTPStatus.OK
+        ):
+            challenge.worker_cpu_cores = new_cores
+            challenge.worker_memory = new_memory
+            challenge.task_def_arn = None
+            challenge.save()
+        else:
+            return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+    # register
+
+    from .utils import get_aws_credentials_for_challenge
+
+    queue_name = challenge.queue
+    container_name = "worker_{}".format(queue_name)
+    worker_cpu_cores = challenge.worker_cpu_cores
+    worker_memory = challenge.worker_memory
+    log_group_name = get_log_group_name(challenge.pk)
+    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
+    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    definition = task_definition.format(
+        queue_name=queue_name,
+        container_name=container_name,
+        ENV=ENV,
+        challenge_pk=challenge.pk,
+        CPU=worker_cpu_cores,
+        MEMORY=worker_memory,
+        log_group_name=log_group_name,
+        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+        **COMMON_SETTINGS_DICT,
+        **challenge_aws_keys,
+    )
+    definition = eval(definition)
+    try:
+        response = client.register_task_definition(**definition)
+        # if we successfully register a new task definition, update the service
+        if (
+                response["ResponseMetadata"]["HTTPStatusCode"]
+                == HTTPStatus.OK
+        ):
+            task_def_arn = response["taskDefinition"][
+                "taskDefinitionArn"
+            ]
+            challenge.task_def_arn = task_def_arn
+            challenge.save()
+            force_new_deployment = False
+            service_name = "{}_service".format(queue_name)
+            num_of_tasks = challenge.workers
+            kwargs = update_service_args.format(
+                CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+                service_name=service_name,
+                task_def_arn=task_def_arn,
+                force_new_deployment=force_new_deployment,
+            )
+            kwargs = eval(kwargs)
+            response = client.update_service(**kwargs)
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+
 def get_code_upload_setup_meta_for_challenge(challenge_pk):
     """
     Return the EKS cluster network and arn meta for a challenge
@@ -270,8 +360,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             try:
                 response = client.register_task_definition(**definition)
                 if (
-                    response["ResponseMetadata"]["HTTPStatusCode"]
-                    == HTTPStatus.OK
+                        response["ResponseMetadata"]["HTTPStatusCode"]
+                        == HTTPStatus.OK
                 ):
                     task_def_arn = response["taskDefinition"][
                         "taskDefinitionArn"
@@ -314,7 +404,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     if (
-        challenge.workers is None
+            challenge.workers is None
     ):  # Verify if the challenge is new (i.e, service not yet created.).
         if challenge.task_def_arn == "" or challenge.task_def_arn is None:
             response = register_task_def_by_challenge_pk(
@@ -351,7 +441,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
 
 
 def update_service_by_challenge_pk(
-    client, challenge, num_of_tasks, force_new_deployment=False
+        client, challenge, num_of_tasks, force_new_deployment=False
 ):
     """
     Updates the worker service for a challenge, and scales the number of workers to num_of_tasks.
@@ -434,7 +524,7 @@ def delete_service_by_challenge_pk(challenge):
 
 
 def service_manager(
-    client, challenge, num_of_tasks=None, force_new_deployment=False
+        client, challenge, num_of_tasks=None, force_new_deployment=False
 ):
     """
     This method determines if the challenge is new or not, and accordingly calls <update or create>_by_challenge_pk.
@@ -692,8 +782,8 @@ def restart_workers(queryset):
     failures = []
     for challenge in queryset:
         if (
-            challenge.is_docker_based
-            and not challenge.is_static_dataset_code_upload
+                challenge.is_docker_based
+                and not challenge.is_static_dataset_code_upload
         ):
             response = "Sorry. This feature is not available for code upload/docker based challenges."
             failures.append(
@@ -804,7 +894,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
 
 
 def get_logs_from_cloudwatch(
-    log_group_name, log_stream_prefix, start_time, end_time, pattern
+        log_group_name, log_stream_prefix, start_time, end_time, pattern
 ):
     """
     To fetch logs of a container from cloudwatch within a specific time frame.

@@ -20,5 +20,34 @@
         <div class="ev-logs-card">
             <div ng-repeat="log in challenge.workerLogs track by $index" class="ev-logs">{{log}}</div>
         </div>
+        <div class="row">
+            <h5 class="w-300">Scale Worker Resources</h5>
+        </div>
+        <form ng-submit="challenge.setWorkerResources()">
+            <div class="row">
+                <div class="input-field align-left col s12 m12 l8">
+                    <input id="name" type="text" class="validate fs-16 dark-autofill w-300"
+                        ng-model="challenge.team.name" ng-pattern="/^[\w -]*$/" focus-if>
+                    <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                    <label for="name" data-error="wrong" data-success="right">Number of Cores*</label>
+                    <div class="wrn-msg text-highlight" ng-show="teams.team.error">
+                        {{challenge.team.error}}</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field align-left  col s12 m12 l8">
+                    <input id="url" type="text" class="validate fs-16 dark-autofill w-300"
+                        ng-model="challenge.team.url" focus-if>
+                    <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
+                    <label for="url" data-error="wrong" data-success="right">Memory (MB)</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m6 l6 align-left reg-control">
+                    <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" type="submit"
+                        value="Submit">Submit</button>
+                </div>
+            </div>
+        </form>
     </div>
 </section>
