@@ -21,4 +21,4 @@ fi
 export AUTH_TOKEN=${auth_token};
 export API_HOST_URL=${api_host_url};
 
-python ${path}/scripts/monitoring/auto_scale_workers.py
+/home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_scale_workers.py
