@@ -2562,7 +2562,6 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
             }
             response = Response(response_data, status=status.HTTP_201_CREATED)
         return response
-
     response_data = {"error": serializer.errors}
     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
