@@ -97,6 +97,9 @@
 
         vm.workerLogs = [];
 
+        vm.memory = 0;
+        vm.cpuUnits = 0;
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
@@ -1551,12 +1554,12 @@
         };
 
         // function to create new team for participating in challenge
-        vm.setWorkerResources = function(numCores, numMemory) {
+        vm.setWorkerResources = function() {
             parameters.url = "challenges/"+vm.challengeId+"/scale_resources/";
             parameters.method = 'PUT';
             parameters.data = {
-                "cores": numCores,
-                "memory": numMemory
+                "cpu_units": vm.cpuUnits,
+                "memory": vm.memory,
             };
             parameters.callback = {
                 onSuccess: function() {
@@ -1568,7 +1571,13 @@
                 onError: function(response) {
                     vm.team.error = true;
                     vm.stopLoader();
-                    $rootScope.notify("error", "Worker resources could not be changed: " + response.statusText);
+                    let requestError = '';
+                    if (typeof(response.data) == 'string') {
+                        requestError = response.data;
+                    } else {
+                        requestError = JSON.stringify(response.data, null, 4);
+                    }
+                    $rootScope.notify("error", "Worker resources could not be changed: " + requestError);
                 }
             };
 
