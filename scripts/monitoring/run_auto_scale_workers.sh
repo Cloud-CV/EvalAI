@@ -17,8 +17,14 @@ if [ ! -z "$3" ]
     api_host_url=$3
 fi
 
+if [ ! -z "$4" ]
+  then
+    monitoring_api_url=$3
+fi
+
 # crontab doesn't have access to env variable, define explicitly
 export AUTH_TOKEN=${auth_token};
 export API_HOST_URL=${api_host_url};
+export MONITORING_API_URL=${monitoring_api_url};
 
-python ${path}/scripts/monitoring/auto_scale_workers.py
+/home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_scale_workers.py
