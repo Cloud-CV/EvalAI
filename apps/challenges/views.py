@@ -2975,24 +2975,41 @@ def get_worker_logs(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def scale_resources_by_challenge_pk(request, challenge_pk):
+    """
+    The function called by a host to update the resources used by their challenge.
+
+    Calls the scale_resources method. Before calling, checks if the caller hosts the challenge and provided valid core
+    counts and memory sizes (MB).
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which its workers' resources will be updated
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized for access worker operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     if request.data.get("cores") is None:
         response_data = {
             "error": "Number of cores is missing from request."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     if request.data.get("memory") is None:
         response_data = {
             "error": "Amount of memory is missing from request."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     challenge = get_challenge_model(challenge_pk)
     cores = request.data["cores"]
     memory = request.data["memory"]
+
     try:
         cores = int(cores)
         memory = int(memory)
@@ -3005,13 +3022,14 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     # validate cores and memory number
     if (
         cores == 256 and memory in (512, 1024, 2048)
-        or cores == 512 and memory in (1024, 2048, 3072, 4096)
-        or cores == 1024 and memory in (2048, 3072, 4096, 5120, 6144, 7168, 8192)
-        or cores == 2048 and memory >= 4096 and memory <= 16384 and memory % 1024 == 0
-        or cores == 4096 and memory >= 8192 and memory <= 30720 and memory % 1024 == 0
+        or cores == 512 and memory in (512, 1024, 2048)
+        or cores == 1024 and memory in (512, 1024, 2048)
     ):
+        challenge.queue = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55"
+        challenge.task_def_arn = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55:4"
         response = scale_resources(challenge, cores, memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            print("Response: " + str(response))
             response_data = {
                 "error": "Issue with ECS."
             }

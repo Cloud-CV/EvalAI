@@ -67,7 +67,8 @@ COMMON_SETTINGS_DICT = {
         ),
     ),
     "CIDR": os.environ.get("CIDR"),
-    "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
+    # TODO: change back to "evalai-prod-cluster" once changes are approved
+    "CLUSTER": os.environ.get("CLUSTER", "evalai-staging-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
     "EVALAI_API_SERVER": os.environ.get("EVALAI_API_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
@@ -97,12 +98,17 @@ VPC_DICT = {
 
 def scale_resources(challenge, new_cores, new_memory):
     client = get_boto3_client("ecs", aws_keys)
+
     if challenge.worker_cpu_cores == new_cores and challenge.worker_memory == new_memory:
         message = "Error. Worker cores and memory were not modified."
         return {
             "Error": message,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
+
+    # TODO: remove once changes are tested and approved
+    print(str(challenge))
+
     if not challenge.task_def_arn:
         message = "Error. Task definition not yet registered for challenge{}.".format(
             challenge.pk
@@ -111,7 +117,9 @@ def scale_resources(challenge, new_cores, new_memory):
             "Error": message,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
+
     # deregister
+    # TODO: convert into celery task
     try:
         response = client.deregister_task_definition(
             taskDefinition=challenge.task_def_arn
@@ -131,7 +139,6 @@ def scale_resources(challenge, new_cores, new_memory):
         return e.response
 
     # register
-
     from .utils import get_aws_credentials_for_challenge
 
     queue_name = challenge.queue
@@ -156,6 +163,7 @@ def scale_resources(challenge, new_cores, new_memory):
         **challenge_aws_keys,
     )
     definition = eval(definition)
+
     try:
         response = client.register_task_definition(**definition)
         # if we successfully register a new task definition, update the service
@@ -360,8 +368,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
             try:
                 response = client.register_task_definition(**definition)
                 if (
-                        response["ResponseMetadata"]["HTTPStatusCode"]
-                        == HTTPStatus.OK
+                    response["ResponseMetadata"]["HTTPStatusCode"]
+                    == HTTPStatus.OK
                 ):
                     task_def_arn = response["taskDefinition"][
                         "taskDefinitionArn"
@@ -404,7 +412,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     if (
-            challenge.workers is None
+        challenge.workers is None
     ):  # Verify if the challenge is new (i.e, service not yet created.).
         if challenge.task_def_arn == "" or challenge.task_def_arn is None:
             response = register_task_def_by_challenge_pk(
@@ -441,7 +449,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
 
 
 def update_service_by_challenge_pk(
-        client, challenge, num_of_tasks, force_new_deployment=False
+    client, challenge, num_of_tasks, force_new_deployment=False
 ):
     """
     Updates the worker service for a challenge, and scales the number of workers to num_of_tasks.
@@ -524,7 +532,7 @@ def delete_service_by_challenge_pk(challenge):
 
 
 def service_manager(
-        client, challenge, num_of_tasks=None, force_new_deployment=False
+    client, challenge, num_of_tasks=None, force_new_deployment=False
 ):
     """
     This method determines if the challenge is new or not, and accordingly calls <update or create>_by_challenge_pk.
@@ -566,16 +574,16 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    if settings.DEBUG:
-        failures = []
-        for challenge in queryset:
-            failures.append(
-                {
-                    "message": "Workers cannot be started on AWS ECS service in development environment",
-                    "challenge_pk": challenge.pk,
-                }
-            )
-        return {"count": 0, "failures": failures}
+    # if settings.DEBUG:
+    #     failures = []
+    #     for challenge in queryset:
+    #         failures.append(
+    #             {
+    #                 "message": "Workers cannot be started on AWS ECS service in development environment",
+    #                 "challenge_pk": challenge.pk,
+    #             }
+    #         )
+    #     return {"count": 0, "failures": failures}
 
     client = get_boto3_client("ecs", aws_keys)
     count = 0
@@ -782,8 +790,8 @@ def restart_workers(queryset):
     failures = []
     for challenge in queryset:
         if (
-                challenge.is_docker_based
-                and not challenge.is_static_dataset_code_upload
+            challenge.is_docker_based
+            and not challenge.is_static_dataset_code_upload
         ):
             response = "Sorry. This feature is not available for code upload/docker based challenges."
             failures.append(
@@ -894,7 +902,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
 
 
 def get_logs_from_cloudwatch(
-        log_group_name, log_stream_prefix, start_time, end_time, pattern
+    log_group_name, log_stream_prefix, start_time, end_time, pattern
 ):
     """
     To fetch logs of a container from cloudwatch within a specific time frame.
