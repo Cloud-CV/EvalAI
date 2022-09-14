@@ -2978,8 +2978,8 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     """
     The function called by a host to update the resources used by their challenge.
 
-    Calls the scale_resources method. Before calling, checks if the caller hosts the challenge and provided valid core
-    counts and memory sizes (MB).
+    Calls the scale_resources method. Before calling, checks if the caller hosts the challenge and provided valid CPU
+    unit counts and memory sizes (MB).
 
     Arguments:
         request {HttpRequest} -- The request object
@@ -2994,9 +2994,9 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.data.get("cores") is None:
+    if request.data.get("cpu_units") is None:
         response_data = {
-            "error": "Number of cores is missing from request."
+            "error": "Number of CPU units is missing from request."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3007,11 +3007,11 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
-    cores = request.data["cores"]
+    cpu_units = request.data["cpu_units"]
     memory = request.data["memory"]
 
     try:
-        cores = int(cores)
+        cpu_units = int(cpu_units)
         memory = int(memory)
     except Exception:
         response_data = {
@@ -3021,13 +3021,13 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
 
     # validate cores and memory number
     if (
-        cores == 256 and memory in (512, 1024, 2048)
-        or cores == 512 and memory in (1024, 2048)
-        or cores == 1024 and memory == 2048
+        cpu_units == 256 and memory in (512, 1024, 2048)
+        or cpu_units == 512 and memory in (1024, 2048)
+        or cpu_units == 1024 and memory == 2048
     ):
         challenge.queue = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55"
         challenge.task_def_arn = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55:4"
-        response = scale_resources(challenge, cores, memory)
+        response = scale_resources(challenge, cpu_units, memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
             print("Response: " + str(response))
             response_data = {
