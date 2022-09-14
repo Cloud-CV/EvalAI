@@ -3022,8 +3022,8 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     # validate cores and memory number
     if (
         cores == 256 and memory in (512, 1024, 2048)
-        or cores == 512 and memory in (512, 1024, 2048)
-        or cores == 1024 and memory in (512, 1024, 2048)
+        or cores == 512 and memory in (1024, 2048)
+        or cores == 1024 and memory == 2048
     ):
         challenge.queue = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55"
         challenge.task_def_arn = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55:4"
