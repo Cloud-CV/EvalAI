@@ -871,9 +871,7 @@ def main():
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
-                        increment_and_push_metrics_to_statsd(
-                            queue_name, is_remote
-                        )
+                        increment_and_push_metrics_to_statsd(queue_name, is_remote)
                 else:
                     logger.info(
                         "{} Processing message body: {}".format(
