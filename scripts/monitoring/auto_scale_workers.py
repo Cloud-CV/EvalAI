@@ -16,9 +16,9 @@ PROMETHEUS_URL = os.environ.get(
     "MONITORING_API_URL", "https://monitoring-staging.eval.ai/prometheus/"
 )
 PROD_CHALLENGE_QUEUES = [
-    "vqa-challenge-2021-744-production-8228992d-b6c6-4e18-b6c4-ce2e8dbe9a57",
+    "reclor-a-reading-comprehension-dataset-requiring-logical-reasoning-77951de9-6306",
     "kilt-69d368bc-a5e8-4952-bd68-21c3ba61eb65",
-    "nuscenes-detection-challenge-510c8c6d-a0d2-40bd-95dd-b7c8ea593d03",
+    "soccernet-challenge-2022-player-reidentification-1538-production-6e6aabcd-e2fc-4",
 ]
 ENV = os.environ.get("ENV", "dev")
 
