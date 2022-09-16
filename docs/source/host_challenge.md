@@ -47,7 +47,7 @@ We categorize the challenges in two categories:
 
 ### Step 1: Use template
 
-Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template.
+Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
    <img src="_static/img/github_based_setup/use_template_1.png"><br />
    <img src="_static/img/github_based_setup/use_template_2.png"><br />
@@ -97,7 +97,7 @@ To update the challenge on EvalAI, make changes in the repository and push on `c
 
 ### Step 1: Setup challenge configuration
 
-We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template to start.
+We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
 ### Step 2: Edit challenge configuration
 
@@ -131,7 +131,7 @@ If you have issues in creating a challenge on EvalAI, please feel free to contac
 
 Steps to create a Code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
 
-We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) repository as template to start.
+We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
 ### Step 2: Edit challenge configuration
 
@@ -164,7 +164,7 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
-[evalai-starters]: https://github.com/cloud-CV/evalai-starters
+[evalai-starters]: https://github.com/Cloud-CV/EvalAI-Starters
 [evalai-cli]: https://cli.eval.ai/
 [evalai]: http://eval.ai
 [docker-compose]: https://docs.docker.com/compose/install/
