@@ -102,6 +102,15 @@ class ExecutionTimeLimitExceeded(Exception):
     pass
 
 
+class MultiOut(object):
+    def __init__(self, *args):
+        self.handles = args
+
+    def write(self, s):
+        for f in self.handles:
+            f.write(s)
+
+
 @contextlib.contextmanager
 def stdout_redirect(where):
     sys.stdout = where
@@ -446,9 +455,11 @@ def run_submission(
                     SUBMISSION_LOGS_PREFIX, submission.id
                 )
             )
-            with stdout_redirect(stdout) as new_stdout, stderr_redirect(
-                stderr
-            ) as new_stderr:
+            with stdout_redirect(
+                MultiOut(stdout, sys.__stdout__)
+            ) as new_stdout, stderr_redirect(  # noqa
+                MultiOut(stderr, sys.__stderr__)
+            ) as new_stderr:  # noqa
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                     annotation_file_path,
                     user_annotation_file_path,
@@ -481,8 +492,10 @@ def run_submission(
     # call `main` from globals and set `status` to running and hence `started_at`
     try:
         successful_submission_flag = True
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(  # noqa
-            stderr
+        with stdout_redirect(
+            MultiOut(stdout, sys.__stdout__)
+        ) as new_stdout, stderr_redirect(  # noqa
+            MultiOut(stderr, sys.__stderr__)
         ) as new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
