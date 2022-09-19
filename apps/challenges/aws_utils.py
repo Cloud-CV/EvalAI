@@ -644,9 +644,6 @@ def scale_resources(challenge, new_cpu_units, new_memory):
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
-    # TODO: remove once changes are tested and approved
-    print(str(challenge))
-
     if not challenge.task_def_arn:
         message = "Error. Task definition not yet registered for challenge{}.".format(
             challenge.pk
@@ -657,7 +654,6 @@ def scale_resources(challenge, new_cpu_units, new_memory):
         }
 
     # deregister
-    # TODO: convert into celery task
     try:
         response = client.deregister_task_definition(
             taskDefinition=challenge.task_def_arn
@@ -713,8 +709,6 @@ def scale_resources(challenge, new_cpu_units, new_memory):
             challenge.save()
             force_new_deployment = False
             service_name = "{}_service".format(queue_name)
-            # TODO: change back to challenge.workers once we ensure that its value is always valid
-            num_of_tasks = 1
             kwargs = update_service_args.format(
                 CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
                 service_name=service_name,

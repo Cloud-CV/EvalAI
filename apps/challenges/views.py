@@ -3029,7 +3029,6 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         challenge.task_def_arn = "random-number-generator-challenge-596-staging-55d46e9a-563d-48f1-a4d7-b9a7f36a55:4"
         response = scale_resources(challenge, cpu_units, memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            print("Response: " + str(response))
             response_data = {
                 "error": "Issue with ECS."
             }
