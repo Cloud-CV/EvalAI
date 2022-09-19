@@ -143,9 +143,9 @@ class Challenge(TimeStampedModel):
         max_length=1000, null=True, blank=True, default=""
     )
     # The number of vCPU for a Fargate worker for the challenge. Default value is 0.25 vCPU.
-    worker_cpu_cores = models.IntegerField(null=True, blank=True, default=256)
+    worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
     # Memory size of a Fargate worker for the challenge. Default value is 0.5 GB memory.
-    worker_memory = models.IntegerField(null=True, blank=True, default=512)
+    worker_memory = models.IntegerField(null=True, blank=True, default=1024)
     # Enable/Disable emails notifications for the challenge
     inform_hosts = models.BooleanField(default=True)
     # VPC and subnet CIDRs for code upload challenge
