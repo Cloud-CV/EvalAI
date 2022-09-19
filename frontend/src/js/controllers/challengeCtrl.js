@@ -97,8 +97,8 @@
 
         vm.workerLogs = [];
 
-        vm.memory = 0;
-        vm.cpuUnits = 0;
+        vm.cpuUnits = 256;
+        vm.memory = 512;
 
         utilities.showLoader();
 
