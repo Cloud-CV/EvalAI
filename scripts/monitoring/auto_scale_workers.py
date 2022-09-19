@@ -15,12 +15,8 @@ NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
 PROMETHEUS_URL = os.environ.get(
     "MONITORING_API_URL", "https://monitoring-staging.eval.ai/prometheus/"
 )
-# PROD_CHALLENGE_QUEUES = [
-#     "reclor-a-reading-comprehension-dataset-requiring-logical-reasoning-77951de9-6306",
-#     "kilt-69d368bc-a5e8-4952-bd68-21c3ba61eb65",
-#     "soccernet-challenge-2022-player-reidentification-1538-production-6e6aabcd-e2fc-4",
-# ]
-# ENV = os.environ.get("ENV", "dev")
+
+ENV = os.environ.get("ENV", "dev")
 
 evalai_endpoint = os.environ.get("API_HOST_URL")
 authorization_header = {
@@ -74,7 +70,6 @@ def get_queue_length_by_challenge(challenge):
 
 
 def increase_or_decrease_workers(challenge):
-    print("=" * 40)
     try:
         queue_length = get_queue_length_by_challenge(challenge)
     except Exception:  # noqa: F841
@@ -123,7 +118,6 @@ def increase_or_decrease_workers(challenge):
                     challenge["id"], challenge["title"]
                 )
             )
-    print("=" * 40)
 
 
 # TODO: Factor in limits for the APIs
@@ -133,11 +127,6 @@ def increase_or_decrease_workers_for_challenges(response):
             not challenge["is_docker_based"]
             and not challenge["remote_evaluation"]
         ):
-            # if ENV == "prod":
-            #     # if challenge["queue"] in PROD_CHALLENGE_QUEUES:
-            #     increase_or_decrease_workers(challenge)
-            #     time.sleep(1)
-            # else:
             increase_or_decrease_workers(challenge)
             time.sleep(1)
 
