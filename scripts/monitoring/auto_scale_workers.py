@@ -70,7 +70,6 @@ def get_queue_length_by_challenge(challenge):
 
 
 def increase_or_decrease_workers(challenge):
-    print("=" * 40)
     try:
         queue_length = get_queue_length_by_challenge(challenge)
     except Exception:  # noqa: F841
