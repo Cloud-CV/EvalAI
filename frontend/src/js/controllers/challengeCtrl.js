@@ -1563,7 +1563,7 @@
             };
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Worker resources for " + vm.team.name + " have been changed successfully!");
+                    $rootScope.notify("success", "Worker resources have been changed successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team = {};

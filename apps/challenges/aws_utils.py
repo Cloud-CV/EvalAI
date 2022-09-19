@@ -632,6 +632,9 @@ def scale_resources(challenge, new_cpu_units, new_memory):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+
+    from .utils import get_aws_credentials_for_challenge
+
     client = get_boto3_client("ecs", aws_keys)
 
     if challenge.worker_cpu_cores == new_cpu_units and challenge.worker_memory == new_memory:
@@ -663,8 +666,6 @@ def scale_resources(challenge, new_cpu_units, new_memory):
                 response["ResponseMetadata"]["HTTPStatusCode"]
                 == HTTPStatus.OK
         ):
-            challenge.worker_cpu_cores = new_cpu_units
-            challenge.worker_memory = new_memory
             challenge.task_def_arn = None
             challenge.save()
         else:
@@ -674,12 +675,9 @@ def scale_resources(challenge, new_cpu_units, new_memory):
         return e.response
 
     # register
-    from .utils import get_aws_credentials_for_challenge
 
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
-    worker_cpu_cores = challenge.worker_cpu_cores
-    worker_memory = challenge.worker_memory
     log_group_name = get_log_group_name(challenge.pk)
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
@@ -689,8 +687,8 @@ def scale_resources(challenge, new_cpu_units, new_memory):
         container_name=container_name,
         ENV=ENV,
         challenge_pk=challenge.pk,
-        CPU=worker_cpu_cores,
-        MEMORY=worker_memory,
+        CPU=challenge.worker_cpu_cores,
+        MEMORY=challenge.worker_memory,
         log_group_name=log_group_name,
         AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
         AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
@@ -706,6 +704,8 @@ def scale_resources(challenge, new_cpu_units, new_memory):
                 response["ResponseMetadata"]["HTTPStatusCode"]
                 == HTTPStatus.OK
         ):
+            challenge.worker_cpu_cores = new_cpu_units
+            challenge.worker_memory = new_memory
             task_def_arn = response["taskDefinition"][
                 "taskDefinitionArn"
             ]
@@ -713,7 +713,8 @@ def scale_resources(challenge, new_cpu_units, new_memory):
             challenge.save()
             force_new_deployment = False
             service_name = "{}_service".format(queue_name)
-            num_of_tasks = challenge.workers
+            # TODO: change back to challenge.workers once we ensure that its value is always valid
+            num_of_tasks = 1
             kwargs = update_service_args.format(
                 CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
                 service_name=service_name,
