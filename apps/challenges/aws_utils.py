@@ -714,6 +714,7 @@ def scale_resources(challenge, new_cpu_units, new_memory):
                 CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
                 service_name=service_name,
                 task_def_arn=task_def_arn,
+                num_of_tasks=num_of_tasks,
                 force_new_deployment=force_new_deployment,
             )
             kwargs = eval(kwargs)
