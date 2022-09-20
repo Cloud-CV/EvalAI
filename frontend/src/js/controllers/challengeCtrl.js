@@ -1554,6 +1554,75 @@
         };
 
         // function to create new team for participating in challenge
+        vm.createNewTeam = function() {
+            vm.isLoader = true;
+            vm.loaderTitle = '';
+            vm.newContainer = angular.element('.new-team-card');
+
+            vm.startLoader("Loading Teams");
+
+            parameters.url = 'participants/participant_team';
+            parameters.method = 'POST';
+            parameters.data = {
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
+            };
+            parameters.callback = {
+                onSuccess: function() {
+                    $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
+                    vm.team.error = false;
+                    vm.stopLoader();
+                    vm.team = {};
+
+                    vm.startLoader("Loading Teams");
+                    parameters.url = 'participants/participant_team';
+                    parameters.method = 'GET';
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var details = response.data;
+                            if (status == 200) {
+                                vm.existTeam = details;
+                                vm.showPagination = true;
+                                vm.paginationMsg = '';
+
+
+                                // condition for pagination
+                                if (vm.existTeam.next === null) {
+                                    vm.isNext = 'disabled';
+                                    vm.currentPage = 1;
+                                } else {
+                                    vm.isNext = '';
+                                    vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                                }
+
+                                if (vm.existTeam.previous === null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                    vm.isPrev = '';
+                                }
+
+
+                                vm.stopLoader();
+                            }
+                        },
+                        onError: function() {
+                            vm.stopLoader();
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    vm.team.error = error.team_name[0];
+                    vm.stopLoader();
+                    $rootScope.notify("error", "New team couldn't be created.");
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
         vm.setWorkerResources = function() {
             parameters.url = "challenges/"+vm.challengeId+"/scale_resources/";
             parameters.method = 'PUT';
