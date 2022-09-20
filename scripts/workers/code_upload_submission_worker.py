@@ -517,6 +517,7 @@ def cleanup_submission(
     challenge_pk,
     phase_pk,
     stderr,
+    enverr,
     message,
 ):
     """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
@@ -528,6 +529,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
+        enverr {[string]} -- Reason of failure for submission/job from environment
         message {[dict]} -- Submission message from AWS SQS queue
     """
     try:
@@ -536,6 +538,7 @@ def cleanup_submission(
             "submission": submission_pk,
             "stdout": "",
             "stderr": stderr,
+            "enverr": enverr,
             "submission_status": "FAILED",
             "result": "[]",
             "metadata": "",
@@ -603,7 +606,10 @@ def update_failed_jobs_and_send_logs(
                                     )
                                     pod_log = pod_log[-1000:]
                                     clean_submission = True
-                                    submission_error = pod_log
+                                    if container_name == "submission":
+                                        submission_error = pod_log
+                                    else:
+                                        agent_error = pod_log
                                 except client.rest.ApiException as e:
                                     logger.exception(
                                         "Exception while reading Job logs {}".format(
@@ -637,6 +643,7 @@ def update_failed_jobs_and_send_logs(
             challenge_pk,
             phase_pk,
             submission_error,
+            agent_error,
             message,
         )
 

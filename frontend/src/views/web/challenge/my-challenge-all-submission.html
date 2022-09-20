@@ -88,6 +88,7 @@
                         <th class="fs-18 w-300" data-field="file">Submitted file</th>
                         <th class="fs-18 w-300" data-field="file">Stdout file</th>
                         <th class="fs-18 w-300" data-field="file">Stderr file</th>
+                        <th class="fs-18 w-300" data-field="file">Environment error file</th>
                         <th class="fs-18 w-300" data-field="file">Result file</th>
                         <th class="fs-18 w-300" data-field="file">Metadata file</th>
                         <!-- <th ng-if="challenge.currentPhaseLeaderboardPublic" class="fs-18 w-300" data-field="button">Show on Leaderboard</th> -->
@@ -118,6 +119,10 @@
                             <td ng-if="!key.stdout_file">None</td>
 
                             <td ng-if="key.stderr_file"><a href="{{key.stderr_file}}" target="_blank"
+                                    class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                            <td ng-if="!key.stderr_file">None</td>
+
+                            <td ng-if="key.enverr_file"><a href="{{key.enverr_file}}" target="_blank"
                                     class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                             <td ng-if="!key.stderr_file">None</td>
 
