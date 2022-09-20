@@ -709,6 +709,7 @@ def scale_resources(challenge, new_cpu_units, new_memory):
             challenge.save()
             force_new_deployment = False
             service_name = "{}_service".format(queue_name)
+            num_of_tasks = challenge.workers
             kwargs = update_service_args.format(
                 CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
                 service_name=service_name,
