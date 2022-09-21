@@ -15,11 +15,7 @@ NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
 PROMETHEUS_URL = os.environ.get(
     "MONITORING_API_URL", "https://monitoring-staging.eval.ai/prometheus/"
 )
-PROD_CHALLENGE_QUEUES = [
-    "reclor-a-reading-comprehension-dataset-requiring-logical-reasoning-77951de9-6306",
-    "kilt-69d368bc-a5e8-4952-bd68-21c3ba61eb65",
-    "soccernet-challenge-2022-player-reidentification-1538-production-6e6aabcd-e2fc-4",
-]
+
 ENV = os.environ.get("ENV", "dev")
 
 evalai_endpoint = os.environ.get("API_HOST_URL")
@@ -78,31 +74,48 @@ def increase_or_decrease_workers(challenge):
         queue_length = get_queue_length_by_challenge(challenge)
     except Exception:  # noqa: F841
         print(
-            "Unable to get the queue length for challenge ID: {}. Skipping.".format(
-                challenge["id"]
+            "Unable to get the queue length for challenge ID: {}, Title: {}. Skipping.".format(
+                challenge["id"], challenge["title"]
             )
         )
         return
 
+    num_workers = (
+        0 if challenge["workers"] is None else int(challenge["workers"])
+    )
+
+    print(
+        "Num Workers: {}, Queue Length: {}".format(num_workers, queue_length)
+    )
     if queue_length == 0:
-        if challenge["workers"] is not None and int(challenge["workers"]) > 0:
-            stop_worker(challenge["id"])
-            print("Stopped worker for challenge: {}".format(challenge["id"]))
+        if num_workers > 0:
+            response = stop_worker(challenge["id"])
+            print("AWS API Response: {}".format(response))
+            print(
+                "Stopped worker for Challenge ID: {}, Title: {}".format(
+                    challenge["id"], challenge["title"]
+                )
+            )
         else:
             print(
-                "No workers and queue messages found for challenge: {}. Skipping.".format(
-                    challenge["id"]
+                "No workers and queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+                    challenge["id"], challenge["title"]
                 )
             )
 
     else:
-        if challenge["workers"] is None or int(challenge["workers"]) == 0:
-            start_worker(challenge["id"])
-            print("Started worker for challenge: {}".format(challenge["id"]))
+        if num_workers == 0:
+            response = start_worker(challenge["id"])
+            print("AWS API Response: {}".format(response))
+            print(
+                "Started worker for Challenge ID: {}, Title: {}.".format(
+                    challenge["id"], challenge["title"]
+                )
+            )
         else:
             print(
-                "Existing workers and pending queue messages found for challenge: {}. Skipping.".format(
-                    challenge["id"]
+                "Existing workers and pending queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+                    challenge["id"], challenge["title"]
                 )
             )
 
@@ -114,13 +127,15 @@ def increase_or_decrease_workers_for_challenges(response):
             not challenge["is_docker_based"]
             and not challenge["remote_evaluation"]
         ):
-            if ENV == "prod":
-                if challenge["queue"] in PROD_CHALLENGE_QUEUES:
-                    increase_or_decrease_workers(challenge)
-                    time.sleep(1)
-            else:
-                increase_or_decrease_workers(challenge)
-                time.sleep(1)
+            increase_or_decrease_workers(challenge)
+            time.sleep(1)
+
+        else:
+            print(
+                "Challenge ID: {}, Title: {} is either docker-based or remote-evaluation. Skipping.".format(
+                    challenge["id"], challenge["title"]
+                )
+            )
 
 
 # Cron Job
