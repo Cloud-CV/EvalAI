@@ -2996,13 +2996,13 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
 
     if request.data.get("worker_cpu_cores") is None:
         response_data = {
-            "error": "Number of CPU units is missing from request."
+            "error": "CPU unit count config missing from request data."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.data.get("worker_memory") is None:
         response_data = {
-            "error": "Amount of memory is missing from request."
+            "error": "Worker memory config missing from request data."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3041,7 +3041,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
             }
     else:
         response_data = {
-            "error": "Invalid core and memory combination."
+            "error": "Please specify correct worker CPU cores and memory config."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return Response(response_data, status=status.HTTP_200_OK)

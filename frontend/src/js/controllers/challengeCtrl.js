@@ -1632,7 +1632,7 @@
             };
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Worker resources have been changed successfully!");
+                    $rootScope.notify("success", "Evaluation worker scaled successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team = {};
@@ -1646,7 +1646,7 @@
                     } else {
                         requestError = JSON.stringify(response.data, null, 4);
                     }
-                    $rootScope.notify("error", "Worker resources could not be changed: " + requestError);
+                    $rootScope.notify("error", "Error scaling evaluation worker: " + requestError);
                 }
             };
 
