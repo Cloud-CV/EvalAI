@@ -2994,21 +2994,21 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.data.get("cpu_units") is None:
+    if request.data.get("worker_cpu_cores") is None:
         response_data = {
             "error": "Number of CPU units is missing from request."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.data.get("memory") is None:
+    if request.data.get("worker_memory") is None:
         response_data = {
             "error": "Amount of memory is missing from request."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
-    cpu_units = request.data["cpu_units"]
-    memory = request.data["memory"]
+    cpu_units = request.data["worker_cpu_cores"]
+    memory = request.data["worker_memory"]
 
     try:
         cpu_units = int(cpu_units)

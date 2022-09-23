@@ -616,7 +616,7 @@ def scale_workers(queryset, num_of_tasks):
     return {"count": count, "failures": failures}
 
 
-def scale_resources(challenge, new_cpu_units, new_memory):
+def scale_resources(challenge, worker_cpu_cores, worker_memory):
     """
     The function called by scale_resources_by_challenge_pk to send the AWS ECS request to change the resources used by
     a challenge's workers.
@@ -626,7 +626,7 @@ def scale_resources(challenge, new_cpu_units, new_memory):
     Parameters:
     challenge (): The challenge object for whom the task definition is being registered.
     new_cpu_val (int): The CPU value (1 vCPU = 1024 values) that should be assigned to workers.
-    new_memory (int): The amount of memory (MB) that should be assigned to each worker.
+    worker_memory (int): The amount of memory (MB) that should be assigned to each worker.
 
     Returns:
     dict: keys-> 'count': the number of workers successfully started.
@@ -637,7 +637,7 @@ def scale_resources(challenge, new_cpu_units, new_memory):
 
     client = get_boto3_client("ecs", aws_keys)
 
-    if challenge.worker_cpu_cores == new_cpu_units and challenge.worker_memory == new_memory:
+    if challenge.worker_cpu_cores == worker_cpu_cores and challenge.worker_memory == worker_memory:
         message = "Error. Worker cores and memory were not modified."
         return {
             "Error": message,
@@ -700,8 +700,8 @@ def scale_resources(challenge, new_cpu_units, new_memory):
                 response["ResponseMetadata"]["HTTPStatusCode"]
                 == HTTPStatus.OK
         ):
-            challenge.worker_cpu_cores = new_cpu_units
-            challenge.worker_memory = new_memory
+            challenge.worker_cpu_cores = worker_cpu_cores
+            challenge.worker_memory = worker_memory
             task_def_arn = response["taskDefinition"][
                 "taskDefinitionArn"
             ]
