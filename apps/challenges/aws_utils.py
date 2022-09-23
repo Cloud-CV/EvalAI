@@ -67,8 +67,7 @@ COMMON_SETTINGS_DICT = {
         ),
     ),
     "CIDR": os.environ.get("CIDR"),
-    # TODO: change back to "evalai-prod-cluster" once changes are approved
-    "CLUSTER": os.environ.get("CLUSTER", "evalai-staging-cluster"),
+    "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
     "EVALAI_API_SERVER": os.environ.get("EVALAI_API_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
@@ -477,16 +476,16 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
-    # if settings.DEBUG:
-    #     failures = []
-    #     for challenge in queryset:
-    #         failures.append(
-    #             {
-    #                 "message": "Workers cannot be started on AWS ECS service in development environment",
-    #                 "challenge_pk": challenge.pk,
-    #             }
-    #         )
-    #     return {"count": 0, "failures": failures}
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS ECS service in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
 
     client = get_boto3_client("ecs", aws_keys)
     count = 0
