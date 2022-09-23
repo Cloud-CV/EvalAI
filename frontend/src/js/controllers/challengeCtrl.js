@@ -1624,7 +1624,7 @@
         };
 
         vm.setWorkerResources = function() {
-            parameters.url = "challenges/"+vm.challengeId+"/scale_resources/";
+            parameters.url = "challenges/" + vm.challengeId + "/scale_resources/";
             parameters.method = 'PUT';
             parameters.data = {
                 "worker_cpu_cores": vm.cpuCores,

@@ -653,7 +653,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
-    # deregister
+    # Deregister current worker service's existing task definition
     try:
         response = client.deregister_task_definition(
             taskDefinition=challenge.task_def_arn
