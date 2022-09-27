@@ -2,6 +2,35 @@
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
+                <h5 class="w-300">Scale worker resources</h5>
+            </div>
+        </div>
+        <div class="three-columns">
+            <form ng-submit="challenge.setWorkerResources()">
+                <div class="column left-text-entry">
+                    <div class="input-field align-left col m12 l8">
+                        <input id="name" type="text" class="validate fs-16 dark-autofill w-300"
+                            ng-model="challenge.workerCPUCores" focus-if>
+                        <label for="name" class="align-left">Number of CPU Units (1/1024 of vCPU)</label>
+                    </div>
+                </div>
+                <div class="column middle-text-entry">
+                    <div class="input-field align-left  col s12 m12 l8">
+                        <input id="url" type="text" class="validate fs-16 dark-autofill w-300"
+                            ng-model="challenge.workerMemory" focus-if>
+                        <label for="url" class="align-left">Memory (MB)</label>
+                    </div>
+                </div>
+                <div class="column submit-column">
+                    <div class="col s12 m6 l6 align-left reg-control">
+                        <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" type="submit"
+                            value="Submit">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
                 <h5 class="w-300">Submission worker actions</h5>
             </div>
         </div>
@@ -20,30 +49,5 @@
         <div class="ev-logs-card">
             <div ng-repeat="log in challenge.workerLogs track by $index" class="ev-logs">{{log}}</div>
         </div>
-        <div class="row">
-            <h5 class="w-300">Scale Worker Resources</h5>
-        </div>
-        <form ng-submit="challenge.setWorkerResources()">
-            <div class="row">
-                <div class="input-field align-left col s12 m12 l8">
-                    <input id="name" type="text" class="validate fs-16 dark-autofill w-300"
-                        ng-model="challenge.cpuCores" focus-if>
-                    <label for="name">Number of CPU Units (1/1024 of vCPU)</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field align-left  col s12 m12 l8">
-                    <input id="url" type="text" class="validate fs-16 dark-autofill w-300"
-                        ng-model="challenge.memory" focus-if>
-                    <label for="url">Memory (MB)</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m6 l6 align-left reg-control">
-                    <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" type="submit"
-                        value="Submit">Submit</button>
-                </div>
-            </div>
-        </form>
     </div>
 </section>

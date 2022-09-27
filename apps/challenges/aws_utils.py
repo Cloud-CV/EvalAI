@@ -669,8 +669,6 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         logger.exception(e)
         return e.response
 
-    # register
-
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
     log_group_name = get_log_group_name(challenge.pk)
@@ -694,7 +692,6 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
     try:
         response = client.register_task_definition(**definition)
-        # if we successfully register a new task definition, update the service
         if (
                 response["ResponseMetadata"]["HTTPStatusCode"]
                 == HTTPStatus.OK

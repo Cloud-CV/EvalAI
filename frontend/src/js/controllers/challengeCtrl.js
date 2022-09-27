@@ -97,8 +97,8 @@
 
         vm.workerLogs = [];
 
-        vm.cpuCores = 256;
-        vm.memory = 512;
+        vm.workerCPUCores = 512;
+        vm.workerMemory = 1024;
 
         utilities.showLoader();
 
@@ -1627,8 +1627,8 @@
             parameters.url = "challenges/" + vm.challengeId + "/scale_resources/";
             parameters.method = 'PUT';
             parameters.data = {
-                "worker_cpu_cores": vm.cpuCores,
-                "worker_memory": vm.memory,
+                "worker_cpu_cores": vm.workerCPUCores,
+                "worker_memory": vm.workerMemory,
             };
             parameters.callback = {
                 onSuccess: function() {
