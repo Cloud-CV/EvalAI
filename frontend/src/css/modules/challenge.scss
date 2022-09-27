@@ -59,6 +59,26 @@ a.active-challenge {
     padding-bottom: 10px;
 }
 
+.title-search-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.searchbar{
+    display: flex;
+    align-items: center;
+}
+
+.searchbarElements{
+    margin-left: 5px;
+}
+
+::placeholder {
+    color: #999;
+    opacity: 1;
+}
+
 .ev-challenge-card {
     height: 425px;
 }
