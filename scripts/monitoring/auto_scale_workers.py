@@ -54,7 +54,7 @@ def execute_get_request(url):
 
 def get_challenges():
     all_challenge_endpoint = (
-        "{}/api/challenges/challenge/present/all/all".format(evalai_endpoint)
+        "{}/api/challenges/challenge/all/all/all".format(evalai_endpoint)
     )
     response = execute_get_request(all_challenge_endpoint)
 
