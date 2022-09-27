@@ -191,10 +191,7 @@ def is_challenge_phase_split_mapping_valid(
     dataset_split_id = phase_split["dataset_split_id"]
     if phase_id in phase_ids:
         if leaderboard_id in leaderboard_ids:
-            if dataset_split_id in dataset_split_ids:
-                return True
-            else:
-                return False
+            return dataset_split_id in dataset_split_ids
         else:
             return False
     return False
@@ -352,7 +349,7 @@ def validate_challenge_config_util(
         message = "ERROR: There is no key for evaluation script in YAML file. Please add it and then try again!"
         error_messages.append(message)
 
-    if not len(error_messages):
+    if not error_messages:
         serializer = ZipChallengeSerializer(
             data=yaml_file_data,
             context={
@@ -486,7 +483,7 @@ def validate_challenge_config_util(
                             or attribute_type == "checkbox"
                         ):
                             options = attribute.get("options")
-                            if not options or not len(options):
+                            if not options or not options:
                                 message = "ERROR: Please include at least one option in attribute for challenge phase {}".format(
                                     data["id"]
                                 )

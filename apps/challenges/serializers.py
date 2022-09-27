@@ -110,8 +110,6 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
 
 
 class ChallengeTemplateSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super(ChallengeTemplateSerializer, self).__init__(*args, **kwargs)
 
     class Meta:
         model = ChallengeTemplate

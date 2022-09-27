@@ -860,10 +860,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    if request.data.get("is_challenge_template"):
-        is_challenge_template = True
-    else:
-        is_challenge_template = False
+    is_challenge_template = bool(request.data.get("is_challenge_template"))
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
@@ -1140,7 +1137,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             or attribute_type == "checkbox"
                         ):
                             options = attribute.get("options")
-                            if not options or not len(options):
+                            if not options or not options:
                                 message = "Please include at least one option in attribute for challenge_phase {}".format(
                                     data["id"]
                                 )
@@ -2928,7 +2925,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
 
     shutil.rmtree(BASE_LOCATION)
 
-    if len(error_messages):
+    if error_messages:
         response_data["error"] = "\n".join(error_messages)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
@@ -3263,7 +3260,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         zip_ref,
     )
 
-    if not len(error_messages):
+    if not error_messages:
         if not challenge_queryset:
             error_messages = None
             try:

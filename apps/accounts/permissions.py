@@ -14,9 +14,6 @@ class HasVerifiedEmail(permissions.BasePermission):
         if request.user.is_anonymous:
             return True
         else:
-            if EmailAddress.objects.filter(
+            return bool(EmailAddress.objects.filter(
                 user=request.user, verified=True
-            ).exists():
-                return True
-            else:
-                return False
+            ).exists())
