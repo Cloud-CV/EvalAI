@@ -40,7 +40,8 @@ urlpatterns = [
     ),
     # `A-Za-z` because it accepts either of `all, future, past or present` in either case
     url(
-        r"^challenge/(?P<challenge_time>[A-Za-z]+)/(?P<challenge_approved>[A-Za-z]+)/(?P<challenge_published>[A-Za-z]+)$",
+        r"^challenge/time/(?P<challenge_time>[A-Za-z]+)/approved/"
+        "(?P<challenge_approved>[A-Za-z]+)/published/(?P<challenge_published>[A-Za-z]+)$",
         views.get_all_challenges,
         name="get_all_challenges",
     ),
