@@ -3009,7 +3009,7 @@ def manage_worker(request, challenge_pk, action):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     
     response_data = {}
-    
+
     if action == "start":
         response = start_workers([challenge])
     elif action == "stop":
