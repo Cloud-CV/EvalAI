@@ -2997,8 +2997,17 @@ def manage_worker(request, challenge_pk, action):
 
     challenge = get_challenge_model(challenge_pk)
 
+    if datetime.fromisoformat(
+        challenge["end_date"][:-1]
+    ) < datetime.utcnow() and action in ("start", "stop", "restart"):
+        response_data = {
+            "error": "The action {} is invalid for worker as the challenge ended on {}.".format(
+                action, challenge["end_date"]
+            )
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     response_data = {}
-
+    
     if action == "start":
         response = start_workers([challenge])
     elif action == "stop":
