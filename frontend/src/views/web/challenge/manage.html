@@ -2,16 +2,16 @@
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Scale worker resources</h5>
+                <h5 class="w-300">Manage worker</h5>
             </div>
         </div>
         <div class="three-columns">
             <form ng-submit="challenge.setWorkerResources()">
                 <div class="column left-text-entry">
                     <div class="input-field align-left col m12 l8">
-                        <input id="name" type="text" class="validate fs-16 dark-autofill w-300"
+                        <input id="cpuCores" type="text" class="validate fs-16 dark-autofill w-300"
                             ng-model="challenge.workerCPUCores" focus-if>
-                        <label for="name" class="align-left">Number of CPU Units (1/1024 of vCPU)</label>
+                        <label for="cpuCores" class="align-left">Number of CPU Units (1/1024 of vCPU)</label>
                     </div>
                 </div>
                 <div class="column middle-text-entry">
@@ -23,16 +23,11 @@
                 </div>
                 <div class="column submit-column">
                     <div class="col s12 m6 l6 align-left reg-control">
-                        <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" type="submit"
-                            value="Submit">Submit</button>
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit"
+                            value="Submit"><i class="fa fa-arrow-up"></i> Scale worker</button>
                     </div>
                 </div>
             </form>
-        </div>
-        <div class="row margin-bottom-cancel">
-            <div class="col s12">
-                <h5 class="w-300">Submission worker actions</h5>
-            </div>
         </div>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
@@ -43,7 +38,7 @@
         </div>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Submission worker logs</h5>
+                <h5 class="w-300">Worker logs</h5>
             </div>
         </div>
         <div class="ev-logs-card">
