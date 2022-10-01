@@ -1076,6 +1076,7 @@ def update_submission(request, challenge_pk):
      - ``submission``: submission id, e.g. 123 (**required**)
      - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``enverr``: Environment error after evaluation, e.g. "Failed due to attempted action being invalid" (**required**)
      - ``submission_status``: Status of submission after evaluation
         (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
