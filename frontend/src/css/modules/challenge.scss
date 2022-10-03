@@ -285,23 +285,29 @@ md-select .md-select-value span:first-child:after {
     margin-bottom: 0px;
 }
 
-.column {
-    float: left;
+.scale-worker-column {
     padding: 10px;
 }
 
-.left-text-entry {
-    width: 40%;
+.text-entry-wrapper {
+    display: flex;
+    width: 50%;
 }
 
-.middle-text-entry {
-    width: 40%;
+.text-entry-content {
+    width: 100%;
+}
+
+.text-entry-columns {
+    flex: 1;
+    display: flex;
 }
 
 .submit-column {
-    width: 20%;
+    flex: 0 0 auto;
+    float: right;
 }
 
-.three-columns {
-    justify-content: space-around;
+.multiple-columns {
+    display: flex;
 }
