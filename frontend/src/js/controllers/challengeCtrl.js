@@ -97,6 +97,9 @@
 
         vm.workerLogs = [];
 
+        const currentEnvironment = utilities.getEnvironment();
+        vm.showBackground = currentEnvironment === 'staging' || currentEnvironment === 'local';
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
