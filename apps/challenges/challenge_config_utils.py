@@ -6,6 +6,7 @@ import yaml
 from django.core.files.base import ContentFile
 
 from os.path import basename, isfile, join
+from apps.challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -220,7 +221,7 @@ def get_value_from_field(data, base_location, field_name):
 
 
 def validate_challenge_config_util(
-    request, challenge_host_team, BASE_LOCATION, unique_folder_name, zip_ref
+    request, challenge_host_team, BASE_LOCATION, unique_folder_name, zip_ref, existing_challenge
 ):
     """
     Function to validate a challenge config
@@ -382,6 +383,21 @@ def validate_challenge_config_util(
             error_messages.append(message)
             return error_messages, yaml_file_data, files
 
+    # Get existing config IDs for leaderboards and dataset splits
+    if existing_challenge is not None:
+        existing_challenge_phases = ChallengePhase.objects.filter(challenge=existing_challenge.id)
+        existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__in=existing_challenge_phases)
+        existing_leaderboards = Leaderboard.objects.filter(id__in=existing_challenge_phase_splits.values('leaderboard'))
+        existing_dataset_splits =  DatasetSplit.objects.filter(id__in=existing_challenge_phase_splits.values('dataset_split'))
+        
+        existing_leaderboard_config_ids = [int(x.config_id) for x in existing_leaderboards]
+        existing_dataset_split_config_ids = [int(x.config_id) for x in existing_dataset_splits]
+        existing_challenge_phase_config_ids = [int(x.config_id) for x in existing_challenge_phases]
+    else:
+        existing_leaderboard_config_ids = []
+        existing_dataset_split_config_ids = []
+        existing_challenge_phase_config_ids = []
+
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
     leaderboard_ids = []
@@ -415,10 +431,18 @@ def validate_challenge_config_util(
                     )
                     error_messages.append(message)
                 else:
+                    # Addition
+                    if existing_leaderboard_config_ids and int(data["id"]) not in existing_leaderboard_config_ids:
+                        error_messages.append("ERROR: The leaderboard {} was not present in the existing leaderboard IDs. It is not possible to add new leaderboards once challenge is created. Please only use existing leaderboard IDs.".format(data["id"]))
                     leaderboard_ids.append(data["id"])
     else:
         message = "ERROR: There is no key leaderboard in the YAML file."
         error_messages.append(message)
+    
+    # Deletion Case:
+    for existing_leaderboard_id in existing_leaderboard_config_ids:
+        if existing_leaderboard_id not in leaderboard_ids:
+            error_messages.append("ERROR: The leaderboard {} was present in the existing leaderboard IDs but not found in the current configuration. It is not possible to delete leaderboards once challenge is created. Please use all the existing leaderboard IDs.".format(existing_leaderboard_id))
 
     # Check for challenge phases
     challenge_phases_data = yaml_file_data.get("challenge_phases")
@@ -544,7 +568,16 @@ def validate_challenge_config_util(
             )
             error_messages.append(message)
         else:
+            # Addition
+            if existing_challenge_phase_config_ids and int(data["id"]) not in existing_challenge_phase_config_ids:
+                error_messages.append("ERROR: The challenge phase {} was not present in the existing challenge phase IDs. It is not possible to add new challenge phases once challenge is created. Please only use existing challenge phase IDs.".format(data["id"]))
             phase_ids.append(data["id"])
+    
+    # Deletion Case:
+    for existing_challenge_phase_id in existing_challenge_phase_config_ids:
+        if existing_challenge_phase_id not in phase_ids:
+            error_messages.append("ERROR: The challenge phase {} was present in the existing challenge phase IDs but not found in the current configuration. It is not possible to delete challenge phases once challenge is created. Please use all the existing challenge phases IDs.".format(existing_challenge_phase_id))
+
 
     # Check for dataset splits
     dataset_splits = yaml_file_data.get("dataset_splits")
@@ -571,11 +604,19 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             else:
+                # Addition
+                if existing_dataset_split_config_ids and int(data["id"]) not in existing_dataset_split_config_ids:
+                    error_messages.append("ERROR: The dataset split ID {} was not present in the existing dataset split IDs. It is not possible to add new dataset split once challenge is created. Please only use existing data split IDs.".format(data["id"]))
                 dataset_splits_ids.append(split["id"])
-
     else:
         message = "ERROR: There is no key for dataset splits."
         error_messages.append(message)
+
+    # Deletion Case:
+    for existing_dataset_split_config_id in existing_dataset_split_config_ids:
+        if existing_dataset_split_config_id not in phase_ids:
+            error_messages.append("ERROR: The dataset split {} was present in the existing dataset split IDs but not found in the current configuration. It is not possible to delete dataset splits once challenge is created. Please use all the existing dataset split IDs.".format(existing_dataset_split_config_id))
+
 
     # Check for challenge phase splits
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")

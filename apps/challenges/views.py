@@ -2927,6 +2927,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         BASE_LOCATION,
         unique_folder_name,
         zip_ref,
+        None
     )
 
     shutil.rmtree(BASE_LOCATION)
@@ -3271,6 +3272,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         BASE_LOCATION,
         unique_folder_name,
         zip_ref,
+        challenge_queryset[0] if challenge_queryset else None
     )
 
     if not len(error_messages):
