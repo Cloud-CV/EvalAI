@@ -1,5 +1,4 @@
 import csv
-from datetime import datetime
 import json
 import logging
 import os
@@ -13,6 +12,7 @@ import yaml
 import zipfile
 
 from os.path import basename, isfile, join
+from dateutil.parser import parse
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -2998,9 +2998,7 @@ def manage_worker(request, challenge_pk, action):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if datetime.fromisoformat(
-        challenge["end_date"][:-1]
-    ) < datetime.utcnow() and action in ("start", "stop", "restart"):
+    if parse(challenge["end_date"]) < datetime.utcnow() and action in ("start", "stop", "restart"):
         response_data = {
             "error": "The action {} is invalid for worker as the challenge ended on {}.".format(
                 action, challenge["end_date"]
