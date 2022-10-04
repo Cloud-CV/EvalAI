@@ -6,7 +6,7 @@ import yaml
 from django.core.files.base import ContentFile
 
 from os.path import basename, isfile, join
-from apps.challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
+from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -605,8 +605,8 @@ def validate_challenge_config_util(
                 error_messages.append(message)
             else:
                 # Addition
-                if existing_dataset_split_config_ids and int(data["id"]) not in existing_dataset_split_config_ids:
-                    error_messages.append("ERROR: The dataset split ID {} was not present in the existing dataset split IDs. It is not possible to add new dataset split once challenge is created. Please only use existing data split IDs.".format(data["id"]))
+                if existing_dataset_split_config_ids and int(split["id"]) not in existing_dataset_split_config_ids:
+                    error_messages.append("ERROR: The dataset split ID {} was not present in the existing dataset split IDs. It is not possible to add new dataset split once challenge is created. Please only use existing data split IDs.".format(split["id"]))
                 dataset_splits_ids.append(split["id"])
     else:
         message = "ERROR: There is no key for dataset splits."
@@ -614,7 +614,7 @@ def validate_challenge_config_util(
 
     # Deletion Case:
     for existing_dataset_split_config_id in existing_dataset_split_config_ids:
-        if existing_dataset_split_config_id not in phase_ids:
+        if existing_dataset_split_config_id not in dataset_splits_ids:
             error_messages.append("ERROR: The dataset split {} was present in the existing dataset split IDs but not found in the current configuration. It is not possible to delete dataset splits once challenge is created. Please use all the existing dataset split IDs.".format(existing_dataset_split_config_id))
 
 
