@@ -201,15 +201,19 @@ def is_challenge_phase_split_mapping_valid(
     phase_id = phase_split["challenge_phase_id"]
     leaderboard_id = phase_split["leaderboard_id"]
     dataset_split_id = phase_split["dataset_split_id"]
-    if phase_id in phase_ids:
-        if leaderboard_id in leaderboard_ids:
-            if dataset_split_id in dataset_split_ids:
-                return True
-            else:
-                return False
-        else:
-            return False
-    return False
+    error_messages = []
+
+    if leaderboard_id not in leaderboard_ids:
+        error_messages.append("ERROR: Challenge phase split {} found leaderboard id {} which is not valid.".format(phase_split["id"], leaderboard_id))
+    if phase_id not in phase_ids:
+        error_messages.append("ERROR: Challenge phase split {} found phase id {} which is not valid.".format(phase_split["id"], phase_id))
+    if  dataset_split_id not in dataset_split_ids:
+        error_messages.append("ERROR: Challenge phase split {} found dataset split id {} which is not valid.".format(phase_split["id"], dataset_split_id))
+    
+    if error_messages:
+        return False, error_messages
+    else:
+        return True, error_messages
 
 
 def get_value_from_field(data, base_location, field_name):
@@ -384,7 +388,8 @@ def validate_challenge_config_util(
             return error_messages, yaml_file_data, files
 
     # Get existing config IDs for leaderboards and dataset splits
-    if existing_challenge is not None:
+    print(existing_challenge)
+    if existing_challenge:
         existing_challenge_phases = ChallengePhase.objects.filter(challenge=existing_challenge.id)
         existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__in=existing_challenge_phases)
         existing_leaderboards = Leaderboard.objects.filter(id__in=existing_challenge_phase_splits.values('leaderboard'))
@@ -400,6 +405,9 @@ def validate_challenge_config_util(
 
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
+    print("cp: ", existing_challenge_phase_config_ids)
+    print("ds: ", existing_dataset_split_config_ids)
+    print("lb: ", existing_leaderboard_config_ids)
     leaderboard_ids = []
     if leaderboard:
         error = False
@@ -622,14 +630,10 @@ def validate_challenge_config_util(
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            if not is_challenge_phase_split_mapping_valid(
+            is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
                 phase_ids, leaderboard_ids, dataset_splits_ids, data
-            ):
-                message = (
-                    "ERROR: Challenge phase split {} has invalid keys "
-                    "for challenge_phase_id, leaderboard_id, dataset_split_id"
-                ).format(phase_split)
-                error_messages.append(message)
+            )
+            error_messages += messages
 
             serializer = ZipChallengePhaseSplitSerializer(
                 data=data, context={"exclude_fields": exclude_fields}
