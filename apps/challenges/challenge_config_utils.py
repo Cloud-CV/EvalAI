@@ -110,11 +110,11 @@ def is_challenge_config_yaml_html_field_valid(
         is_valid {boolean} -- flag for field validation is success
         message {string} -- error message if any
     """
-    value = yaml_file_data.get(key)
+    value = join(base_location, yaml_file_data.get(key))
     message = ""
     is_valid = False
     if value:
-        if isfile(value):
+        if not isfile(value):
             message = "The challenge {} file specified was not found. Please add a valid challenge {} file".format(
                 key, key
             )
@@ -389,7 +389,6 @@ def validate_challenge_config_util(
             return error_messages, yaml_file_data, files
 
     # Get existing config IDs for leaderboards and dataset splits
-    print(existing_challenge)
     if existing_challenge:
         existing_challenge_phases = ChallengePhase.objects.filter(challenge=existing_challenge.id)
         existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__in=existing_challenge_phases)
@@ -406,9 +405,6 @@ def validate_challenge_config_util(
 
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
-    print("cp: ", existing_challenge_phase_config_ids)
-    print("ds: ", existing_dataset_split_config_ids)
-    print("lb: ", existing_leaderboard_config_ids)
     leaderboard_ids = []
     if leaderboard:
         error = False
@@ -553,7 +549,7 @@ def validate_challenge_config_util(
                         data["id"], missing_keys_string
                     )
                     error_messages.append(message)
-        if test_annotation_file:
+        if isfile(test_annotation_file_path):
             serializer = ChallengePhaseCreateSerializer(
                 data=data,
                 context={
