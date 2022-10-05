@@ -235,6 +235,7 @@ def validate_challenge_config_util(
         BASE_LOCATION {str} -- The temp base directory for storing all the files and folders while validating the zip file
         unique_folder_name {str} -- name of the challenge zip file and the parent dir of extracted folder
         zip_ref {zipfile.ZipFile} -- reference to challenge config zip
+        existing_challenge {apps.challenges.models.Challenge} - the existing challenge for the github repo, if any
     """
 
     error_messages = []

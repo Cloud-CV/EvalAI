@@ -2888,6 +2888,10 @@ def validate_challenge_config(request, challenge_host_team_pk):
         BASE_LOCATION, "{}.zip".format(unique_folder_name)
     )
 
+    challenge_queryset = Challenge.objects.filter(
+        github_repository=request.data["GITHUB_REPOSITORY"]
+    )
+
     data = request.data
     challenge_config_serializer = ChallengeConfigSerializer(
         data=data, context={"request": request}
@@ -2927,7 +2931,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         BASE_LOCATION,
         unique_folder_name,
         zip_ref,
-        None
+        challenge_queryset[0] if challenge_queryset else None
     )
 
     shutil.rmtree(BASE_LOCATION)
