@@ -12,7 +12,9 @@ import yaml
 import zipfile
 
 from os.path import basename, isfile, join
+from datetime import datetime
 from dateutil.parser import parse
+
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -3005,7 +3007,7 @@ def manage_worker(request, challenge_pk, action):
             )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
     response_data = {}
 
     if action == "start":
