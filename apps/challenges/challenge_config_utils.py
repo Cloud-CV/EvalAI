@@ -187,7 +187,7 @@ def download_and_write_file(url, stream, output_path, mode):
 
 
 def is_challenge_phase_split_mapping_valid(
-    phase_ids, leaderboard_ids, dataset_split_ids, phase_split
+    phase_ids, leaderboard_ids, dataset_split_ids, phase_split, challenge_phase_split_index
 ):
     """
     Arguments:
@@ -204,11 +204,11 @@ def is_challenge_phase_split_mapping_valid(
     error_messages = []
 
     if leaderboard_id not in leaderboard_ids:
-        error_messages.append("ERROR: Challenge phase split {} found leaderboard id {} which is not valid.".format(phase_split["id"], leaderboard_id))
+        error_messages.append("ERROR: Challenge phase split {} found leaderboard id {} which is not valid.".format(challenge_phase_split_index, leaderboard_id))
     if phase_id not in phase_ids:
-        error_messages.append("ERROR: Challenge phase split {} found phase id {} which is not valid.".format(phase_split["id"], phase_id))
+        error_messages.append("ERROR: Challenge phase split {} found phase id {} which is not valid.".format(challenge_phase_split_index, phase_id))
     if  dataset_split_id not in dataset_split_ids:
-        error_messages.append("ERROR: Challenge phase split {} found dataset split id {} which is not valid.".format(phase_split["id"], dataset_split_id))
+        error_messages.append("ERROR: Challenge phase split {} found dataset split id {} which is not valid.".format(challenge_phase_split_index,dataset_split_id))
     
     if error_messages:
         return False, error_messages
@@ -631,7 +631,7 @@ def validate_challenge_config_util(
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
             is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
-                phase_ids, leaderboard_ids, dataset_splits_ids, data
+                phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
             )
             error_messages += messages
 
