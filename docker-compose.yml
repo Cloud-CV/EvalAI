@@ -53,19 +53,6 @@ services:
       - /code/node_modules
       - /code/bower_components
 
-  nodejs_v2:
-    build:
-      context: ./
-      dockerfile: docker/dev/nodejs_v2/Dockerfile
-    environment:
-      ANGULAR_ENV: development
-    ports:
-      - "9999:4200"
-      - "4200:4200"
-    volumes:
-    - ./frontend_v2:/code
-    - /code/node_modules
-
   statsd-exporter:
     hostname: statsd
     image: prom/statsd-exporter:latest
