@@ -398,7 +398,7 @@ def validate_challenge_config_util(
         existing_leaderboard_config_ids = [int(x.config_id) for x in existing_leaderboards]
         existing_dataset_split_config_ids = [int(x.config_id) for x in existing_dataset_splits]
         existing_challenge_phase_config_ids = [int(x.config_id) for x in existing_challenge_phases]
-        existing_challenge_phase_split_id_triples = [(split.leaderboard, split.challenge_phase, split.dataset_split) for split in existing_challenge_phase_splits]
+        existing_challenge_phase_split_id_triples = [(split.leaderboard.config_id, split.challenge_phase.config_id, split.dataset_split.config_id) for split in existing_challenge_phase_splits]
     else:
         existing_leaderboard_config_ids = []
         existing_dataset_split_config_ids = []
@@ -633,16 +633,18 @@ def validate_challenge_config_util(
             error_messages.append("ERROR: The dataset split {} was present in the existing dataset split IDs but not found in the current configuration. It is not possible to delete dataset splits once challenge is created. Please use all the existing dataset split IDs.".format(existing_dataset_split_config_id))
 
     # Check for challenge phase splits
+    print(existing_challenge_phase_split_id_triples)
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
     challenge_phase_split_id_triples = []
     if challenge_phase_splits:
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            if (data["leaderboard"], data["challenge_phase"], data["dataset_split"]) not in existing_challenge_phase_split_id_triples:
-                error_messages.append("ERROR: You are trying to create a new challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is not present in existing phase splits. Adding phase splits is not allowed.".format(data["leaderboard"], data["challenge_phase"], data["dataset_split"]))
+            print(data)
+            if (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in existing_challenge_phase_split_id_triples:
+                error_messages.append("ERROR: You are trying to create a new challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is not present in existing phase splits. Adding phase splits is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
             else:
-                challenge_phase_split_id_triples.append((data["leaderboard"], data["challenge_phase"], data["dataset_split"]))
+                challenge_phase_split_id_triples.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
 
             is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
                 phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
@@ -659,10 +661,10 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             phase_split += 1
-        
+
         for triple in existing_challenge_phase_split_id_triples:
             if triple not in challenge_phase_split_id_triples:
-                error_messages.append("ERROR: You are trying to delete challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is present in existing phase splits. Deleting phase splits is not allowed".format(triple["leaderboard"], triple["challenge_phase"], triple["dataset_split"]))
+                error_messages.append("ERROR: You are trying to delete challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is present in existing phase splits. Deleting phase splits is not allowed".format(triple[0], triple[1], triple[2]))
     else:
         message = "ERROR: There is no key for challenge phase splits."
         error_messages.append(message)
