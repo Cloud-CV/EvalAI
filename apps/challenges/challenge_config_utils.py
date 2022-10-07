@@ -633,14 +633,12 @@ def validate_challenge_config_util(
             error_messages.append("ERROR: The dataset split {} was present in the existing dataset split IDs but not found in the current configuration. It is not possible to delete dataset splits once challenge is created. Please use all the existing dataset split IDs.".format(existing_dataset_split_config_id))
 
     # Check for challenge phase splits
-    print(existing_challenge_phase_split_id_triples)
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
     challenge_phase_split_id_triples = []
     if challenge_phase_splits:
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            print(data)
             if (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in existing_challenge_phase_split_id_triples:
                 error_messages.append("ERROR: You are trying to create a new challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is not present in existing phase splits. Adding phase splits is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
             else:
