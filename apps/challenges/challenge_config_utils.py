@@ -398,10 +398,12 @@ def validate_challenge_config_util(
         existing_leaderboard_config_ids = [int(x.config_id) for x in existing_leaderboards]
         existing_dataset_split_config_ids = [int(x.config_id) for x in existing_dataset_splits]
         existing_challenge_phase_config_ids = [int(x.config_id) for x in existing_challenge_phases]
+        existing_challenge_phase_split_id_triples = [(split.leaderboard, split.challenge_phase, split.dataset_split) for split in existing_challenge_phase_splits]
     else:
         existing_leaderboard_config_ids = []
         existing_dataset_split_config_ids = []
         existing_challenge_phase_config_ids = []
+        existing_challenge_phase_split_id_triples = []
 
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
@@ -457,8 +459,13 @@ def validate_challenge_config_util(
         return error_messages, yaml_file_data, files
 
     phase_ids = []
+    phase_codenames = []
     files["challenge_test_annotation_files"] = []
     for data in challenge_phases_data:
+        if data["codename"] not in phase_codenames:
+            phase_codenames.append(data["codename"])
+        else:
+            error_messages.append("Found codename `{}` in phase `{}` which in not unique. Please use unique codenames for all phases.".format(data["codename"], data["name"]))
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
             test_annotation_file_path = join(
@@ -585,6 +592,7 @@ def validate_challenge_config_util(
 
     # Check for dataset splits
     dataset_splits = yaml_file_data.get("dataset_splits")
+    dataset_split_codenames = []
     dataset_splits_ids = []
     if dataset_splits:
         for split in dataset_splits:
@@ -596,7 +604,10 @@ def validate_challenge_config_util(
                     )
                 )
                 error_messages.append(message)
-
+            if split["codename"] not in dataset_split_codenames:
+                dataset_split_codenames.append(data["codename"])
+            else:
+                error_messages.append("Found codename `{}` in dataset split `{}` which in not unique. Please use unique codenames for all dataset splits.".format(split["codename"], split["name"]))
         for split in dataset_splits:
             serializer = DatasetSplitSerializer(
                 data=split, context={"config_id": split["id"]}
@@ -623,10 +634,16 @@ def validate_challenge_config_util(
 
     # Check for challenge phase splits
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
+    challenge_phase_split_id_triples = []
     if challenge_phase_splits:
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
+            if (data["leaderboard"], data["challenge_phase"], data["dataset_split"]) not in existing_challenge_phase_split_id_triples:
+                error_messages.append("ERROR: You are trying to create a new challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is not present in existing phase splits. Adding phase splits is not allowed.".format(data["leaderboard"], data["challenge_phase"], data["dataset_split"]))
+            else:
+                challenge_phase_split_id_triples.append((data["leaderboard"], data["challenge_phase"], data["dataset_split"]))
+
             is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
                 phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
             )
@@ -642,6 +659,10 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             phase_split += 1
+        
+        for triple in existing_challenge_phase_split_id_triples:
+            if triple not in challenge_phase_split_id_triples:
+                error_messages.append("ERROR: You are trying to delete challenge phase split with (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) which is present in existing phase splits. Deleting phase splits is not allowed".format(triple["leaderboard"], triple["challenge_phase"], triple["dataset_split"]))
     else:
         message = "ERROR: There is no key for challenge phase splits."
         error_messages.append(message)
