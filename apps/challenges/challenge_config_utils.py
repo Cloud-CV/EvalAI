@@ -197,7 +197,7 @@ def is_challenge_phase_split_mapping_valid(
         phase_split {dict} -- challenge phase split config
     Returns:
         is_success {boolean} -- flag for validation success
-    """ 
+    """
     phase_id = phase_split["challenge_phase_id"]
     leaderboard_id = phase_split["leaderboard_id"]
     dataset_split_id = phase_split["dataset_split_id"]
@@ -207,9 +207,9 @@ def is_challenge_phase_split_mapping_valid(
         error_messages.append("ERROR: Challenge phase split {} found leaderboard id {}. This relationship is not valid. Please check your configuration.".format(challenge_phase_split_index, leaderboard_id))
     if phase_id not in phase_ids:
         error_messages.append("ERROR: Challenge phase split {} found phase id {}. This relationship is not valid. Please check your configuration.".format(challenge_phase_split_index, phase_id))
-    if  dataset_split_id not in dataset_split_ids:
-        error_messages.append("ERROR: Challenge phase split {} found dataset split id {}. This relationship is not valid. Please check your configuration.".format(challenge_phase_split_index,dataset_split_id))
-    
+    if dataset_split_id not in dataset_split_ids:
+        error_messages.append("ERROR: Challenge phase split {} found dataset split id {}. This relationship is not valid. Please check your configuration.".format(challenge_phase_split_index, dataset_split_id))
+
     if error_messages:
         return False, error_messages
     else:
