@@ -109,7 +109,10 @@ class MultiOut(object):
     def write(self, s):
         for f in self.handles:
             f.write(s)
-
+    
+    def flush(self):
+        for f in self.handles:
+            f.flush()
 
 @contextlib.contextmanager
 def stdout_redirect(where):
