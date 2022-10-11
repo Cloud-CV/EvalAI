@@ -3002,9 +3002,7 @@ def manage_worker(request, challenge_pk, action):
 
     if parse(challenge["end_date"]) < datetime.utcnow() and action in ("start", "stop", "restart"):
         response_data = {
-            "error": "The action {} is invalid for worker as the challenge ended on {}.".format(
-                action, challenge["end_date"]
-            )
+            "error": "Action {} worker is not supported for an inactive challenge.".format(action)
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
