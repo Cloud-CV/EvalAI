@@ -86,6 +86,16 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
+                    "enverr_file",
+                    models.FileField(
+                        blank=True,
+                        null=True,
+                        upload_to=base.utils.RandomFileName(
+                            "submission_files/submission"
+                        ),
+                    ),
+                ),
+                (
                     "challenge_phase",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,

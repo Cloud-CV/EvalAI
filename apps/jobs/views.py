@@ -1482,6 +1482,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
         submission_status = request.data.get("submission_status", "").lower()
         stdout_content = request.data.get("stdout", "")
         stderr_content = request.data.get("stderr", "")
+        enverr_content = request.data.get("enverr", "")
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
@@ -1617,6 +1618,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
         submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+        submission.enverr_file.save("enverr.txt", ContentFile(enverr_content))
         submission.submission_result_file.save(
             "submission_result.json", ContentFile(str(public_results))
         )
@@ -1671,6 +1673,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
             challenge_phase_pk = request.data.get("challenge_phase")
             stdout_content = request.data.get("stdout", "")
             stderr_content = request.data.get("stderr", "")
+            enverr_content = request.data.get("enverr", "")
             submission_result = request.data.get("result", "")
 
             try:
@@ -1808,6 +1811,9 @@ def update_partially_evaluated_submission(request, challenge_pk):
             )
             submission.stderr_file.save(
                 "stderr.txt", ContentFile(stderr_content)
+            )
+            submission.enverr_file.save(
+                "enverr.txt", ContentFile(enverr_content)
             )
             submission.submission_result_file.save(
                 "submission_result.json", ContentFile(str(public_results))

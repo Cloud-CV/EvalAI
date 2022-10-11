@@ -24,6 +24,17 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name="submission",
+            name="enverr_file",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName(
+                    "submission_files/submission_{id}"
+                ),
+            ),
+        ),
+        migrations.AlterField(
+            model_name="submission",
             name="stderr_file",
             field=models.FileField(
                 blank=True,
