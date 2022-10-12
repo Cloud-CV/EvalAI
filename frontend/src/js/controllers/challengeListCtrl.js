@@ -32,7 +32,7 @@
         } else {
             parameters.token = null;
         }
-        parameters.url = 'challenges/challenge/present/approved/public';
+        parameters.url = 'challenges/challenge/time/present/approved/approved/published/public';
 
         parameters.callback = {
             onSuccess: function(response) {
@@ -66,7 +66,7 @@
 
                 // dependent api
                 // calls for upcoming challneges
-                parameters.url = 'challenges/challenge/future/approved/public';
+                parameters.url = 'challenges/challenge/time/future/approved/approved/published/public';
                 parameters.method = 'GET';
 
                 parameters.callback = {
@@ -104,7 +104,7 @@
 
                         // dependent api
                         // calls for past challneges
-                        parameters.url = 'challenges/challenge/past/approved/public';
+                        parameters.url = 'challenges/challenge/time/past/approved/approved/published/public';
                         parameters.method = 'GET';
 
                         parameters.callback = {

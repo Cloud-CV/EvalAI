@@ -49,7 +49,7 @@ def delete_worker(challenge_id):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/unapproved/all".format(
+    all_challenge_endpoint = "{}/api/challenges/challenge/time/all/approved/unapproved/published/all".format(
         evalai_endpoint
     )
     response = requests.get(
