@@ -1779,7 +1779,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 "enverr_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,
                                     description="URL of the enverr file generated after evaluating submission (only available for static code upload challenge submissions)"
-                                )
+                                ),
                                 "submission_result_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,
                                     description="URL of the result file generated after successfully evaluating submission",
