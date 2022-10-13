@@ -615,6 +615,112 @@ def scale_workers(queryset, num_of_tasks):
     return {"count": count, "failures": failures}
 
 
+def scale_resources(challenge, worker_cpu_cores, worker_memory):
+    """
+    The function called by scale_resources_by_challenge_pk to send the AWS ECS request to change the resources used by
+    a challenge's workers.
+
+    Deregisters the old task definition and creates a new definition that is substituted into the challenge workers.
+
+    Parameters:
+    challenge (): The challenge object for whom the task definition is being registered.
+    new_cpu_val (int): The CPU value (1 vCPU = 1024 values) that should be assigned to workers.
+    worker_memory (int): The amount of memory (MB) that should be assigned to each worker.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+
+    from .utils import get_aws_credentials_for_challenge
+
+    client = get_boto3_client("ecs", aws_keys)
+
+    if challenge.worker_cpu_cores == worker_cpu_cores and challenge.worker_memory == worker_memory:
+        message = "Error. Worker cores and memory were not modified."
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+
+    if not challenge.task_def_arn:
+        message = "Error. Task definition not yet registered for challenge{}.".format(
+            challenge.pk
+        )
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
+
+    # Deregister current worker service's existing task definition
+    try:
+        response = client.deregister_task_definition(
+            taskDefinition=challenge.task_def_arn
+        )
+        if (
+                response["ResponseMetadata"]["HTTPStatusCode"]
+                == HTTPStatus.OK
+        ):
+            challenge.task_def_arn = None
+            challenge.save()
+        else:
+            return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+    queue_name = challenge.queue
+    container_name = "worker_{}".format(queue_name)
+    log_group_name = get_log_group_name(challenge.pk)
+    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
+    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    definition = task_definition.format(
+        queue_name=queue_name,
+        container_name=container_name,
+        ENV=ENV,
+        challenge_pk=challenge.pk,
+        CPU=challenge.worker_cpu_cores,
+        MEMORY=challenge.worker_memory,
+        log_group_name=log_group_name,
+        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
+        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+        **COMMON_SETTINGS_DICT,
+        **challenge_aws_keys,
+    )
+    definition = eval(definition)
+
+    try:
+        response = client.register_task_definition(**definition)
+        if (
+                response["ResponseMetadata"]["HTTPStatusCode"]
+                == HTTPStatus.OK
+        ):
+            challenge.worker_cpu_cores = worker_cpu_cores
+            challenge.worker_memory = worker_memory
+            task_def_arn = response["taskDefinition"][
+                "taskDefinitionArn"
+            ]
+            challenge.task_def_arn = task_def_arn
+            challenge.save()
+            force_new_deployment = False
+            service_name = "{}_service".format(queue_name)
+            num_of_tasks = challenge.workers
+            kwargs = update_service_args.format(
+                CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+                service_name=service_name,
+                task_def_arn=task_def_arn,
+                num_of_tasks=num_of_tasks,
+                force_new_deployment=force_new_deployment,
+            )
+            kwargs = eval(kwargs)
+            response = client.update_service(**kwargs)
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return e.response
+
+
 def delete_workers(queryset):
     """
     The function called by the admin action method to delete all the selected workers.
