@@ -215,6 +215,11 @@ urlpatterns = [
         name="get_or_update_allowed_email_ids",
     ),
     url(
+        r"(?P<challenge_pk>[0-9]+)/scale_resources/$",
+        views.scale_resources_by_challenge_pk,
+        name="scale_resources_by_challenge_pk",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/get_participant_teams/$",
         views.get_participant_teams_for_challenge,
         name="get_participant_teams_for_challenge",
