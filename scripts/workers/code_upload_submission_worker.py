@@ -529,7 +529,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
-        enverr {[string]} -- Reason of failure for submission/job from environment
+        enverr {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
         message {[dict]} -- Submission message from AWS SQS queue
     """
     try:
@@ -589,7 +589,7 @@ def update_failed_jobs_and_send_logs(
                     container_name,
                     container_state,
                 ) in container_state_map.items():
-                    if container_name in ["agent", "submission"]:
+                    if container_name in ["agent", "submission", "environment"]:
                         if container_state.terminated is not None:
                             if container_state.terminated.reason == "Error":
                                 pod_name = pods_list.items[0].metadata.name
@@ -606,10 +606,10 @@ def update_failed_jobs_and_send_logs(
                                     )
                                     pod_log = pod_log[-1000:]
                                     clean_submission = True
-                                    if container_name == "submission":
-                                        submission_error = pod_log
+                                    if container_name == "environment":
+                                        environment_error = pod_log
                                     else:
-                                        agent_error = pod_log
+                                        submission_error = pod_log
                                 except client.rest.ApiException as e:
                                     logger.exception(
                                         "Exception while reading Job logs {}".format(
@@ -643,7 +643,7 @@ def update_failed_jobs_and_send_logs(
             challenge_pk,
             phase_pk,
             submission_error,
-            agent_error,
+            environment_error,
             message,
         )
 
