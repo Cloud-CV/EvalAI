@@ -30,6 +30,27 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
+        enverr_file = self.fields.get("enverr_file")
+        self.fields.pop("enverr_file")
+
+        if context:
+            curr_user = context.get("request").user
+            if not curr_user:
+                return
+            challenge_phase = self.fields.get("challenge_phase")
+            if not challenge_phase:
+                return
+            challenge = challenge_phase.challenge
+            if not challenge:
+                return
+            challenge_host_team = challenge.creator
+            if not challenge_host_team:
+                return
+            challenge_hosts_pk = challenge_host_team.get_all_challenge_hosts_pk()
+            # only challenge hosts or EvalAI admins should be allowed to see a user's submission
+            if curr_user.pk in challenge_hosts_pk:
+                self.fields["enverr_file"] = enverr_file
+
     class Meta:
         model = Submission
         fields = (

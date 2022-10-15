@@ -30,6 +30,12 @@ class ChallengeHostTeam(TimeStampedModel):
         )
         return list(email_ids)
 
+    def get_all_challenge_hosts_pk(self):
+        hosts_pk = ChallengeHost.objects.filter(team_name=self).values_list(
+            "user__pk", flat=True
+        )
+        return list(hosts_pk)
+
     class Meta:
         app_label = "hosts"
         db_table = "challenge_host_teams"
