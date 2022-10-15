@@ -2041,7 +2041,7 @@ def download_all_submissions(
                         "Submitted File",
                         "Stdout File",
                         "Stderr File",
-                        "Enverr File",
+                        "Environment Error File",
                         "Submitted At",
                         "Submission Result File",
                         "Submission Metadata File",
@@ -2135,7 +2135,6 @@ def download_all_submissions(
                         "Result File",
                         "Stdout File",
                         "Stderr File",
-                        "Enverr File",
                         "Submitted At",
                     ]
                 )
@@ -2150,7 +2149,6 @@ def download_all_submissions(
                             submission["submission_result_file"],
                             submission["stdout_file"],
                             submission["stderr_file"],
-                            submission["enverr_file"],
                             submission["created_at"],
                         ]
                     )
@@ -2184,7 +2182,7 @@ def download_all_submissions(
                     "input_file": "Submitted File",
                     "stdout_file": "Stdout File",
                     "stderr_file": "Stderr File",
-                    "enverr_file": "Enverr File",
+                    "enverr_file": "Environment Error File",
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",

@@ -1900,7 +1900,7 @@
             'label': 'Stderr File',
             'id': 'stderr_file'
         },{
-            'label': 'Environment error File',
+            'label': 'Environment Error File',
             'id': 'enverr_file'
         },{
             'label': 'Submitted At',
