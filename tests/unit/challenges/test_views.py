@@ -2424,6 +2424,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             ),
             stdout_file=None,
             stderr_file=None,
+            enverr_file=None,
         )
         self.client.force_authenticate(user=self.user)
 
@@ -2482,6 +2483,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             ),
             stdout_file=None,
             stderr_file=None,
+            enverr_file=None,
         )
         self.client.force_authenticate(user=self.user)
 
@@ -3221,6 +3223,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             ),
             stdout_file=None,
             stderr_file=None,
+            enverr_file=None,
         )
         self.client.force_authenticate(user=self.user)
 
