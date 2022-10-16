@@ -4,6 +4,7 @@ import pytz
 import requests
 import warnings
 
+from datetime import datetime
 from auto_stop_workers import start_worker, stop_worker
 from prometheus_api_client import PrometheusConnect
 
@@ -53,8 +54,8 @@ def execute_get_request(url):
 
 
 def get_challenges():
-    all_challenge_endpoint = (
-        "{}/api/challenges/challenge/all/all/all".format(evalai_endpoint)
+    all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
+        evalai_endpoint
     )
     response = execute_get_request(all_challenge_endpoint)
 
@@ -88,7 +89,41 @@ def get_queue_length_by_challenge(challenge):
     return get_queue_length(queue_name)
 
 
-def increase_or_decrease_workers(challenge):
+def scale_down_workers(challenge, num_workers):
+    if num_workers > 0:
+        response = stop_worker(challenge["id"])
+        print("AWS API Response: {}".format(response))
+        print(
+            "Stopped worker for Challenge ID: {}, Title: {}".format(
+                challenge["id"], challenge["title"]
+            )
+        )
+    else:
+        print(
+            "No workers and queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+                challenge["id"], challenge["title"]
+            )
+        )
+
+
+def scale_up_workers(challenge, num_workers):
+    if num_workers == 0:
+        response = start_worker(challenge["id"])
+        print("AWS API Response: {}".format(response))
+        print(
+            "Started worker for Challenge ID: {}, Title: {}.".format(
+                challenge["id"], challenge["title"]
+            )
+        )
+    else:
+        print(
+            "Existing workers and pending queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+                challenge["id"], challenge["title"]
+            )
+        )
+
+
+def scale_up_or_down_workers(challenge):
     try:
         queue_length = get_queue_length_by_challenge(challenge)
     except Exception:  # noqa: F841
@@ -106,41 +141,19 @@ def increase_or_decrease_workers(challenge):
     print(
         "Num Workers: {}, Queue Length: {}".format(num_workers, queue_length)
     )
-    if queue_length == 0:
-        if num_workers > 0:
-            response = stop_worker(challenge["id"])
-            print("AWS API Response: {}".format(response))
-            print(
-                "Stopped worker for Challenge ID: {}, Title: {}".format(
-                    challenge["id"], challenge["title"]
-                )
-            )
-        else:
-            print(
-                "No workers and queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
-                    challenge["id"], challenge["title"]
-                )
-            )
 
+    if (
+        queue_length == 0
+        or datetime.fromisoformat(challenge["end_date"][:-1])
+        < datetime.utcnow()
+    ):
+        scale_down_workers(challenge, num_workers)
     else:
-        if num_workers == 0:
-            response = start_worker(challenge["id"])
-            print("AWS API Response: {}".format(response))
-            print(
-                "Started worker for Challenge ID: {}, Title: {}.".format(
-                    challenge["id"], challenge["title"]
-                )
-            )
-        else:
-            print(
-                "Existing workers and pending queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
-                    challenge["id"], challenge["title"]
-                )
-            )
+        scale_up_workers(challenge, num_workers)
 
 
 # TODO: Factor in limits for the APIs
-def increase_or_decrease_workers_for_challenges(response):
+def scale_up_or_down_workers_for_challenges(response):
     for challenge in response["results"]:
         if (
             not challenge["is_docker_based"]
@@ -148,9 +161,9 @@ def increase_or_decrease_workers_for_challenges(response):
         ):
             if ENV == "prod":
                 if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
-                    increase_or_decrease_workers(challenge)
+                    scale_up_or_down_workers(challenge)
             else:
-                increase_or_decrease_workers(challenge)
+                scale_up_or_down_workers(challenge)
             time.sleep(1)
 
         else:
@@ -164,11 +177,11 @@ def increase_or_decrease_workers_for_challenges(response):
 # Cron Job
 def start_job():
     response = get_challenges()
-    increase_or_decrease_workers_for_challenges(response)
+    scale_up_or_down_workers_for_challenges(response)
     next_page = response["next"]
     while next_page is not None:
         response = execute_get_request(next_page)
-        increase_or_decrease_workers_for_challenges(response)
+        scale_up_or_down_workers_for_challenges(response)
         next_page = response["next"]
 
 
