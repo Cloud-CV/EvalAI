@@ -40,7 +40,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             challenge_phase = self.fields.get("challenge_phase")
             if not challenge_phase:
                 return
-            challenge = challenge_phase.challenge
+            challenge = ChallengePhase.objects.get(pk=challenge_phase).challenge
             if not challenge:
                 return
             challenge_host_team = challenge.creator
