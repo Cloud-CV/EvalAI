@@ -30,29 +30,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
-        enverr_file = self.fields.get("enverr_file")
-        self.fields.pop("enverr_file")
-
-        if context:
-            curr_user = context.get("request").user
-            if not curr_user:
-                return
-            challenge_phase = self.fields.get("challenge_phase")
-            if not challenge_phase:
-                return
-            challenge_phase_obj = list(challenge_phase.get_queryset())
-            if not challenge_phase_obj:
-                return
-            challenge = challenge_phase_obj[0].challenge
-            if not challenge:
-                return
-            challenge_host_team = challenge.creator
-            if not challenge_host_team:
-                return
-            challenge_hosts_pk = challenge_host_team.get_all_challenge_hosts_pk()
-            # only challenge hosts or EvalAI admins should be allowed to see a user's submission
-            if curr_user.pk in challenge_hosts_pk:
-                self.fields["enverr_file"] = enverr_file
+        if not self.is_enverr_file_visible(context):
+            self.fields.pop("enverr_file")
 
     class Meta:
         model = Submission
@@ -86,6 +65,29 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "submission_metadata",
             "is_verified_by_host",
         )
+
+    # Determines whether environment error file should be visible to caller.
+    def is_enverr_file_visible(self, context):
+        if not context:
+            return False
+        curr_user = context.get("request").user
+        if not curr_user:
+            return False
+        challenge_phase = self.fields.get("challenge_phase")
+        if not challenge_phase:
+            return False
+        challenge_phase_obj = list(challenge_phase.get_queryset())
+        if not challenge_phase_obj:
+            return False
+        challenge = challenge_phase_obj[0].challenge
+        if not challenge:
+            return False
+        challenge_host_team = challenge.creator
+        if not challenge_host_team:
+            return False
+        challenge_hosts_pk = challenge_host_team.get_all_challenge_hosts_pk()
+        # only challenge hosts or EvalAI admins should be allowed to see a user's submission
+        return curr_user.pk in challenge_hosts_pk
 
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
