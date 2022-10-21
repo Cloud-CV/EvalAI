@@ -1660,6 +1660,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "jobs:get_submission_by_pk",
             kwargs={"submission_id": self.submission.id},
         )
+        # the submission's creator is self.user (in the host team). Thus, enverr_file should be shown
         expected = {
             "id": self.submission.id,
             "participant_team": self.submission.participant_team.pk,
@@ -1677,7 +1678,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
-            "enverr_file": None, # the submission's creator is self.user (in the host team)
+            "enverr_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
