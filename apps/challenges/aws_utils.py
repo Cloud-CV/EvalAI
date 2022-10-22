@@ -375,6 +375,7 @@ def update_service_by_challenge_pk(
         service_name=service_name,
         task_def_arn=task_def_arn,
         force_new_deployment=force_new_deployment,
+        num_of_tasks=num_of_tasks,
     )
     kwargs = eval(kwargs)
 

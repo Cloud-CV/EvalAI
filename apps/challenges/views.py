@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import os
+import pytz
 import random
 import requests
 import shutil
@@ -13,7 +14,6 @@ import zipfile
 
 from os.path import basename, isfile, join
 from datetime import datetime
-from dateutil.parser import parse
 
 
 from django.conf import settings
@@ -3083,7 +3083,7 @@ def manage_worker(request, challenge_pk, action):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if parse(challenge.end_date) < datetime.utcnow() and action in ("start", "stop", "restart"):
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop", "restart"):
         response_data = {
             "error": "Action {} worker is not supported for an inactive challenge.".format(action)
         }
