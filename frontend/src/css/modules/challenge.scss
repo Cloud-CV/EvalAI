@@ -286,20 +286,9 @@ md-select .md-select-value span:first-child:after {
 }
 
 .watermarked {
-    position: relative;
-    overflow: hidden;
-}
-
-.watermarked::before {
-    content: "";
-    position: absolute;
-    width: calc(100% + 58vw);
-    height: calc(100% + 50vw);
-    top: calc(-25vw);
-    left: calc(-29vw);
-    background-image: url(../images/evalai-logo-background.png);
-    background-size: 10%;
-    transform: rotate(-30deg);
-    opacity: 0.1;
-    background-repeat: round;
+    background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),url(../images/evalai-logo-centered.png);
+    background-blend-mode: lighten;
+    background-size: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
 }
