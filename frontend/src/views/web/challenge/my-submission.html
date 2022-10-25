@@ -108,10 +108,6 @@
                                         class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                 <td ng-if="!key.stderr_file">None</td>
 
-                                <td ng-if="key.enverr_file"><a href="{{key.enverr_file}}" target="_blank"
-                                        class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                                <td ng-if="!key.enverr_file">None</td>
-
                                 <td>{{key.submitted_at | date:'medium'}}</td>
 
                                 <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
