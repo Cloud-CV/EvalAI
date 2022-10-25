@@ -99,6 +99,9 @@
 
         const currentEnvironment = utilities.getEnvironment();
         vm.showBackground = currentEnvironment === 'staging' || currentEnvironment === 'local';
+      
+        vm.workerCPUCores = 512;
+        vm.workerMemory = 1024;
 
         utilities.showLoader();
 
@@ -1617,6 +1620,36 @@
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
                     $rootScope.notify("error", "New team couldn't be created.");
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.setWorkerResources = function() {
+            parameters.url = "challenges/" + vm.challengeId + "/scale_resources/";
+            parameters.method = 'PUT';
+            parameters.data = {
+                "worker_cpu_cores": vm.workerCPUCores,
+                "worker_memory": vm.workerMemory,
+            };
+            parameters.callback = {
+                onSuccess: function() {
+                    $rootScope.notify("success", "Evaluation worker scaled successfully!");
+                    vm.team.error = false;
+                    vm.stopLoader();
+                    vm.team = {};
+                },
+                onError: function(response) {
+                    vm.team.error = true;
+                    vm.stopLoader();
+                    let requestError = '';
+                    if (typeof(response.data) == 'string') {
+                        requestError = response.data;
+                    } else {
+                        requestError = JSON.stringify(response.data, null, 4);
+                    }
+                    $rootScope.notify("error", "Error scaling evaluation worker: " + requestError);
                 }
             };
 
