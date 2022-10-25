@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='challengeconfiguration',
-            name='enverr_file',
+            name='code_upload_environment_log_file',
             field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('zip_configuration_files/challenge_zip')),
         ),
         migrations.AlterField(

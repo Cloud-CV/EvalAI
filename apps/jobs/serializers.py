@@ -30,8 +30,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
-        if not self.is_enverr_file_visible(context):
-            self.fields.pop("enverr_file")
+        if not self.is_code_upload_environment_log_file_visible(context):
+            self.fields.pop("code_upload_environment_log_file")
 
     class Meta:
         model = Submission
@@ -47,7 +47,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "submission_input_file",
             "stdout_file",
             "stderr_file",
-            "enverr_file",
+            "code_upload_environment_log_file",
             "started_at",
             "completed_at",
             "submitted_at",
@@ -67,7 +67,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         )
 
     # Determines whether environment error file should be visible to caller.
-    def is_enverr_file_visible(self, context):
+    def is_code_upload_environment_log_file_visible(self, context):
         if not context:
             return False
         curr_user = context.get("request").user
@@ -149,7 +149,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "submission_input_file",
             "stdout_file",
             "stderr_file",
-            "enverr_file",
+            "code_upload_environment_log_file",
             "submission_result_file",
             "submission_metadata_file",
             "participant_team_members_email_ids",

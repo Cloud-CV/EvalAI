@@ -1934,7 +1934,7 @@
             'id': 'stderr_file'
         },{
             'label': 'Environment Error File',
-            'id': 'enverr_file'
+            'id': 'code_upload_environment_log_file'
         },{
             'label': 'Submitted At',
             'id': 'created_at'

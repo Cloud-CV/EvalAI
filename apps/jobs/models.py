@@ -102,7 +102,7 @@ class Submission(TimeStampedModel):
         null=True,
         blank=True,
     )
-    enverr_file = models.FileField(
+    code_upload_environment_log_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
         null=True,
         blank=True,

@@ -504,7 +504,7 @@ class ChallengeConfiguration(TimeStampedModel):
         null=True,
         blank=True,
     )
-    enverr_file = models.FileField(
+    code_upload_environment_log_file = models.FileField(
         upload_to=RandomFileName("zip_configuration_files/challenge_zip"),
         null=True,
         blank=True,

@@ -1780,9 +1780,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                     type=openapi.TYPE_STRING,
                                     description="URL of the stderr file generated after evaluating submission only available when the submission fails",
                                 ),
-                                "enverr_file": openapi.Schema(
+                                "code_upload_environment_log_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,
-                                    description="URL of the enverr file generated after evaluating submission (only available for static code upload challenge submissions)"
+                                    description="URL of the code_upload_submission_log file generated after evaluating submission (only available for static code upload challenge submissions)"
                                 ),
                                 "submission_result_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,
@@ -2092,7 +2092,7 @@ def download_all_submissions(
                             submission["input_file"],
                             submission["stdout_file"],
                             submission["stderr_file"],
-                            submission["enverr_file"],
+                            submission["code_upload_environment_log_file"],
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
@@ -2186,7 +2186,7 @@ def download_all_submissions(
                     "input_file": "Submitted File",
                     "stdout_file": "Stdout File",
                     "stderr_file": "Stderr File",
-                    "enverr_file": "Environment Error File",
+                    "code_upload_environment_log_file": "Environment Error File",
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",
