@@ -570,6 +570,8 @@ def update_failed_jobs_and_send_logs(
     message,
 ):
     clean_submission = False
+    code_upload_environment_error = "Submission Job Failed."
+    submission_error = "Submission Job Failed."
     try:
         job_def = read_job(api_instance, job_name)
         if job_def:
@@ -607,7 +609,7 @@ def update_failed_jobs_and_send_logs(
                                     pod_log = pod_log[-1000:]
                                     clean_submission = True
                                     if container_name == "environment":
-                                        environment_error = pod_log
+                                        code_upload_environment_error = pod_log
                                     else:
                                         submission_error = pod_log
                                 except client.rest.ApiException as e:
@@ -629,11 +631,9 @@ def update_failed_jobs_and_send_logs(
                 )
             )
             clean_submission = True
-            submission_error = "Submission Job Failed."
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         clean_submission = True
-        submission_error = "Submission Job Failed."
     if clean_submission:
         cleanup_submission(
             api_instance,
@@ -643,7 +643,7 @@ def update_failed_jobs_and_send_logs(
             challenge_pk,
             phase_pk,
             submission_error,
-            environment_error,
+            code_upload_environment_error,
             message,
         )
 
