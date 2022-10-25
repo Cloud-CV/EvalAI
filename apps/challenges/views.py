@@ -1782,7 +1782,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                 ),
                                 "code_upload_environment_log_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,
-                                    description="URL of the code_upload_submission_log file generated after evaluating submission (only available for static code upload challenge submissions)"
+                                    description="URL of the code upload environment log file generated after evaluating submission (only available for static code upload challenge submissions)"
                                 ),
                                 "submission_result_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,

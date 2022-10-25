@@ -517,7 +517,7 @@ def cleanup_submission(
     challenge_pk,
     phase_pk,
     stderr,
-    code_upload_submission_log,
+    code_upload_environment_log,
     message,
 ):
     """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
@@ -529,7 +529,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
-        code_upload_submission_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
+        code_upload_environment_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
         message {[dict]} -- Submission message from AWS SQS queue
     """
     try:
@@ -538,7 +538,7 @@ def cleanup_submission(
             "submission": submission_pk,
             "stdout": "",
             "stderr": stderr,
-            "code_upload_submission_log": code_upload_submission_log,
+            "code_upload_environment_log": code_upload_environment_log,
             "submission_status": "FAILED",
             "result": "[]",
             "metadata": "",

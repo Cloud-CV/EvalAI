@@ -2371,7 +2371,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "CANCELLED",
             "stdout": "qwerty",
             "stderr": "qwerty",
-            "code_upload_submission_log": "aeiou",
+            "code_upload_environment_log": "aeiou",
             "result": json.dumps(
                 [
                     {
@@ -2429,7 +2429,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "FINISHED",
             "stdout": "qwerty",
             "stderr": "qwerty",
-            "code_upload_submission_log": "aeiou",
+            "code_upload_environment_log": "aeiou",
             "result": json.dumps(
                 [
                     {
