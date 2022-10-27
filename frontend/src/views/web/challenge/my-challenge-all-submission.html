@@ -88,7 +88,7 @@
                         <th class="fs-18 w-300" data-field="file">Submitted file</th>
                         <th class="fs-18 w-300" data-field="file">Stdout file</th>
                         <th class="fs-18 w-300" data-field="file">Stderr file</th>
-                        <th class="fs-18 w-300" data-field="file">Code upload environment logs (failing submissions only) </th>
+                        <th class="fs-18 w-300" ng-if="challenge.isChallengeHost" data-field="file">Code upload environment logs (failing submissions only) </th>
                         <th class="fs-18 w-300" data-field="file">Result file</th>
                         <th class="fs-18 w-300" data-field="file">Metadata file</th>
                         <!-- <th ng-if="challenge.currentPhaseLeaderboardPublic" class="fs-18 w-300" data-field="button">Show on Leaderboard</th> -->
