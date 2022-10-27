@@ -2,33 +2,9 @@
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Manage worker</h5>
+                <h5 class="w-300">Submission worker actions</h5>
             </div>
         </div>
-        <form ng-submit="challenge.setWorkerResources()" class="multiple-columns">
-            <div class="scale-worker-column text-entry-columns">
-                <div class="scale-worker-column text-entry-wrapper">
-                    <div class="input-field align-left text-entry-content col m12 l8">
-                        <input id="cpuCores" type="text" class="validate fs-16 dark-autofill w-300"
-                            ng-model="challenge.workerCPUCores" focus-if>
-                        <label for="cpuCores" class="align-left">Number of CPU Units (1/1024 of vCPU)</label>
-                    </div>
-                </div>
-                <div class="scale-worker-column text-entry-wrapper">
-                    <div class="input-field align-left text-entry-content col s12 m12 l8">
-                        <input id="url" type="text" class="validate fs-16 dark-autofill w-300"
-                            ng-model="challenge.workerMemory" focus-if>
-                        <label for="url" class="align-left">Memory (MB)</label>
-                    </div>
-                </div>
-            </div>
-            <div class="scale-worker-column submit-column">
-                <div class="col s12 m6 l6 align-left reg-control">
-                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit"
-                        value="Submit"><i class="fa fa-arrow-up"></i> Scale worker</button>
-                </div>
-            </div>
-        </form>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('start');"><i class="fa fa-play"></i> Start worker</button>
@@ -38,7 +14,7 @@
         </div>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Worker logs</h5>
+                <h5 class="w-300">Submission worker logs</h5>
             </div>
         </div>
         <div class="ev-logs-card">
