@@ -496,7 +496,7 @@ update_service_args = """
 {{
     "cluster":"{CLUSTER}",
     "service":"{service_name}",
-    "desiredCount":{num_of_tasks},
+    "desiredCount":num_of_tasks,
     "taskDefinition":"{task_def_arn}",
     "forceNewDeployment":{force_new_deployment}
 }}
