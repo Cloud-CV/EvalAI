@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import os
+import pytz
 import random
 import requests
 import shutil
@@ -12,6 +13,8 @@ import yaml
 import zipfile
 
 from os.path import basename, isfile, join
+from datetime import datetime
+
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -3072,6 +3075,12 @@ def manage_worker(request, challenge_pk, action):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop", "restart"):
+        response_data = {
+            "error": "Action {} worker is not supported for an inactive challenge.".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     response_data = {}
 
