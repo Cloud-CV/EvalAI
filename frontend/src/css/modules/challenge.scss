@@ -303,6 +303,10 @@ md-select .md-select-value span:first-child:after {
     display: flex;
 }
 
+.dropdown-menu {
+    display: block;
+}
+
 .submit-column {
     flex: 0 0 auto;
     float: right;
