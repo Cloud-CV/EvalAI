@@ -1038,7 +1038,7 @@ def delete_eks_nodegroup(challenge, cluster_name):
 
 
 @app.task
-def delete_eks_cluster_roles(challenge):
+def delete_eks_cluster_and_roles(challenge):
     """
     Deletes EKS and NodeGroup ARN roles
 
