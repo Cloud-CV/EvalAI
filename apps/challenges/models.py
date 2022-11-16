@@ -234,6 +234,21 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
+def delete_eks_cluster_for_challenge(sender, instance, created, **kwargs):
+    field_name = "approved_by_admin"
+    import challenges.aws_utils as aws
+
+    if created:
+        if (
+            instance.approved_by_admin is True
+            and instance.is_docker_based is True
+            and instance.remote_evaluation is False
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.delete_eks_cluster_and_roles.delay(serialized_obj)
+    aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
+
+
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
