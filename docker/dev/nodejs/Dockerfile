@@ -24,6 +24,7 @@ RUN npm install
 RUN npm install -g karma-cli
 RUN npm install -g qs
 RUN bower install --allow-root
+RUN cd /bower_components/trix && yarn install && yarn build
 RUN apt-get install -y libxss1
 
 CMD ["gulp", "dev:runserver"]

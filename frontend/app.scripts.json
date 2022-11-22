@@ -43,7 +43,7 @@
        "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js",
        "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js",
        "angular-trix": "bower_components/angular-trix/dist/angular-trix.min.js",
-       "trix": "bower_components/trix/src/trix/trix.js",
+       "trix": "bower_components/trix/dist/trix.umd.min.js",
        "moment": "bower_components/moment/moment.js",
        "locale": "bower_components/moment/locale/en-gb.js",
        "moment-timezone": "bower_components/moment-timezone/moment-timezone.js",
