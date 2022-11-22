@@ -14,6 +14,7 @@
        "angular-material": "bower_components/angular-material/angular-material.css",
        "materialize": "bower_components/materialize/dist/css/materialize.css",
        "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.css",
+       "trix": "bower_components/trix/assets/trix.scss",
        "moment-picker": "bower_components/angular-moment-picker/dist/angular-moment-picker.css"
       }
 }
