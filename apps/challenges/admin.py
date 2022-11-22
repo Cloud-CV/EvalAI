@@ -11,6 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
+    delete_eks_cluster_and_roles, delete_challenge_evaluation_cluster,
 )
 
 from .admin_filters import ChallengeFilter
@@ -83,6 +84,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "delete_selected_challenge_evaluation_clusters"
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -211,6 +213,30 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     delete_selected_workers.short_description = (
         "Delete all selected challenge workers."
+    )
+
+    def delete_selected_challenge_evaluation_clusters(self, request, queryset):
+        """Deletes the selected challenge evaluation clusters"""
+        response = delete_challenge_evaluation_cluster(queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count == queryset.count():
+            message = "All selected challenges' evaluation clusters successfully deleted."
+            messages.success(request, message)
+        else:
+            messages.success(
+                request,
+                "{} challenges' evaluation clusters were successfully deleted.".format(count),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+
+    delete_selected_challenge_evaluation_clusters.description = (
+        "Delete all selected challenges' evaluation clusters."
     )
 
 
@@ -396,6 +422,10 @@ class ChallengeEvaluationClusterAdmin(ImportExportTimeStampedAdmin):
     list_display = ("id", "name", "cluster_yaml", "kube_config")
     list_filter = ("name",)
     search_fields = ("id", "name")
+
+    actions = [
+        'delete_selected_challenge_evaluation_clusters'
+    ]
 
 
 @admin.register(PWCChallengeLeaderboard)
