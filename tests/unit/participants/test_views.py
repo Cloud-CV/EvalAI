@@ -95,8 +95,8 @@ class GetParticipantTeamTest(BaseAPITestClass):
                             "affiliation": self.participant_profile.affiliation,
                             "github_url": self.participant_profile.github_url,
                             "google_scholar_url": self.participant_profile.google_scholar_url,
-                            "linkedin_url": self.participant_profile.linkedin_url
-                        }
+                            "linkedin_url": self.participant_profile.linkedin_url,
+                        },
                     },
                     {
                         "member_name": self.participant2.user.username,
@@ -108,8 +108,8 @@ class GetParticipantTeamTest(BaseAPITestClass):
                             "affiliation": self.participant2_profile.affiliation,
                             "github_url": self.participant2_profile.github_url,
                             "google_scholar_url": self.participant2_profile.google_scholar_url,
-                            "linkedin_url": self.participant2_profile.linkedin_url
-                        }
+                            "linkedin_url": self.participant2_profile.linkedin_url,
+                        },
                     },
                 ],
             }
@@ -201,8 +201,8 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                         "affiliation": self.participant_profile.affiliation,
                         "github_url": self.participant_profile.github_url,
                         "google_scholar_url": self.participant_profile.google_scholar_url,
-                        "linkedin_url": self.participant_profile.linkedin_url
-                    }
+                        "linkedin_url": self.participant_profile.linkedin_url,
+                    },
                 },
                 {
                     "member_name": self.participant2.user.username,
@@ -214,8 +214,8 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                         "affiliation": self.participant2_profile.affiliation,
                         "github_url": self.participant2_profile.github_url,
                         "google_scholar_url": self.participant2_profile.google_scholar_url,
-                        "linkedin_url": self.participant2_profile.linkedin_url
-                    }
+                        "linkedin_url": self.participant2_profile.linkedin_url,
+                    },
                 },
             ],
         }
@@ -858,6 +858,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "created_at": "{0}{1}".format(
                             self.challenge1.created_at.isoformat(), "Z"
                         ).replace("+00:00", ""),
+                        "queue": self.challenge1.queue,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -929,6 +930,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge1.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge1.queue,
             }
         ]
 

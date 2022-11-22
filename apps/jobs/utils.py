@@ -330,6 +330,12 @@ def calculate_distinct_sorted_leaderboard_data(
         submission__status__in=all_valid_submission_status,
     ).order_by("-created_at")
 
+    if only_public_entries:
+        if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
+            leaderboard_data = leaderboard_data.filter(
+                submission__is_public=True
+            )
+
     if challenge_phase_split.show_execution_time:
         time_diff_expression = ExpressionWrapper(
             F("submission__completed_at") - F("submission__started_at"),
@@ -394,11 +400,6 @@ def calculate_distinct_sorted_leaderboard_data(
             "submission__submission_metadata",
             "submission__is_verified_by_host",
         )
-    if only_public_entries:
-        if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
-            leaderboard_data = leaderboard_data.filter(
-                submission__is_public=True
-            )
 
     all_banned_participant_team = []
     for leaderboard_item in leaderboard_data:

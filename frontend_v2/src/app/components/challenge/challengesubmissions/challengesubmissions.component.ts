@@ -254,7 +254,16 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       SELF.selectedPhase = phase;
       SELF.isPhaseSelected = true;
       SELF.submissionCount = 0;
-      if (SELF.challenge['id'] && phase['id']) {
+
+      // Handle incorrect state change. In some cases phase selected here is not correct one
+      let isValidPhase = false;
+      for (let phaseIdx in this.phases) {
+        if (this.phases[phaseIdx]['id'] == phase['id']) {
+          isValidPhase = true;
+          break;
+        }
+      }
+      if (SELF.challenge['id'] && phase['id'] && isValidPhase) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
       }
     };
@@ -410,46 +419,23 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     is_public = !is_public;
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
       const SELF = this;
-      SELF.apiCall = (params) => {
-        const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(
-          this.challenge['id'],
-          this.selectedPhase['id'],
-          id
-        );
-        const BODY = JSON.stringify({ is_public: is_public });
-        this.apiService.patchUrl(API_PATH, BODY).subscribe(
-          () => {
-            this.updateSubmissionVisibility(id);
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err);
-          },
-          () => {
-            this.logger.info('Updated submission visibility', id);
-          }
-        );
-      };
-      const PARAMS = {
-        title: 'Update Submission Visibility',
-        content: 'Challenge host can still see your submission. Do u still want to continue?',
-        isButtonDisabled: true,
-        confirm: 'Yes',
-        deny: 'No',
-        confirmCallback: SELF.apiCall,
-      };
-      const HOST_PARAMS = {
-        title: 'Update Submission Visibility',
-        content: 'Are you sure to change the submission visibility?',
-        isButtonDisabled: true,
-        confirm: 'Yes',
-        deny: 'No',
-        confirmCallback: SELF.apiCall,
-      };
-      if (SELF.isChallengeHost || is_public) {
-        SELF.globalService.showModal(HOST_PARAMS);
-      } else {
-        SELF.globalService.showModal(PARAMS);
-      }
+      const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(
+        this.challenge['id'],
+        this.selectedPhase['id'],
+        id
+      );
+      const BODY = JSON.stringify({ is_public: is_public });
+      this.apiService.patchUrl(API_PATH, BODY).subscribe(
+        () => {
+          this.updateSubmissionVisibility(id);
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {
+          this.logger.info('Updated submission visibility', id);
+        }
+      );
     }
   }
 
@@ -503,7 +489,15 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   editSubmission(submission) {
     const SELF = this;
     SELF.apiCall = (params) => {
-      const BODY = JSON.stringify(params);
+      let BODY = JSON.parse(JSON.stringify(params));
+      if (this.selectedPhase.submission_meta_attributes !== null && this.selectedPhase.submission_meta_attributes !== undefined) {
+        BODY["submission_metadata"] = [] 
+        for (let idx=0; idx < this.selectedPhase.submission_meta_attributes.length; idx++) {
+          let metaAttribute = this.selectedPhase.submission_meta_attributes[idx];
+          metaAttribute["value"] = BODY[metaAttribute["name"].toLowerCase()];
+          BODY["submission_metadata"].push(metaAttribute);
+        }
+      }
       SELF.apiService
         .patchUrl(
           SELF.endpointsService.challengeSubmissionUpdateURL(
@@ -552,7 +546,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           isRequired: false,
           label: 'project_url',
           placeholder: 'Project Url',
-          type: 'text',
+          type: 'url',
           value: submission['project_url'],
           icon: 'fa fa-pencil',
         },
@@ -560,13 +554,40 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           isRequired: false,
           label: 'publication_url',
           placeholder: 'Publication Url',
-          type: 'text',
+          type: 'url',
           value: submission['publication_url'],
           icon: 'fa fa-pencil',
         },
       ],
       confirmCallback: SELF.apiCall,
     };
+    if (this.selectedPhase.submission_meta_attributes !== null && this.selectedPhase.submission_meta_attributes !== undefined) {
+      let attributeDict = {};
+      for (let i=0; i < this.selectedPhase.submission_meta_attributes.length; i++) {
+        let metaAttribute = this.selectedPhase.submission_meta_attributes[i];
+        attributeDict[metaAttribute["name"]] = metaAttribute;
+      }
+      if (submission.submission_metadata !== undefined && submission.submission_metadata !== null) {
+        for (let idx=0; idx < submission.submission_metadata.length; idx++) {
+          let metaAttribute = submission.submission_metadata[idx];
+          let data = {
+            isRequired: metaAttribute["required"] == true,
+            label: metaAttribute["name"],
+            placeholder: metaAttribute["description"],
+            type: metaAttribute["type"],
+            value: metaAttribute["value"],
+            icon: 'fa fa-pencil',
+          }
+          if (metaAttribute["type"] !== "text") {
+            data["attributeOptions"] = attributeDict[metaAttribute["name"]]["options"];
+          }
+          //TODO: add support for radio button fields
+          if (metaAttribute["type"] !== "radio" && metaAttribute["type"] !== "boolean") {
+            PARAMS["form"].push(data);
+          }
+        }
+      }
+    }
     SELF.globalService.showModal(PARAMS);
   }
 
