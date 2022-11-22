@@ -65,6 +65,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "remote_evaluation",
             "workers",
             "created_at",
+            "queue",
         )
 
 

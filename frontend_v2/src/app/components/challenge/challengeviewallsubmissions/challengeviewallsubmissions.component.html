@@ -104,7 +104,7 @@
               *ngIf="
                 column !== 'status' &&
                 element[column] !== null &&
-                column !== 'submitted_file' &&
+                column !== 'input_file' &&
                 column !== 'submission_result_file' &&
                 column !== 's_no'
               "
@@ -115,7 +115,7 @@
               target="_blank"
               class="blue-text"
               [href]="element[column]"
-              *ngIf="element[column] !== null && (column === 'submitted_file' || column === 'submission_result_file')"
+              *ngIf="element[column] !== null && (column === 'input_file' || column === 'submission_result_file')"
             >
               <i class="fa fa-external-link"></i>
               Link
@@ -143,7 +143,7 @@
                 <div class="element">
                     <strong class="element-description-attribution">Submitted at :</strong> &nbsp;
                     <strong class="fw-light fs-14">
-                      {{ element.created_at | date: 'medium' }}
+                      {{ element.submitted_at | date: 'medium' }}
                     </strong>
                 </div>
               </div>
@@ -208,7 +208,7 @@
                   </a>
                 </div>
                 <div class="element element-description-attribution" *ngIf="isChallengeHost">
-                  <a class="pointer" (click)="deleteChallengeSubmission(element)">
+                  <a class="pointer delete-submission-label" (click)="deleteChallengeSubmission(element)">
                     <i class="fa fa-trash" aria-hidden="true"> &nbsp;</i>
                     <strong>Delete Submission</strong>
                   </a>

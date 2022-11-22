@@ -155,7 +155,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     'created_by',
     'status',
     'execution_time',
-    'submitted_file',
+    'input_file',
     'submission_result_file',
   ];
   columnsHeadings = [
@@ -406,7 +406,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             }
           }
 
-          let index = (SELF.paginationDetails.currentPage - 1) * 10;
+          let index = (SELF.paginationDetails.currentPage - 1) * 100;
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
             index += 1;

@@ -64,7 +64,12 @@ export class InputComponent implements OnInit {
   /**
    * Value of input field
    */
-  @Input() value: string;
+  @Input() value: any;
+
+  /**
+   * Value of checkbox input field
+   */
+   @Input() values: any = [];
 
   /**
    * Is field read-only
@@ -107,6 +112,11 @@ export class InputComponent implements OnInit {
    * Attribute ngmodel variable
    */
   @Input() attributeModel: string;
+
+  /**
+   * Attribute options variable
+   */
+  @Input() attributeOptions: string[];
 
   /**
    * Is email flag
@@ -271,5 +281,26 @@ export class InputComponent implements OnInit {
 
   toggleErrorMessage() {
     return !((this.showErrorCondition() || this.message !== '') && this.isDirty);
+  }
+
+  // unchecking checked options
+  toggleSelection(value) {
+    if (!Array.isArray(this.value)) {
+      this.value = [];
+    }
+    const idx = this.value.indexOf(value);
+    if (idx > -1) {
+      this.value.splice(idx, 1);
+    } else {
+      this.value.push(value);
+    }
+  }
+
+  isChecked(value) {
+    if (!Array.isArray(this.value)) {
+      this.value = [];
+    }
+    const idx = this.value.indexOf(value);
+    return idx != -1;
   }
 }

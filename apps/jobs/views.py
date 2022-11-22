@@ -564,7 +564,7 @@ def change_submission_data_and_visibility(
     },
 )
 @api_view(["GET"])
-@throttle_classes([AnonRateThrottle])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """
     Returns leaderboard for a corresponding Challenge Phase Split
@@ -1835,6 +1835,12 @@ def re_run_submission_by_host(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
+    if submission.ignore_submission:
+        response_data = {
+            "error": "Deleted submissions can't be re-run"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     # get the challenge and challenge phase object
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
@@ -2506,6 +2512,18 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         content_type="text/plain",
     )
     submission_data = request.data.copy()
+
+    if submission_data.get("is_public") is None:
+        submission_data["is_public"] = (
+            True if challenge_phase.is_submission_public else False
+        )
+    else:
+        submission_data["is_public"] = json.loads(request.data["is_public"])
+
+    # Override submission visibility if leaderboard_public = False for a challenge phase
+    if not challenge_phase.leaderboard_public:
+        submission_data["is_public"] = challenge_phase.is_submission_public
+
     submission_data["input_file"] = input_file
     serializer = SubmissionSerializer(
         data=submission_data,

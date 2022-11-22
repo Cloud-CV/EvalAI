@@ -24,7 +24,7 @@
           Submission instructions for docker image using evalai-cli
         </span>
         <ol>
-          <li class="content">
+          <li class="content fs-16 fw-light">
             Install evalai-cli<br />
             <code #install_evalai>$ pip install evalai{{ cliVersion }}</code>
             <button
@@ -40,7 +40,7 @@
               ></i>
             </button>
           </li>
-          <li class="content">
+          <li class="content fs-16 fw-light">
             Add your EvalAI account token to evalai-cli<br />
             <code #configure_token>$ evalai set_token {{ authToken }}</code>
             <button
@@ -56,7 +56,7 @@
               ></i>
             </button>
           </li>
-          <li class="content">
+          <li class="content fs-16 fw-light">
             Push docker image to EvalAI docker registry<br />
             <code #evalai_push>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase &lt;phase_name&gt;</code>
             <button
@@ -67,7 +67,7 @@
               <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."> </i>
             </button>
           </li>
-          <li class="content">
+          <li class="content fs-16 fw-light">
             For more commands, please refer to
             <a class="text-highlight" href="https://cli.eval.ai/" target="_blank"
               >evalai-cli documentation.</a
@@ -191,15 +191,6 @@
                   </label>
                 </span>
                 <span class="submission-option">
-                  <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
-                    (click)="isSubmissionUsingUrl = true; showForm = true;" />
-                  <label for="fileUrl" class="radio-button-text pointer">
-                    <div id="radio_button_url" class="show-member-title pointer">
-                      <strong class="text-med-black fw-light fs-16">Enter file URL (for file size > 400MB) </strong>
-                    </div>
-                  </label>
-                </span>
-                <span class="submission-option">
                   <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUpload"
                     (click)="isSubmissionUsingUrl = false; showForm = true;" />
                   <label for="fileUpload" class="radio-button-text pointer">
@@ -269,7 +260,7 @@
             </li>
             <li class="content fw-light fs-16"> Make Submission<br />
               <code
-                #make_submission>$ evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+                #make_submission>$ evalai challenge {{challenge.id}} phase {{selectedPhase.id}} submit --file &lt;submission_file_path&gt; --large</code>
               <button class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn code-btn"
                 value="evalai challenge {{challengeId}} phase {{phaseId}} submit --file &lt;submission_file_path&gt; --large"
                 (click)="copyTextToClipboard(make_submission)">
@@ -319,7 +310,7 @@
             </div>
           </div>
         </div>
-        <div class="row row-lr-margin">
+        <div class="row row-lr-margin" *ngIf="selectedPhase['leaderboard_public']">
           <div class="align-left col-sm-10 col-lr-pad">
             <p class="fs-14 w-400">Select submission visibility:</p>
             <input 
@@ -482,7 +473,7 @@
             <div class="col-sm-12 col-md-12 col-lr-pad">
               <div class="align-left">
                 <button
-                  class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                  class="btn btn-waves-effect grad-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
                   (click)="formValidate()"
                 >
                   Submit
