@@ -5,7 +5,6 @@ import random
 import string
 import uuid
 import yaml
-import boto3
 
 from botocore.exceptions import ClientError
 from django.conf import settings
@@ -17,6 +16,7 @@ from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
     construct_and_send_eks_cluster_creation_mail
 )
+from .models import ChallengeEvaluationCluster
 from .task_definitions import (
     container_definition_code_upload_worker,
     container_definition_submission_worker,

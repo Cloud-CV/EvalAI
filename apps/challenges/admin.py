@@ -11,7 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
-    delete_eks_cluster_and_roles, delete_challenge_evaluation_cluster,
+    delete_challenge_evaluation_cluster,
 )
 
 from .admin_filters import ChallengeFilter
