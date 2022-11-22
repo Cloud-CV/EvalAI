@@ -16,7 +16,6 @@ ADD ./karma.conf.js /code
 
 # Install Prerequisites
 RUN npm install -g bower gulp
-RUN ls /code/bower_components
 
 RUN npm link gulp
 
@@ -26,7 +25,6 @@ RUN npm install -g karma-cli
 RUN npm install -g qs
 RUN bower install --allow-root
 RUN apt-get install -y libxss1
-
 
 CMD ["gulp", "dev:runserver"]
 
