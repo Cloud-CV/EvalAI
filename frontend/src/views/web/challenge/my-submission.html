@@ -64,7 +64,7 @@
                             <th class="fs-18 w-300" data-field="file">Stdout file</th>
                             <th class="fs-18 w-300" data-field="file">Stderr file</th>
                             <th class="fs-18 w-300" ng-if="challenge.isChallengeHost && challenge.isRemoteChallenge &&
-                                    !challenge.isStaticDatasetCodeUpload" data-field="file">Environment Logs</th>
+                                    !challenge.isStaticCodeUploadChallenge" data-field="file">Environment Logs</th>
                             <th class="align-center fs-18 w-300" data-field="file">Submitted at</th>
                             <th class="align-center fs-18 w-300" ng-if="challenge.currentPhaseLeaderboardPublic"
                                 data-field="file">
@@ -111,11 +111,11 @@
                                 <td ng-if="!key.stderr_file">None</td>
 
                                 <td ng-if="key.code_upload_environment_log_file && challenge.isChallengeHost &&
-                                        challenge.isRemoteChallenge && !challenge.isStaticDatasetCodeUpload">
+                                        challenge.isRemoteChallenge && !challenge.isStaticCodeUploadChallenge">
                                     <a href="{{key.code_upload_environment_log_file}}" target="_blank"
                                         class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                 <td ng-if="!key.code_upload_environment_log_file && challenge.isChallengeHost &&
-                                        challenge.isRemoteChallenge && !challenge.isStaticDatasetCodeUpload">None</td>
+                                        challenge.isRemoteChallenge && !challenge.isStaticCodeUploadChallenge">None</td>
 
                                 <td>{{key.submitted_at | date:'medium'}}</td>
 

@@ -97,7 +97,7 @@
 
         vm.workerLogs = [];
         
-        vm.isStaticDatasetCodeUpload = false;
+        vm.isStaticCodeUploadChallenge = false;
 
         vm.workerCPUCores = 512;
         vm.workerMemory = 1024;
@@ -321,7 +321,7 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
-                vm.isStaticDatasetCodeUpload = details.is_static_dataset_code_upload;
+                vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
 
                 vm.getTeamName(vm.challengeId);
 
