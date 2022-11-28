@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:12.4.0
+FROM --platform=linux/amd64 node:12.20.0
 
 RUN npm install -g @angular/cli@7.3.9
 WORKDIR /code
