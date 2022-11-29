@@ -1240,7 +1240,7 @@ def update_submission(request, challenge_pk):
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
         submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
-        submission.code_upload_environment_log_file.save("code_upload_environment_log.txt", ContentFile(code_upload_environment_log_content))
+        submission.code_upload_env_output_file.save("code_upload_environment_log.txt", ContentFile(code_upload_environment_log_content))
         submission.submission_result_file.save(
             "submission_result.json", ContentFile(str(public_results))
         )

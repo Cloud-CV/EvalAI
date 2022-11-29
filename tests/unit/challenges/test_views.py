@@ -2424,7 +2424,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             ),
             stdout_file=None,
             stderr_file=None,
-            code_upload_environment_log_file=None,
+            code_upload_env_output_file=None,
         )
         self.client.force_authenticate(user=self.user)
 
@@ -2483,7 +2483,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             ),
             stdout_file=None,
             stderr_file=None,
-            code_upload_environment_log_file=None,
+            code_upload_env_output_file=None,
         )
         self.client.force_authenticate(user=self.user)
 
@@ -3223,7 +3223,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             ),
             stdout_file=None,
             stderr_file=None,
-            code_upload_environment_log_file=None,
+            code_upload_env_output_file=None,
         )
         self.client.force_authenticate(user=self.user)
 
@@ -3649,7 +3649,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submission_input_file": None,
                     "stdout_file": None,
                     "stderr_file": None,
-                    "code_upload_environment_log_file": None,
+                    "code_upload_env_output_file": None,
                     "submission_result_file": None,
                     "submission_metadata_file": None,
                     "participant_team_members_email_ids": ["user6@test.com"],

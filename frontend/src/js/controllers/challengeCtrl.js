@@ -1937,8 +1937,8 @@
             'label': 'Stderr File',
             'id': 'stderr_file'
         },{
-            'label': 'Environment Error File',
-            'id': 'code_upload_environment_log_file'
+            'label': 'Environment Output File',
+            'id': 'code_upload_env_output_file'
         },{
             'label': 'Submitted At',
             'id': 'created_at'
