@@ -186,7 +186,17 @@ def get_init_container(submission_pk):
     return init_container
 
 
-def create_job_object(message, environment_image):
+def get_job_constraints(challenge):
+    constraints = {}
+    if not challenge.get("cpu_only_jobs"):
+        constraints["nvidia.com/gpu"] = "1"
+    else:
+        constraints["cpu"] = challenge.get("job_cpu_cores")
+        constraints["memory"] = challenge.get("job_memory")
+    return constraints
+
+
+def create_job_object(message, environment_image, challenge):
     """Function to create the AWS EKS Job object
 
     Arguments:
@@ -204,11 +214,17 @@ def create_job_object(message, environment_image):
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
+    submission_meta = message["submission_meta"]
+    SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_LIMIT",
+        value=str(submission_meta["submission_time_limit"]),
+    )
     # Configure Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
     volume_mount_list = get_volume_mount_list("/dataset")
+    job_constraints = get_job_constraints(challenge)
     # Get init container
     init_container = get_init_container(submission_pk)
     # Configure Pod environment container
@@ -220,7 +236,11 @@ def create_job_object(message, environment_image):
             AUTH_TOKEN_ENV,
             EVALAI_API_SERVER_ENV,
             MESSAGE_BODY_ENV,
+            SUBMISSION_TIME_LIMIT_ENV,
         ],
+        resources=client.V1ResourceRequirements(
+            limits=job_constraints
+        ),
         volume_mounts=volume_mount_list,
     )
     volume_list = get_volume_list()
@@ -270,7 +290,7 @@ def create_static_code_upload_submission_job_object(message):
         value=str(submission_meta["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
-        name="SUBMISSION_TIME_DELTA", value="3600"
+        name="SUBMISSION_TIME_DELTA", value="300"
     )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
@@ -391,7 +411,7 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(api_instance, body, challenge_phase, evalai):
+def process_submission_callback(api_instance, body, challenge_phase, challenge, evalai):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -404,7 +424,7 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
             job = create_static_code_upload_submission_job_object(body)
         else:
             environment_image = challenge_phase.get("environment_image")
-            job = create_job_object(body, environment_image)
+            job = create_job_object(body, environment_image, challenge)
         response = create_job(api_instance, job)
         submission_data = {
             "submission_status": "running",
@@ -664,7 +684,9 @@ def main():
     api_instance_client = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
-    install_gpu_drivers(api_instance_client)
+    # Install GPU drivers for GPU only challenges
+    if not challenge.get("cpu_only_jobs"):
+        install_gpu_drivers(api_instance_client)
     api_instance = get_api_object(
         cluster_name, cluster_endpoint, challenge, evalai
     )
@@ -744,7 +766,7 @@ def main():
                         challenge_pk, phase_pk
                     )
                     process_submission_callback(
-                        api_instance, message_body, challenge_phase, evalai
+                        api_instance, message_body, challenge_phase, challenge, evalai
                     )
 
         if killer.kill_now:

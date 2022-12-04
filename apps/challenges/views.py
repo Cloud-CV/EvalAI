@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import os
+import pytz
 import random
 import requests
 import shutil
@@ -12,6 +13,8 @@ import yaml
 import zipfile
 
 from os.path import basename, isfile, join
+from datetime import datetime
+
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -833,7 +836,7 @@ def challenge_phase_split_list(request, challenge_pk):
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(
         challenge_phase__challenge=challenge
-    )
+    ).order_by("pk")
 
     # Check if user is a challenge host or participant
     challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
@@ -2997,6 +3000,12 @@ def manage_worker(request, challenge_pk, action):
 
     challenge = get_challenge_model(challenge_pk)
 
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop", "restart"):
+        response_data = {
+            "error": "Action {} worker is not supported for an inactive challenge.".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     response_data = {}
 
     if action == "start":
@@ -3565,6 +3574,17 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 for data, challenge_test_annotation_file in zip(
                     challenge_phases_data, files["challenge_test_annotation_files"]
                 ):
+
+                    # Override the submission_meta_attributes when they are missing
+                    submission_meta_attributes = data.get("submission_meta_attributes")
+                    if submission_meta_attributes is None:
+                        data["submission_meta_attributes"] = None
+
+                    # Override the default_submission_meta_attributes when they are missing
+                    submission_meta_attributes = data.get("submission_meta_attributes")
+                    if submission_meta_attributes is None:
+                        data["submission_meta_attributes"] = None
+
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]
                     ).first()
@@ -3596,10 +3616,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             partial=True,
                         )
                     else:
-                        # Override the submission_meta_attributes when they are missing
-                        submission_meta_attributes = data.get("submission_meta_attributes")
-                        if submission_meta_attributes is None:
-                            data["submission_meta_attributes"] = None
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
                             data=data,
