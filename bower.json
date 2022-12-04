@@ -34,7 +34,8 @@
     "ngclipboard": "^2.0.0",
     "moment-picker": "0.10.2",
     "angular-moment-picker": "moment-picker#^0.10.2",
-    "moment-timezone": "^0.5.25"
+    "moment-timezone": "^0.5.25",
+    "trix": "1.3.1"
   },
   "resolutions": {
     "angular": "1.7.0"
