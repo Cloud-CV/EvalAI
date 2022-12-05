@@ -94,6 +94,7 @@
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
+        vm.queueName = null;
 
         vm.workerLogs = [];
 
@@ -316,6 +317,7 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
+                vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
