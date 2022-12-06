@@ -805,7 +805,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
 
 
 def get_logs_from_cloudwatch(
-    log_group_name, log_stream_prefix, start_time, end_time, pattern
+    log_group_name, log_stream_prefix, start_time, end_time, pattern, limit
 ):
     """
     To fetch logs of a container from cloudwatch within a specific time frame.
@@ -824,6 +824,7 @@ def get_logs_from_cloudwatch(
                 startTime=start_time,
                 endTime=end_time,
                 filterPattern=pattern,
+                limit=limit
             )
             for event in response["events"]:
                 logs.append(event["message"])

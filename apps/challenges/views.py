@@ -2958,14 +2958,15 @@ def get_worker_logs(request, challenge_pk):
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.
 
-    # This is to specify the time window for fetching logs: 15 minutes before from current time.
-    timeframe = 15
+    # This is to specify the time window for fetching logs: 3 days before from current time.
+    timeframe = 4320
+    limit = 1000
     current_time = int(round(time.time() * 1000))
     start_time = current_time - (timeframe * 60000)
     end_time = current_time
 
     logs = get_logs_from_cloudwatch(
-        log_group_name, log_stream_prefix, start_time, end_time, pattern
+        log_group_name, log_stream_prefix, start_time, end_time, pattern, limit
     )
 
     response_data = {"logs": logs}
