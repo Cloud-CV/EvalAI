@@ -118,7 +118,7 @@ def is_challenge_config_yaml_html_field_valid(
             message = "File at path {} not found. Please specify a valid file path".format(key)
         elif not value.endswith(
             ".html"
-        ):  # TODO: Check what other formats are supported or if this check should be there
+        ):
             message = "File {} is not a HTML file. Please specify a valid HTML file".format(key)
         else:
             is_valid = True
@@ -417,10 +417,6 @@ def validate_challenge_config_util(
             message = "ERROR: There is no 'labels' key in leaderboard schema."
             error_messages.append(message)
             error = True
-            # TODO: What to do if the labels is an empty list?
-            # TODO: Do we need to check for metric metadata?
-            # TODO: How to check for change when we add a leaderboard with new/same id - currently no error.
-            # TODO: Can check for ID repeats at least
         if not error:
             for data in leaderboard:
                 serializer = LeaderboardSerializer(
