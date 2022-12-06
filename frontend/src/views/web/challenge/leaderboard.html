@@ -76,7 +76,7 @@
                         </div>
                     </div>
                 </div>
-                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
+                <table ng-if="challenge.isResult && challenge.leaderboard.length" ng-attr-id="leaderboard_table" ng-class="['highlight', {'watermarked': challenge.showBackground}]">
                     <thead>
                         <tr>
                             <td data-field="rank">
