@@ -2959,8 +2959,8 @@ def get_worker_logs(request, challenge_pk):
     pattern = ""  # Empty string to get all logs including container logs.
 
     # This is to specify the time window for fetching logs: 3 days before from current time.
-    timeframe = 4320  # 15
-    limit = 1000  # logs last 1000 lines
+    timeframe = 4320
+    limit = 1000
     current_time = int(round(time.time() * 1000))
     start_time = current_time - (timeframe * 60000)
     end_time = current_time
