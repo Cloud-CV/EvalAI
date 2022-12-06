@@ -151,6 +151,15 @@
             }
             return [strength, color];
        };
+
+        this.getEnvironment = function() {
+            switch (EnvironmentConfig.API) {
+                case "http://localhost:8000/api/": return "local";
+                case "https://staging.eval.ai/api/": return "staging";
+                case "https://eval.ai/api/": return "production";
+                default: return "other";
+            }
+        };
     }
 
 })();
