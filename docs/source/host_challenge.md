@@ -162,6 +162,99 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
+
+
+## Host a challenge with remote evalution
+
+The steps related to challenge creation will be similar to the steps mentioned above for different types of challenges. This section specifically deals with the bits and pieces required to set up remote challenge evaluation on your own instances.
+
+### Step 1: Modify challenge configuration
+
+Set the `remote_evaluation` parameter to `True` in [`challenge_config.yaml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/challenge_config.yaml#L12). The `challenge_config.yaml` file defines all the different settings of a challenge and you can edit other things based on your requirement.
+
+Make sure that following fields are set correctly:
+
+- `remote_evaluation` is set to `True`
+
+This will ensure that the challenge worker is aware that the evaluation is to be performed remotely.
+
+### Step 2: Fetch details for the challenge
+
+Now, go to [EvalAI](https://eval.ai) to fetch the following details -
+
+1. `auth_token` - Go to [profile page](https://eval.ai/web/profile) after logging in and click on `Get your Auth Token` to copy your auth token.
+2. `evalai_api_server` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server
+
+<img src="_static/img/github_based_setup/evalai_profile.png"><br />
+
+Once the challenge is up on the server, you can go to Manage Tab and fetch the following:
+
+3. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
+4. `challenge_pk`: The primary key for the challenge.
+
+<img src="_static/img/remote_evlaluation_meta.png"><br />
+
+### Step 3: Edit evaluation script
+
+Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
+
+This script is expected the submissions from our queues and updates the status of the submission in our database accordingly. When the submission is finished, 
+
+1. Add the details fetched in the previous step in [these lines](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/remote_challenge_evaluation/evaluation_script_starter.py#L148-L151) inside `__main__`.
+
+2. Modify the evaluation script, especially [these lines](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/remote_challenge_evaluation/evaluation_script_starter.py#L176-L183):
+   ```python
+   elif submission.get("status") == "running":
+         # This section is meant to handle what is to be done when the status is running.
+         # If the evaluation is still running, you could check for the current status, whether it passed, or failed, or is still running.
+
+         # To update the EvalAI submission status:
+         # Update EvalAI after calculating final set of metrics and set submission status as "FINISHED"
+         # submission_data = {
+         #   "challenge_phase": "<phase_pk>",
+         #   "submission": "<submission_pk>",
+         #   "stdout": "",
+         #   "stderr": "",
+         #   "submission_status": "FINISHED",
+         #   "result": '[{"split": "<split-name>", "show_to_participant": true,"accuracies": {"Metric1": 80,"Metric2": 60,"Metric3": 60,"Total": 10}}]',
+         #   "metadata": "",
+         # }
+         # update_data = evalai.update_submission_data(submission_data)
+
+         # OR
+
+         # Update EvalAI in case of errors and set submission status as "FAILED"
+         # submission_data = {
+         #     "challenge_phase": "<phase_pk>",
+         #     "submission": "<submission_pk>",
+         #     "stdout": "",
+         #     "stderr": "<ERROR FROM SUBMISSION>",
+         #     "submission_status": "FAILED",
+         #     "metadata": "",
+         # }
+         # update_data = evalai.update_submission_data(submission_data)
+         pass
+
+
+   else:
+         # This section is meant to handle the "submitted" status. When the submission is submitted, you want to download the code and change the status to running when the submission is running.
+         
+         # Write code to download the input file from the submission from the submission.input_file.url
+         
+         # Run the submission with the input file using your own code and data.
+         # Update EvalAI right after sending the submission into "RUNNING" state.
+
+         # status_data = {"submission": "", "job_name": "", "submission_status": "RUNNING"}
+         # update_status = evalai.update_submission_status(status_data)         
+         pass
+
+### Step 4: Configure your instance to run the evaluation script
+
+1. Create a python or conda virtual environment.
+2. Install the worker requirements from the `EvalAI-Starters/remote_challenge_evaluation` present [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/requirements.txt).
+3. Run the worker using `python -m evaluation_script_starter`.
+
+
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 [evalai-starters]: https://github.com/Cloud-CV/EvalAI-Starters
