@@ -162,8 +162,6 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
-
-
 ## Host a challenge with remote evalution
 
 The steps related to challenge creation will be similar to the steps mentioned above for different types of challenges. This section specifically deals with the bits and pieces required to set up remote challenge evaluation on your own instances.
