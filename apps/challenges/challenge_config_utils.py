@@ -653,7 +653,7 @@ def validate_challenge_config_util(
 
         for triple in exis_phase_split_ids:
             if triple not in challenge_phase_split_id_triples:
-                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) {} not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(triple[0], triple[1], triple[2]))
+                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(triple[0], triple[1], triple[2]))
     else:
         message = "ERROR: There is no key for challenge phase splits."
         error_messages.append(message)
