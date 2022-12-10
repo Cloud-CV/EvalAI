@@ -143,7 +143,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.noneUpcomingChallenge).toBeTruthy();
         });
 
-        it('check description length and calculate timezone of upcoming challenge `challenges/challenge/time/future`', function () {
+        it('check description length and calculate timezone of upcoming challenge `challenges/challenge/future`', function () {
             isUpcomingChallengeSucess = true;
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
