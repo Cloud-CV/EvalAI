@@ -194,7 +194,7 @@ Once the challenge is up on the server, you can go to Manage Tab and fetch the f
 
 <img src="_static/img/remote_evlaluation_meta.png"><br />
 
-### Step 3: Edit evaluation script
+### Step 3: Edit remote evaluation script
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
 
@@ -203,6 +203,7 @@ This script is expected the submissions from our queues and updates the status o
 1. Add the details fetched in the previous step in [these lines](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/remote_challenge_evaluation/evaluation_script_starter.py#L148-L151) inside `__main__`.
 
 2. Modify the evaluation script, especially [these lines](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/remote_challenge_evaluation/evaluation_script_starter.py#L176-L183):
+
    ```python
    elif submission.get("status") == "running":
          # This section is meant to handle what is to be done when the status is running.
@@ -253,7 +254,6 @@ This script is expected the submissions from our queues and updates the status o
 1. Create a python or conda virtual environment.
 2. Install the worker requirements from the `EvalAI-Starters/remote_challenge_evaluation` present [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/requirements.txt).
 3. Run the worker using `python -m evaluation_script_starter`.
-
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
