@@ -5,6 +5,7 @@ import requests
 import warnings
 
 from datetime import datetime
+from dateutil.parser import parse
 from auto_stop_workers import start_worker, stop_worker
 from prometheus_api_client import PrometheusConnect
 
@@ -144,8 +145,8 @@ def scale_up_or_down_workers(challenge):
 
     if (
         queue_length == 0
-        or datetime.fromisoformat(challenge["end_date"][:-1])
-        < datetime.utcnow()
+        or parse(challenge["end_date"])
+        < pytz.UTC.localize(datetime.utcnow())
     ):
         scale_down_workers(challenge, num_workers)
     else:
