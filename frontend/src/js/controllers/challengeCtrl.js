@@ -94,6 +94,7 @@
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
+        vm.queueName = null;
 
         vm.workerLogs = [];
 
@@ -324,6 +325,7 @@
                 vm.selectedWorkerResources[0] = details.worker_cpu_cores/1024;
                 vm.selectedWorkerResources[1] = details.worker_memory;
 
+                vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {

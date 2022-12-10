@@ -1,6 +1,17 @@
 <section class="ev-sm-container ev-view challenge-container" ng-init="challenge.startLoadingLogs();">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 l12">
+                <div class="w-300 fs-16"><strong>Note:</strong>By default, we allocate 0.25 vCPU and 0.5 GB memory
+                to each challenge evaluation worker. In case your evaluation requires additional resources,
+                please email us at <a href="mailto:admin@cloudcv.org" class="blue-text">admin@cloudcv.org</a>.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        
+        <div class="row margin-bottom-cancel">
             <div class="col s12">
                 <h5 class="w-300">Manage worker</h5>
             </div>
@@ -32,6 +43,21 @@
         </div>
         <div class="ev-logs-card">
             <div ng-repeat="log in challenge.workerLogs track by $index" class="ev-logs">{{log}}</div>
+        </div>
+    </div>
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">Remote Evaluation Meta</h5>
+            </div>
+        </div>
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 l12">
+                <div class="w-300 fs-16">
+                    <strong>Primary Key</strong>: {{challenge.challengeId}}<br>
+                    <strong>Queue Name</strong>: {{challenge.queueName}}
+                </div>
+            </div>
         </div>
     </div>
 </section>
