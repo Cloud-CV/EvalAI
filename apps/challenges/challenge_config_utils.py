@@ -385,20 +385,20 @@ def validate_challenge_config_util(
 
     # Get existing config IDs for leaderboards and dataset splits
     if e_challenge:
-        e_challenge_phases = ChallengePhase.objects.filter(challenge=e_challenge.id)
-        e_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__in=e_challenge_phases)
-        e_leaderboards = Leaderboard.objects.filter(id__in=e_challenge_phase_splits.values('leaderboard'))
-        e_dataset_splits = DatasetSplit.objects.filter(id__in=e_challenge_phase_splits.values('dataset_split'))
+        exis_challenge_phases = ChallengePhase.objects.filter(challenge=e_challenge.id)
+        exis_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__in=exis_challenge_phases)
+        exis_leaderboards = Leaderboard.objects.filter(id__in=exis_challenge_phase_splits.values('leaderboard'))
+        exis_dataset_splits = DatasetSplit.objects.filter(id__in=exis_challenge_phase_splits.values('dataset_split'))
 
-        e_leaderboard_config_ids = [int(x.config_id) for x in e_leaderboards]
-        e_dataset_config_ids = [int(x.config_id) for x in e_dataset_splits]
-        e_phase_config_ids = [int(x.config_id) for x in e_challenge_phases]
-        e_phase_split_ids = [(split.leaderboard.config_id, split.challenge_phase.config_id, split.dataset_split.config_id) for split in e_challenge_phase_splits]
+        exis_leaderboard_config_ids = [int(x.config_id) for x in exis_leaderboards]
+        exis_dataset_config_ids = [int(x.config_id) for x in exis_dataset_splits]
+        exis_phase_config_ids = [int(x.config_id) for x in exis_challenge_phases]
+        exis_phase_split_ids = [(split.leaderboard.config_id, split.challenge_phase.config_id, split.dataset_split.config_id) for split in exis_challenge_phase_splits]
     else:
-        e_leaderboard_config_ids = []
-        e_dataset_config_ids = []
-        e_phase_config_ids = []
-        e_phase_split_ids = []
+        exis_leaderboard_config_ids = []
+        exis_dataset_config_ids = []
+        exis_phase_config_ids = []
+        exis_phase_split_ids = []
 
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
@@ -430,7 +430,7 @@ def validate_challenge_config_util(
                     error_messages.append(message)
                 else:
                     # Addition
-                    if e_leaderboard_config_ids and int(data["id"]) not in e_leaderboard_config_ids:
+                    if exis_leaderboard_config_ids and int(data["id"]) not in exis_leaderboard_config_ids:
                         error_messages.append("ERROR: Leaderboard {} doesn't exist. Addition of new leaderboard after challenge creation is not allowed.".format(data["id"]))
                     leaderboard_ids.append(data["id"])
     else:
@@ -438,7 +438,7 @@ def validate_challenge_config_util(
         error_messages.append(message)
 
     # Deletion Case:
-    for e_leaderboard_id in e_leaderboard_config_ids:
+    for e_leaderboard_id in exis_leaderboard_config_ids:
         if e_leaderboard_id not in leaderboard_ids:
             error_messages.append("ERROR: Leaderboard {} not found in config. Deletion of existing leaderboard after challenge creation is not allowed.".format(e_leaderboard_id))
 
@@ -572,12 +572,12 @@ def validate_challenge_config_util(
             error_messages.append(message)
         else:
             # Addition
-            if e_phase_config_ids and int(data["id"]) not in e_phase_config_ids:
+            if exis_phase_config_ids and int(data["id"]) not in exis_phase_config_ids:
                 error_messages.append("ERROR: Challenge phase {} doesn't exist. Addition of new challenge phase after challenge creation is not allowed.".format(data["id"]))
             phase_ids.append(data["id"])
 
     # Deletion Case:
-    for e_challenge_phase_id in e_phase_config_ids:
+    for e_challenge_phase_id in exis_phase_config_ids:
         if e_challenge_phase_id not in phase_ids:
             error_messages.append("ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.".format(e_challenge_phase_id))
 
@@ -611,7 +611,7 @@ def validate_challenge_config_util(
                 error_messages.append(message)
             else:
                 # Addition
-                if e_dataset_config_ids and int(split["id"]) not in e_dataset_config_ids:
+                if exis_dataset_config_ids and int(split["id"]) not in exis_dataset_config_ids:
                     error_messages.append("ERROR: Dataset split {} doesn't exist. Addition of new dataset split after challenge creation is not allowed.".format(split["id"]))
                 dataset_splits_ids.append(split["id"])
     else:
@@ -619,7 +619,7 @@ def validate_challenge_config_util(
         error_messages.append(message)
 
     # Deletion Case:
-    for e_dataset_split_config_id in e_dataset_config_ids:
+    for e_dataset_split_config_id in exis_dataset_config_ids:
         if e_dataset_split_config_id not in dataset_splits_ids:
             error_messages.append("ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.".format(e_dataset_split_config_id))
 
@@ -630,7 +630,7 @@ def validate_challenge_config_util(
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            if (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in e_phase_split_ids:
+            if exis_phase_split_ids and (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in exis_phase_split_ids:
                 error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
             else:
                 challenge_phase_split_id_triples.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
@@ -651,7 +651,7 @@ def validate_challenge_config_util(
                 error_messages.append(message)
             phase_split += 1
 
-        for triple in e_phase_split_ids:
+        for triple in exis_phase_split_ids:
             if triple not in challenge_phase_split_id_triples:
                 error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) {} not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(triple[0], triple[1], triple[2]))
     else:
