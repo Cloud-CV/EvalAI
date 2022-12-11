@@ -618,14 +618,14 @@ def scale_workers(queryset, num_of_tasks):
 
 def scale_resources(challenge, worker_cpu_cores, worker_memory):
     """
-    The function called by scale_resources_by_challenge_pk to send the AWS ECS request to change the resources used by
+    The function called by scale_resources_by_challenge_pk to send the AWS ECS request to update the resources used by
     a challenge's workers.
 
     Deregisters the old task definition and creates a new definition that is substituted into the challenge workers.
 
     Parameters:
     challenge (): The challenge object for whom the task definition is being registered.
-    new_cpu_val (int): The CPU value (1 vCPU = 1024 values) that should be assigned to workers.
+    worker_cpu_cores (int): vCPU (1 CPU core = 1024 vCPU) that should be assigned to workers.
     worker_memory (int): The amount of memory (MB) that should be assigned to each worker.
 
     Returns:
@@ -638,14 +638,14 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
     client = get_boto3_client("ecs", aws_keys)
 
     if challenge.worker_cpu_cores == worker_cpu_cores and challenge.worker_memory == worker_memory:
-        message = "Error. Worker cores and memory were not modified."
+        message = "Worker cores and memory were not modified."
         return {
             "Error": message,
-            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
         }
 
     if not challenge.task_def_arn:
-        message = "Error. Task definition not yet registered for challenge{}.".format(
+        message = "Error. No active task definition registered for the challenge {}.".format(
             challenge.pk
         )
         return {
@@ -653,7 +653,6 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
         }
 
-    # Deregister current worker service's existing task definition
     try:
         response = client.deregister_task_definition(
             taskDefinition=challenge.task_def_arn
@@ -673,10 +672,8 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
     log_group_name = get_log_group_name(challenge.pk)
-    AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
-    AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    definition = task_definition.format(
+    task_def = task_definition.format(
         queue_name=queue_name,
         container_name=container_name,
         ENV=ENV,
@@ -684,15 +681,15 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         CPU=worker_cpu_cores,
         MEMORY=worker_memory,
         log_group_name=log_group_name,
-        AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
-        AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
+        AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
+        AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
         **COMMON_SETTINGS_DICT,
         **challenge_aws_keys,
     )
-    definition = eval(definition)
+    task_def = eval(task_def)
 
     try:
-        response = client.register_task_definition(**definition)
+        response = client.register_task_definition(**task_def)
         if (
                 response["ResponseMetadata"]["HTTPStatusCode"]
                 == HTTPStatus.OK
@@ -702,6 +699,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
             task_def_arn = response["taskDefinition"][
                 "taskDefinitionArn"
             ]
+
             challenge.task_def_arn = task_def_arn
             challenge.save()
             force_new_deployment = False

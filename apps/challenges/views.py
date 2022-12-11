@@ -3000,7 +3000,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
 
     if request.data.get("worker_cpu_cores") is None:
         response_data = {
-            "error": "CPU unit count config missing from request data."
+            "error": "vCPU config missing from request data."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3011,25 +3011,15 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
-    cpu_cores = request.data["worker_cpu_cores"]
-    memory = request.data["worker_memory"]
+    worker_cpu_cores = int(request.data["worker_cpu_cores"])
+    worker_memory = int(request.data["worker_memory"])
 
-    try:
-        cpu_cores = int(cpu_cores)
-        memory = int(memory)
-    except Exception:
-        response_data = {
-            "error": "Enter integer numbers for cores and memory."
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # validate cores and memory number
     if (
-        cpu_cores == 256 and memory in (512, 1024, 2048)
-        or cpu_cores == 512 and memory in (1024, 2048)
-        or cpu_cores == 1024 and memory == 2048
+        worker_cpu_cores == 256 and worker_memory in (512, 1024, 2048)
+        or worker_cpu_cores == 512 and worker_memory in (1024, 2048)
+        or worker_cpu_cores == 1024 and worker_memory == 2048
     ):
-        response = scale_resources(challenge, cpu_cores, memory)
+        response = scale_resources(challenge, worker_cpu_cores, worker_memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
             response_data = {
                 "error": "Issue with ECS."
@@ -3043,7 +3033,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
             }
     else:
         response_data = {
-            "error": "Please specify correct worker CPU cores and memory config."
+            "error": "Please specify correct config for worker vCPU and memory."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return Response(response_data, status=status.HTTP_200_OK)
