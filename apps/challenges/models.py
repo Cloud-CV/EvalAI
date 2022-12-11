@@ -504,11 +504,6 @@ class ChallengeConfiguration(TimeStampedModel):
         null=True,
         blank=True,
     )
-    code_upload_env_output_file = models.FileField(
-        upload_to=RandomFileName("zip_configuration_files/challenge_zip"),
-        null=True,
-        blank=True,
-    )
 
     class Meta:
         app_label = "challenges"
