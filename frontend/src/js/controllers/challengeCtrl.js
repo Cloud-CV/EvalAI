@@ -99,9 +99,9 @@
         vm.workerLogs = [];
 
         // get from backend
-        vm.selectedWorkerResources = [0.5, 1024];
+        vm.selectedWorkerResources = [512, 1024];
 
-        vm.workerResourceOptions = [[0.25, 512], [0.25, 1024], [0.25, 2048], [0.5, 1024], [0.5, 2048], [1, 2048]];
+        vm.workerResourceOptions = [[256, 512], [256, 1024], [256, 2048], [512, 1024], [512, 2048], [1024, 2048]];
 
         utilities.showLoader();
 
@@ -322,7 +322,7 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
-                vm.selectedWorkerResources[0] = details.worker_cpu_cores/1024;
+                vm.selectedWorkerResources[0] = details.worker_cpu_cores;
                 vm.selectedWorkerResources[1] = details.worker_memory;
 
                 vm.queueName = details.queue;
@@ -1634,7 +1634,7 @@
             parameters.url = "challenges/" + vm.challengeId + "/scale_resources/";
             parameters.method = 'PUT';
             parameters.data = {
-                "worker_cpu_cores": vm.selectedWorkerResources[0] * 1024,
+                "worker_cpu_cores": vm.selectedWorkerResources[0],
                 "worker_memory": vm.selectedWorkerResources[1],
             };
             parameters.callback = {

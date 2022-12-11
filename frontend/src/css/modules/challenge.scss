@@ -307,15 +307,28 @@ md-select .md-select-value span:first-child:after {
 }
 
 .text-entry-columns {
-    flex: 1;
-    display: flex;
+    display: inline-block;
 }
 
 .submit-column {
-    flex: 0 0 auto;
+    display: inline-block;
     float: right;
+    position: relative;
 }
 
 .multiple-columns {
     display: flex;
+    margin: 0 auto;
+}
+
+.dropdown-menu {
+    display: inline;
+    float: left;
+}
+
+.scale-worker-button {
+    top: 50%;
+    position: absolute;
+    transform: translateY(-50%);
+    width: max-content;
 }
