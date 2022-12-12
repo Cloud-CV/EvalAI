@@ -31,7 +31,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
-        if not context or not self.is_code_upload_environment_log_file_visible(context):
+        if not context or not self.is_code_upload_environment_log_visible(context):
             self.fields.pop("code_upload_environment_log_file")
 
     class Meta:
@@ -67,15 +67,13 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_verified_by_host",
         )
 
-    # Determines whether environment error file should be visible to caller.
-    def is_code_upload_environment_log_file_visible(self, context):
+    def is_code_upload_environment_log_visible(self, context):
         curr_user = context.get("request").user
         challenge_phase = self.fields.get("challenge_phase")
         challenge_host_team_creator = list(challenge_phase.get_queryset())[0].challenge.creator
         challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team_creator).values_list(
             "user__pk", flat=True
         )
-        # only challenge hosts or EvalAI admins should be allowed to see a user's submission
         return curr_user.pk in challenge_hosts_pk
 
     def get_participant_team_name(self, obj):
