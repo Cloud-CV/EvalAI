@@ -21,8 +21,8 @@
                 <span>
                     <form ng-submit="challenge.setWorkerResources()" class="multiple-columns">
                         <div class="scale-worker-column text-entry-columns">
-                            <md-select ng-model="challenge.selectedWorkerResources" placeholder="Select worker resource configuration" class="dropdown-menu rm-margin">
-                                <md-option value="{{ option }}" ng-repeat="option in challenge.workerResourceOptions">
+                            <md-select ng-model="challenge.selectedWorkerResources" class="dropdown-menu rm-margin" >
+                                <md-option ng-value="option" ng-repeat="option in challenge.workerResourceOptions">
                                     <span class="fs-16 w-300">
                                         {{ option[0] + " vCPU (" + option[0]/1024 + " CPU), " + option[1] + " MiB RAM" }}
                                     </span>
