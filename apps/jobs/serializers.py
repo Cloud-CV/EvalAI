@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from challenges.models import ChallengePhase, LeaderboardData
+from hosts.models import ChallengeHost
 from participants.models import Participant, ParticipantTeam
 
 from .models import Submission
@@ -70,7 +71,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
     def is_code_upload_environment_log_file_visible(self, context):
         curr_user = context.get("request").user
         challenge_phase = self.fields.get("challenge_phase")
-        challenge_hosts_pk = list(challenge_phase.get_queryset())[0].challenge.creator.get_all_challenge_hosts_pk()
+        challenge_host_team_creator = list(challenge_phase.get_queryset())[0].challenge.creator
+        challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team_creator).values_list(
+            "user__pk", flat=True
+        )
         # only challenge hosts or EvalAI admins should be allowed to see a user's submission
         return curr_user.pk in challenge_hosts_pk
 
