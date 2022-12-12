@@ -69,9 +69,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def is_code_upload_environment_log_visible(self, context):
         curr_user = context.get("request").user
-        challenge_phase = self.fields.get("challenge_phase")
-        challenge_host_team_creator = list(challenge_phase.get_queryset())[0].challenge.creator
-        challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team_creator).values_list(
+        challenge_host_team = self.fields["challenge_phase"].challenge.creator
+        challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
             "user__pk", flat=True
         )
         return curr_user.pk in challenge_hosts_pk
