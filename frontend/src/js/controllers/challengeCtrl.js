@@ -346,9 +346,7 @@
                                 }
                             }
 
-                            if (details.is_challenge_host) {
-                                vm.isChallengeHost = true;
-                            }
+                            vm.isChallengeHost = details.is_challenge_host;
 
                             if (!vm.isParticipated) {
 
