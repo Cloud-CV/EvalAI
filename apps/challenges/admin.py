@@ -416,18 +416,6 @@ class UserInvitationAdmin(ImportExportTimeStampedAdmin):
     get_host_team_and_member_name.admin_order_field = "invited_by"
 
 
-@admin.register(ChallengeEvaluationCluster)
-class ChallengeEvaluationClusterAdmin(ImportExportTimeStampedAdmin):
-    readonly_fields = ("created_at",)
-    list_display = ("id", "name", "cluster_yaml", "kube_config")
-    list_filter = ("name",)
-    search_fields = ("id", "name")
-
-    actions = [
-        'delete_selected_challenge_evaluation_clusters'
-    ]
-
-
 @admin.register(PWCChallengeLeaderboard)
 class PWCChallengeLeaderboardAdmin(ImportExportTimeStampedAdmin):
     raw_id_fields = ["phase_split"]
