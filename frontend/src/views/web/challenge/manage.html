@@ -13,22 +13,9 @@
         
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Manage worker</h5>
+                <h5 class="w-300">Submission worker actions</h5>
             </div>
         </div>
-        <form ng-submit="challenge.setWorkerResources()" class="multiple-columns">
-            <div class="scale-worker-column text-entry-columns">
-                <select class="dropdown-menu">
-                    <option ng-model="challenge.selectedWorkerResources" ng-repeat="option in challenge.workerResourceOptions">{{ option[0] + " vCPUs, " + option[1] + " MiB RAM" }}</option>
-                </select>
-            </div>
-            <div class="scale-worker-column submit-column">
-                <div class="col s12 m6 l6 align-left reg-control">
-                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit"
-                        value="Submit"><i class="fa fa-arrow-up"></i> Scale worker</button>
-                </div>
-            </div>
-        </form>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('start');"><i class="fa fa-play"></i> Start worker</button>
@@ -38,7 +25,7 @@
         </div>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Worker logs</h5>
+                <h5 class="w-300">Submission worker logs</h5>
             </div>
         </div>
         <div class="ev-logs-card">
