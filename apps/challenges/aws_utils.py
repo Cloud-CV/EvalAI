@@ -900,6 +900,132 @@ def create_eks_nodegroup(challenge, cluster_name):
 
 
 @app.task
+def delete_only_challenge_evaluation_cluster(queryset):
+    """
+    The function called by the admin action method to delete all the challenge evaluation clusters used by the
+    selected challenges. This does not delete the roles, subnets, route tables, security groups, etc... associated with
+    these clusters.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully stopped.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Challenge evaluation clusters cannot be deleted in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        try:
+            ChallengeEvaluationCluster.objects.get(challenge=challenge)
+        except ChallengeEvaluationCluster.DoesNotExist:
+            response = "Please select challenges with active evaluation clusters only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+            continue
+        response = delete_eks_cluster(challenge=challenge)
+        if not response or response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            failures.append(
+                {
+                    "message": response["Error"],
+                    "challenge_pk": challenge.pk,
+                }
+            )
+            continue
+        count += 1
+    return {"count": count, "failures": failures}
+
+
+@app.task
+def delete_eks_cluster(challenge):
+    """
+    Called when Challenge is approved by the EvalAI admin
+    calls the delete_eks_nodegroup function
+
+    Arguments:
+        sender {type} -- model field called the post hook
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    cluster_name = "{}-{}-cluster".format(
+        challenge_obj.title.replace(" ", "-"), environment_suffix
+    )
+    if challenge_obj.approved_by_admin and challenge_obj.is_docker_based:
+        challenge_aws_keys = get_aws_credentials_for_challenge(
+            challenge_obj.pk
+        )
+        client = get_boto3_client("eks", challenge_aws_keys)
+        try:
+            # Delete nodegroup
+            delete_eks_nodegroup(challenge, cluster_name)
+
+            # Delete mount targets
+            challenge_evaluation_cluster = (
+                ChallengeEvaluationCluster.objects.get(challenge=challenge_obj)
+            )
+            efs_client = get_boto3_client("efs", challenge_aws_keys)
+            for mount_target_id in challenge_evaluation_cluster.efs_mount_target_ids:
+                efs_client.delete_mount_target(MountTargetId=mount_target_id)
+
+            # Delete cluster
+            return client.delete_cluster(name=cluster_name)
+        except ClientError as e:
+            logger.exception(e)
+            return
+
+
+@app.task
+def delete_eks_nodegroup(challenge, cluster_name):
+    """
+    Deletes a nodegroup when a EKS cluster is created by the EvalAI admin
+    Arguments:
+        instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+        cluster_name {str} -- name of eks cluster
+    """
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    environment_suffix = "{}-{}".format(challenge_obj.pk, settings.ENVIRONMENT)
+    nodegroup_name = "{}-{}-nodegroup".format(
+        challenge_obj.title.replace(" ", "-")[:20], environment_suffix
+    )
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    client = get_boto3_client("eks", challenge_aws_keys)
+    try:
+        delete_service_by_challenge_pk(challenge)
+
+        response = client.delete_nodegroup(
+            clusterName=cluster_name,
+            nodegroupName=nodegroup_name,
+        )
+    except ClientError as e:
+        logger.exception(e)
+        return
+    waiter = client.get_waiter("nodegroup_deleted")
+    waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
+    logger.info("Nodegroup deleted: {}".format(response))
+    return response
+
+
+@app.task
 def setup_eks_cluster(challenge):
     """
     Creates EKS and NodeGroup ARN roles
