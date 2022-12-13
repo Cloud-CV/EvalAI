@@ -68,7 +68,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         )
 
     def is_code_upload_environment_log_visible(self, context):
-        if not context:
+        if not context or not self.is_valid():
             return False
         curr_user = context.get("request").user
         challenge_phase = self.data["challenge_phase"]
