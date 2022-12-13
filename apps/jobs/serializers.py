@@ -31,8 +31,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
-        if self.is_code_upload_environment_log_visible(context):
+        if not self.is_code_upload_environment_log_visible(context):
             self.fields.pop("code_upload_environment_log_file")
+            return
 
     class Meta:
         model = Submission
