@@ -14,7 +14,7 @@ from http import HTTPStatus
 
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
-    construct_and_send_eks_cluster_creation_mail,
+    construct_and_send_eks_cluster_creation_mail
 )
 from .task_definitions import (
     container_definition_code_upload_worker,
@@ -913,6 +913,8 @@ def delete_only_challenge_evaluation_cluster(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """
+    from .models import ChallengeEvaluationCluster
+
     if settings.DEBUG:
         failures = []
         for challenge in queryset:
