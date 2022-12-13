@@ -11,7 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
-    delete_challenge_evaluation_cluster,
+    delete_challenge_evaluation_cluster, delete_only_challenge_evaluation_cluster,
 )
 
 from .admin_filters import ChallengeFilter
@@ -84,7 +84,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
-        "delete_selected_challenge_evaluation_clusters"
+        "delete_selected_challenge_evaluation_clusters",
+        "delete_only_selected_challenge_evaluation_clusters"
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -236,7 +237,31 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                 messages.error(request, display_message)
 
     delete_selected_challenge_evaluation_clusters.description = (
-        "Delete all selected challenges' evaluation clusters."
+        "Delete all selected challenges' evaluation clusters, subnets, roles, etc..."
+    )
+
+    def delete_only_selected_challenge_evaluation_clusters(self, request, queryset):
+        """Deletes the selected challenge evaluation clusters only; roles, subnets, etc... not deleted"""
+        response = delete_only_challenge_evaluation_cluster(queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count == queryset.count():
+            message = "All selected challenges' evaluation clusters successfully deleted."
+            messages.success(request, message)
+        else:
+            messages.success(
+                request,
+                "{} challenges' evaluation clusters were successfully deleted.".format(count),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+
+    delete_only_selected_challenge_evaluation_clusters.description = (
+        "Delete only all selected challenges' evaluation clusters."
     )
 
 

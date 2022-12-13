@@ -935,8 +935,8 @@ def delete_challenge_evaluation_cluster(queryset):
                 {"message": response, "challenge_pk": challenge.pk}
             )
             continue
-        response = deconstruct_eks_cluster(challenge=challenge)
-        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+        response = delete_eks_cluster_and_roles(challenge=challenge)
+        if not response or response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
             failures.append(
                 {
                     "message": response["Error"],
@@ -949,7 +949,7 @@ def delete_challenge_evaluation_cluster(queryset):
 
 
 @app.task
-def deconstruct_eks_cluster(challenge):
+def delete_eks_cluster_and_roles(challenge):
     """
     Deletes EKS and NodeGroup ARN roles
 
@@ -1104,6 +1104,55 @@ def delete_eks_cluster_subnets(challenge):
 
 
 @app.task
+def delete_only_challenge_evaluation_cluster(queryset):
+    """
+    The function called by the admin action method to delete all the challenge evaluation clusters used by the
+    selected challenges. This does not delete the roles, subnets, route tables, security groups, etc... associated with
+    these clusters.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully stopped.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Challenge evaluation clusters cannot be deleted in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        try:
+            ChallengeEvaluationCluster.objects.get(challenge=challenge)
+        except ChallengeEvaluationCluster.DoesNotExist:
+            response = "Please select challenges with active evaluation clusters only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+            continue
+        response = delete_eks_cluster(challenge=challenge)
+        if not response or response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            failures.append(
+                {
+                    "message": response["Error"],
+                    "challenge_pk": challenge.pk,
+                }
+            )
+            continue
+        count += 1
+    return {"count": count, "failures": failures}
+
+
+@app.task
 def delete_eks_cluster(challenge):
     """
     Called when Challenge is approved by the EvalAI admin
@@ -1140,7 +1189,7 @@ def delete_eks_cluster(challenge):
                 efs_client.delete_mount_target(MountTargetId=mount_target_id)
 
             # Delete cluster
-            client.delete_cluster(name=cluster_name)
+            return client.delete_cluster(name=cluster_name)
         except ClientError as e:
             logger.exception(e)
             return
@@ -1177,6 +1226,7 @@ def delete_eks_nodegroup(challenge, cluster_name):
     waiter = client.get_waiter("nodegroup_deleted")
     waiter.wait(clusterName=cluster_name, nodegroupName=nodegroup_name)
     logger.info("Nodegroup deleted: {}".format(response))
+    return response
 
 
 @app.task
