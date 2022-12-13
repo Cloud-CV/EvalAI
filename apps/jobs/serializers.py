@@ -72,7 +72,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         if not context or not self.is_valid():
             return False
         curr_user = context.get("request").user
-        challenge_phase = self.data["challenge_phase"]
+        challenge_phase = self.validated_data["challenge_phase"]
         challenge_host_team = ChallengePhase.objects.get(pk=challenge_phase).challenge.creator
         challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
             "user__pk", flat=True
