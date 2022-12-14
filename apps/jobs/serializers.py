@@ -31,10 +31,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
-        if not self.is_code_upload_environment_log_visible(context, kwargs.get("data")):
-            self.fields.pop("code_upload_environment_log_file")
-            return
-
     class Meta:
         model = Submission
         fields = (
@@ -68,23 +64,16 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_verified_by_host",
         )
 
-    def is_code_upload_environment_log_visible(self, context, data):
-        if not context:
-            return False
-        curr_user = context.get("request").user
-        if data:
-            if not self.is_valid():
-                return False
-            challenge_phase = self.validated_data["challenge_phase"]
-        elif self.instance:
-            challenge_phase = self.instance.challenge_phase
-        else:
-            return False
-        challenge_host_team = challenge_phase.challenge.creator
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        curr_user = self.context.get("request").user
+        challenge_host_team = ChallengePhase.objects.get(pk=ret["challenge_phase"]).challenge.creator
         challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
             "user__pk", flat=True
         )
-        return curr_user.pk in challenge_hosts_pk
+        if curr_user.pk in challenge_hosts_pk:
+            ret.pop("code_upload_environment_log_file", None)
+        return ret
 
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
