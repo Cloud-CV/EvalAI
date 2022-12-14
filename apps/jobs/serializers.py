@@ -31,7 +31,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
-        if not self.is_code_upload_environment_log_visible(context, **kwargs):
+        if not self.is_code_upload_environment_log_visible(context, kwargs.get("data")):
             self.fields.pop("code_upload_environment_log_file")
             return
 
@@ -68,11 +68,11 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_verified_by_host",
         )
 
-    def is_code_upload_environment_log_visible(self, context, **kwargs):
+    def is_code_upload_environment_log_visible(self, context, data):
         if not context:
             return False
         curr_user = context.get("request").user
-        if "data" in kwargs:
+        if data:
             if not self.is_valid():
                 return False
             challenge_phase = self.validated_data["challenge_phase"]
