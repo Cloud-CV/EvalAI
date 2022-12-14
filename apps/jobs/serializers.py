@@ -71,7 +71,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
             "user__pk", flat=True
         )
-        if curr_user.pk in challenge_hosts_pk:
+        if curr_user.pk not in challenge_hosts_pk:
             ret.pop("code_upload_environment_log_file", None)
         return ret
 
