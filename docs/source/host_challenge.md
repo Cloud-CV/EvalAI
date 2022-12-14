@@ -180,12 +180,13 @@ This will ensure that the challenge worker is aware that the evaluation is to be
 
 Now, go to [EvalAI](https://eval.ai) to fetch the following details -
 
-1. `auth_token` - Go to [profile page](https://eval.ai/web/profile) after logging in and click on `Get your Auth Token` to copy your auth token.
+1. `auth_token` - Login -> Go to [profile page](https://eval.ai/web/profile) -> Click on `Get your Auth Token` -> Click on the Copy button. The auth token will get copied to your clipboard.
 2. `evalai_api_server` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server
 
-<img src="_static/img/github_based_setup/evalai_profile.png"><br />
+<img src="_static/img/github_based_setup/evalai_profile_get_auth_token.png"><br />
+<img src="_static/img/github_based_setup/evalai_profile_copy_auth_token.png"><br />
 
-Once the challenge is up on the server, you can go to Manage Tab and fetch the following:
+After you are done with Step 4 from [here](#step-4-setup-automated-update-push), the challenge should be up on EvalAI. Then, you can go to `Manage Tab` and fetch the following:
 
 3. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
 4. `challenge_pk`: The primary key for the challenge.
