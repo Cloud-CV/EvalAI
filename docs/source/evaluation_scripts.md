@@ -117,7 +117,7 @@ There are a few things that you need to configure:
 
 There are two possible cases when you run your evaluation:
 
-1. Evaluation is successful: When this happens, use the `update_finished` class method to pass in the metrics and set the status to `finished` for this submission.
+1. **Evaluation is successful**: When this happens, use the `update_finished` class method to pass in the metrics and set the status to `finished` for this submission.
 
     The `result` should be structed in the same way as regular evaluation as shown in the previous section.
 
@@ -134,7 +134,7 @@ There are two possible cases when you run your evaluation:
     )
     ```
 
-2. Evaluation fails: There might be cases where there are errors in the evaluation. In this case it is important to show the error to the participants and update the submission status to `failed`. This can be done using the `update_failed` method.
+2. **Evaluation fails**: There might be cases where there are errors in the evaluation. In this case it is important to show the error to the participants and update the submission status to `failed`. This can be done using the `update_failed` method.
 
     The syntax is shown below:
 

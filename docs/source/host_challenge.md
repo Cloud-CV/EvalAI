@@ -188,16 +188,18 @@ Now, go to [EvalAI](https://eval.ai) to fetch the following details -
 
 After you are done with Step 4 from [here](#step-4-setup-automated-update-push), the challenge should be up on EvalAI. Then, you can go to `Manage Tab` and fetch the following:
 
-3. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
-4. `challenge_pk`: The primary key for the challenge.
+1. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
+2. `challenge_pk`: The primary key for the challenge.
 
-<img src="_static/img/remote_evlaluation_meta.png"><br />
+<img src="_static/img/remote_evaluation_meta.png"><br />
 
 ### Step 3: Edit remote evaluation script
 
-Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py). 
+Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
 
-Please refer to [Writing a remote evaluation script](evaluation_scripts.html) for more details on this.
+Update the details you have fetched in the previous step in the class variables.
+
+Please refer to [Writing a remote evaluation script](evaluation_scripts.html#writing-a-remote-evaluation-script) for more details.
 
 ### Step 4: Configure your instance to run the evaluation script
 
