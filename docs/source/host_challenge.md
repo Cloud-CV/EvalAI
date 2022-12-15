@@ -195,58 +195,9 @@ After you are done with Step 4 from [here](#step-4-setup-automated-update-push),
 
 ### Step 3: Edit remote evaluation script
 
-Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
+Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py). 
 
-This script is expected the submissions from our queues and updates the status of the submission in our database accordingly. When the submission is finished, 
-
-1. Add the details fetched in the previous step in [these lines](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/remote_challenge_evaluation/evaluation_script_starter.py#L148-L151) inside `__main__`.
-
-2. Modify the evaluation script, especially [these lines](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/remote_challenge_evaluation/evaluation_script_starter.py#L176-L183):
-
-   ```python
-   elif submission.get("status") == "running":
-         # This section is meant to handle what is to be done when the status is running.
-         # If the evaluation is still running, you could check for the current status, whether it passed, or failed, or is still running.
-
-         # To update the EvalAI submission status:
-         # Update EvalAI after calculating final set of metrics and set submission status as "FINISHED"
-         # submission_data = {
-         #   "challenge_phase": "<phase_pk>",
-         #   "submission": "<submission_pk>",
-         #   "stdout": "",
-         #   "stderr": "",
-         #   "submission_status": "FINISHED",
-         #   "result": '[{"split": "<split-name>", "show_to_participant": true,"accuracies": {"Metric1": 80,"Metric2": 60,"Metric3": 60,"Total": 10}}]',
-         #   "metadata": "",
-         # }
-         # update_data = evalai.update_submission_data(submission_data)
-
-         # OR
-
-         # Update EvalAI in case of errors and set submission status as "FAILED"
-         # submission_data = {
-         #     "challenge_phase": "<phase_pk>",
-         #     "submission": "<submission_pk>",
-         #     "stdout": "",
-         #     "stderr": "<ERROR FROM SUBMISSION>",
-         #     "submission_status": "FAILED",
-         #     "metadata": "",
-         # }
-         # update_data = evalai.update_submission_data(submission_data)
-         pass
-
-
-   else:
-         # This section is meant to handle the "submitted" status. When the submission is submitted, you want to download the code and change the status to running when the submission is running.
-         
-         # Write code to download the input file from the submission from the submission.input_file.url
-         
-         # Run the submission with the input file using your own code and data.
-         # Update EvalAI right after sending the submission into "RUNNING" state.
-
-         # status_data = {"submission": "", "job_name": "", "submission_status": "RUNNING"}
-         # update_status = evalai.update_submission_status(status_data)         
-         pass
+Please refer to [Writing a remote evaluation script](evaluation_scripts.html) for more details on this.
 
 ### Step 4: Configure your instance to run the evaluation script
 
