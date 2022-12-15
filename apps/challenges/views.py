@@ -3648,9 +3648,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         data["submission_meta_attributes"] = None
 
                     # Override the default_submission_meta_attributes when they are missing
-                    submission_meta_attributes = data.get("submission_meta_attributes")
-                    if submission_meta_attributes is None:
-                        data["submission_meta_attributes"] = None
+                    default_submission_meta_attributes = data.get("default_submission_meta_attributes")
+                    if default_submission_meta_attributes is None:
+                        data["default_submission_meta_attributes"] = None
 
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]
