@@ -294,7 +294,8 @@ md-select .md-select-value span:first-child:after {
 }
 
 .scale-worker-column {
-    padding: 10px;
+    flex: 1 0 auto;
+    padding-right: 10px;
 }
 
 .text-entry-wrapper {
@@ -307,15 +308,32 @@ md-select .md-select-value span:first-child:after {
 }
 
 .text-entry-columns {
-    flex: 1;
-    display: flex;
+    display: inline-block;
 }
 
 .submit-column {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
     float: right;
+    position: relative;
 }
 
-.multiple-columns {
+.multiple-columns, .dropdown-menu {
     display: flex;
+    margin: 0 auto;
+}
+
+.scale-worker-button {
+    flex: 1 0 auto;
+}
+
+.scale-worker-button-div {
+    top: 50%;
+    position: absolute;
+    transform: translateY(-50%);
+    width: max-content;
+    display: inline-flex;
+}
+
+.worker-actions-row {
+    margin-bottom: 10px;
 }
