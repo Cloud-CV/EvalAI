@@ -13,10 +13,34 @@
         
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Submission worker actions</h5>
+                <h5 class="w-300">Manage worker</h5>
             </div>
         </div>
-        <div class="row margin-bottom-cancel">
+        <div class="row">
+            <div class="col xs12 s6">
+                <span>
+                    <form ng-submit="challenge.setWorkerResources()" class="multiple-columns">
+                        <div class="scale-worker-column text-entry-columns">
+                            <md-select ng-model="challenge.selectedWorkerResources" class="dropdown-menu rm-margin" >
+                                <md-option ng-value="option" ng-repeat="option in challenge.workerResourceOptions">
+                                    <span class="fs-16 w-300">
+                                        {{ option[0] + " vCPU (" + option[0]/1024 + " CPU), " + option[1] + " MiB RAM" }}
+                                    </span>
+                                </md-option>
+                            </md-select>
+                        </div>
+                        <div class="submit-column">
+                            <div class="col s12 m6 l6 align-left scale-worker-button-div">
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 scale-worker-button" type="submit"
+                                    value="Submit"><i class="fa fa-arrow-up"></i> Scale worker</button>
+                            </div>
+                        </div>
+                    </form>
+                </span>
+            </div>
+        </div>
+
+        <div class="row worker-actions-row">
             <div class="col s12">
                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('start');"><i class="fa fa-play"></i> Start worker</button>
                 <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.manageWorker('stop');"><i class="fa fa-stop"></i> Stop worker</button>
@@ -25,7 +49,7 @@
         </div>
         <div class="row margin-bottom-cancel">
             <div class="col s12">
-                <h5 class="w-300">Submission worker logs</h5>
+                <h5 class="w-300">Worker logs</h5>
             </div>
         </div>
         <div class="ev-logs-card">
