@@ -899,8 +899,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
-@app.task
-def delete_only_challenge_evaluation_cluster(queryset):
+def delete_code_upload_challenge_resources(queryset):
     """
     The function called by the admin action method to delete all the challenge evaluation clusters used by the
     selected challenges. This does not delete the roles, subnets, route tables, security groups, etc... associated with
@@ -937,7 +936,7 @@ def delete_only_challenge_evaluation_cluster(queryset):
                 {"message": response, "challenge_pk": challenge.pk}
             )
             continue
-        response = delete_eks_cluster(challenge=challenge)
+        response = delete_eks_cluster.delay(challenge)
         if not response or response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
             failures.append(
                 {
@@ -976,7 +975,7 @@ def delete_eks_cluster(challenge):
         client = get_boto3_client("eks", challenge_aws_keys)
         try:
             # Delete nodegroup
-            delete_eks_nodegroup(challenge, cluster_name)
+            delete_eks_nodegroup.delay(challenge, cluster_name)
 
             # Delete mount targets
             challenge_evaluation_cluster = (
