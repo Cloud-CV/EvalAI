@@ -11,7 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
-    delete_only_challenge_evaluation_cluster,
+    delete_code_upload_challenge_resources,
 )
 
 from .admin_filters import ChallengeFilter
@@ -215,9 +215,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete all selected challenge workers."
     )
 
-    def delete_only_selected_challenge_evaluation_clusters(self, request, queryset):
+    def delete_challenge_evaluation_clusters(self, request, queryset):
         """Deletes the selected challenge evaluation clusters only; roles, subnets, etc... not deleted"""
-        response = delete_only_challenge_evaluation_cluster(queryset)
+        response = delete_code_upload_challenge_resources(queryset)
         count, failures = response["count"], response["failures"]
 
         if count == queryset.count():
@@ -235,8 +235,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                 )
                 messages.error(request, display_message)
 
-    delete_only_selected_challenge_evaluation_clusters.description = (
-        "Delete only all selected challenges' evaluation clusters."
+    delete_challenge_evaluation_clusters.description = (
+        "Delete all selected challenges' evaluation clusters."
     )
 
 
