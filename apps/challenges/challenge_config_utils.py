@@ -438,9 +438,9 @@ def validate_challenge_config_util(
         error_messages.append(message)
 
     # Deletion Case:
-    for e_leaderboard_id in current_leaderboard_config_ids:
-        if e_leaderboard_id not in leaderboard_ids:
-            error_messages.append("ERROR: Leaderboard {} not found in config. Deletion of existing leaderboard after challenge creation is not allowed.".format(e_leaderboard_id))
+    for current_leaderboard_id in current_leaderboard_config_ids:
+        if current_leaderboard_id not in leaderboard_ids:
+            error_messages.append("ERROR: Leaderboard {} not found in config. Deletion of existing leaderboard after challenge creation is not allowed.".format(current_leaderboard_id))
 
     # Check for challenge phases
     challenge_phases_data = yaml_file_data.get("challenge_phases")
@@ -579,7 +579,7 @@ def validate_challenge_config_util(
     # Deletion Case:
     for current_challenge_phase_id in current_phase_config_ids:
         if current_challenge_phase_id not in phase_ids:
-            error_messages.append("ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.".format(e_challenge_phase_id))
+            error_messages.append("ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.".format(current_challenge_phase_id))
 
     # Check for dataset splits
     dataset_splits = yaml_file_data.get("dataset_splits")
@@ -619,9 +619,9 @@ def validate_challenge_config_util(
         error_messages.append(message)
 
     # Deletion Case:
-    for e_dataset_split_config_id in current_dataset_config_ids:
-        if e_dataset_split_config_id not in dataset_splits_ids:
-            error_messages.append("ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.".format(e_dataset_split_config_id))
+    for current_dataset_split_config_id in current_dataset_config_ids:
+        if current_dataset_split_config_id not in dataset_splits_ids:
+            error_messages.append("ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.".format(current_dataset_split_config_id))
 
     # Check for challenge phase splits
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
