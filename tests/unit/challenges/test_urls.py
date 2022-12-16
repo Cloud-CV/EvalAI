@@ -196,7 +196,7 @@ class TestChallengeUrls(BaseAPITestClass):
                 "challenge_published": "PUBLIC",
             }
         )
-        self.assertEqual(url, "/api/challenges/challenge/time/PAST/approved/APPROVED/published/PUBLIC")
+        self.assertEqual(url, "/api/challenges/challenge/time/PAST/approved/APPROVED/visibility/PUBLIC")
 
         self.url = reverse_lazy(
             "challenges:download_all_submissions",
