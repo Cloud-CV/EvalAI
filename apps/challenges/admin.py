@@ -217,7 +217,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete all selected challenge workers."
     )
 
-    def delete_selected_challenge_evaluation_clusters_and_roles(self, request, queryset):
+    def delete_challenge_evaluation_clusters(self, request, queryset):
         """Deletes the selected challenge evaluation clusters"""
         response = delete_challenge_evaluation_cluster_and_roles(queryset)
         count, failures = response["count"], response["failures"]
@@ -237,32 +237,8 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                 )
                 messages.error(request, display_message)
 
-    delete_selected_challenge_evaluation_clusters_and_roles.description = (
-        "Delete all selected challenges' evaluation clusters, subnets, roles, etc..."
-    )
-
-    def delete_only_selected_challenge_evaluation_clusters(self, request, queryset):
-        """Deletes the selected challenge evaluation clusters only; roles, subnets, etc... not deleted"""
-        response = delete_only_challenge_evaluation_cluster(queryset)
-        count, failures = response["count"], response["failures"]
-
-        if count == queryset.count():
-            message = "All selected challenges' evaluation clusters successfully deleted."
-            messages.success(request, message)
-        else:
-            messages.success(
-                request,
-                "{} challenges' evaluation clusters were successfully deleted.".format(count),
-            )
-            for fail in failures:
-                challenge_pk, message = fail["challenge_pk"], fail["message"]
-                display_message = "Challenge {}: {}".format(
-                    challenge_pk, message
-                )
-                messages.error(request, display_message)
-
-    delete_only_selected_challenge_evaluation_clusters.description = (
-        "Delete only all selected challenges' evaluation clusters."
+    delete_challenge_evaluation_clusters.description = (
+        "Delete all selected challenges' evaluation clusters."
     )
 
 
