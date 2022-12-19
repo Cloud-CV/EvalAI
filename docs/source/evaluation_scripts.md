@@ -110,7 +110,7 @@ Here are the steps to configure remote evaluation:
     The syntax of evaluate function for a remote challenge is:
 
     ```python
-    def evaluate(user_submission_file, phase_codename, challenge_pk, phase_pk, submission_pk, test_annotation_file = None, **kwargs)
+    def evaluate(user_submission_file, phase_codename, test_annotation_file = None, **kwargs)
         pass
     ```
 
@@ -119,12 +119,6 @@ Here are the steps to configure remote evaluation:
     - `user_annotation_file`: It represents the local path of the file submitted by the user for a particular challenge phase.
 
     - `phase_codename`: It is the `codename` of the challenge phase from the [challenge configuration yaml](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml). This is passed as an argument so that the script can take actions according to the challenge phase.
-
-    - `challenge_pk`: The ID of the challenge, passed by default to this method in `main.py`.
-
-    - `phase_pk`: The ID of the challenge phase, passed by default to this method in `main.py`.
-
-    - `submission_pk`: The ID of the challenge, passed by default to this method in `main.py`.
 
     - `test_annotation_file`: It represents the local path to the annotation file for the challenge. This is the file uploaded by the Challenge host while creating a challenge.
 
