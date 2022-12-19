@@ -197,7 +197,7 @@ Please refer to [writing Remote Evaluation Script section](evaluation_scripts.ht
 
    ```sh
    cd EvalAI-Starts/remote_challenge_evaluation
-   python evaluation_script_starter.py
+   python main.py
    ```
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
