@@ -429,7 +429,6 @@ def validate_challenge_config_util(
                     )
                     error_messages.append(message)
                 else:
-                    # Addition
                     if current_leaderboard_config_ids and int(data["id"]) not in current_leaderboard_config_ids:
                         error_messages.append("ERROR: Leaderboard {} doesn't exist. Addition of new leaderboard after challenge creation is not allowed.".format(data["id"]))
                     leaderboard_ids.append(data["id"])
@@ -437,7 +436,6 @@ def validate_challenge_config_util(
         message = "ERROR: There is no key leaderboard in the YAML file."
         error_messages.append(message)
 
-    # Deletion Case:
     for current_leaderboard_id in current_leaderboard_config_ids:
         if current_leaderboard_id not in leaderboard_ids:
             error_messages.append("ERROR: Leaderboard {} not found in config. Deletion of existing leaderboard after challenge creation is not allowed.".format(current_leaderboard_id))
@@ -571,12 +569,10 @@ def validate_challenge_config_util(
             )
             error_messages.append(message)
         else:
-            # Addition
             if current_phase_config_ids and int(data["id"]) not in current_phase_config_ids:
                 error_messages.append("ERROR: Challenge phase {} doesn't exist. Addition of new challenge phase after challenge creation is not allowed.".format(data["id"]))
             phase_ids.append(data["id"])
 
-    # Deletion Case:
     for current_challenge_phase_id in current_phase_config_ids:
         if current_challenge_phase_id not in phase_ids:
             error_messages.append("ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.".format(current_challenge_phase_id))
@@ -610,7 +606,6 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             else:
-                # Addition
                 if current_dataset_config_ids and int(split["id"]) not in current_dataset_config_ids:
                     error_messages.append("ERROR: Dataset split {} doesn't exist. Addition of new dataset split after challenge creation is not allowed.".format(split["id"]))
                 dataset_splits_ids.append(split["id"])
@@ -618,14 +613,13 @@ def validate_challenge_config_util(
         message = "ERROR: There is no key for dataset splits."
         error_messages.append(message)
 
-    # Deletion Case:
     for current_dataset_split_config_id in current_dataset_config_ids:
         if current_dataset_split_config_id not in dataset_splits_ids:
             error_messages.append("ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.".format(current_dataset_split_config_id))
 
     # Check for challenge phase splits
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
-    challenge_phase_split_id_triples = []
+    challenge_phase_split_uuids = []
     if challenge_phase_splits:
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
@@ -633,7 +627,7 @@ def validate_challenge_config_util(
             if current_phase_split_ids and (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in current_phase_split_ids:
                 error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
             else:
-                challenge_phase_split_id_triples.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
+                challenge_phase_split_uuids.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
 
             is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
                 phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
@@ -651,9 +645,9 @@ def validate_challenge_config_util(
                 error_messages.append(message)
             phase_split += 1
 
-        for triple in current_phase_split_ids:
-            if triple not in challenge_phase_split_id_triples:
-                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(triple[0], triple[1], triple[2]))
+        for uuid in current_phase_split_ids:
+            if uuid not in challenge_phase_split_uuids:
+                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(uuid[0], uuid[1], uuid[2]))
     else:
         message = "ERROR: There is no key for challenge phase splits."
         error_messages.append(message)
