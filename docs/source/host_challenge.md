@@ -162,50 +162,43 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
-## Host a challenge with remote evalution
+## Host a remote evaluation challenge
 
-The steps related to challenge creation will be similar to the steps mentioned above for different types of challenges. This section specifically deals with the bits and pieces required to set up remote challenge evaluation on your own instances.
+### Step 1: Set up the challenge
 
-### Step 1: Modify challenge configuration
+Follow [host challenge using github section](host_challenge.html#host-challenge-using-github) to set up a challenge on EvalAI.
 
-Set the `remote_evaluation` parameter to `True` in [`challenge_config.yaml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/challenge_config.yaml#L12). The `challenge_config.yaml` file defines all the different settings of a challenge and you can edit other things based on your requirement.
+### Step 2: Edit challenge configuration
 
-Make sure that following fields are set correctly:
+Set the `remote_evaluation` parameter to `True` in [`challenge_config.yaml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/621f0cb37b2f1951613c9b6c967ce35be55d34c8/challenge_config.yaml#L12). This challenge config file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc.
 
-- `remote_evaluation` is set to `True`
+Edit this file based on your requirement. For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
 
-This will ensure that the challenge worker is aware that the evaluation is to be performed remotely.
+Please ensure the following fields are set to the following values:
 
-### Step 2: Fetch details for the challenge
-
-Now, go to [EvalAI](https://eval.ai) to fetch the following details -
-
-1. `auth_token` - Login -> Go to [profile page](https://eval.ai/web/profile) -> Click on `Get your Auth Token` -> Click on the Copy button. The auth token will get copied to your clipboard.
-2. `evalai_api_server` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server
-
-<img src="_static/img/github_based_setup/evalai_profile_get_auth_token.png"><br />
-<img src="_static/img/github_based_setup/evalai_profile_copy_auth_token.png"><br />
-
-After you are done with Step 4 from [here](#step-4-setup-automated-update-push), the challenge should be up on EvalAI. Then, you can go to `Manage Tab` and fetch the following:
-
-1. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
-2. `challenge_pk`: The primary key for the challenge.
-
-<img src="_static/img/remote_evaluation_meta.png"><br />
+- `remote_evaluation : True`
 
 ### Step 3: Edit remote evaluation script
 
-Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases. The evaluation script template is different for the remote evaluation and can be found here: [Remote Challenge Evaluation Script](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
+Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
+Please refer to [writing Remote Evaluation Script section](evaluation_scripts.html#writing-a-remote-evaluation-script) to complete this step.
 
-Update the details you have fetched in the previous step in the class variables.
+### Step 4: Set up remote evaluation worker
 
-Please refer to [Writing a remote evaluation script](evaluation_scripts.html#writing-a-remote-evaluation-script) for more details.
+1. Create conda or virtualenv to run evaluation script. Refer this [conda's create environment section](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) to setup a virtual environment.
+2. Install the worker requirements from the `EvalAI-Starters/remote_challenge_evaluation` present [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/requirements.txt):
 
-### Step 4: Configure your instance to run the evaluation script
+   ```sh
+   cd EvalAI-Starters/
+   pip install remote_challenge_evaluation/requirements
+   ```
 
-1. Create a python or conda virtual environment.
-2. Install the worker requirements from the `EvalAI-Starters/remote_challenge_evaluation` present [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/requirements.txt).
-3. Run the worker using `python -m evaluation_script_starter`.
+3. Start evaluation worker:
+
+   ```sh
+   cd EvalAI-Starts/remote_challenge_evaluation
+   python evaluation_script_starter.py
+   ```
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 

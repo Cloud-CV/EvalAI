@@ -83,15 +83,34 @@ Let's break down what is happening in the above code snippet.
 2. Each entry in the list should be a dict that has a key with the corresponding dataset split codename (`train_split` and `test_split` for this example).
 3. Each of these dataset split dict contains various keys (`Metric1`, `Metric2`, `Metric3`, `Total` in this example), which are then displayed as columns in the leaderboard.
 
-### Writing a remote evaluation script
+### Writing Remote Evaluation script
 
-Just like a regular evaluation script, a remote evaluation script allows you to customize evaluation for your remote challenge. The starter template for remote challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
+Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts is fixed due to architectural reasons.
 
-There are a few things that you need to configure:
+The starter template for remote challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
 
-1. **Set variables in the `__init__` method**: There are few variables that you need to set according to your challenge. The `auth_token` is fetched from the profile and `evalai_api_server` is set according to the server. The `challenge_pk` and `queue_name` can be fetched from the `Manage` tab of your challenge once it is up on  the server.
+Here are the steps to configure remote evaluation:
 
-    Changing the `save_dir` is optional and up to your preference.
+1. **Fetch details for the challenge**:
+
+    Go to [EvalAI](https://eval.ai) to fetch the following details -
+
+    1. `auth_token` - Login -> Go to [profile page](https://eval.ai/web/profile) -> Click on `Get your Auth Token` -> Click on the Copy button. The auth token will get copied to your clipboard.
+    2. `evalai_api_server` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server
+
+        <img src="_static/img/github_based_setup/evalai_profile_get_auth_token.png"><br />
+        <img src="_static/img/github_based_setup/evalai_profile_copy_auth_token.png"><br />
+
+        After you are done with Step 4 from [here](#step-4-setup-automated-update-push), the challenge should be up on EvalAI.
+
+    Then, you can go to `Manage Tab` and fetch the following:
+
+    1. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
+    2. `challenge_pk`: The primary key for the challenge.
+
+    <img src="_static/img/remote_evaluation_meta.png"><br />
+
+2. **Set config variables in the `__init__` method**: Please set the `auth_token`, `evalai_api_server`, `challenge_pk` and `queue_name` which you fetched in the previous step inside the `__init__` method. Changing the `save_dir` is optional.
 
     ```python
     self.auth_token = ""  # Go to EvalAI UI to fetch your auth token
@@ -102,18 +121,35 @@ There are a few things that you need to configure:
     self.save_dir = "./" # Location where submissions are downloaded
     ```
 
-2. **Edit the `evaluate` method**: Like a regular evaluation, the `evaluate` method in `RemoteEvaluationUtil` is similar. It includes the three arguments - `user_annotation_file`, `phase_codename`, `test_annotation_file`.
+3. **Write `evaluate` method**:
+    Evaluation scripts are required to have an `evaluate()` function. This is the main function, which is used by workers to evaluate the submission messages.
 
-    Apart from that, we also pass `challenge_pk`, `phase_pk`, `submission_pk`, which only need to be used when updating the submission status on EvalAI.
-
-    The syntax of evaluate function is:
+    The syntax of evaluate function for a remote challenge is:
 
     ```python
     def evaluate(test_annotation_file, challenge_pk, phase_pk, submission_pk, user_submission_file=None, phase_codename=None, **kwargs):
         pass
     ```
 
-    Pass the `test_annotation_file` as default argument or choose to pass separately in the `main.py` depending on the case. The `phase_codename` is passed automatically but is left as as argument for customization.
+    It receives three arguments, namely:
+
+    - `test_annotation_file`: It represents the local path to the annotation file for the challenge. This is the file uploaded by the Challenge host while creating a challenge.
+
+    - `challenge_pk`: The ID of the challenge, passed by default to this method in `main.py`.
+
+    - `phase_pk`: The ID of the challenge phase, passed by default to this method in `main.py`.
+
+    - `submission_pk`: The ID of the challenge, passed by default to this method in `main.py`.
+
+    - `user_annotation_file`: It represents the local path of the file submitted by the user for a particular challenge phase.
+
+    - `phase_codename`: It is the `codename` of the challenge phase from the [challenge configuration yaml](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml). This is passed as an argument so that the script can take actions according to the challenge phase.
+
+    You may pass the `test_annotation_file` as default argument or choose to pass separately in the `main.py` depending on the case. The `phase_codename` is passed automatically but is left as an argument to allow customization.
+
+    After reading the files, some custom actions can be performed. This varies per challenge.
+
+    The `evaluate()` method also accepts keyword arguments.
 
 There are two possible cases when you run your evaluation:
 
