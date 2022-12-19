@@ -32,7 +32,7 @@
         } else {
             parameters.token = null;
         }
-        parameters.url = 'challenges/challenge/time/present/approved/approved/published/public';
+        parameters.url = 'challenges/challenge/present';
 
         parameters.callback = {
             onSuccess: function(response) {

@@ -524,9 +524,9 @@ def disable_challenge(request, challenge_pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([AnonRateThrottle])
-def get_all_challenges(request, challenge_time, challenge_approved, challenge_published):
+def get_all_challenges(request, challenge_time):
     """
     Returns the list of all challenges
     """
@@ -534,6 +534,14 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     if challenge_time.lower() not in ("all", "future", "past", "present"):
         response_data = {"error": "Wrong url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if request.method == "GET":
+        challenge_approved = "approved"
+        challenge_published = "public"
+
+    elif request.method == "POST":
+        challenge_approved =  request.data.get("challenge_approved", "approved")
+        challenge_published = request.data.get("challenge_published", "public")
 
     if challenge_approved.lower() not in ("all", "approved", "unapproved"):
         response_data = {"error": "Wrong challenge approval status!"}
