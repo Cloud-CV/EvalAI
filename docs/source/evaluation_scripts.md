@@ -110,13 +110,15 @@ Here are the steps to configure remote evaluation:
     The syntax of evaluate function for a remote challenge is:
 
     ```python
-    def evaluate(test_annotation_file, challenge_pk, phase_pk, submission_pk, user_submission_file=None, phase_codename=None, **kwargs):
+    def evaluate(user_submission_file, phase_codename, challenge_pk, phase_pk, submission_pk, test_annotation_file = None, **kwargs)
         pass
     ```
 
     It receives three arguments, namely:
 
-    - `test_annotation_file`: It represents the local path to the annotation file for the challenge. This is the file uploaded by the Challenge host while creating a challenge.
+    - `user_annotation_file`: It represents the local path of the file submitted by the user for a particular challenge phase.
+
+    - `phase_codename`: It is the `codename` of the challenge phase from the [challenge configuration yaml](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml). This is passed as an argument so that the script can take actions according to the challenge phase.
 
     - `challenge_pk`: The ID of the challenge, passed by default to this method in `main.py`.
 
@@ -124,9 +126,7 @@ Here are the steps to configure remote evaluation:
 
     - `submission_pk`: The ID of the challenge, passed by default to this method in `main.py`.
 
-    - `user_annotation_file`: It represents the local path of the file submitted by the user for a particular challenge phase.
-
-    - `phase_codename`: It is the `codename` of the challenge phase from the [challenge configuration yaml](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml). This is passed as an argument so that the script can take actions according to the challenge phase.
+    - `test_annotation_file`: It represents the local path to the annotation file for the challenge. This is the file uploaded by the Challenge host while creating a challenge.
 
     You may pass the `test_annotation_file` as default argument or choose to pass separately in the `main.py` depending on the case. The `phase_codename` is passed automatically but is left as an argument to allow customization.
 
