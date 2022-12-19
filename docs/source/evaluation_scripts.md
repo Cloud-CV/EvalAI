@@ -91,37 +91,20 @@ The starter template for remote challenge evaluation can be found [here](https:/
 
 Here are the steps to configure remote evaluation:
 
-1. **Fetch details for the challenge**:
+1. **Setup Configs**:
 
-    Go to [EvalAI](https://eval.ai) to fetch the following details -
+    To configure authentication for the challenge set the following environment variables:
 
-    1. `auth_token` - Login -> Go to [profile page](https://eval.ai/web/profile) -> Click on `Get your Auth Token` -> Click on the Copy button. The auth token will get copied to your clipboard.
-    2. `evalai_api_server` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server
-
+    1. AUTH_TOKEN:  Go to [profile page](https://eval.ai/web/profile) -> Click on `Get your Auth Token` -> Click on the Copy button. The auth token will get copied to your clipboard.
+    2. API_SERVER: Use `https://eval.ai` when setting up challenge on production server. Otherwise, use `https://staging.eval.ai`
         <img src="_static/img/github_based_setup/evalai_profile_get_auth_token.png"><br />
         <img src="_static/img/github_based_setup/evalai_profile_copy_auth_token.png"><br />
+    3. QUEUE_NAME: Go to the challenge manage tab to fetch the challenge queue name.
+    4. CHALLENGE_PK: Go to the challenge manage tab to fetch the challenge primary key.
+        <img src="_static/img/remote_evaluation_meta.png"><br />
+    5. SAVE_DIR: (Optional) Path to submission data download location.
 
-        After you are done with Step 4 from [here](#step-4-setup-automated-update-push), the challenge should be up on EvalAI.
-
-    Then, you can go to `Manage Tab` and fetch the following:
-
-    1. `queue_name`: The queue name for the worker which will be used to receive submissions from participants.
-    2. `challenge_pk`: The primary key for the challenge.
-
-    <img src="_static/img/remote_evaluation_meta.png"><br />
-
-2. **Set config variables in the `__init__` method**: Please set the `auth_token`, `evalai_api_server`, `challenge_pk` and `queue_name` which you fetched in the previous step inside the `__init__` method. Changing the `save_dir` is optional.
-
-    ```python
-    self.auth_token = ""  # Go to EvalAI UI to fetch your auth token
-    self.evalai_api_server = ""  # For staging server, use -- https://staging.eval.ai; For production server, use -- https://eval.ai
-    self.queue_name = ""  # Check Manage Tab of challenge for queue name
-    self.challenge_pk = ""  # Check Manage Tab of challenge for challenge PK
-
-    self.save_dir = "./" # Location where submissions are downloaded
-    ```
-
-3. **Write `evaluate` method**:
+2. **Write `evaluate` method**:
     Evaluation scripts are required to have an `evaluate()` function. This is the main function, which is used by workers to evaluate the submission messages.
 
     The syntax of evaluate function for a remote challenge is:
@@ -151,34 +134,4 @@ Here are the steps to configure remote evaluation:
 
     The `evaluate()` method also accepts keyword arguments.
 
-There are two possible cases when you run your evaluation:
-
-1. **Evaluation is successful**: When this happens, use the `update_finished` class method to pass in the metrics and set the status to `finished` for this submission.
-
-    The `result` should be structed in the same way as regular evaluation as shown in the previous section.
-
-    You can also pass optional `metadata` and other files to help participants understand the `stdout` and `stderr` if needed.
-
-    The syntax is as follows:
-
-    ``` python
-    self.update_finished(
-        evalai,
-        phase_pk,
-        submission_pk,
-        result='[{"split": "<split-name>", "show_to_participant": true,"accuracies": {"Metric1": 80,"Metric2": 60,"Metric3": 60,"Total": 10}}]'
-    )
-    ```
-
-2. **Evaluation fails**: There might be cases where there are errors in the evaluation. In this case it is important to show the error to the participants and update the submission status to `failed`. This can be done using the `update_failed` method.
-
-    The syntax is shown below:
-
-    ```python
-    self.update_failed(
-        phase_pk,
-        submission_pk,
-        submission_error,
-        ...
-    )
-    ```
+    If the `evaluate()` method fails due to any reason or there is a problem with the submission, please ensure to raise an `Exception` with an appropriate message.
