@@ -1040,7 +1040,7 @@ def delete_challenge_evaluation_cluster_and_roles(queryset):
                 {"message": response, "challenge_pk": challenge.pk}
             )
             continue
-        response = delete_eks_cluster_and_roles(challenge=challenge)
+        response = delete_challenge_evaluation_cluster(challenge=challenge)
         if not response or response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
             failures.append(
                 {
@@ -1054,9 +1054,9 @@ def delete_challenge_evaluation_cluster_and_roles(queryset):
 
 
 @app.task
-def delete_eks_cluster_and_roles(challenge):
+def delete_challenge_evaluation_cluster(challenge):
     """
-    Deletes EKS and NodeGroup ARN roles
+    Deletes all ECS objects associated with challenge
 
     Arguments:
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
@@ -1074,10 +1074,11 @@ def delete_eks_cluster_and_roles(challenge):
         environment_suffix
     )
     try:
-        # Delete eks cluster
+        # Delete eks nodegroup and cluster
         delete_eks_cluster.delay(challenge)
-        # Delete efs filesystem
-        delete_efs_filesystem.delay(challenge)
+
+        # Delete EFS
+        delete_efs.delay(challenge)
 
         challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
             challenge=challenge_obj
@@ -1117,7 +1118,7 @@ def delete_eks_cluster_and_roles(challenge):
         for subnet in subnet_ids:
             client.delete_subnet(SubnetId=subnet)
 
-        # Route deleted by deletion of route table
+        # Delete route through route table
         client.delete_route_table(RouteTableId=route_table_id)
         client.detach_internet_gateway(InternetGatewayId=internet_gateway_id)
         client.delete_vpc(VpcId=vpc_id)
@@ -1131,9 +1132,9 @@ def delete_eks_cluster_and_roles(challenge):
 
 
 @app.task
-def delete_efs_filesystem(challenge):
+def delete_efs(challenge):
     """
-    Destroys EKS and NodeGroup ARN roles
+    Deletes AWS ECS filesystem associated with challenge
 
     Arguments:
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
@@ -1159,7 +1160,7 @@ def delete_efs_filesystem(challenge):
             FileSystemId=efs_id,
         )
 
-        # Delete security groups
+        # Delete EFS security groups
         client.delete_security_group(
             GroupID=efs_security_group_id,
             GroupName="evalai-code-upload-challenge-efs-{}".format(
@@ -1174,7 +1175,7 @@ def delete_efs_filesystem(challenge):
 @app.task
 def delete_eks_cluster_subnets(challenge):
     """
-    Destroys EKS and NodeGroup ARN roles
+    Deletes EKS cluster subnets
 
     Arguments:
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
@@ -1243,11 +1244,9 @@ def delete_eks_cluster_subnets(challenge):
 @app.task
 def delete_eks_cluster(challenge):
     """
-    Called when Challenge is approved by the EvalAI admin
-    calls the delete_eks_nodegroup function
+    Deletes the challenge's EKS cluster
 
     Arguments:
-        sender {type} -- model field called the post hook
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
     from .models import ChallengeEvaluationCluster
@@ -1286,7 +1285,8 @@ def delete_eks_cluster(challenge):
 @app.task
 def delete_eks_nodegroup(challenge, cluster_name):
     """
-    Deletes a nodegroup when a EKS cluster is created by the EvalAI admin
+    Deletes the challenge's EKS nodegroup
+
     Arguments:
         instance {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
         cluster_name {str} -- name of eks cluster
