@@ -288,8 +288,7 @@
                                         <div class="clearfix"></div>
                                     </li>
                                 </div>
-
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] == true">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="methodName" name="methodName"
                                             ng-model="challenge.methodName">
@@ -297,7 +296,7 @@
                                         <label for="methodName">Method name (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] == true">
                                     <div class="input-field align-left col s10">
                                         <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
                                             ng-model="challenge.methodDesc"></textarea>
@@ -305,7 +304,7 @@
                                         <label for="methodDesc">Method description (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] == true">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="projectUrl" name="projectUrl"
                                             ng-model="challenge.projectUrl">
@@ -313,7 +312,7 @@
                                         <label for="projectUrl">Project URL (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] == true">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="publicationUrl" name="publicationUrl"
                                             ng-model="challenge.publicationUrl">
@@ -337,7 +336,7 @@
                                                     <div class="align-left col s10">
                                                         <label for="{{attribute.name}}" class="label-radio" ng-bind-html="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
-                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                            <md-radio-group ng-model="attribute.value" id="{{$parent.$index}}_{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
                                                                     <span class="fs-16">{{option}}</span>
                                                                 </md-radio-button>
@@ -352,8 +351,8 @@
                                                         <label for="{{attribute.name}}" class="label-checkbox" ng-bind-html="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
                                                             <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
-                                                                <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
-                                                                <label for="{{option}}"></label>
+                                                                <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{$parent.$index}}_{{option}}" ng-value="option">
+                                                                <label for="{{$parent.$index}}_{{option}}"></label>
                                                                 <span  class="fs-16 w-300">{{option}}</span>
                                                             </div>
                                                         </div>

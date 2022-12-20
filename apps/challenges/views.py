@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import os
+import pytz
 import random
 import requests
 import shutil
@@ -12,6 +13,8 @@ import yaml
 import zipfile
 
 from os.path import basename, isfile, join
+from datetime import datetime
+
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -129,6 +132,7 @@ from .aws_utils import (
     restart_workers,
     get_logs_from_cloudwatch,
     get_log_group_name,
+    scale_resources,
 )
 from .utils import (
     get_aws_credentials_for_submission,
@@ -2955,17 +2959,83 @@ def get_worker_logs(request, challenge_pk):
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.
 
-    # This is to specify the time window for fetching logs: 15 minutes before from current time.
-    timeframe = 15
+    # This is to specify the time window for fetching logs: 3 days before from current time.
+    timeframe = 4320
+    limit = 1000
     current_time = int(round(time.time() * 1000))
     start_time = current_time - (timeframe * 60000)
     end_time = current_time
 
     logs = get_logs_from_cloudwatch(
-        log_group_name, log_stream_prefix, start_time, end_time, pattern
+        log_group_name, log_stream_prefix, start_time, end_time, pattern, limit
     )
 
     response_data = {"logs": logs}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def scale_resources_by_challenge_pk(request, challenge_pk):
+    """
+    The function called by a host to update the resources used by their challenge.
+
+    Calls the scale_resources method. Before calling, checks if the caller hosts the challenge and provided valid CPU
+    unit counts and memory sizes (MB).
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which its workers' resources will be updated
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.data.get("worker_cpu_cores") is None:
+        response_data = {
+            "error": "vCPU config missing from request data."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.data.get("worker_memory") is None:
+        response_data = {
+            "error": "Worker memory config missing from request data."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+    worker_cpu_cores = int(request.data["worker_cpu_cores"])
+    worker_memory = int(request.data["worker_memory"])
+
+    if (
+        worker_cpu_cores == 256 and worker_memory in (512, 1024, 2048)
+        or worker_cpu_cores == 512 and worker_memory in (1024, 2048)
+        or worker_cpu_cores == 1024 and worker_memory == 2048
+    ):
+        response = scale_resources(challenge, worker_cpu_cores, worker_memory)
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            response_data = {
+                "error": "Issue with ECS."
+            }
+            return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        else:
+            response_data = {
+                "Success": "The challenge {} has been scaled successfully".format(
+                    challenge.title
+                )
+            }
+    else:
+        response_data = {
+            "error": "Please specify correct config for worker vCPU and memory."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -2996,6 +3066,12 @@ def manage_worker(request, challenge_pk, action):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop", "restart"):
+        response_data = {
+            "error": "Action {} worker is not supported for an inactive challenge.".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     response_data = {}
 
@@ -3565,6 +3641,17 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 for data, challenge_test_annotation_file in zip(
                     challenge_phases_data, files["challenge_test_annotation_files"]
                 ):
+
+                    # Override the submission_meta_attributes when they are missing
+                    submission_meta_attributes = data.get("submission_meta_attributes")
+                    if submission_meta_attributes is None:
+                        data["submission_meta_attributes"] = None
+
+                    # Override the default_submission_meta_attributes when they are missing
+                    default_submission_meta_attributes = data.get("default_submission_meta_attributes")
+                    if default_submission_meta_attributes is None:
+                        data["default_submission_meta_attributes"] = None
+
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]
                     ).first()
@@ -3596,10 +3683,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             partial=True,
                         )
                     else:
-                        # Override the submission_meta_attributes when they are missing
-                        submission_meta_attributes = data.get("submission_meta_attributes")
-                        if submission_meta_attributes is None:
-                            data["submission_meta_attributes"] = None
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
                             data=data,

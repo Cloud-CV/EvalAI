@@ -284,3 +284,56 @@ md-select .md-select-value span:first-child:after {
 .margin-bottom-cancel {
     margin-bottom: 0px;
 }
+
+.watermarked {
+    background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),url(../images/evalai-logo-centered.png);
+    background-blend-mode: lighten;
+    background-size: 50%;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+.scale-worker-column {
+    flex: 1 0 auto;
+    padding-right: 10px;
+}
+
+.text-entry-wrapper {
+    display: flex;
+    width: 50%;
+}
+
+.text-entry-content {
+    width: 100%;
+}
+
+.text-entry-columns {
+    display: inline-block;
+}
+
+.submit-column {
+    flex: 0 1 auto;
+    float: right;
+    position: relative;
+}
+
+.multiple-columns, .dropdown-menu {
+    display: flex;
+    margin: 0 auto;
+}
+
+.scale-worker-button {
+    flex: 1 0 auto;
+}
+
+.scale-worker-button-div {
+    top: 50%;
+    position: absolute;
+    transform: translateY(-50%);
+    width: max-content;
+    display: inline-flex;
+}
+
+.worker-actions-row {
+    margin-bottom: 10px;
+}
