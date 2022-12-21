@@ -664,6 +664,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
             challenge.task_def_arn = None
             challenge.save()
         else:
+            response["Error"] = f"Scaling worker not supported for inactive worker. Full error:\n" + response["Error"]
             return response
     except ClientError as e:
         logger.exception(e)
