@@ -1102,7 +1102,7 @@ def delete_eks_cluster_and_roles(challenge):
             PolicyArn=settings.EKS_CLUSTER_POLICY
         )
         response = client.delete_role(RoleName=eks_role_name)
-        
+
         # Delete all EKS cluster subnets
         delete_eks_cluster_subnets.delay(challenge)
 

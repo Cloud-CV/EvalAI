@@ -12,7 +12,6 @@ from .aws_utils import (
     start_workers,
     stop_workers,
     delete_challenge_evaluation_cluster_and_roles,
-    delete_only_challenge_evaluation_cluster,
 )
 
 from .admin_filters import ChallengeFilter
