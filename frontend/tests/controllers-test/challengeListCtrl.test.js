@@ -44,15 +44,15 @@ describe('Unit tests for challenge list controller', function () {
             spyOn(utilities, 'storeData');
 
             utilities.sendRequest = function (parameters) {
-                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/time/present/approved/approved/published/public') ||
-                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/time/future/approved/approved/published/public') ||
-                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/time/past/approved/approved/published/public')) {
+                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present') ||
+                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future') ||
+                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past')) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
-                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/time/present/approved/approved/published/public') ||
-                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/time/future/approved/approved/published/public') ||
-                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/time/past/approved/approved/published/public')){
+                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present') ||
+                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future') ||
+                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past')){
                     parameters.callback.onError({
                         data: errorResponse
                     });
@@ -60,7 +60,7 @@ describe('Unit tests for challenge list controller', function () {
             };
         });
 
-        it('when no ongoing challenge found `challenges/challenge/time/present/approved/approved/published/public`', function () {
+        it('when no ongoing challenge found `challenges/challenge/present`', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -72,7 +72,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.noneCurrentChallenge).toBeTruthy();
         });
 
-        it('check description length and calculate timezone of ongoing challenge `challenges/challenge/time/present/approved/approved/published/public`', function () {
+        it('check description length and calculate timezone of ongoing challenge `challenges/challenge/present`', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -120,7 +120,7 @@ describe('Unit tests for challenge list controller', function () {
             }
         });
 
-        it('ongoing challenge backend error `challenges/challenge/time/present/approved/approved/published/public`', function () {
+        it('ongoing challenge backend error `challenges/challenge/present`', function () {
             isPresentChallengeSuccess = false; 
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -131,7 +131,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('when no upcoming `challenges/challenge/time/present/approved/approved/published/public`challenge found `challenges/challenge/time/future/approved/approved/published/public`', function () {
+        it('when no upcoming `challenges/challenge/present`challenge found `challenges/challenge/future`', function () {
             isUpcomingChallengeSucess = true;
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
@@ -191,7 +191,7 @@ describe('Unit tests for challenge list controller', function () {
             }
         });
 
-        it('upcoming challenge backend error `challenges/challenge/time/future/approved/approved/published/public`', function () {
+        it('upcoming challenge backend error `challenges/challenge/future`', function () {
             isUpcomingChallengeSucess = false;
             isPresentChallengeSuccess = true; 
             isPastChallengeSuccess = null;
@@ -204,7 +204,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('when no past challenge found `challenges/challenge/time/past/approved/approved/published/public`', function () {
+        it('when no past challenge found `challenges/challenge/past`', function () {
             isPastChallengeSuccess = true;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
@@ -216,7 +216,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.nonePastChallenge).toBeTruthy();
         });
 
-        it('check description length and calculate timezone of past challenge `challenges/challenge/time/past/approved/approved/published/public`', function () {
+        it('check description length and calculate timezone of past challenge `challenges/challenge/past`', function () {
             isPastChallengeSuccess = true;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
@@ -265,7 +265,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('past challenge backend error `challenges/challenge/time/past/approved/approved/published/public`', function () {
+        it('past challenge backend error `challenges/challenge/past`', function () {
             isPastChallengeSuccess = false;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;

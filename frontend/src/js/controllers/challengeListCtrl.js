@@ -66,7 +66,7 @@
 
                 // dependent api
                 // calls for upcoming challneges
-                parameters.url = 'challenges/challenge/time/future/approved/approved/published/public';
+                parameters.url = 'challenges/challenge/future';
                 parameters.method = 'GET';
 
                 parameters.callback = {
@@ -104,7 +104,7 @@
 
                         // dependent api
                         // calls for past challneges
-                        parameters.url = 'challenges/challenge/time/past/approved/approved/published/public';
+                        parameters.url = 'challenges/challenge/past';
                         parameters.method = 'GET';
 
                         parameters.callback = {
