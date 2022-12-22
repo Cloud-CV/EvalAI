@@ -540,7 +540,7 @@ def get_all_challenges(request, challenge_time):
         challenge_published = "public"
 
     elif request.method == "POST":
-        challenge_approved =  request.data.get("challenge_approved", "approved")
+        challenge_approved = request.data.get("challenge_approved", "approved")
         challenge_published = request.data.get("challenge_published", "public")
 
     if challenge_approved.lower() not in ("all", "approved", "unapproved"):
