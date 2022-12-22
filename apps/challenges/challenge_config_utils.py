@@ -6,6 +6,7 @@ import yaml
 from django.core.files.base import ContentFile
 
 from os.path import basename, isfile, join
+from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -109,11 +110,18 @@ def is_challenge_config_yaml_html_field_valid(
         is_valid {boolean} -- flag for field validation is success
         message {string} -- error message if any
     """
-    value = yaml_file_data.get(key)
+    value = join(base_location, yaml_file_data.get(key))
     message = ""
     is_valid = False
     if value:
-        is_valid = True
+        if not isfile(value):
+            message = "File at path {} not found. Please specify a valid file path".format(key)
+        elif not value.endswith(
+            ".html"
+        ):
+            message = "File {} is not a HTML file. Please specify a valid HTML file".format(key)
+        else:
+            is_valid = True
     else:
         message = "ERROR: There is no key for {} in YAML file".format(key)
     return is_valid, message
@@ -175,7 +183,7 @@ def download_and_write_file(url, stream, output_path, mode):
 
 
 def is_challenge_phase_split_mapping_valid(
-    phase_ids, leaderboard_ids, dataset_split_ids, phase_split
+    phase_ids, leaderboard_ids, dataset_split_ids, phase_split, challenge_phase_split_index
 ):
     """
     Arguments:
@@ -189,15 +197,19 @@ def is_challenge_phase_split_mapping_valid(
     phase_id = phase_split["challenge_phase_id"]
     leaderboard_id = phase_split["leaderboard_id"]
     dataset_split_id = phase_split["dataset_split_id"]
-    if phase_id in phase_ids:
-        if leaderboard_id in leaderboard_ids:
-            if dataset_split_id in dataset_split_ids:
-                return True
-            else:
-                return False
-        else:
-            return False
-    return False
+    error_messages = []
+
+    if leaderboard_id not in leaderboard_ids:
+        error_messages.append("ERROR: Invalid leaderboard id {} found in challenge phase split {}.".format(leaderboard_id, challenge_phase_split_index))
+    if phase_id not in phase_ids:
+        error_messages.append("ERROR: Invalid phased id {} found in challenge phase split {}.".format(phase_id, challenge_phase_split_index))
+    if dataset_split_id not in dataset_split_ids:
+        error_messages.append("ERROR: Invalid dataset split id {} found in challenge phase split {}.".format(dataset_split_id, challenge_phase_split_index))
+
+    if error_messages:
+        return False, error_messages
+    else:
+        return True, error_messages
 
 
 def get_value_from_field(data, base_location, field_name):
@@ -209,7 +221,7 @@ def get_value_from_field(data, base_location, field_name):
 
 
 def validate_challenge_config_util(
-    request, challenge_host_team, BASE_LOCATION, unique_folder_name, zip_ref
+    request, challenge_host_team, BASE_LOCATION, unique_folder_name, zip_ref, current_challenge
 ):
     """
     Function to validate a challenge config
@@ -219,6 +231,7 @@ def validate_challenge_config_util(
         BASE_LOCATION {str} -- The temp base directory for storing all the files and folders while validating the zip file
         unique_folder_name {str} -- name of the challenge zip file and the parent dir of extracted folder
         zip_ref {zipfile.ZipFile} -- reference to challenge config zip
+        current_challenge {apps.challenges.models.Challenge} - the existing challenge for the github repo, if any
     """
 
     error_messages = []
@@ -370,6 +383,23 @@ def validate_challenge_config_util(
             error_messages.append(message)
             return error_messages, yaml_file_data, files
 
+    # Get existing config IDs for leaderboards and dataset splits
+    if current_challenge:
+        current_challenge_phases = ChallengePhase.objects.filter(challenge=current_challenge.id)
+        current_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__in=current_challenge_phases)
+        current_leaderboards = Leaderboard.objects.filter(id__in=current_challenge_phase_splits.values('leaderboard'))
+        current_dataset_splits = DatasetSplit.objects.filter(id__in=current_challenge_phase_splits.values('dataset_split'))
+
+        current_leaderboard_config_ids = [int(x.config_id) for x in current_leaderboards]
+        current_dataset_config_ids = [int(x.config_id) for x in current_dataset_splits]
+        current_phase_config_ids = [int(x.config_id) for x in current_challenge_phases]
+        current_phase_split_ids = [(split.leaderboard.config_id, split.challenge_phase.config_id, split.dataset_split.config_id) for split in current_challenge_phase_splits]
+    else:
+        current_leaderboard_config_ids = []
+        current_dataset_config_ids = []
+        current_phase_config_ids = []
+        current_phase_split_ids = []
+
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
     leaderboard_ids = []
@@ -387,7 +417,6 @@ def validate_challenge_config_util(
             message = "ERROR: There is no 'labels' key in leaderboard schema."
             error_messages.append(message)
             error = True
-
         if not error:
             for data in leaderboard:
                 serializer = LeaderboardSerializer(
@@ -400,10 +429,16 @@ def validate_challenge_config_util(
                     )
                     error_messages.append(message)
                 else:
+                    if current_leaderboard_config_ids and int(data["id"]) not in current_leaderboard_config_ids:
+                        error_messages.append("ERROR: Leaderboard {} doesn't exist. Addition of new leaderboard after challenge creation is not allowed.".format(data["id"]))
                     leaderboard_ids.append(data["id"])
     else:
         message = "ERROR: There is no key leaderboard in the YAML file."
         error_messages.append(message)
+
+    for current_leaderboard_id in current_leaderboard_config_ids:
+        if current_leaderboard_id not in leaderboard_ids:
+            error_messages.append("ERROR: Leaderboard {} not found in config. Deletion of existing leaderboard after challenge creation is not allowed.".format(current_leaderboard_id))
 
     # Check for challenge phases
     challenge_phases_data = yaml_file_data.get("challenge_phases")
@@ -413,8 +448,13 @@ def validate_challenge_config_util(
         return error_messages, yaml_file_data, files
 
     phase_ids = []
+    phase_codenames = []
     files["challenge_test_annotation_files"] = []
     for data in challenge_phases_data:
+        if data["codename"] not in phase_codenames:
+            phase_codenames.append(data["codename"])
+        else:
+            error_messages.append("ERROR: Duplicate codename {} for phase {}. Please ensure codenames are unique".format(data["codename"], data["name"]))
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
             test_annotation_file_path = join(
@@ -505,7 +545,7 @@ def validate_challenge_config_util(
                         data["id"], missing_keys_string
                     )
                     error_messages.append(message)
-        if test_annotation_file:
+        if isfile(test_annotation_file_path):
             serializer = ChallengePhaseCreateSerializer(
                 data=data,
                 context={
@@ -529,10 +569,17 @@ def validate_challenge_config_util(
             )
             error_messages.append(message)
         else:
+            if current_phase_config_ids and int(data["id"]) not in current_phase_config_ids:
+                error_messages.append("ERROR: Challenge phase {} doesn't exist. Addition of new challenge phase after challenge creation is not allowed.".format(data["id"]))
             phase_ids.append(data["id"])
+
+    for current_challenge_phase_id in current_phase_config_ids:
+        if current_challenge_phase_id not in phase_ids:
+            error_messages.append("ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.".format(current_challenge_phase_id))
 
     # Check for dataset splits
     dataset_splits = yaml_file_data.get("dataset_splits")
+    dataset_split_codenames = []
     dataset_splits_ids = []
     if dataset_splits:
         for split in dataset_splits:
@@ -544,7 +591,10 @@ def validate_challenge_config_util(
                     )
                 )
                 error_messages.append(message)
-
+            if split["codename"] not in dataset_split_codenames:
+                dataset_split_codenames.append(data["codename"])
+            else:
+                error_messages.append("ERROR: Duplicate codename {} for dataset split {}. Please ensure codenames are unique".format(split["codename"], split["name"]))
         for split in dataset_splits:
             serializer = DatasetSplitSerializer(
                 data=split, context={"config_id": split["id"]}
@@ -556,26 +606,33 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             else:
+                if current_dataset_config_ids and int(split["id"]) not in current_dataset_config_ids:
+                    error_messages.append("ERROR: Dataset split {} doesn't exist. Addition of new dataset split after challenge creation is not allowed.".format(split["id"]))
                 dataset_splits_ids.append(split["id"])
-
     else:
         message = "ERROR: There is no key for dataset splits."
         error_messages.append(message)
 
+    for current_dataset_split_config_id in current_dataset_config_ids:
+        if current_dataset_split_config_id not in dataset_splits_ids:
+            error_messages.append("ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.".format(current_dataset_split_config_id))
+
     # Check for challenge phase splits
     challenge_phase_splits = yaml_file_data.get("challenge_phase_splits")
+    challenge_phase_split_uuids = []
     if challenge_phase_splits:
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            if not is_challenge_phase_split_mapping_valid(
-                phase_ids, leaderboard_ids, dataset_splits_ids, data
-            ):
-                message = (
-                    "ERROR: Challenge phase split {} has invalid keys "
-                    "for challenge_phase_id, leaderboard_id, dataset_split_id"
-                ).format(phase_split)
-                error_messages.append(message)
+            if current_phase_split_ids and (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in current_phase_split_ids:
+                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
+            else:
+                challenge_phase_split_uuids.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
+
+            is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
+                phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
+            )
+            error_messages += messages
 
             serializer = ZipChallengePhaseSplitSerializer(
                 data=data, context={"exclude_fields": exclude_fields}
@@ -587,6 +644,10 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             phase_split += 1
+
+        for uuid in current_phase_split_ids:
+            if uuid not in challenge_phase_split_uuids:
+                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(uuid[0], uuid[1], uuid[2]))
     else:
         message = "ERROR: There is no key for challenge phase splits."
         error_messages.append(message)
