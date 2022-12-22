@@ -859,8 +859,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             self.challenge1.created_at.isoformat(), "Z"
                         ).replace("+00:00", ""),
                         "queue": self.challenge1.queue,
-                        "worker_cpu_cores": None,
-                        "worker_memory": None,
+                        "worker_cpu_cores": 512,
+                        "worker_memory": 1024,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -933,8 +933,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     self.challenge1.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge1.queue,
-                "worker_cpu_cores": None,
-                "worker_memory": None,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
 
