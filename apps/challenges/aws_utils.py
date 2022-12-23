@@ -899,7 +899,7 @@ def create_eks_nodegroup(challenge, cluster_name):
     create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
-def delete_code_upload_challenge_resources(queryset):
+def delete_multiple_challenge_evaluation_clusters(queryset):
     """
     The function called by the admin action method to delete all the challenge evaluation clusters used by the
     selected challenges. This does not delete the roles, subnets, route tables, security groups, etc... associated with
