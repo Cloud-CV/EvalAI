@@ -132,7 +132,6 @@ from .aws_utils import (
     restart_workers,
     get_logs_from_cloudwatch,
     get_log_group_name,
-    scale_resources,
 )
 from .utils import (
     get_aws_credentials_for_submission,
@@ -4026,3 +4025,20 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def convert_to_github_challenge(request, challenge_pk):
+    challenge = get_challenge_model(challenge_pk)
+    if challenge.github_repository is not None:
+        response_data = {
+                "error": "This challenge is already a github challenge."
+            }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    r = generate_repo_from_template(request.data["user_auth_token"], request.data["repo_name"])
+    if r.status_code != status.HTTP_200_OK:
+        return Response(r, status=status.HTTP_400_BAD_REQUEST)
+    return Response(r, status=status.HTTP_200_OK)

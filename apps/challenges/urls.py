@@ -220,6 +220,11 @@ urlpatterns = [
         name="scale_resources_by_challenge_pk",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/convert_to_github_challenge/$",
+        views.convert_to_github_challenge,
+        name="convert_to_github_challenge",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/get_participant_teams/$",
         views.get_participant_teams_for_challenge,
         name="get_participant_teams_for_challenge",
