@@ -1639,7 +1639,7 @@
             };
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Evaluation worker resources scaled successfully. Please wait until the old worker is stopped and the new worker starts before making further changes.");
+                    $rootScope.notify("success", "Evaluation worker resources scaled successfully.");
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team = {};
