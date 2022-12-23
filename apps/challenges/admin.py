@@ -11,7 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
-    delete_challenge_evaluation_cluster_and_roles,
+    delete_multiple_challenge_evaluation_clusters,
 )
 
 from .admin_filters import ChallengeFilter
@@ -217,7 +217,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     def delete_challenge_evaluation_clusters(self, request, queryset):
         """Deletes the selected challenge evaluation clusters"""
-        response = delete_challenge_evaluation_cluster_and_roles(queryset)
+        response = delete_multiple_challenge_evaluation_clusters(queryset)
         count, failures = response["count"], response["failures"]
 
         if count == queryset.count():

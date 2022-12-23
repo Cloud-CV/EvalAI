@@ -1004,7 +1004,7 @@ def create_eks_nodegroup(challenge, cluster_name):
 
 
 @app.task
-def delete_challenge_evaluation_cluster_and_roles(queryset):
+def delete_multiple_challenge_evaluation_clusters(queryset):
     """
     The function called by the admin action method to delete all the challenge evaluation clusters used by the
     selected challenges. Calls the delete_eks_cluster_and_roles method.
