@@ -1264,7 +1264,7 @@ def delete_eks_cluster(challenge):
         )
         client = get_boto3_client("eks", challenge_aws_keys)
         try:
-            # Delete nodegroup
+            # Delete nodegroup and all the challenge's workers
             delete_eks_nodegroup(challenge, cluster_name)
 
             # Delete mount targets
