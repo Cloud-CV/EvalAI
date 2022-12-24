@@ -128,4 +128,4 @@ Here are the steps to configure remote evaluation:
 
     The `evaluate()` method also accepts keyword arguments.
 
-    If the `evaluate()` method fails due to any reason or there is a problem with the submission, please ensure to raise an `Exception` with an appropriate message.
+    **IMPORTANT** ⚠️: If the `evaluate()` method fails due to any reason or there is a problem with the submission, please ensure to raise an `Exception` with an appropriate message.
