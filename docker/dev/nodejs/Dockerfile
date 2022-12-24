@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:14.20.1
+FROM node:14.20.1
 
 # install chrome for protractor tests
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
