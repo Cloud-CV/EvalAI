@@ -178,6 +178,8 @@ Please ensure the following fields are set to the following values:
 
 - `remote_evaluation : True`
 
+Refer to the [following documentation](https://evalai.readthedocs.io/en/latest/configuration.html) for details on challenge configuration.
+
 ### Step 3: Edit remote evaluation script
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
@@ -185,12 +187,13 @@ Please refer to [writing Remote Evaluation Script section](evaluation_scripts.ht
 
 ### Step 4: Set up remote evaluation worker
 
-1. Create conda or virtualenv to run evaluation script. Refer this [conda's create environment section](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) to setup a virtual environment.
+1. Create conda environment to run the evaluation worker. Refer to [conda's create environment section](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) to set up a virtual environment.
 2. Install the worker requirements from the `EvalAI-Starters/remote_challenge_evaluation` present [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/requirements.txt):
 
    ```sh
    cd EvalAI-Starters/
-   pip install remote_challenge_evaluation/requirements
+   pip install remote_challenge_evaluation/requirements.txt
+
    ```
 
 3. Start evaluation worker:
