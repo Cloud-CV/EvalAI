@@ -66,6 +66,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "workers",
             "created_at",
             "queue",
+            "worker_cpu_cores",
+            "worker_memory"
         )
 
 
