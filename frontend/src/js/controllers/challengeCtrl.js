@@ -1639,7 +1639,7 @@
             };
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Evaluation worker resources scaled successfully");
+                    $rootScope.notify("success", "Evaluation worker resources scaled successfully.");
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team = {};
