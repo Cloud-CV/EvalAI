@@ -103,6 +103,8 @@
 
         vm.workerResourceOptions = [[256, 512], [256, 1024], [256, 2048], [512, 1024], [512, 2048], [1024, 2048]];
 
+        vm.showBackground = (utilities.getEnvironment() == "local") || (utilities.getEnvironment() == "staging");
+
         utilities.showLoader();
 
         // scroll to the selected entry after page has been rendered
