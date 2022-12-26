@@ -17,6 +17,7 @@ def execute_get_request(url):
     response = requests.get(url, headers=authorization_header)
     return response.json()
 
+
 def execute_post_request(url, data):
     response = requests.post(url, data=data, headers=authorization_header)
     return response.json()
