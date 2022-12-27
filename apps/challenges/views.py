@@ -96,6 +96,7 @@ from participants.utils import (
     is_user_creator_of_participant_team,
 )
 
+from .github_utils import generate_repo_from_template
 from .models import (
     Challenge,
     ChallengeEvaluationCluster,
@@ -4033,12 +4034,14 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def convert_to_github_challenge(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
-    if challenge.github_repository is not None:
+    if challenge.github_repository is not None and challenge.github_repository != "":
         response_data = {
-                "error": "This challenge is already a github challenge."
-            }
+            "error": "This challenge is already a github challenge."
+        }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     r = generate_repo_from_template(request.data["user_auth_token"], request.data["repo_name"])
-    if r.status_code != status.HTTP_200_OK:
+    if r.status_code != status.HTTP_201_CREATED:
         return Response(r, status=status.HTTP_400_BAD_REQUEST)
+    challenge.github_repository = r.json()['html_url']
+    challenge.save()
     return Response(r, status=status.HTTP_200_OK)
