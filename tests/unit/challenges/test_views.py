@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import boto3
 import csv
 import io
@@ -20,6 +22,7 @@ from django.test import override_settings
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
+from requests.cookies import MockResponse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
@@ -36,6 +39,8 @@ from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
+
+from apps.challenges.github_utils import generate_repo_from_template
 
 
 class BaseAPITestClass(APITestCase):
@@ -4912,3 +4917,75 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         )
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+def mocked_requests_post(*args, **kwargs):
+    return MockResponse({"id":123,"node_id":"R_kgDOIrz2HA","name":"EvalAI-Laura-Challenge","full_name":"test-repo/EvalAI-Laura-Challenge"})
+
+
+class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(ConvertToGitHubChallengePkTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:convert_to_github_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.user = User.objects.create(
+            username="someuser1",
+            email="user1@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Some Test Challenge Host Team", created_by=self.user
+        )
+
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
+    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=mocked_requests_post)
+    def test_generate_repo_from_template_success(self, mock_post):
+        response = self.client.post(self.url, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=mocked_requests_post)
+    def test_generate_repo_from_template_when_request_arguments_are_missing(self, mock_post):
+        response = self.client.post(self.url, {'user_auth_token': 'abc123'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {
+            "error": "Request missing user_auth_token (GitHub token) or repo_name (proposed name of new repo)."
+        }
+        self.assertEqual(response.data, expected)
+
+
+    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=mocked_requests_post)
+    def test_generate_repo_from_template_when_github_challenge_already_exists(self, mock_post):
+        self.challenge.github_repository = "https://www.github.com/test-user/test-repo"
+        response = self.client.post(self.url, {'user_auth_token': 'abc123'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {
+            "error": "This challenge is already a github challenge."
+        }
+        self.assertEqual(response.data, expected)

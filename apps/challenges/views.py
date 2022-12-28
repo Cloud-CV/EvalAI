@@ -4046,9 +4046,14 @@ def convert_to_github_challenge(request, challenge_pk):
             "error": "This challenge is already a github challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if "user_auth_token" not in request.data or "repo_name" not in request.data:
+        response_data = {
+            "error": "Request missing user_auth_token (GitHub token) or repo_name (proposed name of new repo)."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     r = generate_repo_from_template(request.data["user_auth_token"], request.data["repo_name"])
     if r.status_code != status.HTTP_201_CREATED:
-        return Response(r, status=status.HTTP_400_BAD_REQUEST)
+        return Response(r, status=r.status_code)
     challenge.github_repository = r.json()['html_url']
     challenge.save()
-    return Response(r, status=status.HTTP_200_OK)
+    return Response(r, status=status.HTTP_201_CREATED)
