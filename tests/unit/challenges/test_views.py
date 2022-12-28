@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import boto3
 import csv
 import io
@@ -39,8 +37,6 @@ from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
-
-from apps.challenges.github_utils import generate_repo_from_template
 
 
 class BaseAPITestClass(APITestCase):
@@ -4919,8 +4915,9 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-def mocked_requests_post(*args, **kwargs):
-    return MockResponse({"id":123,"node_id":"R_kgDOIrz2HA","name":"EvalAI-Laura-Challenge","full_name":"test-repo/EvalAI-Laura-Challenge"})
+def mocked_generate_repo_from_template_requests_post(*args, **kwargs):
+    return MockResponse({"id": 123, "node_id": "R_kgDOIrz2HA", "name": "EvalAI-Laura-Challenge", "full_name":
+                        "test-repo/EvalAI-Laura-Challenge"})
 
 
 class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
@@ -4964,13 +4961,14 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
             approved_by_admin=False,
         )
 
-    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=mocked_requests_post)
+    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=
+                mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_success(self, mock_post):
         response = self.client.post(self.url, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
-    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=mocked_requests_post)
+    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=
+                mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_when_request_arguments_are_missing(self, mock_post):
         response = self.client.post(self.url, {'user_auth_token': 'abc123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -4979,8 +4977,8 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
         }
         self.assertEqual(response.data, expected)
 
-
-    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=mocked_requests_post)
+    @mock.patch('github_utils.generate_repo_from_template.requests.post', side_effect=
+                mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_when_github_challenge_already_exists(self, mock_post):
         self.challenge.github_repository = "https://www.github.com/test-user/test-repo"
         response = self.client.post(self.url, {'user_auth_token': 'abc123'})
