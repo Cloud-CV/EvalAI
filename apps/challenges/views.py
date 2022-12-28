@@ -133,6 +133,7 @@ from .aws_utils import (
     restart_workers,
     get_logs_from_cloudwatch,
     get_log_group_name,
+    scale_resources,
 )
 from .utils import (
     get_aws_credentials_for_submission,
