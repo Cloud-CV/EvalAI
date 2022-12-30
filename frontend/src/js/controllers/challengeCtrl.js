@@ -322,8 +322,7 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
-                vm.selectedWorkerResources[0] = details.worker_cpu_cores;
-                vm.selectedWorkerResources[1] = details.worker_memory;
+                vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
 
                 vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
