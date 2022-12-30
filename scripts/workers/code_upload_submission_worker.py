@@ -517,6 +517,7 @@ def cleanup_submission(
     challenge_pk,
     phase_pk,
     stderr,
+    code_upload_environment_log,
     message,
 ):
     """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
@@ -528,6 +529,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
+        code_upload_environment_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
         message {[dict]} -- Submission message from AWS SQS queue
     """
     try:
@@ -536,6 +538,7 @@ def cleanup_submission(
             "submission": submission_pk,
             "stdout": "",
             "stderr": stderr,
+            "code_upload_environment_log": code_upload_environment_log,
             "submission_status": "FAILED",
             "result": "[]",
             "metadata": "",
@@ -567,6 +570,8 @@ def update_failed_jobs_and_send_logs(
     message,
 ):
     clean_submission = False
+    code_upload_environment_error = "Submission Job Failed."
+    submission_error = "Submission Job Failed."
     try:
         job_def = read_job(api_instance, job_name)
         if job_def:
@@ -586,7 +591,7 @@ def update_failed_jobs_and_send_logs(
                     container_name,
                     container_state,
                 ) in container_state_map.items():
-                    if container_name in ["agent", "submission"]:
+                    if container_name in ["agent", "submission", "environment"]:
                         if container_state.terminated is not None:
                             if container_state.terminated.reason == "Error":
                                 pod_name = pods_list.items[0].metadata.name
@@ -603,7 +608,10 @@ def update_failed_jobs_and_send_logs(
                                     )
                                     pod_log = pod_log[-1000:]
                                     clean_submission = True
-                                    submission_error = pod_log
+                                    if container_name == "environment":
+                                        code_upload_environment_error = pod_log
+                                    else:
+                                        submission_error = pod_log
                                 except client.rest.ApiException as e:
                                     logger.exception(
                                         "Exception while reading Job logs {}".format(
@@ -623,11 +631,9 @@ def update_failed_jobs_and_send_logs(
                 )
             )
             clean_submission = True
-            submission_error = "Submission Job Failed."
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         clean_submission = True
-        submission_error = "Submission Job Failed."
     if clean_submission:
         cleanup_submission(
             api_instance,
@@ -637,6 +643,7 @@ def update_failed_jobs_and_send_logs(
             challenge_pk,
             phase_pk,
             submission_error,
+            code_upload_environment_error,
             message,
         )
 

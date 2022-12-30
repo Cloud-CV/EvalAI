@@ -1437,6 +1437,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.private_submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "code_upload_environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
@@ -1593,6 +1594,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.host_participant_team_submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "code_upload_environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.host_participant_team_submission.started_at,
             "completed_at": self.host_participant_team_submission.completed_at,
@@ -1658,6 +1660,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "jobs:get_submission_by_pk",
             kwargs={"submission_id": self.submission.id},
         )
+        # the submission's creator is self.user (in the host team). Thus, code_upload_environment_log_file should be shown
         expected = {
             "id": self.submission.id,
             "participant_team": self.submission.participant_team.pk,
@@ -1675,6 +1678,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "code_upload_environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
@@ -1722,6 +1726,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "code_upload_environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
@@ -2366,6 +2371,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "CANCELLED",
             "stdout": "qwerty",
             "stderr": "qwerty",
+            "code_upload_environment_log": "aeiou",
             "result": json.dumps(
                 [
                     {
@@ -2423,6 +2429,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "FINISHED",
             "stdout": "qwerty",
             "stderr": "qwerty",
+            "code_upload_environment_log": "aeiou",
             "result": json.dumps(
                 [
                     {
