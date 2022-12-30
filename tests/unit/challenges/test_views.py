@@ -4971,7 +4971,7 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
-            github_repository = "https://www.github.com/test-user/test-repo"
+            github_repository="https://www.github.com/test-user/test-repo"
         )
 
         self.url_no_repo = reverse_lazy(
