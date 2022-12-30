@@ -3026,9 +3026,14 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     ):
         response = scale_resources(challenge, worker_cpu_cores, worker_memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            response_data = {
-                "error": "Issue with ECS."
-            }
+            if "IsWorkerInactive" in response and response["IsWorkerInactive"]:
+                response_data = {
+                    "error": "Scaling inactive workers not supported."
+                }
+            else:
+                response_data = {
+                    "error": "Issue with ECS."
+                }
             return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         else:
             response_data = {
