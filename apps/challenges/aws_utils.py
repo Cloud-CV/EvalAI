@@ -638,9 +638,8 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
     client = get_boto3_client("ecs", aws_keys)
 
     if challenge.worker_cpu_cores == worker_cpu_cores and challenge.worker_memory == worker_memory:
-        message = "Worker cores and memory were not modified."
         return {
-            "Error": message,
+            "IsWorkerConfigModified": True,
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
         }
 
@@ -663,9 +662,6 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         ):
             challenge.task_def_arn = None
             challenge.save()
-        else:
-            response["IsWorkerInactive"] = True
-            return response
     except ClientError as e:
         logger.exception(e)
         return e.response

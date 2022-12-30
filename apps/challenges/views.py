@@ -3016,6 +3016,12 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
+    if challenge.workers is None or challenge.workers == 0:
+        response_data = {
+            "error": "Scaling inactive workers not supported."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     worker_cpu_cores = int(request.data["worker_cpu_cores"])
     worker_memory = int(request.data["worker_memory"])
 
@@ -3026,9 +3032,10 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     ):
         response = scale_resources(challenge, worker_cpu_cores, worker_memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            if "IsWorkerInactive" in response and response["IsWorkerInactive"]:
+            if response.get('Error', {'Message': 'No error', 'Code': 'No error'}).get('Code', 'No error code') == \
+                    'ClientException':
                 response_data = {
-                    "error": "Scaling inactive workers not supported."
+                    "error": "Challenge workers are inactive or do not exist."
                 }
             else:
                 response_data = {
@@ -3036,11 +3043,17 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
                 }
             return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         else:
-            response_data = {
-                "Success": "The challenge {} has been scaled successfully".format(
-                    challenge.title
-                )
-            }
+            if response.get("IsWorkerConfigModified", False):
+                response_data = {
+                    "Success": "The challenge \"{}\"'s worker cores and memory were not "
+                               "modified.".format(challenge.title)
+                }
+            else:
+                response_data = {
+                    "Success": "The challenge {} has been scaled successfully".format(
+                        challenge.title
+                    )
+                }
     else:
         response_data = {
             "error": "Please specify correct config for worker vCPU and memory."
