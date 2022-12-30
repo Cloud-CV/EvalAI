@@ -4942,7 +4942,7 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
         )
 
         self.challenge_with_no_repo = Challenge.objects.create(
-            title="Test Challenge",
+            title="Test Challenge 1",
             short_description="Short description for test challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
@@ -4958,7 +4958,7 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
         )
 
         self.challenge_with_repo = Challenge.objects.create(
-            title="Test Challenge",
+            title="Test Challenge 2",
             short_description="Short description for test challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
