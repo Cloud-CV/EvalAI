@@ -4961,14 +4961,13 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
             approved_by_admin=False,
         )
 
-    @mock.patch('challenges.github_utils.generate_repo_from_template.requests.post',
-                side_effect=mocked_generate_repo_from_template_requests_post)
+    @mock.patch('requests.post', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_success(self, mock_post):
+        # import challenges.
         response = self.client.post(self.url, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @mock.patch('challenges.github_utils.generate_repo_from_template.requests.post',
-                side_effect=mocked_generate_repo_from_template_requests_post)
+    @mock.patch('requests.post', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_when_request_arguments_are_missing(self, mock_post):
         response = self.client.post(self.url, {'user_auth_token': 'abc123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -4977,8 +4976,7 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
         }
         self.assertEqual(response.data, expected)
 
-    @mock.patch('challenges.github_utils.generate_repo_from_template.requests.post',
-                side_effect=mocked_generate_repo_from_template_requests_post)
+    @mock.patch('requests.post', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_when_github_challenge_already_exists(self, mock_post):
         self.challenge.github_repository = "https://www.github.com/test-user/test-repo"
         response = self.client.post(self.url, {'user_auth_token': 'abc123'})
