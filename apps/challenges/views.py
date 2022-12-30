@@ -3016,6 +3016,10 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
+    response_data = {
+        "error": "Issue with ECS."
+    }
+    return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if challenge.workers is None or challenge.workers == 0:
         response_data = {
             "error": "Scaling inactive workers not supported."
@@ -3050,7 +3054,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
                 }
             else:
                 response_data = {
-                    "Success": "The challenge {} has been scaled successfully".format(
+                    "Success": "The challenge \"{}\" has been scaled successfully!".format(
                         challenge.title
                     )
                 }

@@ -1637,8 +1637,8 @@
                 "worker_memory": vm.selectedWorkerResources[1],
             };
             parameters.callback = {
-                onSuccess: function() {
-                    $rootScope.notify("success", "Evaluation worker resources scaled successfully.");
+                onSuccess: function(response) {
+                    $rootScope.notify("success", response.data["Success"]);
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team = {};
@@ -1650,7 +1650,7 @@
                     if (typeof(response.data) == 'string') {
                         requestError = response.data;
                     } else {
-                        requestError = JSON.stringify(response.data, null, 4);
+                        requestError = response.data["error"];
                     }
                     $rootScope.notify("error", "Error scaling evaluation worker resources: " + requestError);
                 }
