@@ -4923,10 +4923,6 @@ def mocked_generate_repo_from_template_requests_post(*args, **kwargs):
 class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
     def setUp(self):
         super(ConvertToGitHubChallengePkTest, self).setUp()
-        self.url = reverse_lazy(
-            "challenges:convert_to_github_challenge",
-            kwargs={"challenge_pk": self.challenge.pk},
-        )
 
         self.user = User.objects.create(
             username="someuser1",
@@ -4945,7 +4941,7 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
             team_name="Some Test Challenge Host Team", created_by=self.user
         )
 
-        self.challenge = Challenge.objects.create(
+        self.challenge_with_no_repo = Challenge.objects.create(
             title="Test Challenge",
             short_description="Short description for test challenge",
             description="Description for test challenge",
@@ -4961,15 +4957,42 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
             approved_by_admin=False,
         )
 
+        self.challenge_with_repo = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+            github_repository = "https://www.github.com/test-user/test-repo"
+        )
+
+        self.url_no_repo = reverse_lazy(
+            "challenges:convert_to_github_challenge",
+            kwargs={"challenge_pk": self.challenge_with_no_repo.pk},
+        )
+
+        self.url_repo = reverse_lazy(
+            "challenges:convert_to_github_challenge",
+            kwargs={"challenge_pk": self.challenge_with_repo.pk},
+        )
+
     @mock.patch('challenges.github_utils.generate_repo_from_template', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_success(self, mock_post):
         # import challenges.
-        response = self.client.post(self.url, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
+        response = self.client.post(self.url_no_repo, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     @mock.patch('challenges.github_utils.generate_repo_from_template', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_when_request_arguments_are_missing(self, mock_post):
-        response = self.client.post(self.url, {'user_auth_token': 'abc123'})
+        response = self.client.post(self.url_no_repo, {'user_auth_token': 'abc123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         expected = {
             "error": "Request missing user_auth_token (GitHub token) or repo_name (proposed name of new repo)."
@@ -4978,8 +5001,7 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
 
     @mock.patch('challenges.github_utils.generate_repo_from_template', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_when_github_challenge_already_exists(self, mock_post):
-        self.challenge.github_repository = "https://www.github.com/test-user/test-repo"
-        response = self.client.post(self.url, {'user_auth_token': 'abc123'})
+        response = self.client.post(self.url_repo, {'user_auth_token': 'abc123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         expected = {
             "error": "This challenge is already a github challenge."
