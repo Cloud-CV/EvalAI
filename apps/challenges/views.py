@@ -3049,7 +3049,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
                 }
             else:
                 response_data = {
-                    "Success": "Scaled worker resources successfully!"
+                    "Success": "Worker scaled successfully!"
                 }
     else:
         response_data = {
