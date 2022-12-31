@@ -3049,14 +3049,11 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         else:
             if response.get("IsWorkerConfigModified", False):
                 response_data = {
-                    "Success": "The challenge \"{}\"'s worker cores and memory were not "
-                               "modified.".format(challenge.title)
+                    "Success": "The challenge's worker cores and memory were not modified."
                 }
             else:
                 response_data = {
-                    "Success": "The challenge \"{}\" has been scaled successfully!".format(
-                        challenge.title
-                    )
+                    "Success": "Scaled worker resources successfully!"
                 }
     else:
         response_data = {
