@@ -20,9 +20,10 @@ from django.test import override_settings
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
-from requests.cookies import MockResponse
+from requests.models import Response
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+from unittest.mock import Mock
 
 from challenges.models import (
     Challenge,
@@ -4916,8 +4917,11 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
 
 
 def mocked_generate_repo_from_template_requests_post(*args, **kwargs):
-    return MockResponse({"id": 123, "node_id": "R_kgDOIrz2HA", "name": "EvalAI-Laura-Challenge", "full_name":
-                        "test-repo/EvalAI-Laura-Challenge"})
+    response = Mock(spec=Response)
+    response.status_code = 200
+    response.json.return_value = {"id": 123, "node_id": "R_kgDOIrz2HA", "name": "EvalAI-Laura-Challenge", "full_name":
+                                  "test-repo/EvalAI-Laura-Challenge"}
+    return response
 
 
 class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
@@ -4986,7 +4990,6 @@ class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
 
     @mock.patch('challenges.github_utils.generate_repo_from_template', side_effect=mocked_generate_repo_from_template_requests_post)
     def test_generate_repo_from_template_success(self, mock_post):
-        # import challenges.
         response = self.client.post(self.url_no_repo, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
