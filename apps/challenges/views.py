@@ -4053,7 +4053,14 @@ def convert_to_github_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     r = generate_repo_from_template(request.data["user_auth_token"], request.data["repo_name"])
     if r.status_code != status.HTTP_201_CREATED:
-        return Response(r, status=r.status_code)
+        response_data = {
+            "error": "Unable to create GitHub repository."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     challenge.github_repository = r.json()['html_url']
     challenge.save()
-    return Response(r, status=status.HTTP_201_CREATED)
+    response_data = {
+        "Success": "This challenge's GitHub repository has been created successfully.",
+        "github_repository": r.json()['html_url']
+    }
+    return Response(response_data, status=status.HTTP_201_CREATED)
