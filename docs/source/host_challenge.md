@@ -199,7 +199,7 @@ Please refer to [writing Remote Evaluation Script section](evaluation_scripts.ht
 3. Start evaluation worker:
 
    ```sh
-   cd EvalAI-Starts/remote_challenge_evaluation
+   cd EvalAI-Starters/remote_challenge_evaluation
    python main.py
    ```
 
