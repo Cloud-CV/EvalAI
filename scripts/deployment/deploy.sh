@@ -72,7 +72,7 @@ case $opt in
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
 				ENDSSH2
 			ENDSSH
-            ;;        
+            ;;
         pull)
             aws_login;
             echo "Pulling environment variables file..."
