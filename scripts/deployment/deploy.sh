@@ -39,7 +39,7 @@ case $opt in
         auto_deploy)
             chmod 400 scripts/deployment/evalai.pem
             ssh-add scripts/deployment/evalai.pem
-			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
 				ssh ubuntu@${INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
 					source venv/bin/activate
 					cd ~/Projects/EvalAI
@@ -52,6 +52,12 @@ case $opt in
 					docker-compose -f docker-compose-${env}.yml pull django nodejs celery nodejs_v2 node_exporter memcached
 					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs nodejs_v2 celery node_exporter memcached
 				ENDSSH2
+			ENDSSH
+            ;;
+        deploy-monitoring)
+            chmod 400 scripts/deployment/evalai.pem
+            ssh-add scripts/deployment/evalai.pem
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
 				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
 					source venv/bin/activate
                     			cd ~/Projects/EvalAI
@@ -218,6 +224,8 @@ case $opt in
         echo
         echo "    auto_deploy : Deploy staging or production branch to staging or production server respectively."
         echo "        Eg. ./scripts/deployment/deploy.sh auto_deploy"
+        echo "    deploy-monitoring : Deploy monitoring containers of staging or production branch to staging or production monitoring server respectively."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-monitoring"
         echo "    pull : Pull docker images from ECR."
         echo "        Eg. ./scripts/deployment/deploy.sh pull production"
         echo "    deploy-django : Deploy django containers in the respective environment."
