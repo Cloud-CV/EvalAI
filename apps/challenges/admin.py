@@ -11,7 +11,7 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
-    delete_multiple_challenge_evaluation_clusters,
+    delete_challenge_evaluation_clusters,
 )
 
 from .admin_filters import ChallengeFilter
@@ -84,7 +84,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
-        "delete_challenge_evaluation_clusters"
+        "delete_selected_challenge_evaluation_clusters"
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -215,9 +215,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Delete all selected challenge workers."
     )
 
-    def delete_challenge_evaluation_clusters(self, request, queryset):
+    def delete_selected_challenge_evaluation_clusters(self, request, queryset):
         """Deletes the selected challenge evaluation clusters"""
-        response = delete_multiple_challenge_evaluation_clusters(queryset)
+        response = delete_challenge_evaluation_clusters(queryset)
         count, failures = response["count"], response["failures"]
 
         if count == queryset.count():
@@ -235,7 +235,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                 )
                 messages.error(request, display_message)
 
-    delete_challenge_evaluation_clusters.description = (
+    delete_selected_challenge_evaluation_clusters.description = (
         "Delete all selected challenges' evaluation clusters."
     )
 
