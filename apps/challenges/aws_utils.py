@@ -639,7 +639,8 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
     if challenge.worker_cpu_cores == worker_cpu_cores and challenge.worker_memory == worker_memory:
         return {
-            "IsWorkerConfigModified": True,
+            "Success": True,
+            "Message": "Worker not modified",
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
         }
 

@@ -3042,15 +3042,14 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
                     "error": "Issue with ECS."
                 }
             return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        elif response.get("Message", "N/A") == "Worker not modified":
+            response_data = {
+                "Success": "The challenge's worker cores and memory were not modified."
+            }
         else:
-            if response.get("IsWorkerConfigModified", False):
-                response_data = {
-                    "Success": "The challenge's worker cores and memory were not modified."
-                }
-            else:
-                response_data = {
-                    "Success": "Worker scaled successfully!"
-                }
+            response_data = {
+                "Success": "Worker scaled successfully!"
+            }
     else:
         response_data = {
             "error": "Please specify correct config for worker vCPU and memory."
