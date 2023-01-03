@@ -1004,7 +1004,6 @@ def create_eks_nodegroup(challenge, cluster_name):
     create_service_by_challenge_pk(client, challenge_obj, client_token)
 
 
-@app.task
 def delete_challenge_evaluation_clusters(queryset):
     """
     The function called by the admin action method to delete all the challenge evaluation clusters used by the
@@ -1035,13 +1034,16 @@ def delete_challenge_evaluation_clusters(queryset):
     for challenge in queryset:
         try:
             ChallengeEvaluationCluster.objects.get(challenge=challenge)
+            cluster_exists = True
         except ChallengeEvaluationCluster.DoesNotExist:
+            cluster_exists = False
+        if not cluster_exists or not challenge.workers or challenge.workers == 0:
             response = "Please select challenges with active evaluation clusters only."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
             )
             continue
-        response = delete_challenge_evaluation_cluster(challenge=challenge)
+        response = delete_challenge_evaluation_cluster.delay(challenge)
         if not response or response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
             failures.append(
                 {
