@@ -1035,7 +1035,10 @@ def delete_challenge_evaluation_clusters(queryset):
     for challenge in queryset:
         try:
             ChallengeEvaluationCluster.objects.get(challenge=challenge)
+            cluster_exists = True
         except ChallengeEvaluationCluster.DoesNotExist:
+            cluster_exists = False
+        if not cluster_exists or not challenge.workers or challenge.workers == 0:
             response = "Please select challenges with active evaluation clusters only."
             failures.append(
                 {"message": response, "challenge_pk": challenge.pk}
