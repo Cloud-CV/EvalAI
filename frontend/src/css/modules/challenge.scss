@@ -18,6 +18,18 @@
     cursor: pointer;
 }
 
+.chip {
+    margin: 5px;
+    display: inline-block;
+    padding-top: 5px 12px;
+    padding-bottom: 5px;
+    height: 25px;
+    font-size: 12px;
+    line-height: 25px;
+    border-radius: 25px;
+    background-color: #f1f1f1;
+  }
+
 a.active-challenge {
     color: $dark-black;
     display: block;

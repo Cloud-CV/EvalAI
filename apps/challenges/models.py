@@ -59,6 +59,9 @@ class Challenge(TimeStampedModel):
         related_name="challenge_creator",
         on_delete=models.CASCADE,
     )
+    tags = ArrayField(
+        models.CharField(max_length=200, blank=True), default=list, blank=True, null=True
+    )
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
