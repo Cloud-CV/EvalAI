@@ -24,6 +24,9 @@ PROD_INCLUDED_CHALLENGE_QUEUES = [
     "habitat-rearrangement-challenge-2022-1820-production-e900ef02-eeb1-439a-b4a4-833",
     "habitat-challenge-2022-1615-production-be08fce5-72a7-40bc-aa2e-4df7b3380a8a",
 ]
+DEV_INCLUDED_CHALLENGE_QUEUES = [
+    "habitat-challenge-2022-696-staging-2e5f7385-a6a8-43d6-a1b5-5f7b9948d97a"
+]
 
 ENV = os.environ.get("ENV", "dev")
 
@@ -236,10 +239,8 @@ def scale_up_or_down_nodes_for_eks_challenges(response):
                 if challenge["queue"] in PROD_INCLUDED_CHALLENGE_QUEUES:
                     scale_up_or_down_workers(challenge)
             else:
-                # TODO: Check what to do in case the ENV `dev` is provided.
-                raise ValueError(
-                    "EKS nodes cannot be scaled for `dev` environment."
-                )
+                if challenge["queue"] in PROD_INCLUDED_CHALLENGE_QUEUES:
+                    scale_up_or_down_workers(challenge)
             time.sleep(1)
 
         else:
