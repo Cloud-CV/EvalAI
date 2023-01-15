@@ -67,7 +67,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "created_at",
             "queue",
             "worker_cpu_cores",
-            "worker_memory"
+            "worker_memory",
+            "min_worker_instance",
+            "max_worker_instance",
+            "desired_worker_instance"
         )
 
 
