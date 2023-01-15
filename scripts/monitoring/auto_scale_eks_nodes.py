@@ -216,7 +216,7 @@ def scale_up_or_down_workers(challenge):
     scaling_config = get_scaling_config(
         eks_client, cluster_name, nodegroup_name
     )
-    min_size = scaling_config["min_size"]
+    min_size = scaling_config["minSize"]
 
     print("Min Size: {}, Queue Length: {}".format(min_size, queue_length))
 
