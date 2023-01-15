@@ -58,39 +58,56 @@ def get_boto3_client(resource, aws_keys):
     return client
 
 
-def get_eks_meta(challenge):
-    # NodeGroup Name
-    environment_suffix = "{}-{}".format(challenge["id"], ENV)
-    nodegroup_name = "{}-{}-nodegroup".format(
-        challenge["title"].replace(" ", "-")[:20], environment_suffix
-    )
-
-    # Boto3 EKS Client
-    eks_client = get_boto3_client("eks", aws_keys)
-
-    # Cluster Name
+def get_challenge_evaluation_cluster_details(challenge):
     evalai_interface = EvalAI_Interface(
         os.environ.get("AUTH_TOKEN"), evalai_endpoint, challenge["queue"]
     )
     challenge_evaluation_cluster = (
         evalai_interface.get_aws_eks_cluster_details(challenge["id"])
     )
-    cluster_name = challenge_evaluation_cluster["name"]
+    return challenge_evaluation_cluster
 
-    # Scaling Config
+
+def get_cluster_name(challenge):
+    challenge_evaluation_cluster = get_challenge_evaluation_cluster_details(
+        challenge
+    )
+    cluster_name = challenge_evaluation_cluster["name"]
+    return cluster_name
+
+
+def get_nodegroup_name(challenge):
+    environment_suffix = "{}-{}".format(challenge["id"], ENV)
+    nodegroup_name = "{}-{}-nodegroup".format(
+        challenge["title"].replace(" ", "-")[:20], environment_suffix
+    )
+    return nodegroup_name
+
+
+def get_eks_meta(challenge):
+    # TODO: Check if eks_client should be a global thing. Clients must have an expiry/timeout.
+    # Maybe it is better to re-create for every challenge. Not sure about this.
+    eks_client = get_boto3_client("eks", aws_keys)
+    cluster_name = get_cluster_name(challenge)
+    nodegroup_name = get_nodegroup_name(challenge)
+    return eks_client, cluster_name, nodegroup_name
+
+
+def get_scaling_config(eks_client, cluster_name, nodegroup_name):
+    nodegroup_desc = eks_client.describe_nodegroup(
+        clusterName=cluster_name, nodegroupName=nodegroup_name
+    )
+    scaling_config = nodegroup_desc["nodegroup"]["scalingConfig"]
+    return scaling_config
+
+
+def start_eks_worker(challenge):
+    eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
     scaling_config = {
         "minSize": challenge["min_worker_instance"],
         "maxSize": challenge["max_worker_instance"],
         "desiredSize": challenge["desired_worker_instance"],
     }
-
-    return eks_client, cluster_name, nodegroup_name, scaling_config
-
-
-def start_eks_worker(challenge_id):
-    eks_client, cluster_name, nodegroup_name, scaling_config = get_eks_meta(
-        challenge_id
-    )
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
         nodegroupName=nodegroup_name,
@@ -99,8 +116,8 @@ def start_eks_worker(challenge_id):
     return response
 
 
-def stop_eks_worker(challenge_id):
-    eks_client, cluster_name, nodegroup_name, _ = get_eks_meta(challenge_id)
+def stop_eks_worker(challenge):
+    eks_client, cluster_name, nodegroup_name, _ = get_eks_meta(challenge)
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
         nodegroupName=nodegroup_name,
@@ -150,12 +167,12 @@ def get_queue_length_by_challenge(challenge):
     return get_queue_length(queue_name)
 
 
-def scale_down_workers(challenge, num_workers):
-    if num_workers > 0:
-        response = stop_eks_worker(challenge["id"])
+def scale_down_workers(challenge, min_size):
+    if min_size > 0:
+        response = stop_eks_worker(challenge)
         print("AWS API Response: {}".format(response))
         print(
-            "Stopped worker for Challenge ID: {}, Title: {}".format(
+            "Stopped EKS worker for Challenge ID: {}, Title: {}".format(
                 challenge["id"], challenge["title"]
             )
         )
@@ -167,12 +184,12 @@ def scale_down_workers(challenge, num_workers):
         )
 
 
-def scale_up_workers(challenge, num_workers):
-    if num_workers == 0:
-        response = start_eks_worker(challenge["id"])
+def scale_up_workers(challenge, min_size):
+    if min_size == 0:
+        response = start_eks_worker(challenge)
         print("AWS API Response: {}".format(response))
         print(
-            "Started worker for Challenge ID: {}, Title: {}.".format(
+            "Increased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
                 challenge["id"], challenge["title"]
             )
         )
@@ -195,20 +212,20 @@ def scale_up_or_down_workers(challenge):
         )
         return
 
-    num_workers = (
-        0 if challenge["workers"] is None else int(challenge["workers"])
+    eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
+    scaling_config = get_scaling_config(
+        eks_client, cluster_name, nodegroup_name
     )
+    min_size = scaling_config["min_size"]
 
-    print(
-        "Num Workers: {}, Queue Length: {}".format(num_workers, queue_length)
-    )
+    print("Min Size: {}, Queue Length: {}".format(min_size, queue_length))
 
     if queue_length == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
         datetime.utcnow()
     ):
-        scale_down_workers(challenge, num_workers)
+        scale_down_workers(challenge, min_size)
     else:
-        scale_up_workers(challenge, num_workers)
+        scale_up_workers(challenge, min_size)
 
 
 # TODO: Factor in limits for the APIs
