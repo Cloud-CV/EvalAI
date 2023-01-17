@@ -20,6 +20,10 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **remote_evaluation**: True/False (specify whether evaluation will happen on a remote machine or not. Default is `False`)
 
+- **is_docker_based**: True/False (specify whether the challenge is docker based or not. Default is `False`)
+
+- **is_static_dataset_code_upload**: True/False (specify whether the challenge is static dataset code upload or not. Default is `False`)
+
 - **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
 - **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone

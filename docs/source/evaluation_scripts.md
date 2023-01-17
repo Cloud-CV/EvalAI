@@ -1,6 +1,6 @@
 ## Writing Evaluation Script
 
-### Writing an evaluation script
+### Writing an Evaluation Script
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts are fixed due to architectural reasons.
 
@@ -83,7 +83,7 @@ Let's break down what is happening in the above code snippet.
 2. Each entry in the list should be a dict that has a key with the corresponding dataset split codename (`train_split` and `test_split` for this example).
 3. Each of these dataset split dict contains various keys (`Metric1`, `Metric2`, `Metric3`, `Total` in this example), which are then displayed as columns in the leaderboard.
 
-### Writing Remote Evaluation script
+### Writing Remote Evaluation Script
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts is fixed due to architectural reasons.
 
@@ -129,3 +129,8 @@ Here are the steps to configure remote evaluation:
     The `evaluate()` method also accepts keyword arguments.
 
     **IMPORTANT** ⚠️: If the `evaluate()` method fails due to any reason or there is a problem with the submission, please ensure to raise an `Exception` with an appropriate message.
+
+### Writing Code-Upload Challenge Evaluation Script
+
+
+### Writing Static Code-Upload Challenge Evaluation Script

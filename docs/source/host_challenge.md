@@ -36,12 +36,15 @@ We categorize the challenges in two categories:
     <br />
 
 2. **Code upload based challenges**: In these kind of challenges, participants upload their training code in the form of docker images using [EvalAI-CLI].
+   We support two types of code upload based challenges -
+      - Code Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
+      - Static Code Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
    Some of the popular code upload based challenges that we have hosted are shown below:
 
    <a href="https://eval.ai/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
 
-   If you are interested in hosting code upload based challenges, then [click here](host_challenge.html#host-prediction-upload-based-challenge).
+   If you are interested in hosting code upload based challenges, then [click here](host_challenge.html#host-code-upload-based-challenge). If you are interested in hosting static code upload based challenges, then [click here](host_challenge.html#host-static-code-upload-based-challenge)
 
 ## Host challenge using github
 
@@ -93,7 +96,7 @@ Go to [Hosted Challenges](https://eval.ai/web/hosted-challenges) to view your ch
 
 To update the challenge on EvalAI, make changes in the repository and push on `challenge` branch and wait for the build to complete.
 
-## Host Prediction upload based challenge
+## Host prediction upload based challenge
 
 ### Step 1: Setup challenge configuration
 
@@ -125,11 +128,11 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
-## Host Code upload based challenge
+## Host code upload based challenge
 
 ### Step 1: Setup challenge configuration
 
-Steps to create a Code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
+Steps to create a code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
 
 We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
@@ -137,10 +140,10 @@ We have created a sample challenge configuration that we recommend you to use to
 
 Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) from the repository that you cloned in step-1. This file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc. Edit this file based on your requirement.
 
-Make sure that following fields are set correctly:
+Please ensure the following fields are set to the following values:
 
-- `remote_evaluation` is set to `True`
-- `is_docker_based` is set to `True`
+- `remote_evaluation : True`
+- `is_docker_based : True`
 
 For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
 
@@ -148,7 +151,45 @@ For reference to the fields, refer to the [challenge configuration reference sec
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
 
-Please refer to the [writing evaluation script](evaluation_scripts.html) to complete this step.
+Please refer to the [Writing Code Upload Challenge Evaluation Script](evaluation_scripts.html#writing-a-code-upload-challenge-evaluation-script) section to complete this step.
+
+### Step 4: Edit challenge HTML templates
+
+Almost there. You just need to update the HTML templates in the `templates/` directory of the bundle that you cloned.
+
+EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
+
+<!-- ### Step 5: Upload configuration on EvalAI
+
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`. -->
+
+**Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
+
+## Host static code upload based challenge
+
+### Step 1: Setup challenge configuration
+
+Steps to create a code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
+
+We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
+
+### Step 2: Edit challenge configuration
+
+Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) from the repository that you cloned in step-1. This file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc. Edit this file based on your requirement.
+
+Please ensure the following fields are set to the following values:
+
+- `remote_evaluation : True`
+- `is_docker_based : True`
+- `is_static_dataset_code_upload : True`
+
+For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
+
+### Step 3: Edit evaluation script
+
+Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
+
+Please refer to the [Writing Code Upload Challenge Evaluation Script](evaluation_scripts.html#writing-a-code-upload-challenge-evaluation-script) section to complete this step.
 
 ### Step 4: Edit challenge HTML templates
 
@@ -183,7 +224,7 @@ Refer to the [following documentation](https://evalai.readthedocs.io/en/latest/c
 ### Step 3: Edit remote evaluation script
 
 Next step is to edit the challenge evaluation script that decides what metrics the submissions are going to be evaluated on for different phases.
-Please refer to [writing Remote Evaluation Script section](evaluation_scripts.html#writing-a-remote-evaluation-script) to complete this step.
+Please refer to [Writing Remote Evaluation Script](evaluation_scripts.html#writing-a-remote-evaluation-script) section to complete this step.
 
 ### Step 4: Set up remote evaluation worker
 
