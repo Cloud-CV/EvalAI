@@ -326,4 +326,8 @@ Here are the steps to configure evaluation for code upload challenges:
 
 ### Writing Static Code Upload Challenge Evaluation Script
 
-The starter templates for static code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/evaluation_script/main.py). Note that the evaluation file provided will be used on our submission workers, just like prediction upload challenges. See [writing an evaluation script] section (evaluation_scripts.html#writing-an-evaluation-script) in order to write evaluation scripts for these types of challenges.
+The starter templates for static code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/evaluation_script/main.py). Note that the evaluation file provided will be used on our submission workers, just like prediction upload challenges.
+
+See [writing an evaluation script] section (evaluation_scripts.html#writing-an-evaluation-script) in order to write evaluation scripts for these types of challenges.
+
+A good example of a well-documented evaluation script for static code-upload challenges is [My Seizure Gauge Forecasting Challenge 2022](https://github.com/seermedical/msg-2022).
