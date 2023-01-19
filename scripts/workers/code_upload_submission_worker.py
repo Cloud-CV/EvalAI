@@ -3,16 +3,15 @@ import logging
 import os
 import signal
 import sys
-import yaml
 import time
 
-
-from worker_utils import EvalAI_Interface
-
+import yaml
 from kubernetes import client
-
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
+from worker_utils import EvalAI_Interface
+
+from .submission_worker import increment_and_push_metrics_to_statsd
 
 
 class GracefulKiller:
@@ -238,9 +237,7 @@ def create_job_object(message, environment_image, challenge):
             MESSAGE_BODY_ENV,
             SUBMISSION_TIME_LIMIT_ENV,
         ],
-        resources=client.V1ResourceRequirements(
-            limits=job_constraints
-        ),
+        resources=client.V1ResourceRequirements(limits=job_constraints),
         volume_mounts=volume_mount_list,
     )
     volume_list = get_volume_list()
@@ -411,7 +408,9 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(api_instance, body, challenge_phase, challenge, evalai):
+def process_submission_callback(
+    api_instance, body, challenge_phase, challenge, evalai
+):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -678,6 +677,7 @@ def main():
         )
     )
     challenge = evalai.get_challenge_by_queue_name()
+    is_remote = int(challenge.get("remote_evaluation"))
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
@@ -746,6 +746,10 @@ def main():
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )
+                        increment_and_push_metrics_to_statsd(
+                            QUEUE_NAME, is_remote
+                        )
+
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(
@@ -766,7 +770,11 @@ def main():
                         challenge_pk, phase_pk
                     )
                     process_submission_callback(
-                        api_instance, message_body, challenge_phase, challenge, evalai
+                        api_instance,
+                        message_body,
+                        challenge_phase,
+                        challenge,
+                        evalai,
                     )
 
         if killer.kill_now:
