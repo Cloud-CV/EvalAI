@@ -17,11 +17,11 @@ utc = pytz.UTC
 # Need to check if we want to consider the `use_host_credentials` case.
 # Or if we can provide just environment variables for this.
 AWS_EKS_KEYS = {
-    "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID"),
-    "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID"),
-    "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY"),
-    "AWS_REGION": os.environ.get("AWS_REGION"),
-    "AWS_STORAGE_BUCKET_NAME": os.environ.get("AWS_STORAGE_BUCKET_NAME"),
+    "AWS_ACCOUNT_ID": os.environ.get("EKS_AWS_ACCOUNT_ID"),
+    "AWS_ACCESS_KEY_ID": os.environ.get("EKS_AWS_ACCESS_KEY_ID"),
+    "AWS_SECRET_ACCESS_KEY": os.environ.get("EKS_AWS_SECRET_ACCESS_KEY"),
+    "AWS_REGION": os.environ.get("EKS_AWS_REGION"),
+    "AWS_STORAGE_BUCKET_NAME": os.environ.get("EKS_AWS_STORAGE_BUCKET_NAME"),
 }
 
 # Env Variables
