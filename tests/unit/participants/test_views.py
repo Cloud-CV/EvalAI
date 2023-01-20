@@ -938,9 +938,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "queue": self.challenge1.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
 

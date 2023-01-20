@@ -180,9 +180,6 @@ class GetChallengeTest(BaseAPITestClass):
                 "queue": self.challenge.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
 
@@ -1161,9 +1158,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge3.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1227,9 +1221,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1293,9 +1284,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge4.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1359,9 +1347,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge4.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             },
             {
                 "id": self.challenge3.pk,
@@ -1409,9 +1394,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge3.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             },
             {
                 "id": self.challenge2.pk,
@@ -1459,9 +1441,6 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1574,9 +1553,6 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "queue": self.challenge3.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1916,9 +1892,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
 
@@ -1978,9 +1951,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
 
@@ -2040,9 +2010,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             }
         ]
 
@@ -2100,9 +2067,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "queue": self.challenge.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             },
             {
                 "id": self.challenge2.pk,
@@ -2150,9 +2114,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "queue": self.challenge2.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
-                "min_worker_instance": 1,
-                "max_worker_instance": 10,
-                "desired_worker_instance": 1,
             },
         ]
 
