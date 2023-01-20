@@ -335,9 +335,6 @@ class GetParticularChallenge(BaseAPITestClass):
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
-            "min_worker_instance": 1,
-            "max_worker_instance": 10,
-            "desired_worker_instance": 1,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -420,9 +417,6 @@ class GetParticularChallenge(BaseAPITestClass):
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
-            "min_worker_instance": 1,
-            "max_worker_instance": 10,
-            "desired_worker_instance": 1,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -531,9 +525,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
-            "min_worker_instance": 1,
-            "max_worker_instance": 10,
-            "desired_worker_instance": 1,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -591,9 +582,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "queue": self.challenge.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
-            "min_worker_instance": 1,
-            "max_worker_instance": 10,
-            "desired_worker_instance": 1,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1688,9 +1676,6 @@ class GetChallengeByPk(BaseAPITestClass):
             "queue": self.challenge3.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
-            "min_worker_instance": 1,
-            "max_worker_instance": 10,
-            "desired_worker_instance": 1,
         }
 
         response = self.client.get(self.url, {})
@@ -1762,9 +1747,6 @@ class GetChallengeByPk(BaseAPITestClass):
             "queue": self.challenge4.queue,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
-            "min_worker_instance": 1,
-            "max_worker_instance": 10,
-            "desired_worker_instance": 1,
         }
 
         self.client.force_authenticate(user=self.user1)
