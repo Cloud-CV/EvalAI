@@ -39,7 +39,6 @@ PROD_INCLUDED_CHALLENGE_PKS = [
 ]
 DEV_INCLUDED_CHALLENGE_PKS = [696]
 
-DOWN_SCALING_CONFIG = {"minSize": 0, "maxSize": 1, "desiredSize": 0}
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
 
@@ -87,12 +86,12 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge):
+def start_eks_worker(challenge, queue_length):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
     scaling_config = {
-        "minSize": challenge["min_worker_instance"],
-        "maxSize": challenge["max_worker_instance"],
-        "desiredSize": challenge["desired_worker_instance"],
+        "minSize": 1,
+        "maxSize": max(5, queue_length),
+        "desiredSize": min(5, queue_length),
     }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
@@ -104,10 +103,15 @@ def start_eks_worker(challenge):
 
 def stop_eks_worker(challenge):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
+    scaling_config = {
+        "minSize": 0,
+        "maxSize": 1,
+        "desiredSize": 0,
+    }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
         nodegroupName=nodegroup_name,
-        scalingConfig=DOWN_SCALING_CONFIG,
+        scalingConfig=scaling_config,
     )
     return response
 
@@ -139,8 +143,8 @@ def get_queue_length_by_challenge(challenge):
     return get_queue_length(queue_name)
 
 
-def scale_down_workers(challenge, min_size):
-    if min_size > 0:
+def scale_down_workers(challenge, desired_size):
+    if desired_size > 0:
         response = stop_eks_worker(challenge)
         print("AWS API Response: {}".format(response))
         print(
@@ -156,9 +160,9 @@ def scale_down_workers(challenge, min_size):
         )
 
 
-def scale_up_workers(challenge, min_size):
-    if min_size == 0:
-        response = start_eks_worker(challenge)
+def scale_up_workers(challenge, desired_size, queue_length):
+    if desired_size == 0:
+        response = start_eks_worker(challenge, queue_length)
         print("AWS API Response: {}".format(response))
         print(
             "Increased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
@@ -204,9 +208,9 @@ def scale_up_or_down_workers(challenge):
     if queue_length == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
         datetime.utcnow()
     ):
-        scale_down_workers(challenge, min_size)
+        scale_down_workers(challenge, desired_size)
     else:
-        scale_up_workers(challenge, min_size)
+        scale_up_workers(challenge, desired_size, queue_length)
 
 
 # Cron Job
