@@ -3778,12 +3778,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         str(data["dataset_split_id"])
                     ]
                     visibility = data["visibility"]
+                    leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
+                    is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
 
                     data = {
                         "challenge_phase": challenge_phase,
                         "leaderboard": leaderboard,
                         "dataset_split": dataset_split,
                         "visibility": visibility,
+                        "is_leaderboard_order_descending": is_leaderboard_order_descending,
+                        "leaderboard_decimal_precision": leaderboard_decimal_precision
                     }
 
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
