@@ -752,7 +752,6 @@ def main():
                         increment_and_push_metrics_to_statsd(
                             QUEUE_NAME, is_remote
                         )
-
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(
