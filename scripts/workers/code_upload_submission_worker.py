@@ -772,7 +772,9 @@ def main():
                     challenge_phase = evalai.get_challenge_phase_by_pk(
                         challenge_pk, phase_pk
                     )
-                    process_submission_callback(api_instance, message_body, challenge_phase, challenge, evalai,)
+                    process_submission_callback(
+                        api_instance, message_body, challenge_phase, challenge, evalai
+                    )
 
         if killer.kill_now:
             break
