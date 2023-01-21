@@ -3,13 +3,16 @@ import logging
 import os
 import signal
 import sys
+import yaml
 import time
 
-import yaml
+
+from worker_utils import EvalAI_Interface
+
 from kubernetes import client
+
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
-from worker_utils import EvalAI_Interface
 
 from .submission_worker import increment_and_push_metrics_to_statsd
 
@@ -237,7 +240,9 @@ def create_job_object(message, environment_image, challenge):
             MESSAGE_BODY_ENV,
             SUBMISSION_TIME_LIMIT_ENV,
         ],
-        resources=client.V1ResourceRequirements(limits=job_constraints),
+        resources=client.V1ResourceRequirements(
+            limits=job_constraints
+        ),
         volume_mounts=volume_mount_list,
     )
     volume_list = get_volume_list()
@@ -408,9 +413,7 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(
-    api_instance, body, challenge_phase, challenge, evalai
-):
+def process_submission_callback(api_instance, body, challenge_phase, challenge, evalai):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -769,13 +772,7 @@ def main():
                     challenge_phase = evalai.get_challenge_phase_by_pk(
                         challenge_pk, phase_pk
                     )
-                    process_submission_callback(
-                        api_instance,
-                        message_body,
-                        challenge_phase,
-                        challenge,
-                        evalai,
-                    )
+                    process_submission_callback(api_instance, message_body, challenge_phase, challenge, evalai,)
 
         if killer.kill_now:
             break
