@@ -16,6 +16,7 @@ from kubernetes.client.rest import ApiException
 
 from .submission_worker import increment_and_push_metrics_to_statsd
 
+
 class GracefulKiller:
     kill_now = False
 
