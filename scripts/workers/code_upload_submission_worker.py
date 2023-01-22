@@ -14,6 +14,8 @@ from kubernetes import client
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
 
+from .submission_worker import increment_and_push_metrics_to_statsd
+
 
 class GracefulKiller:
     kill_now = False
@@ -678,6 +680,7 @@ def main():
         )
     )
     challenge = evalai.get_challenge_by_queue_name()
+    is_remote = int(challenge.get("remote_evaluation"))
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
@@ -745,6 +748,9 @@ def main():
                         # Delete message from sqs queue to avoid re-triggering job delete
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
+                        )
+                        increment_and_push_metrics_to_statsd(
+                            QUEUE_NAME, is_remote
                         )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
