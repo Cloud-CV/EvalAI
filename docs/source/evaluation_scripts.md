@@ -134,7 +134,7 @@ Here are the steps to configure remote evaluation:
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts is fixed due to architectural reasons.
 
-In code-upload challenges, the evaluation is tighly-coupled with the agent and environment containers: The agent container continuously interacts with the environment container, and the environment container provides feedback to the agent until the environment provides a `stop` signal when the goal is reached or when the agent cannot continue further. Therefore, it is important to describe the interaction between the containers, how once can set up the individual containers, and how can the evaluation be performed.
+In code-upload challenges, the evaluation is tighly-coupled with the agent and environment containers: The agent container continuously interacts with the environment container, and the environment container provides feedback to the agent until the agent provides a `stop` action for each episode. The environment asks agents for actions until all episodes run out or the time limit for evaluation is reached. Therefore, it is important to describe the interaction between the containers, how once can set up the individual containers, and how can the evaluation be performed.
 
 The starter templates for code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/tree/master/code_upload_challenge_evaluation). Here, we have a code organization to facilitate communication between the agent and environment.
 
@@ -159,11 +159,14 @@ Here are the steps to configure evaluation for code upload challenges:
                 self.score += 1
         ```
 
-        The attribute `self.env` here is the environment, `self.feedback` is the observations from the sensors of the agent after performing an action and `self.score` stores the score at each step.
+        There are three methods in this example:
+        - `__init__`: The initialization method to instantiate and set up the evaluation environment.
+        - `get_action_space`: Returns the action space of the agent in the environment.
+        - `next_score`: Returns/updates the reward achieved.
 
-        The `next_score` method shows how the score can be updated and shown towards the end of the evaluation and the `get_action_space` gets the list of possible actions. You can add custom methods and attributes which help in interaction with the environment.
+        You can add custom methods and attributes which help in interaction with the environment.
 
-    2. _Edit the Environment service_: This service is hosted on the GRPC server in order to get actions in form of messages from the agent container. Modify the lines shown [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/8338085c6335487332f5b57cf7182201b8499aad/code_upload_challenge_evaluation/environment/environment.py#L35-L65):
+    2. *Edit the Environment service*: This service is hosted on the [gRPC](https://grpc.io/) server in order to get actions in form of messages from the agent container. gRPC is a framework which is used for communication between services. Modify the lines shown [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/8338085c6335487332f5b57cf7182201b8499aad/code_upload_challenge_evaluation/environment/environment.py#L35-L65):
 
         ```python
         class Environment(evaluation_pb2_grpc.EnvironmentServicer):
@@ -199,14 +202,21 @@ Here are the steps to configure evaluation for code upload challenges:
                 )
         ```
 
-        You can modify the relevant parts of the environment service in order to make it work for your case. For example, `feedback` can totally depend on the results obtained from the `env.env` after performing an action, which in-turn depends on the sensors expected from the agent. In our example, `feedback[2]` is the stop signal sensor. The `unpack_for_grpc` and `pack_for_grpc` are methods to receive and send messages with the agent.
+        You can modify the relevant parts of the environment service in order to make it work for your case. For example, `feedback` can totally depend on the results obtained from the `env.env` after performing an action, which in-turn depends on the sensors expected from the agent. In our example, `feedback[2]` is the stop signal sensor.
+
+        In addition, you would need to serialize and deserialize the response/request to act in the environment and communicate across the gRPC server.
+
+        For this, we have implemented two methods which might be useful:
+        - `unpack_for_grpc`: This method deserializes entities from request/response sent over gRPC. This is useful for receiving messages (for example, actions from the agent).
+        - `pack_for_grpc`: This method serializes entities to be sent over a request over gRPC. This is useful for sending messages (for example, feedback from the environment).
 
         This is a high-level description of the class and the implementations may vary on a case-by-case basis.
-    3. _Edit the requirements file_: Change the [requirements file](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/requirements/environment.txt) according to the packages required by your environment.
 
-    4. _Edit environment Dockerfile_: You may choose to modify the [Dockerfile](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/environment/Dockerfile) which will host the Environment service on a GRPC server.
+    3. *Edit the requirements file*: Change the [requirements file](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/requirements/environment.txt) according to the packages required by your environment.
 
-    5. _Edit the docker environment variables_: Fill in the following information in the [`docker.env`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/environment/docker.env) file:
+    4. *Edit environment Dockerfile*: You may choose to modify the [Dockerfile](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/environment/Dockerfile) that will set up and run the environment service.
+
+    5. *Edit the docker environment variables*: Fill in the following information in the [`docker.env`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/environment/docker.env) file:
 
         ```env
         AUTH_TOKEN=<Add your EvalAI Auth Token here>
@@ -215,9 +225,23 @@ Here are the steps to configure evaluation for code upload challenges:
         QUEUE_NAME=<Go to the challenge manage tab to get challenge queue name.>
         ```
 
-    6. _Create the docker image and host it_: Create an environment docker image using the above steps using `docker build` command and host it.
+    6. *Create the docker image and upload on ECR*: Create an environment docker image for the created `Dockerfile` by using:
 
-    7. _Add environment image the challenge configuration for challenge phase_: For each challenge phase, add the link to the environment image in the [challenge configuration](https://evalai.readthedocs.io/en/latest/configuration.html):
+        ```sh
+        docker build -f <file_path_to_Dockerfile>
+        ````
+
+        Upload the created docker image to ECR:
+
+        ```sh
+        aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+        docker tag <image_id> <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:<tag>
+        docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:<tag>
+        ```
+
+        Detailed steps for uploading a docker image to ECR can be found [here](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html).
+
+    7. *Add environment image the challenge configuration for challenge phase*: For each challenge phase, add the link to the environment image in the [challenge configuration](https://evalai.readthedocs.io/en/latest/configuration.html):
 
         ```yaml
         ...
@@ -230,41 +254,17 @@ Here are the steps to configure evaluation for code upload challenges:
 
     Example References:
     - [Habitat Benchmark](https://github.com/facebookresearch/habitat-lab/blob/b1f2d4791a0065d0791001b72a6c96748a5f9ae0/habitat-lab/habitat/core/benchmark.py): This file contains description of an evaluation class which evaluates agents on the environment.
-    - 
 
-2. **Create a dummy agent**:
-    The participants are expected to submit docker images for their agents which will contain the policy/network and the methods to interact with the environment.
+2. **Create a starter example**:
+    The participants are expected to submit docker images for their agents which will contain the policy and the methods to interact with the environment.
 
     Like environment, there are a few steps involved in creating the agent:
-    1. _Create a dummy agent script_: In order to help the participants understand what your environment expects, please create a python script for a dummy/baseline/random agent and submit the agent to your challenge/environment for evaluation.
+    1. *Create a starter example script*: In order to help the participants understand what your environment expects, please create a starter agent submission and a local evaluation script in order to help the participants perform sanity checks on their code before making submissions to EvalAI.
 
         The `agent.py` file should contain a description of the agent, the methods that the environment expects the agent to have.
+        It should also contain a `main()` function or script which either submits the agent or the action to the environment.
 
-        An example agent taken from [Habitat Rearrangement Challenge 2022](https://github.com/facebookresearch/habitat-challenge/blob/rearrangement-challenge-2022/agents/random_agent.py) that randomly picks actions given observations is shown below.
-
-        ```python
-        class RandomAgent(habitat.Agent):
-            def __init__(self, task_config: habitat.Config):
-                self._POSSIBLE_ACTIONS = task_config.TASK.POSSIBLE_ACTIONS
-
-            def reset(self):
-                pass
-
-            def act(self, observations):
-                return {
-                    "action": ("ARM_ACTION", "BASE_VELOCITY", "REARRANGE_STOP"),
-                    "action_args": {
-                        "arm_action": np.random.rand(7),
-                        "grip_action": np.random.rand(1),
-                        "base_vel": np.random.rand(2),
-                        "REARRANGE_STOP": np.random.rand(1),
-                    },
-                }
-        ```
-
-        Note that this example is specific to superclass `habitat.Agent` and the corresponding environment is `habitat-lab`'s [`Challenge`](https://github.com/facebookresearch/habitat-lab/blob/b1f2d4791a0065d0791001b72a6c96748a5f9ae0/habitat-lab/habitat/core/challenge.py#L9) which makes the agent perform actions on the environment using the `reset` and `act` methods.
-
-        The `agent.py` should also contain a `main()` function which either submits the agent or the action to the environment.
+         that randomly picks actions given observations is shown below.
 
         We provide a template for `agent.py` [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/agent/agent.py):
 
@@ -311,11 +311,14 @@ Here are the steps to configure evaluation for code upload challenges:
 
         The feedback is checked for stop signal, and usually contains observations from the sensors. The action then can depend on the `feedback` from the environment.
 
-    2. _Edit the requirements file_: Change the [requirements file](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/requirements/agent.txt) according to the packages required by an agent.
+        **Other Examples**:
+           -   A [random agent](https://github.com/facebookresearch/habitat-challenge/blob/rearrangement-challenge-2022/agents/random_agent.py) from [Habitat Rearrangement Challenge 2022](https://github.com/facebookresearch/habitat-challenge/blob/rearrangement-challenge-2022)
 
-    3. _Edit environment Dockerfile_: You may choose to modify the [Dockerfile](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/agent/Dockerfile) which will run the `agent.py` file and interact with environment.
+    2. *Edit the requirements file*: Change the [requirements file](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/requirements/agent.txt) according to the packages required by an agent.
 
-    4. _Edit the docker environment variables_: Fill in the following information in the [`docker.env`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/agent/docker.env) file:
+    3. *Edit environment Dockerfile*: You may choose to modify the [Dockerfile](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/agent/Dockerfile) which will run the `agent.py` file and interact with environment.
+
+    4. *Edit the docker environment variables*: Fill in the following information in the [`docker.env`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/agent/docker.env) file:
 
         ```env
         LOCAL_EVALUATION = True
