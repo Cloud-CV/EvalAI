@@ -592,7 +592,7 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             if split["codename"] not in dataset_split_codenames:
-                dataset_split_codenames.append(data["codename"])
+                dataset_split_codenames.append(split["codename"])
             else:
                 error_messages.append("ERROR: Duplicate codename {} for dataset split {}. Please ensure codenames are unique".format(split["codename"], split["name"]))
         for split in dataset_splits:
