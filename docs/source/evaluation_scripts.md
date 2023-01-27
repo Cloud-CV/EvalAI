@@ -326,11 +326,3 @@ Here are the steps to configure evaluation for code upload challenges:
 
     Example References:
     - [Habitat Rearrangement Challenge 2022 - Random Agent](https://github.com/facebookresearch/habitat-challenge/blob/rearrangement-challenge-2022/agents/random_agent.py): This is an example of a dummy agent created for the [Habitat Rearrangement Challenge 2022](https://eval.ai/web/challenges/challenge-page/1820/overview) which is then sent to the evaluator (here, [Habitat Benchmark](https://github.com/facebookresearch/habitat-lab/blob/b1f2d4791a0065d0791001b72a6c96748a5f9ae0/habitat-lab/habitat/core/benchmark.py)) for evaluation.
-
-### Writing Static Code Upload Challenge Evaluation Script
-
-The starter templates for static code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/evaluation_script/main.py). Note that the evaluation file provided will be used on our submission workers, just like prediction upload challenges.
-
-See [writing an evaluation script] section (evaluation_scripts.html#writing-an-evaluation-script) in order to write evaluation scripts for these types of challenges.
-
-A good example of a well-documented evaluation script for static code-upload challenges is [My Seizure Gauge Forecasting Challenge 2022](https://github.com/seermedical/msg-2022).
