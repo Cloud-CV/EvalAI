@@ -8,7 +8,7 @@ EvalAI supports hosting challenges with different configurations. Challenge orga
 - Daily / monthly / overall submission limit
 - Number of workers evaluating submissions
 - Evaluation on remote machines
-- Provide your AWS credentials to host code upload based challenge
+- Provide your AWS credentials to host code-upload based challenge
 - Show / hide error bars on leaderboard
 - Public / private leaderboards
 - Allow / block certain email addresses to participate in the challenge or phase
@@ -35,17 +35,17 @@ We categorize the challenges in two categories:
 
     <br />
 
-2. **Code upload based challenges**: In these kind of challenges, participants upload their training code in the form of docker images using [EvalAI-CLI](https://github.com/Cloud-CV/evalai-cli/).
+2. **Code-upload based challenges**: In these kind of challenges, participants upload their training code in the form of docker images using [EvalAI-CLI](https://github.com/Cloud-CV/evalai-cli/).
 
-   We support two types of code upload based challenges -
-      - Code Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
-      - Static Code Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
+   We support two types of code-upload based challenges -
+      - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
+      - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
-   Some of the popular code upload based challenges that we have hosted are shown below:
+   Some of the popular code-upload based challenges that we have hosted are shown below:
 
    <a href="https://eval.ai/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
 
-   If you are interested in hosting code upload based challenges, then [click here](host_challenge.html#host-code-upload-based-challenge). If you are interested in hosting static code upload based challenges, then [click here](host_challenge.html#host-static-code-upload-based-challenge).
+   If you are interested in hosting code-upload based challenges, then [click here](host_challenge.html#host-code-upload-based-challenge). If you are interested in hosting static code-upload based challenges, then [click here](host_challenge.html#host-static-code-upload-based-challenge).
 
    A good reference would be the [Habitat Re-arrangement Challenge 2022](https://github.com/facebookresearch/habitat-challenge/tree/rearrangement-challenge-2022).
 
@@ -131,24 +131,24 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
-## Host code upload based challenge
+## Host code-upload based challenge
 
-### Step 1: Setup challenge configuration
+### Step 1: Setup challenge repository
 
-Steps to create a code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
+Steps to create a code-upload based challenge are somewhat similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
 
-We have created a sample challenge configuration that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
+We have created a sample challenge repository that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
 ### Step 2: Edit challenge configuration
 
 Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) from the repository that you cloned in step-1. This file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc. Edit this file based on your requirement.
 
-Please ensure the following fields are set to the following values for code upload based challenges:
+Please ensure the following fields are set to the following values for code-upload based challenges:
 
 - `remote_evaluation : True`
 - `is_docker_based : True`
 
-In order to perform evaluation, you might also need to create an EKS cluster on AWS. This is because we use docker containers for both - the agent, and the environment. See [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/) to learn more about what EKS is and how it works.
+In order to perform evaluation, you might also need to create an EKS cluster on AWS. This is because we expect to use docker containers for both - the agent, and the environment. See [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/) to learn more about what EKS is and how it works.
 
 We need the following details for the EKS cluster in order to perform evaluations in case you are using your own AWS account:
 
@@ -167,7 +167,7 @@ Next step is to create code-upload challenge evaluation that decides what metric
 
 For code-upload challenges, the environment image is expected to be created by the host and the agent image is to be pushed by the participants.
 
-Please refer to the [Writing Code Upload Challenge Evaluation](evaluation_scripts.html#writing-code-upload-challenge-evaluation) section to complete this step.
+Please refer to the [Writing Code-Upload Challenge Evaluation](evaluation_scripts.html#writing-code-upload-challenge-evaluation) section to complete this step.
 
 ### Step 4: Edit challenge HTML templates
 
@@ -185,7 +185,7 @@ evalai push <image>:<tag> --phase <phase_name>
 
 Please refer to the [documentation](https://cli.eval.ai/) for more details on this.
 
-A good example of submission guidelines is present [here](https://eval.ai/web/challenges/challenge-page/1820/submission).
+A good example of submission guidelines for code-upload challenges is present [here](https://eval.ai/web/challenges/challenge-page/1820/submission).
 
 <!-- ### Step 5: Upload configuration on EvalAI
 
