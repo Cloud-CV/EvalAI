@@ -56,12 +56,9 @@ def get_boto3_client(resource, aws_keys):
     return client
 
 
-def get_nodegroup_name(challenge):
-    environment_suffix = "{}-{}".format(challenge["id"], ENV)
-    nodegroup_name = "{}-{}-nodegroup".format(
-        challenge["title"].replace(" ", "-")[:20], environment_suffix
-    )
-    return nodegroup_name
+def get_nodegroup_name(eks_client, cluster_name):
+    nodegroup_list = eks_client.list_nodegroups(clusterName=cluster_name)
+    return nodegroup_list['nodegroups'][0]
 
 
 def get_eks_meta(challenge):
@@ -71,7 +68,7 @@ def get_eks_meta(challenge):
     cluster_name = evalai_interface.get_aws_eks_cluster_details(
         challenge["id"]
     )["name"]
-    nodegroup_name = get_nodegroup_name(challenge)
+    nodegroup_name = get_nodegroup_name(eks_client, cluster_name)
     return eks_client, cluster_name, nodegroup_name
 
 
