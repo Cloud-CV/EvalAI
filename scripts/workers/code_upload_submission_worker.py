@@ -3,16 +3,13 @@ import logging
 import os
 import signal
 import sys
-import yaml
 import time
 
-
-from worker_utils import EvalAI_Interface
-
+import yaml
 from kubernetes import client
-
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
+from worker_utils import EvalAI_Interface
 
 from .submission_worker import increment_and_push_metrics_to_statsd
 
