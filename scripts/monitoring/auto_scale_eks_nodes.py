@@ -84,8 +84,8 @@ def start_eks_worker(challenge, queue_length):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
     scaling_config = {
         "minSize": 1,
-        "maxSize": max(5, queue_length),
-        "desiredSize": min(5, queue_length),
+        "maxSize": max(1, queue_length),
+        "desiredSize": min(1, queue_length),
     }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
