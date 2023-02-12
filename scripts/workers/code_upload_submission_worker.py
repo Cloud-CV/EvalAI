@@ -521,7 +521,7 @@ def cleanup_submission(
     stderr,
     message,
     queue_name,
-    is_remote
+    is_remote,
 ):
     """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and message from SQS.
     Arguments:
@@ -573,7 +573,7 @@ def update_failed_jobs_and_send_logs(
     phase_pk,
     message,
     queue_name,
-    is_remote
+    is_remote,
 ):
     clean_submission = False
     try:
@@ -648,7 +648,7 @@ def update_failed_jobs_and_send_logs(
             submission_error,
             message,
             queue_name,
-            is_remote
+            is_remote,
         )
 
 
@@ -776,7 +776,7 @@ def main():
                         phase_pk,
                         message,
                         QUEUE_NAME,
-                        is_remote
+                        is_remote,
                     )
                 else:
                     logger.info(
