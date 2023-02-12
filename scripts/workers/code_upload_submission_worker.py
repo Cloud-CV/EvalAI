@@ -3,16 +3,13 @@ import logging
 import os
 import signal
 import sys
-import yaml
 import time
 
-
-from worker_utils import EvalAI_Interface
-
+import yaml
 from kubernetes import client
-
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
+from worker_utils import EvalAI_Interface
 
 from .submission_worker import increment_and_push_metrics_to_statsd
 
@@ -520,8 +517,10 @@ def cleanup_submission(
     phase_pk,
     stderr,
     message,
+    queue_name,
+    is_remote,
 ):
-    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
+    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and message from SQS.
     Arguments:
         api_instance {[AWS EKS API object]} -- API object for deleting job
         evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
@@ -531,6 +530,8 @@ def cleanup_submission(
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
         message {[dict]} -- Submission message from AWS SQS queue
+        queue_name {[string]} -- Submission SQS queue name
+        is_remote {[int]} -- Whether the challenge is remote evaluation
     """
     try:
         submission_data = {
@@ -550,6 +551,7 @@ def cleanup_submission(
         message_receipt_handle = message.get("receipt_handle")
         if message_receipt_handle:
             evalai.delete_message_from_sqs_queue(message_receipt_handle)
+            increment_and_push_metrics_to_statsd(queue_name, is_remote)
     except Exception as e:
         logger.exception(
             "Exception while cleanup Submission {}:  {}".format(
@@ -567,6 +569,8 @@ def update_failed_jobs_and_send_logs(
     challenge_pk,
     phase_pk,
     message,
+    queue_name,
+    is_remote,
 ):
     clean_submission = False
     try:
@@ -640,6 +644,8 @@ def update_failed_jobs_and_send_logs(
             phase_pk,
             submission_error,
             message,
+            queue_name,
+            is_remote,
         )
 
 
@@ -741,6 +747,9 @@ def main():
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )
+                        increment_and_push_metrics_to_statsd(
+                            QUEUE_NAME, is_remote
+                        )
                     except Exception as e:
                         logger.exception(
                             "Failed to delete submission job: {}".format(e)
@@ -763,6 +772,8 @@ def main():
                         challenge_pk,
                         phase_pk,
                         message,
+                        QUEUE_NAME,
+                        is_remote,
                     )
                 else:
                     logger.info(
