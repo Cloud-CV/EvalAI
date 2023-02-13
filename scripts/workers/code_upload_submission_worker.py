@@ -9,9 +9,8 @@ import yaml
 from kubernetes import client
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
-from worker_utils import EvalAI_Interface
-
 from statsd_utils import increment_and_push_metrics_to_statsd
+from worker_utils import EvalAI_Interface
 
 
 class GracefulKiller:
