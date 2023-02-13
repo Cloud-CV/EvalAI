@@ -16,6 +16,7 @@ logger.setLevel(logging.INFO)
 
 SUBMISSION_LOGS_PREFIX = "SUBMISSION_LOG"
 
+
 def increment_and_push_metrics_to_statsd(queue_name, is_remote):
     try:
         submission_metric_tags = [
