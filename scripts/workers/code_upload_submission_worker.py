@@ -11,7 +11,7 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 from worker_utils import EvalAI_Interface
 
-from .submission_worker import increment_and_push_metrics_to_statsd
+from workers.submission_worker import increment_and_push_metrics_to_statsd
 
 
 class GracefulKiller:
