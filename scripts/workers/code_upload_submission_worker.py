@@ -7,11 +7,11 @@ import time
 
 import yaml
 from kubernetes import client
+
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
+from statsd_utils import increment_and_push_metrics_to_statsd
 from worker_utils import EvalAI_Interface
-
-from .submission_worker import increment_and_push_metrics_to_statsd
 
 
 class GracefulKiller:
