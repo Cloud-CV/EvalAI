@@ -23,7 +23,10 @@ import requests
 import yaml
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from .statsd_utils import increment_and_push_metrics_to_statsd
+try:
+    from statsd_utils import increment_and_push_metrics_to_statsd
+except:
+    from .statsd_utils import increment_and_push_metrics_to_statsd
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
