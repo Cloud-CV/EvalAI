@@ -1,32 +1,29 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-import boto3
-import botocore
 import contextlib
-import django
 import importlib
 import json
 import logging
 import os
-import requests
-import signal
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
 import time
 import traceback
-import yaml
 import zipfile
-
 from os.path import join
 
+import boto3
+import botocore
+import django
+import requests
+import yaml
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from monitoring.statsd.metrics import NUM_PROCESSED_SUBMISSIONS, increment_statsd_counter
+from .statsd_utils import increment_and_push_metrics_to_statsd
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -45,15 +42,10 @@ logger.setLevel(logging.INFO)
 
 django.setup()
 
+from challenges.models import (Challenge, ChallengePhase,  # noqa:E402
+                               ChallengePhaseSplit, LeaderboardData)
 # Load django app settings
 from django.conf import settings  # noqa
-from challenges.models import (  # noqa:E402
-    Challenge,
-    ChallengePhase,
-    ChallengePhaseSplit,
-    LeaderboardData,
-)
-
 from jobs.models import Submission  # noqa:E402
 from jobs.serializers import SubmissionSerializer  # noqa:E402
 
@@ -785,21 +777,6 @@ def load_challenge_and_return_max_submissions(q_params):
         challenge.max_concurrent_submission_evaluation
     )
     return maximum_concurrent_submissions, challenge
-
-
-def increment_and_push_metrics_to_statsd(queue_name, is_remote):
-    try:
-        submission_metric_tags = [
-            "queue_name:%s" % queue_name,
-            "is_remote:%d" % is_remote,
-        ]
-        increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
-    except Exception as e:
-        logger.exception(
-            "{} Exception when pushing metrics to statsd: {}".format(
-                SUBMISSION_LOGS_PREFIX, e
-            )
-        )
 
 
 def main():
