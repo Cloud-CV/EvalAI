@@ -212,7 +212,7 @@ The steps to configure evaluation for code-upload challenges are:
     The participants are expected to submit docker images for their agents which will contain the policy and the methods to interact with the environment.
 
     Like environment, there are a few steps involved in creating the agent:
-    1. *Create a starter example script*_: Please create a starter agent submission and a local evaluation script in order to help the participants perform sanity checks on their code before making submissions to EvalAI.
+    1. *Create a starter example script*: Please create a starter agent submission and a local evaluation script in order to help the participants perform sanity checks on their code before making submissions to EvalAI.
 
         The `agent.py` file should contain a description of the agent, the methods that the environment expects the agent to have, and a `main()` function to pass actions to the environment.
 
