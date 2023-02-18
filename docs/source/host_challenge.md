@@ -157,8 +157,7 @@ We need the following details for the EKS cluster in order to perform evaluation
 - `aws_secret_access_key: <AWS Secret Access Key>`
 - `aws_region: <AWS Region>`
 
-These details need to be added to the challenge configuration.
-
+These details need to be emailed us at [team@cloudcv.org](mailto:team@cloudcv.org). The EvalAI team will set up the infrastructure in your AWS account. Please share challenge ID and any other relevant details along with it to make the process faster.
 For reference to the other fields, refer to the [challenge configuration reference section](configuration.html).
 
 ### Step 3: Edit evaluation code
