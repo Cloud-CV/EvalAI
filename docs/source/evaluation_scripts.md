@@ -165,7 +165,7 @@ The steps to configure evaluation for code-upload challenges are:
 
         **Note**: This is a basic description of the class and the implementations may vary on a case-by-case basis.
 
-    3. *Edit the requirements file_: Change the [requirements file](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/requirements/environment.txt) according to the packages required by your environment.
+    3. *Edit the requirements file*: Change the [requirements file](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/requirements/environment.txt) according to the packages required by your environment.
 
     4. *Edit environment Dockerfile*: You may choose to modify the [Dockerfile](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/code_upload_challenge_evaluation/docker/environment/Dockerfile) that will set up and run the environment service.
 
