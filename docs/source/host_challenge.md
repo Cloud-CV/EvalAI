@@ -37,7 +37,7 @@ We categorize the challenges in two categories:
 
 2. **Code-upload based challenges**: In these kind of challenges, participants upload their training code in the form of docker images using [EvalAI-CLI](https://github.com/Cloud-CV/evalai-cli/).
 
-   We support two types of code upload based challenges -
+   We support two types of code-upload based challenges -
       - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained model in form of docker images and the environment is also saved in form of a docker image.
       - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
@@ -196,7 +196,7 @@ Finally run the `./run.sh` script in the bundle. It will generate a `challenge_c
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
 
-## Host static code upload based challenge
+## Host static code-upload based challenge
 
 ### Step 1: Setup challenge repository
 
@@ -262,7 +262,7 @@ This docker image will run `submission.py` script and the script will save the p
 
 Next step is to write the evaluation script to compute the metrics for each submission.
 
-Please refer to the [Writing Static Code Upload Challenge Evaluation](evaluation_scripts.html#writing-static-code-upload-challenge-evaluation) section to complete this step.
+Please refer to the [Writing Static Code-Upload Challenge Evaluation](evaluation_scripts.html#writing-static-code-upload-challenge-evaluation) section to complete this step.
 
 ### Step 6: Prepare detailed documentation
 

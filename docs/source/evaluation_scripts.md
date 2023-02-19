@@ -320,7 +320,7 @@ Here are the steps to configure remote evaluation:
 
     **IMPORTANT** ⚠️: If the `evaluate()` method fails due to any reason or there is a problem with the submission, please ensure to raise an `Exception` with an appropriate message.
 
-### Writing Static Code Upload Challenge Evaluation Script
+### Writing Static Code-Upload Challenge Evaluation Script
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts are fixed due to architectural reasons.
 
