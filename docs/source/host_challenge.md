@@ -38,6 +38,10 @@ We categorize the challenges in two categories:
 2. **Code-upload based challenges**: In these kind of challenges, participants upload their training code in the form of docker images using [EvalAI-CLI](https://github.com/Cloud-CV/evalai-cli/).
 
    We support two types of code-upload based challenges -
+      - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained model in form of docker images and the environment is also saved in form of a docker image.
+      - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
+
+   We support two types of code-upload based challenges -
       - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
       - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
@@ -185,6 +189,110 @@ evalai push <image>:<tag> --phase <phase_name>
 Please refer to the [documentation](https://cli.eval.ai/) for more details on this.
 
 A good example of submission guidelines for code-upload challenges is present [here](https://eval.ai/web/challenges/challenge-page/1820/submission).
+
+<!-- ### Step 5: Upload configuration on EvalAI
+
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://eval.ai/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`. -->
+
+**Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://eval.ai/team) has notified about this. [EvalAI team](https://eval.ai/team) will review and will approve the challenge.
+
+## Host static code-upload based challenge
+
+### Step 1: Setup challenge repository
+
+Steps to create a static code-upload based challenge are very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge) and [code-upload based challenge](host_challenge.html#host-code-upload-based-challenge).
+
+We have created a sample challenge repository that we recommend you to use to get started. Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template to start. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
+
+### Step 2: Edit challenge configuration
+
+Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) from the repository that you cloned in step-1. This file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc. Edit this file based on your requirement.
+
+Please ensure the following fields are set to the following values for static code-upload based challenges:
+
+- `remote_evaluation : True`
+- `is_docker_based : True`
+- `is_static_dataset_code_upload : True`
+
+In order to perform evaluation, you might also need to create an EKS cluster on AWS. This is because we use docker containers for managing the evaluation environment, and as well as model container. See [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/) to learn more about what EKS is and how it works.
+
+We need the following details for the EKS cluster in order to perform evaluations in case you are using your own AWS account:
+
+- `aws_account_id: <AWS Account ID>`
+- `aws_access_key_id: <AWS Access Key ID>`
+- `aws_secret_access_key: <AWS Secret Access Key>`
+- `aws_region: <AWS Region>`
+
+These details need to be emailed us at [team@cloudcv.org](mailto:team@cloudcv.org). The EvalAI team will set up the infrastructure in your AWS account.
+
+For reference to the other fields, refer to the [challenge configuration reference section](configuration.html).
+
+### Step 3: Save the static dataset using EFS
+
+Use [AWS EFS](https://aws.amazon.com/efs/) to store the static dataset file(s) on which the evaluation is to be performed. By default an `EFS` file system is created and the file system ID is stored in `efs_id` in the Challenge Evaluation Cluster and then the file system is mounted on the instances inside the cluster.
+
+### Step 4: Create a sample submission Dockerfile
+
+Create a Dockerfile showing the participants how to install their requirements and run the submission script which produces the predictions file. This docker image is then run on the cluster to perform predictions.
+
+An template Dockerfile is shown below:
+
+```Dockerfile
+FROM nvidia/cuda:11.2.0-cudnn8-runtime-ubuntu20.04
+
+RUN apt-get update &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y python3 &&\
+    apt-get install -y
+
+# ADITIONAL PYTHON DEPENDENCIES
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+
+WORKDIR /app
+
+# COPY WHATEVER OTHER SCRIPTS YOU MAY NEED
+COPY trained_model /trained_model
+# SPECIFY THE ENTRYPOINT SCRIPT
+CMD ["python", "-u", "submission.py"]
+```
+
+This docker image will run `submission.py` script and the script will save the predictions at the specified location.
+
+### Step 5: Edit evaluation script
+
+Next step is to write the evaluation script to compute the metrics for each submission.
+
+Please refer to the [Writing Static Code-Upload Challenge Evaluation](evaluation_scripts.html#writing-static-code-upload-challenge-evaluation) section to complete this step.
+
+### Step 6: Prepare detailed documentation
+
+Prepare a detailed documentation describing the following details:
+
+- Input/Output Format: Details about the model input format and the expected model output format for the participants with examples.
+- Expected Input/Output Files Names: The documentation should also contain where the dataset is expected to be stored in the docker container, where to save the file, and the output file name.
+- Docker commands/script: The docker commands/script to create the docker container from the Docker file.
+- Submission Command: The `evalai-cli` command to push the container.
+- Any other installation, processing, training tips required for the task.
+
+It is recommended to look at the example of [My Seizure Gauge Forecasting Challenge 2022](https://github.com/seermedical/msg-2022) which contain extensively described steps and documentation for everything, along with tips for every step of challenge participation.
+
+### Step 7: Edit challenge HTML templates
+
+Almost there. You just need to update the HTML templates in the `templates/` directory of the bundle that you cloned.
+
+EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
+
+Please include a detailed [`submission_guidelines.html`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/templates/submission_guidelines.html) as it is usually not as straightforward for the participants to upload submissions for static code-upload challenges.
+
+The participants are expected to submit links to their model docker images using [`evalai-cli`](https://github.com/Cloud-CV/evalai-cli/). Here is an example of a command:
+
+```sh
+evalai push <image>:<tag> --phase <phase_name>
+```
+
+Please refer to the [documentation](https://cli.eval.ai/) for more details on this.
+
+A good example of submission guidelines is present [here](https://eval.ai/web/challenges/challenge-page/1693/submission).
 
 <!-- ### Step 5: Upload configuration on EvalAI
 
