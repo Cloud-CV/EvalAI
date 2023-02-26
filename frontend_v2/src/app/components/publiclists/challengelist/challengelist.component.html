@@ -3,6 +3,26 @@
   <div *ngIf="routerPublic.url === allChallengesRoutePathCommon" [@.disabled]="true">
     <h4 class="fw-light">All challenges</h4>
     <mat-tab-group>
+      <mat-tab label="All ({{ searchChallengesView.length }})" id="filtered-Challenges">
+        <ng-template matTabContent>
+          <div class="search-bar-container">
+            <mat-form-field appearance="outline">
+              <mat-label>Search Challenges</mat-label>
+              <input type="text" [(ngModel)]="searchQuery" placeholder="Search challenges by title" (input)="searchChallenges()">
+              <ul id="results"></ul>
+            </mat-form-field>
+          </div>
+        <div *ngIf="searchChallengesView.length === 0" class="none fw-light fs-16">No challenges found.</div>
+        <div class="row pd-lr-20">
+          <div class="col s12 m4 l3" *ngFor="let challenge of searchChallengesView">
+            <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon, challenge.id]">
+              <app-challengecard [challenge]="challenge"></app-challengecard>
+            </a>
+          </div>
+        </div>
+        </ng-template>
+      </mat-tab>
+      
       <mat-tab label="Ongoing ({{ ongoingChallenges.length }})" id="ongoing-challenges">
         <ng-template matTabContent>
         <div *ngIf="ongoingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
@@ -49,6 +69,30 @@
   <div *ngIf="routerPublic.url === myChallengesRoutePathCommon" [@.disabled]="true">
     <h4 class="fw-light">Hosted challenges</h4>
     <mat-tab-group>
+      <mat-tab label="All ({{ filteredsearchChallengesView.length }})">
+        <ng-template matTabContent>
+          <div class="search-bar-container">
+            <mat-form-field appearance="outline">
+              <mat-label>Search Challenges</mat-label>
+              <input type="text" [(ngModel)]="searchQuery" placeholder="Search challenges by title" (input)="searchhostedChallenges()">
+              <ul id="results"></ul>
+            </mat-form-field>
+          </div>
+        <div *ngIf="!filteredOngoingChallenges.length">
+          <p class="fw-light fs-16">
+            You haven't hosted any challenge. Please
+            <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to get started.
+          </p>
+        </div>
+        <div class="row pd-lr-20" *ngIf="filteredsearchChallengesView.length">
+          <div class="col s12 m3" *ngFor="let challenge of filteredsearchChallengesView">
+            <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon, challenge['id']]">
+              <app-challengecard [challenge]="challenge"></app-challengecard>
+            </a>
+          </div>
+        </div>
+        </ng-template>
+      </mat-tab>
       <mat-tab label="Ongoing ({{ filteredOngoingChallenges.length }})">
         <ng-template matTabContent>
         <div *ngIf="!filteredOngoingChallenges.length">
