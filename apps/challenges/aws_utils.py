@@ -1310,7 +1310,7 @@ def create_eks_cluster(challenge):
         try:
             response = client.create_cluster(
                 name=cluster_name,
-                version="1.21",
+                version="1.22",
                 roleArn=cluster_meta["EKS_CLUSTER_ROLE_ARN"],
                 resourcesVpcConfig={
                     "subnetIds": [
