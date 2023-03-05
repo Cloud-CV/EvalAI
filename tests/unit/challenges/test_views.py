@@ -177,6 +177,9 @@ class GetChallengeTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
 
@@ -329,6 +332,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
+            "worker_cpu_cores": 512,
+            "worker_memory": 1024,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -408,6 +414,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
+            "worker_cpu_cores": 512,
+            "worker_memory": 1024,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -513,6 +522,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
+            "worker_cpu_cores": 512,
+            "worker_memory": 1024,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -567,6 +579,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge.queue,
+            "worker_cpu_cores": 512,
+            "worker_memory": 1024,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -703,7 +718,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         )
 
         self.participant_team4 = ParticipantTeam.objects.create(
-            team_name="Some Participant Team 2 by User 2", created_by=self.user2
+            team_name="Some Participant Team 2 by User 2",
+            created_by=self.user2,
         )
 
         self.participant5 = Participant.objects.create(
@@ -877,7 +893,9 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_participation_when_participant_team_member_is_not_in_allowed_list(self):
+    def test_participation_when_participant_team_member_is_not_in_allowed_list(
+        self,
+    ):
         self.client.force_authenticate(user=self.participant_team4.created_by)
         self.challenge2.allowed_email_domains.extend(["example1", "example2"])
         self.challenge2.save()
@@ -1001,7 +1019,12 @@ class GetAllChallengesTest(BaseAPITestClass):
     def setUp(self):
         super(GetAllChallengesTest, self).setUp()
         self.url = reverse_lazy(
-            "challenges:get_all_challenges", kwargs={"challenge_time": "PAST"}
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "PAST",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
 
         # Present challenge
@@ -1120,6 +1143,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge3.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1129,7 +1155,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def test_get_present_challenges(self):
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
-            kwargs={"challenge_time": "PRESENT"},
+            kwargs={
+                "challenge_time": "PRESENT",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
 
         expected = [
@@ -1176,6 +1206,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1185,7 +1218,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def test_get_future_challenges(self):
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
-            kwargs={"challenge_time": "FUTURE"},
+            kwargs={
+                "challenge_time": "FUTURE",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
 
         expected = [
@@ -1232,6 +1269,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge4.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1240,7 +1280,12 @@ class GetAllChallengesTest(BaseAPITestClass):
 
     def test_get_all_challenges(self):
         self.url = reverse_lazy(
-            "challenges:get_all_challenges", kwargs={"challenge_time": "ALL"}
+            "challenges:get_all_challenges",
+            kwargs={
+                "challenge_time": "ALL",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
 
         expected = [
@@ -1287,6 +1332,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge4.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             },
             {
                 "id": self.challenge3.pk,
@@ -1331,6 +1379,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge3.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             },
             {
                 "id": self.challenge2.pk,
@@ -1375,6 +1426,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1384,7 +1438,11 @@ class GetAllChallengesTest(BaseAPITestClass):
     def test_incorrent_url_pattern_challenges(self):
         self.url = reverse_lazy(
             "challenges:get_all_challenges",
-            kwargs={"challenge_time": "INCORRECT"},
+            kwargs={
+                "challenge_time": "INCORRECT",
+                "challenge_approved": "APPROVED",
+                "challenge_published": "PUBLIC",
+            },
         )
         expected = {"error": "Wrong url pattern!"}
         response = self.client.get(self.url, {}, format="json")
@@ -1480,6 +1538,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge3.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1612,6 +1673,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge3.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge3.queue,
+            "worker_cpu_cores": 512,
+            "worker_memory": 1024,
         }
 
         response = self.client.get(self.url, {})
@@ -1680,6 +1744,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "created_at": "{0}{1}".format(
                 self.challenge4.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "queue": self.challenge4.queue,
+            "worker_cpu_cores": 512,
+            "worker_memory": 1024,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1804,6 +1871,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
 
@@ -1860,6 +1930,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
 
@@ -1916,6 +1989,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             }
         ]
 
@@ -1970,6 +2046,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             },
             {
                 "id": self.challenge2.pk,
@@ -2014,6 +2093,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "queue": self.challenge2.queue,
+                "worker_cpu_cores": 512,
+                "worker_memory": 1024,
             },
         ]
 

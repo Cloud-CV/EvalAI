@@ -120,7 +120,7 @@ task_definition = """
                 {{
                     "name": "STATSD_PORT",
                     "value": "{STATSD_PORT}"
-                }},
+                }}
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -204,6 +204,14 @@ task_definition_code_upload_worker = """
                 {{
                     "name": "EFS_ID",
                     "value": "{EFS_ID}"
+                }},
+                {{
+                    "name": "STATSD_ENDPOINT",
+                    "value": "{STATSD_ENDPOINT}"
+                }},
+                {{
+                    "name": "STATSD_PORT",
+                    "value": "{STATSD_PORT}"
                 }}
 
             ],
@@ -361,7 +369,7 @@ container_definition_submission_worker = """
         }},
         {{
             "name": "STATSD_PORT",
-            "value: "{STATSD_PORT}"
+            "value": "{STATSD_PORT}"
         }}
     ],
     "workingDirectory": "/code",
@@ -440,7 +448,7 @@ container_definition_code_upload_worker = """
         }},
         {{
             "name": "STATSD_PORT",
-            "value: "{STATSD_PORT}"
+            "value": "{STATSD_PORT}"
         }}
 
     ],
@@ -496,7 +504,7 @@ update_service_args = """
 {{
     "cluster":"{CLUSTER}",
     "service":"{service_name}",
-    "desiredCount":num_of_tasks,
+    "desiredCount":{num_of_tasks},
     "taskDefinition":"{task_def_arn}",
     "forceNewDeployment":{force_new_deployment}
 }}

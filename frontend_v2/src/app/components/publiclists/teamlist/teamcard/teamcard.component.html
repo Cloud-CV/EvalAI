@@ -16,10 +16,17 @@
           Team:
         </span>
         <span *ngIf="teamView['team_url']">
-          <a class="orange-text" target="_blank" href="{{ teamView['team_url'] }}">{{ teamView['team_name'] }}</a>
+          <a class="orange-text" target="_blank" href="{{ teamView['team_url'] }}"> {{ teamView['team_name'] }}</a>
         </span>
         <span *ngIf="!teamView['team_url']" class="team-detail">
           {{ teamView['team_name'] }}
+        </span>
+        <br />
+        <span class="title">
+          Team id:
+        </span>
+        <span class="team-detail">
+          {{ teamView['id'] }}
         </span>
         <br />
         <span class="title">

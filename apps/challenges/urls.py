@@ -40,7 +40,7 @@ urlpatterns = [
     ),
     # `A-Za-z` because it accepts either of `all, future, past or present` in either case
     url(
-        r"^challenge/(?P<challenge_time>[A-Za-z]+)$",
+        r"^challenge/(?P<challenge_time>[A-Za-z]+)/(?P<challenge_approved>[A-Za-z]+)/(?P<challenge_published>[A-Za-z]+)$",
         views.get_all_challenges,
         name="get_all_challenges",
     ),
@@ -213,6 +213,11 @@ urlpatterns = [
         r"^challenges/(?P<challenge_pk>[0-9]+)/phases/(?P<phase_pk>[0-9]+)/allowed_email_ids/$",
         views.update_allowed_email_ids,
         name="get_or_update_allowed_email_ids",
+    ),
+    url(
+        r"(?P<challenge_pk>[0-9]+)/scale_resources/$",
+        views.scale_resources_by_challenge_pk,
+        name="scale_resources_by_challenge_pk",
     ),
     url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/get_participant_teams/$",

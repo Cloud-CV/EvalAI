@@ -1,5 +1,10 @@
 version: '3'
 services:
+  memcached:
+    image: memcached:1.6.15
+    ports:
+      - "11211:11211"
+
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${COMMIT_ID}
     env_file:
@@ -40,6 +45,14 @@ services:
     env_file:
       - docker/prod/docker_staging.env
 
+  worker_py3.8:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.8:${COMMIT_ID}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker_py3.8/Dockerfile
+    env_file:
+      - docker/prod/docker_staging.env
+
   nodejs:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${COMMIT_ID}
     build:
@@ -49,6 +62,7 @@ services:
         NODE_ENV: staging
     ports:
       - '80:80'
+      - "443:443"
     volumes:
       - /code/node_modules
       - /code/bower_components
@@ -68,7 +82,6 @@ services:
         NODE_ENV: staging
     ports:
       - "9999:80"
-      - "443:443"
     volumes:
       - /code/node_modules
     logging:
