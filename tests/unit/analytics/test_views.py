@@ -76,8 +76,8 @@ class BaseAPITestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         self.challenge1 = Challenge.objects.create(
@@ -90,8 +90,8 @@ class BaseAPITestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         self.challenge2 = Challenge.objects.create(
@@ -104,8 +104,8 @@ class BaseAPITestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         self.challenge_host = ChallengeHost.objects.create(
@@ -146,8 +146,8 @@ class BaseAPITestClass(APITestCase):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -163,8 +163,8 @@ class BaseAPITestClass(APITestCase):
                 description="Description for Challenge Phase 1",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge1,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -180,8 +180,8 @@ class BaseAPITestClass(APITestCase):
                 description="Description for Challenge Phase 1",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge1,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -197,8 +197,8 @@ class BaseAPITestClass(APITestCase):
                 description="Description for Challenge Phase 3",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge2,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",

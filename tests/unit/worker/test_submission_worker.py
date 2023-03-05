@@ -81,7 +81,7 @@ class BaseAPITestClass(APITestCase):
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
             start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=5),
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,

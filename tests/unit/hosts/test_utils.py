@@ -50,8 +50,8 @@ class BaseTestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             approved_by_admin=False,
         )
 

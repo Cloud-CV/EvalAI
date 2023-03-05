@@ -43,10 +43,9 @@ class BaseTestCase(TestCase):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-            anonymous_leaderboard=False,
-        )
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
+            anonymous_leaderboard=False)
 
         try:
             os.makedirs("/tmp/evalai")
@@ -59,8 +58,8 @@ class BaseTestCase(TestCase):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
