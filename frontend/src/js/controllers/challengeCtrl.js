@@ -94,8 +94,16 @@
 
         vm.isChallengeLeaderboardPrivate = false;
         vm.previousPublicSubmissionId = null;
+        vm.queueName = null;
 
         vm.workerLogs = [];
+
+        // get from backend
+        vm.selectedWorkerResources = [512, 1024];
+
+        vm.workerResourceOptions = [[256, 512], [256, 1024], [256, 2048], [512, 1024], [512, 2048], [1024, 2048]];
+
+        vm.showBackground = (utilities.getEnvironment() == "local") || (utilities.getEnvironment() == "staging");
 
         utilities.showLoader();
 
@@ -316,6 +324,9 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
+                vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
+
+                vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
@@ -931,7 +942,7 @@
                 };
 
                 utilities.sendRequest(parameters);
-            }, 5000);
+            }, 10000);
         };
 
         vm.getLeaderboard = function(phaseSplitId) {
@@ -1134,7 +1145,7 @@
                     };
 
                     utilities.sendRequest(parameters);
-                }, 5000);
+                }, 10000);
             };
 
             vm.stopFetchingSubmissions = function() {
@@ -1265,7 +1276,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentPage = vm.submissionResult.count / 150;
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';
@@ -1620,6 +1631,36 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.setWorkerResources = function() {
+            parameters.url = "challenges/" + vm.challengeId + "/scale_resources/";
+            parameters.method = 'PUT';
+            parameters.data = {
+                "worker_cpu_cores": vm.selectedWorkerResources[0],
+                "worker_memory": vm.selectedWorkerResources[1],
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $rootScope.notify("success", response.data["Success"]);
+                    vm.team.error = false;
+                    vm.stopLoader();
+                    vm.team = {};
+                },
+                onError: function(response) {
+                    vm.team.error = true;
+                    vm.stopLoader();
+                    let requestError = '';
+                    if (typeof(response.data) == 'string') {
+                        requestError = response.data;
+                    } else {
+                        requestError = response.data["error"];
+                    }
+                    $rootScope.notify("error", "Error scaling evaluation worker resources: " + requestError);
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
         vm.getAllSubmissionResults = function(phaseId) {
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
@@ -1708,7 +1749,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentPage = vm.submissionResult.count / 150;
                                     vm.currentRefPage = Math.ceil(vm.currentPage);
                                 } else {
                                     vm.isNext = '';

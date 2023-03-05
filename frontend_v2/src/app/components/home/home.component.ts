@@ -37,25 +37,30 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
    * Sample testimonials till the API comes up
    */
   testimonials = [
-    { text: '1-' + this.ipsum, author: 'Lorem', org: 'Georgia Tech', image: '' },
-    { text: '2-' + this.ipsum, author: 'Octopus', org: 'Google', image: '' },
-    { text: '3-' + this.ipsum, author: 'Penguin', org: 'Facebook', image: '' },
+    { text: "At Motional we have been using EvalAI for all our nuScenes benchmark challenges. It is an easy-to-use open source platform on a non-profit basis. The team behind EvalAI consists of a number of accomplished academics and therefore we trust them to preserve the integrity of our test set annotations.", author: "Holger Caesar", org: "Motional", image: "https://www.nuscenes.org/public/images/team/Holger.jpg"},
+    { text: "EvalAI has helped our competitions attract talented academic teams. EvalAI has also been responsive about adding new features.", author: "James Hayes", org: "ArgoAI", image: "https://faculty.cc.gatech.edu/~hays/headshots/2017c.jpg"},
+    { text: "We used EvalAI for iGibson Challenge, the first visual navigation sim2real challenge in our community. EvalAI's flexible evaluation pipeline enables us to easily set up a rigorous workflow to test the submissions in simulation and on real robots. The workflow is easy for the participants as they just need to submit their solution with one command line and get back evaluation results. It is a great experience to create such a challenge and our participants totally enjoyed it! EvalAI has great potential to support robotics benchmarking on the cloud and provides opportunities to people who don't have access to the hardware.", author: "Fei Xia", org: "Stanford", image: "https://fxia22.github.io/assets/img/feixia.png"},
   ];
 
   /**
    * Selected testimonial text
    */
-  testimonialbody = this.testimonials[this.selected]['text'];
+  testimonialBody = this.testimonials[this.selected]['text'];
 
   /**
    * Selected testimonial author
    */
-  testimonialauthor = this.testimonials[this.selected]['author'];
+  testimonialAuthor = this.testimonials[this.selected]['author'];
 
   /**
    * Selected testimonial orgName
    */
-  testimonialorg = this.testimonials[this.selected]['org'];
+  testimonialOrg = this.testimonials[this.selected]['org'];
+
+  /**
+   * Selected testimonial author image
+   */
+  testimonialAuthorImage = this.testimonials[this.selected]['image'];
 
   /**
    * Subscribe Form
@@ -209,9 +214,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   flyOut = (element, direction, scope) => {
     const temp = 15;
     setTimeout(function () {
-      scope.testimonialbody = scope.testimonials[scope.selected]['text'];
-      scope.testimonialauthor = scope.testimonials[scope.selected]['author'];
-      scope.testimonialorg = scope.testimonials[scope.selected]['org'];
+      scope.testimonialBody = scope.testimonials[scope.selected]['text'];
+      scope.testimonialAuthor = scope.testimonials[scope.selected]['author'];
+      scope.testimonialOrg = scope.testimonials[scope.selected]['org'];
+      scope.testimonialAuthorImage = scope.testimonials[scope.selected]['image'];
     }, 1000);
   };
 

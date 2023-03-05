@@ -104,14 +104,20 @@
             >
               <div class="elements-detail">
                 <div class="element">
+                  <strong class="element-description-attribution">Submission id :</strong> &nbsp;
+                  <strong class="fw-light fs-14">
+                    {{ element.id }}
+                  </strong>
+                </div>
+                <div class="element">
                   <strong class="element-description-attribution">Submitted at: </strong>&nbsp;
                   <strong class="fw-light fs-14">
                     {{ element.submitted_at | date: 'medium' }}
                   </strong>
                 </div>
               </div>
-              <div class="elements-status">
-                <div class="element" *ngIf="!selectedPhase['leaderboard_public'] || !selectedPhase['is_submission_public']">
+              <div class="elements-status" *ngIf="selectedPhase['leaderboard_public'] || isChallengeHost">
+                <div class="element" *ngIf="selectedPhase['leaderboard_public']">
                   <mat-checkbox
                     class="element-icon fw-light"
                     [checked]="element.is_public"

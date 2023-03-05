@@ -3,16 +3,15 @@ import logging
 import os
 import signal
 import sys
-import yaml
 import time
 
-
-from worker_utils import EvalAI_Interface
-
+import yaml
 from kubernetes import client
 
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
+from statsd_utils import increment_and_push_metrics_to_statsd
+from worker_utils import EvalAI_Interface
 
 
 class GracefulKiller:
@@ -186,7 +185,17 @@ def get_init_container(submission_pk):
     return init_container
 
 
-def create_job_object(message, environment_image):
+def get_job_constraints(challenge):
+    constraints = {}
+    if not challenge.get("cpu_only_jobs"):
+        constraints["nvidia.com/gpu"] = "1"
+    else:
+        constraints["cpu"] = challenge.get("job_cpu_cores")
+        constraints["memory"] = challenge.get("job_memory")
+    return constraints
+
+
+def create_job_object(message, environment_image, challenge):
     """Function to create the AWS EKS Job object
 
     Arguments:
@@ -204,11 +213,17 @@ def create_job_object(message, environment_image):
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=json.dumps(message))
     submission_pk = message["submission_pk"]
     image = message["submitted_image_uri"]
+    submission_meta = message["submission_meta"]
+    SUBMISSION_TIME_LIMIT_ENV = client.V1EnvVar(
+        name="SUBMISSION_TIME_LIMIT",
+        value=str(submission_meta["submission_time_limit"]),
+    )
     # Configure Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
     volume_mount_list = get_volume_mount_list("/dataset")
+    job_constraints = get_job_constraints(challenge)
     # Get init container
     init_container = get_init_container(submission_pk)
     # Configure Pod environment container
@@ -220,9 +235,10 @@ def create_job_object(message, environment_image):
             AUTH_TOKEN_ENV,
             EVALAI_API_SERVER_ENV,
             MESSAGE_BODY_ENV,
+            SUBMISSION_TIME_LIMIT_ENV,
         ],
         resources=client.V1ResourceRequirements(
-            limits={"nvidia.com/gpu": "1"}
+            limits=job_constraints
         ),
         volume_mounts=volume_mount_list,
     )
@@ -273,7 +289,7 @@ def create_static_code_upload_submission_job_object(message):
         value=str(submission_meta["submission_time_limit"]),
     )
     SUBMISSION_TIME_DELTA_ENV = client.V1EnvVar(
-        name="SUBMISSION_TIME_DELTA", value="3600"
+        name="SUBMISSION_TIME_DELTA", value="300"
     )
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
@@ -394,7 +410,7 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(api_instance, body, challenge_phase, evalai):
+def process_submission_callback(api_instance, body, challenge_phase, challenge, evalai):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -407,7 +423,7 @@ def process_submission_callback(api_instance, body, challenge_phase, evalai):
             job = create_static_code_upload_submission_job_object(body)
         else:
             environment_image = challenge_phase.get("environment_image")
-            job = create_job_object(body, environment_image)
+            job = create_job_object(body, environment_image, challenge)
         response = create_job(api_instance, job)
         submission_data = {
             "submission_status": "running",
@@ -501,8 +517,10 @@ def cleanup_submission(
     phase_pk,
     stderr,
     message,
+    queue_name,
+    is_remote,
 ):
-    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and messaage from SQS.
+    """Function to update status of submission to EvalAi, Delete corrosponding job from cluster and message from SQS.
     Arguments:
         api_instance {[AWS EKS API object]} -- API object for deleting job
         evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
@@ -512,6 +530,8 @@ def cleanup_submission(
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
         message {[dict]} -- Submission message from AWS SQS queue
+        queue_name {[string]} -- Submission SQS queue name
+        is_remote {[int]} -- Whether the challenge is remote evaluation
     """
     try:
         submission_data = {
@@ -531,6 +551,7 @@ def cleanup_submission(
         message_receipt_handle = message.get("receipt_handle")
         if message_receipt_handle:
             evalai.delete_message_from_sqs_queue(message_receipt_handle)
+            increment_and_push_metrics_to_statsd(queue_name, is_remote)
     except Exception as e:
         logger.exception(
             "Exception while cleanup Submission {}:  {}".format(
@@ -548,6 +569,8 @@ def update_failed_jobs_and_send_logs(
     challenge_pk,
     phase_pk,
     message,
+    queue_name,
+    is_remote,
 ):
     clean_submission = False
     try:
@@ -621,6 +644,8 @@ def update_failed_jobs_and_send_logs(
             phase_pk,
             submission_error,
             message,
+            queue_name,
+            is_remote,
         )
 
 
@@ -661,13 +686,16 @@ def main():
         )
     )
     challenge = evalai.get_challenge_by_queue_name()
+    is_remote = int(challenge.get("remote_evaluation"))
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
     api_instance_client = get_api_client(
         cluster_name, cluster_endpoint, challenge, evalai
     )
-    install_gpu_drivers(api_instance_client)
+    # Install GPU drivers for GPU only challenges
+    if not challenge.get("cpu_only_jobs"):
+        install_gpu_drivers(api_instance_client)
     api_instance = get_api_object(
         cluster_name, cluster_endpoint, challenge, evalai
     )
@@ -683,9 +711,7 @@ def main():
         "submission_time_limit"
     )
     while True:
-        # Equal distribution of queue messages among submission worker and code upload worker
-        if challenge.get("is_static_dataset_code_upload"):
-            time.sleep(0.5)
+        time.sleep(2)
         message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
@@ -721,6 +747,9 @@ def main():
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )
+                        increment_and_push_metrics_to_statsd(
+                            QUEUE_NAME, is_remote
+                        )
                     except Exception as e:
                         logger.exception(
                             "Failed to delete submission job: {}".format(e)
@@ -728,6 +757,9 @@ def main():
                         # Delete message from sqs queue to avoid re-triggering job delete
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
+                        )
+                        increment_and_push_metrics_to_statsd(
+                            QUEUE_NAME, is_remote
                         )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
@@ -740,6 +772,8 @@ def main():
                         challenge_pk,
                         phase_pk,
                         message,
+                        QUEUE_NAME,
+                        is_remote,
                     )
                 else:
                     logger.info(
@@ -749,7 +783,7 @@ def main():
                         challenge_pk, phase_pk
                     )
                     process_submission_callback(
-                        api_instance, message_body, challenge_phase, evalai
+                        api_instance, message_body, challenge_phase, challenge, evalai
                     )
 
         if killer.kill_now:
