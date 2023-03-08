@@ -3023,6 +3023,12 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge = get_challenge_model(challenge_pk)
+    if challenge.workers is None or challenge.workers == 0:
+        response_data = {
+            "error": "Scaling inactive workers not supported."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     worker_cpu_cores = int(request.data["worker_cpu_cores"])
     worker_memory = int(request.data["worker_memory"])
 
@@ -3033,15 +3039,23 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
     ):
         response = scale_resources(challenge, worker_cpu_cores, worker_memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            response_data = {
-                "error": "Issue with ECS."
-            }
+            if response.get('Error', {'Message': 'No error', 'Code': 'No error'}).get('Code', 'No error code') == \
+                    'ClientException':
+                response_data = {
+                    "error": "Challenge workers are inactive or do not exist."
+                }
+            else:
+                response_data = {
+                    "error": "Issue with ECS."
+                }
             return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        elif response.get("Message", "N/A") == "Worker not modified":
+            response_data = {
+                "Success": "The challenge's worker cores and memory were not modified."
+            }
         else:
             response_data = {
-                "Success": "The challenge {} has been scaled successfully".format(
-                    challenge.title
-                )
+                "Success": "Worker scaled successfully!"
             }
     else:
         response_data = {
@@ -3771,12 +3785,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         str(data["dataset_split_id"])
                     ]
                     visibility = data["visibility"]
+                    leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
+                    is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
 
                     data = {
                         "challenge_phase": challenge_phase,
                         "leaderboard": leaderboard,
                         "dataset_split": dataset_split,
                         "visibility": visibility,
+                        "is_leaderboard_order_descending": is_leaderboard_order_descending,
+                        "leaderboard_decimal_precision": leaderboard_decimal_precision
                     }
 
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
