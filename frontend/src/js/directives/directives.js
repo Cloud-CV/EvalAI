@@ -336,3 +336,37 @@ function dashboardFooterController($scope) {
         }
     }
 })();
+// Cookie Consent
+(function() {
+    angular.module('evalai')
+  .directive('cookieConsent', function() {
+    return {
+      restrict: 'E',
+      template: `
+        <div class="cookie-consent" ng-show="!accepted">
+          This website uses cookies to ensure you get the best experience on our website.
+          <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="accept()" >Accept</button>
+        </div>
+      `,
+      link: function(scope, element) {
+        var acceptedCookieName = 'cookieConsentAccepted';
+
+        // check if the user has already accepted the consent
+        scope.accepted = document.cookie.includes(acceptedCookieName);
+
+        // set a cookie when the user accepts the consent and hide it
+        scope.accept = function() {
+          var now = new Date();
+          var expirationDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+          document.cookie = `${acceptedCookieName}=true;expires=${expirationDate.toUTCString()}`;
+          scope.accepted = true;
+		  element.hide();
+        };
+
+        // position the consent message at the bottom of the screen and make it stick
+        element.addClass('cookie-consent-wrapper');
+      }
+    };
+  });
+})();
+

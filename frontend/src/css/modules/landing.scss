@@ -608,3 +608,15 @@ a.view-more {
 #aws {
     margin-top: 2%;
 }
+
+.cookie-consent-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+  
