@@ -1,4 +1,4 @@
-<section class="ev-sm-container ev-view challenge-container" ng-init="challenge.startLoadingLogs();" ng-if="challenge.isChallengeHost">
+<section class="ev-sm-container ev-view challenge-container" ng-init="challenge.errorIfNotHost(); challenge.startLoadingLogs();">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view" ng-if="!challenge.isRemoteChallenge">
         <div class="row margin-bottom-cancel">
             <div class="col s12 m12 l12">
@@ -67,16 +67,6 @@
                 <div class="w-300 fs-16">
                     <strong>Primary Key</strong>: {{challenge.challengeId}}<br>
                     <strong>Queue Name</strong>: {{challenge.queueName}}
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section class="ev-sm-container ev-view challenge-container" ng-if="!challenge.isChallengeHost">
-    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <div class="row margin-bottom-cancel">
-            <div class="col s12 m12 l12">
-                <div class="w-300 fs-16">Sorry, you are not allowed to access this page!
                 </div>
             </div>
         </div>
