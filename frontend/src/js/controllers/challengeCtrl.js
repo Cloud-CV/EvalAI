@@ -2773,12 +2773,6 @@
             }
         };
 
-        vm.errorIfNotHost = function () {
-            if (!vm.isChallengeHost) {
-                $state.go('error-404');
-            }
-        };
-
         vm.encodeMetricURI = function(metric) {
             return encodeURIComponent(metric);
         };
