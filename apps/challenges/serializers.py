@@ -274,6 +274,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
+            "cpu_only_jobs",
+            "job_cpu_cores",
+            "job_memory",
         )
 
 
