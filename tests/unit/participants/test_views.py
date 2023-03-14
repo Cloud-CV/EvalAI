@@ -859,6 +859,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             self.challenge1.created_at.isoformat(), "Z"
                         ).replace("+00:00", ""),
                         "queue": self.challenge1.queue,
+                        "cpu_only_jobs": self.challenge1.cpu_only_jobs,
                         "worker_cpu_cores": 512,
                         "worker_memory": 1024,
                     },
@@ -933,6 +934,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     self.challenge1.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge1.queue,
+                "cpu_only_jobs": self.challenge1.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
             }
