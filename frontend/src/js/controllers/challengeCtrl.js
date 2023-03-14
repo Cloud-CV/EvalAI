@@ -2777,6 +2777,33 @@
             return encodeURIComponent(metric);
         };
 
+        vm.errorIfNotHost = function () {
+            // var details = null;
+            if (userKey){
+                // get details of challenges corresponding to participant teams of that user
+                parameters.url = 'participants/participant_teams/challenges/' + vm.challengeId + '/user';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        console.log(details);
+                        if (details.is_challenge_host) {
+                            vm.isChallengeHost = true;
+                        }
+                        else{
+                            $state.go('error-404');
+                        }
+                    },
+                    onError: function() {
+                            utilities.hideLoader();
+                        }
+                    };
+                utilities.sendRequest(parameters);
+            }
+            utilities.hideLoader();
+        };
+
     }
 
 })();
