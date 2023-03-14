@@ -178,9 +178,11 @@ class GetChallengeTest(BaseAPITestClass):
                     self.challenge.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge.queue,
-                "cpu_only_jobs": self.challenge.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge.cpu_only_jobs,
+                "job_cpu_cores": self.challenge.job_cpu_cores,
+                "job_memory": self.challenge.job_memory,
             }
         ]
 
@@ -334,9 +336,11 @@ class GetParticularChallenge(BaseAPITestClass):
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "queue": self.challenge.queue,
-            "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
+            "cpu_only_jobs": self.challenge.cpu_only_jobs,
+            "job_cpu_cores": self.challenge.job_cpu_cores,
+            "job_memory": self.challenge.job_memory,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -417,9 +421,11 @@ class GetParticularChallenge(BaseAPITestClass):
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "queue": self.challenge.queue,
-            "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
+            "cpu_only_jobs": self.challenge.cpu_only_jobs,
+            "job_cpu_cores": self.challenge.job_cpu_cores,
+            "job_memory": self.challenge.job_memory,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -526,9 +532,11 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "queue": self.challenge.queue,
-            "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
+            "cpu_only_jobs": self.challenge.cpu_only_jobs,
+            "job_cpu_cores": self.challenge.job_cpu_cores,
+            "job_memory": self.challenge.job_memory,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -584,9 +592,11 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 self.challenge.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "queue": self.challenge.queue,
-            "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
+            "cpu_only_jobs": self.challenge.cpu_only_jobs,
+            "job_cpu_cores": self.challenge.job_cpu_cores,
+            "job_memory": self.challenge.job_memory,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1149,9 +1159,11 @@ class GetAllChallengesTest(BaseAPITestClass):
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge3.queue,
-                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
+                "job_cpu_cores": self.challenge3.job_cpu_cores,
+                "job_memory": self.challenge3.job_memory,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1213,9 +1225,11 @@ class GetAllChallengesTest(BaseAPITestClass):
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge2.queue,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1277,9 +1291,11 @@ class GetAllChallengesTest(BaseAPITestClass):
                     self.challenge4.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge4.queue,
-                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
+                "job_cpu_cores": self.challenge4.job_cpu_cores,
+                "job_memory": self.challenge4.job_memory,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1341,9 +1357,11 @@ class GetAllChallengesTest(BaseAPITestClass):
                     self.challenge4.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge4.queue,
-                "cpu_only_jobs": self.challenge4.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
+                "job_cpu_cores": self.challenge3.job_cpu_cores,
+                "job_memory": self.challenge3.job_memory,
             },
             {
                 "id": self.challenge3.pk,
@@ -1389,9 +1407,11 @@ class GetAllChallengesTest(BaseAPITestClass):
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge3.queue,
-                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
+                "job_cpu_cores": self.challenge3.job_cpu_cores,
+                "job_memory": self.challenge3.job_memory,
             },
             {
                 "id": self.challenge2.pk,
@@ -1437,9 +1457,11 @@ class GetAllChallengesTest(BaseAPITestClass):
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge2.queue,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1550,9 +1572,11 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     self.challenge3.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge3.queue,
-                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge3.cpu_only_jobs,
+                "job_cpu_cores": self.challenge3.job_cpu_cores,
+                "job_memory": self.challenge3.job_memory,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1686,9 +1710,11 @@ class GetChallengeByPk(BaseAPITestClass):
                 self.challenge3.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "queue": self.challenge3.queue,
-            "cpu_only_jobs": self.challenge3.cpu_only_jobs,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
+            "cpu_only_jobs": self.challenge3.cpu_only_jobs,
+            "job_cpu_cores": self.challenge3.job_cpu_cores,
+            "job_memory": self.challenge3.job_memory,
         }
 
         response = self.client.get(self.url, {})
@@ -1758,9 +1784,11 @@ class GetChallengeByPk(BaseAPITestClass):
                 self.challenge4.created_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "queue": self.challenge4.queue,
-            "cpu_only_jobs": self.challenge4.cpu_only_jobs,
             "worker_cpu_cores": 512,
             "worker_memory": 1024,
+            "cpu_only_jobs": self.challenge4.cpu_only_jobs,
+            "job_cpu_cores": self.challenge4.job_cpu_cores,
+            "job_memory": self.challenge4.job_memory,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1886,9 +1914,11 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge2.queue,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
             }
         ]
 
@@ -1946,9 +1976,11 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge2.queue,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
             }
         ]
 
@@ -2006,9 +2038,11 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge2.queue,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
             }
         ]
 
@@ -2064,9 +2098,11 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     self.challenge.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge.queue,
-                "cpu_only_jobs": self.challenge.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge.cpu_only_jobs,
+                "job_cpu_cores": self.challenge.job_cpu_cores,
+                "job_memory": self.challenge.job_memory,
             },
             {
                 "id": self.challenge2.pk,
@@ -2112,9 +2148,11 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     self.challenge2.created_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "queue": self.challenge2.queue,
-                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge2.cpu_only_jobs,
+                "job_cpu_cores": self.challenge2.job_cpu_cores,
+                "job_memory": self.challenge2.job_memory,
             },
         ]
 
