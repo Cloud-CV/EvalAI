@@ -2787,7 +2787,6 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
-                        console.log(details);
                         if (details.is_challenge_host) {
                             vm.isChallengeHost = true;
                         }
