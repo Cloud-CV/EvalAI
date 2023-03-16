@@ -22,6 +22,11 @@ class DatadogMiddleware(MiddlewareMixin):
 
     DATADOG_TIMING_ATTRIBUTE = "_datadog_start_time"
     app_name = settings.DATADOG_APP_NAME
+    BATCH_SIZE = 10
+
+    def __init__(self, get_response=None):
+        super().__init__(get_response=get_response)
+        self.statsd_batch = statsd.ThreadStats(batch_size=self.BATCH_SIZE)
 
     def process_request(self, request):
         setattr(request, self.DATADOG_TIMING_ATTRIBUTE, time.time())
@@ -46,12 +51,15 @@ class DatadogMiddleware(MiddlewareMixin):
         tags = self._get_metric_tags(request)
 
         if 200 <= response.status_code < 400:
-            statsd.increment(success_metric, tags=tags)
+            self.statsd_batch.increment(success_metric, tags=tags)
         else:
-            statsd.increment(unsuccess_metric, tags=tags)
+            self.statsd_batch.increment(unsuccess_metric, tags=tags)
 
-        statsd.increment(count_metric, tags=tags)
-        statsd.histogram(timing_metric, request_time, tags=tags)
+        self.statsd_batch.increment(count_metric, tags=tags)
+        self.statsd_batch.histogram(timing_metric, request_time, tags=tags)
+
+        if self.statsd_batch._batch_count >= self.BATCH_SIZE:
+            self.statsd_batch._send_batch()
 
         return response
 
@@ -66,8 +74,11 @@ class DatadogMiddleware(MiddlewareMixin):
             self.app_name, request.path
         )
 
-        statsd.increment(app_error_metric, tags=tags)
+        self.statsd_batch.increment(app_error_metric, tags=tags)
         api.Event.create(title=title, text=text, tags=event_tags)
+
+        if self.statsd_batch._batch_count >= self.BATCH_SIZE:
+            self.statsd_batch._send_batch()
 
     def _get_metric_tags(self, request):
         return ["path:{0}".format(request.path)]
