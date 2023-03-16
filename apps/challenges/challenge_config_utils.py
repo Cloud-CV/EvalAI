@@ -478,6 +478,7 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
         else:
+            test_annotation_file_path = None
             files["challenge_test_annotation_files"].append(None)
 
         if data.get("max_submissions_per_month", None) is None:
@@ -545,7 +546,7 @@ def validate_challenge_config_util(
                         data["id"], missing_keys_string
                     )
                     error_messages.append(message)
-        if isfile(test_annotation_file_path):
+        if test_annotation_file_path is not None and isfile(test_annotation_file_path):
             serializer = ChallengePhaseCreateSerializer(
                 data=data,
                 context={
