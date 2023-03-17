@@ -403,7 +403,6 @@ def validate_challenge_config_util(
             )
             error_messages.append(message)
             return error_messages, yaml_file_data, files
-
     # Get existing config IDs for leaderboards and dataset splits
     if current_challenge:
         current_challenge_phases = ChallengePhase.objects.filter(challenge=current_challenge.id)
@@ -430,14 +429,15 @@ def validate_challenge_config_util(
             message = "ERROR: There is no leaderboard schema in the YAML configuration file."
             error_messages.append(message)
             error = True
-        if "default_order_by" not in leaderboard[0].get("schema"):
-            message = "ERROR: There is no 'default_order_by' key in leaderboard schema."
-            error_messages.append(message)
-            error = True
-        if "labels" not in leaderboard[0].get("schema"):
-            message = "ERROR: There is no 'labels' key in leaderboard schema."
-            error_messages.append(message)
-            error = True
+        else:
+            if "default_order_by" not in leaderboard[0].get("schema"):
+                message = "ERROR: There is no 'default_order_by' key in leaderboard schema."
+                error_messages.append(message)
+                error = True
+            if "labels" not in leaderboard[0].get("schema"):
+                message = "ERROR: There is no 'labels' key in leaderboard schema."
+                error_messages.append(message)
+                error = True
         if not error:
             for data in leaderboard:
                 serializer = LeaderboardSerializer(
