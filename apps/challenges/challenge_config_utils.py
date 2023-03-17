@@ -472,10 +472,13 @@ def validate_challenge_config_util(
     phase_codenames = []
     files["challenge_test_annotation_files"] = []
     for data in challenge_phases_data:
-        if data["codename"] not in phase_codenames:
-            phase_codenames.append(data["codename"])
+        if "codename" not in data:
+            error_messages.append("ERROR: No codename found. Please add codename and try again!")
         else:
-            error_messages.append("ERROR: Duplicate codename {} for phase {}. Please ensure codenames are unique".format(data["codename"], data["name"]))
+            if data["codename"] not in phase_codenames:
+                phase_codenames.append(data["codename"])
+            else:
+                error_messages.append("ERROR: Duplicate codename {} for phase {}. Please ensure codenames are unique".format(data["codename"], data["name"]))
         test_annotation_file = data.get("test_annotation_file")
         if test_annotation_file:
             test_annotation_file_path = join(
@@ -613,10 +616,14 @@ def validate_challenge_config_util(
                     )
                 )
                 error_messages.append(message)
-            if split["codename"] not in dataset_split_codenames:
-                dataset_split_codenames.append(split["codename"])
+            if "codename" not in split:
+                message = "ERROR: There is no codename for dataset split"
+                error_messages.append(message)
             else:
-                error_messages.append("ERROR: Duplicate codename {} for dataset split {}. Please ensure codenames are unique".format(split["codename"], split["name"]))
+                if split["codename"] not in dataset_split_codenames:
+                    dataset_split_codenames.append(split["codename"])
+                else:
+                    error_messages.append("ERROR: Duplicate codename {} for dataset split {}. Please ensure codenames are unique".format(split["codename"], split["name"]))
         for split in dataset_splits:
             serializer = DatasetSplitSerializer(
                 data=split, context={"config_id": split["id"]}
