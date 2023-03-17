@@ -301,48 +301,69 @@ def validate_challenge_config_util(
     challenge_config_location = join(
         BASE_LOCATION, unique_folder_name, extracted_folder_name
     )
-    is_valid, message = is_challenge_config_yaml_html_field_valid(
-        yaml_file_data, "description", challenge_config_location
-    )
-    if not is_valid:
+
+    challenge_description = yaml_file_data.get("description")
+    if not challenge_description or len(challenge_description) == 0:
+        message = "Please add the challenge description"
         error_messages.append(message)
     else:
-        yaml_file_data["description"] = get_value_from_field(
-            yaml_file_data, challenge_config_location, "description"
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "description", challenge_config_location
         )
+        if not is_valid:
+            error_messages.append(message)
+        else:
+            yaml_file_data["description"] = get_value_from_field(
+                yaml_file_data, challenge_config_location, "description"
+            )
 
     # Check for evaluation details file
-    is_valid, message = is_challenge_config_yaml_html_field_valid(
-        yaml_file_data, "evaluation_details", challenge_config_location
-    )
-    if not is_valid:
+    evaluation_details = yaml_file_data.get("evaluation_details")
+    if not evaluation_details or len(evaluation_details) == 0:
+        message = "Please add the evaluation details"
         error_messages.append(message)
     else:
-        yaml_file_data["evaluation_details"] = get_value_from_field(
-            yaml_file_data, challenge_config_location, "evaluation_details"
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "evaluation_details", challenge_config_location
         )
+        if not is_valid:
+            error_messages.append(message)
+        else:
+            yaml_file_data["evaluation_details"] = get_value_from_field(
+                yaml_file_data, challenge_config_location, "evaluation_details"
+            )
 
     # Check for terms and conditions file
-    is_valid, message = is_challenge_config_yaml_html_field_valid(
-        yaml_file_data, "terms_and_conditions", challenge_config_location
-    )
-    if not is_valid:
+    terms_and_conditions = yaml_file_data.get("terms_and_conditions")
+    if not terms_and_conditions or len(terms_and_conditions) == 0:
+        message = "Please add the terms and conditions"
         error_messages.append(message)
     else:
-        yaml_file_data["terms_and_conditions"] = get_value_from_field(
-            yaml_file_data, challenge_config_location, "terms_and_conditions"
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "terms_and_conditions", challenge_config_location
         )
+        if not is_valid:
+            error_messages.append(message)
+        else:
+            yaml_file_data["terms_and_conditions"] = get_value_from_field(
+                yaml_file_data, challenge_config_location, "terms_and_conditions"
+            )
 
     # Check for submission guidelines file
-    is_valid, message = is_challenge_config_yaml_html_field_valid(
-        yaml_file_data, "submission_guidelines", challenge_config_location
-    )
-    if not is_valid:
+    submission_guidelines = yaml_file_data.get("submission_guidelines")
+    if not submission_guidelines or len(submission_guidelines) == 0:
+        message = "Please add the submission_guidelines"
         error_messages.append(message)
     else:
-        yaml_file_data["submission_guidelines"] = get_value_from_field(
-            yaml_file_data, challenge_config_location, "submission_guidelines"
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, "submission_guidelines", challenge_config_location
         )
+        if not is_valid:
+            error_messages.append(message)
+        else:
+            yaml_file_data["submission_guidelines"] = get_value_from_field(
+                yaml_file_data, challenge_config_location, "submission_guidelines"
+            )
 
     # Check for evaluation script path
     evaluation_script = yaml_file_data.get("evaluation_script")
