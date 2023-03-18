@@ -653,27 +653,33 @@ def validate_challenge_config_util(
         phase_split = 1
         exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
         for data in challenge_phase_splits:
-            if current_phase_split_ids and (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in current_phase_split_ids:
-                error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
-            else:
-                challenge_phase_split_uuids.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
+            expected_keys = {'is_leaderboard_order_descending', 'leaderboard_decimal_precision', 'visibility', 'dataset_split_id',
+                             'leaderboard_id', 'challenge_phase_id'}
+            if expected_keys.issubset(data.keys()):
+                if current_phase_split_ids and (data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]) not in current_phase_split_ids:
+                    error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.".format(data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
+                else:
+                    challenge_phase_split_uuids.append((data["leaderboard_id"], data["challenge_phase_id"], data["dataset_split_id"]))
 
-            is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
-                phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
-            )
-            error_messages += messages
-
-            serializer = ZipChallengePhaseSplitSerializer(
-                data=data, context={"exclude_fields": exclude_fields}
-            )
-            if not serializer.is_valid():
-                serializer_error = str(serializer.errors)
-                message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(
-                    phase_split, serializer_error
+                is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
+                    phase_ids, leaderboard_ids, dataset_splits_ids, data, phase_split
                 )
-                error_messages.append(message)
-            phase_split += 1
+                error_messages += messages
 
+                serializer = ZipChallengePhaseSplitSerializer(
+                    data=data, context={"exclude_fields": exclude_fields}
+                )
+                if not serializer.is_valid():
+                    serializer_error = str(serializer.errors)
+                    message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(
+                        phase_split, serializer_error
+                    )
+                    error_messages.append(message)
+                phase_split += 1
+            else:
+                missing_keys = expected_keys - data.keys()
+                missing_keys_string = ", ".join(missing_keys)
+                error_messages.append("ERROR: The following keys are missing in the challenge phase splits of YAML file: {}".format(missing_keys_string))
         for uuid in current_phase_split_ids:
             if uuid not in challenge_phase_split_uuids:
                 error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(uuid[0], uuid[1], uuid[2]))
