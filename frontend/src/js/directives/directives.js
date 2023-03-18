@@ -360,7 +360,7 @@ function dashboardFooterController($scope) {
           var expirationDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
           document.cookie = `${acceptedCookieName}=true;expires=${expirationDate.toUTCString()}`;
           scope.accepted = true;
-		  element.hide();
+          element.hide();
         };
 
         // position the consent message at the bottom of the screen and make it stick
