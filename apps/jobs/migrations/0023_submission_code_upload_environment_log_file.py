@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='submission',
-            name='code_upload_environment_log_file',
+            name='environment_log_file',
             field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
         ),
     ]

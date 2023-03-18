@@ -3741,7 +3741,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submission_input_file": None,
                     "stdout_file": None,
                     "stderr_file": None,
-                    "code_upload_environment_log_file": None,
+                    "environment_log_file": None,
                     "submission_result_file": None,
                     "submission_metadata_file": None,
                     "participant_team_members_email_ids": ["user6@test.com"],

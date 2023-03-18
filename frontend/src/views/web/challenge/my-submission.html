@@ -110,11 +110,11 @@
                                         class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                 <td ng-if="!key.stderr_file">None</td>
 
-                                <td ng-if="key.code_upload_environment_log_file && challenge.isChallengeHost &&
+                                <td ng-if="key.environment_log_file && challenge.isChallengeHost &&
                                         !challenge.isStaticCodeUploadChallenge">
-                                    <a href="{{key.code_upload_environment_log_file}}" target="_blank"
+                                    <a href="{{key.environment_log_file}}" target="_blank"
                                         class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                                <td ng-if="!key.code_upload_environment_log_file && challenge.isChallengeHost &&
+                                <td ng-if="!key.environment_log_file && challenge.isChallengeHost &&
                                         !challenge.isStaticCodeUploadChallenge">None</td>
 
                                 <td>{{key.submitted_at | date:'medium'}}</td>

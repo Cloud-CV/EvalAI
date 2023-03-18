@@ -516,7 +516,7 @@ def cleanup_submission(
     challenge_pk,
     phase_pk,
     stderr,
-    code_upload_environment_log,
+    environment_log,
     message,
     queue_name,
     is_remote,
@@ -530,7 +530,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
-        code_upload_environment_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
+        environment_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
         message {[dict]} -- Submission message from AWS SQS queue
         queue_name {[string]} -- Submission SQS queue name
         is_remote {[int]} -- Whether the challenge is remote evaluation
@@ -541,7 +541,7 @@ def cleanup_submission(
             "submission": submission_pk,
             "stdout": "",
             "stderr": stderr,
-            "code_upload_environment_log": code_upload_environment_log,
+            "environment_log": environment_log,
             "submission_status": "FAILED",
             "result": "[]",
             "metadata": "",

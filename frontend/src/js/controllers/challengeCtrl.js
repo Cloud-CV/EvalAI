@@ -1942,8 +1942,8 @@
             'label': 'Stderr File',
             'id': 'stderr_file'
         },{
-            'label': 'Code Upload Environment Log File',
-            'id': 'code_upload_environment_log_file'
+            'label': 'Environment Log File',
+            'id': 'environment_log_file'
         },{
             'label': 'Submitted At',
             'id': 'created_at'

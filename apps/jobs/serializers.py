@@ -45,7 +45,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "submission_input_file",
             "stdout_file",
             "stderr_file",
-            "code_upload_environment_log_file",
+            "environment_log_file",
             "started_at",
             "completed_at",
             "submitted_at",
@@ -72,7 +72,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "user__pk", flat=True
         )
         if curr_user.pk not in challenge_hosts_pk:
-            ret.pop("code_upload_environment_log_file", None)
+            ret.pop("environment_log_file", None)
         return ret
 
     def get_participant_team_name(self, obj):
@@ -135,7 +135,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "submission_input_file",
             "stdout_file",
             "stderr_file",
-            "code_upload_environment_log_file",
+            "environment_log_file",
             "submission_result_file",
             "submission_metadata_file",
             "participant_team_members_email_ids",
