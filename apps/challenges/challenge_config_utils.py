@@ -425,6 +425,10 @@ def validate_challenge_config_util(
     leaderboard_ids = []
     if leaderboard:
         error = False
+        if "id" not in leaderboard[0]:
+            message = "ERROR: There is no leaderboard id in the YAML configuration file."
+            error_messages.append(message)
+            error = True
         if "schema" not in leaderboard[0]:
             message = "ERROR: There is no leaderboard schema in the YAML configuration file."
             error_messages.append(message)
