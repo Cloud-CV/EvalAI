@@ -1660,7 +1660,6 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "jobs:get_submission_by_pk",
             kwargs={"submission_id": self.submission.id},
         )
-        # the submission's creator is self.user (in the host team). Thus, environment_log_file should be shown
         expected = {
             "id": self.submission.id,
             "participant_team": self.submission.participant_team.pk,
