@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='submission',
             name='environment_log_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/environment_log_file_{id}')),
         ),
     ]
