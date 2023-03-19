@@ -1076,6 +1076,7 @@ def update_submission(request, challenge_pk):
      - ``submission``: submission id, e.g. 123 (**required**)
      - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``environment_log``: Environment error after evaluation, e.g. "Failed due to attempted action being invalid" (**code upload challenge only**)
      - ``submission_status``: Status of submission after evaluation
         (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
@@ -1114,6 +1115,7 @@ def update_submission(request, challenge_pk):
         submission_status = request.data.get("submission_status", "").lower()
         stdout_content = request.data.get("stdout", "").encode("utf-8")
         stderr_content = request.data.get("stderr", "").encode("utf-8")
+        environment_log_content = request.data.get("environment_log", "").encode("utf-8")
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
@@ -1238,6 +1240,7 @@ def update_submission(request, challenge_pk):
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
         submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+        submission.environment_log_file.save("environment_log.txt", ContentFile(environment_log_content))
         submission.submission_result_file.save(
             "submission_result.json", ContentFile(str(public_results))
         )

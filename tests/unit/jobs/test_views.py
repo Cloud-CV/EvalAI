@@ -1437,6 +1437,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.private_submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
@@ -1593,6 +1594,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.host_participant_team_submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.host_participant_team_submission.started_at,
             "completed_at": self.host_participant_team_submission.completed_at,
@@ -1675,6 +1677,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
@@ -1722,6 +1725,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "publication_url": self.submission.publication_url,
             "stdout_file": None,
             "stderr_file": None,
+            "environment_log_file": None,
             "submission_result_file": None,
             "started_at": self.submission.started_at,
             "completed_at": self.submission.completed_at,
@@ -2366,6 +2370,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "CANCELLED",
             "stdout": "qwerty",
             "stderr": "qwerty",
+            "environment_log": "aeiou",
             "result": json.dumps(
                 [
                     {
@@ -2423,6 +2428,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "FINISHED",
             "stdout": "qwerty",
             "stderr": "qwerty",
+            "environment_log": "aeiou",
             "result": json.dumps(
                 [
                     {

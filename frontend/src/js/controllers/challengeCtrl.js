@@ -98,6 +98,8 @@
 
         vm.workerLogs = [];
 
+        vm.isStaticCodeUploadChallenge = false;
+        
         // get from backend
         vm.selectedWorkerResources = [512, 1024];
 
@@ -324,6 +326,7 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
+                vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
 
                 vm.queueName = details.queue;
@@ -351,9 +354,7 @@
                                 }
                             }
 
-                            if (details.is_challenge_host) {
-                                vm.isChallengeHost = true;
-                            }
+                            vm.isChallengeHost = details.is_challenge_host;
 
                             if (!vm.isParticipated) {
 
@@ -1940,6 +1941,9 @@
         },{
             'label': 'Stderr File',
             'id': 'stderr_file'
+        },{
+            'label': 'Environment Log File',
+            'id': 'environment_log_file'
         },{
             'label': 'Submitted At',
             'id': 'created_at'

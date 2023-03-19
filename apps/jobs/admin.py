@@ -34,6 +34,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "submission_input_file",
         "stdout_file",
         "stderr_file",
+        "environment_log_file",
         "submission_result_file",
         "submission_metadata_file",
         "job_name",
