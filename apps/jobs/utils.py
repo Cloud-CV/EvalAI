@@ -201,6 +201,7 @@ def handle_submission_rerun(submission, updated_status):
     submission.pk = None
     submission.stdout_file = None
     submission.stderr_file = None
+    submission.environment_log_file = None
     submission.submission_result_file = None
     submission.submission_metadata_file = None
     with suppress_autotime(submission, ["submitted_at"]):
