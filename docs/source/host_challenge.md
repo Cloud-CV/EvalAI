@@ -33,17 +33,18 @@ We categorize the challenges in two categories:
 
    If you are interested in hosting prediction upload based challenges, then [click here](host_challenge.html#host-prediction-upload-based-challenge).
 
-    <br />
-
+   <br />
 2. **Code-upload based challenges**: In these kind of challenges, participants upload their training code in the form of docker images using [EvalAI-CLI](https://github.com/Cloud-CV/evalai-cli/).
 
    We support two types of code-upload based challenges -
-      - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained model in form of docker images and the environment is also saved in form of a docker image.
-      - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
+
+   - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained model in form of docker images and the environment is also saved in form of a docker image.
+   - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
    We support two types of code-upload based challenges -
-      - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
-      - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
+
+   - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
+   - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
    Some of the popular code-upload based challenges that we have hosted are shown below:
 
@@ -59,31 +60,32 @@ We categorize the challenges in two categories:
 
 Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
-   <img src="_static/img/github_based_setup/use_template_1.png"><br />
-   <img src="_static/img/github_based_setup/use_template_2.png"><br />
+   `<img src="_static/img/github_based_setup/use_template_1.png"><br />`
+   `<img src="_static/img/github_based_setup/use_template_2.png"><br />`
 
 ### Step 2: Generate github token
 
-Generate your [github personal acccess token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) and copy it in clipboard.
+Generate your [github personal access token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) and copy it in clipboard.
 
 Add the github personal access token in the forked repository's [secrets](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with the name `AUTH_TOKEN`.
 
 ### Step 3: Setup host configuration
 
 Now, go to [EvalAI](https://eval.ai) to fetch the following details -
-   1. `evalai_user_auth_token` - Go to [profile page](https://eval.ai/web/profile) after logging in and click on `Get your Auth Token` to copy your auth token.
-   2. `host_team_pk` - Go to [host team page](https://eval.ai/web/challenge-host-teams) and copy the `ID` for the team you want to use for challenge creation.
-   3. `evalai_host_url` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server.
 
-   <img src="_static/img/github_based_setup/evalai_profile.png"><br />
+1. `evalai_user_auth_token` - Go to [profile page](https://eval.ai/web/profile) after logging in and click on `Get your Auth Token` to copy your auth token.
+2. `host_team_pk` - Go to [host team page](https://eval.ai/web/challenge-host-teams) and copy the `ID` for the team you want to use for challenge creation.
+3. `evalai_host_url` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server.
+
+   `<img src="_static/img/github_based_setup/evalai_profile.png"><br />`
 
 ### Step 4: Setup automated update push
 
 Create a branch with name `challenge` in the forked repository from the `master` branch.
-<span style="color:purple">Note: Only changes in `challenge` branch will be synchronized with challenge on EvalAI.</span>
+`<span style="color:purple">`Note: Only changes in `challenge` branch will be synchronized with challenge on EvalAI.
 
 Add `evalai_user_auth_token` and `host_team_pk` in `github/host_config.json`.
-   <img src="_static/img/github_based_setup/host_config_json.png"><br />
+   `<img src="_static/img/github_based_setup/host_config_json.png"><br />`
 
 ### Step 5: Update challenge details
 
@@ -92,8 +94,8 @@ Read [EvalAI challenge creation documentation](https://evalai.readthedocs.io/en/
 ### Step 6: Push changes to the challenge
 
 Commit the changes and push the `challenge` branch in the repository and wait for the build to complete. View the [logs of your build](https://docs.github.com/en/free-pro-team@latest/actions/managing-workflow-runs/using-workflow-run-logs#viewing-logs-to-diagnose-failures).
-    <img src="_static/img/github_based_setup/commit.png"><br />
-    <img src="_static/img/github_based_setup/build_logs.png"><br />
+    `<img src="_static/img/github_based_setup/commit.png"><br />`
+    `<img src="_static/img/github_based_setup/build_logs.png"><br />`
 
 If challenge config contains errors then a `issue` will be opened automatically in the repository with the errors otherwise the challenge will be created on EvalAI.
 
@@ -126,6 +128,7 @@ Please refer to the [writing evaluation script](evaluation_scripts.html) to comp
 Almost there. You just need to update the HTML templates in the `templates/` directory of the bundle that you cloned.
 
 EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
+
 <!-- 
 ### Step 5: Upload configuration on EvalAI
 
@@ -325,7 +328,7 @@ Please refer to [Writing Remote Evaluation Script](evaluation_scripts.html#writi
 
 ### Step 4: Set up remote evaluation worker
 
-1. Create conda environment to run the evaluation worker. Refer to [conda's create environment section](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) to set up a virtual environment.
+1. Create conda environment to run the evaluation worker. Refer to [conda&#39;s create environment section](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) to set up a virtual environment.
 2. Install the worker requirements from the `EvalAI-Starters/remote_challenge_evaluation` present [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/requirements.txt):
 
    ```sh
@@ -333,7 +336,6 @@ Please refer to [Writing Remote Evaluation Script](evaluation_scripts.html#writi
    pip install remote_challenge_evaluation/requirements.txt
 
    ```
-
 3. Start evaluation worker:
 
    ```sh
