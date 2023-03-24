@@ -353,8 +353,8 @@ def validate_challenge_config_util(
             error_messages.append(message)
         else:
             yaml_file_data["category"] = get_value_from_field(
-            yaml_file_data, challenge_config_location, "category"
-        )
+                yaml_file_data, challenge_config_location, "category"
+            )
 
     # Check for evaluation script path
     evaluation_script = yaml_file_data.get("evaluation_script")

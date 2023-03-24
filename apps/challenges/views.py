@@ -2483,7 +2483,7 @@ def category_challenge_by_challenge_pk(request, challenge_pk):
     if request.method == "GET":
         try:
             response_data = challenge.category
-        except:
+        except Challenge.DoesNotExist:
             response_data = {
                 "error": "Challenge {} does not exist".format(challenge_pk)
             }
