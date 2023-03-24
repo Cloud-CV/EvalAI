@@ -121,6 +121,11 @@ urlpatterns = [
         name="star_challenge",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/category",
+        views.category_challenge_by_challenge_pk,
+        name="category_challenge_by_challenge_pk",
+    ),
+    url(
         r"^get_broker_url/(?P<challenge_pk>[0-9]+)/$",
         views.get_broker_url_by_challenge_pk,
         name="get_broker_url_by_challenge_pk",

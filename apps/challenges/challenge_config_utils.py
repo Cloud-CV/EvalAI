@@ -344,6 +344,18 @@ def validate_challenge_config_util(
             yaml_file_data, challenge_config_location, "submission_guidelines"
         )
 
+    # Check for challenge tags
+    allowed_categories = ['Paper', 'Dataset', 'Environment', 'Workshop']
+    category = yaml_file_data.get("category")
+    for item in category:
+        if 'category' in item and item['category'] not in allowed_categories:
+            message = f"Invalid category '{item['category']}' found in YAML file!"
+            error_messages.append(message)
+        else:
+            yaml_file_data["category"] = get_value_from_field(
+            yaml_file_data, challenge_config_location, "category"
+        )
+
     # Check for evaluation script path
     evaluation_script = yaml_file_data.get("evaluation_script")
     if evaluation_script:

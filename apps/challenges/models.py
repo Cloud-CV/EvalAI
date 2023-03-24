@@ -70,6 +70,7 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False, db_index=True)
+    category = ArrayField(models.TextField(null=True, blank=True), default=[], blank=True)
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts")
     )  # should be zip format
