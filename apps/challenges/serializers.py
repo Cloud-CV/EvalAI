@@ -15,6 +15,7 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
 )
 
 
@@ -41,6 +42,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "terms_and_conditions",
             "submission_guidelines",
             "evaluation_details",
+            "has_prizes",
             "image",
             "start_date",
             "end_date",
@@ -508,3 +510,25 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         # PWC requires the default sorted by metric at the index "0" of the array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
+
+
+class ChallengePrizeSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengePrize Model.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengePrizeSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            challenge = context.get("challenge")
+            if challenge:
+                kwargs["data"]["challenge"] = challenge.pk
+
+    class Meta:
+        model = ChallengePrize
+        fields = (
+            "challenge", 
+            "amount", 
+            "rank"
+        )
