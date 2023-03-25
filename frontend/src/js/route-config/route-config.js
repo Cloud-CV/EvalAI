@@ -268,6 +268,14 @@
             title: 'Leaderboard',
         };
 
+        var prizes = {
+            name: "web.challenge-main.challenge-page.prizes",
+            parent: "web.challenge-main.challenge-page",
+            url: "/prizes",
+            templateUrl: baseUrl + "/web/challenge/prizes.html",
+            title: 'Prizes',
+        };
+
         var manage = {
             name: "web.challenge-main.challenge-page.manage",
             parent: "web.challenge-main.challenge-page",
@@ -511,6 +519,7 @@
         $stateProvider.state(my_submission);
         $stateProvider.state(my_challenge_all_submission);
         $stateProvider.state(leaderboard);
+        $stateProvider.state(prizes);
         $stateProvider.state(challenge_phase_leaderboard);
         $stateProvider.state(challenge_phase_metric_leaderboard);
 

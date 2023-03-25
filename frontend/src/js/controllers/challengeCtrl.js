@@ -29,6 +29,7 @@
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
+        vm.hasPrizes = false;
         vm.phases = {};
         vm.phaseSplits = {};
         vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
@@ -324,6 +325,7 @@
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
                 vm.isRegistrationOpen = details.is_registration_open;
+                vm.hasPrizes = details.has_prizes;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
@@ -335,6 +337,24 @@
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
 
+                }
+
+                // Get challenge prizes
+                vm.prizes = {};
+                if (vm.hasPrizes) {
+                    parameters.url = 'challenges/' + vm.challengeId + '/prizes/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.prizes = response.data;
+                        },
+                        onError: function(response) {
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
                 }
 
                 if (userKey) {
