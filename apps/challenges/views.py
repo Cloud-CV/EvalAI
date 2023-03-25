@@ -1448,7 +1448,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             response_data = {"error": message}
                             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                         rank_set.add(rank)
-                                
+
                         data = {
                             "challenge": challenge,
                             "amount": amount,
@@ -1461,7 +1461,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         if index == len(prizes_data) - 1:
                             for prize_data in prizes:
                                 serializer = ChallengePrizeSerializer(
-                                    data=prize_data, 
+                                    data=prize_data,
                                     context={
                                         "challenge": challenge,
                                     }
@@ -1475,7 +1475,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                     challenge.save()
                                     response_data = serializer.errors
                                     raise RuntimeError()
-                        
+
             # Create Challenge Phase
             challenge_phase_ids = {}
             for data in challenge_phases_data:
@@ -3506,7 +3506,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 response_data = {"error": message}
                                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                             rank_set.add(rank)
-                            
+
                             amount = prize["amount"]
 
                             data = {
@@ -3516,7 +3516,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             }
 
                             serializer = ChallengePrizeSerializer(
-                                data=data, 
+                                data=data,
                                 context={
                                     "challenge": challenge,
                                 }
@@ -3794,7 +3794,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             message = "Prize amount not found in YAML data."
                             response_data = {"error": message}
                             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                        
+
                         # Check for duplicate rank.
                         rank = prize['rank']
                         if rank in rank_set:
@@ -3813,7 +3813,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 "amount": amount,
                             }
                             serializer = ChallengePrizeSerializer(
-                                prize_obj, data=data, 
+                                prize_obj, data=data,
                                 context={
                                     "challenge": challenge,
                                 },
@@ -3826,7 +3826,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 "rank": rank,
                             }
                             serializer = ChallengePrizeSerializer(
-                                data=data, 
+                                data=data,
                                 context={
                                     "challenge": challenge,
                                 }

@@ -528,7 +528,7 @@ class ChallengePrizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengePrize
         fields = (
-            "challenge", 
-            "amount", 
+            "challenge",
+            "amount",
             "rank"
         )
