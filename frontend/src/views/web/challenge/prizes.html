@@ -1,0 +1,38 @@
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">Prizes</h5>
+            </div>
+        </div>
+        <div class="row">
+            <div class="horizontal-scroll">
+                <table ng-attr-id="prize_table" ng-class="['highlight', {'watermarked': challenge.showBackground}]">
+                    <thead>
+                        <tr>
+                            <td data-field="rank">
+                                <span class="w-300 fs-20">Rank</span>
+                            </td>
+                            <td data-field="amount">
+                                <span class="w-300 fs-20">Amount</span>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody class="fs-16 w-300">
+                        <tr ng-repeat="prize in challenge.prizes"
+                            class="fs-16" id="prizerank-{{challenge.initial_ranking[prize.rank]}}">
+                            <td>{{prize.rank}}</td>
+                            <td>
+                                <!-- Adding space between amount and currency letters -->
+                                <span>{{ prize.amount.slice(0, -3) }} {{ prize.amount.slice(-3) }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div >
+                    <p class="fs-16 w-300">{{challenge.prizes.error.error}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
