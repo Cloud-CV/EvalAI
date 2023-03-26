@@ -27,6 +27,13 @@ class ParticipantTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParticipantTeam
         fields = ("id", "team_name", "created_by", "team_url")
+        extra_kwargs = {
+            'team_name': {
+                'error_messages': {
+                    'invalid': 'Team Name is invalid.'
+                }
+            }
+        }
 
 
 class InviteParticipantToTeamSerializer(serializers.Serializer):
