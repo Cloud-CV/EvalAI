@@ -37,7 +37,7 @@ class BaseTestCase(TestCase):
 
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
-            domain = "Test Domain",
+            domain="Test Domain",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
