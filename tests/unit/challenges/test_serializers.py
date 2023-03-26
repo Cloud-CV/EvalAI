@@ -35,6 +35,7 @@ class BaseTestCase(APITestCase):
 
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
+            domain="Test Domain",
             short_description="Short description for test challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
