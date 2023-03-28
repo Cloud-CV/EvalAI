@@ -2562,7 +2562,7 @@
         };
 
         vm.challengePhaseDialog = function(ev, phase) {
-            vm.page.challenge_phase = phase;
+            vm.page.challenge_phase = Object.assign({},phase);
             vm.page.max_submissions_per_day = phase.max_submissions_per_day;
             vm.page.max_submissions_per_month = phase.max_submissions_per_month;
             vm.phaseStartDate = moment(phase.start_date);
@@ -2600,6 +2600,12 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
+                        var details = response.data;
+                        for (let i = 0; i < vm.phases.results.length; i++) {
+                            if (vm.phases.results[i].id == details.id) {
+                                vm.phases.results[i] = details;
+                            }
+                        }
                         utilities.hideLoader();
                         if (status === 200) {
                             $mdDialog.hide();
