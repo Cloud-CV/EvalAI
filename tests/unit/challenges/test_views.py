@@ -72,6 +72,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             short_description="Short description for test challenge",
+            category=["Paper", "Dataset", "Environment", "Workshop"],
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
@@ -139,6 +140,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "title": self.challenge.title,
                 "description": self.challenge.description,
                 "short_description": self.challenge.short_description,
+                "category": self.challenge.category,
                 "terms_and_conditions": self.challenge.terms_and_conditions,
                 "submission_guidelines": self.challenge.submission_guidelines,
                 "evaluation_details": self.challenge.evaluation_details,
@@ -296,6 +298,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "id": self.challenge.pk,
             "title": self.challenge.title,
             "short_description": self.challenge.short_description,
+            "category": self.challenge.category,
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
@@ -379,6 +382,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "id": self.challenge.pk,
             "title": new_title,
             "short_description": self.challenge.short_description,
+            "category": self.challenge.category,
             "description": new_description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
@@ -487,6 +491,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "id": self.challenge.pk,
             "title": self.partial_update_challenge_title,
             "short_description": self.challenge.short_description,
+            "category": self.challenge.category,
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
@@ -547,6 +552,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "id": self.challenge.pk,
             "title": self.update_challenge_title,
             "short_description": self.challenge.short_description,
+            "category": self.challenge.category,
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.update_submission_guidelines,
@@ -1119,6 +1125,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "id": self.challenge3.pk,
                 "title": self.challenge3.title,
                 "short_description": self.challenge3.short_description,
+                "category": self.challenge3.category,
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
@@ -1185,6 +1192,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
                 "short_description": self.challenge2.short_description,
+                "category": self.challenge2.category,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -1251,6 +1259,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "id": self.challenge4.pk,
                 "title": self.challenge4.title,
                 "short_description": self.challenge4.short_description,
+                "category": self.challenge4.category,
                 "description": self.challenge4.description,
                 "terms_and_conditions": self.challenge4.terms_and_conditions,
                 "submission_guidelines": self.challenge4.submission_guidelines,
@@ -1317,6 +1326,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "id": self.challenge4.pk,
                 "title": self.challenge4.title,
                 "short_description": self.challenge4.short_description,
+                "category": self.challenge4.category,
                 "description": self.challenge4.description,
                 "terms_and_conditions": self.challenge4.terms_and_conditions,
                 "submission_guidelines": self.challenge4.submission_guidelines,
@@ -1367,6 +1377,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "id": self.challenge3.pk,
                 "title": self.challenge3.title,
                 "short_description": self.challenge3.short_description,
+                "category": self.challenge3.category,
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
@@ -1417,6 +1428,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
                 "short_description": self.challenge2.short_description,
+                "category": self.challenge2.category,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -1532,6 +1544,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "id": self.challenge3.pk,
                 "title": self.challenge3.title,
                 "short_description": self.challenge3.short_description,
+                "category": self.challenge3.category,
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
@@ -1670,6 +1683,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "id": self.challenge3.pk,
             "title": self.challenge3.title,
             "short_description": self.challenge3.short_description,
+            "category": self.challenge3.category,
             "description": self.challenge3.description,
             "terms_and_conditions": self.challenge3.terms_and_conditions,
             "submission_guidelines": self.challenge3.submission_guidelines,
@@ -1744,6 +1758,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "id": self.challenge4.pk,
             "title": self.challenge4.title,
             "short_description": self.challenge4.short_description,
+            "category": self.challenge4.category,
             "description": self.challenge4.description,
             "terms_and_conditions": self.challenge4.terms_and_conditions,
             "submission_guidelines": self.challenge4.submission_guidelines,
@@ -1874,6 +1889,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
                 "short_description": self.challenge2.short_description,
+                "category": self.challenge2.category,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -1936,6 +1952,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
                 "short_description": self.challenge2.short_description,
+                "category": self.challenge2.category,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -1998,6 +2015,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
                 "short_description": self.challenge2.short_description,
+                "category": self.challenge2.category,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -2058,6 +2076,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "id": self.challenge.pk,
                 "title": self.challenge.title,
                 "short_description": self.challenge.short_description,
+                "category": self.challenge.category,
                 "description": self.challenge.description,
                 "terms_and_conditions": self.challenge.terms_and_conditions,
                 "submission_guidelines": self.challenge.submission_guidelines,
@@ -2108,6 +2127,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
                 "short_description": self.challenge2.short_description,
+                "category": self.challenge2.category,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -4852,6 +4872,69 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+class CategorieshallengesTest(BaseAPITestClass):
+    def setUp(self):
+        super(CategorieshallengesTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:category_challenge_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.user2 = User.objects.create(
+            username="someuser2",
+            email="user2@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge1 = Challenge.objects.create(
+            title="Test Challenge1",
+            short_description="Short description for test challenge1",
+            description="Description for test challenge1",
+            terms_and_conditions="Terms and conditions for test challenge1",
+            submission_guidelines="Submission guidelines for test challenge1",
+            category=["Dataset"],
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_get_category_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:category_challenge_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk + 10},
+        )
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(
+                self.challenge.pk + 10
+            )
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_category_challenge_by_challenge_pk(self):
+        self.url = reverse_lazy(
+            "challenges:category_challenge_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        expected = ["Dataset"]
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestAllowedEmailIds(BaseChallengePhaseClass):
