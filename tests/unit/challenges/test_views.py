@@ -4872,6 +4872,7 @@ class PresignedURLAnnotationTest(BaseChallengePhaseClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
 
 class CategorieshallengesTest(BaseAPITestClass):
     def setUp(self):
