@@ -42,7 +42,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     list_display = (
         "id",
         "title",
-        "domain",
         "start_date",
         "end_date",
         "creator",
@@ -70,7 +69,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "featured",
         "start_date",
         "end_date",
-        "domain",
     )
     search_fields = (
         "id",
