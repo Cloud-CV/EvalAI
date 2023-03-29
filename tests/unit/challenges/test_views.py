@@ -4932,7 +4932,7 @@ class CategorieshallengesTest(BaseAPITestClass):
             "challenges:category_challenge_by_challenge_pk",
             kwargs={"challenge_pk": self.challenge.pk},
         )
-        expected = ["Dataset"]
+        expected = ["Paper", "Dataset", "Environment", "Workshop"]
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
