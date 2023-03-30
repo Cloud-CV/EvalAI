@@ -17,6 +17,8 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
         if context:
             request = context.get("request")
             kwargs["data"]["created_by"] = request.user.username
+        for field in self.fields: # iterate over the serializer fields
+            self.fields[field].error_messages['required'] = 'Team name is invalid'.format(field) # set the custom error message, only team name need validation
 
     class Meta:
         model = ChallengeHostTeam

@@ -165,10 +165,12 @@
 
 
         vm.updateChallengeHostTeamData = function(updateChallengeHostTeamDataForm) {
+            // console.log("this is" + updateChallengeHostTeamDataForm); false
             if (updateChallengeHostTeamDataForm) {
             var parameters = {};
             parameters.url = 'hosts/challenge_host_team/' + vm.hostTeamId;
-            parameters.method = 'PATCH';
+            // parameters.method = 'PATCH'; can not validate the special characteristics
+            parameters.method = 'PUT';
             parameters.data = {
                 "team_name": vm.team.TeamName,
                 "team_url": vm.team.TeamURL
@@ -210,7 +212,11 @@
 
             utilities.sendRequest(parameters);
             }
-            else {
+            else if(updateChallengeHostTeamDataForm == false){
+                // frontend validation if updateChallengeHostTeamDataForm is false
+                $rootScope.notify("error", "Update failed! Invalid team name");
+                $mdDialog.hide();
+            }else{
                 $mdDialog.hide();
             }
         };

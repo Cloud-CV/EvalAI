@@ -94,9 +94,10 @@ def challenge_host_team_detail(request, pk):
             )
         else:
             serializer = ChallengeHostTeamSerializer(
-                challenge_host_team,
+                instance = challenge_host_team,
                 data=request.data,
                 context={"request": request},
+                partial=False,
             )
         if serializer.is_valid():
             serializer.save()
