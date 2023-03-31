@@ -33,13 +33,11 @@ PROMETHEUS_URL = os.environ.get(
     "MONITORING_API_URL", "https://monitoring.eval.ai/prometheus/"
 )
 
+json_path = os.environ.get("JSON_PATH", "~/prod_eks_auth_tokens.json")
 # QUEUES
-with open("/Users/gunjanchhablani/prod_eks_auth_tokens.json", "r") as f:
+with open(json_path, "r") as f:
     # Load the JSON data into a Python dictionary
-    PROD_INCLUDED_CHALLENGE_PKS = json.load(f)
-with open("/Users/gunjanchhablani/dev_eks_auth_tokens.json", "r") as f:
-    # Load the JSON data into a Python dictionary
-    DEV_INCLUDED_CHALLENGE_PKS = json.load(f)
+    INCLUDED_CHALLENGE_PKS = json.load(f)
 
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
@@ -224,12 +222,7 @@ def scale_up_or_down_workers(challenge, evalai_interface):
 # Cron Job
 def start_job():
 
-    if ENV == "production":
-        pks = PROD_INCLUDED_CHALLENGE_PKS
-    else:
-        pks = DEV_INCLUDED_CHALLENGE_PKS
-
-    for challenge_id, auth_token in pks.items():
+    for challenge_id, auth_token in INCLUDED_CHALLENGE_PKS.items():
         evalai_interface = create_evalai_interface(auth_token)
         challenge = evalai_interface.get_challenge_by_pk(challenge_id)
         assert (
