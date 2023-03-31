@@ -31,6 +31,7 @@ from challenges.models import (
     DatasetSplit,
     Leaderboard,
     StarChallenge,
+    ChallengePrize,
 )
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -76,6 +77,7 @@ class BaseAPITestClass(APITestCase):
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
+            has_prizes=False,
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -155,6 +157,7 @@ class GetChallengeTest(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "has_prizes": self.challenge.has_prizes,
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -313,6 +316,7 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "has_prizes": self.challenge.has_prizes,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -396,6 +400,7 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "has_prizes": self.challenge.has_prizes,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -500,6 +505,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "has_prizes": self.challenge.has_prizes,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -560,6 +566,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "has_prizes": self.challenge.has_prizes,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -1136,6 +1143,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "has_prizes": self.challenge3.has_prizes,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1202,6 +1210,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "has_prizes": self.challenge2.has_prizes,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1268,6 +1277,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "has_prizes": self.challenge4.has_prizes,
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1334,6 +1344,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "has_prizes": self.challenge4.has_prizes,
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1384,6 +1395,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "has_prizes": self.challenge3.has_prizes,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1434,6 +1446,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "has_prizes": self.challenge2.has_prizes,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1549,6 +1562,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "has_prizes": self.challenge3.has_prizes,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1687,6 +1701,7 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge3.creator.created_by.username,
                 "team_url": self.challenge3.creator.team_url,
             },
+            "has_prizes": self.challenge3.has_prizes,
             "published": self.challenge3.published,
             "submission_time_limit": self.challenge3.submission_time_limit,
             "is_registration_open": self.challenge3.is_registration_open,
@@ -1761,6 +1776,7 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge4.creator.created_by.username,
                 "team_url": self.challenge4.creator.team_url,
             },
+            "has_prizes": self.challenge4.has_prizes,
             "published": self.challenge4.published,
             "submission_time_limit": self.challenge4.submission_time_limit,
             "is_registration_open": self.challenge4.is_registration_open,
@@ -1891,6 +1907,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "has_prizes": self.challenge2.has_prizes,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1953,6 +1970,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "has_prizes": self.challenge2.has_prizes,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2015,6 +2033,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "has_prizes": self.challenge2.has_prizes,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2075,6 +2094,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "has_prizes": self.challenge.has_prizes,
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -2125,6 +2145,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "has_prizes": self.challenge2.has_prizes,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2184,6 +2205,66 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class ChallengePrizesTest(BaseAPITestClass):
+
+    def setUp(self):
+        super().setUp()
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_challenge_has_prizes_false(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_by_pk",
+            kwargs={"pk": self.challenge.pk},
+        )
+
+        self.challenge.has_prizes = False
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["has_prizes"])
+
+    def test_challenge_has_prizes_true(self):
+        self.url = reverse_lazy(
+            "challenges:get_prizes_by_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.challenge.has_prizes = True
+        self.challenge.save()
+        prize = ChallengePrize.objects.create(
+            challenge=self.challenge,
+            amount="100USD",
+            rank=1,
+        )
+        prize1 = ChallengePrize.objects.create(
+            challenge=self.challenge,
+            amount="500USD",
+            rank=2,
+        )
+        response = self.client.get(self.url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["challenge"], prize.challenge.pk)
+        self.assertEqual(response.data[0]["amount"], prize.amount)
+        self.assertEqual(response.data[0]["rank"], prize.rank)
+        self.assertEqual(response.data[1]["challenge"], prize1.challenge.pk)
+        self.assertEqual(response.data[1]["amount"], prize1.amount)
+        self.assertEqual(response.data[1]["rank"], prize1.rank)
 
 
 class BaseChallengePhaseClass(BaseAPITestClass):
