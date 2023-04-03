@@ -169,7 +169,7 @@
             if (updateChallengeHostTeamDataForm) {
             var parameters = {};
             parameters.url = 'hosts/challenge_host_team/' + vm.hostTeamId;
-            // parameters.method = 'PATCH'; can not validate the special characteristics
+            // parameters.method = 'PATCH'; can not validate the special characters
             parameters.method = 'PUT';
             parameters.data = {
                 "team_name": vm.team.TeamName,
