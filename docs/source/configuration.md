@@ -6,33 +6,27 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **short_description**: Short description of the challenge (preferably 140 characters max)
 
-- **description**: Long description of the challenge (use a relative path for the HTML file, e.g. `challenge_details/description.html`)
+- **description**: Long description of the challenge (use a relative path for the HTML file, e.g. `templates/description.html`)
 
-- **evaluation_criteria**: Evaluation criteria and details of the challenge (use a relative path for the HTML file, e.g. `challenge_details/evaluation.html`)
+- **evaluation_details**: Evaluation details and details of the challenge (use a relative path for the HTML file, e.g. `templates/evaluation_details.html`)
 
-- **terms_and_conditions**: Terms and conditions of the challenge (use a relative path for the HTML file, e.g. `challenge_details/tnc.html`)
+- **terms_and_conditions**: Terms and conditions of the challenge (use a relative path for the HTML file, e.g. `templates/terms_and_conditions.html`)
 
-- **image**: Logo of the challenge (use a relative path for the logo in the zip configuration, e.g. `images/logo/challenge_logo.jpg`). **Note**: The image must be in jpg, jpeg or png format.
+- **image**: Logo of the challenge (use a relative path for the logo in the zip configuration, e.g. `./logo.jpg`). **Note**: The image must be in jpg, jpeg or png format.
 
-- **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the HTML file, e.g. `challenge_details/submission_guidelines.html`)
+- **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the HTML file, e.g. `templates/submission_guidelines.html`)
 
-- **evaluation_script**: Python script which will decide how to evaluate submissions in different phases (path of the evaluation script file or folder relative to this YAML file. For e.g. `evaluation_script/`)
+- **evaluation_script**: Python script which will decide how to evaluate submissions in different phases (path of the evaluation script is in root e.g. `./`)
 
 - **remote_evaluation**: True/False (specify whether evaluation will happen on a remote machine or not. Default is `False`)
 
 - **is_docker_based**: True/False (specify whether the challenge is docker based or not. Default is `False`)
-
-- **is_static_dataset_code_upload**: True/False (specify whether the challenge is static dataset code upload or not. Default is `False`)
 
 - **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
 - **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
 - **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
-
-- **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
-
-- **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
 
 - **leaderboard**:
   A leaderboard for a challenge on EvalAI consists of following subfields:
@@ -44,6 +38,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
     1. `labels`: Labels are the header rows in the leaderboard according to which the challenge ranking is done.
 
     2. `default_order_by`: This key decides the default sorting of the leaderboard based on one of the labels defined above.
+    
+    3. `metadata`: This field defines additional information about the metrics that are used to evaluate the challenge submissions.
 
   The leaderboard schema for the [sample challenge configuration](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) looks like this:
 
@@ -54,6 +50,11 @@ Following fields are required (and can be customized) in the [`challenge_config.
         {
           "labels": ["Metric1", "Metric2", "Metric3", "Total"],
           "default_order_by": "Total",
+          "metadata": {
+          "Metric1": {
+            "sort_ascending": True,
+            "description": "Metric Description",
+          }
         }
   ```
 
@@ -69,7 +70,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **name**: Name of the challenge phase
 
-  - **description**: Long description of the challenge phase (set the relative path of the HTML file, e.g. `challenge_details/phase1_description.html`)
+  - **description**: Long description of the challenge phase (set the relative path of the HTML file, e.g. `templates/challenge_phase_1_description.html`)
 
   - **leaderboard_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
 
@@ -81,7 +82,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **end_date**: End DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
-  - **test_annotation_file**: This file is used for ranking the submission made by a participant. An annotation file can be shared by more than one challenge phase. (Path of the test annotation file relative to this YAML file, e.g. `challenge_details/test_annotation.txt`)
+  - **test_annotation_file**: This file is used for ranking the submission made by a participant. An annotation file can be shared by more than one challenge phase. (Path of the test annotation file relative to this YAML file, e.g. `annotations/test_annotations_devsplit.json`)
 
   - **codename**: Unique id for each challenge phase. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase. The codename specified here should match with the codename specified in the evaluation script to perfect mapping.
 
@@ -91,12 +92,48 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **max_submissions**: a Positive integer that decides the overall maximum number of submissions that can be done to a challenge phase.
 
+  - **default_submission_meta_attributes**: These are the default metadata attributes that will be displayed for all submissions, the metadata attributes are method_name, method_description, project_url, and publication_url.
+      ```yaml
+    default_submission_meta_attributes:
+      - name: method_name
+        is_visible: True
+      - name: method_description
+        is_visible: True
+      - name: project_url
+        is_visible: True
+      - name: publication_url
+        is_visible: True
+      ```
+  - **submission_meta_attributes**: These are the custom metadata attributes that can be added by participants for their submissions. The custom metadata attributes are TextAttribute, SingleOptionAttribute, MultipleChoiceAttribute, and TrueFalseField.
+    ```yaml
+    submission_meta_attributes:
+      - name: TextAttribute
+        description: Sample
+        type: text
+        required: False
+      - name: SingleOptionAttribute
+        description: Sample
+        type: radio
+        options: ["A", "B", "C"]
+      - name: MultipleChoiceAttribute
+        description: Sample
+        type: checkbox
+        options: ["alpha", "beta", "gamma"]
+      - name: TrueFalseField
+        description: Sample
+        type: boolean
+        required: True
+    ```
+  - **is_restricted_to_select_one_submission**: True/False (indicates whether participants are restricted to submitting only one submission for the challenge)
+  - **is_partial_submission_evaluation_enabled**: True/False (indicates whether partial submission evaluation is enabled)
+  - **allowed_submission_file_types**: This is a list of file types that are allowed for submission (e.g .json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy, .npz)
+
 - **dataset_splits**:
 
   Dataset splits define the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have two splits:
 
-  1. **test-dev** (Allow participants to make large number of submissions, let them see how they are doing, and let them overfit)
-  2. **test-challenge** (Allow small number of submissions so that they cannot mimic test-set. Use this split to decide the winners for the challenge)
+  1. **train_split** (Allow large number of submissions so participants can train there model)
+  2. **test_split** (Allow small number of submissions so that they cannot mimic test_split. Use this split to decide the winners for the challenge)
 
   A dataset split has the following subfields:
 
