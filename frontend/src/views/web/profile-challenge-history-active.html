@@ -1,0 +1,22 @@
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m11 l11">
+                <h5 class="w-300">Challenge Overview</h5>
+            </div>
+            <div class="col s12 m1 l1">
+                <h5><a ng-if="challenge.isChallengeHost" class="pointer theme-text fs-16"
+                        ng-click="challenge.overviewDialog($event)"><i class="fa fa-pencil"
+                            aria-hidden="true"></i>&nbsp;edit</a></h5>
+            </div>
+            <div class="col s12 m12 l12">
+                <div class="what-a-separator"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div ng-bind-html="challenge.page.description" class="fs-16 w-300 challenge-description trix-container"></div>
+            </div>
+        </div>
+    </div>
+</section>
