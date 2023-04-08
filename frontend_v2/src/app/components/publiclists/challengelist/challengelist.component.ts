@@ -46,11 +46,6 @@ export class ChallengelistComponent implements OnInit {
   pastChallenges = [];
 
   /**
-   * searchQuery
-   */
-  searchQuery: string = '';
-
-  /**
    * Unapproved challeges list
    */
   unapprovedChallengeList = [];
@@ -111,15 +106,6 @@ export class ChallengelistComponent implements OnInit {
    * List of filtered-further challenges
    */
   filteredChallengesView = [];
-  /**
-   * List of search challenges
-   */
-  searchChallengesView = [];
-
-  /**
-   * List of search challenges
-   */
-  filteredsearchChallengesView = [];
 
   /**
    * Team list
@@ -333,58 +319,7 @@ export class ChallengelistComponent implements OnInit {
       this.filteredPastChallenges = this.filteredPastChallenges.filter(
         (v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1
       );
-      this.filteredsearchChallengesView = this.filteredChallenges;
     }
-  }
-
-  /**
-   * Filtering challenge by search
-   */
-  searchChallenges() {
-    // Create a new array to hold the filtered challenges
-    const searchChallenges = [];
-  
-    // Iterate over allChallenges and filter by searchQuery
-    for (const challenge of this.filteredChallenges) {
-      if (
-        !this.searchQuery ||
-        (challenge.title &&
-          challenge.title.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
-        (challenge.description &&
-          challenge.description
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase()))
-      ) {
-        searchChallenges.push(challenge);
-      }
-    }
-    // Set filteredChallengesView to first windowSize elements
-    this.searchChallengesView = searchChallenges;
-  }
-
-   /**
-   * Filtering challenge by search for hosted challenge
-   */
-   searchhostedChallenges() {
-    // Create a new array to hold the filtered challenges
-    const searchChallenges = [];
-  
-    // Iterate over allChallenges and filter by searchQuery
-    for (const challenge of this.filteredChallenges) {
-      if (
-        !this.searchQuery ||
-        (challenge.title &&
-          challenge.title.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
-        (challenge.description &&
-          challenge.description
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase()))
-      ) {
-        searchChallenges.push(challenge);
-      }
-    }
-    // Set filteredChallengesView to first windowSize elements
-    this.filteredsearchChallengesView = searchChallenges;
   }
 
   /**
@@ -466,7 +401,6 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
         SELF.filteredUpcomingChallenges = SELF.upcomingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
-        SELF.searchChallengesView = SELF.filteredChallenges;
         this.updateChallengesView(true);
       },
       (err) => {
@@ -493,7 +427,6 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
         SELF.filteredOngoingChallenges = SELF.ongoingChallenges;
         SELF.filteredPastChallenges = SELF.pastChallenges;
-        SELF.searchChallengesView = SELF.filteredChallenges;
       },
       (err) => {
         if (err.status === 403) {
