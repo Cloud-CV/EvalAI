@@ -138,7 +138,7 @@
                     }
                     else {
                         vm.past.showPagination = true;
-                        vm.past.paginationMsg = "Ongoing Challenges";
+                        vm.past.paginationMsg = "Past Challenges";
                     }
                     if (vm.past.next === null) {
                         vm.past.isNext = 'disabled';
