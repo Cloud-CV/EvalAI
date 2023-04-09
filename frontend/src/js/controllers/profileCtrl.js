@@ -191,7 +191,6 @@
                     // reinitialized data
                     var details = response.data;
                     vm[category] = details;
-                    console.log(vm[category]);
                     // condition for pagination
                     if (vm[category]['next'] === null) {
                         vm[category]['isNext'] = 'disabled';
