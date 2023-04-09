@@ -107,7 +107,7 @@
                     } else {
                         vm.present.isPrev = '';
                     }
-                    if (vm.present.next !== null) {
+                    if (vm.present.next != null) {
                         vm.present.currentPage = vm.present.next.split('page=')[1] - 1;
                     } else {
                         vm.present.currentPage = 1;
@@ -151,7 +151,7 @@
                     } else {
                         vm.past.isPrev = '';
                     }
-                    if (vm.past.next !== null) {
+                    if (vm.past.next != null) {
                         vm.past.currentPage = vm.past.next.split('page=')[1] - 1;
                     } else {
                         vm.past.currentPage = 1;
