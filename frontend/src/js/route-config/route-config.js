@@ -306,6 +306,22 @@
             authenticate: true
         };
 
+        var active = {
+            name: "web.profile.active",
+            parent: "web.profile",
+            url:"/active",
+            templateUrl: baseUrl + "/web/profile-challenge-history-active.html",
+            title: "Active",
+        };
+
+        var past = {
+            name: "web.profile.past",
+            parent: "web.profile",
+            url:"/past",
+            templateUrl: baseUrl + "/web/profile-challenge-history-past.html",
+            title: "Past",
+        };
+
         var host_challenge = {
             name: "web.host-challenge",
             parent: "web",
@@ -525,7 +541,11 @@
 
         $stateProvider.state(host_challenge);
 
+        //profile details
         $stateProvider.state(profile);
+        $stateProvider.state(active);
+        $stateProvider.state(past);
+
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
