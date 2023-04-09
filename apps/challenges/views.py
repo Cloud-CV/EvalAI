@@ -51,6 +51,7 @@ from base.utils import (
     get_slug,
     get_url_from_hostname,
     paginated_queryset,
+    profile_paginated_queryset,
     send_email,
     send_slack_notification,
 )
@@ -648,7 +649,7 @@ def get_all_participated_challenges(request, challenge_time):
     participant_team_ids = get_participant_teams_for_user(request.user)
     q_params["participant_teams__pk__in"] = participant_team_ids
     challenges = Challenge.objects.filter(**q_params).order_by("-pk")
-    paginator, result_page = paginated_queryset(challenges, request)
+    paginator, result_page = profile_paginated_queryset(challenges, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={"request": request}
     )
