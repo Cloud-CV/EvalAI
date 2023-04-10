@@ -583,7 +583,7 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     except Exception as e:
         response_data = {"error": f"Error in creating challenge serializer with the given results: {e}"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
     response_data = serializer.data
 
     try:
