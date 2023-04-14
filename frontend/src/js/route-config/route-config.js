@@ -275,6 +275,7 @@
             templateUrl: baseUrl + "/web/challenge/manage.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
+            authenticate: true,
             resolve: {
               challenge: function(utilities, $state, $stateParams) {
                 return new Promise(function(resolve, reject) {
