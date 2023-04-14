@@ -275,7 +275,33 @@
             templateUrl: baseUrl + "/web/challenge/manage.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
-        };
+            resolve: {
+              challenge: function(utilities, $state, $stateParams) {
+                return new Promise(function(resolve, reject) {
+                  var parameters = {};
+                  parameters.token = utilities.getData('userKey');
+                  parameters.url = 'participants/participant_teams/challenges/' + $stateParams.challengeId + '/user';
+                  parameters.method = 'GET';
+                  parameters.data = {};
+                  parameters.callback = {
+                    onSuccess: function(response) {
+                      var details = response.data;
+                      if (details.is_challenge_host) {
+                        resolve(details);
+                      } else {
+                        $state.go('error-404');
+                        reject();
+                      }
+                    },
+                    onError: function() {
+                      reject();
+                    }
+                  };
+                  utilities.sendRequest(parameters);
+                });
+              }
+            },
+        }; 
 
         var challenge_phase_leaderboard = {
             name: "web.challenge-main.challenge-page.phase-leaderboard",
