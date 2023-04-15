@@ -1,11 +1,37 @@
 from __future__ import unicode_literals
 
-from django.db import models
-from django.db.models.signals import post_save
-from django.contrib.auth.models import User
-from django.dispatch import receiver
+from urllib.parse import urlparse
 
 from base.models import TimeStampedModel
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+def validate_github_url(value):
+    if not value:
+        return
+    obj = urlparse(value)
+    if not obj.hostname in ("github.com"):
+        raise ValidationError(f"Only URLs from GitHub are allowed")
+
+
+def validate_linkedin_url(value):
+    if not value:
+        return
+    obj = urlparse(value)
+    if not obj.hostname in ("linkedin.com", "www.linkedin.com", "linkedin.in"):
+        raise ValidationError(f"Only URLs from LinkedIn are allowed")
+
+
+def validate_google_scholar_url(value):
+    if not value:
+        return
+    obj = urlparse(value)
+    if not obj.hostname in ("scholar.google.com", "www.scholar.google.com"):
+        raise ValidationError(f"Only URLs from Google Scholar are allowed")
 
 
 class UserStatus(TimeStampedModel):
@@ -44,9 +70,21 @@ class Profile(TimeStampedModel):
     affiliation = models.CharField(max_length=512)
     receive_participated_challenge_updates = models.BooleanField(default=False)
     recieve_newsletter = models.BooleanField(default=False)
-    github_url = models.URLField(max_length=200, null=True, blank=True)
-    google_scholar_url = models.URLField(max_length=200, null=True, blank=True)
-    linkedin_url = models.URLField(max_length=200, null=True, blank=True)
+    github_url = models.URLField(
+        max_length=200, null=True, blank=True, validators=[validate_github_url]
+    )
+    google_scholar_url = models.URLField(
+        max_length=200,
+        null=True,
+        blank=True,
+        validators=[validate_google_scholar_url],
+    )
+    linkedin_url = models.URLField(
+        max_length=200,
+        null=True,
+        blank=True,
+        validators=[validate_linkedin_url],
+    )
 
     def __str__(self):
         return "{}".format(self.user)
