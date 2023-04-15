@@ -79,7 +79,7 @@ p.no-top-para {
 
 /*scrollbar customization*/
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 10px;
   border-radius: 10px;
   height: 3px;
 }
@@ -1846,7 +1846,7 @@ a.dashboard-evailai-logo img {
 }
 
 .web-container {
-  width: calc(100vw - 223px);
+  width: calc(100vw - 230px);
   float: right;
   padding-top: 70px;
   overflow-x: hidden;

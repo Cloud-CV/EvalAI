@@ -69,7 +69,7 @@ p.no-top-para {
 /*scrollbar customization*/
 
 ::-webkit-scrollbar {
-    width: 4px;
+    width: 10px;
     border-radius: 10px;
     height: 5px;
 }
@@ -1015,7 +1015,7 @@ h4.challenge-step-title {
     }
 
     .web-container {
-        width: calc(1440px - 223px) !important;
+        width: calc(1440px - 220px) !important;
     }
 
     .dashboard-flex,
