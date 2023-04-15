@@ -11,16 +11,17 @@ def validate_github_url(value):
     if not value:
         return
     obj = urlparse(value)
-    if not obj.hostname in ("github.com"):
-        raise ValidationError(f"Only URLs from GitHub are allowed")
+    if obj.hostname not in ("github.com"):
+        raise ValidationError("Only URLs from GitHub are allowed")
 
 
 def validate_linkedin_url(value):
     if not value:
         return
     obj = urlparse(value)
-    if not obj.hostname in ("linkedin.com", "www.linkedin.com", "linkedin.in"):
-        raise ValidationError(f"Only URLs from LinkedIn are allowed")
+    if obj.hostname not in ("linkedin.com", "www.linkedin.com", "linkedin.in"):
+        raise ValidationError("Only URLs from LinkedIn are allowed")
+
 
 class Contact(TimeStampedModel):
     """Model representing details of User submitting queries."""
