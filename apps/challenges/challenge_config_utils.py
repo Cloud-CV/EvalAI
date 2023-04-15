@@ -277,6 +277,12 @@ def validate_challenge_config_util(
         message = "Please add the challenge title"
         error_messages.append(message)
 
+    # Check for challenge domain
+    challenge_domain = yaml_file_data.get("domain")
+    if not challenge_domain or challenge_domain not in ["CV", "NLP", "RL"]:
+        message = "Challenge domain cannot be empty. It must be one of the following: 'CV', 'NLP', or 'RL'."
+        error_messages.append(message)
+
     # Check for the challenge logo
     image = yaml_file_data.get("image")
     if image and (

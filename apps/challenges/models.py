@@ -36,7 +36,16 @@ class Challenge(TimeStampedModel):
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
 
+    DOMAIN_OPTIONS = (
+        ("CV", "Computer Vision"),
+        ("NLP", "Natural Language Processing"),
+        ("RL", "Reinforcement Learning"),
+    )
+
     title = models.CharField(max_length=100, db_index=True)
+    domain = models.CharField(
+        max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
+    )
     short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     terms_and_conditions = models.TextField(null=True, blank=True)

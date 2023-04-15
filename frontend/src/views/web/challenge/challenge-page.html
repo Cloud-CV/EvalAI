@@ -30,6 +30,17 @@
                             </a>
                         </span>
                     </h4>
+                    <span class="fs-16 w-300">
+                        <strong class="text-light-black">Domain:</strong>
+                        {{ challenge.page.domain }}
+                    </span>
+                    &nbsp;
+                    <span ng-if="challenge.isChallengeHost">
+                        <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </a>
+                    </span>
+                    <br>
                     <span ng-if="challenge.page.creator.team_url != ''" class="fs-16 w-300"><strong
                             class="text-light-black">Organized
                             by:</strong><a class="orange-text" href="{{challenge.page.creator.team_url}}"

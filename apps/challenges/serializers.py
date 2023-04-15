@@ -36,6 +36,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "title",
+            "domain",
             "short_description",
             "description",
             "terms_and_conditions",

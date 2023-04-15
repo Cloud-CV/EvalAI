@@ -4,6 +4,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **title**: Title of the challenge
 
+- **domain**: Domain of the challenge. It must be one of the following: CV, NLP, or RL.
+
 - **short_description**: Short description of the challenge (preferably 140 characters max)
 
 - **description**: Long description of the challenge (use a relative path for the HTML file, e.g. `challenge_details/description.html`)
