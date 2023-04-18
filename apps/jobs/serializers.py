@@ -17,13 +17,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         context = kwargs.get("context")
         self.created_by = None
-        if context and context.get("request").method == "GET":
+        if context:
             created_by = context.get("request").user
             self.created_by = created_by
 
         if context and context.get("request").method == "POST":
             created_by = context.get("request").user
-            self.created_by = created_by
             kwargs["data"]["created_by"] = created_by.pk
 
             participant_team = context.get("participant_team").pk
@@ -76,7 +75,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
         challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
             "user__pk", flat=True
         )
-        print(challenge_hosts_pk, self.created_by.pk if self.created_by else None)
         if self.created_by and self.created_by.pk not in challenge_hosts_pk:
             ret.pop("environment_log_file", None)
         return ret
