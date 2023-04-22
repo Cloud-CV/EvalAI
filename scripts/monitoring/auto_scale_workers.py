@@ -54,11 +54,20 @@ def execute_get_request(url):
     return response.json()
 
 
+def execute_post_request(url, data):
+    response = requests.post(url, data=data, headers=authorization_header)
+    return response.json()
+
+
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
-        evalai_endpoint
+    all_challenge_endpoint = (
+        "{}/api/challenges/challenge/all".format(evalai_endpoint)
     )
-    response = execute_get_request(all_challenge_endpoint)
+    data = {
+        'challenge_approved': 'all',
+        'challenge_published': 'all'
+    }
+    response = execute_post_request(all_challenge_endpoint, data)
 
     return response
 

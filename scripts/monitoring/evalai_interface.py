@@ -16,7 +16,7 @@ URLS = {
     "get_aws_eks_bearer_token": "/api/jobs/challenge/{}/eks_bearer_token/",
     "get_aws_eks_cluster_details": "/api/challenges/{}/evaluation_cluster/",
     "get_challenge_by_pk": "/api/challenges/challenge/{}/",
-    "get_challenges": "/api/challenges/challenge/all/all/all",
+    "get_challenges": "/api/challenges/challenge/all",
 }
 
 
@@ -122,5 +122,9 @@ class EvalAI_Interface:
     def get_challenges(self):
         url = URLS.get("get_challenges")
         url = self.return_url_per_environment(url)
-        response = self.make_request(url, "GET")
+        data = {
+            'challenge_approved': 'all',
+            'challenge_published': 'all'
+        }
+        response = self.make_request(url, "POST", data=data)
         return response

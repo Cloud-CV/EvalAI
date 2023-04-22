@@ -18,6 +18,11 @@ def execute_get_request(url):
     return response.json()
 
 
+def execute_post_request(url, data):
+    response = requests.post(url, data=data, headers=authorization_header)
+    return response.json()
+
+
 def start_worker(challenge_id):
     start_worker_endpoint = "{}/api/challenges/{}/manage_worker/start/".format(
         evalai_endpoint, challenge_id
@@ -49,11 +54,15 @@ def delete_worker(challenge_id):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/unapproved/all".format(
+    all_challenge_endpoint = "{}/api/challenges/challenge/all".format(
         evalai_endpoint
     )
-    response = requests.get(
-        all_challenge_endpoint, headers=authorization_header
+    data = {
+        'challenge_approved': 'unapproved',
+        'challenge_published': 'all'
+    }
+    response = execute_post_request(
+        all_challenge_endpoint, data
     )
     return response.json()
 

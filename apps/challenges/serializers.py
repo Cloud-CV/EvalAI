@@ -27,7 +27,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
         context = kwargs.get("context")
         if context and context.get("request").method != "GET":
             challenge_host_team = context.get("challenge_host_team")
-            kwargs["data"]["creator"] = challenge_host_team.pk
+            if challenge_host_team is None:
+                self.fields["creator"] = ChallengeHostTeamSerializer()
+            else:
+                kwargs["data"]["creator"] = challenge_host_team.pk
         else:
             self.fields["creator"] = ChallengeHostTeamSerializer()
 

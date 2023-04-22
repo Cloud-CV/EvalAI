@@ -1037,8 +1037,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             "challenges:get_all_challenges",
             kwargs={
                 "challenge_time": "PAST",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
             },
         )
 
@@ -1175,8 +1173,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             "challenges:get_all_challenges",
             kwargs={
                 "challenge_time": "PRESENT",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
             },
         )
 
@@ -1241,8 +1237,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             "challenges:get_all_challenges",
             kwargs={
                 "challenge_time": "FUTURE",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
             },
         )
 
@@ -1307,8 +1301,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             "challenges:get_all_challenges",
             kwargs={
                 "challenge_time": "ALL",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
             },
         )
 
@@ -1473,8 +1465,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             "challenges:get_all_challenges",
             kwargs={
                 "challenge_time": "INCORRECT",
-                "challenge_approved": "APPROVED",
-                "challenge_published": "PUBLIC",
             },
         )
         expected = {"error": "Wrong url pattern!"}
