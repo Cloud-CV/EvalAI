@@ -108,10 +108,10 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
     def get_email_options(self):
         try:
-                user = get_user_model().objects.get(email=self.data['email'])
-                if not user.is_active:
-                    raise ValidationError({'details': "Account is not active. Please contact the administrator."})
-                else:
-                    return super().get_email_options()
+            user = get_user_model().objects.get(email=self.data['email'])
+            if not user.is_active:
+                raise ValidationError({'details': "Account is not active. Please contact the administrator."})
+            else:
+                return super().get_email_options()
         except get_user_model().DoesNotExist:
             raise ValidationError({'details': "User with the given email does not exist."})
