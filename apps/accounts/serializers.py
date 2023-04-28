@@ -101,10 +101,10 @@ class JwtTokenSerializer(serializers.ModelSerializer):
             "access_token",
         )
 
+
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
     Serializer to check Account Active Status.
-    Extends the default PasswordResetSerializer.
     """
     def get_email_options(self):
         try:
@@ -113,6 +113,5 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
                     raise ValidationError({'details': "Account is not active. Please contact the administrator."})
                 else:
                     return super().get_email_options()
-        except:
+        except get_user_model().DoesNotExist:
             raise ValidationError({'details': "User with the given email does not exist."})
-
