@@ -320,10 +320,10 @@
                         vm.getUser.email = '';
                         vm.stopLoader();
                     },
-                    onError: function(error) {
+                    onError: function(response) {
                         vm.isFormError = true;
-                        if (error.status === 400) {
-                            vm.FormError = error.data.details;
+                        if (response.status === 400) {
+                            vm.FormError = response.data.details;
                         } else {
                             vm.FormError = "Something went wrong. Please try again";
                         }
