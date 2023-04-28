@@ -320,11 +320,16 @@
                         vm.getUser.email = '';
                         vm.stopLoader();
                     },
-                    onError: function() {
+                    onError: function(error) {
                         vm.isFormError = true;
-                        vm.FormError = "Something went wrong. Please try again";
+                        if (error.status === 400) {
+                            vm.FormError = error.data.details;
+                        } else {
+                            vm.FormError = "Something went wrong. Please try again";
+                        }
                         vm.stopLoader();
                     }
+                    
                 };
                 utilities.sendRequest(parameters, "no-header");
             } else {
