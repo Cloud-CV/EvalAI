@@ -65,6 +65,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -77,6 +78,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -125,6 +127,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             errorResponse = {
+                next: null,
                 error: 'error'
             };
             vm = createController();
@@ -136,6 +139,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -148,6 +152,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -197,6 +202,7 @@ describe('Unit tests for challenge list controller', function () {
             isPastChallengeSuccess = null;
             // success response for the ongoing challenge
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -209,6 +215,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -221,6 +228,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -271,6 +279,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = true;
             // success response for the ongoing and upcoming challenge
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
