@@ -60,7 +60,6 @@
 
                     // check for the next page
                     if (data.next !== null) {
-                        console.log(data.next);
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         parameters.url = slicedUrl;
