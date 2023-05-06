@@ -15,9 +15,9 @@
         utilities.showLoader();
         utilities.hideButton();
 
-        vm.currentList = {};
-        vm.upcomingList = {};
-        vm.pastList = {};
+        vm.currentList = [];
+        vm.upcomingList = [];
+        vm.pastList = [];
 
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
@@ -60,10 +60,11 @@
 
                     // check for the next page
                     if (data.next !== null) {
-                        parameters.url = data.next;
-                        utilities.sendRequest(parameters).then(function() {
-                            getAllResults(parameters, resultsArray, noneResults);
-                        });
+                        console.log(data.next);
+                        var url = data.next;
+                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
+                        parameters.url = slicedUrl;
+                        getAllResults(parameters, resultsArray, noneResults);
                     } else {
                         utilities.hideLoader();
                     }
