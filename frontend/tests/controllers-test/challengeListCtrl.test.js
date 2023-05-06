@@ -26,9 +26,9 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
             expect(vm.userKey).toEqual(utilities.getData('userKey'));
             expect(utilities.showLoader).toHaveBeenCalled();
-            expect(vm.currentList).toEqual({});
-            expect(vm.upcomingList).toEqual({});
-            expect(vm.pastList).toEqual({});
+            expect(vm.currentList).toEqual([]);
+            expect(vm.upcomingList).toEqual([]);
+            expect(vm.pastList).toEqual([]);
             expect(vm.noneCurrentChallenge).toBeFalsy();
             expect(vm.noneUpcomingChallenge).toBeFalsy();
             expect(vm.nonePastChallenge).toBeFalsy();
