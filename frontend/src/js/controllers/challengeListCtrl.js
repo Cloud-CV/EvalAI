@@ -22,9 +22,7 @@
         vm.noneCurrentChallenge = true;
         vm.noneUpcomingChallenge = true;
         vm.nonePastChallenge = true;
-
-        // helper function to get all challenge results
-        function getAllResults(parameters, resultsArray) {
+        vm.getAllResults = function(parameters, resultsArray){
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
@@ -83,7 +81,7 @@
         parameters.url = 'challenges/challenge/present/approved/public';
         parameters.method = 'GET';
         
-        getAllResults(parameters, vm.currentList);
+        vm.getAllResults(parameters, vm.currentList);
 
         if (vm.currentList.length === 0) {
             vm.noneCurrentChallenge = true;
@@ -95,7 +93,7 @@
         parameters.url = 'challenges/challenge/future/approved/public';
         parameters.method = 'GET';
 
-        getAllResults(parameters, vm.upcomingList);
+        vm.getAllResults(parameters, vm.upcomingList);
 
         if (vm.upcomingList.length === 0) {
             vm.noneUpcomingChallenge = true;
@@ -107,7 +105,7 @@
         parameters.url = 'challenges/challenge/past/approved/public';
         parameters.method = 'GET';
 
-        getAllResults(parameters, vm.pastList);
+        vm.noneCurrentChallengegetAllResults(parameters, vm.pastList);
 
         if (vm.pastList.length === 0) {
             vm.nonePastChallenge = true;
