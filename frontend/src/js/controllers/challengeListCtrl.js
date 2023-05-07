@@ -55,7 +55,7 @@
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         parameters.url = slicedUrl;
-                        getAllResults(parameters, resultsArray);
+                        vm.getAllResults(parameters, resultsArray);
                     } else {
                         utilities.hideLoader();
                     }
