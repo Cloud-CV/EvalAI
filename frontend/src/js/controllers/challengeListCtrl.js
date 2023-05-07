@@ -19,9 +19,9 @@
         vm.upcomingList = [];
         vm.pastList = [];
 
-        vm.noneCurrentChallenge = false;
-        vm.noneUpcomingChallenge = false;
-        vm.nonePastChallenge = false;
+        vm.noneCurrentChallenge = true;
+        vm.noneUpcomingChallenge = true;
+        vm.nonePastChallenge = true;
 
         // helper function to get all challenge results
         function getAllResults(parameters, resultsArray) {
