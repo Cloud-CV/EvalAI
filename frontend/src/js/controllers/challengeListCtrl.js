@@ -91,7 +91,7 @@
             vm.noneCurrentChallenge = false;
         }
 
-        // calls for upcoming challneges
+        // calls for upcoming challenges
         parameters.url = 'challenges/challenge/future/approved/public';
         parameters.method = 'GET';
 
@@ -103,7 +103,7 @@
             vm.noneUpcomingChallenge = false;
         }
 
-        // calls for past challneges
+        // calls for past challenges
         parameters.url = 'challenges/challenge/past/approved/public';
         parameters.method = 'GET';
 
