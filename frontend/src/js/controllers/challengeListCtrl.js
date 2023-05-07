@@ -24,18 +24,12 @@
         vm.nonePastChallenge = false;
 
         // helper function to get all challenge results
-        function getAllResults(parameters, resultsArray, noneResults) {
+        function getAllResults(parameters, resultsArray) {
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
                     var results = data.results;
-
-                    if (results.length === 0) {
-                        noneResults = true;
-                    } else {
-                        noneResults = false;
-                    }
-
+                    
                     var timezone = moment.tz.guess();
                     for (var i in results) {
 
@@ -76,30 +70,50 @@
             utilities.sendRequest(parameters);
         }
 
-        // calls for ongoing challenges
+        
         vm.challengeCreator = {};
         var parameters = {};
-        parameters.method = 'GET';
         if (userKey) {
             parameters.token = userKey;
         } else {
             parameters.token = null;
         }
-        parameters.url = 'challenges/challenge/present/approved/public';
 
-        getAllResults(parameters, vm.currentList, vm.noneCurrentChallenge);
+        // calls for ongoing challenges
+        parameters.url = 'challenges/challenge/present/approved/public';
+        parameters.method = 'GET';
+        
+        getAllResults(parameters, vm.currentList);
+
+        if (vm.currentList.length === 0) {
+            vm.noneCurrentChallenge = true;
+        } else {
+            vm.noneCurrentChallenge = false;
+        }
 
         // calls for upcoming challneges
         parameters.url = 'challenges/challenge/future/approved/public';
         parameters.method = 'GET';
 
-        getAllResults(parameters, vm.upcomingList, vm.noneUpcomingChallenge);
+        getAllResults(parameters, vm.upcomingList);
+
+        if (vm.upcomingList.length === 0) {
+            vm.noneUpcomingChallenge = true;
+        } else {
+            vm.noneUpcomingChallenge = false;
+        }
 
         // calls for past challneges
         parameters.url = 'challenges/challenge/past/approved/public';
         parameters.method = 'GET';
 
-        getAllResults(parameters, vm.pastList, vm.nonePastChallenge);
+        getAllResults(parameters, vm.pastList);
+
+        if (vm.pastList.length === 0) {
+            vm.nonePastChallenge = true;
+        } else {
+            vm.nonePastChallenge = false;
+        }
 
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {
