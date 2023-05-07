@@ -287,5 +287,38 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.upcomingList).toEqual(successResponse.results);
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+
+        it('should call getAllResults method recursively when next is not null', function () {
+            spyOn(utilities, 'getAllResults').and.callThrough(); // spy on getAllResults method
+            spyOn(utilities, 'hideLoader');
+            spyOn(utilities, 'storeData');
+            
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+
+            // mock response with next property set to a non-null value
+            successResponse = {
+                next: 'http://example.com/challenges/?page=2',
+                results: [
+                    {
+                        id: 1,
+                        description: "the length of the ongoing challenge description is greater than or equal to 50",
+                        creator: {
+                        id: 1
+                        },
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                    }
+                ]
+            };
+
+            vm = createController();
+            expect(vm.currentList).toEqual(successResponse.results);
+            expect(vm.noneCurrentChallenge).toBeFalsy();
+            expect(utilities.getAllResults).toHaveBeenCalledWith('http://example.com/challenges/?page=2', [], jasmine.any(Function));
+        });
+
+
     });
 });
