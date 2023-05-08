@@ -66,7 +66,7 @@
             };
 
             utilities.sendRequest(parameters);
-        }
+        };
 
         
         vm.challengeCreator = {};
