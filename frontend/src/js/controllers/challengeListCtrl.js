@@ -105,7 +105,7 @@
         parameters.url = 'challenges/challenge/past/approved/public';
         parameters.method = 'GET';
 
-        vm.noneCurrentChallengegetAllResults(parameters, vm.pastList);
+        vm.getAllResults(parameters, vm.pastList);
 
         if (vm.pastList.length === 0) {
             vm.nonePastChallenge = true;
