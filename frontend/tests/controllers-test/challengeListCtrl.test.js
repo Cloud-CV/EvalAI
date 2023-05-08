@@ -290,9 +290,7 @@ describe('Unit tests for challenge list controller', function () {
 
         it('should call getAllResults method recursively when next is not null', function () {
             spyOn(vm, 'getAllResults').and.callThrough(); // spy on getAllResults method
-            spyOn(utilities, 'hideLoader');
-            spyOn(utilities, 'storeData');
-            
+
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
