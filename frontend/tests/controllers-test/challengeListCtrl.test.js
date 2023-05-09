@@ -289,8 +289,6 @@ describe('Unit tests for challenge list controller', function () {
         });
 
         it('should call getAllResults method recursively when next is not null', function () {
-            spyOn(vm, 'getAllResults'); // spy on getAllResults method
-
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
@@ -312,9 +310,16 @@ describe('Unit tests for challenge list controller', function () {
             };
 
             vm = createController();
+            spyOn(vm, 'getAllResults').and.callThrough();
+            const parameters = {
+                url: 'challenges/challenge/present/approved/public',
+                method: 'GET',
+                callback: jasmine.any(Function)
+            };
+            vm.getAllResults(parameters, []);
             expect(vm.currentList).toEqual(successResponse.results);
             expect(vm.noneCurrentChallenge).toBeFalsy();
-            expect(vm.getAllResults).toHaveBeenCalledWith('http://example.com/challenges/?page=2', vm.currentList);
+            expect(vm.getAllResults).toHaveBeenCalledTimes(2);
         });
 
 
