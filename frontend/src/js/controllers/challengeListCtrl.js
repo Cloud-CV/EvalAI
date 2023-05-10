@@ -15,156 +15,103 @@
         utilities.showLoader();
         utilities.hideButton();
 
-        vm.currentList = {};
-        vm.upcomingList = {};
-        vm.pastList = {};
+        vm.currentList = [];
+        vm.upcomingList = [];
+        vm.pastList = [];
 
-        vm.noneCurrentChallenge = false;
-        vm.noneUpcomingChallenge = false;
-        vm.nonePastChallenge = false;
+        vm.noneCurrentChallenge = true;
+        vm.noneUpcomingChallenge = true;
+        vm.nonePastChallenge = true;
+        vm.getAllResults = function(parameters, resultsArray){
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var data = response.data;
+                    var results = data.results;
+                    
+                    var timezone = moment.tz.guess();
+                    for (var i in results) {
 
-        // calls for ongoing challenges
+                        var descLength = results[i].description.length;
+                        if (descLength >= 50) {
+                            results[i].isLarge = "...";
+                        } else {
+                            results[i].isLarge = "";
+                        }
+
+                        var offset = new Date(results[i].start_date).getTimezoneOffset();
+                        results[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                        offset = new Date(results[i].end_date).getTimezoneOffset();
+                        results[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+
+                        var id = results[i].id;
+                        vm.challengeCreator[id] = results[i].creator.id;
+                        utilities.storeData("challengeCreator", vm.challengeCreator);
+
+                        resultsArray.push(results[i]);
+                    }
+
+                    // check for the next page
+                    if (data.next !== null) {
+                        var url = data.next;
+                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
+                        parameters.url = slicedUrl;
+                        vm.getAllResults(parameters, resultsArray);
+                    } else {
+                        utilities.hideLoader();
+                    }
+                },
+                onError: function() {
+                    utilities.hideLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        
         vm.challengeCreator = {};
         var parameters = {};
-        parameters.method = 'GET';
         if (userKey) {
             parameters.token = userKey;
         } else {
             parameters.token = null;
         }
+
+        // calls for ongoing challenges
         parameters.url = 'challenges/challenge/present/approved/public';
+        parameters.method = 'GET';
+        
+        vm.getAllResults(parameters, vm.currentList);
 
-        parameters.callback = {
-            onSuccess: function(response) {
-                var data = response.data;
-                vm.currentList = data.results;
+        if (vm.currentList.length === 0) {
+            vm.noneCurrentChallenge = true;
+        } else {
+            vm.noneCurrentChallenge = false;
+        }
 
-                if (vm.currentList.length === 0) {
-                    vm.noneCurrentChallenge = true;
-                } else {
-                    vm.noneCurrentChallenge = false;
-                }
+        // calls for upcoming challenges
+        parameters.url = 'challenges/challenge/future/approved/public';
+        parameters.method = 'GET';
 
-                var timezone = moment.tz.guess();
-                for (var i in vm.currentList) {
+        vm.getAllResults(parameters, vm.upcomingList);
 
-                    var descLength = vm.currentList[i].description.length;
-                    if (descLength >= 50) {
-                        vm.currentList[i].isLarge = "...";
-                    } else {
-                        vm.currentList[i].isLarge = "";
-                    }
-                    var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
-                    vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
-                    offset = new Date(vm.currentList[i].end_date).getTimezoneOffset();
-                    vm.currentList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+        if (vm.upcomingList.length === 0) {
+            vm.noneUpcomingChallenge = true;
+        } else {
+            vm.noneUpcomingChallenge = false;
+        }
 
-                    var id = vm.currentList[i].id;
-                    vm.challengeCreator[id] = vm.currentList[i].creator.id;
-                    utilities.storeData("challengeCreator", vm.challengeCreator);
-                }
+        // calls for past challenges
+        parameters.url = 'challenges/challenge/past/approved/public';
+        parameters.method = 'GET';
 
-                // dependent api
-                // calls for upcoming challneges
-                parameters.url = 'challenges/challenge/future/approved/public';
-                parameters.method = 'GET';
+        vm.getAllResults(parameters, vm.pastList);
 
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var data = response.data;
-                        vm.upcomingList = data.results;
-
-                        if (vm.upcomingList.length === 0) {
-                            vm.noneUpcomingChallenge = true;
-                        } else {
-                            vm.noneUpcomingChallenge = false;
-                        }
-
-                        var timezone = moment.tz.guess();
-                        for (var i in vm.upcomingList) {
-
-                            var descLength = vm.upcomingList[i].description.length;
-
-                            if (descLength >= 50) {
-                                vm.upcomingList[i].isLarge = "...";
-                            } else {
-                                vm.upcomingList[i].isLarge = "";
-                            }
-                            
-                            var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
-                            vm.upcomingList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
-                            offset = new Date(vm.upcomingList[i].end_date).getTimezoneOffset();
-                            vm.upcomingList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
-
-                            
-                            var id = vm.upcomingList[i].id;
-                            vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
-                            utilities.storeData("challengeCreator", vm.challengeCreator);
-                        }
-
-                        // dependent api
-                        // calls for past challneges
-                        parameters.url = 'challenges/challenge/past/approved/public';
-                        parameters.method = 'GET';
-
-                        parameters.callback = {
-                            onSuccess: function(response) {
-                                var data = response.data;
-                                vm.pastList = data.results;
-
-                                if (vm.pastList.length === 0) {
-                                    vm.nonePastChallenge = true;
-                                } else {
-                                    vm.nonePastChallenge = false;
-                                }
-
-                                var timezone = moment.tz.guess();
-                                for (var i in vm.pastList) {
-
-
-                                    var descLength = vm.pastList[i].description.length;
-                                    if (descLength >= 50) {
-                                        vm.pastList[i].isLarge = "...";
-                                    } else {
-                                        vm.pastList[i].isLarge = "";
-                                    }
-
-                                    var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
-                                    vm.pastList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
-                                    offset = new Date(vm.pastList[i].end_date).getTimezoneOffset();
-                                    vm.pastList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
-
-                                    var id = vm.pastList[i].id;
-                                    vm.challengeCreator[id] = vm.pastList[i].creator.id;
-                                    utilities.storeData("challengeCreator", vm.challengeCreator);
-                                }
-
-                                utilities.hideLoader();
-
-                            },
-                            onError: function() {
-                                utilities.hideLoader();
-                            }
-                        };
-
-                        utilities.sendRequest(parameters);
-
-                    },
-                    onError: function() {
-                        utilities.hideLoader();
-                    }
-                };
-
-                utilities.sendRequest(parameters);
-
-            },
-            onError: function() {
-
-                utilities.hideLoader();
-            }
-        };
-
-        utilities.sendRequest(parameters);
+        if (vm.pastList.length === 0) {
+            vm.nonePastChallenge = true;
+        } else {
+            vm.nonePastChallenge = false;
+        }
 
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {
