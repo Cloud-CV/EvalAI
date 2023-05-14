@@ -27,7 +27,6 @@
                 onSuccess: function(response) {
                     var data = response.data;
                     var results = data.results;
-                    var vm = this;
                     
                     var timezone = moment.tz.guess();
                     for (var i in results) {
@@ -66,7 +65,7 @@
                             vm[typ] = false;
                         }
                     }
-                }.bind(vm),
+                },
                 onError: function() {
                     utilities.hideLoader();
                 }
