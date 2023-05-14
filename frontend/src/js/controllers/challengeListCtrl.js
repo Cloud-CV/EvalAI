@@ -19,10 +19,10 @@
         vm.upcomingList = [];
         vm.pastList = [];
 
-        vm.noneCurrentChallenge = true;
-        vm.noneUpcomingChallenge = true;
-        vm.nonePastChallenge = true;
-        vm.getAllResults = function(parameters, resultsArray){
+        vm.noneCurrentChallenge = false;
+        vm.noneUpcomingChallenge = false;
+        vm.nonePastChallenge = false;
+        vm.getAllResults = function(parameters, resultsArray, typ){
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
@@ -58,6 +58,12 @@
                         vm.getAllResults(parameters, resultsArray);
                     } else {
                         utilities.hideLoader();
+                        if (resultsArray.length === 0) {
+                            vm[typ] = true;
+                        } else {
+                            console.log(resultsArray.length);
+                            vm[typ] = false;
+                        }
                     }
                 },
                 onError: function() {
@@ -81,38 +87,20 @@
         parameters.url = 'challenges/challenge/present/approved/public';
         parameters.method = 'GET';
         
-        vm.getAllResults(parameters, vm.currentList);
-
-        if (vm.currentList.length === 0) {
-            vm.noneCurrentChallenge = true;
-        } else {
-            vm.noneCurrentChallenge = false;
-        }
-
+        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
         // calls for upcoming challenges
         parameters.url = 'challenges/challenge/future/approved/public';
         parameters.method = 'GET';
 
-        vm.getAllResults(parameters, vm.upcomingList);
-
-        if (vm.upcomingList.length === 0) {
-            vm.noneUpcomingChallenge = true;
-        } else {
-            vm.noneUpcomingChallenge = false;
-        }
+        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
 
         // calls for past challenges
         parameters.url = 'challenges/challenge/past/approved/public';
         parameters.method = 'GET';
 
-        vm.getAllResults(parameters, vm.pastList);
-
-        if (vm.pastList.length === 0) {
-            vm.nonePastChallenge = true;
-        } else {
-            vm.nonePastChallenge = false;
-        }
-
+        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
+    
+        console.log(vm.nonePastChallenge);
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {
                 if (this.pageYOffset >= 100) {
