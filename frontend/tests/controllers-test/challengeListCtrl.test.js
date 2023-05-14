@@ -29,9 +29,9 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.currentList).toEqual([]);
             expect(vm.upcomingList).toEqual([]);
             expect(vm.pastList).toEqual([]);
-            expect(vm.noneCurrentChallenge).toBeTruthy();
-            expect(vm.noneUpcomingChallenge).toBeTruthy();
-            expect(vm.nonePastChallenge).toBeTruthy();
+            expect(vm.noneCurrentChallenge).toBeFalsy();
+            expect(vm.noneUpcomingChallenge).toBeFalsy();
+            expect(vm.nonePastChallenge).toBeFalsy();
             expect(vm.challengeCreator).toEqual({});
         });
     });
