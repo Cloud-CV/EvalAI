@@ -599,31 +599,30 @@ def update_failed_jobs_and_send_logs(
                 ) in container_state_map.items():
                     if container_name in ["agent", "submission", "environment"]:
                         if container_state.terminated is not None:
-                            if container_state.terminated.reason == "Error":
-                                pod_name = pods_list.items[0].metadata.name
-                                try:
-                                    pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
-                                        name=pod_name,
-                                        namespace="default",
-                                        _return_http_data_only=True,
-                                        _preload_content=False,
-                                        container=container_name,
+                            pod_name = pods_list.items[0].metadata.name
+                            try:
+                                pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                                    name=pod_name,
+                                    namespace="default",
+                                    _return_http_data_only=True,
+                                    _preload_content=False,
+                                    container=container_name,
+                                )
+                                pod_log = pod_log_response.data.decode(
+                                    "utf-8"
+                                )
+                                pod_log = pod_log[-10000:]
+                                clean_submission = True
+                                if container_name == "environment":
+                                    code_upload_environment_error = pod_log
+                                else:
+                                    submission_error = pod_log
+                            except client.rest.ApiException as e:
+                                logger.exception(
+                                    "Exception while reading Job logs {}".format(
+                                        e
                                     )
-                                    pod_log = pod_log_response.data.decode(
-                                        "utf-8"
-                                    )
-                                    pod_log = pod_log[-1000:]
-                                    clean_submission = True
-                                    if container_name == "environment":
-                                        code_upload_environment_error = pod_log
-                                    else:
-                                        submission_error = pod_log
-                                except client.rest.ApiException as e:
-                                    logger.exception(
-                                        "Exception while reading Job logs {}".format(
-                                            e
-                                        )
-                                    )
+                                )
             else:
                 logger.info(
                     "Job pods in pending state, waiting for node assignment for submission {}".format(
