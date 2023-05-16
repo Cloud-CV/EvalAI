@@ -1,4 +1,4 @@
-FROM node:8.11.2 as node
+FROM node:14.20.0 as node
 
 ARG NODE_ENV
 WORKDIR /code
