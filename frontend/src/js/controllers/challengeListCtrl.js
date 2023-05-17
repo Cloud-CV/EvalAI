@@ -61,7 +61,6 @@
                         if (resultsArray.length === 0) {
                             vm[typ] = true;
                         } else {
-                            console.log(resultsArray.length);
                             vm[typ] = false;
                         }
                     }
@@ -99,8 +98,7 @@
         parameters.method = 'GET';
 
         vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
-    
-        console.log(vm.nonePastChallenge);
+
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {
                 if (this.pageYOffset >= 100) {
