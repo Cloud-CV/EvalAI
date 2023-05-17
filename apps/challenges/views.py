@@ -564,13 +564,33 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     # don't return disabled challenges
     q_params["is_disabled"] = False
 
-    challenge = Challenge.objects.filter(**q_params).order_by("-pk")
-    paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(
-        result_page, many=True, context={"request": request}
-    )
+    try:
+        challenge = Challenge.objects.filter(**q_params).order_by("-pk")
+    except Exception as e:
+        response_data = {"error": f"Error in fetching challenges from backend: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        paginator, result_page = paginated_queryset(challenge, request)
+    except Exception as e:
+        response_data = {"error": f"Error in creating paginated queryset: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        serializer = ChallengeSerializer(
+            result_page, many=True, context={"request": request}
+        )
+    except Exception as e:
+        response_data = {"error": f"Error in creating challenge serializer with the given results: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+
+    try:
+        return paginator.get_paginated_response(response_data)
+    except Exception as e:
+        response_data = {"error": f"Error in getting paginated response: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["GET"])
