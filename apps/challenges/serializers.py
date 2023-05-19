@@ -15,6 +15,8 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
+    ChallengeSponsor
 )
 
 
@@ -45,6 +47,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "creator",
+            "list_tags",
+            "domain",
+            "has_prize",
+            "has_sponsors",
             "published",
             "submission_time_limit",
             "is_registration_open",
@@ -241,6 +247,10 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "start_date",
             "end_date",
             "creator",
+            "list_tags",
+            "domain",
+            "has_prize",
+            "has_sponsors",
             "evaluation_details",
             "published",
             "submission_time_limit",
@@ -502,3 +512,49 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         # PWC requires the default sorted by metric at the index "0" of the array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
+    
+class ChallengePrizeSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengePrize Model.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengePrizeSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            challenge = context.get("challenge")
+            if challenge:
+                kwargs["data"]["challenge"] = challenge.pk
+
+    class Meta:
+        model = ChallengePrize
+        fields = (
+            "challenge",
+            "amount",
+            "rank"
+        )
+
+class ChallengeSponsorSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengeSponsor Model.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengeSponsorSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            sponsor_logo = context.get("sponsor_logo")
+            if sponsor_logo:
+                kwargs["data"]["sponsor_logo"] = sponsor_logo
+            challenge = context.get("challenge")
+            if challenge:
+                kwargs["data"]["challenge"] = challenge.pk
+
+    class Meta:
+        model = ChallengeSponsor
+        fields = (
+            "challenge",
+            "sponsor",
+            "sponsor_logo",
+            "sponsor_url"
+        )

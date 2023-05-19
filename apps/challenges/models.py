@@ -26,7 +26,27 @@ def save_challenge_slug(sender, instance, **kwargs):
 def get_default_eval_metric():
     return ["Accuracy"]
 
+class ChallengeTags(models.Model):
+    """
+    Model to store tags for a challenge
+    """
 
+    TAG_CHOICES = [
+        ("Paper", "Paper"),
+        ("Dataset", "Dataset"),
+        ("Environment", "Environment"),
+        ("Workshop", "Workshop"),
+    ]
+
+    tag_name = models.CharField(max_length=200, db_index=True, choices=TAG_CHOICES)
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_tags"
+
+    def __str__(self):
+        """Returns the tag name"""
+        return self.tag_name
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
@@ -59,6 +79,15 @@ class Challenge(TimeStampedModel):
         related_name="challenge_creator",
         on_delete=models.CASCADE,
     )
+    list_tags = models.ManyToManyField(ChallengeTags, blank=True)
+    DOMAIN_OPTIONS = (
+    ("CV", "Computer Vision"),
+    ("NLP", "Natural Language Processing"),
+    ("RL", "Reinforcement Learning"),
+    )
+    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
+    has_prize = models.BooleanField(default=False)
+    has_sponsors = models.BooleanField(default=False)
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
@@ -627,3 +656,50 @@ class PWCChallengeLeaderboard(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "pwc_challenge_leaderboard"
+
+class ChallengeSponsor(TimeStampedModel):
+    """
+    Model to store challenge sponsors
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE, related_name='challenge_sponsor')
+    sponsor_logo = models.ImageField(
+        upload_to=RandomFileName("sponsor_logo"),
+        null=True,
+        blank=True,
+        verbose_name="Sponsor Logo",
+    )
+    sponsor = models.CharField(max_length=200, blank=True, null=True)
+    sponsor_url = models.URLField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_sponsor"
+
+    def __str__(self):
+        """Returns a string representation of the Sponsor object"""
+        return f"Sponsor for {self.challenge}: {self.sponsor}"
+
+class ChallengePrize(TimeStampedModel):
+    """
+    Model to store challenge prizes
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
+    amount = models.CharField(max_length=10)
+    rank = models.PositiveIntegerField()
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_prize"
+
+    def __str__(self):
+        """Returns a string representation of the Prize object"""
+        return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"
+    

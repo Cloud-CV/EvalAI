@@ -2,6 +2,7 @@ import logging
 import requests
 import zipfile
 import yaml
+import re
 
 from django.core.files.base import ContentFile
 
@@ -399,6 +400,47 @@ def validate_challenge_config_util(
         current_dataset_config_ids = []
         current_phase_config_ids = []
         current_phase_split_ids = []
+
+    # Check for Prizes
+    prizes = yaml_file_data.get("prizes")
+    if prizes:
+        for prize in prizes:
+            rank = prize.get("rank")
+            amount = prize.get("amount")
+            if not rank or not amount:
+                message = "ERROR: Invalid prize entry, rank or amount is missing."
+                error_messages.append(message)
+            elif not isinstance(rank, int) or rank < 1:
+                message = "ERROR: Invalid rank value {}. Rank should be a positive integer.".format(prize["rank"])
+                error_messages.append(message)
+            else:
+                if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', amount):
+                    message = "ERROR: Invalid amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).".format(prize["amount"])
+                    error_messages.append(message)
+
+    # Check for Sponsor
+    sponsors_list = yaml_file_data.get("sponsors")
+    if sponsors_list:
+        for sponsor_data in sponsors_list:
+            sponsor_logo = sponsor_data['sponsor_logo']
+            if sponsor_logo and (sponsor_logo.endswith(".jpg")or sponsor_logo.endswith(".jpeg")or sponsor_logo.endswith(".png")):
+                sponsor_image_path = join(BASE_LOCATION, unique_folder_name, extracted_folder_name, sponsor_logo)
+                if isfile(sponsor_image_path):
+                    sponsor_image_file = ContentFile(get_file_content(sponsor_image_path, "rb"), sponsor_logo)
+                else:
+                    sponsor_image_file = None
+                    message = "ERROR: No sponsor logo is present. Please add it and then try again!"
+                    error_messages.append(message)
+            else:
+                sponsor_image_file = None
+            sponsor_url = sponsor_data.get("sponsor_url")
+            files["sponsor_image_file"] = sponsor_image_file
+            if sponsor_url:
+                if not re.match(r'^https?://', sponsor_url):
+                    message = "ERROR: Invalid sponsor_url value {}. URL should start with http:// or https://.".format(sponsor_url)
+                    error_messages.append(message)
+            
+
 
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")

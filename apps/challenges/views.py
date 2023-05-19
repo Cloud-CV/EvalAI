@@ -11,6 +11,7 @@ import time
 import uuid
 import yaml
 import zipfile
+import re
 
 from os.path import basename, isfile, join
 from datetime import datetime
@@ -106,6 +107,9 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
+    ChallengeSponsor,
+    ChallengeTags,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -123,6 +127,8 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
+    ChallengePrizeSerializer,
+    ChallengeSponsorSerializer,
 )
 
 from .aws_utils import (
@@ -1416,6 +1422,93 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     response_data = serializer.errors
                     raise RuntimeError()
+                
+            # Create Prizes
+            if "prizes" in yaml_file_data:
+                prizes_data = yaml_file_data['prizes']
+                rank_set = set()
+                prizes = []
+                for index, prize in enumerate(prizes_data):
+                    rank = prize.get("rank")
+                    amount = prize.get("amount")
+                    if not rank or not amount:
+                        message = "Invalid prize entry, rank or amount is missing."
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    elif not isinstance(rank, int) or rank < 1:
+                        message = "Invalid prize rank value {}. Rank should be a positive integer.".format(prize["rank"])
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    elif not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', amount):
+                        message = "Invalid prize amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).".format(prize["amount"])
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        # Check for duplicate rank.
+                        rank = prize['rank']
+                        if rank in rank_set:
+                            message = f"Duplicate rank {rank} found in prizes."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        rank_set.add(rank)
+
+                        data = {
+                            "challenge": challenge,
+                            "amount": amount,
+                            "rank": rank,
+                        }
+
+                        prizes.append(data)
+
+                        # Update all prizes data after successful validation
+                        if index == len(prizes_data) - 1:
+                            for prize_data in prizes:
+                                serializer = ChallengePrizeSerializer(
+                                    data=prize_data,
+                                    context={
+                                        "challenge": challenge,
+                                    }
+                                )
+                                if serializer.is_valid():
+                                    serializer.save()
+                                    challenge.has_prizes = True
+                                    challenge.save()
+                                else:
+                                    challenge.has_prizes = False
+                                    challenge.save()
+                                    response_data = serializer.errors
+                                    raise RuntimeError()
+
+
+                                
+            # Add Sponsor
+            if "sponsors" in yaml_file_data:
+                sponsor_data = yaml_file_data["sponsor"]
+                for sponsor_data in yaml_file_data["sponsor"]:
+                    # Check for Sponsor logo in yaml file.
+                    sponsor_logo = sponsor_data['sponsor_logo']
+                    if sponsor_logo and (sponsor_logo.endswith(".jpg")or sponsor_logo.endswith(".jpeg")or sponsor_logo.endswith(".png")):
+                        sponsor_image_path = join(BASE_LOCATION, unique_folder_name, extracted_folder_name, sponsor_logo)
+                        if isfile(sponsor_image_path):
+                            sponsor_image_file = ContentFile(get_file_content(sponsor_image_path, "rb"), sponsor_image_path)
+                        else:
+                            sponsor_image_file = None
+                    else:
+                        sponsor_image_file = None
+                    serializer = ChallengeSponsorSerializer(
+                        data=sponsor_data,
+                        context={"challenge": challenge,
+                                "sponsor_logo": sponsor_image_file}
+                    )
+                    if serializer.is_valid():
+                        challenge.has_sponsor = True
+                        challenge.save()
+                        serializer.save()
+                    else:
+                        challenge.has_sponsor = False
+                        challenge.save()
+                        response_data = serializer.errors
+                        raise RuntimeError()
 
             # Create Challenge Phase
             challenge_phase_ids = {}
@@ -2402,6 +2495,21 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
+    
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def get_prizes_by_challenge(challenge_pk):
+    """
+    Returns a list of prizes for a given challenge.
+    """
+    challenge = get_challenge_model(
+        challenge_pk
+    )
+
+    prizes = ChallengePrize.objects.filter(challenge=challenge)
+    serializer = ChallengePrizeSerializer(prizes, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET", "POST"])
@@ -3402,6 +3510,133 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         leaderboard_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
+                        
+                    # Add/Update ChallengePrize objects
+                    if "prizes" in yaml_file_data:
+                        prizes_data = yaml_file_data['prizes']
+                        rank_set = set()
+                        for prize in prizes_data:
+                            if 'rank' not in prize:
+                                message = "Prize rank not found in YAML data."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            if 'amount' not in prize:
+                                message = "Prize amount not found in YAML data."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+                            # Check for duplicate rank.
+                            rank = prize['rank']
+                            if rank in rank_set:
+                                message = f"Duplicate rank {rank} found in YAML data."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            rank_set.add(rank)
+
+                            rank = prize['rank']
+                            amount = prize["amount"]
+
+                            prize_obj = ChallengePrize.objects.filter(rank=rank, challenge=challenge).first()
+                            if prize_obj:
+                                data = {
+                                    "amount": amount,
+                                }
+                                serializer = ChallengePrizeSerializer(
+                                    prize_obj, data=data,
+                                    context={
+                                        "challenge": challenge,
+                                    },
+                                    partial=True
+                                )
+                            else:
+                                data = {
+                                    "challenge": challenge,
+                                    "amount": amount,
+                                    "rank": rank,
+                                }
+                                serializer = ChallengePrizeSerializer(
+                                    data=data,
+                                    context={
+                                        "challenge": challenge,
+                                    }
+                                )
+                            if serializer.is_valid():
+                                challenge.has_prize = True
+                                challenge.save()
+                                serializer.save()
+                            else:
+                                error_messages = serializer.errors
+                                challenge.has_prize = False
+                                challenge.save()
+                                raise RuntimeError()
+                    else:
+                        challenge.has_prize = False
+                        challenge.save()
+                        
+                    # Add/Update Sponsor
+                    if "sponsors" in yaml_file_data:
+                        for sponsor_data in yaml_file_data["sponsors"]:
+                            sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge,sponsor=sponsor_data["sponsor"]).first()
+                            if files["sponsor_image_file"] is None:
+                                    message = "Sponsor image file not found."
+                                    response_data = {"error": message}
+                                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            else:
+                                if sponsor_check:
+                                    serializer = ChallengeSponsorSerializer(
+                                        sponsor_check,
+                                        data=sponsor_data,
+                                        context={"challenge": challenge,
+                                                "sponsor_logo": files["sponsor_image_file"]},
+                                        partial=True
+                                    )
+                                else:
+                                    serializer = ChallengeSponsorSerializer(
+                                        data=sponsor_data,
+                                        context={"challenge": challenge,
+                                                "sponsor_logo": files["sponsor_image_file"]}
+                                    )
+                                if serializer.is_valid():
+                                    challenge.has_sponsors = True
+                                    challenge.save()
+                                    serializer.save()
+                                else:
+                                    challenge.has_sponsors = False
+                                    challenge.save()
+                                    response_data = serializer.errors
+                                    raise RuntimeError()
+                    else:
+                        challenge.has_sponsors = False
+                        challenge.save()
+
+                    # Add Tags
+                    if "tags" in yaml_file_data:
+                        tags_data = yaml_file_data["tags"]
+                        new_tags = set(tags_data)
+
+                        # Remove tags not present in the YAML file
+                        challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+
+                        # Add new tags to the challenge
+                        for tag_name in new_tags:
+                            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name)
+                            challenge.list_tags.add(tag_obj)
+                    else:
+                        # Remove all existing tags if no tags are defined in the YAML file
+                        challenge.list_tags.clear()
+
+                    # Add Domain
+                    if "domain" in yaml_file_data:
+                        domain_value = yaml_file_data["domain"]
+                        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
+                        if domain_value in valid_domains:
+                            challenge.domain = domain_value
+                        else:
+                            message = f"Invalid domain value: {domain_value}"
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        challenge.domain = None
 
                     # Create Challenge Phase
                     challenge_phase_ids = {}
@@ -3655,6 +3890,134 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         error_messages = serializer.errors
                         raise RuntimeError()
 
+            # Add/Update ChallengePrize objects
+                if "prizes" in yaml_file_data:
+                    prizes_data = yaml_file_data['prizes']
+                    rank_set = set()
+                    for prize in prizes_data:
+                        if 'rank' not in prize:
+                            message = "Prize rank not found in YAML data."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        if 'amount' not in prize:
+                            message = "Prize amount not found in YAML data."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+                        # Check for duplicate rank.
+                        rank = prize['rank']
+                        if rank in rank_set:
+                            message = f"Duplicate rank {rank} found in YAML data."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        rank_set.add(rank)
+
+                        rank = prize['rank']
+                        amount = prize["amount"]
+
+                        prize_obj = ChallengePrize.objects.filter(rank=rank, challenge=challenge).first()
+                        if prize_obj:
+                            data = {
+                                "amount": amount,
+                            }
+                            serializer = ChallengePrizeSerializer(
+                                prize_obj, data=data,
+                                context={
+                                    "challenge": challenge,
+                                },
+                                partial=True
+                            )
+                        else:
+                            data = {
+                                "challenge": challenge,
+                                "amount": amount,
+                                "rank": rank,
+                            }
+                            serializer = ChallengePrizeSerializer(
+                                data=data,
+                                context={
+                                    "challenge": challenge,
+                                }
+                            )
+                        if serializer.is_valid():
+                            challenge.has_prize = True
+                            challenge.save()
+                            serializer.save()
+                        else:
+                            error_messages = serializer.errors
+                            challenge.has_prize = False
+                            challenge.save()
+                            raise RuntimeError()
+                else:
+                    challenge.has_prize = False
+                    challenge.save()
+                    
+                # Add/Update Sponsor
+                if "sponsors" in yaml_file_data:
+                    for sponsor_data in yaml_file_data["sponsors"]:
+                        sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge,sponsor=sponsor_data["sponsor"]).first()
+                        if files["sponsor_image_file"] is None:
+                                message = "Sponsor image file not found."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        else:
+                            if sponsor_check:
+                                serializer = ChallengeSponsorSerializer(
+                                    sponsor_check,
+                                    data=sponsor_data,
+                                    context={"challenge": challenge,
+                                            "sponsor_logo": files["sponsor_image_file"]},
+                                    partial=True
+                                )
+                            else:
+                                serializer = ChallengeSponsorSerializer(
+                                    data=sponsor_data,
+                                    context={"challenge": challenge,
+                                            "sponsor_logo": files["sponsor_image_file"]}
+                                )
+                            if serializer.is_valid():
+                                challenge.has_sponsors = True
+                                challenge.save()
+                                serializer.save()
+                            else:
+                                challenge.has_sponsors = False
+                                challenge.save()
+                                response_data = serializer.errors
+                                raise RuntimeError()
+                else:
+                        challenge.has_sponsors = False
+                        challenge.save()
+
+                # Add Tags
+                if "tags" in yaml_file_data:
+                    tags_data = yaml_file_data["tags"]
+                    new_tags = set(tags_data)
+
+                    # Remove tags not present in the YAML file
+                    challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+
+                    # Add new tags to the challenge
+                    for tag_name in new_tags:
+                        tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name)
+                        challenge.list_tags.add(tag_obj)
+                else:
+                    # Remove all existing tags if no tags are defined in the YAML file
+                    challenge.list_tags.clear()
+
+                # Add Domain
+                    if "domain" in yaml_file_data:
+                        domain_value = yaml_file_data["domain"]
+                        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
+                        if domain_value in valid_domains:
+                            challenge.domain = domain_value
+                        else:
+                            message = f"Invalid domain value: {domain_value}"
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        challenge.domain = None
+                        
+                            
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]

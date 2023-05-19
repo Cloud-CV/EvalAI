@@ -28,6 +28,9 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengeSponsor,
+    ChallengePrize,
+    ChallengeTags
 )
 
 
@@ -431,3 +434,21 @@ class PWCChallengeLeaderboardAdmin(ImportExportTimeStampedAdmin):
 
     get_challenge_name_and_id.short_description = "Challenge Name - ID"
     get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"
+
+@admin.register(ChallengeTags)
+class TagsAdmin(ImportExportTimeStampedAdmin):
+    list_display = ("id", "tag_name")
+    list_filter = ("tag_name",)
+    search_fields = ("id", "tag_name")
+
+@admin.register(ChallengeSponsor)
+class ChallengeSponsorAdmin(ImportExportTimeStampedAdmin):
+    list_display = ("id", "sponsor", "sponsor_logo", "sponsor_url")
+    list_filter = ("sponsor",)
+    search_fields = ("id", "sponsor")
+
+@admin.register(ChallengePrize)
+class ChallengePrizeAdmin(ImportExportTimeStampedAdmin):
+    list_display = ("id", "amount", "rank")
+    list_filter = ("rank",)
+    search_fields = ("id", "rank")
