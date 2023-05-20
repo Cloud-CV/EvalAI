@@ -10,6 +10,12 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
+                        <ul class="list-unstyled list-inline">
+                            <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text">{{tags.tag_name}}</li>
+                        </ul>
+                        <ul class="list-unstyled list-inline">
+                            <li class="list-inline-item chip light-blue white-text">{{challenge.domain_name}}</li>
+                        </ul>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>

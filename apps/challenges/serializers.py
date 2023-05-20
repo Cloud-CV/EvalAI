@@ -16,13 +16,39 @@ from .models import (
     StarChallenge,
     UserInvitation,
     ChallengePrize,
-    ChallengeSponsor
+    ChallengeSponsor,
+    ChallengeTags, 
 )
 
+class ChallengeTagsSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengeTags Model.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengeTagsSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            tag_name = context.get("tag_name")
+            if tag_name:
+                kwargs["data"]["tag_name"] = tag_name
+            challenge = context.get("challenge")
+            if challenge:
+                kwargs["data"]["challenge"] = challenge.pk
+
+    class Meta:
+        model = ChallengeTags
+        fields = "__all__"
 
 class ChallengeSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
+    list_tags = ChallengeTagsSerializer(many=True)
+
+    domain_name = serializers.SerializerMethodField()
+
+    def get_domain_name(self, obj):
+        return obj.get_domain_display()
 
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
@@ -48,7 +74,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "end_date",
             "creator",
             "list_tags",
-            "domain",
+            "domain_name",
             "has_prize",
             "has_sponsors",
             "published",

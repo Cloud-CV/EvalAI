@@ -6,32 +6,22 @@
             </div>
         </div>
         <div class="row">
-            <div class="horizontal-scroll">
-                <table ng-attr-id="prize_table" ng-class="['highlight', {'watermarked': challenge.showBackground}]">
-                    <thead>
-                        <tr>
-                            <td data-field="rank">
-                                <span class="w-300 fs-20">Rank</span>
-                            </td>
-                            <td data-field="amount">
-                                <span class="w-300 fs-20">Amount</span>
-                            </td>
-                        </tr>
-                    </thead>
-                    <tbody class="fs-16 w-300">
-                        <tr ng-repeat="prize in challenge.prizes"
-                            class="fs-16" id="prizerank-{{challenge.initial_ranking[prize.rank]}}">
-                            <td>{{prize.rank}}</td>
-                            <td>
-                                <!-- Adding space between amount and currency letters -->
-                                <span>{{ prize.amount.slice(0, -3) }} {{ prize.amount.slice(-3) }}</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div >
-                    <p class="fs-16 w-300">{{challenge.prizes.error.error}}</p>
-                </div>
+            <div class="col s12 m3" ng-repeat="prize in challenge.prizes | orderBy:'+rank'">
+                <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                    <div class="card ev-card-panel ev-card-hover">
+                        <div class="card-image ev-card-image">
+                            <span class="ev-card-title fs-14">
+                                {{prize.rank}}
+                            </span>
+                        </div>
+                        <div class="card-content">
+                            <p>
+                                <strong class="text-light-black fs-12">Prize Amount</strong><br>
+                                <strong>{{ prize.amount.slice(0, -3) }} {{ prize.amount.slice(-3) }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
