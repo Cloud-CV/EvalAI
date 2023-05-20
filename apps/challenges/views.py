@@ -570,13 +570,33 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     # don't return disabled challenges
     q_params["is_disabled"] = False
 
-    challenge = Challenge.objects.filter(**q_params).order_by("-pk")
-    paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(
-        result_page, many=True, context={"request": request}
-    )
+    try:
+        challenge = Challenge.objects.filter(**q_params).order_by("-pk")
+    except Exception as e:
+        response_data = {"error": f"Error in fetching challenges from backend: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        paginator, result_page = paginated_queryset(challenge, request)
+    except Exception as e:
+        response_data = {"error": f"Error in creating paginated queryset: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        serializer = ChallengeSerializer(
+            result_page, many=True, context={"request": request}
+        )
+    except Exception as e:
+        response_data = {"error": f"Error in creating challenge serializer with the given results: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+
+    try:
+        return paginator.get_paginated_response(response_data)
+    except Exception as e:
+        response_data = {"error": f"Error in getting paginated response: {e}"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["GET"])
@@ -1873,6 +1893,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                     type=openapi.TYPE_STRING,
                                     description="URL of the stderr file generated after evaluating submission only available when the submission fails",
                                 ),
+                                "environment_log_file": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="URL of the Environment Log File generated after evaluating submission (only available for code-upload challenge submissions)"
+                                ),
                                 "submission_result_file": openapi.Schema(
                                     type=openapi.TYPE_STRING,
                                     description="URL of the result file generated after successfully evaluating submission",
@@ -2134,6 +2158,7 @@ def download_all_submissions(
                         "Submitted File",
                         "Stdout File",
                         "Stderr File",
+                        "Environment Log File",
                         "Submitted At",
                         "Submission Result File",
                         "Submission Metadata File",
@@ -2180,6 +2205,7 @@ def download_all_submissions(
                             submission["input_file"],
                             submission["stdout_file"],
                             submission["stderr_file"],
+                            submission["environment_log_file"],
                             submission["created_at"],
                             submission["submission_result_file"],
                             submission["submission_metadata_file"],
@@ -2273,6 +2299,7 @@ def download_all_submissions(
                     "input_file": "Submitted File",
                     "stdout_file": "Stdout File",
                     "stderr_file": "Stderr File",
+                    "environment_log_file": "Environment Log File",
                     "created_at": "Submitted At (mm/dd/yyyy hh:mm:ss)",
                     "submission_result_file": "Submission Result File",
                     "submission_metadata_file": "Submission Metadata File",

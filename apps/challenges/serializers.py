@@ -99,7 +99,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "created_at",
             "queue",
             "worker_cpu_cores",
-            "worker_memory"
+            "worker_memory",
+            "cpu_only_jobs",
+            "job_cpu_cores",
+            "job_memory",
         )
 
 
@@ -307,6 +310,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
+            "cpu_only_jobs",
+            "job_cpu_cores",
+            "job_memory",
         )
 
 

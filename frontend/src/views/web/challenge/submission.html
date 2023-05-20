@@ -222,15 +222,6 @@
                                     <strong class="fs-16 w-300">Use CLI (for file size > 400MB)
                                     </strong>
                                 </div>
-                                <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
-                                    value="fileUrl" ng-click="challenge.isSubmissionUsingUrl = true; challenge.isSubmissionUsingCli = false; challenge.isSubmissionUsingFile = false;">
-                                <label for="fileUrl"></label>
-                                <div class="show-member-title pointer">
-                                    <strong class="fs-16 w-300">File URL (for file size > 400MB)
-                                    </strong>
-                                </div>
-                                <div class="clearfix"></div>
-
                                 <input type="radio" name="submissionOptions" class="with-gap selectPhase"
                                     id="fileUpload" value="challenge.showFileUploadOption"
                                     ng-click="challenge.isSubmissionUsingFile = true; challenge.isSubmissionUsingUrl = false; challenge.isSubmissionUsingCli = false;">
