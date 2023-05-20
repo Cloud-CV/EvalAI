@@ -30,6 +30,8 @@
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
+        vm.hasPrizes = false;
+        vm.has_sponsors = false;
         vm.phaseSplits = {};
         vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
         vm.phaseSplitLeaderboardSchema = {};
@@ -325,13 +327,50 @@
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
-
+                vm.hasPrizes = details.has_prize;
+                vm.has_sponsors = details.has_sponsors;
                 vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
 
+                }
+                
+                // Get challenge prizes
+                vm.prizes = {};
+                if (vm.hasPrizes) {
+                    parameters.url = 'challenges/challenge/' + vm.challengeId + '/prizes/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.prizes = response.data;
+                        },
+                        onError: function(response) {
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+
+                // Get challenge Sponsors
+                vm.sponsors = {};
+                if (vm.has_sponsors) {
+                    parameters.url = 'challenges/challenge/' + vm.challengeId + '/sponsors/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.sponsors = response.data;
+                        },
+                        onError: function(response) {
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
                 }
 
                 if (userKey) {

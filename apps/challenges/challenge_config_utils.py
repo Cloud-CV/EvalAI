@@ -421,7 +421,7 @@ def validate_challenge_config_util(
     # Check for Sponsor
     sponsors_list = yaml_file_data.get("sponsors")
     if sponsors_list:
-        for sponsor_data in sponsors_list:
+        for index, sponsor_data in enumerate(sponsors_list):
             sponsor_logo = sponsor_data['sponsor_logo']
             if sponsor_logo and (sponsor_logo.endswith(".jpg")or sponsor_logo.endswith(".jpeg")or sponsor_logo.endswith(".png")):
                 sponsor_image_path = join(BASE_LOCATION, unique_folder_name, extracted_folder_name, sponsor_logo)
@@ -434,7 +434,7 @@ def validate_challenge_config_util(
             else:
                 sponsor_image_file = None
             sponsor_url = sponsor_data.get("sponsor_url")
-            files["sponsor_image_file"] = sponsor_image_file
+            files[f"sponsor_image_file_{index}"] = sponsor_image_file
             if sponsor_url:
                 if not re.match(r'^https?://', sponsor_url):
                     message = "ERROR: Invalid sponsor_url value {}. URL should start with http:// or https://.".format(sponsor_url)

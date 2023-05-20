@@ -665,7 +665,7 @@ class ChallengeSponsor(TimeStampedModel):
                                             `modified_at` fields.
     """
 
-    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE, related_name='challenge_sponsor')
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
     sponsor_logo = models.ImageField(
         upload_to=RandomFileName("sponsor_logo"),
         null=True,
