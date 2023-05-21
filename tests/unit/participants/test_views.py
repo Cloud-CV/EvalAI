@@ -772,7 +772,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 1",
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
-            list_tags={1, 2, 3, 4},
             domain=['CV', 'NLP'],
             has_prize=False,
             has_sponsors=False,
@@ -784,6 +783,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge1.list_tags.set([1, 2, 3, 4])
         self.challenge1.slug = "{}-{}".format(
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
