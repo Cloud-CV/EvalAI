@@ -11,7 +11,6 @@ import time
 import uuid
 import yaml
 import zipfile
-import re
 
 from os.path import basename, isfile, join
 from datetime import datetime
