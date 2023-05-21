@@ -87,7 +87,6 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
-        self.challenge.list_tags.set([1, 2, 3, 4])
         self.challenge.slug = "{}-{}".format(
             self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
         )[:199]
@@ -133,7 +132,6 @@ class GetChallengeTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
-        self.challenge.list_tags.set([1, 2, 3, 4])
         self.url = reverse_lazy(
             "challenges:get_challenge_list",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -739,8 +737,6 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             blocked_email_domains=[],
             approved_by_admin=False,
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
-        self.challenge.list_tags.set([1, 2, 3, 4])
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name="Some Participant Team", created_by=self.user3
         )
@@ -1009,7 +1005,6 @@ class DisableChallengeTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
         self.url = reverse_lazy(
             "challenges:disable_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -1099,7 +1094,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
         # Past Challenge challenge
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
@@ -1120,7 +1114,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
         )
-        self.challenge3.list_tags.set([1, 2, 3, 4])
         # Future challenge
         self.challenge4 = Challenge.objects.create(
             title="Test Challenge 4",
@@ -1140,7 +1133,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge4.list_tags.set([1, 2, 3, 4])
         # Disabled challenge
         self.challenge5 = Challenge.objects.create(
             title="Test Challenge 5",
@@ -1162,7 +1154,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=True,
         )
-        self.challenge5.list_tags.set([1, 2, 3, 4])
 
     def test_get_past_challenges(self):
         expected = [
@@ -1584,7 +1575,6 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
         # Featured challenge
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
@@ -1606,7 +1596,6 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             end_date=timezone.now() - timedelta(days=1),
             featured=True,
         )
-        self.challenge3.list_tags.set([1, 2, 3, 4])
 
     def test_get_featured_challenges(self):
         expected = [
@@ -1705,7 +1694,6 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
-        self.challenge3.list_tags.set([1, 2, 3, 4])
 
         self.challenge4 = Challenge.objects.create(
             title="Test Challenge 4",
@@ -1727,7 +1715,6 @@ class GetChallengeByPk(BaseAPITestClass):
             is_disabled=False,
             approved_by_admin=True,
         )
-        self.challenge4.list_tags.set([1, 2, 3, 4])
 
         self.challenge5 = Challenge.objects.create(
             title="Test Challenge 5",
@@ -1748,7 +1735,6 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=True,
         )
-        self.challenge5.list_tags.set([1, 2, 3, 4])
 
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
         self.url = reverse_lazy(
@@ -1946,7 +1932,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
         )
-        self.challenge.list_tags.set([1, 2, 3, 4])
 
         self.challenge2 = Challenge.objects.create(
             title="Some Test Challenge",
@@ -1966,7 +1951,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=True,
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
 
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name="Some Participant Team", created_by=self.user
@@ -2794,7 +2778,6 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
         data = {
             "name": "Challenge Phase 2",
             "description": "Description for Challenge Phase 2",
@@ -2848,7 +2831,6 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge2.list_tags.set([1, 2, 3, 4])
 
         data = {
             "name": "Challenge Phase 2",
@@ -3699,7 +3681,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.challenge5.list_tags.set([1, 2, 3, 4])
 
         try:
             os.makedirs("/tmp/evalai")
@@ -4531,7 +4512,6 @@ class StarChallengesTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
-        self.challenge1.list_tags.set([1, 2, 3, 4])
         self.star_challenge = StarChallenge.objects.create(
             user=self.user, challenge=self.challenge, is_starred=True
         )
