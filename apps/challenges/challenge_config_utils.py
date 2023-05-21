@@ -440,7 +440,6 @@ def validate_challenge_config_util(
                     message = "ERROR: Invalid sponsor_url value {}. URL should start with http:// or https://.".format(sponsor_url)
                     error_messages.append(message)
 
-
     # Check for leaderboards
     leaderboard = yaml_file_data.get("leaderboard")
     leaderboard_ids = []
