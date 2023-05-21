@@ -772,7 +772,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 1",
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
-            domain=['CV', 'NLP'],
+            domain=['CV'],
             has_prize=False,
             has_sponsors=False,
             published=False,
