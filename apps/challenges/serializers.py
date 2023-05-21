@@ -547,6 +547,7 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
 
+
 class ChallengePrizeSerializer(serializers.ModelSerializer):
     """
     Serialize the ChallengePrize Model.

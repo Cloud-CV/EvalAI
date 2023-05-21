@@ -3621,12 +3621,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
                     # Add/Update Sponsor
                     if "sponsors" in yaml_file_data:
-                        for index ,sponsor_data in enumerate(yaml_file_data["sponsors"]):
+                        for index, sponsor_data in enumerate(yaml_file_data["sponsors"]):
                             data = {
                                 "sponsor": sponsor_data["sponsor"],
                                 "sponsor_url": sponsor_data["url"],
                             }
-                            sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge ,sponsor=data["sponsor"]).first()
+                            sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge, sponsor=data["sponsor"]).first()
                             if files[f"sponsor_image_file_{index}"] is None:
                                 message = "Sponsor image file not found."
                                 response_data = {"error": message}
@@ -3636,15 +3636,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                     serializer = ChallengeSponsorSerializer(
                                         sponsor_check,
                                         data=data,
-                                        context={"challenge": challenge,"sponsor_logo": files[f"sponsor_image_file_{index}"]},
+                                        context={"challenge": challenge, "sponsor_logo": files[f"sponsor_image_file_{index}"]},
                                         partial=True
-                                        )
+                                    )
                                 else:
                                     serializer = ChallengeSponsorSerializer(
                                         data=data,
-                                        context={"challenge": challenge,
-                                                "sponsor_logo": files[f"sponsor_image_file_{index}"]}
-                                                )
+                                        context={
+                                            "challenge": challenge,
+                                            "sponsor_logo": files[f"sponsor_image_file_{index}"]}
+                                    )
                                 if serializer.is_valid():
                                     challenge.has_sponsors = True
                                     challenge.save()
@@ -4004,12 +4005,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
                 # Add/Update Sponsor
                 if "sponsors" in yaml_file_data:
-                    for index ,sponsor_data in enumerate(yaml_file_data["sponsors"]):
+                    for index, sponsor_data in enumerate(yaml_file_data["sponsors"]):
                         data = {
                             "sponsor": sponsor_data["sponsor"],
                             "sponsor_url": sponsor_data["url"],
                         }
-                        sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge ,sponsor=data["sponsor"]).first()
+                        sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge, sponsor=data["sponsor"]).first()
                         if files[f"sponsor_image_file_{index}"] is None:
                             message = "Sponsor image file not found."
                             response_data = {"error": message}
@@ -4019,13 +4020,13 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 serializer = ChallengeSponsorSerializer(
                                     sponsor_check,
                                     data=data,
-                                    context={"challenge": challenge ,"sponsor_logo": files[f"sponsor_image_file_{index}"]},
+                                    context={"challenge": challenge, "sponsor_logo": files[f"sponsor_image_file_{index}"]},
                                     partial=True
                                 )
                             else:
                                 serializer = ChallengeSponsorSerializer(
                                     data=data,
-                                    context={"challenge": challenge ,"sponsor_logo": files[f"sponsor_image_file_{index}"]}
+                                    context={"challenge": challenge, "sponsor_logo": files[f"sponsor_image_file_{index}"]}
                                 )
                             if serializer.is_valid():
                                 challenge.has_sponsors = True

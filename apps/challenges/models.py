@@ -48,7 +48,7 @@ class ChallengeTags(models.Model):
     def __str__(self):
         """Returns the tag name"""
         return self.tag_name
-    
+
 
 class Challenge(TimeStampedModel):
 
@@ -87,7 +87,7 @@ class Challenge(TimeStampedModel):
         ("CV", "Computer Vision"),
         ("NLP", "Natural Language Processing"),
         ("RL", "Reinforcement Learning"),
-        )
+    )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     has_prize = models.BooleanField(default=False)
     has_sponsors = models.BooleanField(default=False)
