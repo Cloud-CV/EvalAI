@@ -17,8 +17,9 @@ from .models import (
     UserInvitation,
     ChallengePrize,
     ChallengeSponsor,
-    ChallengeTags, 
+    ChallengeTags,
 )
+
 
 class ChallengeTagsSerializer(serializers.ModelSerializer):
     """
@@ -39,6 +40,7 @@ class ChallengeTagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengeTags
         fields = "__all__"
+
 
 class ChallengeSerializer(serializers.ModelSerializer):
 
@@ -544,7 +546,7 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         # PWC requires the default sorted by metric at the index "0" of the array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
-    
+
 class ChallengePrizeSerializer(serializers.ModelSerializer):
     """
     Serialize the ChallengePrize Model.
@@ -565,6 +567,7 @@ class ChallengePrizeSerializer(serializers.ModelSerializer):
             "amount",
             "rank"
         )
+
 
 class ChallengeSponsorSerializer(serializers.ModelSerializer):
     """

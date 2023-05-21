@@ -423,7 +423,7 @@ def validate_challenge_config_util(
     if sponsors_list:
         for index, sponsor_data in enumerate(sponsors_list):
             sponsor_logo = sponsor_data['sponsor_logo']
-            if sponsor_logo and (sponsor_logo.endswith(".jpg")or sponsor_logo.endswith(".jpeg")or sponsor_logo.endswith(".png")):
+            if sponsor_logo and (sponsor_logo.endswith(".jpg") or sponsor_logo.endswith(".jpeg") or sponsor_logo.endswith(".png")):
                 sponsor_image_path = join(BASE_LOCATION, unique_folder_name, extracted_folder_name, sponsor_logo)
                 if isfile(sponsor_image_path):
                     sponsor_image_file = ContentFile(get_file_content(sponsor_image_path, "rb"), sponsor_logo)
@@ -439,7 +439,6 @@ def validate_challenge_config_util(
                 if not re.match(r'^https?://', sponsor_url):
                     message = "ERROR: Invalid sponsor_url value {}. URL should start with http:// or https://.".format(sponsor_url)
                     error_messages.append(message)
-            
 
 
     # Check for leaderboards

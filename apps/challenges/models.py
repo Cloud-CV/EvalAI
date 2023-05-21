@@ -26,6 +26,7 @@ def save_challenge_slug(sender, instance, **kwargs):
 def get_default_eval_metric():
     return ["Accuracy"]
 
+
 class ChallengeTags(models.Model):
     """
     Model to store tags for a challenge
@@ -47,6 +48,8 @@ class ChallengeTags(models.Model):
     def __str__(self):
         """Returns the tag name"""
         return self.tag_name
+    
+
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
@@ -81,10 +84,10 @@ class Challenge(TimeStampedModel):
     )
     list_tags = models.ManyToManyField(ChallengeTags, blank=True)
     DOMAIN_OPTIONS = (
-    ("CV", "Computer Vision"),
-    ("NLP", "Natural Language Processing"),
-    ("RL", "Reinforcement Learning"),
-    )
+        ("CV", "Computer Vision"),
+        ("NLP", "Natural Language Processing"),
+        ("RL", "Reinforcement Learning"),
+        )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     has_prize = models.BooleanField(default=False)
     has_sponsors = models.BooleanField(default=False)
@@ -657,6 +660,7 @@ class PWCChallengeLeaderboard(TimeStampedModel):
         app_label = "challenges"
         db_table = "pwc_challenge_leaderboard"
 
+
 class ChallengeSponsor(TimeStampedModel):
     """
     Model to store challenge sponsors
@@ -683,6 +687,7 @@ class ChallengeSponsor(TimeStampedModel):
         """Returns a string representation of the Sponsor object"""
         return f"Sponsor for {self.challenge}: {self.sponsor}"
 
+
 class ChallengePrize(TimeStampedModel):
     """
     Model to store challenge prizes
@@ -702,4 +707,3 @@ class ChallengePrize(TimeStampedModel):
     def __str__(self):
         """Returns a string representation of the Prize object"""
         return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"
-    

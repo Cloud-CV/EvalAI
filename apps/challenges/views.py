@@ -1442,7 +1442,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     response_data = serializer.errors
                     raise RuntimeError()
-                
+
             # Create Prizes
             if "prizes" in yaml_file_data:
                 prizes_data = yaml_file_data['prizes']
@@ -1500,14 +1500,14 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                     raise RuntimeError()
 
 
-                                
+
             # Add Sponsor
             if "sponsors" in yaml_file_data:
                 sponsor_data = yaml_file_data["sponsor"]
                 for sponsor_data in yaml_file_data["sponsor"]:
                     # Check for Sponsor logo in yaml file.
                     sponsor_logo = sponsor_data['sponsor_logo']
-                    if sponsor_logo and (sponsor_logo.endswith(".jpg")or sponsor_logo.endswith(".jpeg")or sponsor_logo.endswith(".png")):
+                    if sponsor_logo and (sponsor_logo.endswith(".jpg") or sponsor_logo.endswith(".jpeg") or sponsor_logo.endswith(".png")):
                         sponsor_image_path = join(BASE_LOCATION, unique_folder_name, extracted_folder_name, sponsor_logo)
                         if isfile(sponsor_image_path):
                             sponsor_image_file = ContentFile(get_file_content(sponsor_image_path, "rb"), sponsor_image_path)
@@ -1517,9 +1517,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         sponsor_image_file = None
                     serializer = ChallengeSponsorSerializer(
                         data=sponsor_data,
-                        context={"challenge": challenge,
-                                "sponsor_logo": sponsor_image_file}
-                    )
+                        context={"challenge": challenge,"sponsor_logo": sponsor_image_file})
                     if serializer.is_valid():
                         challenge.has_sponsor = True
                         challenge.save()
@@ -2522,7 +2520,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    
+
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
@@ -3558,7 +3556,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         leaderboard_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
-                        
+
                     # Add/Update ChallengePrize objects
                     if "prizes" in yaml_file_data:
                         prizes_data = yaml_file_data['prizes']
@@ -3620,47 +3618,46 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     else:
                         challenge.has_prize = False
                         challenge.save()
-                        
+
                     # Add/Update Sponsor
                     if "sponsors" in yaml_file_data:
-                        for index,sponsor_data in enumerate(yaml_file_data["sponsors"]):
+                        for index ,sponsor_data in enumerate(yaml_file_data["sponsors"]):
                             data = {
                                 "sponsor": sponsor_data["sponsor"],
                                 "sponsor_url": sponsor_data["url"],
                             }
-                            sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge,sponsor=data["sponsor"]).first()
+                            sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge ,sponsor=data["sponsor"]).first()
                             if files[f"sponsor_image_file_{index}"] is None:
-                                    message = "Sponsor image file not found."
-                                    response_data = {"error": message}
-                                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                                message = "Sponsor image file not found."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                             else:
                                 if sponsor_check:
                                     serializer = ChallengeSponsorSerializer(
                                         sponsor_check,
                                         data=data,
-                                        context={"challenge": challenge,
-                                                "sponsor_logo": files[f"sponsor_image_file_{index}"]},
+                                        context={"challenge": challenge,"sponsor_logo": files[f"sponsor_image_file_{index}"]},
                                         partial=True
-                                    )
+                                        )
                                 else:
                                     serializer = ChallengeSponsorSerializer(
                                         data=data,
                                         context={"challenge": challenge,
                                                 "sponsor_logo": files[f"sponsor_image_file_{index}"]}
-                                    )
+                                                )
                                 if serializer.is_valid():
                                     challenge.has_sponsors = True
                                     challenge.save()
                                     serializer.save()
                                 else:
-                                    print(serializer.errors )
+                                    print(serializer.errors)
                                     challenge.has_sponsors = False
                                     challenge.save()
                                     response_data = serializer.errors
                                     raise RuntimeError()
                     else:
-                            challenge.has_sponsors = False
-                            challenge.save()
+                        challenge.has_sponsors = False
+                        challenge.save()
 
                     # Add Tags
                     if "tags" in yaml_file_data:
@@ -4004,47 +4001,45 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 else:
                     challenge.has_prize = False
                     challenge.save()
-                    
+
                 # Add/Update Sponsor
                 if "sponsors" in yaml_file_data:
-                    for index,sponsor_data in enumerate(yaml_file_data["sponsors"]):
+                    for index ,sponsor_data in enumerate(yaml_file_data["sponsors"]):
                         data = {
                             "sponsor": sponsor_data["sponsor"],
                             "sponsor_url": sponsor_data["url"],
                         }
-                        sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge,sponsor=data["sponsor"]).first()
+                        sponsor_check = ChallengeSponsor.objects.filter(challenge=challenge ,sponsor=data["sponsor"]).first()
                         if files[f"sponsor_image_file_{index}"] is None:
-                                message = "Sponsor image file not found."
-                                response_data = {"error": message}
-                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            message = "Sponsor image file not found."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                         else:
                             if sponsor_check:
                                 serializer = ChallengeSponsorSerializer(
                                     sponsor_check,
                                     data=data,
-                                    context={"challenge": challenge,
-                                            "sponsor_logo": files[f"sponsor_image_file_{index}"]},
+                                    context={"challenge": challenge ,"sponsor_logo": files[f"sponsor_image_file_{index}"]},
                                     partial=True
                                 )
                             else:
                                 serializer = ChallengeSponsorSerializer(
                                     data=data,
-                                    context={"challenge": challenge,
-                                            "sponsor_logo": files[f"sponsor_image_file_{index}"]}
+                                    context={"challenge": challenge ,"sponsor_logo": files[f"sponsor_image_file_{index}"]}
                                 )
                             if serializer.is_valid():
                                 challenge.has_sponsors = True
                                 challenge.save()
                                 serializer.save()
                             else:
-                                print(serializer.errors )
+                                print(serializer.errors)
                                 challenge.has_sponsors = False
                                 challenge.save()
                                 response_data = serializer.errors
                                 raise RuntimeError()
                 else:
-                        challenge.has_sponsors = False
-                        challenge.save()
+                    challenge.has_sponsors = False
+                    challenge.save()
 
                 # Add Tags
                 if "tags" in yaml_file_data:
@@ -4074,8 +4069,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                     else:
                         challenge.domain = None
-                        
-                            
+
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
