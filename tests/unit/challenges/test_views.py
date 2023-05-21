@@ -1163,6 +1163,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             is_disabled=True,
         )
         self.challenge5.list_tags.set([1, 2, 3, 4])
+
     def test_get_past_challenges(self):
         expected = [
             {
