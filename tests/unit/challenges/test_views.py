@@ -119,9 +119,6 @@ class GetChallengeTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for disabled challenge",
             submission_guidelines="Submission guidelines for disabled challenge",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -132,6 +129,7 @@ class GetChallengeTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
+
         self.url = reverse_lazy(
             "challenges:get_challenge_list",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -263,9 +261,6 @@ class CreateChallengeTest(BaseAPITestClass):
                 "team_name": self.challenge_host_team.team_name,
                 "created_by": self.challenge_host_team.created_by.pk,
             },
-            "domain": self.challenge.domain,
-            "has_prize": self.challenge.has_prize,
-            "has_sponsors": self.challenge.has_sponsors,
             "published": False,
             "is_registration_open": True,
             "enable_forum": True,
@@ -717,9 +712,6 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for some test challenge",
             submission_guidelines="Submission guidelines for some test challenge",
             creator=self.challenge_host_team2,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -731,6 +723,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             blocked_email_domains=[],
             approved_by_admin=False,
         )
+
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name="Some Participant Team", created_by=self.user3
         )
@@ -989,9 +982,6 @@ class DisableChallengeTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for other test challenge",
             submission_guidelines="Submission guidelines for other test challenge",
             creator=self.challenge_host_team1,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -999,6 +989,7 @@ class DisableChallengeTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+
         self.url = reverse_lazy(
             "challenges:disable_challenge",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -1077,9 +1068,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 2",
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1088,6 +1076,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+
         # Past Challenge challenge
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
@@ -1096,9 +1085,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1108,6 +1094,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
         )
+
         # Future challenge
         self.challenge4 = Challenge.objects.create(
             title="Test Challenge 4",
@@ -1116,9 +1103,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1127,6 +1111,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+
         # Disabled challenge
         self.challenge5 = Challenge.objects.create(
             title="Test Challenge 5",
@@ -1135,9 +1120,6 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 5",
             submission_guidelines="Submission guidelines for test challenge 5",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1552,9 +1534,6 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 2",
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1563,6 +1542,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+
         # Featured challenge
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
@@ -1571,9 +1551,6 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1670,9 +1647,6 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -1689,9 +1663,6 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1710,9 +1681,6 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 5",
             submission_guidelines="Submission guidelines for test challenge 5",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -1905,9 +1873,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1925,9 +1890,6 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for some test challenge",
             submission_guidelines="Submission guidelines for some test challenge",
             creator=self.challenge_host_team2,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -2749,9 +2711,6 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             terms_and_conditions="Terms and conditions for other test challenge",
             submission_guidelines="Submission guidelines for other test challenge",
             creator=self.challenge_host_team1,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
@@ -2802,9 +2761,6 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             terms_and_conditions="Terms and conditions for other test challenge",
             submission_guidelines="Submission guidelines for other test challenge",
             creator=self.challenge_host_team2,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
@@ -3652,9 +3608,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for other test challenge",
             submission_guidelines="Submission guidelines for other test challenge",
             creator=self.challenge_host_team5,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
@@ -4482,9 +4435,6 @@ class StarChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge1",
             submission_guidelines="Submission guidelines for test challenge1",
             creator=self.challenge_host_team,
-            domain=['CV'],
-            has_prize=False,
-            has_sponsors=False,
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
@@ -4492,6 +4442,7 @@ class StarChallengesTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
+
         self.star_challenge = StarChallenge.objects.create(
             user=self.user, challenge=self.challenge, is_starred=True
         )
