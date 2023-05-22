@@ -727,7 +727,7 @@ def process_submission_callback(body):
         )
 
 
-def get_or_create_sqs_queue(queue_name, challenge):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     """
     Returns:
         Returns the SQS Queue object
@@ -741,7 +741,7 @@ def get_or_create_sqs_queue(queue_name, challenge):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
     else:
-        if challenge.use_host_sqs:
+        if challenge and challenge.use_host_sqs:
             sqs = boto3.resource(
                 "sqs",
                 region_name=challenge.aws_region,

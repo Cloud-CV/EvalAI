@@ -92,6 +92,29 @@ class BaseAPITestClass(APITestCase):
                 content_type="text/plain",
             ),
         )
+        
+        self.challenge2 = Challenge.objects.create(
+            title="Test Challenge 2",
+            description="Description for test challenge 2",
+            terms_and_conditions="Terms and conditions for test challenge 2",
+            submission_guidelines="Submission guidelines for test challenge 2",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            max_concurrent_submission_evaluation=100,
+            evaluation_script=SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+            use_host_sqs=True,
+            region_name='us-east-1',
+            aws_secret_access_key='AWS_SECRET_ACCESS_KEY',
+            aws_access_key_id='AWS_ACCESS_KEY_ID',
+        )
 
         self.participant_team = ParticipantTeam.objects.create(
             team_name="Some Participant Team", created_by=self.user
@@ -272,6 +295,17 @@ class BaseAPITestClass(APITestCase):
         ]
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
+    
+    @mock_sqs()
+    def test_get_or_create_sqs_queue_for_existing_host_queue(self):
+        get_or_create_sqs_queue("test_host_queue_2", self.challenge2)
+        queue_url = self.sqs_client.get_queue_url(QueueName="test_queue_2")[
+            "QueueUrl"
+        ]
+        self.assertTrue(queue_url)
+        self.sqs_client.delete_queue(QueueUrl=queue_url)
+    
+    
 
 
 class DownloadAndExtractFileTest(BaseAPITestClass):
