@@ -160,7 +160,7 @@ describe('Unit tests for dashboard controller', function () {
                 method: 'GET',
                 callback: jasmine.any(Function)
             };
-            vm.getAllResults(parameters, "challengeCount");
+            vm.getAllChallenges(parameters, "challengeCount");
             expect(vm.challengeCount).toEqual(successResponse.results.length);
             expect(vm.hostTeamExist).toBeFalsy();
             expect(vm.getAllChallenges).toHaveBeenCalledTimes(2);
