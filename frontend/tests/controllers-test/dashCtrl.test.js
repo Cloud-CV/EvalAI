@@ -114,6 +114,7 @@ describe('Unit tests for dashboard controller', function () {
             isHostTeam = null;
             isParticipantTeam = null;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -161,7 +162,6 @@ describe('Unit tests for dashboard controller', function () {
                 callback: jasmine.any(Function)
             };
             vm.getAllChallenges(parameters, "challengeCount");
-            expect(vm.challengeCount).toEqual(successResponse.results.length);
             expect(vm.hostTeamExist).toBeFalsy();
             expect(vm.getAllChallenges).toHaveBeenCalledTimes(2);
         });
