@@ -1,12 +1,11 @@
 import logging
 
-from django.contrib import admin
-
 from base.admin import ImportExportTimeStampedAdmin
+from django.contrib import admin
 
 from .models import Submission
 from .sender import publish_submission_message
-from .utils import handle_submission_rerun
+from .utils import handle_submission_rerun, update_processed_submissions
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +65,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
     def submit_job_to_worker(self, request, queryset):
         for submission in queryset:
             message = handle_submission_rerun(submission, Submission.CANCELLED)
+            update_processed_submissions(submission)
             publish_submission_message(message)
 
     submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
@@ -88,5 +88,6 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         for submission in queryset:
             submission.status = Submission.CANCELLED
             submission.save()
+            update_processed_submissions(submission)
 
     change_submission_status_to_cancel.short_description = "Cancel selected submissions (will set the status to canceled for the submissions) "
