@@ -111,9 +111,9 @@ class BaseAPITestClass(APITestCase):
                 content_type="text/plain",
             ),
             use_host_sqs=True,
-            aws_region='us-east-1',
-            aws_secret_access_key='AWS_SECRET_ACCESS_KEY',
-            aws_access_key_id='AWS_ACCESS_KEY_ID',
+            aws_region=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
 
         self.participant_team = ParticipantTeam.objects.create(
