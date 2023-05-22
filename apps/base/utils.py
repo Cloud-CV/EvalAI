@@ -186,7 +186,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
                 aws_secret_access_key=challenge.aws_secret_access_key,
                 aws_access_key_id=challenge.aws_access_key_id,
             )
-        else:     
+        else:
             sqs = boto3.resource(
                 "sqs",
                 region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),

@@ -92,7 +92,7 @@ class BaseAPITestClass(APITestCase):
                 content_type="text/plain",
             ),
         )
-        
+
         self.challenge2 = Challenge.objects.create(
             title="Test Challenge 2",
             description="Description for test challenge 2",
@@ -295,7 +295,7 @@ class BaseAPITestClass(APITestCase):
         ]
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
-    
+
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_host_queue(self):
         get_or_create_sqs_queue("test_host_queue_2", self.challenge2)
@@ -304,8 +304,6 @@ class BaseAPITestClass(APITestCase):
         ]
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
-    
-    
 
 
 class DownloadAndExtractFileTest(BaseAPITestClass):
