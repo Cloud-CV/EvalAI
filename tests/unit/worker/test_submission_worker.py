@@ -299,7 +299,7 @@ class BaseAPITestClass(APITestCase):
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_host_queue(self):
         get_or_create_sqs_queue("test_host_queue_2", self.challenge2)
-        queue_url = self.sqs_client.get_queue_url(QueueName="test_queue_2")[
+        queue_url = self.sqs_client.get_queue_url(QueueName="test_host_queue_2")[
             "QueueUrl"
         ]
         self.assertTrue(queue_url)
