@@ -322,8 +322,7 @@ describe('Unit tests for auth controller', function () {
                         }
                     });
                 } else {
-                    status = 400;
-                    parameters.callback.onError({status: status, data: {details: inactivesms}});
+                    parameters.callback.onError({status: 400, data: {details: inactivesms}});
                 }
             };
         });
@@ -337,8 +336,7 @@ describe('Unit tests for auth controller', function () {
 
         it('backend error', function () {
             success = false;
-            vm.resetPassword(true, status);
-            expect(status).toEqual(400);
+            vm.resetPassword(true);
             expect(vm.isFormError).toEqual(true);
             expect(vm.FormError).toEqual(inactivesms);
         });
