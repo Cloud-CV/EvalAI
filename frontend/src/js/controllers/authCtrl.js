@@ -329,7 +329,6 @@
                         }
                         vm.stopLoader();
                     }
-                    
                 };
                 utilities.sendRequest(parameters, "no-header");
             } else {
