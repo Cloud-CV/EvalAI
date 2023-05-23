@@ -64,8 +64,10 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
 
     def submit_job_to_worker(self, request, queryset):
         for submission in queryset:
+            original_status = submission.status
             message = handle_submission_rerun(submission, Submission.CANCELLED)
-            update_processed_submissions(submission)
+            if original_status in [Submission.SUBMITTED, Submission.RUNNING, Submission.SUBMITTING]:
+                update_processed_submissions(submission)
             publish_submission_message(message)
 
     submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
@@ -86,8 +88,10 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
 
     def change_submission_status_to_cancel(self, request, queryset):
         for submission in queryset:
+            original_status = submission.status
             submission.status = Submission.CANCELLED
             submission.save()
-            update_processed_submissions(submission)
+            if original_status in [Submission.SUBMITTED, Submission.RUNNING, Submission.SUBMITTING]:
+                update_processed_submissions(submission)
 
     change_submission_status_to_cancel.short_description = "Cancel selected submissions (will set the status to canceled for the submissions) "
