@@ -31,7 +31,6 @@ from challenges.models import (
     DatasetSplit,
     Leaderboard,
     StarChallenge,
-    ChallengeTags,
 )
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -99,7 +98,6 @@ class BaseAPITestClass(APITestCase):
             status=ChallengeHost.ACCEPTED,
             permissions=ChallengeHost.ADMIN,
         )
-
 
         self.participant_team = ParticipantTeam.objects.create(
             team_name="Participant Team for Challenge", created_by=self.user
