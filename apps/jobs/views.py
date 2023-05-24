@@ -81,7 +81,6 @@ from .utils import (
     is_url_valid,
     reorder_submissions_comparator,
     reorder_submissions_comparator_to_key,
-    update_processed_submissions
 )
 
 logger = logging.getLogger(__name__)
@@ -1861,10 +1860,7 @@ def re_run_submission_by_host(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    original_status = submission.status
     message = handle_submission_rerun(submission, Submission.CANCELLED)
-    if original_status in [Submission.SUBMITTED, Submission.RUNNING, Submission.SUBMITTING]:
-        update_processed_submissions(submission)
     publish_submission_message(message)
     response_data = {
         "success": "Submission is successfully submitted for re-running"
