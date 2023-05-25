@@ -516,6 +516,7 @@ def cleanup_submission(
     challenge_pk,
     phase_pk,
     stderr,
+    environment_log,
     message,
     queue_name,
     is_remote,
@@ -529,6 +530,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
+        environment_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
         message {[dict]} -- Submission message from AWS SQS queue
         queue_name {[string]} -- Submission SQS queue name
         is_remote {[int]} -- Whether the challenge is remote evaluation
@@ -539,6 +541,7 @@ def cleanup_submission(
             "submission": submission_pk,
             "stdout": "",
             "stderr": stderr,
+            "environment_log": environment_log,
             "submission_status": "FAILED",
             "result": "[]",
             "metadata": "",
@@ -573,6 +576,8 @@ def update_failed_jobs_and_send_logs(
     is_remote,
 ):
     clean_submission = False
+    code_upload_environment_error = "Submission Job Failed."
+    submission_error = "Submission Job Failed."
     try:
         job_def = read_job(api_instance, job_name)
         if job_def:
@@ -592,30 +597,32 @@ def update_failed_jobs_and_send_logs(
                     container_name,
                     container_state,
                 ) in container_state_map.items():
-                    if container_name in ["agent", "submission"]:
+                    if container_name in ["agent", "submission", "environment"]:
                         if container_state.terminated is not None:
-                            if container_state.terminated.reason == "Error":
-                                pod_name = pods_list.items[0].metadata.name
-                                try:
-                                    pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
-                                        name=pod_name,
-                                        namespace="default",
-                                        _return_http_data_only=True,
-                                        _preload_content=False,
-                                        container=container_name,
-                                    )
-                                    pod_log = pod_log_response.data.decode(
-                                        "utf-8"
-                                    )
-                                    pod_log = pod_log[-1000:]
-                                    clean_submission = True
+                            pod_name = pods_list.items[0].metadata.name
+                            try:
+                                pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                                    name=pod_name,
+                                    namespace="default",
+                                    _return_http_data_only=True,
+                                    _preload_content=False,
+                                    container=container_name,
+                                )
+                                pod_log = pod_log_response.data.decode(
+                                    "utf-8"
+                                )
+                                pod_log = pod_log[-10000:]
+                                clean_submission = True
+                                if container_name == "environment":
+                                    code_upload_environment_error = pod_log
+                                else:
                                     submission_error = pod_log
-                                except client.rest.ApiException as e:
-                                    logger.exception(
-                                        "Exception while reading Job logs {}".format(
-                                            e
-                                        )
+                            except client.rest.ApiException as e:
+                                logger.exception(
+                                    "Exception while reading Job logs {}".format(
+                                        e
                                     )
+                                )
             else:
                 logger.info(
                     "Job pods in pending state, waiting for node assignment for submission {}".format(
@@ -629,11 +636,9 @@ def update_failed_jobs_and_send_logs(
                 )
             )
             clean_submission = True
-            submission_error = "Submission Job Failed."
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         clean_submission = True
-        submission_error = "Submission Job Failed."
     if clean_submission:
         cleanup_submission(
             api_instance,
@@ -643,6 +648,7 @@ def update_failed_jobs_and_send_logs(
             challenge_pk,
             phase_pk,
             submission_error,
+            code_upload_environment_error,
             message,
             queue_name,
             is_remote,
