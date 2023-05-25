@@ -1,23 +1,21 @@
 import datetime
 import logging
 import os
+import requests
 import tempfile
 import urllib.request
-
-import requests
-from base.utils import get_model_object, suppress_autotime
-from challenges.models import Challenge, ChallengePhaseSplit, LeaderboardData
-from challenges.utils import get_challenge_model, get_challenge_phase_model
-from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
+from django.db.models import FloatField, Q, F, fields, ExpressionWrapper
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
-from hosts.utils import is_user_a_host_of_challenge
-from participants.models import ParticipantTeam
-from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from rest_framework import status
 
-from monitoring.statsd.metrics import (NUM_PROCESSED_SUBMISSIONS,
-                                       increment_statsd_counter)
+from challenges.models import ChallengePhaseSplit, LeaderboardData
+from participants.models import ParticipantTeam
+
+from base.utils import get_model_object, suppress_autotime
+from challenges.utils import get_challenge_model, get_challenge_phase_model
+from hosts.utils import is_user_a_host_of_challenge
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
 
 from .constants import submission_status_to_exclude
 from .models import Submission
@@ -234,27 +232,6 @@ def handle_submission_rerun(submission, updated_status):
                 message["is_static_dataset_code_upload_submission"] = True
 
     return message
-
-
-def update_processed_submissions(submission):
-
-    challenge_pk = submission.challenge_phase.challenge.pk
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        logger.exception(
-            "Challenge does not exist for the given id {}".format(challenge_pk)
-        )
-        return
-    queue_name = challenge.queue
-    is_remote = challenge.remote_evaluation
-    submission_metric_tags = [
-        "queue_name:%s" % queue_name,
-        "is_remote:%d" % int(is_remote),
-    ]
-    increment_statsd_counter(
-        NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1
-    )
 
 
 def calculate_distinct_sorted_leaderboard_data(
