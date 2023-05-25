@@ -143,7 +143,7 @@
                     var details = response.data;
                     $rootScope.notify("error", details.error);
                 }
-            }
+            };
             utilities.sendRequest(parameters);
         };
 
