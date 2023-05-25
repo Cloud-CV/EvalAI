@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('profileCtrl', profileCtrl);
 
-    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog', 'moment'];
+    profileCtrl.$inject = ['utilities', '$state', '$rootScope', '$scope', '$mdDialog', 'moment'];
 
-    function profileCtrl(utilities, $rootScope, $scope, $mdDialog, moment) {
+    function profileCtrl(utilities,  $state, $rootScope, $scope, $mdDialog, moment) {
         var vm = this;
 
         vm.user = {};
@@ -121,6 +121,30 @@
                 templateUrl: 'dist/views/web/auth/get-token.html',
                 escapeToClose: false
             });
+        };
+
+        // Disable User Account
+        vm.disableUserAccount = function() {
+            parameters.token = userKey;
+            parameters.method = 'POST';
+            parameters.url = 'accounts/user/disable';
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if (status == 200) {
+                        utilities.resetStorage();
+                        $rootScope.isLoader = false;
+                        $state.go("home");
+                        $rootScope.isAuth = false;
+                        $rootScope.notify("success", "Your account has been disabled successfully.");
+                    }
+                },
+                onError: function(response) {
+                    var details = response.data;
+                    $rootScope.notify("error", details.error);
+                }
+            }
+            utilities.sendRequest(parameters);
         };
 
         vm.getAuthToken = function(getTokenForm) {
