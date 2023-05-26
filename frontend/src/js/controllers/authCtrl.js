@@ -322,7 +322,7 @@
                     },
                     onError: function(response) {
                         vm.isFormError = true;
-                        if (response.status === 400) {
+                        if (response.status == 400) {
                             vm.FormError = response.data.details;
                         } else {
                             vm.FormError = "Something went wrong. Please try again";
