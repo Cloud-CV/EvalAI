@@ -322,11 +322,7 @@
                     },
                     onError: function(response) {
                         vm.isFormError = true;
-                        if (response.status == 400) {
-                            vm.FormError = response.data.details;
-                        } else {
-                            vm.FormError = "Something went wrong. Please try again";
-                        }
+                        vm.FormError = (response.status == 400) ? response.data.details : "Something went wrong. Please try again";
                         vm.stopLoader();
                     }
                 };
