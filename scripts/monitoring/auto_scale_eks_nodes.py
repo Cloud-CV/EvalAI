@@ -150,7 +150,7 @@ def scale_down_workers(challenge, desired_size, evalai_interface):
         response = stop_eks_worker(challenge, evalai_interface)
         print("AWS API Response: {}".format(response))
         print(
-            "Stopped EKS worker for Challenge ID: {}, Title: {}".format(
+            "Decreased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
                 challenge["id"], challenge["title"]
             )
         )
