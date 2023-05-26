@@ -191,6 +191,34 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.callAPI = function() {
+            parameters.url = 'challenges/' + vm.challengeId + '/submissions/finished/';
+            parameters.method = 'GET';
+            parameters.data = {};
+        
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var result = response.data;
+                    if (result === true) {
+                        $rootScope.notify("success", "Request sent successfuly.");
+                    } else {
+                        $rootScope.notify("error", "You need to have atleast 1 finsihed submisson");
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data.error;
+                    if (error == undefined) {
+                        $rootScope.notify("error", "There was an error.");
+                    } else {
+                        $rootScope.notify("error", "There was an error: " + error);
+                    }
+                }
+            };
+        
+            utilities.sendRequest(parameters);
+        };
+        
+
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function() {
             vm.logs_poller = $interval(function(){

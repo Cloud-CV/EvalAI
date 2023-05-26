@@ -1853,6 +1853,41 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def check_if_any_challenge_has_finished_submission(request, challenge_pk):
+    """
+    Checks if the given challenge has any finished submissions
+    """
+    challenge = get_challenge_model(challenge_pk)
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    for challenge_phase in challenge_phases:
+        submissions = Submission.objects.filter(
+            challenge_phase=challenge_phase,
+            status="finished"
+        )
+        if submissions.exists():
+            send_slack_approval_notification(challenge_pk)
+            return Response(True)
+    return Response(False)
+
+
+def send_slack_approval_notification(challenge_id):
+    message = f"Challenge no {challenge_id} is ready for taking submmissions. You may Approve it."
+    # Enter webhook url here
+    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+    payload = {
+        "text": message
+    }
+    response = requests.post(slack_webhook_url, json=payload)
+    if response.status_code == 200:
+        print("Slack notification sent successfully.")
+    else:
+        print("Error sending Slack notification. You may retry. Status:", response.status_code)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_submissions_of_challenge(
     request, challenge_pk, challenge_phase_pk
 ):

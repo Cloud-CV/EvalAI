@@ -9,6 +9,14 @@
             </div>
         </div>
     </div>
+
+    <div class="row" ng-if="challenge.isChallengeHost && !challenge.approved_by_admin">
+        <div class="col s12">
+            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.callAPI()">
+                Request for approval.
+            </button>
+        </div>
+    </div>
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view" ng-if="!challenge.isRemoteChallenge">
         
         <div class="row margin-bottom-cancel">
