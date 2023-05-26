@@ -437,6 +437,7 @@ def create_submission(
         publication_url=fake.uri(),
         stdout_file=None,
         stderr_file=None,
+        environment_log_file=None,
         submission_result_file=ContentFile(submission_result),
         submission_metadata_file=None,
         is_baseline=True,
