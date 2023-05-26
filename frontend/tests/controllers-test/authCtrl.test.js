@@ -309,7 +309,7 @@ describe('Unit tests for auth controller', function () {
     });
 
     describe('Unit tests for resetPassword function `auth/password/reset/`', function () {
-        var success, status;
+        var success;
         var inactivesms = 'Account is not active. Please contact the administrator.';
         var mailSent = 'mail sent';
 
