@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import warnings
@@ -26,24 +27,28 @@ AWS_EKS_KEYS = {
 
 # Env Variables
 ENV = os.environ.get("ENV", "production")
-AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
+# AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 EVALAI_ENDPOINT = os.environ.get("API_HOST_URL", "https://eval.ai")
 PROMETHEUS_URL = os.environ.get(
     "MONITORING_API_URL", "https://monitoring.eval.ai/prometheus/"
 )
 
+json_path = os.environ.get("JSON_PATH", "~/prod_eks_auth_tokens.json")
 # QUEUES
-PROD_INCLUDED_CHALLENGE_PKS = [802, 1820, 1615]
-DEV_INCLUDED_CHALLENGE_PKS = []
+with open(json_path, "r") as f:
+    # Load the JSON data into a Python dictionary
+    INCLUDED_CHALLENGE_PKS = json.load(f)
 
 NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
 NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
 
-authorization_header = {"Authorization": "Bearer {}".format(AUTH_TOKEN)}
+
+def create_evalai_interface(auth_token):
+    evalai_interface = EvalAI_Interface(auth_token, EVALAI_ENDPOINT)
+    return evalai_interface
+
 
 prom = PrometheusConnect(url=PROMETHEUS_URL, disable_ssl=True)
-
-evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_ENDPOINT)
 
 
 def get_boto3_client(resource, aws_keys):
@@ -58,12 +63,11 @@ def get_boto3_client(resource, aws_keys):
 
 def get_nodegroup_name(eks_client, cluster_name):
     nodegroup_list = eks_client.list_nodegroups(clusterName=cluster_name)
-    return nodegroup_list['nodegroups'][0]
+    return nodegroup_list["nodegroups"][0]
 
 
-def get_eks_meta(challenge):
+def get_eks_meta(challenge, evalai_interface):
     # TODO: Check if eks_client should be a global thing. Clients must have an expiry/timeout.
-    # Maybe it is better to re-create for every challenge. Not sure about this.
     eks_client = get_boto3_client("eks", AWS_EKS_KEYS)
     cluster_name = evalai_interface.get_aws_eks_cluster_details(
         challenge["id"]
@@ -80,8 +84,10 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge, queue_length):
-    eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
+def start_eks_worker(challenge, queue_length, evalai_interface):
+    eks_client, cluster_name, nodegroup_name = get_eks_meta(
+        challenge, evalai_interface
+    )
     scaling_config = {
         "minSize": 1,
         "maxSize": max(1, queue_length),
@@ -95,8 +101,10 @@ def start_eks_worker(challenge, queue_length):
     return response
 
 
-def stop_eks_worker(challenge):
-    eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
+def stop_eks_worker(challenge, evalai_interface):
+    eks_client, cluster_name, nodegroup_name = get_eks_meta(
+        challenge, evalai_interface
+    )
     scaling_config = {
         "minSize": 0,
         "maxSize": 1,
@@ -137,9 +145,9 @@ def get_queue_length_by_challenge(challenge):
     return get_queue_length(queue_name)
 
 
-def scale_down_workers(challenge, desired_size):
+def scale_down_workers(challenge, desired_size, evalai_interface):
     if desired_size > 0:
-        response = stop_eks_worker(challenge)
+        response = stop_eks_worker(challenge, evalai_interface)
         print("AWS API Response: {}".format(response))
         print(
             "Decreased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
@@ -154,9 +162,9 @@ def scale_down_workers(challenge, desired_size):
         )
 
 
-def scale_up_workers(challenge, desired_size, queue_length):
+def scale_up_workers(challenge, desired_size, queue_length, evalai_interface):
     if desired_size == 0:
-        response = start_eks_worker(challenge, queue_length)
+        response = start_eks_worker(challenge, queue_length, evalai_interface)
         print("AWS API Response: {}".format(response))
         print(
             "Increased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
@@ -171,7 +179,7 @@ def scale_up_workers(challenge, desired_size, queue_length):
         )
 
 
-def scale_up_or_down_workers(challenge):
+def scale_up_or_down_workers(challenge, evalai_interface):
     try:
         queue_length = get_queue_length_by_challenge(challenge)
     except Exception:  # noqa: F841
@@ -182,7 +190,9 @@ def scale_up_or_down_workers(challenge):
         )
         return
 
-    eks_client, cluster_name, nodegroup_name = get_eks_meta(challenge)
+    eks_client, cluster_name, nodegroup_name = get_eks_meta(
+        challenge, evalai_interface
+    )
     scaling_config = get_scaling_config(
         eks_client, cluster_name, nodegroup_name
     )
@@ -202,26 +212,25 @@ def scale_up_or_down_workers(challenge):
     if queue_length == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
         datetime.utcnow()
     ):
-        scale_down_workers(challenge, desired_size)
+        scale_down_workers(challenge, desired_size, evalai_interface)
     else:
-        scale_up_workers(challenge, desired_size, queue_length)
+        scale_up_workers(
+            challenge, desired_size, queue_length, evalai_interface
+        )
 
 
 # Cron Job
 def start_job():
-    if ENV == "production":
-        pks = PROD_INCLUDED_CHALLENGE_PKS
-    else:
-        pks = DEV_INCLUDED_CHALLENGE_PKS
 
-    for challenge_id in pks:
+    for challenge_id, auth_token in INCLUDED_CHALLENGE_PKS.items():
+        evalai_interface = create_evalai_interface(auth_token)
         challenge = evalai_interface.get_challenge_by_pk(challenge_id)
         assert (
             challenge["is_docker_based"] and not challenge["remote_evaluation"]
         ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
             challenge["id"], challenge["title"]
         )
-        scale_up_or_down_workers(challenge)
+        scale_up_or_down_workers(challenge, evalai_interface)
         time.sleep(1)
 
 
