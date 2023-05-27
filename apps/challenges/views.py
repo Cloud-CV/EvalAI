@@ -106,7 +106,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengeTags,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -1410,15 +1409,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 new_tags = set(tags_data)
 
                 # Remove tags not present in the YAML file
-                challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+                challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
 
                 # Add new tags to the challenge
                 for tag_name in new_tags:
-                    tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
-                    challenge.list_tags.add(tag_obj)
+                    if tag_name not in challenge.list_tags:
+                        challenge.list_tags.append(tag_name)
             else:
                 # Remove all existing tags if no tags are defined in the YAML file
-                challenge.list_tags.clear()
+                challenge.list_tags = []
 
             # Add Domain
             if "domain" in yaml_file_data:
@@ -2456,11 +2455,13 @@ def update_challenge_tags_and_domain(request, challenge_pk):
     if request.method == "PATCH":
         new_tags = request.data.get("list_tags", [])
         domain_value = request.data.get("domain")
-        challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+        # Remove tags not present in the YAML file
+        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+
         # Add new tags to the challenge
         for tag_name in new_tags:
-            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
-            challenge.list_tags.add(tag_obj)
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
         # Verifying Domain name
         valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
         if domain_value in valid_domains:
@@ -3475,15 +3476,15 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         new_tags = set(tags_data)
 
                         # Remove tags not present in the YAML file
-                        challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+                        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
 
                         # Add new tags to the challenge
                         for tag_name in new_tags:
-                            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
-                            challenge.list_tags.add(tag_obj)
+                            if tag_name not in challenge.list_tags:
+                                challenge.list_tags.append(tag_name)
                     else:
                         # Remove all existing tags if no tags are defined in the YAML file
-                        challenge.list_tags.clear()
+                        challenge.list_tags = []
 
                     # Add Domain
                     if "domain" in yaml_file_data:
@@ -3749,15 +3750,15 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     new_tags = set(tags_data)
 
                     # Remove tags not present in the YAML file
-                    challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+                    challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
 
                     # Add new tags to the challenge
                     for tag_name in new_tags:
-                        tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
-                        challenge.list_tags.add(tag_obj)
+                        if tag_name not in challenge.list_tags:
+                            challenge.list_tags.append(tag_name)
                 else:
                     # Remove all existing tags if no tags are defined in the YAML file
-                    challenge.list_tags.clear()
+                    challenge.list_tags = []
 
                 # Add Domain
                 if "domain" in yaml_file_data:
