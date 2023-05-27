@@ -27,6 +27,29 @@ def get_default_eval_metric():
     return ["Accuracy"]
 
 
+class ChallengeTags(models.Model):
+    """
+    Model to store tags for a challenge
+    """
+
+    TAG_CHOICES = [
+        ("Paper", "Paper"),
+        ("Dataset", "Dataset"),
+        ("Environment", "Environment"),
+        ("Workshop", "Workshop"),
+    ]
+
+    tag_name = models.CharField(max_length=200, db_index=True, choices=TAG_CHOICES)
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_tags"
+
+    def __str__(self):
+        """Returns the tag name"""
+        return self.tag_name
+
+
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
@@ -59,6 +82,7 @@ class Challenge(TimeStampedModel):
         related_name="challenge_creator",
         on_delete=models.CASCADE,
     )
+    list_tags = models.ManyToManyField(ChallengeTags, blank=True)
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )

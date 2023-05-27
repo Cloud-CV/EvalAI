@@ -106,6 +106,7 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengeTags,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -1402,6 +1403,22 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 raise RuntimeError()
                 # transaction.set_rollback(True)
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+            # Add Tags
+            if "tags" in yaml_file_data:
+                tags_data = yaml_file_data["tags"]
+                new_tags = set(tags_data)
+
+                # Remove tags not present in the YAML file
+                challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+
+                # Add new tags to the challenge
+                for tag_name in new_tags:
+                    tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name)
+                    challenge.list_tags.add(tag_obj)
+            else:
+                # Remove all existing tags if no tags are defined in the YAML file
+                challenge.list_tags.clear()
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -3384,6 +3401,22 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     queue_name = get_queue_name(challenge.title, challenge.pk)
                     challenge.queue = queue_name
                     challenge.save()
+
+                    # Add Tags
+                    if "tags" in yaml_file_data:
+                        tags_data = yaml_file_data["tags"]
+                        new_tags = set(tags_data)
+
+                        # Remove tags not present in the YAML file
+                        challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
+
+                        # Add new tags to the challenge
+                        for tag_name in new_tags:
+                            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name)
+                            challenge.list_tags.add(tag_obj)
+                    else:
+                        # Remove all existing tags if no tags are defined in the YAML file
+                        challenge.list_tags.clear()
 
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[

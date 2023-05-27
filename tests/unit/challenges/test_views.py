@@ -31,6 +31,7 @@ from challenges.models import (
     DatasetSplit,
     Leaderboard,
     StarChallenge,
+    ChallengeTags,
 )
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -96,6 +97,9 @@ class BaseAPITestClass(APITestCase):
             permissions=ChallengeHost.ADMIN,
         )
 
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.challenge.list_tags.add(self.tags[0])
+
         self.participant_team = ParticipantTeam.objects.create(
             team_name="Participant Team for Challenge", created_by=self.user
         )
@@ -155,6 +159,10 @@ class GetChallengeTest(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge.list_tags.all()[0].id,
+                    "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -310,6 +318,10 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "list_tags": [{
+                    "id": self.challenge.list_tags.all()[0].id,
+                    "tag_name": self.challenge.list_tags.all()[0].tag_name,
+            }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -390,6 +402,10 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "list_tags": [{
+                    "id": self.challenge.list_tags.all()[0].id,
+                    "tag_name": self.challenge.list_tags.all()[0].tag_name,
+            }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -491,6 +507,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "list_tags": [{
+                    "id": self.challenge.list_tags.all()[0].id,
+                    "tag_name": self.challenge.list_tags.all()[0].tag_name,
+            }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -548,6 +568,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "list_tags": [{
+                    "id": self.challenge.list_tags.all()[0].id,
+                    "tag_name": self.challenge.list_tags.all()[0].tag_name,
+            }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -1098,6 +1122,11 @@ class GetAllChallengesTest(BaseAPITestClass):
             is_disabled=True,
         )
 
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.challenge2.list_tags.add(self.tags[0])
+        self.challenge3.list_tags.add(self.tags[0])
+        self.challenge4.list_tags.add(self.tags[0])
+
     def test_get_past_challenges(self):
         expected = [
             {
@@ -1121,6 +1150,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge3.list_tags.all()[0].id,
+                    "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1184,6 +1217,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge2.list_tags.all()[0].id,
+                    "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1247,6 +1284,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge4.list_tags.all()[0].id,
+                    "tag_name": self.challenge4.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1310,6 +1351,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge4.list_tags.all()[0].id,
+                    "tag_name": self.challenge4.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1357,6 +1402,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge3.list_tags.all()[0].id,
+                    "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1404,6 +1453,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge2.list_tags.all()[0].id,
+                    "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1493,6 +1546,10 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             featured=True,
         )
 
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.challenge2.list_tags.add(self.tags[0])
+        self.challenge3.list_tags.add(self.tags[0])
+
     def test_get_featured_challenges(self):
         expected = [
             {
@@ -1516,6 +1573,10 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge3.list_tags.all()[0].id,
+                    "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1616,6 +1677,10 @@ class GetChallengeByPk(BaseAPITestClass):
             is_disabled=True,
         )
 
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.challenge3.list_tags.add(self.tags[0])
+        self.challenge4.list_tags.add(self.tags[0])
+
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
         self.url = reverse_lazy(
             "challenges:get_challenge_by_pk",
@@ -1651,6 +1716,10 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge3.creator.created_by.username,
                 "team_url": self.challenge3.creator.team_url,
             },
+            "list_tags": [{
+                    "id": self.challenge3.list_tags.all()[0].id,
+                    "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+            }],
             "published": self.challenge3.published,
             "submission_time_limit": self.challenge3.submission_time_limit,
             "is_registration_open": self.challenge3.is_registration_open,
@@ -1722,6 +1791,10 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge4.creator.created_by.username,
                 "team_url": self.challenge4.creator.team_url,
             },
+            "list_tags": [{
+                    "id": self.challenge4.list_tags.all()[0].id,
+                    "tag_name": self.challenge4.list_tags.all()[0].tag_name,
+            }],
             "published": self.challenge4.published,
             "submission_time_limit": self.challenge4.submission_time_limit,
             "is_registration_open": self.challenge4.is_registration_open,
@@ -1822,6 +1895,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             team=self.participant_team2,
         )
 
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.challenge.list_tags.add(self.tags[0])
+        self.challenge2.list_tags.add(self.tags[0])
+
         self.challenge2.participant_teams.add(self.participant_team2)
 
     def test_get_challenge_when_host_team_is_given(self):
@@ -1849,6 +1926,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge2.list_tags.all()[0].id,
+                    "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1908,6 +1989,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge2.list_tags.all()[0].id,
+                    "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1967,6 +2052,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge2.list_tags.all()[0].id,
+                    "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2024,6 +2113,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge.list_tags.all()[0].id,
+                    "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -2071,6 +2164,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge2.list_tags.all()[0].id,
+                    "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,

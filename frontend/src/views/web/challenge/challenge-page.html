@@ -74,6 +74,9 @@
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </a>
                     </span>
+                    <ul class="list-unstyled list-inline">
+                        <li ng-repeat="tags in challenge.page.list_tags" class="list-inline-item chip orange white-text">{{tags.tag_name}}</li>
+                    </ul>
                 </div>
             </div>
             <div class="col m2 l2 fs-16 w-300 center">
