@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from accounts.models import Profile
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge, ChallengePhase, ChallengeTags
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
@@ -783,6 +783,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.challenge1.slug = "{}-{}".format(
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
+
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.challenge1.list_tags.add(self.tags[0])
+
         self.challenge1.save()
 
         self.challenge2 = Challenge.objects.create(
@@ -836,6 +840,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "created_by": self.challenge_host_team.created_by.username,
                             "team_url": self.challenge_host_team.team_url,
                         },
+                        "list_tags": [{
+                            "id": self.challenge1.list_tags.all()[0].id,
+                            "tag_name": self.challenge1.list_tags.all()[0].tag_name,
+                        }],
                         "published": self.challenge1.published,
                         "submission_time_limit": self.challenge1.submission_time_limit,
                         "is_registration_open": self.challenge1.is_registration_open,
@@ -910,6 +918,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "created_by": self.challenge_host_team.created_by.username,
                     "team_url": self.challenge_host_team.team_url,
                 },
+                "list_tags": [{
+                    "id": self.challenge1.list_tags.all()[0].id,
+                    "tag_name": self.challenge1.list_tags.all()[0].tag_name,
+                }],
                 "published": self.challenge1.published,
                 "submission_time_limit": self.challenge1.submission_time_limit,
                 "is_registration_open": self.challenge1.is_registration_open,
