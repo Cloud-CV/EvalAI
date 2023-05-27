@@ -124,27 +124,40 @@
         };
 
         // Disable User Account
-        vm.disableUserAccount = function() {
-            parameters.token = userKey;
-            parameters.method = 'POST';
-            parameters.url = 'accounts/user/disable';
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    if (status == 200) {
-                        utilities.resetStorage();
-                        $rootScope.isLoader = false;
-                        $state.go("home");
-                        $rootScope.isAuth = false;
-                        $rootScope.notify("success", "Your account has been disabled successfully.");
+        vm.confirmdisableUserAccount = function(ev) {
+            ev.stopPropagation();
+            // Confirms that the user wants to deactivate the account
+            var confirm = $mdDialog.confirm()
+                .title('Would you like to deactivate your account?')
+                .textContent('Note: This action will deactivate your account and you will not be able to login again.')
+                .ariaLabel('Lucky day')
+                .targetEvent(ev)
+                .ok('Yes')
+                .cancel("No");
+
+            $mdDialog.show(confirm).then(function() {
+                parameters.token = userKey;
+                parameters.method = 'POST';
+                parameters.url = 'accounts/user/disable';
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status == 200) {
+                            utilities.resetStorage();
+                            $rootScope.isLoader = false;
+                            $state.go("home");
+                            $rootScope.isAuth = false;
+                            $rootScope.notify("success", "Your account has been disabled successfully.");
+                        }
+                    },
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify("error", details.error);
                     }
-                },
-                onError: function(response) {
-                    var details = response.data;
-                    $rootScope.notify("error", details.error);
-                }
-            };
-            utilities.sendRequest(parameters);
+                };
+                utilities.sendRequest(parameters);
+            }, function() {
+            });
         };
 
         vm.getAuthToken = function(getTokenForm) {
