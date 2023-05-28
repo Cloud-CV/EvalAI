@@ -336,7 +336,7 @@ def validate_challenge_config_util(
     # Check for terms and conditions file
     terms_and_conditions = yaml_file_data.get("terms_and_conditions")
     if not terms_and_conditions or len(terms_and_conditions) == 0:
-        message = "Please add the terms and conditions"
+        message = "Please add the terms and conditions."
         error_messages.append(message)
     else:
         is_valid, message = is_challenge_config_yaml_html_field_valid(
@@ -352,7 +352,7 @@ def validate_challenge_config_util(
     # Check for submission guidelines file
     submission_guidelines = yaml_file_data.get("submission_guidelines")
     if not submission_guidelines or len(submission_guidelines) == 0:
-        message = "Please add the submission_guidelines"
+        message = "Please add the submission guidelines."
         error_messages.append(message)
     else:
         is_valid, message = is_challenge_config_yaml_html_field_valid(
@@ -424,46 +424,46 @@ def validate_challenge_config_util(
     leaderboard = yaml_file_data.get("leaderboard")
     leaderboard_ids = []
     if leaderboard:
-        error = False
-        if "id" not in leaderboard[0]:
-            message = "ERROR: There is no leaderboard id in the YAML configuration file."
-            error_messages.append(message)
-            error = True
-        if "schema" not in leaderboard[0]:
-            message = "ERROR: There is no leaderboard schema in the YAML configuration file."
-            error_messages.append(message)
-            error = True
-        else:
-            if "default_order_by" not in leaderboard[0].get("schema"):
-                message = "ERROR: There is no 'default_order_by' key in leaderboard schema."
+        for data in leaderboard:
+            error = False
+            if "id" not in data:
+                message = "ERROR: There is no leaderboard ID for the leaderboard."
                 error_messages.append(message)
                 error = True
-            if "labels" not in leaderboard[0].get("schema"):
-                message = "ERROR: There is no 'labels' key in leaderboard schema."
+            if "schema" not in data:
+                message = "ERROR: There is no leaderboard schema for the leaderboard with ID: {}.".format(data.get("id"))
                 error_messages.append(message)
                 error = True
-        if not error:
-            for data in leaderboard:
+            else:
+                if "default_order_by" not in data["schema"]:
+                    message = "ERROR: There is no 'default_order_by' key in the schema for the leaderboard with ID: {}.".format(data.get("id"))
+                    error_messages.append(message)
+                    error = True
+                if "labels" not in data["schema"]:
+                    message = "ERROR: There is no 'labels' key in the schema for the leaderboard with ID: {}.".format(data.get("id"))
+                    error_messages.append(message)
+                    error = True
+            if not error:
                 serializer = LeaderboardSerializer(
                     data=data, context={"config_id": data["id"]}
                 )
                 if not serializer.is_valid():
                     serializer_error = str(serializer.errors)
-                    message = "ERROR: Leaderboard {} has following schema errors:\n {}".format(
+                    message = "ERROR: The leaderboard with ID: {} has the following schema errors:\n {}".format(
                         data["id"], serializer_error
                     )
                     error_messages.append(message)
                 else:
                     if current_leaderboard_config_ids and int(data["id"]) not in current_leaderboard_config_ids:
-                        error_messages.append("ERROR: Leaderboard {} doesn't exist. Addition of new leaderboard after challenge creation is not allowed.".format(data["id"]))
+                        error_messages.append("ERROR: The leaderboard with ID: {} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.".format(data["id"]))
                     leaderboard_ids.append(data["id"])
     else:
-        message = "ERROR: There is no key leaderboard in the YAML file."
+        message = "ERROR: There is no key 'leaderboard' in the YAML file."
         error_messages.append(message)
 
     for current_leaderboard_id in current_leaderboard_config_ids:
         if current_leaderboard_id not in leaderboard_ids:
-            error_messages.append("ERROR: Leaderboard {} not found in config. Deletion of existing leaderboard after challenge creation is not allowed.".format(current_leaderboard_id))
+            error_messages.append("ERROR: The leaderboard with ID: {} not found in config. Deletion of an existing leaderboard after challenge creation is not allowed.".format(current_leaderboard_id))
 
     # Check for challenge phases
     challenge_phases_data = yaml_file_data.get("challenge_phases")
@@ -477,7 +477,7 @@ def validate_challenge_config_util(
     files["challenge_test_annotation_files"] = []
     for data in challenge_phases_data:
         if "codename" not in data:
-            error_messages.append("ERROR: No codename found. Please add codename and try again!")
+            error_messages.append("ERROR: No codename found for challenge phase. Please add codename and try again!")
         else:
             if data["codename"] not in phase_codenames:
                 phase_codenames.append(data["codename"])
@@ -621,7 +621,11 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
             if "codename" not in split:
-                message = "ERROR: There is no codename for dataset split"
+                message = (
+                    "ERROR: There is no codename for dataset split {}.".format(
+                        split.get("id")
+                    )
+                )
                 error_messages.append(message)
             else:
                 if split["codename"] not in dataset_split_codenames:
@@ -675,7 +679,7 @@ def validate_challenge_config_util(
                 )
                 if not serializer.is_valid():
                     serializer_error = str(serializer.errors)
-                    message = "ERROR: Challenege phase split {} has following schema errors:\n {}".format(
+                    message = "ERROR: Challenge phase split {} has following schema errors:\n {}".format(
                         phase_split, serializer_error
                     )
                     error_messages.append(message)
@@ -683,7 +687,7 @@ def validate_challenge_config_util(
             else:
                 missing_keys = expected_keys - data.keys()
                 missing_keys_string = ", ".join(missing_keys)
-                error_messages.append("ERROR: The following keys are missing in the challenge phase splits of YAML file: {}".format(missing_keys_string))
+                error_messages.append("ERROR: The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}".format(phase_split, missing_keys_string))
         for uuid in current_phase_split_ids:
             if uuid not in challenge_phase_split_uuids:
                 error_messages.append("ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.".format(uuid[0], uuid[1], uuid[2]))
