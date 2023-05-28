@@ -12,7 +12,7 @@
 
     <div class="row" ng-if="challenge.isChallengeHost && !challenge.approved_by_admin">
         <div class="col s12">
-            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.callAPI()">
+            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.sendApprovalRequest()">
                 Request for approval.
             </button>
         </div>

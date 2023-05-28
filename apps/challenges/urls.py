@@ -65,9 +65,9 @@ urlpatterns = [
         name="get_challenges_based_on_teams",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/submissions/finished",
-        views.check_if_any_challenge_has_finished_submission,
-        name="check_if_any_challenge_has_finished_submission",
+        r"^(?P<challenge_pk>[0-9]+)/has_finished_submission",
+        views.check_if_all_challenge_phases_have_finished_submissions,
+        name="check_if_all_challenge_phases_have_finished_submissions",
     ),
     url(
         r"^(?P<challenge_pk>[0-9]+)/challenge_phase_split$",

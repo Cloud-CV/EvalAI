@@ -191,32 +191,33 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.callAPI = function() {
-            parameters.url = 'challenges/' + vm.challengeId + '/submissions/finished/';
+        vm.sendApprovalRequest = function() {
+            parameters.url = 'challenges/' + vm.challengeId + '/has_finished_submission';
             parameters.method = 'GET';
             parameters.data = {};
         
             parameters.callback = {
                 onSuccess: function(response) {
                     var result = response.data;
-                    if (result === true) {
-                        $rootScope.notify("success", "Request sent successfuly.");
+                    if (result.error) {
+                        $rootScope.notify("error", result.error);
                     } else {
-                        $rootScope.notify("error", "You need to have atleast 1 finsihed submisson");
+                        $rootScope.notify("success", "Request sent successfully.");
                     }
                 },
                 onError: function(response) {
                     var error = response.data.error;
-                    if (error == undefined) {
-                        $rootScope.notify("error", "There was an error.");
-                    } else {
+                    if (error) {
                         $rootScope.notify("error", "There was an error: " + error);
+                    } else {
+                        $rootScope.notify("error", "There was an error.");
                     }
                 }
             };
         
             utilities.sendRequest(parameters);
         };
+        
         
 
         // Get the logs from worker if submissions are failing.

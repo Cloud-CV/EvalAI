@@ -1853,35 +1853,53 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def check_if_any_challenge_has_finished_submission(request, challenge_pk):
+def check_if_all_challenge_phases_have_finished_submissions(request, challenge_pk):
     """
-    Checks if the given challenge has any finished submissions
+    Checks if all challenge phases have finished submissions for the given challenge
     """
     challenge = get_challenge_model(challenge_pk)
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    unfinished_phases = []
+
     for challenge_phase in challenge_phases:
         submissions = Submission.objects.filter(
             challenge_phase=challenge_phase,
             status="finished"
         )
-        if submissions.exists():
-            send_slack_approval_notification(challenge_pk)
-            return Response(True)
-    return Response(False)
+
+        if not submissions.exists():
+            unfinished_phases.append(challenge_phase.name)
+
+    if unfinished_phases:
+        error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    send_slack_approval_request(challenge_pk)
+    response_data = {
+        "message": "All challenge phases have finished submissions.",
+        "challenge_id": challenge_pk
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
-def send_slack_approval_notification(challenge_id):
-    message = f"Challenge no {challenge_id} is ready for taking submmissions. You may Approve it."
-    # Enter webhook url here
+def send_slack_approval_request(challenge_id):
+    host_url = os.environ.get("HOST_URL")
     slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+
+    if not host_url:
+        raise ValueError("HOST_URL environment variable is missing.")
+    if not slack_webhook_url:
+        raise ValueError("SLACK_WEBHOOK_URL environment variable is missing.")
+
+    message = f"Challenge {challenge_id} has finished submissions and has requested for approval. Approve it here: {host_url}/api/admin/challenges/challenge/{challenge_id}"
     payload = {
         "text": message
     }
     response = requests.post(slack_webhook_url, json=payload)
     if response.status_code == 200:
-        print("Slack notification sent successfully.")
+        return {"status": "success", "message": "Slack notification sent successfully."}
     else:
-        print("Error sending Slack notification. You may retry. Status:", response.status_code)
+        return {"status": "error", "message": f"Error sending Slack notification. You may retry. Status: {response.status_code}"}
 
 
 @api_view(["GET"])
