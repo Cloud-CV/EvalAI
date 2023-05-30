@@ -1853,7 +1853,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def check_if_all_challenge_phases_have_finished_submissions(request, challenge_pk):
+def challenge_has_finished_submissions(request, challenge_pk):
     """
     Checks if all challenge phases have finished submissions for the given challenge
     """
@@ -1874,17 +1874,20 @@ def check_if_all_challenge_phases_have_finished_submissions(request, challenge_p
         error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    send_slack_approval_request(challenge_pk)
-    response_data = {
-        "message": "All challenge phases have finished submissions.",
-        "challenge_id": challenge_pk
-    }
-    return Response(response_data, status=status.HTTP_200_OK)
+    send_slack_approval_request_response = send_slack_approval_request(challenge_pk)
+    if send_slack_approval_request_response["status"] == "success":
+        response_data = {
+            "message": "All challenge phases have finished submissions.",
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        error_message = f"All challenge phases have finished submissions, but there was an error sending the Slack notification: {send_slack_approval_request_response['message']}"
+        return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def send_slack_approval_request(challenge_id):
-    host_url = os.environ.get("HOST_URL")
-    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+    host_url = os.environ.get("HOST_URL", None)
+    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
 
     if not host_url:
         raise ValueError("HOST_URL environment variable is missing.")
@@ -1899,7 +1902,7 @@ def send_slack_approval_request(challenge_id):
     if response.status_code == 200:
         return {"status": "success", "message": "Slack notification sent successfully."}
     else:
-        return {"status": "error", "message": f"Error sending Slack notification. You may retry. Status: {response.status_code}"}
+        return {"status": "error", "message": f" {response.status_code}"}
 
 
 @api_view(["GET"])

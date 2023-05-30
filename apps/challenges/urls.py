@@ -66,8 +66,8 @@ urlpatterns = [
     ),
     url(
         r"^(?P<challenge_pk>[0-9]+)/has_finished_submission",
-        views.check_if_all_challenge_phases_have_finished_submissions,
-        name="check_if_all_challenge_phases_have_finished_submissions",
+        views.challenge_has_finished_submissions,
+        name="challenge_has_finished_submissions",
     ),
     url(
         r"^(?P<challenge_pk>[0-9]+)/challenge_phase_split$",
