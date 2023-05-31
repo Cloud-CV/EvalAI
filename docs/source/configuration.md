@@ -130,7 +130,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
         type: boolean
         required: True
     ```
-  - **is_restricted_to_select_one_submission**: True/False (indicates whether to restrict user to select only one submission for leaderboard. Default is `False`)
+  - **is_restricted_to_select_one_submission**: True/False (indicates whether to restrict a user to select only one submission for the leaderboard. Default is `False`)
   - **is_partial_submission_evaluation_enabled**: True/False (indicates whether partial submission evaluation is enabled. Default is `False`)
   - **allowed_submission_file_types**: This is a list of file types that are allowed for submission( Optional Default is `.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy`)
 
