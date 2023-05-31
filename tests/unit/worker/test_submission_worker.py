@@ -266,7 +266,7 @@ class BaseAPITestClass(APITestCase):
     def test_load_challenge_and_return_max_submissions_when_challenge_does_not_exist(
         self, mock_logger
     ):
-        non_existing_challenge_pk = self.challenge.pk + 1
+        non_existing_challenge_pk = self.challenge.pk + 2
         with self.assertRaises(Challenge.DoesNotExist):
             load_challenge_and_return_max_submissions(
                 {"pk": non_existing_challenge_pk}
