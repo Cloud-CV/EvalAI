@@ -123,26 +123,27 @@
             });
         };
 
-        // Disable User Account
-        vm.confirmdisableUserAccount = function(ev) {
-            ev.stopPropagation();
-            // Confirms that the user wants to deactivate the account
-            var confirm = $mdDialog.confirm()
-                .title('Would you like to deactivate your account?')
-                .textContent('Note: This action will deactivate your account and you will not be able to login again.')
-                .ariaLabel('Lucky day')
-                .targetEvent(ev)
-                .ok('Yes')
-                .cancel("No");
+        // Disable User Account Dialog
+        vm.showdisableuserDialog = function() { 
+            $mdDialog.show({ 
+                scope: $scope, 
+                preserveScope: true, 
+                templateUrl: 'dist/views/web/profile/disable-user.html' 
+            }); 
+        }; 
 
-            $mdDialog.show(confirm).then(function() {
+        // Disable User Account
+        vm.confirmdisableUserAccount = function(disableuserform) {
+            if (disableuserform) {
                 parameters.token = userKey;
                 parameters.method = 'POST';
                 parameters.url = 'accounts/user/disable';
                 parameters.callback = {
                     onSuccess: function(response) {
+                        console.log(response);
                         var status = response.status;
                         if (status == 200) {
+                            $mdDialog.hide();
                             utilities.resetStorage();
                             $rootScope.isLoader = false;
                             $state.go("home");
@@ -151,13 +152,16 @@
                         }
                     },
                     onError: function(response) {
+                        $mdDialog.hide(); 
                         var details = response.data;
                         $rootScope.notify("error", details.error);
                     }
                 };
                 utilities.sendRequest(parameters);
-            }, function() {
-            });
+            }
+            else {
+                $mdDialog.hide();
+            }
         };
 
         vm.getAuthToken = function(getTokenForm) {
