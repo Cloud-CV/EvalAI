@@ -98,7 +98,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **max_submissions**: A positive integer that decides the maximum number of total submissions that can be made to the challenge phase.( Optional,  Default value is `100000`)
 
-  - **default_submission_meta_attributes**: These are the default metadata attributes that will be displayed for all submissions, the metadata attributes are method_name, method_description, project_url, and publication_url.
+  - **default_submission_meta_attributes**: These are the default metadata attributes that will be displayed for all submissions, the metadata attributes are `method_name`, `method_description`, `project_url`, and `publication_url`.
       ```yaml
     default_submission_meta_attributes:
       - name: method_name
@@ -110,7 +110,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
       - name: publication_url
         is_visible: True
       ```
-  - **submission_meta_attributes**: These are the custom metadata attributes that can be added by participants for their submissions. The custom metadata attributes are TextAttribute, SingleOptionAttribute, MultipleChoiceAttribute, and TrueFalseField.
+  - **submission_meta_attributes**: These are the custom metadata attributes that can be added by participants for their submissions. The custom metadata attributes are `TextAttribute`, `SingleOptionAttribute`, `MultipleChoiceAttribute`, and `TrueFalseField`.
     ```yaml
     submission_meta_attributes:
       - name: TextAttribute
