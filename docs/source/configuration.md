@@ -110,7 +110,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
       - name: publication_url
         is_visible: True
       ```
-  - **submission_meta_attributes**: These are the custom metadata attributes that can be added by participants for their submissions. The custom metadata attributes are `TextAttribute`, `SingleOptionAttribute`, `MultipleChoiceAttribute`, and `TrueFalseField`.
+  - **submission_meta_attributes**: These are the custom metadata attributes that participants can add to their submissions. The custom metadata attributes are `TextAttribute`, `SingleOptionAttribute`, `MultipleChoiceAttribute`, and `TrueFalseField`.
     ```yaml
     submission_meta_attributes:
       - name: TextAttribute
