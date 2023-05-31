@@ -96,7 +96,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **max_submissions_per_month**: A positive integer that tells the maximum number of submissions per month to a challenge phase. ( Optional, Default value is `100000`)
 
-  - **max_submissions**: A positive integer that decides the maximum number of total submissions that can be made to the challenge phase.( Optional,  Default value is `100000`)
+  - **max_submissions**: A positive integer that decides the maximum number of total submissions that can be made to the challenge phase. ( Optional,  Default value is `100000`)
 
   - **default_submission_meta_attributes**: These are the default metadata attributes that will be displayed for all submissions, the metadata attributes are `method_name`, `method_description`, `project_url`, and `publication_url`.
       ```yaml
