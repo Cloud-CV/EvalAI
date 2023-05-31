@@ -169,6 +169,6 @@ Following fields are required (and can be customized) in the [`challenge_config.
   | 2          | Only visible to challenge host and participant who made that submission |
   | 3          | Visible to everyone on leaderboard                                      |
 
-  - **leaderboard_decimal_precision**: Positive integer field used for varying the leaderboard decimal precision. Default value is `2`.
+  - **leaderboard_decimal_precision**: A positive integer field used for varying the leaderboard decimal precision. Default value is `2`.
 
   - **is_leaderboard_order_descending**: True/False (a Boolean field that gives the flexibility to challenge host to change the default leaderboard sorting order. It is useful in cases where you have error as a metric and want to sort the leaderboard in increasing order of error value. Default is `True`)
