@@ -92,7 +92,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **codename**: Unique id for each challenge phase. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase. The codename specified here should match with the codename specified in the evaluation script to perfect mapping.
 
-  - **max_submissions_per_day**: Positive integer which tells the maximum number of submissions per day to a challenge phase.( Optional, Default value is `100000`)
+  - **max_submissions_per_day**: A positive integer that tells the maximum number of submissions per day to a challenge phase. ( Optional, Default value is `100000`)
 
   - **max_submissions_per_month**: Positive integer which tells the maximum number of submissions per month to a challenge phase.( Optional, Default value is `100000`)
 
