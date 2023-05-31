@@ -96,6 +96,7 @@ from participants.utils import (
     is_user_creator_of_participant_team,
 )
 
+from .github_utils import generate_repo_from_template
 from .models import (
     Challenge,
     ChallengeEvaluationCluster,
@@ -4077,3 +4078,34 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def convert_to_github_challenge(request, challenge_pk):
+    challenge = get_challenge_model(challenge_pk)
+    if challenge.github_repository is not None and challenge.github_repository != "":
+        response_data = {
+            "error": "This challenge is already a github challenge."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if "user_auth_token" not in request.data or "repo_name" not in request.data:
+        response_data = {
+            "error": "Request missing user_auth_token (GitHub token) or repo_name (proposed name of new repo)."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    r = generate_repo_from_template(request.data["user_auth_token"], request.data["repo_name"])
+    if r.status_code != status.HTTP_201_CREATED:
+        response_data = {
+            "error": "Unable to create GitHub repository."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge.github_repository = r.json()['html_url']
+    challenge.save()
+    response_data = {
+        "Success": "This challenge's GitHub repository has been created successfully.",
+        "github_repository": r.json()['html_url']
+    }
+    return Response(response_data, status=status.HTTP_201_CREATED)

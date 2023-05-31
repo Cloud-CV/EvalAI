@@ -22,6 +22,8 @@ from django.utils import timezone
 from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from challenges.models import (
     Challenge,
@@ -4970,3 +4972,103 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         )
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+def mocked_generate_repo_from_template_requests_post(*args, **kwargs):
+    response = Mock(spec=requests.Response)
+    response.status_code = 201
+    response.json.return_value = {"id": 123, "node_id": "R_kgDOIrz2HA", "name": "EvalAI-Laura-Challenge", "full_name":
+                                  "test-repo/EvalAI-Laura-Challenge", "html_url":
+                                  "https://github.com/test-repo/EvalAI-Laura-Challenge"}
+    return response
+
+
+class ConvertToGitHubChallengePkTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(ConvertToGitHubChallengePkTest, self).setUp()
+
+        self.user = User.objects.create(
+            username="someuser1",
+            email="user1@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Some Test Challenge Host Team", created_by=self.user
+        )
+
+        self.challenge_with_no_repo = Challenge.objects.create(
+            title="Test Challenge 1",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
+        self.challenge_with_repo = Challenge.objects.create(
+            title="Test Challenge 2",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+            github_repository="https://www.github.com/test-user/test-repo"
+        )
+
+        self.url_no_repo = reverse_lazy(
+            "challenges:convert_to_github_challenge",
+            kwargs={"challenge_pk": self.challenge_with_no_repo.pk},
+        )
+
+        self.url_repo = reverse_lazy(
+            "challenges:convert_to_github_challenge",
+            kwargs={"challenge_pk": self.challenge_with_repo.pk},
+        )
+
+    @patch('challenges.views.generate_repo_from_template', side_effect=mocked_generate_repo_from_template_requests_post)
+    def test_generate_repo_from_template_success(self, mock_post):
+        response = self.client.post(self.url_no_repo, {'user_auth_token': 'abc123', 'repo_name': 'test-repo'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        expected = {
+            "Success": "This challenge's GitHub repository has been created successfully.",
+            "github_repository": "https://github.com/test-repo/EvalAI-Laura-Challenge"
+        }
+        self.assertEqual(response.data, expected)
+
+    def test_generate_repo_from_template_when_request_arguments_are_missing(self):
+        response = self.client.post(self.url_no_repo, {'user_auth_token': 'abc123'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {
+            "error": "Request missing user_auth_token (GitHub token) or repo_name (proposed name of new repo)."
+        }
+        self.assertEqual(response.data, expected)
+
+    def test_generate_repo_from_template_when_github_challenge_already_exists(self):
+        response = self.client.post(self.url_repo, {'user_auth_token': 'abc123'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {
+            "error": "This challenge is already a github challenge."
+        }
+        self.assertEqual(response.data, expected)
