@@ -4970,3 +4970,70 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         )
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class ChallengeHasFinishedSubmissionsTest(BaseAPITestClass):
+    def setUp(self):
+        super(ChallengeHasFinishedSubmissionsTest, self).setUp()
+
+    @mock.patch("challenges.views.send_slack_approval_request")
+    def test_challenge_has_finished_submissions(self, mock_send_slack_approval_request):
+        mock_send_slack_approval_request.return_value = {"status": "success"}
+
+        url = reverse_lazy("challenges:challenge_has_finished_submissions", kwargs={"challenge_pk": self.challenge.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {"message": "All challenge phases have finished submissions."}
+        )
+
+    def test_challenge_has_unfinished_submissions(self):
+        self.user1 = User.objects.create(
+            username="otheruser1",
+            password="other_secret_password",
+            email="user1@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.participant_team1 = ParticipantTeam.objects.create(
+            team_name="Participant Team for Challenge8", created_by=self.user1
+        )
+
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
+            status=Participant.ACCEPTED,
+            team=self.participant_team1,
+        )
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        url = reverse_lazy("challenges:challenge_has_finished_submissions", kwargs={"challenge_pk": self.challenge.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {"error": "The following challenge phases do not have finished submissions: Challenge Phase"}
+        )
