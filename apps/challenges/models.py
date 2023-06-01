@@ -42,6 +42,7 @@ class Challenge(TimeStampedModel):
     terms_and_conditions = models.TextField(null=True, blank=True)
     submission_guidelines = models.TextField(null=True, blank=True)
     evaluation_details = models.TextField(null=True, blank=True)
+    has_prizes = models.BooleanField(default=False)
     image = models.ImageField(
         upload_to=RandomFileName("logos"),
         null=True,
@@ -627,3 +628,25 @@ class PWCChallengeLeaderboard(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "pwc_challenge_leaderboard"
+
+
+class ChallengePrize(TimeStampedModel):
+    """
+    Model to store challenge prizes
+
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
+    amount = models.CharField(max_length=10)
+    rank = models.PositiveIntegerField()
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_prize"
+
+    def __str__(self):
+        """Returns a string representation of the Prize object"""
+        return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"

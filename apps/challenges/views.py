@@ -11,6 +11,7 @@ import time
 import uuid
 import yaml
 import zipfile
+import re
 
 from os.path import basename, isfile, join
 from datetime import datetime
@@ -106,6 +107,7 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -123,6 +125,7 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
+    ChallengePrizeSerializer,
 )
 
 from .aws_utils import (
@@ -1437,6 +1440,62 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data = serializer.errors
                     raise RuntimeError()
 
+            # Create Prizes
+            if "prizes" in yaml_file_data:
+                prizes_data = yaml_file_data['prizes']
+                rank_set = set()
+                prizes = []
+                for index, prize in enumerate(prizes_data):
+                    rank = prize.get("rank")
+                    amount = prize.get("amount")
+                    if not rank or not amount:
+                        message = "Invalid prize entry, rank or amount is missing."
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    elif not isinstance(rank, int) or rank < 1:
+                        message = "Invalid prize rank value {}. Rank should be a positive integer.".format(prize["rank"])
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    elif not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', amount):
+                        message = "Invalid prize amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).".format(prize["amount"])
+                        response_data = {"error": message}
+                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        # Check for duplicate rank.
+                        rank = prize['rank']
+                        if rank in rank_set:
+                            message = f"Duplicate rank {rank} found in prizes."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        rank_set.add(rank)
+
+                        data = {
+                            "challenge": challenge,
+                            "amount": amount,
+                            "rank": rank,
+                        }
+
+                        prizes.append(data)
+
+                        # Update all prizes data after successful validation
+                        if index == len(prizes_data) - 1:
+                            for prize_data in prizes:
+                                serializer = ChallengePrizeSerializer(
+                                    data=prize_data,
+                                    context={
+                                        "challenge": challenge,
+                                    }
+                                )
+                                if serializer.is_valid():
+                                    serializer.save()
+                                    challenge.has_prizes = True
+                                    challenge.save()
+                                else:
+                                    challenge.has_prizes = False
+                                    challenge.save()
+                                    response_data = serializer.errors
+                                    raise RuntimeError()
+
             # Create Challenge Phase
             challenge_phase_ids = {}
             for data in challenge_phases_data:
@@ -2429,6 +2488,22 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def get_prizes_by_challenge(request, challenge_pk):
+    """
+    Returns a list of prizes for a given challenge.
+    """
+    challenge = get_challenge_model(
+        challenge_pk
+    )
+
+    prizes = ChallengePrize.objects.filter(challenge=challenge)
+    serializer = ChallengePrizeSerializer(prizes, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET", "POST"])
@@ -3430,6 +3505,50 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["id"])
                         ] = serializer.instance.pk
 
+                    # Create Prizes
+                    if "prizes" in yaml_file_data:
+                        prizes_data = yaml_file_data['prizes']
+                        rank_set = set()
+                        for prize in prizes_data:
+                            if 'rank' not in prize:
+                                message = "Prize rank not found in YAML data."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            if 'amount' not in prize:
+                                message = "Prize amount not found in YAML data."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+                            # Check for duplicate rank.
+                            rank = prize['rank']
+                            if rank in rank_set:
+                                message = f"Duplicate rank {rank} found in YAML data."
+                                response_data = {"error": message}
+                                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            rank_set.add(rank)
+
+                            amount = prize["amount"]
+
+                            data = {
+                                "challenge": challenge,
+                                "amount": amount,
+                                "rank": rank,
+                            }
+
+                            serializer = ChallengePrizeSerializer(
+                                data=data,
+                                context={
+                                    "challenge": challenge,
+                                }
+                            )
+                            if serializer.is_valid():
+                                serializer.save()
+                                challenge.has_prizes = True
+                                challenge.save()
+                            else:
+                                error_messages = serializer.errors
+                                raise RuntimeError()
+
                     # Create Challenge Phase
                     challenge_phase_ids = {}
                     challenge_phases_data = yaml_file_data["challenge_phases"]
@@ -3681,6 +3800,67 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     else:
                         error_messages = serializer.errors
                         raise RuntimeError()
+
+                # Updating ChallengePrize objects
+                if "prizes" in yaml_file_data:
+                    prizes_data = yaml_file_data['prizes']
+                    rank_set = set()
+                    for prize in prizes_data:
+                        if 'rank' not in prize:
+                            message = "Prize rank not found in YAML data."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        if 'amount' not in prize:
+                            message = "Prize amount not found in YAML data."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+                        # Check for duplicate rank.
+                        rank = prize['rank']
+                        if rank in rank_set:
+                            message = f"Duplicate rank {rank} found in YAML data."
+                            response_data = {"error": message}
+                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        rank_set.add(rank)
+
+                        rank = prize['rank']
+                        amount = prize["amount"]
+
+                        prize_obj = ChallengePrize.objects.filter(rank=rank, challenge=challenge).first()
+
+                        if prize_obj:
+                            data = {
+                                "amount": amount,
+                            }
+                            serializer = ChallengePrizeSerializer(
+                                prize_obj, data=data,
+                                context={
+                                    "challenge": challenge,
+                                },
+                                partial=True
+                            )
+                        else:
+                            data = {
+                                "challenge": challenge,
+                                "amount": amount,
+                                "rank": rank,
+                            }
+                            serializer = ChallengePrizeSerializer(
+                                data=data,
+                                context={
+                                    "challenge": challenge,
+                                }
+                            )
+                        if serializer.is_valid():
+                            serializer.save()
+                            challenge.has_prizes = True
+                            challenge.save()
+                        else:
+                            error_messages = serializer.errors
+                            raise RuntimeError()
+                    else:
+                        challenge.has_prizes = False
+                        challenge.save()
 
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
