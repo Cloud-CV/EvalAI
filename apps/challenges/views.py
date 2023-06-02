@@ -1433,6 +1433,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
             else:
                 challenge.domain = None
+                challenge.save()
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -2460,7 +2461,7 @@ def update_challenge_tags_and_domain(request, challenge_pk):
             challenge.save()
             return Response(status=status.HTTP_200_OK)
         else:
-            message = f"Invalid domain value: {domain_value}"
+            message = f"Invalid domain value:{domain_value}"
             response_data = {"error": message}
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         
@@ -2478,7 +2479,7 @@ def get_domain_choices(request):
         return Response(domain_choices, status.HTTP_200_OK)
     else:
         response_data = {"error": "Method not allowed"}
-        return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(response_data , status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(["GET", "POST"])
@@ -2491,7 +2492,6 @@ def star_challenge(request, challenge_pk):
     a challenge.
     """
     challenge = get_challenge_model(challenge_pk)
-
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
@@ -3491,6 +3491,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                     else:
                         challenge.domain = None
+                        challenge.save()
 
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
@@ -3499,7 +3500,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     leaderboard_ids = {}
                     for data in yaml_file_data_of_leaderboard:
                         serializer = LeaderboardSerializer(
-                            data=data , context={"config_id": data["id"]}
+                            data=data, context={"config_id": data["id"]}
                         )
                         if serializer.is_valid():
                             serializer.save()
@@ -3764,14 +3765,15 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
                 else:
                     challenge.domain = None
+                    challenge.save()
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
                 for data in yaml_file_data_of_leaderboard:
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__challenge__pk=challenge.pk,
-                        leaderboard__config_id=data["config_id"] ,
+                        challenge_phase__challenge__pk=challenge.pk, 
+                        leaderboard__config_id=data["config_id"],
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -3796,7 +3798,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
                 for data, challenge_test_annotation_file in zip(
-                    challenge_phases_data, files["challenge_test_annotation_files"]
+                    challenge_phases_data , files["challenge_test_annotation_files"]
                 ):
 
                     # Override the submission_meta_attributes when they are missing

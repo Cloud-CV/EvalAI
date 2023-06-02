@@ -784,7 +784,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper",challenge=self.challenge1)
         self.challenge1.list_tags.add(self.tags[0])
 
         self.challenge1.save()
@@ -843,6 +843,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "list_tags": [{
                             "id": self.challenge1.list_tags.all()[0].id,
                             "tag_name": self.challenge1.list_tags.all()[0].tag_name,
+                            "challenge": self.challenge1.pk,
                         }],
                         "published": self.challenge1.published,
                         "submission_time_limit": self.challenge1.submission_time_limit,
@@ -921,6 +922,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge1.list_tags.all()[0].id,
                     "tag_name": self.challenge1.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge1.pk,
                 }],
                 "published": self.challenge1.published,
                 "submission_time_limit": self.challenge1.submission_time_limit,

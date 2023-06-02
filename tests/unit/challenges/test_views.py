@@ -98,7 +98,7 @@ class BaseAPITestClass(APITestCase):
             permissions=ChallengeHost.ADMIN,
         )
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper",challenge=self.challenge)
         self.challenge.list_tags.add(self.tags[0])
 
         self.participant_team = ParticipantTeam.objects.create(
@@ -165,6 +165,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge.list_tags.all()[0].id,
                     "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge.pk,
                 }],
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
@@ -327,6 +328,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                "challenge": self.challenge.pk,
             }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
@@ -413,6 +415,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                "challenge": self.challenge.pk,
             }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
@@ -520,6 +523,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                "challenge": self.challenge.pk,
             }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
@@ -583,6 +587,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                "challenge": self.challenge.pk,
             }],
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
@@ -1137,10 +1142,12 @@ class GetAllChallengesTest(BaseAPITestClass):
             is_disabled=True,
         )
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge2)
         self.challenge2.list_tags.add(self.tags[0])
-        self.challenge3.list_tags.add(self.tags[0])
-        self.challenge4.list_tags.add(self.tags[0])
+        self.tags2 = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge3)
+        self.challenge3.list_tags.add(self.tags2[0])
+        self.tags3 = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge4)
+        self.challenge4.list_tags.add(self.tags3[0])
 
     def test_get_past_challenges(self):
         expected = [
@@ -1170,6 +1177,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge3.list_tags.all()[0].id,
                     "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge3.pk,
                 }],
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
@@ -1239,6 +1247,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge2.pk,
                 }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
@@ -1308,6 +1317,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge4.list_tags.all()[0].id,
                     "tag_name": self.challenge4.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge4.pk,
                 }],
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
@@ -1377,6 +1387,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge4.list_tags.all()[0].id,
                     "tag_name": self.challenge4.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge4.pk,
                 }],
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
@@ -1430,6 +1441,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge3.list_tags.all()[0].id,
                     "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge3.pk,
                 }],
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
@@ -1483,6 +1495,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge2.pk,
                 }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
@@ -1573,9 +1586,10 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             featured=True,
         )
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge2)
         self.challenge2.list_tags.add(self.tags[0])
-        self.challenge3.list_tags.add(self.tags[0])
+        self.tags2 = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge3)
+        self.challenge3.list_tags.add(self.tags2[0])
 
     def test_get_featured_challenges(self):
         expected = [
@@ -1605,6 +1619,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge3.list_tags.all()[0].id,
                     "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge3.pk,
                 }],
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
@@ -1708,9 +1723,10 @@ class GetChallengeByPk(BaseAPITestClass):
             is_disabled=True,
         )
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge3)
         self.challenge3.list_tags.add(self.tags[0])
-        self.challenge4.list_tags.add(self.tags[0])
+        self.tags2 = ChallengeTags.objects.get_or_create(tag_name="Paper" , challenge=self.challenge4)
+        self.challenge4.list_tags.add(self.tags2[0])
 
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
         self.url = reverse_lazy(
@@ -1752,6 +1768,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "list_tags": [{
                 "id": self.challenge3.list_tags.all()[0].id,
                 "tag_name": self.challenge3.list_tags.all()[0].tag_name,
+                "challenge": self.challenge3.pk,
             }],
             "published": self.challenge3.published,
             "submission_time_limit": self.challenge3.submission_time_limit,
@@ -1829,6 +1846,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "list_tags": [{
                 "id": self.challenge4.list_tags.all()[0].id,
                 "tag_name": self.challenge4.list_tags.all()[0].tag_name,
+                "challenge": self.challenge4.pk,
             }],
             "published": self.challenge4.published,
             "submission_time_limit": self.challenge4.submission_time_limit,
@@ -1932,9 +1950,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             team=self.participant_team2,
         )
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper")
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge)
         self.challenge.list_tags.add(self.tags[0])
-        self.challenge2.list_tags.add(self.tags[0])
+        self.tags2 = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge2)
+        self.challenge2.list_tags.add(self.tags2[0])
 
         self.challenge2.participant_teams.add(self.participant_team2)
 
@@ -1968,6 +1987,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge2.pk,
                 }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
@@ -2033,6 +2053,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge2.pk,
                 }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
@@ -2098,6 +2119,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge2.pk,
                 }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
@@ -2161,6 +2183,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge.list_tags.all()[0].id,
                     "tag_name": self.challenge.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge.pk,
                 }],
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
@@ -2214,6 +2237,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
+                    "challenge": self.challenge2.pk,
                 }],
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
