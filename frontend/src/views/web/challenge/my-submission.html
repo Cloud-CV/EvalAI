@@ -63,6 +63,8 @@
                             <th class="fs-18 w-300" data-field="file">Result file</th>
                             <th class="fs-18 w-300" data-field="file">Stdout file</th>
                             <th class="fs-18 w-300" data-field="file">Stderr file</th>
+                            <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
+                                    !challenge.isStaticCodeUploadChallenge" data-field="file">Environment Logs</th>
                             <th class="align-center fs-18 w-300" data-field="file">Submitted at</th>
                             <th class="align-center fs-18 w-300" ng-if="challenge.currentPhaseLeaderboardPublic"
                                 data-field="file">
@@ -107,6 +109,13 @@
                                 <td ng-if="key.stderr_file"><a href="{{key.stderr_file}}" target="_blank"
                                         class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                 <td ng-if="!key.stderr_file">None</td>
+
+                                <td ng-if="key.environment_log_file && challenge.isChallengeHost &&
+                                        !challenge.isStaticCodeUploadChallenge">
+                                    <a href="{{key.environment_log_file}}" target="_blank"
+                                        class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                <td ng-if="!key.environment_log_file && challenge.isChallengeHost &&
+                                        !challenge.isStaticCodeUploadChallenge">None</td>
 
                                 <td>{{key.submitted_at | date:'medium'}}</td>
 

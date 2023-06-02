@@ -871,6 +871,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "queue": self.challenge1.queue,
                         "worker_cpu_cores": 512,
                         "worker_memory": 1024,
+                        "cpu_only_jobs": self.challenge1.cpu_only_jobs,
+                        "job_cpu_cores": self.challenge1.job_cpu_cores,
+                        "job_memory": self.challenge1.job_memory,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -950,6 +953,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "queue": self.challenge1.queue,
                 "worker_cpu_cores": 512,
                 "worker_memory": 1024,
+                "cpu_only_jobs": self.challenge1.cpu_only_jobs,
+                "job_cpu_cores": self.challenge1.job_cpu_cores,
+                "job_memory": self.challenge1.job_memory,
             }
         ]
 
