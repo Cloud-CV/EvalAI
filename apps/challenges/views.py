@@ -1874,14 +1874,14 @@ def challenge_has_finished_submissions(request, challenge_pk):
         error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    send_slack_approval_request_response = send_slack_approval_request(challenge_pk)
-    if send_slack_approval_request_response["status"] == "success":
+    slack_approval_request_response = send_slack_approval_request(challenge_pk)
+    if slack_approval_request_response["status"] == "success":
         response_data = {
-            "message": "All challenge phases have finished submissions.",
+            "message": "Approval request sent!",
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        error_message = f"All challenge phases have finished submissions, but there was an error sending the Slack notification: {send_slack_approval_request_response['message']}"
+        error_message = "Sorry, there was an error sending approval request. Please try again."
         return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

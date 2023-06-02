@@ -218,8 +218,6 @@
             utilities.sendRequest(parameters);
         };
         
-        
-
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function() {
             vm.logs_poller = $interval(function(){
