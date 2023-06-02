@@ -1105,11 +1105,6 @@
 
             utilities.sendRequest(parameters);
         };
-
-        if (vm.phaseSplitId) {
-            vm.getLeaderboard(vm.phaseSplitId);
-        }
-
         
         vm.showMetaAttributesDialog = function(ev, attributes){
             if (attributes != false){
