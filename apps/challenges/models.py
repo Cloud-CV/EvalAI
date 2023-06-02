@@ -31,15 +31,8 @@ class ChallengeTags(models.Model):
     """
     Model to store tags for a challenge
     """
-
-    TAG_CHOICES = [
-        ("Paper", "Paper"),
-        ("Dataset", "Dataset"),
-        ("Environment", "Environment"),
-        ("Workshop", "Workshop"),
-    ]
-
-    tag_name = models.CharField(max_length=200, db_index=True, choices=TAG_CHOICES)
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE, default=None, null=True)
+    tag_name = models.CharField(max_length=200, db_index=True)
 
     class Meta:
         app_label = "challenges"
@@ -82,7 +75,13 @@ class Challenge(TimeStampedModel):
         related_name="challenge_creator",
         on_delete=models.CASCADE,
     )
-    list_tags = models.ManyToManyField(ChallengeTags, blank=True)
+    DOMAIN_OPTIONS = (
+        ("CV", "Computer Vision"),
+        ("NLP", "Natural Language Processing"),
+        ("RL", "Reinforcement Learning"),
+    )
+    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
+    list_tags = models.ManyToManyField(ChallengeTags, blank=True, related_name="challenge_tags")
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )

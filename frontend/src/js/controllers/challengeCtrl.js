@@ -2735,6 +2735,91 @@
             }
         };
 
+        vm.challengeTagDialog = function(ev) {
+            vm.tags = [];
+            for (var i = 0; i < vm.page.list_tags.length; i++) {
+                vm.tags[i] = vm.page.list_tags[i].tag_name;
+            }
+            vm.domainoptions = vm.domain_choices();
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-tag.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeTag = function(editChallengeTagDomainForm) {
+            if (editChallengeTagDomainForm) {
+                if(typeof vm.tags == 'string') {
+                    var new_tags = vm.tags.split(",");
+                }
+                else {
+                    var new_tags = [];
+                    for (var i = 0; i < vm.page.list_tags.length; i++) {
+                        new_tags[i] = vm.page.list_tags[i].tag_name;
+                    }
+                }
+                if(new_tags.length > 4) {
+                    $rootScope.notify("error", "Maximum 4 tags are allowed!");
+                }
+                else {
+                    parameters.url = "challenges/challenge/" + vm.challengeId + "/update_challenge_tags_and_domain/";
+                    parameters.method = 'PATCH';
+                    parameters.data = {
+                        "list_tags": new_tags,
+                        "domain": vm.domain
+                    };
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            utilities.hideLoader();
+                            if (status === 200) {
+                                $rootScope.notify("success", "The challenge tags and domain is successfully updated!");
+                                $state.reload();
+                                $mdDialog.hide();
+                            }
+                        },
+                        onError: function(response) {
+                            utilities.hideLoader();
+                            $mdDialog.hide();
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.showLoader();
+                    utilities.sendRequest(parameters);
+                }
+            } else {
+                $mdDialog.hide();
+            }
+        };
+
+        vm.domain_choices = function() {
+            var domain_choices = [];
+            parameters.url = "challenges/challenge/get_domain_choices/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    for (var i = 0; i < details.length; i++) {
+                        domain_choices.push(details[i]);
+                        if (details[i][0] == vm.page.domain) {
+                            vm.domain = details[i][0];
+                        }
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
+            return domain_choices;
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();

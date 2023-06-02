@@ -45,6 +45,11 @@ class ChallengeSerializer(serializers.ModelSerializer):
     is_active = serializers.ReadOnlyField()
     list_tags = ChallengeTagsSerializer(many=True)
 
+    domain_name = serializers.SerializerMethodField()
+
+    def get_domain_name(self, obj):
+        return obj.get_domain_display()
+
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get("context")
@@ -68,6 +73,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "creator",
+            "domain",
+            "domain_name",
             "list_tags",
             "published",
             "submission_time_limit",

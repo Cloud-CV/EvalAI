@@ -76,6 +76,12 @@
                     </span>
                     <ul class="list-unstyled list-inline">
                         <li ng-repeat="tags in challenge.page.list_tags" class="list-inline-item chip orange white-text">{{tags.tag_name}}</li>
+                        <li class="list-inline-item chip light-blue white-text">{{challenge.page.domain_name}}</li>
+                        <span ng-if="challenge.isChallengeHost">
+                            <a class="pointer" ng-click="challenge.challengeTagDialog($event)">
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </a>
+                        </span>
                     </ul>
                 </div>
             </div>

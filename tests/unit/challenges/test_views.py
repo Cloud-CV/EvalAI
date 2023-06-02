@@ -77,6 +77,7 @@ class BaseAPITestClass(APITestCase):
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -159,6 +160,8 @@ class GetChallengeTest(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "domain": self.challenge.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge.list_tags.all()[0].id,
                     "tag_name": self.challenge.list_tags.all()[0].tag_name,
@@ -192,6 +195,7 @@ class GetChallengeTest(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {})
+        breakpoint()
         self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -318,6 +322,8 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
@@ -402,6 +408,8 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
@@ -507,6 +515,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
@@ -568,6 +578,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
             "list_tags": [{
                 "id": self.challenge.list_tags.all()[0].id,
                 "tag_name": self.challenge.list_tags.all()[0].tag_name,
@@ -1059,6 +1071,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 2",
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1076,6 +1089,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1094,6 +1108,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1150,6 +1165,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "domain": self.challenge3.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge3.list_tags.all()[0].id,
                     "tag_name": self.challenge3.list_tags.all()[0].tag_name,
@@ -1217,6 +1234,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
@@ -1284,6 +1303,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "domain": self.challenge4.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge4.list_tags.all()[0].id,
                     "tag_name": self.challenge4.list_tags.all()[0].tag_name,
@@ -1351,6 +1372,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "domain": self.challenge4.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge4.list_tags.all()[0].id,
                     "tag_name": self.challenge4.list_tags.all()[0].tag_name,
@@ -1402,6 +1425,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "domain": self.challenge3.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge3.list_tags.all()[0].id,
                     "tag_name": self.challenge3.list_tags.all()[0].tag_name,
@@ -1453,6 +1478,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
@@ -1573,6 +1600,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "domain": self.challenge3.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge3.list_tags.all()[0].id,
                     "tag_name": self.challenge3.list_tags.all()[0].tag_name,
@@ -1633,6 +1662,7 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -1649,6 +1679,7 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1716,6 +1747,8 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge3.creator.created_by.username,
                 "team_url": self.challenge3.creator.team_url,
             },
+            "domain": self.challenge3.domain,
+            "domain_name": 'Computer Vision',
             "list_tags": [{
                 "id": self.challenge3.list_tags.all()[0].id,
                 "tag_name": self.challenge3.list_tags.all()[0].tag_name,
@@ -1791,6 +1824,8 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge4.creator.created_by.username,
                 "team_url": self.challenge4.creator.team_url,
             },
+            "domain": self.challenge4.domain,
+            "domain_name": 'Computer Vision',
             "list_tags": [{
                 "id": self.challenge4.list_tags.all()[0].id,
                 "tag_name": self.challenge4.list_tags.all()[0].tag_name,
@@ -1859,6 +1894,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
+            domain = 'CV',
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1876,6 +1912,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for some test challenge",
             submission_guidelines="Submission guidelines for some test challenge",
             creator=self.challenge_host_team2,
+            domain = 'CV',
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1926,6 +1963,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
@@ -1989,6 +2028,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
@@ -2052,6 +2093,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,
@@ -2113,6 +2156,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "domain": self.challenge.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge.list_tags.all()[0].id,
                     "tag_name": self.challenge.list_tags.all()[0].tag_name,
@@ -2164,6 +2209,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge2.list_tags.all()[0].id,
                     "tag_name": self.challenge2.list_tags.all()[0].tag_name,

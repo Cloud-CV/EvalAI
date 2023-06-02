@@ -60,7 +60,7 @@ a.active-challenge {
 }
 
 .ev-challenge-card {
-    height: 425px;
+    min-height: 460px;
 }
 
 .ev-dashboard-card {
@@ -336,4 +336,31 @@ md-select .md-select-value span:first-child:after {
 
 .worker-actions-row {
     margin-bottom: 10px;
+}
+
+.chip {
+    display: inline-block;
+    height: 26px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 26px;
+    padding: 0 12px;
+    border-radius: 16px;
+    background-color: #e4e4e4;
+    margin-bottom: 5px;
+    margin-right: 5px;
+  }
+
+  @media (max-width: 968px) and (min-width: 601px) {
+    .chip {
+        display: inline-block;
+        height: 20px;
+        font-size: 10px;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 0.6);
+        line-height: 20px;
+        padding: 0 6px;
+        border-radius: 16px;
+      }
 }
