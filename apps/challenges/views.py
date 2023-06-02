@@ -110,7 +110,6 @@ from .models import (
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
-    ChallengeTagsSerializer,
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
     ChallengePhaseSerializer,
@@ -2496,13 +2495,13 @@ def star_challenge(request, challenge_pk):
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user.pk, challenge=challenge
+                user=request.user.pk , challenge=challenge
             )
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
+            return Response(response_data , status=status.HTTP_200_OK)
         except StarChallenge.DoesNotExist:
             serializer = StarChallengeSerializer(
                 data=request.data,
@@ -3500,7 +3499,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     leaderboard_ids = {}
                     for data in yaml_file_data_of_leaderboard:
                         serializer = LeaderboardSerializer(
-                            data=data, context={"config_id": data["id"]}
+                            data=data , context={"config_id": data["id"]}
                         )
                         if serializer.is_valid():
                             serializer.save()
@@ -3772,7 +3771,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 for data in yaml_file_data_of_leaderboard:
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__challenge__pk=challenge.pk,
-                        leaderboard__config_id=data["config_id"],
+                        leaderboard__config_id=data["config_id"] ,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()

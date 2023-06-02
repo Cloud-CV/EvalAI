@@ -2751,12 +2751,13 @@
         };
 
         vm.editChallengeTag = function(editChallengeTagDomainForm) {
+            var new_tags;
             if (editChallengeTagDomainForm) {
                 if(typeof vm.tags == 'string') {
-                    var new_tags = vm.tags.split(",");
+                    new_tags = vm.tags.split(",");
                 }
                 else {
-                    var new_tags = [];
+                    new_tags = [];
                     for (var i = 0; i < vm.page.list_tags.length; i++) {
                         new_tags[i] = vm.page.list_tags[i].tag_name;
                     }

@@ -516,7 +516,7 @@ def validate_challenge_config_util(
                 )
                 error_messages.append(message)
 
-        #Verify Domain name is correct
+        # Verify Domain name is correct
         if "domain" in yaml_file_data:
             domain_value = yaml_file_data["domain"]
             if domain_value not in ["CV", "NLP", "RL"]:
@@ -525,7 +525,6 @@ def validate_challenge_config_util(
                     " then try again!"
                 )
                 error_messages.append(message)
-
 
         # To ensure that the schema for submission meta attributes is valid
         if data.get("submission_meta_attributes"):
