@@ -772,6 +772,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 1",
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
+            domain="CV",
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -784,7 +785,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper",challenge=self.challenge1)
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge1)
         self.challenge1.list_tags.add(self.tags[0])
 
         self.challenge1.save()

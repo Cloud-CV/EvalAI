@@ -98,7 +98,7 @@ class BaseAPITestClass(APITestCase):
             permissions=ChallengeHost.ADMIN,
         )
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper",challenge=self.challenge)
+        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge)
         self.challenge.list_tags.add(self.tags[0])
 
         self.participant_team = ParticipantTeam.objects.create(
@@ -1558,6 +1558,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 2",
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
+            domain="CV",
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1575,6 +1576,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
+            domain="CV",
             published=True,
             is_registration_open=True,
             enable_forum=True,
