@@ -2575,12 +2575,6 @@
             vm.page.max_submissions_per_month = phase.max_submissions_per_month;
             vm.phaseStartDate = moment(phase.start_date);
             vm.phaseEndDate = moment(phase.end_date);
-            var offset = new Date(vm.phaseStartDate).getTimezoneOffset();
-            vm.phasesstart_zone = moment.tz.zone(timezone).abbr(offset);
-            vm.gmt_start_zone = gmtZone;
-            offset = new Date(vm.phaseEndDate).getTimezoneOffset();
-            vm.phasesend_zone = moment.tz.zone(timezone).abbr(offset);
-            vm.gmt_end_zone = gmtZone;
             vm.testAnnotationFile = null;
             vm.sanityCheckPass = true;
             vm.sanityCheck = "";

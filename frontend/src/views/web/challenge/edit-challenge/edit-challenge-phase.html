@@ -37,7 +37,7 @@
                         <div class="col s12 m3 l3 half-width">
                             <div class="input-field align-left">
                                 <span class="text-med-black w-400 fs-16">Start date and time</span>
-                                <input id="start_date" name="start_date" format="MM-DD-YYYY hh:mm a [{{challenge.phasesstart_zone}}({{challenge.gmt_start_zone}})]" locale="en"
+                                <input id="start_date" name="start_date" format="MM-DD-YYYY hh:mm a" locale="en"
                                     value="{{challenge.phaseStartDate}}" ng-model="challenge.phaseStartDate"
                                     start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
                                     moment-picker="challenge.phaseStartDate" start-date="challenge.phaseStartDate"
@@ -48,7 +48,7 @@
                         <div class="col s12 m3 l3">
                             <div class="input-field align-left">
                                 <span class="text-med-black w-400 fs-16">End date and time</span>
-                                <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a [{{challenge.phasesend_zone}}({{challenge.gmt_end_zone}})]" locale="en"
+                                <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a" locale="en"
                                     value="{{challenge.phaseEndDate}}" ng-model="challenge.phaseEndDate"
                                     start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
                                     moment-picker="challenge.phaseEndDate" min-date="challenge.phaseStartDate" required>
