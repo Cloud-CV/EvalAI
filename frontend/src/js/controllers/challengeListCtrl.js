@@ -11,6 +11,9 @@
     function ChallengeListCtrl(utilities, $window, moment) {
         var vm = this;
         var userKey = utilities.getData('userKey');
+        var gmtOffset = moment().utcOffset();
+        var gmtSign = gmtOffset >= 0 ? '+' : '-';
+        var gmtZone = 'GMT' + gmtSign + Math.abs(gmtOffset / 60);
 
         utilities.showLoader();
         utilities.hideButton();
@@ -56,8 +59,10 @@
                     }
                     var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
                     vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    vm.currentList[i].gmt_start_zone = gmtZone;
                     offset = new Date(vm.currentList[i].end_date).getTimezoneOffset();
                     vm.currentList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+                    vm.currentList[i].gmt_end_zone = gmtZone;
 
                     var id = vm.currentList[i].id;
                     vm.challengeCreator[id] = vm.currentList[i].creator.id;
@@ -93,8 +98,10 @@
                             
                             var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
                             vm.upcomingList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                            vm.upcomingList[i].gmt_start_zone = gmtZone;
                             offset = new Date(vm.upcomingList[i].end_date).getTimezoneOffset();
                             vm.upcomingList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+                            vm.upcomingList[i].gmt_end_zone = gmtZone;
 
                             
                             var id = vm.upcomingList[i].id;
@@ -131,8 +138,10 @@
 
                                     var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
                                     vm.pastList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                                    vm.pastList[i].gmt_start_zone = gmtZone;
                                     offset = new Date(vm.pastList[i].end_date).getTimezoneOffset();
                                     vm.pastList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+                                    vm.pastList[i].gmt_end_zone = gmtZone;
 
                                     var id = vm.pastList[i].id;
                                     vm.challengeCreator[id] = vm.pastList[i].creator.id;
