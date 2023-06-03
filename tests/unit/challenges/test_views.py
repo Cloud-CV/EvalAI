@@ -199,7 +199,6 @@ class GetChallengeTest(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {})
-        breakpoint()
         self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
