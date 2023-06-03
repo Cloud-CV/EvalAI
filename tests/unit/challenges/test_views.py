@@ -4986,7 +4986,7 @@ class ChallengeHasFinishedSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data,
-            {"message": "All challenge phases have finished submissions."}
+            {"message": "Approval request sent!"}
         )
 
     def test_challenge_has_unfinished_submissions(self):
