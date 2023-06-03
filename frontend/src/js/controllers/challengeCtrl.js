@@ -97,6 +97,10 @@
         vm.queueName = null;
 
         vm.workerLogs = [];
+        var timezone = moment.tz.guess();
+        var gmtOffset = moment().utcOffset();
+        var gmtSign = gmtOffset >= 0 ? '+' : '-';
+        var gmtZone = 'GMT' + gmtSign + Math.abs(gmtOffset / 60);
 
         // get from backend
         vm.selectedWorkerResources = [512, 1024];
@@ -316,6 +320,12 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.page = details;
+                var offset = new Date(vm.page.start_date).getTimezoneOffset();
+                vm.page.start_zone = moment.tz.zone(timezone).abbr(offset);
+                vm.page.gmt_start_zone = gmtZone;
+                offset = new Date(vm.page.end_date).getTimezoneOffset();
+                vm.page.end_zone = moment.tz.zone(timezone).abbr(offset);
+                vm.page.gmt_end_zone = gmtZone;
                 vm.isActive = details.is_active;
                 vm.isPublished = vm.page.published;
                 vm.isForumEnabled = details.enable_forum;
@@ -676,7 +686,6 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
-                var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
                         vm.phases.results[i].showPrivate = true;
@@ -685,8 +694,10 @@
                 for (var j=0; j<vm.phases.results.length; j++){
                     var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
                     vm.phases.results[j].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    vm.phases.results[j].gmt_start_zone = gmtZone;
                     offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
                     vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
+                    vm.phases.results[j].gmt_end_zone = gmtZone;
                 }
 
                 for(var k=0; k<details.count; k++){
@@ -2563,6 +2574,12 @@
             vm.page.max_submissions_per_month = phase.max_submissions_per_month;
             vm.phaseStartDate = moment(phase.start_date);
             vm.phaseEndDate = moment(phase.end_date);
+            var offset = new Date(vm.phaseStartDate).getTimezoneOffset();
+            vm.phasesstart_zone = moment.tz.zone(timezone).abbr(offset);
+            vm.gmt_start_zone = gmtZone;
+            offset = new Date(vm.phaseEndDate).getTimezoneOffset();
+            vm.phasesend_zone = moment.tz.zone(timezone).abbr(offset);
+            vm.gmt_end_zone = gmtZone;
             vm.testAnnotationFile = null;
             vm.sanityCheckPass = true;
             vm.sanityCheck = "";

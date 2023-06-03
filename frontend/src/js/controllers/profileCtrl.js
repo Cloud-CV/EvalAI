@@ -85,6 +85,10 @@
                 let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
                 var timezone = moment.tz.guess();
                 vm.expiresAtTimezone = moment.tz.zone(timezone).abbr(expiresAtOffset);
+                var gmtOffset = moment().utcOffset();
+                var gmtSign = gmtOffset >= 0 ? '+' : '-';
+                var gmtZone = 'GMT' + gmtSign + Math.abs(gmtOffset / 60);
+                vm.expiresAtGMT = '(' + gmtZone + ')';
             },
             onError: function(response) {
                 var details = response.data;
