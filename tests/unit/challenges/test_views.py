@@ -1763,7 +1763,7 @@ class GetChallengeByPk(BaseAPITestClass):
 
         self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge3)
         self.challenge3.list_tags.add(self.tags[0])
-        self.tags2 = ChallengeTags.objects.get_or_create(tag_name="Paper" , challenge=self.challenge4)
+        self.tags2 = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge4)
         self.challenge4.list_tags.add(self.tags2[0])
 
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):

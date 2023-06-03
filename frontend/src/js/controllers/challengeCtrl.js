@@ -98,8 +98,6 @@
 
         vm.workerLogs = [];
 
-        vm.isStaticCodeUploadChallenge = false;
-        
         // get from backend
         vm.selectedWorkerResources = [512, 1024];
 
@@ -326,7 +324,6 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
-                vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
 
                 vm.queueName = details.queue;
@@ -354,7 +351,9 @@
                                 }
                             }
 
-                            vm.isChallengeHost = details.is_challenge_host;
+                            if (details.is_challenge_host) {
+                                vm.isChallengeHost = true;
+                            }
 
                             if (!vm.isParticipated) {
 
@@ -1076,6 +1075,11 @@
 
             utilities.sendRequest(parameters);
         };
+
+        if (vm.phaseSplitId) {
+            vm.getLeaderboard(vm.phaseSplitId);
+        }
+
         
         vm.showMetaAttributesDialog = function(ev, attributes){
             if (attributes != false){
@@ -1937,9 +1941,6 @@
             'label': 'Stderr File',
             'id': 'stderr_file'
         },{
-            'label': 'Environment Log File',
-            'id': 'environment_log_file'
-        },{
             'label': 'Submitted At',
             'id': 'created_at'
         },{
@@ -2734,7 +2735,7 @@
             }
         };
 
-        vm.challengeTagDialog = function(ev) {
+        vm.editchallengeTagDialog = function(ev) {
             vm.tags = [];
             for (var i = 0; i < vm.page.list_tags.length; i++) {
                 vm.tags[i] = vm.page.list_tags[i].tag_name;
@@ -2751,49 +2752,43 @@
 
         vm.editChallengeTag = function(editChallengeTagDomainForm) {
             var new_tags;
-            if (editChallengeTagDomainForm) {
-                if(typeof vm.tags == 'string') {
-                    new_tags = vm.tags.split(",");
-                }
-                else {
-                    new_tags = [];
-                    for (var i = 0; i < vm.page.list_tags.length; i++) {
-                        new_tags[i] = vm.page.list_tags[i].tag_name;
-                    }
-                }
-                if(new_tags.length > 4) {
-                    $rootScope.notify("error", "Maximum 4 tags are allowed!");
-                }
-                else {
-                    parameters.url = "challenges/challenge/" + vm.challengeId + "/update_challenge_tags_and_domain/";
-                    parameters.method = 'PATCH';
-                    parameters.data = {
-                        "list_tags": new_tags,
-                        "domain": vm.domain
-                    };
-                    parameters.callback = {
-                        onSuccess: function(response) {
-                            var status = response.status;
-                            utilities.hideLoader();
-                            if (status === 200) {
-                                $rootScope.notify("success", "The challenge tags and domain is successfully updated!");
-                                $state.reload();
-                                $mdDialog.hide();
-                            }
-                        },
-                        onError: function(response) {
-                            utilities.hideLoader();
-                            $mdDialog.hide();
-                            var error = response.data;
-                            $rootScope.notify("error", error);
-                        }
-                    };
-                    utilities.showLoader();
-                    utilities.sendRequest(parameters);
-                }
-            } else {
+            if (!editChallengeTagDomainForm) {
                 $mdDialog.hide();
+                return;
             }
+            new_tags = typeof vm.tags === 'string'
+                ? vm.tags.split(",").map(item => item.trim())
+                : vm.page.list_tags.map(tag => tag.tag_name);
+            
+            if (typeof vm.tags === 'string' && (new_tags.length > 4 || new_tags.some(tag => tag.length > 15))) {
+                $rootScope.notify("error", "Invalid tags! Maximum 4 tags are allowed, and each tag must be 15 characters or less.");
+                return;
+            }
+            parameters.url = "challenges/challenge/" + vm.challengeId + "/update_challenge_tags_and_domain/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "list_tags": new_tags,
+                "domain": vm.domain
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    utilities.hideLoader();
+                    if (status === 200) {
+                        $rootScope.notify("success", "The challenge tags and domain is successfully updated!");
+                        $state.reload();
+                        $mdDialog.hide();
+                    }
+                },
+                onError: function(response) {
+                    utilities.hideLoader();
+                    $mdDialog.hide();
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.showLoader();
+            utilities.sendRequest(parameters);
         };
 
         vm.domain_choices = function() {

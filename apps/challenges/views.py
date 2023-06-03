@@ -1434,7 +1434,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
                 # Add new tags to the challenge
                 for tag_name in new_tags:
-                    tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name,challenge=challenge)
+                    tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
                     challenge.list_tags.add(tag_obj)
             else:
                 # Remove all existing tags if no tags are defined in the YAML file
@@ -2461,7 +2461,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    
+
 
 @api_view(["PATCH"])
 @throttle_classes([UserRateThrottle])
@@ -2474,12 +2474,12 @@ def update_challenge_tags_and_domain(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
 
     if request.method == "PATCH":
-        new_tags=request.data.get("list_tags", [])
-        domain_value=request.data.get("domain")
+        new_tags = request.data.get("list_tags", [])
+        domain_value = request.data.get("domain")
         challenge.list_tags.set(ChallengeTags.objects.filter(tag_name__in=new_tags))
         # Add new tags to the challenge
         for tag_name in new_tags:
-            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name,challenge=challenge)
+            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
             challenge.list_tags.add(tag_obj)
         # Verifying Domain name
         valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
@@ -2491,7 +2491,7 @@ def update_challenge_tags_and_domain(request, challenge_pk):
             message = f"Invalid domain value:{domain_value}"
             response_data = {"error": message}
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-        
+
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
@@ -2506,7 +2506,7 @@ def get_domain_choices(request):
         return Response(domain_choices, status.HTTP_200_OK)
     else:
         response_data = {"error": "Method not allowed"}
-        return Response(response_data , status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(["GET", "POST"])
@@ -2522,13 +2522,13 @@ def star_challenge(request, challenge_pk):
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user.pk , challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
-            return Response(response_data , status=status.HTTP_200_OK)
+            return Response(response_data, status=status.HTTP_200_OK)
         except StarChallenge.DoesNotExist:
             serializer = StarChallengeSerializer(
                 data=request.data,
@@ -3499,7 +3499,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
                         # Add new tags to the challenge
                         for tag_name in new_tags:
-                            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name,challenge=challenge)
+                            tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
                             challenge.list_tags.add(tag_obj)
                     else:
                         # Remove all existing tags if no tags are defined in the YAML file
@@ -3773,7 +3773,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
                     # Add new tags to the challenge
                     for tag_name in new_tags:
-                        tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name,challenge=challenge)
+                        tag_obj, _ = ChallengeTags.objects.get_or_create(tag_name=tag_name, challenge=challenge)
                         challenge.list_tags.add(tag_obj)
                 else:
                     # Remove all existing tags if no tags are defined in the YAML file
@@ -3799,7 +3799,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
                 for data in yaml_file_data_of_leaderboard:
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__challenge__pk=challenge.pk, 
+                        challenge_phase__challenge__pk=challenge.pk,
                         leaderboard__config_id=data["config_id"],
                     )
                     if challenge_phase_split_qs:
@@ -3825,7 +3825,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
                 for data, challenge_test_annotation_file in zip(
-                    challenge_phases_data , files["challenge_test_annotation_files"]
+                    challenge_phases_data, files["challenge_test_annotation_files"]
                 ):
 
                     # Override the submission_meta_attributes when they are missing
