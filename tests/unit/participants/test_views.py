@@ -841,6 +841,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "created_by": self.challenge_host_team.created_by.username,
                             "team_url": self.challenge_host_team.team_url,
                         },
+                        "domain": self.challenge1.domain,
+                        "domain_name": 'Computer Vision',
                         "list_tags": [{
                             "id": self.challenge1.list_tags.all()[0].id,
                             "tag_name": self.challenge1.list_tags.all()[0].tag_name,
@@ -923,6 +925,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "created_by": self.challenge_host_team.created_by.username,
                     "team_url": self.challenge_host_team.team_url,
                 },
+                "domain": self.challenge1.domain,
+                "domain_name": 'Computer Vision',
                 "list_tags": [{
                     "id": self.challenge1.list_tags.all()[0].id,
                     "tag_name": self.challenge1.list_tags.all()[0].tag_name,
