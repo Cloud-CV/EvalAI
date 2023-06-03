@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from challenges.models import ChallengePhase, LeaderboardData
+from hosts.models import ChallengeHost
 from participants.models import Participant, ParticipantTeam
 
 from .models import Submission
@@ -15,6 +16,11 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get("context")
+        self.created_by = None
+        if context:
+            created_by = context.get("request").user
+            self.created_by = created_by
+
         if context and context.get("request").method == "POST":
             created_by = context.get("request").user
             kwargs["data"]["created_by"] = created_by.pk
@@ -44,6 +50,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "submission_input_file",
             "stdout_file",
             "stderr_file",
+            "environment_log_file",
             "started_at",
             "completed_at",
             "submitted_at",
@@ -61,6 +68,16 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "submission_metadata",
             "is_verified_by_host",
         )
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        challenge_host_team = ChallengePhase.objects.get(pk=ret["challenge_phase"]).challenge.creator
+        challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
+            "user__pk", flat=True
+        )
+        if self.created_by and self.created_by.pk not in challenge_hosts_pk:
+            ret.pop("environment_log_file", None)
+        return ret
 
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
@@ -122,6 +139,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "submission_input_file",
             "stdout_file",
             "stderr_file",
+            "environment_log_file",
             "submission_result_file",
             "submission_metadata_file",
             "participant_team_members_email_ids",
