@@ -362,7 +362,6 @@
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
-                vm.allowResumingSubmissions = details.allow_resuming_submissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
 
                 vm.queueName = details.queue;
