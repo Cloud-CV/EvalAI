@@ -2631,16 +2631,6 @@
                     onSuccess: function(response) {
                         var details = response.data;
                         vm.phases = details;
-                        if (vm.phases.results && vm.phases.results.length > 0) { 
-                            for (var j = 0; j < vm.phases.results.length; j++) {
-                                var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
-                                vm.phases.results[j].start_zone = moment.tz.zone(timezone).abbr(offset);
-                                vm.phases.results[j].gmt_start_zone = gmtZone;
-                                offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
-                                vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
-                                vm.phases.results[j].gmt_end_zone = gmtZone;
-                            }
-                        }
                         utilities.hideLoader();
                     },
                     onError: function(response) {
