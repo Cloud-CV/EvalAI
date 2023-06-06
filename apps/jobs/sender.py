@@ -16,7 +16,7 @@ from monitoring.statsd.metrics import NUM_SUBMISSIONS_IN_QUEUE, increment_statsd
 logger = logging.getLogger(__name__)
 
 
-def get_or_create_sqs_queue(queue_name):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     """
     Args:
         queue_name: Name of the SQS Queue
@@ -34,12 +34,20 @@ def get_or_create_sqs_queue(queue_name):
         # Use default queue name in dev and test environment
         queue_name = "evalai_submission_queue"
     else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+        if challenge and challenge.use_host_sqs:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=challenge.aws_region,
+                aws_secret_access_key=challenge.aws_secret_access_key,
+                aws_access_key_id=challenge.aws_access_key_id,
+            )
+        else:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            )
 
     if queue_name == "":
         queue_name = "evalai_submission_queue"
@@ -84,7 +92,7 @@ def publish_submission_message(message):
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
     is_remote = challenge.remote_evaluation
-    queue = get_or_create_sqs_queue(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     # increase counter for submission pushed into queue
     submission_metric_tags = [
         "queue_name:%s" % queue_name,
