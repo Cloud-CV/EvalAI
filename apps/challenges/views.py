@@ -531,70 +531,46 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     Returns the list of all challenges
     """
     # make sure that a valid url is requested.
-    try:
-        if challenge_time.lower() not in ("all", "future", "past", "present"):
-            response_data = {"error": "Wrong url pattern!"}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-        if challenge_approved.lower() not in ("all", "approved", "unapproved"):
-            response_data = {"error": "Wrong challenge approval status!"}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-        if challenge_published.lower() not in ("all", "public", "private"):
-            response_data = {"error": "Wrong challenge published status!"}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-        q_params = {}
-        if challenge_approved.lower() != "all":
-            q_params["approved_by_admin"] = (challenge_approved.lower() == "approved")
-
-        if challenge_published.lower() != "all":
-            q_params["published"] = (challenge_published.lower() == "public")
-
-        if challenge_time.lower() == "past":
-            q_params["end_date__lt"] = timezone.now()
-
-        elif challenge_time.lower() == "present":
-            q_params["start_date__lt"] = timezone.now()
-            q_params["end_date__gt"] = timezone.now()
-
-        elif challenge_time.lower() == "future":
-            q_params["start_date__gt"] = timezone.now()
-        # for `all` we dont need any condition in `q_params`
-
-        # don't return disabled challenges
-        q_params["is_disabled"] = False
-
-    except Exception as e:
-        response_data = {"error": f"Error in challenge parameters if conditions: {e}"}
+    if challenge_time.lower() not in ("all", "future", "past", "present"):
+        response_data = {"error": "Wrong url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        challenge = Challenge.objects.filter(**q_params).order_by("-pk")
-    except Exception as e:
-        response_data = {"error": f"Error in fetching challenges from backend: {e}"}
+    if challenge_approved.lower() not in ("all", "approved", "unapproved"):
+        response_data = {"error": "Wrong challenge approval status!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        paginator, result_page = paginated_queryset(challenge, request)
-    except Exception as e:
-        response_data = {"error": f"Error in creating paginated queryset: {e}"}
+    if challenge_published.lower() not in ("all", "public", "private"):
+        response_data = {"error": "Wrong challenge published status!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        serializer = ChallengeSerializer(
-            result_page, many=True, context={"request": request}
-        )
-        response_data = serializer.data
-    except Exception as e:
-        response_data = {"error": f"Error in creating challenge serializer with the given results: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    q_params = {}
+    if challenge_approved.lower() != "all":
+        q_params["approved_by_admin"] = (challenge_approved.lower() == "approved")
 
-    try:
-        return paginator.get_paginated_response(response_data)
-    except Exception as e:
-        response_data = {"error": f"Error in getting paginated response: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if challenge_published.lower() != "all":
+        q_params["published"] = (challenge_published.lower() == "public")
+
+    if challenge_time.lower() == "past":
+        q_params["end_date__lt"] = timezone.now()
+
+    elif challenge_time.lower() == "present":
+        q_params["start_date__lt"] = timezone.now()
+        q_params["end_date__gt"] = timezone.now()
+
+    elif challenge_time.lower() == "future":
+        q_params["start_date__gt"] = timezone.now()
+    # for `all` we dont need any condition in `q_params`
+
+    # don't return disabled challenges
+    q_params["is_disabled"] = False
+
+    challenge = Challenge.objects.filter(**q_params).order_by("-pk")
+    paginator, result_page = paginated_queryset(challenge, request)
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={"request": request}
+    )
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
 
 
 @api_view(["GET"])
