@@ -28,13 +28,13 @@
                                 <i class="fa fa-trash red-text fs-16" aria-hidden="true"></i>
                             </a>
                         </span>
+                        <br>
+                        <span ng-if="challenge.isChallengeHost && !challenge.approved_by_admin" class="fs-16 w-300">
+                            <button class="waves-effect waves-dark btn ev-btn-green fs-10 w-300" ng-click="challenge.sendApprovalRequest()">
+                                <strong class="fs-10">Send Approval Request</strong>
+                            </button>
+                        </span>
                     </h4>
-                    <span  ng-if="challenge.isChallengeHost && !challenge.approved_by_admin" class="fs-16 w-300">
-                        <button class="waves-effect waves-dark btn ev-btn-green fs-10 w-300" ng-click="challenge.sendApprovalRequest()">
-                            <strong class="fs-10">Send Approval Request</strong>
-                        </button>
-                    </span>
-                    <br>
                     <span ng-if="challenge.page.creator.team_url != ''" class="fs-16 w-300"><strong
                             class="text-light-black">Organized
                             by:</strong><a class="orange-text" href="{{challenge.page.creator.team_url}}"
