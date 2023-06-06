@@ -19,7 +19,6 @@
         var gmtMinutes = Math.abs(gmtOffset % 60);
         var gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
 
-
         vm.challengeList = [];
         vm.challengeCreator = {};
 

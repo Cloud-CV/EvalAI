@@ -259,6 +259,7 @@ describe('Unit tests for challenge list controller', function () {
                     expect(vm.pastList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
+                
                 expect(vm.pastList[i].time_zone).toEqual(zone.abbr(offset));
                 expect(vm.challengeCreator[vm.pastList[i].id]).toEqual(vm.pastList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
