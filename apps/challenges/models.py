@@ -128,6 +128,7 @@ class Challenge(TimeStampedModel):
         max_length=50, default="us-east-1", null=True, blank=True
     )
     use_host_credentials = models.BooleanField(default=False)
+    use_host_sqs = models.BooleanField(default=False)
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
