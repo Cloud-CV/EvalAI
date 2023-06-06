@@ -531,16 +531,21 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     Returns the list of all challenges
     """
     # make sure that a valid url is requested.
-    if challenge_time.lower() not in ("all", "future", "past", "present"):
-        response_data = {"error": "Wrong url pattern!"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    try:
+        if challenge_time.lower() not in ("all", "future", "past", "present"):
+            response_data = {"error": "Wrong url pattern!"}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+  
+        if challenge_approved.lower() not in ("all", "approved", "unapproved"):
+            response_data = {"error": "Wrong challenge approval status!"}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if challenge_approved.lower() not in ("all", "approved", "unapproved"):
-        response_data = {"error": "Wrong challenge approval status!"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    if challenge_published.lower() not in ("all", "public", "private"):
-        response_data = {"error": "Wrong challenge published status!"}
+        if challenge_published.lower() not in ("all", "public", "private"):
+            response_data = {"error": "Wrong challenge published status!"}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+    except Except as e:
+        response_data = {"error": f"Error in challenge parameters if conditions: {e}"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     q_params = {}
@@ -580,11 +585,10 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
         serializer = ChallengeSerializer(
             result_page, many=True, context={"request": request}
         )
+        response_data = serializer.data
     except Exception as e:
         response_data = {"error": f"Error in creating challenge serializer with the given results: {e}"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    response_data = serializer.data
 
     try:
         return paginator.get_paginated_response(response_data)
