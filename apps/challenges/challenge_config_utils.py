@@ -291,6 +291,10 @@ error_messages_dicta = {
     "is_submission_public_restricted": "ERROR: is_submission_public can't be 'True' for challenge phase '{}' with is_restricted_to_select_one_submission 'True'. Please change is_submission_public to 'False' and try again!",
     "missing_option_in_submission_meta_attribute": "ERROR: Please include at least one option in the attribute for challenge phase {}",
     "missing_fields_in_submission_meta_attribute": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
+    "missing_date": "ERROR: Please add the start_date and end_date.",
+    "start_date_greater_than_end_date": "ERROR: Start date cannot be greater than end date.",
+    "missing_dates_challenge_phase": "ERROR: Please add the start_date and end_date in challenge phase {}.",
+    "start_date_greater_than_end_date_challenge_phase": "ERROR: Start date cannot be greater than end date in challenge phase {}.",
 }
 
 
@@ -484,11 +488,23 @@ class ValidateChallengeConfigUtil:
                     "challenge_evaluation_script_file"
                 ] = self.challenge_evaluation_script_file
             else:
-                message = "ERROR: No evaluation script is present in the zip file. Please add it and then try again!"
+                message = self.error_messages_dict.get("missing_evaluation_script")
                 self.error_messages.append(message)
         else:
             message = self.error_messages_dict.get("missing_evaluation_script")
             self.error_messages.append(message)
+
+    def validate_dates(self):
+        start_date = self.yaml_file_data.get("start_date")
+        end_date = self.yaml_file_data.get("end_date")
+
+        if not start_date or not end_date:
+            message = self.error_messages_dict.get("missing_date")
+            self.error_messages.append(message)
+        if start_date and end_date:
+            if start_date > end_date:
+                message = self.error_messages_dict.get("start_date_greater_than_end_date")
+                self.error_messages.append(message)
 
     def validate_serializer(self):
         if not len(self.error_messages):
@@ -647,6 +663,16 @@ class ValidateChallengeConfigUtil:
                     "is_submission_public_restricted"
                 ].format(data["name"])
                 self.error_messages.append(message)
+
+            start_date = data.get("start_date")
+            end_date = data.get("end_date")
+            if not start_date or not end_date:
+                message = self.error_messages_dict.get("missing_dates_challenge_phase").format(data.get("id"))
+                self.error_messages.append(message)
+            if start_date and end_date:
+                if start_date > end_date:
+                    message = self.error_messages_dict.get("start_date_greater_than_end_date_challenge_phase").format(data.get("id"))
+                    self.error_messages.append(message)
 
             # To ensure that the schema for submission meta attributes is valid
             if data.get("submission_meta_attributes"):
@@ -911,6 +937,8 @@ def validate_challenge_config_util(
 
     # Validate evaluation script
     val_config_util.validate_evaluation_script_file()
+
+    val_config_util.validate_dates()
 
     val_config_util.validate_serializer()
 
