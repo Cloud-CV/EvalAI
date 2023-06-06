@@ -89,8 +89,7 @@
                 var gmtSign = gmtOffset >= 0 ? '+' : '-';
                 var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
                 var gmtMinutes = Math.abs(gmtOffset % 60);
-                var gmtZone = 'GMT' + gmtSign + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
-                vm.expiresAtGMT = ' (' + gmtZone + ')';
+                 vm.gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
             },
             onError: function(response) {
                 var details = response.data;

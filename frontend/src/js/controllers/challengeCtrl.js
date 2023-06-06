@@ -102,7 +102,7 @@
         var gmtSign = gmtOffset >= 0 ? '+' : '-';
         var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
         var gmtMinutes = Math.abs(gmtOffset % 60);
-        var gmtZone = 'GMT' + gmtSign + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
+        var gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
 
         vm.isStaticCodeUploadChallenge = false;
         
@@ -325,11 +325,8 @@
                 var details = response.data;
                 vm.page = details;
                 var offset = new Date(vm.page.start_date).getTimezoneOffset();
-                vm.page.start_zone = moment.tz.zone(timezone).abbr(offset);
-                vm.page.gmt_start_zone = gmtZone;
-                offset = new Date(vm.page.end_date).getTimezoneOffset();
-                vm.page.end_zone = moment.tz.zone(timezone).abbr(offset);
-                vm.page.gmt_end_zone = gmtZone;
+                vm.page.time_zone = moment.tz.zone(timezone).abbr(offset);
+                vm.page.gmt_zone = gmtZone;
                 vm.isActive = details.is_active;
                 vm.isPublished = vm.page.published;
                 vm.isForumEnabled = details.enable_forum;
@@ -696,11 +693,8 @@
                 }
                 for (var j=0; j<vm.phases.results.length; j++){
                     var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
-                    vm.phases.results[j].start_zone = moment.tz.zone(timezone).abbr(offset);
-                    vm.phases.results[j].gmt_start_zone = gmtZone;
-                    offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
-                    vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
-                    vm.phases.results[j].gmt_end_zone = gmtZone;
+                    vm.phases.results[j].time_zone = moment.tz.zone(timezone).abbr(offset);
+                    vm.phases.results[j].gmt_zone = gmtZone;
                 }
 
                 for(var k=0; k<details.count; k++){

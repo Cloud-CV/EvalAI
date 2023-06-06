@@ -15,7 +15,7 @@
         var gmtSign = gmtOffset >= 0 ? '+' : '-';
         var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
         var gmtMinutes = Math.abs(gmtOffset % 60);
-        var gmtZone = 'GMT' + gmtSign + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
+        var gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
 
         utilities.showLoader();
         utilities.hideButton();
@@ -44,11 +44,8 @@
                         }
 
                         var offset = new Date(results[i].start_date).getTimezoneOffset();
-                        results[i].start_zone = moment.tz.zone(timezone).abbr(offset);
-                        results[i].gmt_start_zone = gmtZone;
-                        offset = new Date(results[i].end_date).getTimezoneOffset();
-                        results[i].end_zone = moment.tz.zone(timezone).abbr(offset);
-                        results[i].gmt_end_zone = gmtZone;
+                        results[i].time_zone = moment.tz.zone(timezone).abbr(offset);
+                        results[i].gmt_zone = gmtZone;
 
                         var id = results[i].id;
                         vm.challengeCreator[id] = results[i].creator.id;
