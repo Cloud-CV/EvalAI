@@ -92,11 +92,11 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **codename**: Unique id for each challenge phase. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase. The codename specified here should match with the codename specified in the evaluation script to perfect mapping.
 
-  - **max_submissions_per_day**: A positive integer that tells the maximum number of submissions per day to a challenge phase. ( Optional, Default value is `100000`)
+  - **max_submissions_per_day**: A positive integer that tells the maximum number of submissions per day to a challenge phase. (Optional, Default value is `100000`)
 
-  - **max_submissions_per_month**: A positive integer that tells the maximum number of submissions per month to a challenge phase. ( Optional, Default value is `100000`)
+  - **max_submissions_per_month**: A positive integer that tells the maximum number of submissions per month to a challenge phase. (Optional, Default value is `100000`)
 
-  - **max_submissions**: A positive integer that decides the maximum number of total submissions that can be made to the challenge phase. ( Optional,  Default value is `100000`)
+  - **max_submissions**: A positive integer that decides the maximum number of total submissions that can be made to the challenge phase. (Optional,  Default value is `100000`)
 
   - **default_submission_meta_attributes**: These are the default metadata attributes that will be displayed for all submissions, the metadata attributes are `method_name`, `method_description`, `project_url`, and `publication_url`.
       ```yaml
@@ -132,11 +132,11 @@ Following fields are required (and can be customized) in the [`challenge_config.
     ```
   - **is_restricted_to_select_one_submission**: True/False (indicates whether to restrict a user to select only one submission for the leaderboard. Default is `False`)
   - **is_partial_submission_evaluation_enabled**: True/False (indicates whether partial submission evaluation is enabled. Default is `False`)
-  - **allowed_submission_file_types**: This is a list of file types that are allowed for submission( Optional Default is `.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy`)
+  - **allowed_submission_file_types**: This is a list of file types that are allowed for submission (Optional Default is `.json, .zip, .txt, .tsv, .gz, .csv, .h5, .npy`)
 
 - **dataset_splits**:
 
-  Dataset splits define the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have two splits:
+  Dataset splits define the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have three splits:
 
   1. **train_split** (Allow participants to make a large number of submissions, let them see how they are doing, and let them overfit)
   2. **test_split** (Allow a small number of submissions so that they cannot mimic test_set. Use this split to decide the winners for the challenge)
@@ -160,7 +160,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **dataset_split_id**: Id of `dataset_split`
 
-  - **visibility**: It will set the visibility of the numbers corresponding to metrics for this `challenge_phase_split`. Select one of the following positive integers based on the visibility level you want:( Optional, Default is `3`)
+  - **visibility**: It will set the visibility of the numbers corresponding to metrics for this `challenge_phase_split`. Select one of the following positive integers based on the visibility level you want: (Optional, Default is `3`)
 
 
   | Visibility | Description                                                             |
