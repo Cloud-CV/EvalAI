@@ -1853,9 +1853,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def challenge_has_finished_submissions(request, challenge_pk):
+def request_challenge_approval_by_pk(request, challenge_pk):
     """
     Checks if all challenge phases have finished submissions for the given challenge
+    and send approval request for the challenge
     """
     challenge = get_challenge_model(challenge_pk)
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
@@ -1874,7 +1875,12 @@ def challenge_has_finished_submissions(request, challenge_pk):
         error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    slack_approval_request_response = send_slack_approval_request(challenge_pk)
+    try:
+        slack_approval_request_response = send_slack_approval_request(challenge_pk)
+    except:
+        error_message = "Sorry, there was an error sending approval request. Please try again."
+        return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     if slack_approval_request_response["status"] == "success":
         response_data = {
             "message": "Approval request sent!",
@@ -1885,7 +1891,7 @@ def challenge_has_finished_submissions(request, challenge_pk):
         return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def send_slack_approval_request(challenge_id):
+def send_slack_approval_request(challenge_pk):
     host_url = os.environ.get("HOST_URL", None)
     slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
 
@@ -1894,7 +1900,7 @@ def send_slack_approval_request(challenge_id):
     if not slack_webhook_url:
         raise ValueError("SLACK_WEBHOOK_URL environment variable is missing.")
 
-    message = f"Challenge {challenge_id} has finished submissions and has requested for approval. Approve it here: {host_url}/api/admin/challenges/challenge/{challenge_id}"
+    message = f"Challenge {challenge_pk} has finished submissions and has requested for approval. Approve it here: {host_url}/api/admin/challenges/challenge/{challenge_pk}"
     payload = {
         "text": message
     }
