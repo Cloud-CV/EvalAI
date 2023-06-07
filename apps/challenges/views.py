@@ -1849,6 +1849,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
     },
 )
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1875,41 +1876,48 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        slack_approval_request_response = send_slack_approval_request(challenge_pk)
-    except:  # noqa: E722
-        error_message = "Sorry, there was an error fetching required data for approval requests."
-        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if not settings.DEBUG:
+        try:
+            evalai_api_server = settings.EVALAI_API_SERVER
+            approval_webhook_url = settings.APPROVAL_WEBHOOK_URL
 
-    if slack_approval_request_response["status"] == "success":
-        response_data = {
-            "message": "Approval request sent!",
+            if not evalai_api_server:
+                raise ValueError("EVALAI_API_SERVER environment variable is missing.")
+            if not approval_webhook_url:
+                raise ValueError("APPROVAL_WEBHOOK_URL environment variable is missing.")
+        except:  # noqa: E722
+            error_message = f"Sorry, there was an error fetching required data for approval requests."
+            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+        message = {
+            "text": f"Challenge {challenge_pk} has finished submissions and has requested for approval!",
+            "fields": [
+                {
+                    "title": "Admin URL",
+                    "value": f"{evalai_api_server}/api/admin/challenges/challenge/{challenge_pk}",
+                    "short": False,
+                },
+                {
+                    "title": "Challenge title",
+                    "value": challenge.title,
+                    "short": False,
+                },
+            ],
         }
-        return Response(response_data, status=status.HTTP_200_OK)
+
+        webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
+
+        if webhook_response.content.decode('utf-8') == "ok":
+            response_data = {
+                "message": "Approval request sent!",
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
+            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
-        error_message = "Sorry, there was an error sending approval request. Please try again."
+        error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-def send_slack_approval_request(challenge_pk):
-    host_url = os.environ.get("HOST_URL", None)
-    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
-
-    if not host_url:
-        raise ValueError("HOST_URL environment variable is missing.")
-    if not slack_webhook_url:
-        raise ValueError("SLACK_WEBHOOK_URL environment variable is missing.")
-
-    message = f"Challenge {challenge_pk} has finished submissions and has requested for approval. Approve it here: {host_url}/api/admin/challenges/challenge/{challenge_pk}"
-    payload = {
-        "text": message
-    }
-    response = requests.post(slack_webhook_url, json=payload)
-    if response.status_code == 200:
-        return {"status": "success", "message": "Slack notification sent successfully."}
-    else:
-        return {"status": "error", "message": f" {response.status_code}"}
-
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
