@@ -19,6 +19,8 @@ from rest_framework.pagination import PageNumberPagination
 
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
+from settings.common import SQS_RETENTION_PERIOD
+
 logger = logging.getLogger(__name__)
 
 
@@ -202,7 +204,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        queue = sqs.create_queue(QueueName=queue_name)
+        queue = sqs.create_queue(QueueName=queue_name, Attributes={'MessageRetentionPeriod': SQS_RETENTION_PERIOD})
     return queue
 
 

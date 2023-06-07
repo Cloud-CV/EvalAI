@@ -13,6 +13,8 @@ from challenges.models import Challenge
 from .utils import get_submission_model
 from monitoring.statsd.metrics import NUM_SUBMISSIONS_IN_QUEUE, increment_statsd_counter
 
+from settings.common import SQS_RETENTION_PERIOD
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,7 +62,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             ex.response["Error"]["Code"]
             == "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            queue = sqs.create_queue(QueueName=queue_name)
+            queue = sqs.create_queue(QueueName=queue_name, Attributes={'MessageRetentionPeriod': SQS_RETENTION_PERIOD})
         else:
             logger.exception("Cannot get or create Queue")
     return queue

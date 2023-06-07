@@ -279,7 +279,7 @@ class BaseAPITestClass(APITestCase):
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
-        self.sqs_client.create_queue(QueueName="test_queue")
+        self.sqs_client.create_queue(QueueName="test_queue", Attributes={'MessageRetentionPeriod': SQS_RETENTION_PERIOD})
         get_or_create_sqs_queue("test_queue")
         queue_url = self.sqs_client.get_queue_url(QueueName="test_queue")[
             "QueueUrl"

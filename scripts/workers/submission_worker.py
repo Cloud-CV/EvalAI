@@ -25,6 +25,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from .statsd_utils import increment_and_push_metrics_to_statsd
 
+from settings.common import SQS_RETENTION_PERIOD
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -766,7 +767,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        queue = sqs.create_queue(QueueName=queue_name)
+        queue = sqs.create_queue(QueueName=queue_name, Attributes={'MessageRetentionPeriod': SQS_RETENTION_PERIOD})
     return queue
 
 
