@@ -4972,15 +4972,15 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-class ChallengeHasFinishedSubmissionsTest(BaseAPITestClass):
+class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     def setUp(self):
-        super(ChallengeHasFinishedSubmissionsTest, self).setUp()
+        super(ChallengeSendApprovalRequestTest, self).setUp()
 
     @mock.patch("challenges.views.send_slack_approval_request")
-    def test_challenge_has_finished_submissions(self, mock_send_slack_approval_request):
+    def test_request_challenge_approval_when_challenge_has_finished_submissions(self, mock_send_slack_approval_request):
         mock_send_slack_approval_request.return_value = {"status": "success"}
 
-        url = reverse_lazy("challenges:challenge_has_finished_submissions", kwargs={"challenge_pk": self.challenge.pk})
+        url = reverse_lazy("challenges:request_challenge_approval_by_pk", kwargs={"challenge_pk": self.challenge.pk})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -4989,7 +4989,7 @@ class ChallengeHasFinishedSubmissionsTest(BaseAPITestClass):
             {"message": "Approval request sent!"}
         )
 
-    def test_challenge_has_unfinished_submissions(self):
+    def test_request_challenge_approval_when_challenge_has_unfinished_submissions(self):
         self.user1 = User.objects.create(
             username="otheruser1",
             password="other_secret_password",
@@ -5029,7 +5029,7 @@ class ChallengeHasFinishedSubmissionsTest(BaseAPITestClass):
                 ),
             )
 
-        url = reverse_lazy("challenges:challenge_has_finished_submissions", kwargs={"challenge_pk": self.challenge.pk})
+        url = reverse_lazy("challenges:request_challenge_approval_by_pk", kwargs={"challenge_pk": self.challenge.pk})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
