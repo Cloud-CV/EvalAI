@@ -310,7 +310,7 @@ describe('Unit tests for auth controller', function () {
 
     describe('Unit tests for resetPassword function `auth/password/reset/`', function () {
         var success;
-
+        var inactiveResponse = 'Account is not active. Please contact the administrator.';
         var mailSent = 'mail sent';
 
         beforeEach(function () {
@@ -322,7 +322,7 @@ describe('Unit tests for auth controller', function () {
                         }
                     });
                 } else {
-                    parameters.callback.onError();
+                    parameters.callback.onError({status: 400, data: {details: inactiveResponse}});
                 }
             };
         });
@@ -338,6 +338,7 @@ describe('Unit tests for auth controller', function () {
             success = false;
             vm.resetPassword(true);
             expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual(inactiveResponse);
         });
 
         it('invalid details', function () {
