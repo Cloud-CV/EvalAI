@@ -55,7 +55,7 @@
                     <br>
                     <span class="fs-16 w-300">
                         <strong class="text-light-black">Starts on:</strong>
-                        {{ challenge.page.start_date | date:'medium' }}
+                        {{ challenge.page.start_date | date:'medium' }} {{ challenge.page.time_zone }} ({{ challenge.page.gmt_zone }})
                     </span>
                     &nbsp;
                     <span ng-if="challenge.isChallengeHost" class="fs-16 w-300">
@@ -66,7 +66,7 @@
                     <br>
                     <span class="fs-16 w-300">
                         <strong class="text-light-black">Ends on:</strong>
-                        {{ challenge.page.end_date | date:'medium' }}
+                        {{ challenge.page.end_date | date:'medium' }} {{ challenge.page.time_zone }} ({{ challenge.page.gmt_zone }})
                     </span>
                     &nbsp;
                     <span ng-if="challenge.isChallengeHost">

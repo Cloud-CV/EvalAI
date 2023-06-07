@@ -513,9 +513,7 @@ describe('Unit tests for challenge controller', function () {
 
             for(var i = 0; i < successResponse.results.length; i++){
                 var offset = new Date(successResponse.results[i].start_date).getTimezoneOffset();
-                expect(vm.phases.results[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
-                offset = new Date(successResponse.results[i].end_date).getTimezoneOffset();
-                expect(vm.phases.results[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.phases.results[i].time_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
         });

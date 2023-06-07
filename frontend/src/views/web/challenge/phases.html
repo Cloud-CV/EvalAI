@@ -18,8 +18,8 @@
         <div class="row">
             <div class="col s12 m12 l9">
                 <p class="fs-16">Starts on: <span class="w-300">{{item.start_date | date:'medium'}}
-                        {{item.start_zone}}</span></p>
-                <p class="fs-16">Ends on: <span class="w-300">{{item.end_date | date:'medium'}} {{item.end_zone}}</span>
+                        {{item.time_zone}} ({{item.gmt_zone}})</span></p>
+                <p class="fs-16">Ends on: <span class="w-300">{{item.end_date | date:'medium'}} {{item.time_zone}} ({{item.gmt_zone}})</span>
                 </p>
             </div>
             <div class="col s12 m12 l12">
