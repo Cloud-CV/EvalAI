@@ -168,7 +168,7 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_or_create_sqs_queue_object(queue_name):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"
         sqs = boto3.resource(
@@ -179,12 +179,20 @@ def get_or_create_sqs_queue_object(queue_name):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
         )
     else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+        if challenge and challenge.use_host_sqs:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=challenge.aws_region,
+                aws_secret_access_key=challenge.aws_secret_access_key,
+                aws_access_key_id=challenge.aws_access_key_id,
+            )
+        else:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            )
     # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
