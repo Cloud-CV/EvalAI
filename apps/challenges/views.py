@@ -1877,9 +1877,9 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 
     try:
         slack_approval_request_response = send_slack_approval_request(challenge_pk)
-    except:
-        error_message = "Sorry, there was an error sending approval request. Please try again."
-        return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:  # noqa: E722
+        error_message = "Sorry, there was an error fetching required data for approval requests."
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if slack_approval_request_response["status"] == "success":
         response_data = {
@@ -1888,7 +1888,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         error_message = "Sorry, there was an error sending approval request. Please try again."
-        return Response({"error": error_message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 def send_slack_approval_request(challenge_pk):
