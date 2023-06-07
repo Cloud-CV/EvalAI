@@ -192,7 +192,7 @@
         };
 
         vm.sendApprovalRequest = function() {
-            parameters.url = 'challenges/' + vm.challengeId + '/has_finished_submission';
+            parameters.url = 'challenges/' + vm.challengeId + '/request_approval';
             parameters.method = 'GET';
             parameters.data = {};
         
