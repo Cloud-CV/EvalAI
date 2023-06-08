@@ -1,17 +1,19 @@
 from __future__ import absolute_import
 
-import boto3
-import botocore
 import json
 import logging
 import os
 
-from django.conf import settings
-
+import boto3
+import botocore
 from base.utils import send_slack_notification
 from challenges.models import Challenge
-from .utils import get_submission_model
+from django.conf import settings
+
 from monitoring.statsd.metrics import NUM_SUBMISSIONS_IN_QUEUE, increment_statsd_counter
+from settings.common import SQS_RETENTION_PERIOD
+
+from .utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             ex.response["Error"]["Code"]
             == "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            queue = sqs.create_queue(QueueName=queue_name)
+            queue = sqs.create_queue(
+                QueueName=queue_name,
+                Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+            )
         else:
             logger.exception("Cannot get or create Queue")
     return queue
@@ -96,7 +101,7 @@ def publish_submission_message(message):
     # increase counter for submission pushed into queue
     submission_metric_tags = [
         "queue_name:%s" % queue_name,
-        "is_remote:%d" % int(is_remote)
+        "is_remote:%d" % int(is_remote),
     ]
     increment_statsd_counter(NUM_SUBMISSIONS_IN_QUEUE, submission_metric_tags, 1)
     response = queue.send_message(MessageBody=json.dumps(message))

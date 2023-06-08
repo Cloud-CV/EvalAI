@@ -1,23 +1,22 @@
 import base64
-import boto3
-import botocore
 import json
 import logging
 import os
 import re
-import requests
-import sendgrid
 import uuid
-
 from contextlib import contextmanager
 
+import boto3
+import botocore
+import requests
+import sendgrid
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
-
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
-
 from sendgrid.helpers.mail import Email, Mail, Personalization
+
+from settings.common import SQS_RETENTION_PERIOD
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +201,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        queue = sqs.create_queue(QueueName=queue_name)
+        queue = sqs.create_queue(
+            QueueName=queue_name,
+            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+        )
     return queue
 
 
