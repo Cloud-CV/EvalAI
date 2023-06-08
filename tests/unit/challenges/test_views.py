@@ -4968,14 +4968,9 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     def setUp(self):
         super(ChallengeSendApprovalRequestTest, self).setUp()
 
-    @mock.patch("base.utils.send_slack_notification")
-    def test_request_challenge_approval_when_challenge_has_finished_submissions(
-        self, mock_send_slack_notification
-    ):
-        response = Response()
-        response.status_code = status.HTTP_200_OK
-        response._content = b'ok'
-        mock_send_slack_notification.return_value = response
+    @responses.activate
+    def test_request_challenge_approval_when_challenge_has_finished_submissions(self):
+        responses.add(responses.GET, settings.APPROVAL_WEBHOOK_URL,body=b'ok', status=200,content_type='application/json')
 
         url = reverse_lazy(
             "challenges:request_challenge_approval_by_pk",
