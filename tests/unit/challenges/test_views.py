@@ -4969,7 +4969,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
     @responses.activate
     def test_request_challenge_approval_when_challenge_has_finished_submissions(self):
-        responses.add(responses.POST, settings.APPROVAL_WEBHOOK_URL, body={'content': b'ok'}, status=200, content_type='application/json')
+        responses.add(responses.POST, settings.APPROVAL_WEBHOOK_URL, body=b'ok', status=200, content_type='text/plain')
 
         url = reverse_lazy(
             "challenges:request_challenge_approval_by_pk",
