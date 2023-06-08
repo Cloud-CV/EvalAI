@@ -1849,7 +1849,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
     },
 )
-
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1886,9 +1885,9 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             if not approval_webhook_url:
                 raise ValueError("APPROVAL_WEBHOOK_URL environment variable is missing.")
         except:  # noqa: E722
-            error_message = f"Sorry, there was an error fetching required data for approval requests."
+            error_message = "Sorry, there was an error fetching required data for approval requests."
             return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
-            
+
         message = {
             "text": f"Challenge {challenge_pk} has finished submissions and has requested for approval!",
             "fields": [
@@ -1918,6 +1917,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
