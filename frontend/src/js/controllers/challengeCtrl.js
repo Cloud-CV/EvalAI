@@ -197,6 +197,33 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.sendApprovalRequest = function() {
+            parameters.url = 'challenges/' + vm.challengeId + '/request_approval';
+            parameters.method = 'GET';
+            parameters.data = {};
+        
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var result = response.data;
+                    if (result.error) {
+                        $rootScope.notify("error", result.error);
+                    } else {
+                        $rootScope.notify("success", "Request sent successfully.");
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data.error;
+                    if (error) {
+                        $rootScope.notify("error", "There was an error: " + error);
+                    } else {
+                        $rootScope.notify("error", "There was an error.");
+                    }
+                }
+            };
+        
+            utilities.sendRequest(parameters);
+        };
+        
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function() {
             vm.logs_poller = $interval(function(){

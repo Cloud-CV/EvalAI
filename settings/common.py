@@ -307,6 +307,11 @@ SLACK_WEB_HOOK_URL = os.environ.get(
     "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"
 )
 
+# Approval web hook url
+APPROVAL_WEBHOOK_URL = os.environ.get(
+    "APPROVAL_WEBHOOK_URL", "http://testslackwebhook.com/webhook"
+)
+
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "evalai.urls.swagger_api_info",
     "SECURITY_DEFINITIONS": {

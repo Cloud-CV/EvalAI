@@ -4057,3 +4057,76 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def request_challenge_approval_by_pk(request, challenge_pk):
+    """
+    Checks if all challenge phases have finished submissions for the given challenge
+    and send approval request for the challenge
+    """
+    challenge = get_challenge_model(challenge_pk)
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    unfinished_phases = []
+
+    for challenge_phase in challenge_phases:
+        submissions = Submission.objects.filter(
+            challenge_phase=challenge_phase,
+            status="finished"
+        )
+
+        if not submissions.exists():
+            unfinished_phases.append(challenge_phase.name)
+
+    if unfinished_phases:
+        error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not settings.DEBUG:
+        try:
+            evalai_api_server = settings.EVALAI_API_SERVER
+            approval_webhook_url = settings.APPROVAL_WEBHOOK_URL
+
+            if not evalai_api_server:
+                raise ValueError("EVALAI_API_SERVER environment variable is missing.")
+            if not approval_webhook_url:
+                raise ValueError("APPROVAL_WEBHOOK_URL environment variable is missing.")
+        except:  # noqa: E722
+            error_message = "Sorry, there was an error fetching required data for approval requests."
+            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        message = {
+            "text": f"Challenge {challenge_pk} has finished submissions and has requested for approval!",
+            "fields": [
+                {
+                    "title": "Admin URL",
+                    "value": f"{evalai_api_server}/api/admin/challenges/challenge/{challenge_pk}",
+                    "short": False,
+                },
+                {
+                    "title": "Challenge title",
+                    "value": challenge.title,
+                    "short": False,
+                },
+            ],
+        }
+
+        webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
+        if webhook_response:
+            if webhook_response.content.decode('utf-8') == "ok":
+                response_data = {
+                    "message": "Approval request sent!",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
+            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        error_message = "Please approve the challenge using admin for local deployments."
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
