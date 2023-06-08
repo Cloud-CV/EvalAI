@@ -25,7 +25,6 @@ from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
 from moto import mock_s3
 from participants.models import Participant, ParticipantTeam
-from requests import Response
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -4970,7 +4969,7 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
 
     @responses.activate
     def test_request_challenge_approval_when_challenge_has_finished_submissions(self):
-        responses.add(responses.GET, settings.APPROVAL_WEBHOOK_URL,body=b'ok', status=200,content_type='application/json')
+        responses.add(responses.GET, settings.APPROVAL_WEBHOOK_URL, body=b'ok', status=200, content_type='application/json')
 
         url = reverse_lazy(
             "challenges:request_challenge_approval_by_pk",
