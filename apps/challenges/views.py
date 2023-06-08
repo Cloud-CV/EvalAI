@@ -4125,7 +4125,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
                 error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
                 return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
-            error_message = f"Sorry, there was an error sending approval request: No response received. Please try again."
+            error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
             return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         error_message = "Please approve the challenge using admin for local deployments."
