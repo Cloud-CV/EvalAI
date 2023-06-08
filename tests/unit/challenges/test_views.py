@@ -4972,9 +4972,10 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     def test_request_challenge_approval_when_challenge_has_finished_submissions(
         self, mock_send_slack_notification
     ):
-        mock_send_slack_notification.return_value = Response(
-            status_code=status.HTTP_200_OK, content=b"ok"
-        )
+        response = Response()
+        response.status_code = status.HTTP_200_OK
+        response._content = b'ok'
+        mock_send_slack_notification.return_value = response
 
         url = reverse_lazy(
             "challenges:request_challenge_approval_by_pk",
