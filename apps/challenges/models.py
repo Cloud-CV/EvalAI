@@ -15,6 +15,7 @@ from base.utils import RandomFileName, get_slug, is_model_field_changed
 
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
+from .github_utils import github_challenge_sync, github_challenge_phase_sync
 
 
 @receiver(pre_save, sender="challenges.Challenge")
@@ -143,6 +144,10 @@ class Challenge(TimeStampedModel):
     github_repository = models.CharField(
         max_length=1000, null=True, blank=True, default=""
     )
+    # Auth Token for the github repository of a challenge
+    github_token = models.CharField(
+        max_length=200, null=True, blank=True, default=""
+    )
     # The number of vCPU for a Fargate worker for the challenge. Default value is 0.25 vCPU.
     worker_cpu_cores = models.IntegerField(null=True, blank=True, default=512)
     # Memory size of a Fargate worker for the challenge. Default value is 0.5 GB memory.
@@ -233,6 +238,13 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_eks_cluster.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def challenge_details_sync(sender, instance, created, **kwargs):
+    if instance.github_repository and instance.github_token:
+        serialized_obj = serializers.serialize("json", [instance])
+        github_challenge_sync.delay(serialized_obj)
 
 
 class DatasetSplit(TimeStampedModel):
@@ -354,6 +366,16 @@ class ChallengePhase(TimeStampedModel):
             *args, **kwargs
         )
         return challenge_phase_instance
+
+
+@receiver(signals.post_save, sender="challenges.ChallengePhase")
+def challenge_phase_details_sync(sender, instance, created, **kwargs):
+    if (
+        instance.challenge.github_repository
+        and instance.challenge.github_token
+    ):
+        serialized_obj = serializers.serialize("json", [instance])
+        github_challenge_phase_sync.delay(serialized_obj)
 
 
 def post_save_connect(field_name, sender):

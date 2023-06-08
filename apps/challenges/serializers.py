@@ -231,6 +231,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             github_repository = context.get("github_repository")
             if github_repository:
                 kwargs["data"]["github_repository"] = github_repository
+            github_token = context.get("github_token")
+            if github_token:
+                kwargs["data"]["github_token"] = github_token
 
     class Meta:
         model = Challenge
@@ -265,6 +268,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_docker_image_size",
             "cli_version",
             "github_repository",
+            "github_token",
             "vpc_cidr",
             "subnet_1_cidr",
             "subnet_2_cidr",

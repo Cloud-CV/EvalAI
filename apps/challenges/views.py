@@ -3383,6 +3383,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
                             ],
+                            "github_token": request.data.get(
+                                "GITHUB_AUTH_TOKEN"
+                            ),
                         },
                     )
                     if serializer.is_valid():
