@@ -3,9 +3,8 @@
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-banner">
         <div class="row margin-bottom-cancel">
             <div class="col s12 m12 l12">Thank you for successfully creating a challenge on EvalAI.
-                The challenge is ready to accept submissions from host the team. Please note that the submissions from the host team won't be visible on leaderboard until you mark them as baseline submission.
-                In order for the challenge to accept submissions from the public, it requires approval from the EvalAI Team. Please reach out to us at 
-                <a href="mailto:team@cloudcv.org" class="blue-text">team@cloudcv.org</a> for challenge approval.
+                The challenge is ready to accept submissions from the host team. Please note that the submissions from the host team won't be visible on leaderboard until you mark them as baseline submission.
+                In order for the challenge to accept submissions from the public, it requires approval from the EvalAI Team.
             </div>
         </div>
     </div>
@@ -17,6 +16,13 @@
                 <div class="image-container">
                     <img src="{{challenge.page.image}}" width="100%">
                 </div>
+                <br>
+                <span ng-if="challenge.isChallengeHost && !challenge.approved_by_admin" class="fs-16 w-300">
+                    <button class="waves-effect waves-dark ev-btn-approval btn  fs-10 w-300" ng-click="challenge.sendApprovalRequest()">
+                    
+                        <strong class="fs-10">Send Approval Request</strong>
+                    </button>
+                </span>
             </div>
             <div class="col m7 l8">
                 <div class="card-content">
@@ -91,7 +97,6 @@
                         </div>
                     </div>
                     <div class="toggle-participation-text fs-16 w-300">Toggle Participation</div>
-
                 </div>
 
             </div>
