@@ -1,41 +1,33 @@
-import boto3
 import csv
 import io
 import json
-import mock
 import os
-import requests
-import responses
 import shutil
-
 from datetime import timedelta
-from moto import mock_s3
 from os.path import join
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse_lazy
+import boto3
+import mock
+import requests
+import responses
+from allauth.account.models import EmailAddress
+from challenges.models import (Challenge, ChallengeConfiguration,
+                               ChallengePhase, ChallengePhaseSplit,
+                               DatasetSplit, Leaderboard, StarChallenge)
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
+from django.urls import reverse_lazy
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from challenges.models import (
-    Challenge,
-    ChallengeConfiguration,
-    ChallengePhase,
-    ChallengePhaseSplit,
-    DatasetSplit,
-    Leaderboard,
-    StarChallenge,
-)
-from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
+from moto import mock_s3
+from participants.models import Participant, ParticipantTeam
+from requests import Response
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):
@@ -4976,20 +4968,26 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
     def setUp(self):
         super(ChallengeSendApprovalRequestTest, self).setUp()
 
-    @mock.patch("challenges.views.send_slack_approval_request")
-    def test_request_challenge_approval_when_challenge_has_finished_submissions(self, mock_send_slack_approval_request):
-        mock_send_slack_approval_request.return_value = {"status": "success"}
+    @mock.patch("base.utils.send_slack_notification")
+    def test_request_challenge_approval_when_challenge_has_finished_submissions(
+        self, mock_send_slack_notification
+    ):
+        mock_send_slack_notification.return_value = Response(
+            status_code=status.HTTP_200_OK, content=b"ok"
+        )
 
-        url = reverse_lazy("challenges:request_challenge_approval_by_pk", kwargs={"challenge_pk": self.challenge.pk})
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data,
-            {"message": "Approval request sent!"}
-        )
+        self.assertEqual(response.data, {"message": "Approval request sent!"})
 
-    def test_request_challenge_approval_when_challenge_has_unfinished_submissions(self):
+    def test_request_challenge_approval_when_challenge_has_unfinished_submissions(
+        self,
+    ):
         self.user1 = User.objects.create(
             username="otheruser1",
             password="other_secret_password",
@@ -5029,11 +5027,16 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 ),
             )
 
-        url = reverse_lazy("challenges:request_challenge_approval_by_pk", kwargs={"challenge_pk": self.challenge.pk})
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(
             response.data,
-            {"error": "The following challenge phases do not have finished submissions: Challenge Phase"}
+            {
+                "error": "The following challenge phases do not have finished submissions: Challenge Phase"
+            },
         )
