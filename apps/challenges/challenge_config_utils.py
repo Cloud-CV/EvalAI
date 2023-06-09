@@ -194,8 +194,8 @@ def is_challenge_phase_split_mapping_valid(
 ):
     """
     Arguments:
-        self.phase_ids {array} -- list of phase ids
-        self.leaderboard_ids {array} -- list of leaderboard ids
+        phase_ids {array} -- list of phase ids
+        leaderboard_ids {array} -- list of leaderboard ids
         dataset_split_ids {array} -- list of dataset split ids
         phase_split {dict} -- challenge phase split config
     Returns:
@@ -239,42 +239,43 @@ def get_value_from_field(data, base_location, field_name):
     return field_value
 
 
-error_messages_dicta = {
+error_message_dict = {
     "no_yaml_file": "There is no YAML file in the zip file you uploaded!",
-    "multiple_yaml_files": "There are {0} YAML files instead of one in the zip file!",
-    "yaml_file_read_error": "\n{0} in line {1}, column {2}\n",
+    "multiple_yaml_files": "There are {} YAML files instead of one in the zip file!",
+    "yaml_file_read_error": "\n{} in line {}, column {}\n",
     "missing_challenge_title": "Please add the challenge title",
     "missing_challenge_description": "Please add the challenge description",
     "missing_evaluation_details": "Please add the evaluation details",
     "missing_terms_and_conditions": "Please add the terms and conditions.",
     "missing_submission_guidelines": "Please add the submission guidelines.",
-    "missing_evaluation_script": "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!",
+    "missing_evaluation_script": "ERROR: No evaluation script is present in the zip file. Please add it and then try again!",
+    "missing_evaluation_script_key": "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!",
     "missing_leaderboard_id": "ERROR: There is no leaderboard ID for the leaderboard.",
-    "missing_leaderboard_schema": "ERROR: There is no leaderboard schema for the leaderboard with ID: {0}.",
-    "missing_default_order_by": "ERROR: There is no 'default_order_by' key in the schema for the leaderboard with ID: {0}.",
-    "wrong_default_order_by": "ERROR: The 'default_order_by' value '{}' in the schema for the leaderboard with ID: {} is not a valid label.",
+    "missing_leaderboard_schema": "ERROR: There is no leaderboard schema for the leaderboard with ID: {}.",
+    "missing_leaderboard_default_order_by": "ERROR: There is no 'default_order_by' key in the schema for the leaderboard with ID: {}.",
+    "incorrect_default_order_by": "ERROR: The 'default_order_by' value '{}' in the schema for the leaderboard with ID: {} is not a valid label.",
     "leaderboard_schema_error": "ERROR: The leaderboard with ID: {} has the following schema errors:\n {}",
     "leaderboard_additon_after_creation": "ERROR: The leaderboard with ID: {} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.",
     "leaderboard_deletion_after_creation": "ERROR: The leaderboard with ID: {} not found in config. Deletion of an existing leaderboard after challenge creation is not allowed.",
-    "missing_labels": "ERROR: There is no 'labels' key in the schema for the leaderboard with ID: {0}.",
+    "missing_leaderboard_labels": "ERROR: There is no 'labels' key in the schema for the leaderboard with ID: {}.",
     "missing_leaderboard_key": "ERROR: There is no key 'leaderboard' in the YAML file.",
     "missing_challenge_phases": "ERROR: No challenge phase key found. Please add challenge phases in the YAML file and try again!",
     "missing_challenge_phase_codename": "ERROR: No codename found for the challenge phase. Please add the codename and try again!",
-    "missing_test_annotation_file": "ERROR: No test annotation file found in the zip file for challenge phase {0}.",
-    "missing_submission_meta_attribute_keys": "ERROR: Please enter the following keys to the submission meta attribute in challenge phase {0}: {1}",
-    "invalid_submission_meta_attribute_types": "ERROR: Please ensure that the submission meta attribute types for the attribute in challenge phase {0} are among the following: boolean, text, radio, or checkbox.",
-    "missing_challenge_phase_id": "ERROR: Challenge phase {0} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
-    "missing_challenge_phase_id_config": "ERROR: Challenge phase {0} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
-    "missing_leaderboard_id_config": "ERROR: The leaderboard with ID: {0} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.",
-    "missing_existing_leaderboard_id": "ERROR: The leaderboard with ID: {0} was not found in the configuration. Deletion of an existing leaderboard after challenge creation is not allowed.",
-    "missing_existing_challenge_phase_id": "ERROR: Challenge phase {0} was not found in the configuration. Deletion of an existing challenge phase after challenge creation is not allowed.",
+    "missing_test_annotation_file": "ERROR: No test annotation file found in the zip file for challenge phase {}.",
+    "missing_submission_meta_attribute_keys": "ERROR: Please enter the following keys to the submission meta attribute in challenge phase {}: {}",
+    "invalid_submission_meta_attribute_types": "ERROR: Please ensure that the submission meta attribute types for the attribute in challenge phase {} are among the following: boolean, text, radio, or checkbox.",
+    "missing_challenge_phase_id": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
+    "missing_challenge_phase_id_config": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
+    "missing_leaderboard_id_config": "ERROR: The leaderboard with ID: {} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.",
+    "missing_existing_leaderboard_id": "ERROR: The leaderboard with ID: {} was not found in the configuration. Deletion of an existing leaderboard after challenge creation is not allowed.",
+    "missing_existing_challenge_phase_id": "ERROR: Challenge phase {} was not found in the configuration. Deletion of an existing challenge phase after challenge creation is not allowed.",
     "missing_dataset_splits_key": "ERROR: There is no key for dataset splits.",
-    "missing_dataset_split_name": "ERROR: There is no name for dataset split {0}.",
-    "missing_dataset_split_codename": "ERROR: There is no codename for dataset split {0}.",
-    "duplicate_dataset_split_codename": "ERROR: Duplicate codename {0} for dataset split {1}. Please ensure codenames are unique.",
-    "dataset_split_schema_errors": "ERROR: Dataset split {0} has the following schema errors:\n {1}",
-    "missing_dataset_split_id": "ERROR: Dataset split {0} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
-    "missing_existing_dataset_split_id": "ERROR: Dataset split {0} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
+    "missing_dataset_split_name": "ERROR: There is no name for dataset split {}.",
+    "missing_dataset_split_codename": "ERROR: There is no codename for dataset split {}.",
+    "duplicate_dataset_split_codename": "ERROR: Duplicate codename {} for dataset split {}. Please ensure codenames are unique.",
+    "dataset_split_schema_errors": "ERROR: Dataset split {} has the following schema errors:\n {}",
+    "missing_dataset_split_id": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
+    "missing_existing_dataset_split_id": "ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
     "challenge_phase_split_not_exist": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.",
     "challenge_phase_split_schema_errors": "ERROR: Challenge phase split {} has the following schema errors:\n {}",
     "missing_keys_in_challenge_phase_splits": "ERROR: The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}",
@@ -313,7 +314,8 @@ class ValidateChallengeConfigUtil:
 
         Arguments:
             request {HttpRequest} -- The request object
-            BASE_LOCATION {str} -- The temp base directory for storing all the files and folders while validating the zip file
+            challenge_host_team {int} -- the team creating the challenge
+            base_location {str} -- The temp base directory for storing all the files and folders while validating the zip file
             unique_folder_name {str} -- name of the challenge zip file and the parent dir of extracted folder
             zip_ref {zipfile.ZipFile} -- reference to challenge config zip
             current_challenge {apps.challenges.models.Challenge} - the existing challenge for the github repo, if any
@@ -328,18 +330,22 @@ class ValidateChallengeConfigUtil:
         self.error_messages = []
         self.files = {}
         self.yaml_file_data = None
-        self.error_messages_dict = error_messages_dicta
+        self.error_messages_dict = error_message_dict
 
-        self.extracted_folder_name = None
-        self.challenge_config_location = None
-        self.phase_ids = []
-
-    def read_and_validate_yaml(self):
         (
             self.yaml_file_count,
             self.yaml_file,
             self.extracted_folder_name,
         ) = get_yaml_files_from_challenge_config(self.zip_ref)
+
+        self.challenge_config_location = join(
+            self.base_location, self.unique_folder_name, self.extracted_folder_name
+        )
+        self.phase_ids = []
+        self.leaderboard_ids = []
+
+    def read_and_validate_yaml(self):
+
         if not self.yaml_file_count:
             message = self.error_messages_dict.get("no_yaml_file")
             self.error_messages.append(message)
@@ -392,9 +398,6 @@ class ValidateChallengeConfigUtil:
         self.files["challenge_image_file"] = self.challenge_image_file
 
     def validate_challenge_description(self):
-        self.challenge_config_location = join(
-            self.base_location, self.unique_folder_name, self.extracted_folder_name
-        )
         challenge_description = self.yaml_file_data.get("description")
         if not challenge_description or len(challenge_description) == 0:
             message = self.error_messages_dict.get("missing_challenge_description")
@@ -491,7 +494,7 @@ class ValidateChallengeConfigUtil:
                 message = self.error_messages_dict.get("missing_evaluation_script")
                 self.error_messages.append(message)
         else:
-            message = self.error_messages_dict.get("missing_evaluation_script")
+            message = self.error_messages_dict.get("missing_evaluation_script_key")
             self.error_messages.append(message)
 
     def validate_dates(self):
@@ -527,7 +530,6 @@ class ValidateChallengeConfigUtil:
     # Check for leaderboards
     def validate_leaderboards(self, current_leaderboard_config_ids):
         leaderboard = self.yaml_file_data.get("leaderboard")
-        self.leaderboard_ids = []
         if leaderboard:
             for data in leaderboard:
                 error = False
@@ -543,14 +545,14 @@ class ValidateChallengeConfigUtil:
                     error = True
                 else:
                     if "labels" not in data["schema"]:
-                        message = self.error_messages_dict.get("missing_labels").format(
+                        message = self.error_messages_dict.get("missing_leaderboard_labels").format(
                             data.get("id")
                         )
                         self.error_messages.append(message)
                         error = True
                     if "default_order_by" not in data["schema"]:
                         message = self.error_messages_dict.get(
-                            "missing_default_order_by"
+                            "missing_leaderboard_default_order_by"
                         ).format(data.get("id"))
                         self.error_messages.append(message)
                         error = True
@@ -561,7 +563,7 @@ class ValidateChallengeConfigUtil:
                             and default_order_by not in data["schema"]["labels"]
                         ):
                             message = self.error_messages_dict.get(
-                                "wrong_default_order_by"
+                                "incorrect_default_order_by"
                             ).format(default_order_by, data.get("id"))
                             self.error_messages.append(message)
                             error = True
@@ -581,7 +583,7 @@ class ValidateChallengeConfigUtil:
                             and int(data["id"]) not in current_leaderboard_config_ids
                         ):
                             message = self.error_messages_dict.get(
-                                "leaderboard_schema_error"
+                                "leaderboard_additon_after_creation"
                             ).format(data["id"])
                             self.error_messages.append(message)
                         self.leaderboard_ids.append(data["id"])
