@@ -114,6 +114,7 @@ describe('Unit tests for dashboard controller', function () {
             isHostTeam = null;
             isParticipantTeam = null;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -130,6 +131,39 @@ describe('Unit tests for dashboard controller', function () {
             vm = createController();
             expect(vm.challengeCount).toEqual(successResponse.results.length);
             expect(vm.hostTeamExist).toBeFalsy();
+        });
+
+        it('should call getAllChallenges method recursively when next is not null', function () {
+            isUserDetails = null;
+            isPresentChallenge = true;
+            isHostTeam = null;
+            isParticipantTeam = null;
+            // mock response with next property set to a non-null value
+            successResponse = {
+                next: 'http://example.com/challenges/?page=2',
+                results: [
+                    {
+                        id: 1,
+                        description: "the length of the ongoing challenge description is greater than or equal to 50",
+                        creator: {
+                        id: 1
+                        },
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                    }
+                ]
+            };
+
+            vm = createController();
+            spyOn(vm, 'getAllChallenges').and.callThrough();
+            const parameters = {
+                url: 'challenges/challenge/present/approved/public',
+                method: 'GET',
+                callback: jasmine.any(Function)
+            };
+            vm.getAllChallenges(parameters, "challengeCount");
+            expect(vm.hostTeamExist).toBeFalsy();
+            expect(vm.getAllChallenges).toHaveBeenCalledTimes(2);
         });
 
         it('403 backend error on getting all ongoing challenges `challenges/challenge/present/approved/public`', function () {
