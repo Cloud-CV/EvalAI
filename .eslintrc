@@ -12,7 +12,8 @@ eslint config file.
 		"angular":1,
 		"jquery": 1,
 		"$": 1,
-		"_": 1
+		"_": 1,
+		"moment": true
 	},
 
 	"extends": "eslint:recommended",

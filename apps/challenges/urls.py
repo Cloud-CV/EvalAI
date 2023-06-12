@@ -65,6 +65,11 @@ urlpatterns = [
         name="get_challenges_based_on_teams",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/request_approval",
+        views.request_challenge_approval_by_pk,
+        name="request_challenge_approval_by_pk",
+    ),
+    url(
         r"^(?P<challenge_pk>[0-9]+)/challenge_phase_split$",
         views.challenge_phase_split_list,
         name="challenge_phase_split_list",

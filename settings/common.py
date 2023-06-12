@@ -291,7 +291,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
-    "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer"
+    "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
+    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer"
 }
 
 # For inviting users to participant and host teams.
@@ -304,6 +305,11 @@ PRESIGNED_URL_EXPIRY_TIME = 3600
 # Slack web hook url
 SLACK_WEB_HOOK_URL = os.environ.get(
     "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"
+)
+
+# Approval web hook url
+APPROVAL_WEBHOOK_URL = os.environ.get(
+    "APPROVAL_WEBHOOK_URL", "http://testslackwebhook.com/webhook"
 )
 
 SWAGGER_SETTINGS = {
@@ -398,3 +404,6 @@ EKS_CLUSTER_TRUST_RELATION = {
         }
     ],
 }
+
+# SQS Queue Message Retention Period
+SQS_RETENTION_PERIOD = "1209600"
