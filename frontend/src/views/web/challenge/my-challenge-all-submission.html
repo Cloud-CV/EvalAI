@@ -94,6 +94,8 @@
                         <th class="fs-18 w-300" data-field="file">Metadata file</th>
                         <!-- <th ng-if="challenge.currentPhaseLeaderboardPublic" class="fs-18 w-300" data-field="button">Show on Leaderboard</th> -->
                         <th class="fs-18 w-300" data-field="button">Rerun submission</th>
+                        <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
+                                challenge.allowResumingSubmissions" data-field="button">Resume submission</th>
                         <th class="fs-18 w-300" data-field="button">Verify submission</th>
                     </thead>
                     <tbody>
@@ -151,6 +153,10 @@
                             <td>
                                 <center><a ng-class="key.classList" class="fa fa-refresh pointer"
                                         ng-click="challenge.reRunSubmission(key)"></a></center>
+                            </td>
+                            <td ng-if="challenge.isChallengeHost && challenge.allowResumingSubmissions">
+                                <center><a ng-class="key.classList2" class="fa fa-play pointer" ng-click="challenge.resumeSubmission(key)"></a>
+                                </center>
                             </td>
                             <td>
                                 <center><input ng-checked="key.is_verified_by_host"
