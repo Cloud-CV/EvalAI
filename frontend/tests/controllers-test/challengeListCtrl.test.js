@@ -26,9 +26,9 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
             expect(vm.userKey).toEqual(utilities.getData('userKey'));
             expect(utilities.showLoader).toHaveBeenCalled();
-            expect(vm.currentList).toEqual({});
-            expect(vm.upcomingList).toEqual({});
-            expect(vm.pastList).toEqual({});
+            expect(vm.currentList).toEqual([]);
+            expect(vm.upcomingList).toEqual([]);
+            expect(vm.pastList).toEqual([]);
             expect(vm.noneCurrentChallenge).toBeFalsy();
             expect(vm.noneUpcomingChallenge).toBeFalsy();
             expect(vm.nonePastChallenge).toBeFalsy();
@@ -65,6 +65,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -77,6 +78,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -111,9 +113,7 @@ describe('Unit tests for challenge list controller', function () {
                     expect(vm.currentList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
-                expect(vm.currentList[i].start_zone).toEqual(zone.abbr(offset));
-                offset = new Date(vm.currentList[i].end_date).getTimezoneOffset();
-                expect(vm.currentList[i].end_zone).toEqual(zone.abbr(offset));
+                expect(vm.currentList[i].time_zone).toEqual(zone.abbr(offset));
 
                 expect(vm.challengeCreator[vm.currentList[i].id]).toEqual(vm.currentList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
@@ -125,6 +125,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
             errorResponse = {
+                next: null,
                 error: 'error'
             };
             vm = createController();
@@ -136,6 +137,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -148,6 +150,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -182,9 +185,7 @@ describe('Unit tests for challenge list controller', function () {
                     expect(vm.upcomingList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
-                expect(vm.upcomingList[i].start_zone).toEqual(zone.abbr(offset));
-                offset = new Date(vm.upcomingList[i].end_date).getTimezoneOffset();
-                expect(vm.upcomingList[i].end_zone).toEqual(zone.abbr(offset));
+                expect(vm.upcomingList[i].time_zone).toEqual(zone.abbr(offset));
 
                 expect(vm.challengeCreator[vm.upcomingList[i].id]).toEqual(vm.upcomingList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
@@ -197,6 +198,7 @@ describe('Unit tests for challenge list controller', function () {
             isPastChallengeSuccess = null;
             // success response for the ongoing challenge
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -209,6 +211,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -221,6 +224,7 @@ describe('Unit tests for challenge list controller', function () {
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
             successResponse = {
+                next: null,
                 results: [
                     {
                         id: 1,
@@ -255,9 +259,7 @@ describe('Unit tests for challenge list controller', function () {
                     expect(vm.pastList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
-                expect(vm.pastList[i].start_zone).toEqual(zone.abbr(offset));
-                offset = new Date(vm.pastList[i].end_date).getTimezoneOffset();
-                expect(vm.pastList[i].end_zone).toEqual(zone.abbr(offset));
+                expect(vm.pastList[i].time_zone).toEqual(zone.abbr(offset));
 
                 expect(vm.challengeCreator[vm.pastList[i].id]).toEqual(vm.pastList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
@@ -271,6 +273,7 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = true;
             // success response for the ongoing and upcoming challenge
             successResponse = {
+                next: null,
                 results: []
             };
             vm = createController();
@@ -278,5 +281,41 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.upcomingList).toEqual(successResponse.results);
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
+
+        it('should call getAllResults method recursively when next is not null', function () {
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+
+            // mock response with next property set to a non-null value
+            successResponse = {
+                next: 'http://example.com/challenges/?page=2',
+                results: [
+                    {
+                        id: 1,
+                        description: "the length of the ongoing challenge description is greater than or equal to 50",
+                        creator: {
+                        id: 1
+                        },
+                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                    }
+                ]
+            };
+
+            vm = createController();
+            spyOn(vm, 'getAllResults').and.callThrough();
+            const parameters = {
+                url: 'challenges/challenge/present/approved/public',
+                method: 'GET',
+                callback: jasmine.any(Function)
+            };
+            vm.getAllResults(parameters, []);
+            expect(vm.currentList).toEqual(successResponse.results);
+            expect(vm.noneCurrentChallenge).toBeFalsy();
+            expect(vm.getAllResults).toHaveBeenCalledTimes(2);
+        });
+
+
     });
 });

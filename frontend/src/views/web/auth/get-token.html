@@ -10,7 +10,7 @@
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </div>
-                    <div><strong>Expires at:</strong> {{profile.expiresAt | date:'medium'}} {{profile.expiresAtTimezone}}</div>
+                    <div><strong>Expires at:</strong> {{profile.expiresAt | date:'medium'}} {{profile.expiresAtTimezone}} ({{profile.gmtZone}})</div>
                     <br>
                     <ul class="inline-list">
                         <li>

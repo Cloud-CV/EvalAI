@@ -23,6 +23,9 @@ import requests
 import yaml
 from django.core.files.base import ContentFile
 from django.utils import timezone
+
+from settings.common import SQS_RETENTION_PERIOD
+
 from .statsd_utils import increment_and_push_metrics_to_statsd
 
 # all challenge and submission will be stored in temp directory
@@ -727,7 +730,7 @@ def process_submission_callback(body):
         )
 
 
-def get_or_create_sqs_queue(queue_name):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     """
     Returns:
         Returns the SQS Queue object
@@ -741,12 +744,20 @@ def get_or_create_sqs_queue(queue_name):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
     else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+        if challenge and challenge.use_host_sqs:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=challenge.aws_region,
+                aws_secret_access_key=challenge.aws_secret_access_key,
+                aws_access_key_id=challenge.aws_access_key_id,
+            )
+        else:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            )
     if queue_name == "":
         queue_name = "evalai_submission_queue"
     # Check if the queue exists. If no, then create one
@@ -758,7 +769,10 @@ def get_or_create_sqs_queue(queue_name):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        queue = sqs.create_queue(QueueName=queue_name)
+        queue = sqs.create_queue(
+            QueueName=queue_name,
+            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+        )
     return queue
 
 
@@ -822,7 +836,7 @@ def main():
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
-    queue = get_or_create_sqs_queue(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     is_remote = int(challenge.remote_evaluation)
     while True:
         for message in queue.receive_messages():
