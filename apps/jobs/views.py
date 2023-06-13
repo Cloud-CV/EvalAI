@@ -1875,6 +1875,7 @@ def re_run_submission_by_host(request, submission_pk):
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1944,6 +1945,7 @@ def resume_submission_by_host(request, submission_pk):
         "success": "Submission is successfully resumed"
     }
     return Response(response_data, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
