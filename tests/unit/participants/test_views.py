@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from accounts.models import Profile
-from challenges.models import Challenge, ChallengePhase, ChallengeTags
+from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
@@ -773,6 +773,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
             domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -785,7 +786,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
 
-        self.tags = ChallengeTags.objects.get_or_create(tag_name="Paper", challenge=self.challenge1)
         self.challenge1.list_tags.add(self.tags[0])
 
         self.challenge1.save()
@@ -843,11 +843,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         },
                         "domain": self.challenge1.domain,
                         "domain_name": 'Computer Vision',
-                        "list_tags": [{
-                            "id": self.challenge1.list_tags.all()[0].id,
-                            "tag_name": self.challenge1.list_tags.all()[0].tag_name,
-                            "challenge": self.challenge1.pk,
-                        }],
+                        "list_tags": self.challenge1.list_tags,
                         "published": self.challenge1.published,
                         "submission_time_limit": self.challenge1.submission_time_limit,
                         "is_registration_open": self.challenge1.is_registration_open,
@@ -928,11 +924,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 },
                 "domain": self.challenge1.domain,
                 "domain_name": 'Computer Vision',
-                "list_tags": [{
-                    "id": self.challenge1.list_tags.all()[0].id,
-                    "tag_name": self.challenge1.list_tags.all()[0].tag_name,
-                    "challenge": self.challenge1.pk,
-                }],
+                "list_tags": self.challenge1.list_tags,
                 "published": self.challenge1.published,
                 "submission_time_limit": self.challenge1.submission_time_limit,
                 "is_registration_open": self.challenge1.is_registration_open,

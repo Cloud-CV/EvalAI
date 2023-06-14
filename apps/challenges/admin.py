@@ -28,7 +28,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengeTags,
 )
 
 

@@ -111,11 +111,7 @@
                     utilities.hideButton();
                 }
             });
-        };
-
-        vm.toggleSearch = function() {
-            vm.isSearchOpen = !vm.isSearchOpen;
-          };            
+        };           
     }
 
 })();

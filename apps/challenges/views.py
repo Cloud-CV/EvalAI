@@ -2457,9 +2457,10 @@ def update_challenge_tags_and_domain(request, challenge_pk):
         domain_value = request.data.get("domain")
         # Remove tags not present in the YAML file
         challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
-
         # Add new tags to the challenge
         for tag_name in new_tags:
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
             if tag_name not in challenge.list_tags:
                 challenge.list_tags.append(tag_name)
         # Verifying Domain name

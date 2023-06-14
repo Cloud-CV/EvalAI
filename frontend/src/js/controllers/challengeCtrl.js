@@ -361,7 +361,6 @@
                 vm.isRegistrationOpen = details.is_registration_open;
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
-                vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
 
                 vm.queueName = details.queue;
@@ -389,9 +388,7 @@
                                 }
                             }
 
-                            if (details.is_challenge_host) {
-                                vm.isChallengeHost = true;
-                            }
+                            vm.isChallengeHost = details.is_challenge_host;
 
                             if (!vm.isParticipated) {
 
@@ -1111,11 +1108,6 @@
 
             utilities.sendRequest(parameters);
         };
-
-        if (vm.phaseSplitId) {
-            vm.getLeaderboard(vm.phaseSplitId);
-        }
-
         
         vm.showMetaAttributesDialog = function(ev, attributes){
             if (attributes != false){
@@ -1996,6 +1988,9 @@
             'label': 'Stderr File',
             'id': 'stderr_file'
         },{
+            'label': 'Environment Log File',
+            'id': 'environment_log_file'
+        },{
             'label': 'Submitted At',
             'id': 'created_at'
         },{
@@ -2793,7 +2788,7 @@
         vm.editchallengeTagDialog = function(ev) {
             vm.tags = [];
             for (var i = 0; i < vm.page.list_tags.length; i++) {
-                vm.tags[i] = vm.page.list_tags[i].tag_name;
+                vm.tags[i] = vm.page.list_tags[i];
             }
             vm.domainoptions = vm.domain_choices();
             $mdDialog.show({
@@ -2813,8 +2808,8 @@
             }
             new_tags = typeof vm.tags === 'string'
                 ? vm.tags.split(",").map(item => item.trim())
-                : vm.page.list_tags.map(tag => tag.tag_name);
-            
+                : vm.page.list_tags.map(tag => tag);
+
             if (typeof vm.tags === 'string' && (new_tags.length > 4 || new_tags.some(tag => tag.length > 15))) {
                 $rootScope.notify("error", "Invalid tags! Maximum 4 tags are allowed, and each tag must be 15 characters or less.");
                 return;
