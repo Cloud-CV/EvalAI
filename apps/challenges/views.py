@@ -2570,8 +2570,8 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         response_data = {"success": data}
     except Exception as e:
         message = {"error": f"Facing this error: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-  
+        return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     return Response(response_data, status=status.HTTP_200_OK)
 
 
