@@ -26,6 +26,11 @@ urlpatterns = [
         name="re_run_submission_by_host",
     ),
     url(
+        r"^submissions/(?P<submission_pk>[0-9]+)/resume-by-host/$",
+        views.resume_submission_by_host,
+        name="resume_submission_by_host",
+    ),
+    url(
         r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
         views.leaderboard,
         name="leaderboard",
