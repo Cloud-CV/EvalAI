@@ -76,6 +76,7 @@
         vm.currentPhaseMetaAttributesVisibility = {};
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
+        vm.approved_by_host = false;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -247,6 +248,7 @@
                 onSuccess: function(response) {
                      var details = response.data;
                     vm.participated_team_name = details["team_name"];
+                    vm.approved_by_host = details["approved"];
                 },
             };
             utilities.sendRequest(parameters);
@@ -254,7 +256,7 @@
 
             vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
-            if (isDockerBased && isParticipated == true) {
+            if (isDockerBased && isParticipated == true && vm.approved_by_host) {
                 parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions/';
                 parameters.method = 'GET';
                 parameters.data = {};
@@ -337,7 +339,7 @@
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
-
+                vm.manual_approval = details.manual_approval;
                 vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
 
@@ -573,7 +575,7 @@
         };
 
         vm.makeSubmission = function() {
-            if (vm.isParticipated) {
+            if (vm.isParticipated && vm.approved_by_host) {
                 var fileVal = angular.element(".file-path").val();
                 if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
                     vm.subErrors.msg = "Please upload file or enter submission URL!";
@@ -1829,6 +1831,89 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.activateCollapsible = function() {
+            angular.element('.collapsible').collapsible();
+        };
+
+        vm.team_approval_list = function(){
+            var parameters = {};
+            parameters.token = utilities.getData('userKey');
+            parameters.url = 'challenges/challenge/' + $stateParams.challengeId + '/get_participant_teams';
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.approved_teams = response.data;
+                    vm.activateCollapsible();
+                },
+                onError: function() {
+                    $rootScope.notify("error", "Some error occured.Please try again.");
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.showapprovalparticipantteamDialog = function(challengeId, participant_team_id, approved_status) {
+            if (approved_status) {
+                vm.dialog = {};
+                vm.dialog.challengeId = challengeId;
+                vm.dialog.participant_team_id = participant_team_id;
+                vm.dialog.approved_status = approved_status;
+                $mdDialog.show({ 
+                    scope: $scope, 
+                    preserveScope: true, 
+                    templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-approvalConfirm.html',
+                });
+            }
+            else {
+                vm.check_approval_status(challengeId, participant_team_id, approved_status, false);
+            }
+        };
+        
+
+        vm.check_approval_status = function(challengeId, participant_team_id, approved_status, formvalid){
+            var parameters = {};
+            parameters.token = utilities.getData('userKey');
+            parameters.method = 'POST';
+            if(approved_status) {
+                if (formvalid) {
+                        parameters.url = 'challenges/challenge/' + challengeId + '/approve_participant_team/' + participant_team_id;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                if(response.status == 201){
+                                    $rootScope.notify("success", "Participant Team Approved successfully.");
+                                }
+                            },
+                            onError: function(response) {
+                                $rootScope.notify("error", response.data.error);
+                            }
+                        };
+                        utilities.sendRequest(parameters);
+                        $mdDialog.hide();
+                    }
+                else {
+                    $mdDialog.hide();
+                    $state.reload();
+                }
+            }
+            else {
+                parameters.url = 'challenges/challenge/' + challengeId + '/disapprove_participant_team/' + participant_team_id;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        if(response.status == 204){
+                            $rootScope.notify("success", "Participant Team Disapproved successfully.");
+                        }
+                    },
+                    onError: function(response) {
+                        $rootScope.notify("error", response.data.error);
+                        $state.reload();
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+        };
+
+
         vm.changeBaselineStatus = function(submission_id) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
@@ -2784,5 +2869,6 @@
         };
 
     }
+    
 
 })();

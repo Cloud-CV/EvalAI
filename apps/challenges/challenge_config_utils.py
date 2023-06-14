@@ -311,6 +311,13 @@ def validate_challenge_config_util(
             yaml_file_data, challenge_config_location, "description"
         )
 
+    # Check Manual Approval
+    if "maunal_approval" in yaml_file_data:
+        manual_approval = yaml_file_data.get("manual_approval")
+        if not isinstance(manual_approval, bool):
+            message = "Manual approval should be a boolean value"
+            error_messages.append(message)
+
     # Check for evaluation details file
     is_valid, message = is_challenge_config_yaml_html_field_valid(
         yaml_file_data, "evaluation_details", challenge_config_location
