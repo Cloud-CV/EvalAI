@@ -772,6 +772,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 1",
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -783,6 +785,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.challenge1.slug = "{}-{}".format(
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
+
+        self.challenge1.list_tags.add(self.tags[0])
+
         self.challenge1.save()
 
         self.challenge2 = Challenge.objects.create(
@@ -836,6 +841,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "created_by": self.challenge_host_team.created_by.username,
                             "team_url": self.challenge_host_team.team_url,
                         },
+                        "domain": self.challenge1.domain,
+                        "domain_name": 'Computer Vision',
+                        "list_tags": self.challenge1.list_tags,
                         "published": self.challenge1.published,
                         "submission_time_limit": self.challenge1.submission_time_limit,
                         "is_registration_open": self.challenge1.is_registration_open,
@@ -914,6 +922,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "created_by": self.challenge_host_team.created_by.username,
                     "team_url": self.challenge_host_team.team_url,
                 },
+                "domain": self.challenge1.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge1.list_tags,
                 "published": self.challenge1.published,
                 "submission_time_limit": self.challenge1.submission_time_limit,
                 "is_registration_open": self.challenge1.is_registration_open,

@@ -6,7 +6,7 @@ import yaml
 from django.core.files.base import ContentFile
 
 from os.path import basename, isfile, join
-from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
+from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -446,6 +446,27 @@ def validate_challenge_config_util(
         message = "ERROR: No challenge phase key found. Please add challenge phases in YAML file and try again!"
         error_messages.append(message)
         return error_messages, yaml_file_data, files
+
+        # Verify Tags are limited to 4
+    if "tags" in yaml_file_data:
+        tags_data = yaml_file_data["tags"]
+        if len(tags_data) > 4:
+            message = (
+                "ERROR: Tags are limited to 4. Please remove extra tags"
+                " then try again!"
+            )
+            error_messages.append(message)
+
+    # Verify Domain name is correct
+    if "domain" in yaml_file_data:
+        domain_value = yaml_file_data["domain"]
+        domain_choice = [option[0] for option in Challenge.DOMAIN_OPTIONS]
+        if domain_value not in domain_choice:
+            message = (
+                "ERROR: Domain name is incorrect. Please enter correct domain name"
+                " then try again!"
+            )
+            error_messages.append(message)
 
     phase_ids = []
     phase_codenames = []
