@@ -69,6 +69,7 @@
         vm.isSubmissionUsingCli = null;
         vm.isSubmissionUsingFile = null;
         vm.isRemoteChallenge = false;
+        vm.allowResumingSubmisisons = false;
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
@@ -363,6 +364,7 @@
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
+                vm.allowResumingSubmissions = details.allow_resuming_submissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
 
                 vm.queueName = details.queue;
@@ -1424,6 +1426,25 @@
                     var error = response.data;
                     $rootScope.notify("error", error);
                     submissionObject.classList = [''];
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.resumeSubmission = function(submissionObject) {
+            submissionObject.classList2 = ['progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume-by-host/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList2 = [''];
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList2 = [''];
                 }
             };
             utilities.sendRequest(parameters);
