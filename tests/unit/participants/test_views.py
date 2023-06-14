@@ -785,9 +785,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.challenge1.slug = "{}-{}".format(
             self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
         )[:199]
-
-        self.challenge1.list_tags.add(self.tags[0])
-
         self.challenge1.save()
 
         self.challenge2 = Challenge.objects.create(
