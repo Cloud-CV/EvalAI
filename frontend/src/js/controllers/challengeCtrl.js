@@ -69,6 +69,7 @@
         vm.isSubmissionUsingCli = null;
         vm.isSubmissionUsingFile = null;
         vm.isRemoteChallenge = false;
+        vm.allowResumingSubmisisons = false;
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
@@ -198,6 +199,33 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.sendApprovalRequest = function() {
+            parameters.url = 'challenges/' + vm.challengeId + '/request_approval';
+            parameters.method = 'GET';
+            parameters.data = {};
+        
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var result = response.data;
+                    if (result.error) {
+                        $rootScope.notify("error", result.error);
+                    } else {
+                        $rootScope.notify("success", "Request sent successfully.");
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data.error;
+                    if (error) {
+                        $rootScope.notify("error", "There was an error: " + error);
+                    } else {
+                        $rootScope.notify("error", "There was an error.");
+                    }
+                }
+            };
+        
+            utilities.sendRequest(parameters);
+        };
+        
         // Get the logs from worker if submissions are failing.
         vm.startLoadingLogs = function() {
             vm.logs_poller = $interval(function(){
@@ -338,6 +366,7 @@
                 vm.approved_by_admin = details.approved_by_admin;
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
+                vm.allowResumingSubmissions = details.allow_resuming_submissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_approval = details.manual_approval;
                 vm.queueName = details.queue;
@@ -1399,6 +1428,25 @@
                     var error = response.data;
                     $rootScope.notify("error", error);
                     submissionObject.classList = [''];
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.resumeSubmission = function(submissionObject) {
+            submissionObject.classList2 = ['progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume-by-host/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList2 = [''];
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList2 = [''];
                 }
             };
             utilities.sendRequest(parameters);

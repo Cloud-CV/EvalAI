@@ -856,6 +856,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "max_docker_image_size": self.challenge1.max_docker_image_size,
                         "cli_version": self.challenge1.cli_version,
                         "remote_evaluation": self.challenge1.remote_evaluation,
+                        "allow_resuming_submissions": self.challenge1.allow_resuming_submissions,
                         "workers": self.challenge1.workers,
                         "created_at": "{0}{1}".format(
                             self.challenge1.created_at.isoformat(), "Z"
@@ -934,6 +935,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "max_docker_image_size": self.challenge1.max_docker_image_size,
                 "cli_version": self.challenge1.cli_version,
                 "remote_evaluation": self.challenge1.remote_evaluation,
+                "allow_resuming_submissions": self.challenge1.allow_resuming_submissions,
                 "workers": self.challenge1.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge1.created_at.isoformat(), "Z"
