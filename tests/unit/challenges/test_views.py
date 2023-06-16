@@ -5054,3 +5054,173 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 "error": "The following challenge phases do not have finished submissions: Challenge Phase"
             },
         )
+
+class CreateOrUpdateGithubChallengeTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username="host", email="host@test.com", password="secret_password"
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_challenge_using_github_success(self):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+            }
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json(), expected)
+        self.assertEqual(Challenge.objects.count(), 1)
+        self.assertEqual(DatasetSplit.objects.count(), 1)
+        self.assertEqual(Leaderboard.objects.count(), 1)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+    def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk + 10
+            },
+        )
+        expected = {
+            "detail": "ChallengeHostTeam {} does not exist".format(
+                self.challenge_host_team.pk + 10
+            )
+        }
+        response = self.client.post(
+            self.url,
+            {
+                "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                "zip_configuration": self.input_zip_file,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_challenge_using_github_when_user_is_not_authenticated(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        self.client.force_authenticate(user=None)
+        expected = {"error": "Authentication credentials were not provided."}
+        response = self.client.post(self.url, {})
+        self.assertEqual(list(response.data.values())[0], expected["error"])
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ValidateChallengeTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username="host", email="host@test.com", password="secret_password"
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_validate_challenge_using_success(self):
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "The challenge config has been validated successfully"
+            }
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected)
+
+
+# to add more test after pr is merged
