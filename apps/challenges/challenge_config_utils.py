@@ -253,17 +253,17 @@ error_message_dict = {
     "missing_leaderboard_id": "ERROR: There is no leaderboard ID for the leaderboard.",
     "missing_leaderboard_schema": "ERROR: There is no leaderboard schema for the leaderboard with ID: {}.",
     "missing_leaderboard_default_order_by": "ERROR: There is no 'default_order_by' key in the schema for the leaderboard with ID: {}.",
+    "missing_leaderboard_key": "ERROR: There is no key for the leaderboard in the YAML file. Please add it and then try again!",
     "incorrect_default_order_by": "ERROR: The 'default_order_by' value '{}' in the schema for the leaderboard with ID: {} is not a valid label.",
     "leaderboard_schema_error": "ERROR: The leaderboard with ID: {} has the following schema errors:\n {}",
     "leaderboard_additon_after_creation": "ERROR: The leaderboard with ID: {} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.",
     "leaderboard_deletion_after_creation": "ERROR: The leaderboard with ID: {} not found in config. Deletion of an existing leaderboard after challenge creation is not allowed.",
     "missing_leaderboard_labels": "ERROR: There is no 'labels' key in the schema for the leaderboard with ID: {}.",
-    "missing_leaderboard_key": "ERROR: There is no key 'leaderboard' in the YAML file.",
     "missing_challenge_phases": "ERROR: No challenge phase key found. Please add challenge phases in the YAML file and try again!",
     "missing_challenge_phase_codename": "ERROR: No codename found for the challenge phase. Please add the codename and try again!",
     "missing_test_annotation_file": "ERROR: No test annotation file found in the zip file for challenge phase {}.",
     "missing_submission_meta_attribute_keys": "ERROR: Please enter the following keys to the submission meta attribute in challenge phase {}: {}",
-    "invalid_submission_meta_attribute_types": "ERROR: Please ensure that the submission meta attribute types for the attribute in challenge phase {} are among the following: boolean, text, radio, or checkbox.",
+    "invalid_submission_meta_attribute_types": "ERROR: Please ensure that the submission meta attribute types for the attribute '{}' in challenge phase {} are among the following: boolean, text, radio, or checkbox.",
     "missing_challenge_phase_id": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
     "missing_challenge_phase_id_config": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
     "missing_leaderboard_id_config": "ERROR: The leaderboard with ID: {} doesn't exist. Addition of a new leaderboard after challenge creation is not allowed.",
@@ -274,7 +274,7 @@ error_message_dict = {
     "missing_dataset_split_codename": "ERROR: There is no codename for dataset split {}.",
     "duplicate_dataset_split_codename": "ERROR: Duplicate codename {} for dataset split {}. Please ensure codenames are unique.",
     "dataset_split_schema_errors": "ERROR: Dataset split {} has the following schema errors:\n {}",
-    "missing_dataset_split_id": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
+    "dataset_split_addition": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
     "missing_existing_dataset_split_id": "ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
     "challenge_phase_split_not_exist": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.",
     "challenge_phase_split_schema_errors": "ERROR: Challenge phase split {} has the following schema errors:\n {}",
@@ -287,7 +287,7 @@ error_message_dict = {
     "submission_meta_attribute_option_missing": "ERROR: Please include at least one option in the attribute for challenge phase {}",
     "missing_submission_meta_attribute_fields": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
     "challenge_phase_schema_errors": "ERROR: Challenge phase {} has the following schema errors:\n {}",
-    "challenge_phase_not_exist": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
+    "challenge_phase_addition": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
     "challenge_phase_not_found": "ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.",
     "is_submission_public_restricted": "ERROR: is_submission_public can't be 'True' for challenge phase '{}' with is_restricted_to_select_one_submission 'True'. Please change is_submission_public to 'False' and try again!",
     "missing_option_in_submission_meta_attribute": "ERROR: Please include at least one option in the attribute for challenge phase {}",
@@ -588,7 +588,7 @@ class ValidateChallengeConfigUtil:
                             self.error_messages.append(message)
                         self.leaderboard_ids.append(data["id"])
         else:
-            message = self.error_messages_dict.get("missing_leaderboard_id")
+            message = self.error_messages_dict.get("missing_leaderboard_key")
             self.error_messages.append(message)
 
         for current_leaderboard_id in current_leaderboard_config_ids:
@@ -699,7 +699,7 @@ class ValidateChallengeConfigUtil:
                         else:
                             message = self.error_messages_dict[
                                 "invalid_submission_meta_attribute_types"
-                            ].format(data["id"])
+                            ].format(attribute_type, data["id"])
                             self.error_messages.append(message)
                     else:
                         missing_keys_string = ", ".join(missing_keys)
@@ -740,7 +740,7 @@ class ValidateChallengeConfigUtil:
                     and int(data["id"]) not in current_phase_config_ids
                 ):
                     message = self.error_messages_dict[
-                        "challenge_phase_not_exist"
+                        "challenge_phase_addition"
                     ].format(data["id"])
                     self.error_messages.append(message)
                 self.phase_ids.append(data["id"])
@@ -872,7 +872,7 @@ class ValidateChallengeConfigUtil:
                         and int(split["id"]) not in current_dataset_config_ids
                     ):
                         message = self.error_messages_dict[
-                            "missing_dataset_split_id"
+                            "dataset_split_addition"
                         ].format(split["id"])
                         self.error_messages.append(message)
                     self.dataset_splits_ids.append(split["id"])
