@@ -76,6 +76,9 @@ class Challenge(TimeStampedModel):
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
     )
+    approval_requested = models.BooleanField(
+        default=False, verbose_name="Approval Requested", db_index=True
+    )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
     )

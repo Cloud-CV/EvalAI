@@ -4118,20 +4118,25 @@ def request_challenge_approval_by_pk(request, challenge_pk):
                 },
             ],
         }
-
-        webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
-        if webhook_response:
-            if webhook_response.content.decode('utf-8') == "ok":
-                response_data = {
-                    "message": "Approval request sent!",
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
-                return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        else:
-            error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
+        if challenge.approval_requested:
+            error_message = "Approval request has already been sent for this challenge."
             return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
+            if webhook_response:
+                if webhook_response.content.decode('utf-8') == "ok":
+                    response_data = {
+                        "message": "Approval request sent!",
+                    }
+                    challenge.approval_requested = True
+                    challenge.save()
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                    return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            else:
+                error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
+                return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
