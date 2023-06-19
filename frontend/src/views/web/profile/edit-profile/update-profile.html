@@ -1,0 +1,80 @@
+<section class="ev-md-container">
+    <div class="row">
+        <div class="ev-md-container ev-card-panel">
+            <form name="profileForm" ng-submit="profile.updateProfile(profileForm.$valid)" novalidate>
+            <div class="col s12 m6 l6 center">
+        <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
+            <div class="input-field align-left ">
+                <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400 " ng-model="profile.user.username" ng-maxlength="30" ng-minlength="3" required focus-if="profile.user.username">
+                <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                <label class="active" for="username">Username</label>
+                <div class="wrn-msg text-highlight" ng-messages="profileForm.username.$error" ng-if="profileForm.username.$touched || profileForm.$submitted">
+                    <p ng-message="required">Username is required</p>
+                    <p ng-message="maxlength"> Username is too long </p>
+                    <p ng-message="minlength"> Username is too short </p>
+                </div>
+            </div>
+        </div>
+        <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
+            <div class="input-field align-left">
+                <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="profile.user.first_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="profile.user.first_name">
+                <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                <label for="first_name">First Name</label>
+                <div class="wrn-msg text-highlight" ng-messages="profileForm.first_name.$error" ng-if="profileForm.first_name.$touched || profileForm.$submitted">
+                    <p ng-message="required">First Name is required</p>
+                    <p ng-message="maxlength"> First Name is too long</p>
+                </div>
+            </div>
+        </div>
+        <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view  ">
+            <div class="input-field align-left"> 
+                <input id="affiliation" name="affiliation" type="text" class="text-dark-black dark-autofill w-400" ng-model="profile.user.affiliation" ng-maxlength="50" required focus-if="profile.user.affiliation">
+                <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                <label for="affiliation">Affiliation</label>
+                <div class="wrn-msg text-highlight" ng-messages="profileForm.affiliation.$error" ng-if="profileForm.affiliation.$touched || profileForm.$submitted">
+                    <p ng-message="required">Affiliation is required</p>
+                    <p ng-message="maxlength"> Affiliation is too long</p>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col s12 m6 l6 center">
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+            <div class="input-field align-left"> 
+                <input id="google_scholar_url" name="google_scholar_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="profile.user.google_scholar_url" focus-if="profile.user.google_scholar_url">
+                <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                <label for="google_scholar_url">Google Scholar Url</label>
+                <div class="wrn-msg text-highlight" ng-if="profile.errorResponse.data.google_scholar_url">
+                    <span>{{profile.errorResponse.data.google_scholar_url[0]}}</span>
+                </div>
+            </div>
+            </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
+                <div class="input-field align-left">
+                    <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="profile.user.last_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="profile.user.last_name">
+                    <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                    <label for="last_name">Last Name</label>
+                    <div class="wrn-msg text-highlight" ng-messages="profileForm.last_name.$error" ng-if="profileForm.last_name.$touched || profileForm.$submitted">
+                        <p ng-message="required">Last Name is required</p>
+                        <p ng-message="maxlength"> Last Name is too long. </p>
+                    </div>
+                </div>
+            </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
+                <div class="input-field align-left"> 
+                    <input id="linkedin_url" name="linkedin_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="profile.user.linkedin_url" focus-if="profile.user.linkedin_url">
+                    <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                    <label for="linkedin_url">Linkedin Url</label>
+                    <div class="wrn-msg text-highlight" ng-if="profile.errorResponse.data.linkedin_url">
+                        <span>{{profile.errorResponse.data.linkedin_url[0]}}</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="align-left reg-control right">
+                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</section>

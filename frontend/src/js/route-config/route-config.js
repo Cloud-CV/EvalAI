@@ -352,10 +352,38 @@
             name: "web.profile",
             parent: "web",
             url: "/profile",
-            templateUrl: baseUrl + "/web/profile.html",
+            templateUrl: baseUrl + "/web/profile/profile.html",
             title: "Profile",
             controller: 'profileCtrl',
             controllerAs: 'profile',
+            redirectTo: "web.profile.AuthToken",
+            authenticate: true
+        };
+
+        var AuthToken = {
+            name: "web.profile.AuthToken",
+            parent: "web.profile",
+            url: "/auth-token",
+            templateUrl: baseUrl + "/web/auth/get-token.html",
+            title: 'AuthToken',
+            authenticate: true
+        };
+
+        var Updateprofile = {
+            name: "web.profile.Updateprofile",
+            parent: "web.profile",
+            url: "/update-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/update-profile.html",
+            title: 'Updateprofile',
+            authenticate: true
+        };
+
+        var ChangePassword = {
+            name: "web.profile.ChangePassword",
+            parent: "web.profile",
+            url: "/change-password",
+            templateUrl: baseUrl + "/web/change-password.html",
+            title: 'ChangePassword',
             authenticate: true
         };
 
@@ -579,6 +607,9 @@
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
+        $stateProvider.state(AuthToken);
+        $stateProvider.state(Updateprofile);
+        $stateProvider.state(ChangePassword);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);

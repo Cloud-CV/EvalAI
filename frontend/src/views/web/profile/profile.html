@@ -13,26 +13,20 @@
                     <br>
                     <span class="text-dark-black">{{profile.user.complete}}%</span>
                 </div>
-                <br><br>
-                <div>
-                    <button class="btn ev-btn-dark waves-effect waves-dark
-                        grad-btn grad-btn-dark fs-14"
-                        ng-click="profile.getAuthTokenDialog($event)">
-                        Get your Auth Token
-                    </button>
-                </div>
             </div>
             <div class="row">
                 <div class="col s12 m4 l4 center user-info">
                     <ul>
                         <li>
-                            <span class="text-light-black fs-12">First Name<br>
-                            </span> {{profile.user.first_name}}
-                        </li>
-                        <li>
+                            <span class="text-light-black fs-12">First Name<br></span>
+                            <span ng-if="!profile.user.first_name">-</span>
+                            <span ng-if="profile.user.first_name">{{profile.user.first_name}}</span>
+                          </li>
+                          <li>
                             <span class="text-light-black fs-12">Last Name<br></span>
-                            {{profile.user.last_name}}
-                        </li>
+                            <span ng-if="!profile.user.last_name">-</span>
+                            <span ng-if="profile.user.last_name">{{profile.user.last_name}}</span>
+                          </li>
                         <li>
                             <span class="text-light-black fs-12">Affiliated
                                 To<br></span>
@@ -64,17 +58,20 @@
                         </li>
                     </ul>
                 </div>
-                <ul class="inline-list profile-edit-group center">
-                    <li>
-                        <a ng-click="main.hostChallenge($event)"
-                            ui-sref="web.change-password" class="dark-link"><strong>Change
-                                Password</strong></a>
-                    </li>
-                    <li><a class="btn ev-btn-dark waves-effect waves-dark
-                            grad-btn grad-btn-dark fs-14"
-                            ui-sref="web.update-profile">Update Profile</a></li>
-                </ul>
+            </div>
+            <div class="row rm-row-bot">
+                <div class="col s12">
+                    <ul class="inline-list rm-gut">
+                        <li class="margin-btm-0"><a ui-sref=".AuthToken" ui-sref-active="active-challenge"
+                                class="text-light-black w-300"><i class="fa fa-info"></i> Auth Token</a></li>
+                        <li class="margin-btm-0"><a ui-sref=".Updateprofile" ui-sref-active="active-challenge"
+                                class="text-light-black w-300"><i class="fa fa-users"></i> Profile</a></li>
+                        <li class="margin-btm-0"><a ui-sref=".ChangePassword" ui-sref-active="active-challenge"
+                                class="text-light-black w-300"><i class="fa fa-key"></i> Password</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<ui-view></ui-view>
