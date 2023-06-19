@@ -5,13 +5,13 @@
             challenge-title-container">
             <div class="col s12 m3 l3 center">
                 <img src="dist/images/pro-pic.png" class="profile-pic">
-                <div>{{profile.user.username}}</div>
-                <div class="text-light-black w-300">{{profile.user.email}}</div>
+                <div>{{profile.userdisplay.username}}</div>
+                <div class="text-light-black w-300">{{profile.userdisplay.email}}</div>
                 <br><br>
                 <div class="text-highlight"><span class="fs-12">
                     Profile Completed</span>
                     <br>
-                    <span class="text-dark-black">{{profile.user.complete}}%</span>
+                    <span class="text-dark-black">{{profile.userdisplay.complete}}%</span>
                 </div>
             </div>
             <div class="row">
@@ -19,18 +19,18 @@
                     <ul>
                         <li>
                             <span class="text-light-black fs-12">First Name<br></span>
-                            <span ng-if="!profile.user.first_name">-</span>
-                            <span ng-if="profile.user.first_name">{{profile.user.first_name}}</span>
+                            <span ng-if="!profile.userdisplay.first_name">-</span>
+                            <span ng-if="profile.userdisplay.first_name">{{profile.userdisplay.first_name}}</span>
                           </li>
                           <li>
                             <span class="text-light-black fs-12">Last Name<br></span>
-                            <span ng-if="!profile.user.last_name">-</span>
-                            <span ng-if="profile.user.last_name">{{profile.user.last_name}}</span>
+                            <span ng-if="!profile.userdisplay.last_name">-</span>
+                            <span ng-if="profile.userdisplay.last_name">{{profile.userdisplay.last_name}}</span>
                           </li>
                         <li>
                             <span class="text-light-black fs-12">Affiliated
                                 To<br></span>
-                            {{profile.user.affiliation}}
+                            {{profile.userdisplay.affiliation}}
                         </li>
                     </ul>
                 </div>
@@ -39,22 +39,22 @@
                         <li>
                             <span class="text-light-black fs-12">GitHub Url<br>
                             </span>
-                            <a href="{{profile.user.github_url}}"
+                            <a href="{{profile.userdisplay.github_url}}"
                                 target="_blank"
-                                class="text-highlight">{{profile.user.github_url || '-'}}</a>
+                                class="text-highlight">{{profile.userdisplay.github_url || '-'}}</a>
                         </li>
                         <li>
                             <span class="text-light-black fs-12">
                                 Google Scholar Url<br></span>
-                            <a href="{{profile.user.google_scholar_url}}"
+                            <a href="{{profile.userdisplay.google_scholar_url}}"
                                 target="_blank" class="text-highlight">
-                                {{profile.user.google_scholar_url || '-'}}</a>
+                                {{profile.userdisplay.google_scholar_url || '-'}}</a>
                         </li>
                         <li>
                             <span class="text-light-black fs-12">Linkedin Url<br></span>
-                            <a href="{{profile.user.linkedin_url}}"
+                            <a href="{{profile.userdisplay.linkedin_url}}"
                                 target="_blank"
-                                class="text-highlight">{{profile.user.linkedin_url || '-'}}</a>
+                                class="text-highlight">{{profile.userdisplay.linkedin_url || '-'}}</a>
                         </li>
                     </ul>
                 </div>

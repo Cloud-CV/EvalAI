@@ -128,3 +128,28 @@ def refresh_auth_token(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def check_username_availability(request):
+    """
+    Checks if the username is available or not.
+    """
+    username = request.data.get("username", None)
+    if username is None:
+        response_data = {"error": "Username is required."}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(username=username)
+        if (user):
+            response_data = {"error": "Username is not available."}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    except User.DoesNotExist:
+        pass
+
+    response_data = {"message": "Username is available."}
+    return Response(response_data, status=status.HTTP_200_OK)

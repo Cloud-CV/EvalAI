@@ -21,6 +21,7 @@
         vm.status = 'Show';
         vm.token = '';
         vm.expiresAt = '';
+        vm.username_matched = false;
 
         // default parameters
         $rootScope.canShowOldPassword = false;
@@ -52,13 +53,14 @@
             onSuccess: function(response) {
                 var status = response.status;
                 var result = response.data;
+                vm.userdisplay = angular.copy(result);
                 if (status == 200) {
                     for (var i in result) {
                         if (result[i] === "" || result[i] === undefined || result[i] === null) {
                             if (i === "linkedin_url" || i === "github_url" || i === "google_scholar_url") {
                                 result[i] = "";
                             } else {
-                                result[i] = "";
+                                result[i] = "-";
                             }
                             vm.countLeft = vm.countLeft + 1;
                         }
@@ -212,6 +214,7 @@
                     "first_name": vm.user.first_name,
                     "last_name": vm.user.last_name,
                     "affiliation": vm.user.affiliation,
+                    "email": vm.user.email,
                     "github_url": vm.user.github_url,
                     "google_scholar_url": vm.user.google_scholar_url,
                     "linkedin_url": vm.user.linkedin_url
@@ -327,6 +330,30 @@
                 $rootScope.notify("error", "Something went wrong! Please refresh the page and try again.");
             }
         };
+
+        vm.checkusername = function() {
+            parameters.url = 'accounts/user/check_username_availability/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.data = {
+                "username": vm.user.username
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.usernameCheck = true;
+                    vm.username_matched = false;
+                    vm.usernamemessage = response.data.message;
+                },
+                onError: function(response) {
+                    vm.usernameCheck = true;
+                    vm.username_matched = true;
+                    vm.usernamemessage = response.data.error;
+                }
+            };
+            utilities.sendRequest(parameters);
+
+        };
+
     }
 
 })();

@@ -5,13 +5,14 @@
             <div class="col s12 m6 l6 center">
         <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
             <div class="input-field align-left ">
-                <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400 " ng-model="profile.user.username" ng-maxlength="30" ng-minlength="3" required focus-if="profile.user.username">
+                <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400 " ng-model="profile.user.username" ng-maxlength="30" ng-minlength="3" ng-keyup="profile.checkusername()" required focus-if="profile.user.username">
                 <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                 <label class="active" for="username">Username</label>
                 <div class="wrn-msg text-highlight" ng-messages="profileForm.username.$error" ng-if="profileForm.username.$touched || profileForm.$submitted">
                     <p ng-message="required">Username is required</p>
                     <p ng-message="maxlength"> Username is too long </p>
                     <p ng-message="minlength"> Username is too short </p>
+                    <p ng-show="profile.usernameCheck">{{profile.usernamemessage}}</p>
                 </div>
             </div>
         </div>
@@ -36,10 +37,8 @@
                     <p ng-message="maxlength"> Affiliation is too long</p>
                 </div>
             </div>
-            </div>
         </div>
-        <div class="col s12 m6 l6 center">
-            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
             <div class="input-field align-left"> 
                 <input id="google_scholar_url" name="google_scholar_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="profile.user.google_scholar_url" focus-if="profile.user.google_scholar_url">
                 <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
@@ -48,6 +47,15 @@
                     <span>{{profile.errorResponse.data.google_scholar_url[0]}}</span>
                 </div>
             </div>
+        </div>
+        </div>
+        <div class="col s12 m6 l6 center">
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
+                <div class="input-field align-left ">
+                    <input id="email" name="email" type="text" class="text-dark-black dark-autofill w-400 " ng-model="profile.user.email"  required focus-if="profile.user.email">
+                    <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                    <label class="active" for="username">Email</label>
+                </div>
             </div>
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
                 <div class="input-field align-left">
@@ -70,9 +78,19 @@
                     </div>
                 </div>
             </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view ">
+                <div class="input-field align-left"> 
+                    <input id="github_url" name="github_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.github_url" focus-if="updateProfile.user.github_url">
+                    <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                    <label for="github_url">GitHub Url</label>
+                    <div class="wrn-msg text-highlight" ng-if="updateProfile.errorResponse.data.github_url">
+                        <span>{{updateProfile.errorResponse.data.github_url[0]}}</span>
+                    </div>
+                </div>
             </div>
+        </div>
             <div class="align-left reg-control right">
-                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="profile.username_matched" type="submit" value="Submit">Submit</button>
             </div>
             </form>
         </div>
