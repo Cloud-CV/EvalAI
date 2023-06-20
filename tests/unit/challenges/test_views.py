@@ -165,7 +165,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
                 "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
-                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions, 
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
