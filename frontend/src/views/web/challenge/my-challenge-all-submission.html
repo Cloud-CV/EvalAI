@@ -96,6 +96,7 @@
                         <th class="fs-18 w-300" data-field="button">Rerun submission</th>
                         <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
                                 challenge.allowResumingSubmissions" data-field="button">Resume submission</th>
+                        <th class="fs-18 w-300">Cancel submission</th>
                         <th class="fs-18 w-300" data-field="button">Verify submission</th>
                     </thead>
                     <tbody>
@@ -157,6 +158,11 @@
                             <td ng-if="challenge.isChallengeHost && challenge.allowResumingSubmissions">
                                 <center><a ng-class="key.classList2" class="fa fa-play pointer" ng-click="challenge.resumeSubmission(key)"></a>
                                 </center>
+                            </td>
+                            <td ng-if="challenge.isChallengeHost && challenge.allowHostCancelSubmissions">
+                                <center><a class="times" ng-click="challenge.showCancelSubmissionDialog(key.id, key.status)">
+                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                </a></center>
                             </td>
                             <td>
                                 <center><input ng-checked="key.is_verified_by_host"
