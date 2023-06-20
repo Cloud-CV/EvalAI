@@ -1862,12 +1862,6 @@ def re_run_submission_by_host(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not challenge.remote_evaluation:
-        response_data = {
-            "error": "Challenge {} must be a remote evaluation for resuming submissions".format(challenge.title)
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     message = handle_submission_rerun(submission, Submission.CANCELLED)
     publish_submission_message(message)
     response_data = {
