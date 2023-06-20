@@ -856,6 +856,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "remote_evaluation": self.challenge1.remote_evaluation,
                         "allow_resuming_submissions": self.challenge1.allow_resuming_submissions,
                         "allow_host_cancel_submissions": self.challenge1.allow_host_cancel_submissions,
+                        "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                         "workers": self.challenge1.workers,
                         "created_at": "{0}{1}".format(
                             self.challenge1.created_at.isoformat(), "Z"
@@ -935,6 +936,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "remote_evaluation": self.challenge1.remote_evaluation,
                 "allow_resuming_submissions": self.challenge1.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge1.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                 "workers": self.challenge1.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge1.created_at.isoformat(), "Z"
