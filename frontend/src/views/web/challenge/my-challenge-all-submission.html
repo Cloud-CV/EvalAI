@@ -158,6 +158,11 @@
                                 <center><a ng-class="key.classList2" class="fa fa-play pointer" ng-click="challenge.resumeSubmission(key)"></a>
                                 </center>
                             </td>
+                            <td ng-if="challenge.isChallengeHost && challenge.allowHostCancelSubmissions">
+                                <center><a class="times" ng-click="challenge.showCancelSubmissionDialog(key.id, key.status)">
+                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                </a></center>
+                            </td>
                             <td>
                                 <center><input ng-checked="key.is_verified_by_host"
                                         ng-model="challenge.verifiedStatus[key.id]" type="checkbox"
