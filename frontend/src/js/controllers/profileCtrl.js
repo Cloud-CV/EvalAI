@@ -244,6 +244,7 @@
                 parameters.method = 'PUT';
                 parameters.data = {
                     "username": vm.user.username,
+                    "email": vm.user.email,
                     "first_name": vm.user.first_name,
                     "last_name": vm.user.last_name,
                     "affiliation": vm.user.affiliation,
@@ -259,7 +260,6 @@
                             $mdDialog.hide();
                             // navigate to profile page
                             $state.reload();
-
                         }
                     },
                     onError: function(response) {
@@ -284,6 +284,7 @@
                                 } else {
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
+                                $rootScope.notify("error", vm.FormError);
 
                             } catch (error) {
                                 $rootScope.notify("error", error);
@@ -297,6 +298,7 @@
 
             } else {
                 $mdDialog.hide();
+                $rootScope.notify("error", "Form fields are not valid!");
 
             }
         };
