@@ -231,6 +231,40 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
+class DeregisterParticipantTeamTest(BaseAPITestClass):
+    def setUp(self):
+        super(DeregisterParticipantTeamTest, self).setUp()
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+    def test_deregister_participant_team(self):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        response = self.client.post(self.url, {})
+        breakpoint()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["success"], "Successfully deregistered!")
+
+    def test_deregister_participant_team_with_challenge_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk + 2},
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
 class CreateChallengeTest(BaseAPITestClass):
     def setUp(self):
         super(CreateChallengeTest, self).setUp()

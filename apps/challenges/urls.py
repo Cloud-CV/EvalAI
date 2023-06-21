@@ -229,6 +229,11 @@ urlpatterns = [
         views.get_participant_teams_for_challenge,
         name="get_participant_teams_for_challenge",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/deregister/$",
+        views.deregister_participant_team_from_challenge,
+        name="deregister_participant_team_from_challenge",
+    ),
 ]
 
 app_name = "challenges"

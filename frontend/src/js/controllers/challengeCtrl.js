@@ -2834,6 +2834,26 @@
             return encodeURIComponent(metric);
         };
 
+        vm.deregister = function() {
+            parameters.url = 'challenges/challenge/' + vm.challengeId + '/deregister/';
+            parameters.method = 'POST';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if (status === 200) {
+                        $rootScope.notify("success", "You have successfully deregistered from the challenge.");
+                        $state.go('web.challenge-main.challenge-page.overview');
+                        $state.reload();
+                    }
+                },
+                onError: function(response) {
+                    $rootScope.notify("error", response.data.error);
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
     }
 
 })();
