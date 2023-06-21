@@ -312,9 +312,9 @@ def validate_challenge_config_util(
         )
 
     # Check Manual Approval
-    if "maunal_approval" in yaml_file_data:
-        manual_approval = yaml_file_data.get("manual_approval")
-        if not isinstance(manual_approval, bool):
+    if "manual_participant_approval" in yaml_file_data:
+        manual_participant_approval = yaml_file_data.get("manual_participant_approval")
+        if not isinstance(manual_participant_approval, bool):
             message = "Manual approval should be a boolean value"
             error_messages.append(message)
 

@@ -339,7 +339,7 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         serializer = ParticipantTeamDetailSerializer(participant_team)
         if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
             approved = True
-        elif not challenge.manual_approval:
+        elif not challenge.manual_participant_approval:
             approved = True
         else:
             approved = False
@@ -572,6 +572,7 @@ def remove_participant_team_from_approved_list(request, challenge_pk, participan
 
     try:
         participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+        team_name = participant_team.team_name
     except ParticipantTeam.DoesNotExist:
         response_data = {"error": "Participant Team does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -587,8 +588,11 @@ def remove_participant_team_from_approved_list(request, challenge_pk, participan
     if challenge.approved_participant_teams.filter(pk=participant_team_pk).exists() and not submission_exist:
         challenge.approved_participant_teams.remove(participant_team)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    elif submission_exist:
+        response_data = {"error": f"Participant Team {team_name} has existing submissions and cannot be unapproved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
-        response_data = {"error": "Participant Team not approved or already have a Submission"}
+        response_data = {"error": f"Participant Team {team_name} was not approved"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
@@ -1576,12 +1580,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     raise RuntimeError()
 
             # Check for Manual Approval
-            if "manual_approval" in yaml_file_data:
-                manual_approval = yaml_file_data["manual_approval"]
-                if manual_approval:
-                    challenge.manual_approval = True
+            if "manual_participant_approval" in yaml_file_data:
+                manual_participant_approval = yaml_file_data["manual_participant_approval"]
+                if manual_participant_approval:
+                    challenge.manual_participant_approval = True
                 else:
-                    challenge.manual_approval = False
+                    challenge.manual_participant_approval = False
                 challenge.save()
 
             # Create Dataset Splits
@@ -3546,12 +3550,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         ] = serializer.instance.pk
 
                     # Check for Manual Approval
-                    if "manual_approval" in yaml_file_data:
-                        manual_approval = yaml_file_data["manual_approval"]
-                        if manual_approval:
-                            challenge.manual_approval = True
+                    if "manual_participant_approval" in yaml_file_data:
+                        manual_participant_approval = yaml_file_data["manual_participant_approval"]
+                        if manual_participant_approval:
+                            challenge.manual_participant_approval = True
                         else:
-                            challenge.manual_approval = False
+                            challenge.manual_participant_approval = False
                         challenge.save()
 
                     # Create Dataset Splits
@@ -3573,12 +3577,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         ] = serializer.instance.pk
 
                     # Check for Manual Approval
-                    if "manual_approval" in yaml_file_data:
-                        manual_approval = yaml_file_data["manual_approval"]
-                        if manual_approval:
-                            challenge.manual_approval = True
+                    if "manual_participant_approval" in yaml_file_data:
+                        manual_participant_approval = yaml_file_data["manual_participant_approval"]
+                        if manual_participant_approval:
+                            challenge.manual_participant_approval = True
                         else:
-                            challenge.manual_approval = False
+                            challenge.manual_participant_approval = False
                         challenge.save()
 
                     # Create Challenge Phase Splits

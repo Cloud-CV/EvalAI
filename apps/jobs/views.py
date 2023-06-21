@@ -242,7 +242,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         # check if manual approval is enabled and team is approved
-        if challenge.manual_approval and not challenge.approved_participant_teams.filter(pk=participant_team_id).exists():
+        if challenge.manual_participant_approval and not challenge.approved_participant_teams.filter(pk=participant_team_id).exists():
             response_data = {
                 "error": "Your team is not approved by challenge host"
             }

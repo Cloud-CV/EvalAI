@@ -50,7 +50,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
-            "manual_approval",
+            "manual_participant_approval",
             "is_active",
             "leaderboard_description",
             "allowed_email_domains",

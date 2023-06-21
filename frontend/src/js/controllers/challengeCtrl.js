@@ -371,7 +371,7 @@
                 vm.allowHostCancelSubmissions = details.allow_host_cancel_submissions,
                 vm.allowCancelRunningSubmissions = details.allow_cancel_running_submissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
-                vm.manual_approval = details.manual_approval;
+                vm.manual_participant_approval = details.manual_participant_approval;
                 vm.queueName = details.queue;
                 vm.getTeamName(vm.challengeId);
 

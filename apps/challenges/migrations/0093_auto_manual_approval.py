@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('participants', '0012_remove_docker_repository_uri_from_team'),
-        ('challenges', '0090_challenge_allow_resuming_submissions'),
+        ('challenges', '0092_challenge_allow_cancel_running_submissions'),
     ]
 
     operations = [
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='challenge',
-            name='manual_approval',
+            name='manual_participant_approval',
             field=models.BooleanField(default=False),
         ),
     ]

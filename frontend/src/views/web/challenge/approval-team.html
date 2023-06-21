@@ -9,7 +9,7 @@
         <div class="row">
             <div class="col s12 approval-table-scroll">
                 <div class="ev-md-container ev-card-body exist-team-card">
-                <div ng-if="challenge.manual_approval" class="page-msg"></div>
+                <div ng-if="challenge.manual_participant_approval" class="page-msg"></div>
                 <ul class="collapsible" data-collapsible="accordion">
                     <li ng-repeat="key in challenge.approved_teams.participant_teams">
                         <div class="collapsible-header">
@@ -17,7 +17,7 @@
                             <div class="show-member-title pointer">
                                 <span ng-if="value.team_url != ''"><b class="text-med-black">Team: </b><a class="orange-text" href="{{key.team_url}}" target="_blank">{{key.team_name}}</a></span>
                                 <span ng-if="value.team_url == ''"><b class="text-med-black">Team: </b>{{key.team_name}}</span>
-                                <center class="list-icon text-highlight w-300 right">
+                                <center class="list-icon text-highlight w-300 right approval-button">
                                     <input ng-checked="key.approved"
                                     ng-model="key.approved" type="checkbox"
                                     id="isApprovedTeam{{ key.id }}"
