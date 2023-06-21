@@ -27,6 +27,12 @@
         </div>
     </div>
 </section>
+<section ng-if="!challenge.isChallengeHost" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5">
+        Click here to deregister from this challenge:
+        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16" ng-click="challenge.deregisterdialog($event)"> Deregister</button>
+    </div>
+</section>
 
 <!-- If challenge is docker based -->
 <section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
@@ -176,7 +182,6 @@
             <div class="col s12">
                 <h5 class="w-300">Make Submission</h5>
             </div>
-            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16 right" ng-click="challenge.deregister()"> Deregister</button>
             <div class="col s12 m7 fs-16 w-300">
                 <div class="ev-card-body exist-team-card">
                     <form ng-submit="challenge.makeSubmission();">
@@ -499,6 +504,6 @@
 <!-- Show error when the challenge is not active -->
 <section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <p class="fs-16 w-300">Sorry, the challenge is not active.</p>
+        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16 right" ng-click="challenge.deregister()"> Deregister</button>
     </div>
 </section>

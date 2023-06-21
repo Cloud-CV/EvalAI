@@ -250,7 +250,6 @@ class DeregisterParticipantTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, {})
-        breakpoint()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["success"], "Successfully deregistered!")
 
