@@ -70,6 +70,7 @@
         vm.isSubmissionUsingFile = null;
         vm.isRemoteChallenge = false;
         vm.allowResumingSubmisisons = false;
+        vm.allowCancelRunningSubmissions = false;
         vm.allowedSubmissionFileTypes = [];
         vm.currentPhaseAllowedSubmissionFileTypes = '';
         vm.defaultSubmissionMetaAttributes = [];
@@ -367,6 +368,8 @@
                 vm.isRemoteChallenge = details.remote_evaluation;
                 vm.isStaticCodeUploadChallenge = details.is_static_dataset_code_upload;
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
+                vm.allowHostCancelSubmissions = details.allow_host_cancel_submissions,
+                vm.allowCancelRunningSubmissions = details.allow_cancel_running_submissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_approval = details.manual_approval;
                 vm.queueName = details.queue;
@@ -2236,7 +2239,7 @@
         };
 
         vm.showCancelSubmissionDialog = function(submissionId, status) {
-            if (status != "submitted") {
+            if (!vm.allowCancelRunningSubmissions && status != "submitted") {
                 $rootScope.notify("error", "Only unproccessed submissions can be cancelled");
                 return;
             }

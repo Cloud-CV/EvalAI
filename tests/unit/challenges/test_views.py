@@ -167,6 +167,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
                 "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -403,6 +405,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -490,6 +494,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -603,6 +609,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -665,6 +673,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -1237,6 +1247,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
                 "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1305,6 +1317,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1373,6 +1387,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
                 "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1441,6 +1457,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
                 "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1493,6 +1511,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
                 "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1545,6 +1565,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1664,6 +1686,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
                 "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1807,6 +1831,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "cli_version": self.challenge3.cli_version,
             "remote_evaluation": self.challenge3.remote_evaluation,
             "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
             "workers": self.challenge3.workers,
             "created_at": "{0}{1}".format(
                 self.challenge3.created_at.isoformat(), "Z"
@@ -1883,6 +1909,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "cli_version": self.challenge4.cli_version,
             "remote_evaluation": self.challenge4.remote_evaluation,
             "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
             "workers": self.challenge4.workers,
             "created_at": "{0}{1}".format(
                 self.challenge4.created_at.isoformat(), "Z"
@@ -2015,6 +2043,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2079,6 +2109,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2143,6 +2175,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2205,6 +2239,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
                 "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -2257,6 +2293,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
