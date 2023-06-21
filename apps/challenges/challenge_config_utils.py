@@ -6,12 +6,7 @@ import yaml
 from django.core.files.base import ContentFile
 
 from os.path import basename, isfile, join
-from challenges.models import (
-    ChallengePhase,
-    ChallengePhaseSplit,
-    DatasetSplit,
-    Leaderboard,
-)
+from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -23,7 +18,6 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
     ZipChallengeSerializer,
 )
-
 from .utils import (
     get_file_content,
     get_missing_keys_from_dict,
@@ -63,7 +57,9 @@ def get_yaml_files_from_challenge_config(zip_ref):
             not name.startswith("__MACOSX")
         ):
             yaml_file_name = name
-            extracted_folder_name = yaml_file_name.split(basename(yaml_file_name))[0]
+            extracted_folder_name = yaml_file_name.split(
+                basename(yaml_file_name)
+            )[0]
             yaml_file_count += 1
 
     if not yaml_file_count:
@@ -102,7 +98,9 @@ def get_yaml_read_error(exc):
     return error_description, line_number, column_number
 
 
-def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+def is_challenge_config_yaml_html_field_valid(
+    yaml_file_data, key, base_location
+):
     """
     Arguments:
         yaml_file_data {dict} -- challenge config yaml dict
@@ -117,17 +115,11 @@ def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location
     is_valid = False
     if value:
         if not isfile(value):
-            message = (
-                "File at path {} not found. Please specify a valid file path".format(
-                    key
-                )
-            )
-        elif not value.endswith(".html"):
-            message = (
-                "File {} is not a HTML file. Please specify a valid HTML file".format(
-                    key
-                )
-            )
+            message = "File at path {} not found. Please specify a valid file path".format(key)
+        elif not value.endswith(
+            ".html"
+        ):
+            message = "File {} is not a HTML file. Please specify a valid HTML file".format(key)
         else:
             is_valid = True
     else:
@@ -135,7 +127,9 @@ def is_challenge_config_yaml_html_field_valid(yaml_file_data, key, base_location
     return is_valid, message
 
 
-def is_challenge_phase_config_yaml_html_field_valid(yaml_file_data, key, base_location):
+def is_challenge_phase_config_yaml_html_field_valid(
+    yaml_file_data, key, base_location
+):
     """
     Arguments:
         yaml_file_data {dict} -- challenge config yaml dict
@@ -177,20 +171,19 @@ def download_and_write_file(url, stream, output_path, mode):
                 write_file(output_path, mode, response.content)
                 is_success = True
         except IOError:
-            message = "Unable to process the uploaded zip file. " "Please try again!"
+            message = (
+                "Unable to process the uploaded zip file. " "Please try again!"
+            )
     except requests.exceptions.RequestException:
         message = (
-            "A server error occured while processing zip file. " "Please try again!"
+            "A server error occured while processing zip file. "
+            "Please try again!"
         )
     return is_success, message
 
 
 def is_challenge_phase_split_mapping_valid(
-    phase_ids,
-    leaderboard_ids,
-    dataset_split_ids,
-    phase_split,
-    challenge_phase_split_index,
+    phase_ids, leaderboard_ids, dataset_split_ids, phase_split, challenge_phase_split_index
 ):
     """
     Arguments:
@@ -207,23 +200,11 @@ def is_challenge_phase_split_mapping_valid(
     error_messages = []
 
     if leaderboard_id not in leaderboard_ids:
-        error_messages.append(
-            "ERROR: Invalid leaderboard id {} found in challenge phase split {}.".format(
-                leaderboard_id, challenge_phase_split_index
-            )
-        )
+        error_messages.append("ERROR: Invalid leaderboard id {} found in challenge phase split {}.".format(leaderboard_id, challenge_phase_split_index))
     if phase_id not in phase_ids:
-        error_messages.append(
-            "ERROR: Invalid phased id {} found in challenge phase split {}.".format(
-                phase_id, challenge_phase_split_index
-            )
-        )
+        error_messages.append("ERROR: Invalid phased id {} found in challenge phase split {}.".format(phase_id, challenge_phase_split_index))
     if dataset_split_id not in dataset_split_ids:
-        error_messages.append(
-            "ERROR: Invalid dataset split id {} found in challenge phase split {}.".format(
-                dataset_split_id, challenge_phase_split_index
-            )
-        )
+        error_messages.append("ERROR: Invalid dataset split id {} found in challenge phase split {}.".format(dataset_split_id, challenge_phase_split_index))
 
     if error_messages:
         return False, error_messages
@@ -339,21 +320,22 @@ class ValidateChallengeConfigUtil:
         ) = get_yaml_files_from_challenge_config(self.zip_ref)
 
         self.challenge_config_location = join(
-            self.base_location, self.unique_folder_name, self.extracted_folder_name
+            self.base_location,
+            self.unique_folder_name,
+            self.extracted_folder_name,
         )
         self.phase_ids = []
         self.leaderboard_ids = []
 
     def read_and_validate_yaml(self):
-
         if not self.yaml_file_count:
             message = self.error_messages_dict.get("no_yaml_file")
             self.error_messages.append(message)
 
         if self.yaml_file_count > 1:
-            message = self.error_messages_dict.get("multiple_yaml_files").format(
-                self.yaml_file_count
-            )
+            message = self.error_messages_dict.get(
+                "multiple_yaml_files"
+            ).format(self.yaml_file_count)
             self.error_messages.append(message)
 
         # YAML Read Error
@@ -363,10 +345,14 @@ class ValidateChallengeConfigUtil:
             )
             self.yaml_file_data = read_yaml_file(self.yaml_file_path, "r")
         except (yaml.YAMLError, ScannerError) as exc:
-            error_description, line_number, column_number = get_yaml_read_error(exc)
-            message = self.error_messages_dict.get("yaml_file_read_error").format(
-                error_description, line_number, column_number
-            )
+            (
+                error_description,
+                line_number,
+                column_number,
+            ) = get_yaml_read_error(exc)
+            message = self.error_messages_dict.get(
+                "yaml_file_read_error"
+            ).format(error_description, line_number, column_number)
             self.error_messages.append(message)
 
     def validate_challenge_title(self):
@@ -378,7 +364,9 @@ class ValidateChallengeConfigUtil:
     def validate_challenge_logo(self):
         image = self.yaml_file_data.get("image")
         if image and (
-            image.endswith(".jpg") or image.endswith(".jpeg") or image.endswith(".png")
+            image.endswith(".jpg")
+            or image.endswith(".jpeg")
+            or image.endswith(".png")
         ):
             self.challenge_image_path = join(
                 self.base_location,
@@ -400,24 +388,32 @@ class ValidateChallengeConfigUtil:
     def validate_challenge_description(self):
         challenge_description = self.yaml_file_data.get("description")
         if not challenge_description or len(challenge_description) == 0:
-            message = self.error_messages_dict.get("missing_challenge_description")
+            message = self.error_messages_dict.get(
+                "missing_challenge_description"
+            )
             self.error_messages.append(message)
         else:
             is_valid, message = is_challenge_config_yaml_html_field_valid(
-                self.yaml_file_data, "description", self.challenge_config_location
+                self.yaml_file_data,
+                "description",
+                self.challenge_config_location,
             )
             if not is_valid:
                 self.error_messages.append(message)
             else:
                 self.yaml_file_data["description"] = get_value_from_field(
-                    self.yaml_file_data, self.challenge_config_location, "description"
+                    self.yaml_file_data,
+                    self.challenge_config_location,
+                    "description",
                 )
 
     # Check for evaluation details file
     def validate_evaluation_details_file(self):
         evaluation_details = self.yaml_file_data.get("evaluation_details")
         if not evaluation_details or len(evaluation_details) == 0:
-            message = self.error_messages_dict.get("missing_evaluation_details")
+            message = self.error_messages_dict.get(
+                "missing_evaluation_details"
+            )
             self.error_messages.append(message)
         else:
             is_valid, message = is_challenge_config_yaml_html_field_valid(
@@ -428,7 +424,9 @@ class ValidateChallengeConfigUtil:
             if not is_valid:
                 self.error_messages.append(message)
             else:
-                self.yaml_file_data["evaluation_details"] = get_value_from_field(
+                self.yaml_file_data[
+                    "evaluation_details"
+                ] = get_value_from_field(
                     self.yaml_file_data,
                     self.challenge_config_location,
                     "evaluation_details",
@@ -438,7 +436,9 @@ class ValidateChallengeConfigUtil:
     def validate_terms_and_conditions_file(self):
         terms_and_conditions = self.yaml_file_data.get("terms_and_conditions")
         if not terms_and_conditions or len(terms_and_conditions) == 0:
-            message = self.error_messages_dict.get("missing_terms_and_conditions")
+            message = self.error_messages_dict.get(
+                "missing_terms_and_conditions"
+            )
             self.error_messages.append(message)
         else:
             is_valid, message = is_challenge_config_yaml_html_field_valid(
@@ -449,7 +449,9 @@ class ValidateChallengeConfigUtil:
             if not is_valid:
                 self.error_messages.append(message)
             else:
-                self.yaml_file_data["terms_and_conditions"] = get_value_from_field(
+                self.yaml_file_data[
+                    "terms_and_conditions"
+                ] = get_value_from_field(
                     self.yaml_file_data,
                     self.challenge_config_location,
                     "terms_and_conditions",
@@ -457,9 +459,13 @@ class ValidateChallengeConfigUtil:
 
     # Validate  ubmission guidelines file
     def validate_submission_guidelines_file(self):
-        submission_guidelines = self.yaml_file_data.get("submission_guidelines")
+        submission_guidelines = self.yaml_file_data.get(
+            "submission_guidelines"
+        )
         if not submission_guidelines or len(submission_guidelines) == 0:
-            message = self.error_messages_dict.get("missing_submission_guidelines")
+            message = self.error_messages_dict.get(
+                "missing_submission_guidelines"
+            )
             self.error_messages.append(message)
         else:
             is_valid, message = is_challenge_config_yaml_html_field_valid(
@@ -470,7 +476,9 @@ class ValidateChallengeConfigUtil:
             if not is_valid:
                 self.error_messages.append(message)
             else:
-                self.yaml_file_data["submission_guidelines"] = get_value_from_field(
+                self.yaml_file_data[
+                    "submission_guidelines"
+                ] = get_value_from_field(
                     self.yaml_file_data,
                     self.challenge_config_location,
                     "submission_guidelines",
@@ -484,17 +492,23 @@ class ValidateChallengeConfigUtil:
             )
             # Check for evaluation script file in extracted zip folder
             if isfile(evaluation_script_path):
-                self.challenge_evaluation_script_file = read_file_data_as_content_file(
-                    evaluation_script_path, "rb", evaluation_script_path
+                self.challenge_evaluation_script_file = (
+                    read_file_data_as_content_file(
+                        evaluation_script_path, "rb", evaluation_script_path
+                    )
                 )
                 self.files[
                     "challenge_evaluation_script_file"
                 ] = self.challenge_evaluation_script_file
             else:
-                message = self.error_messages_dict.get("missing_evaluation_script")
+                message = self.error_messages_dict.get(
+                    "missing_evaluation_script"
+                )
                 self.error_messages.append(message)
         else:
-            message = self.error_messages_dict.get("missing_evaluation_script_key")
+            message = self.error_messages_dict.get(
+                "missing_evaluation_script_key"
+            )
             self.error_messages.append(message)
 
     def validate_dates(self):
@@ -506,7 +520,9 @@ class ValidateChallengeConfigUtil:
             self.error_messages.append(message)
         if start_date and end_date:
             if start_date > end_date:
-                message = self.error_messages_dict.get("start_date_greater_than_end_date")
+                message = self.error_messages_dict.get(
+                    "start_date_greater_than_end_date"
+                )
                 self.error_messages.append(message)
 
     def validate_serializer(self):
@@ -518,7 +534,9 @@ class ValidateChallengeConfigUtil:
                     "challenge_host_team": self.challenge_host_team,
                     "image": self.challenge_image_file,
                     "evaluation_script": self.challenge_evaluation_script_file,
-                    "github_repository": self.request.data["GITHUB_REPOSITORY"],
+                    "github_repository": self.request.data[
+                        "GITHUB_REPOSITORY"
+                    ],
                 },
             )
             if not serializer.is_valid():
@@ -534,7 +552,9 @@ class ValidateChallengeConfigUtil:
             for data in leaderboard:
                 error = False
                 if "id" not in data:
-                    message = self.error_messages_dict.get("missing_leaderboard_id")
+                    message = self.error_messages_dict.get(
+                        "missing_leaderboard_id"
+                    )
                     self.error_messages.append(message)
                     error = True
                 if "schema" not in data:
@@ -545,9 +565,9 @@ class ValidateChallengeConfigUtil:
                     error = True
                 else:
                     if "labels" not in data["schema"]:
-                        message = self.error_messages_dict.get("missing_leaderboard_labels").format(
-                            data.get("id")
-                        )
+                        message = self.error_messages_dict.get(
+                            "missing_leaderboard_labels"
+                        ).format(data.get("id"))
                         self.error_messages.append(message)
                         error = True
                     if "default_order_by" not in data["schema"]:
@@ -560,7 +580,8 @@ class ValidateChallengeConfigUtil:
                         default_order_by = data["schema"]["default_order_by"]
                         if (
                             "labels" in data["schema"]
-                            and default_order_by not in data["schema"]["labels"]
+                            and default_order_by
+                            not in data["schema"]["labels"]
                         ):
                             message = self.error_messages_dict.get(
                                 "incorrect_default_order_by"
@@ -580,7 +601,8 @@ class ValidateChallengeConfigUtil:
                     else:
                         if (
                             current_leaderboard_config_ids
-                            and int(data["id"]) not in current_leaderboard_config_ids
+                            and int(data["id"])
+                            not in current_leaderboard_config_ids
                         ):
                             message = self.error_messages_dict.get(
                                 "leaderboard_additon_after_creation"
@@ -628,10 +650,12 @@ class ValidateChallengeConfigUtil:
                     self.challenge_config_location, test_annotation_file
                 )
                 if isfile(test_annotation_file_path):
-                    challenge_test_annotation_file = read_file_data_as_content_file(
-                        test_annotation_file_path,
-                        "rb",
-                        test_annotation_file_path,
+                    challenge_test_annotation_file = (
+                        read_file_data_as_content_file(
+                            test_annotation_file_path,
+                            "rb",
+                            test_annotation_file_path,
+                        )
                     )
                     self.files["challenge_test_annotation_files"].append(
                         challenge_test_annotation_file
@@ -646,9 +670,14 @@ class ValidateChallengeConfigUtil:
                 self.files["challenge_test_annotation_files"].append(None)
 
             if data.get("max_submissions_per_month", None) is None:
-                data["max_submissions_per_month"] = data.get("max_submissions", None)
+                data["max_submissions_per_month"] = data.get(
+                    "max_submissions", None
+                )
 
-            is_valid, message = is_challenge_phase_config_yaml_html_field_valid(
+            (
+                is_valid,
+                message,
+            ) = is_challenge_phase_config_yaml_html_field_valid(
                 data, "description", self.challenge_config_location
             )
             if not is_valid:
@@ -669,11 +698,15 @@ class ValidateChallengeConfigUtil:
             start_date = data.get("start_date")
             end_date = data.get("end_date")
             if not start_date or not end_date:
-                message = self.error_messages_dict.get("missing_dates_challenge_phase").format(data.get("id"))
+                message = self.error_messages_dict.get(
+                    "missing_dates_challenge_phase"
+                ).format(data.get("id"))
                 self.error_messages.append(message)
             if start_date and end_date:
                 if start_date > end_date:
-                    message = self.error_messages_dict.get("start_date_greater_than_end_date_challenge_phase").format(data.get("id"))
+                    message = self.error_messages_dict.get(
+                        "start_date_greater_than_end_date_challenge_phase"
+                    ).format(data.get("id"))
                     self.error_messages.append(message)
 
             # To ensure that the schema for submission meta attributes is valid
@@ -683,7 +716,12 @@ class ValidateChallengeConfigUtil:
                     missing_keys = get_missing_keys_from_dict(attribute, keys)
 
                     if len(missing_keys) == 0:
-                        valid_attribute_types = ["boolean", "text", "radio", "checkbox"]
+                        valid_attribute_types = [
+                            "boolean",
+                            "text",
+                            "radio",
+                            "checkbox",
+                        ]
                         attribute_type = attribute["type"]
                         if attribute_type in valid_attribute_types:
                             if (
@@ -724,7 +762,6 @@ class ValidateChallengeConfigUtil:
                     data=data,
                     context={
                         "exclude_fields": ["challenge"],
-                        "test_annotation": challenge_test_annotation_file,
                         "config_id": data["id"],
                     },
                 )
@@ -747,17 +784,23 @@ class ValidateChallengeConfigUtil:
 
         for current_challenge_phase_id in current_phase_config_ids:
             if current_challenge_phase_id not in self.phase_ids:
-                message = self.error_messages_dict["challenge_phase_not_found"].format(
-                    current_challenge_phase_id
-                )
+                message = self.error_messages_dict[
+                    "challenge_phase_not_found"
+                ].format(current_challenge_phase_id)
                 self.error_messages.append(message)
 
     def validate_challenge_phase_splits(self, current_phase_split_ids):
-        challenge_phase_splits = self.yaml_file_data.get("challenge_phase_splits")
+        challenge_phase_splits = self.yaml_file_data.get(
+            "challenge_phase_splits"
+        )
         challenge_phase_split_uuids = []
         if challenge_phase_splits:
             phase_split = 1
-            exclude_fields = ["challenge_phase", "dataset_split", "leaderboard"]
+            exclude_fields = [
+                "challenge_phase",
+                "dataset_split",
+                "leaderboard",
+            ]
             for data in challenge_phase_splits:
                 expected_keys = {
                     "is_leaderboard_order_descending",
@@ -794,7 +837,10 @@ class ValidateChallengeConfigUtil:
                             )
                         )
 
-                    is_mapping_valid, messages = is_challenge_phase_split_mapping_valid(
+                    (
+                        is_mapping_valid,
+                        messages,
+                    ) = is_challenge_phase_split_mapping_valid(
                         self.phase_ids,
                         self.leaderboard_ids,
                         self.dataset_splits_ids,
@@ -827,7 +873,9 @@ class ValidateChallengeConfigUtil:
                     ].format(uuid[0], uuid[1], uuid[2])
                     self.error_messages.append(message)
         else:
-            message = self.error_messages_dict["no_key_for_challenge_phase_splits"]
+            message = self.error_messages_dict[
+                "no_key_for_challenge_phase_splits"
+            ]
             self.error_messages.append(message)
 
     # Check for dataset splits
@@ -962,8 +1010,12 @@ def validate_challenge_config_util(
         current_leaderboard_config_ids = [
             int(x.config_id) for x in current_leaderboards
         ]
-        current_dataset_config_ids = [int(x.config_id) for x in current_dataset_splits]
-        current_phase_config_ids = [int(x.config_id) for x in current_challenge_phases]
+        current_dataset_config_ids = [
+            int(x.config_id) for x in current_dataset_splits
+        ]
+        current_phase_config_ids = [
+            int(x.config_id) for x in current_challenge_phases
+        ]
         current_phase_split_ids = [
             (
                 split.leaderboard.config_id,
