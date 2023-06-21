@@ -260,11 +260,12 @@ def create_job_object(message, environment_image, challenge):
     return job
 
 
-def create_static_code_upload_submission_job_object(message):
+def create_static_code_upload_submission_job_object(message, challenge):
     """Function to create the static code upload pod AWS EKS Job object
 
     Arguments:
         message {[dict]} -- Submission message from AWS SQS queue
+        challenge {challenges.Challenge} - Challenge model for the related challenge
 
     Returns:
         [AWS EKS Job class object] -- AWS EKS Job class object
@@ -296,6 +297,7 @@ def create_static_code_upload_submission_job_object(message):
         name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
     )
     image = message["submitted_image_uri"]
+    job_constraints = get_job_constraints(challenge)
     # Get init container
     init_container = get_init_container(submission_pk)
     # Get dataset volume and volume mounts
@@ -333,7 +335,7 @@ def create_static_code_upload_submission_job_object(message):
             PHASE_PK_ENV,
         ],
         resources=client.V1ResourceRequirements(
-            limits={"nvidia.com/gpu": "1"}
+            limits=job_constraints
         ),
         volume_mounts=volume_mount_list,
     )
@@ -420,7 +422,7 @@ def process_submission_callback(api_instance, body, challenge_phase, challenge, 
     try:
         logger.info("[x] Received submission message %s" % body)
         if body.get("is_static_dataset_code_upload_submission"):
-            job = create_static_code_upload_submission_job_object(body)
+            job = create_static_code_upload_submission_job_object(body, challenge)
         else:
             environment_image = challenge_phase.get("environment_image")
             job = create_job_object(body, environment_image, challenge)
