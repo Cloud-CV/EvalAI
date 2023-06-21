@@ -1893,9 +1893,9 @@ def resume_submission_by_host(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if submission.status not in [Submission.FAILED, Submission.PARTIALLY_EVALUATED]:
+    if submission.status != Submission.FAILED:
         response_data = {
-            "error": "Only failed or partially evaluated submissions can be resumed"
+            "error": "Only failed submissions can be resumed"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
