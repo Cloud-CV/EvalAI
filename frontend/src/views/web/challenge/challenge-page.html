@@ -85,6 +85,7 @@
                         <li ng-if="challenge.page.domain_name" class="list-inline-item chip light-blue white-text">{{challenge.page.domain_name}}</li>
                         <span ng-if="challenge.isChallengeHost">
                             <a class="pointer" ng-click="challenge.editchallengeTagDialog($event)">
+                                <span ng-if="!(challenge.page.domain_name && tags)">Add Tags or Domain</span>
                                 <i class="fa fa-pencil" aria-hidden="true"></i>
                             </a>
                         </span>
