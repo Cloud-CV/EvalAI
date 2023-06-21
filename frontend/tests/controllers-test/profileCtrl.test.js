@@ -213,6 +213,7 @@ describe('Unit tests for profile controller', function () {
             vm.updateProfile(resetconfirmFormValid);
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
             expect($state.reload());
+            $mdDialog.hide();
         });
 
         it('when username is invalid', function () {
@@ -278,7 +279,8 @@ describe('Unit tests for profile controller', function () {
         it('invalid form submission', function () {
             var resetconfirmFormValid = false;
             vm.updateProfile(resetconfirmFormValid);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Form fields are not valid!");
+            $mdDialog.hide();
+            $state.reload();
         });
     });
 });

@@ -298,7 +298,7 @@
 
             } else {
                 $mdDialog.hide();
-                $rootScope.notify("error", "Form fields are not valid!");
+                $state.reload();
 
             }
         };
