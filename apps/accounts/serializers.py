@@ -28,7 +28,7 @@ class ProfileSerializer(UserDetailsSerializer):
     Serializer to update the user profile.
     """
 
-    affiliation = serializers.CharField(source="profile.affiliation")
+    affiliation = serializers.CharField(source="profile.affiliation", allow_blank=True)
     github_url = serializers.URLField(
         source="profile.github_url", allow_blank=True
     )

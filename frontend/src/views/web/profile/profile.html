@@ -1,66 +1,10 @@
 <!-- <slide-profile></slide-profile> -->
 <div class="ev-md-container">
-    <div class="row">
-        <div class="ev-md-container ev-card-panel ev-z-depth-5
+
+        <div class="ev-md-container-custom ev-card-panel ev-z-depth-5
             challenge-title-container">
-            <div class="col s12 m3 l3 center">
-                <img src="dist/images/pro-pic.png" class="profile-pic">
-                <div>{{profile.user.username}}</div>
-                <div class="text-light-black w-300">{{profile.user.email}}</div>
-                <br><br>
-                <div class="text-highlight"><span class="fs-12">
-                    Profile Completed</span>
-                    <br>
-                    <span class="text-dark-black">{{profile.user.complete}}%</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m4 l4 center user-info">
-                    <ul>
-                        <li>
-                            <span class="text-light-black fs-12">First Name<br></span>
-                            <span ng-if="!profile.user.first_name">-</span>
-                            <span ng-if="profile.user.first_name">{{profile.user.first_name}}</span>
-                          </li>
-                          <li>
-                            <span class="text-light-black fs-12">Last Name<br></span>
-                            <span ng-if="!profile.user.last_name">-</span>
-                            <span ng-if="profile.user.last_name">{{profile.user.last_name}}</span>
-                          </li>
-                        <li>
-                            <span class="text-light-black fs-12">Affiliated
-                                To<br></span>
-                            {{profile.user.affiliation}}
-                        </li>
-                    </ul>
-                </div>
-                <div class="col s12 m5 l5 user-urls center">
-                    <ul>
-                        <li>
-                            <span class="text-light-black fs-12">GitHub Url<br>
-                            </span>
-                            <a href="{{profile.user.github_url}}"
-                                target="_blank"
-                                class="text-highlight">{{profile.user.github_url || '-'}}</a>
-                        </li>
-                        <li>
-                            <span class="text-light-black fs-12">
-                                Google Scholar Url<br></span>
-                            <a href="{{profile.user.google_scholar_url}}"
-                                target="_blank" class="text-highlight">
-                                {{profile.user.google_scholar_url || '-'}}</a>
-                        </li>
-                        <li>
-                            <span class="text-light-black fs-12">Linkedin Url<br></span>
-                            <a href="{{profile.user.linkedin_url}}"
-                                target="_blank"
-                                class="text-highlight">{{profile.user.linkedin_url || '-'}}</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row rm-row-bot">
-                <div class="col s12">
+
+      
                     <ul class="inline-list rm-gut">
                         <li class="margin-btm-0"><a ui-sref=".AuthToken" ui-sref-active="active-challenge"
                                 class="text-light-black w-300"><i class="fa fa-info"></i> Auth Token</a></li>
@@ -69,9 +13,8 @@
                         <li class="margin-btm-0"><a ui-sref=".ChangePassword" ui-sref-active="active-challenge"
                                 class="text-light-black w-300"><i class="fa fa-key"></i> Password</a></li>
                     </ul>
-                </div>
-            </div>
-        </div>
+               
+
     </div>
 </div>
 <ui-view></ui-view>

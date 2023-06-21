@@ -67,6 +67,7 @@
                     vm.compPerc = parseInt((vm.countLeft / count) * 100);
 
                     vm.user = result;
+                    vm.userdetails = angular.copy(result);
                     vm.user.complete = 100 - vm.compPerc;
 
                 }
@@ -179,30 +180,67 @@
             if (url === undefined || url === null) {
                 return true;
             }
-            return (url.length <= 200);
+            if (url.length <= 200 && /^https?:\/\/[\w\-]+(\.[\w\-]+)+(\/[\w\-]*)*(\?[\w\-\+=&]*)?(#[\w\-]*)?$/.test(url)) {
+                return true;
+            }
+            return false;
+        };
+
+        vm.editprofileDialog = function(ev) {
+            if (ev.currentTarget.id === "username") {
+                vm.titleInput = "Username";
+                vm.editid = "username";
+            }
+            else if (ev.currentTarget.id === "email") {
+                vm.titleInput = "Email";
+                vm.editid = "email";
+            }
+            else if (ev.currentTarget.id === "first_name") {
+                vm.titleInput = "First Name";
+                vm.editid = "first_name";
+            }
+            else if (ev.currentTarget.id === "last_name") {
+                vm.titleInput = "Last Name";
+                vm.editid = "last_name";
+            }
+            else if (ev.currentTarget.id === "affiliation") {
+                vm.titleInput = "Affiliation";
+                vm.editid = "affiliation";
+            }
+            else if (ev.currentTarget.id === "github_url") {
+                vm.titleInput = "Github URL";
+                vm.editid = "github_url";
+            }
+            else if (ev.currentTarget.id === "google_scholar_url") {
+                vm.titleInput = "Google Scholar URL";
+                vm.editid = "google_scholar_url";
+            }
+            else if (ev.currentTarget.id === "linkedin_url") {
+                vm.titleInput = "Linkedin URL";
+                vm.editid = "linkedin_url";
+            }
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/profile/edit-profile/edit-profile.html',
+                escapeToClose: false
+            });
         };
 
         // function to update Profile
-        vm.updateProfile = function(resetconfirmFormValid) {
+        vm.updateProfile = function(resetconfirmFormValid, editid) {
             if (resetconfirmFormValid) {
                 vm.user.github_url = vm.user.github_url === null ? "" : vm.user.github_url;
                 vm.user.google_scholar_url = vm.user.google_scholar_url === null ? "" : vm.user.google_scholar_url;
                 vm.user.linkedin_url = vm.user.linkedin_url === null ? "" : vm.user.linkedin_url;
 
-                if (!vm.isURLValid(vm.user.github_url)) {
+                if (!vm.isURLValid(vm.user.editid)) {
                     vm.isFormError = true;
-                    vm.FormError = "Github URL length should not be greater than 200!";
-                    return;
-                } else if (!vm.isURLValid(vm.user.google_scholar_url)) {
-                    vm.isFormError = true;
-                    vm.FormError = "Google Scholar URL length should not be greater than 200!";
-                    return;
-                } else if (!vm.isURLValid(vm.user.linkedin_url)) {
-                    vm.isFormError = true;
-                    vm.FormError = "LinkedIn URL length should not be greater than 200!";
+                    $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
                     return;
                 }
-
 
                 var parameters = {};
                 parameters.url = 'auth/user/';
@@ -221,8 +259,9 @@
                     onSuccess: function(response) {
                         if (response.status == 200) {
                             $rootScope.notify("success", "Profile updated successfully!");
+                            $mdDialog.hide();
                             // navigate to profile page
-                            $state.go('web.profile');
+                            $state.reload();
 
                         }
                     },
@@ -260,7 +299,7 @@
                 utilities.sendRequest(parameters);
 
             } else {
-                $rootScope.notify("error", "Form fields are not valid!");
+                $mdDialog.hide();
 
             }
         };

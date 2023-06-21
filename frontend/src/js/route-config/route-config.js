@@ -378,6 +378,15 @@
             authenticate: true
         };
 
+        var Editprofile = {
+            name: "web.profile.Editprofile",
+            parent: "web.profile",
+            url: "/edit-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/edit-profile.html",
+            title: 'Editprofile',
+            authenticate: true
+        };
+
         var ChangePassword = {
             name: "web.profile.ChangePassword",
             parent: "web.profile",
@@ -460,17 +469,6 @@
             url: "/get-involved",
             templateUrl: baseUrl + "/web/get-involved.html",
             title: "Get Involved"
-        };
-
-        var update_profile = {
-            name: "web.update-profile",
-            parent: "web",
-            url: "/update-profile",
-            templateUrl: baseUrl + "/web/update-profile.html",
-            title: "Update Profile",
-            controller: 'updateProfileCtrl',
-            controllerAs: 'updateProfile',
-            authenticate: true
         };
 
         var contact_us = {
@@ -617,7 +615,7 @@
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
-        $stateProvider.state(update_profile);
+        $stateProvider.state(Editprofile);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);
