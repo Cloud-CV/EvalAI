@@ -65,7 +65,7 @@ class ProfileSerializer(UserDetailsSerializer):
         )
 
         profile = instance.profile
-        if profile_data and affiliation:
+        if profile_data:
             profile.username = username
             profile.affiliation = affiliation
             profile.github_url = github_url

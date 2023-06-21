@@ -180,10 +180,7 @@
             if (url === undefined || url === null) {
                 return true;
             }
-            if (url.length <= 200 && /^https?:\/\/[\w\-]+(\.[\w\-]+)+(\/[\w\-]*)*(\?[\w\-\+=&]*)?(#[\w\-]*)?$/.test(url)) {
-                return true;
-            }
-            return false;
+            return (url.length <= 200);
         };
 
         vm.editprofileDialog = function(ev) {
@@ -236,7 +233,7 @@
                 vm.user.google_scholar_url = vm.user.google_scholar_url === null ? "" : vm.user.google_scholar_url;
                 vm.user.linkedin_url = vm.user.linkedin_url === null ? "" : vm.user.linkedin_url;
 
-                if (!vm.isURLValid(vm.user.editid)) {
+                if (!vm.isURLValid(vm.user[editid])) {
                     vm.isFormError = true;
                     $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
                     return;

@@ -1,0 +1,88 @@
+<section class="ev-md-container text-center ">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-md-container ev-card-body update-profile-card">
+                <div class="pass-title">Update Profile</div>
+                <form name="updateProfileForm" ng-submit="updateProfile.updateProfile(updateProfileForm.$valid)" novalidate>
+                    <div class="input-field align-left">
+                        <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.username" ng-maxlength="30" ng-minlength="3" required focus-if="updateProfile.user.username" disabled>
+                        <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                        <label class="active" for="username">Username</label>
+                        <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.username.$error" ng-if="updateProfileForm.username.$touched || updateProfileForm.$submitted">
+                            <p ng-message="required">Username is required</p>
+                            <p ng-message="maxlength"> Username is too long </p>
+                            <p ng-message="minlength"> Username is too short </p>
+                        </div>
+                    </div>
+                    <div class="input-field align-left">
+                        <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.first_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="updateProfile.user.first_name">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="first_name">First Name</label>
+                        <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.first_name.$error" ng-if="updateProfileForm.first_name.$touched || updateProfileForm.$submitted">
+                            <p ng-message="required">First Name is required</p>
+                            <p ng-message="maxlength"> First Name is too long</p>
+                        </div>
+                    </div>
+                    <div class="input-field align-left">
+                        <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.last_name" ng-maxlength="30" ng-pattern="/^[A-Za-z ]*$/" required focus-if="updateProfile.user.last_name">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="last_name">Last Name</label>
+                        <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.last_name.$error" ng-if="updateProfileForm.last_name.$touched || updateProfileForm.$submitted">
+                            <p ng-message="required">Last Name is required</p>
+                            <p ng-message="maxlength"> Last Name is too long. </p>
+                        </div>
+                    </div>
+                    <div class="input-field align-left"> 
+                        <input id="affiliation" name="affiliation" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.affiliation" ng-maxlength="50" required focus-if="updateProfile.user.affiliation">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="affiliation">Affiliation</label>
+                        <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.affiliation.$error" ng-if="updateProfileForm.affiliation.$touched || updateProfileForm.$submitted">
+                            <p ng-message="required">Affiliation is required</p>
+                            <p ng-message="maxlength"> Affiliation is too long</p>
+                        </div>
+                    </div>
+                    <div class="input-field align-left"> 
+                        <input id="github_url" name="github_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.github_url" focus-if="updateProfile.user.github_url">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="github_url">GitHub Url</label>
+                        <div class="wrn-msg text-highlight" ng-if="updateProfile.errorResponse.data.github_url">
+                            <span>{{updateProfile.errorResponse.data.github_url[0]}}</span>
+                        </div>
+                    </div>
+                    <div class="input-field align-left"> 
+                        <input id="google_scholar_url" name="google_scholar_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.google_scholar_url" focus-if="updateProfile.user.google_scholar_url">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="google_scholar_url">Google Scholar Url</label>
+                        <div class="wrn-msg text-highlight" ng-if="updateProfile.errorResponse.data.google_scholar_url">
+                            <span>{{updateProfile.errorResponse.data.google_scholar_url[0]}}</span>
+                        </div>
+                    </div>
+                    <div class="input-field align-left"> 
+                        <input id="linkedin_url" name="linkedin_url" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.linkedin_url" focus-if="updateProfile.user.linkedin_url">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="linkedin_url">Linkedin Url</label>
+                        <div class="wrn-msg text-highlight" ng-if="updateProfile.errorResponse.data.linkedin_url">
+                            <span>{{updateProfile.errorResponse.data.linkedin_url[0]}}</span>
+                        </div>
+                    </div>
+                    <div class="align-left reg-control">
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                    </div>
+                    <div ng-if="updateProfile.isFormError" class="wrn-msg text-highlight align-right"> {{updateProfile.FormError}}
+                    </div>
+                </form>
+                <div class="back-profile-group">
+                    <ul class="inline-list">
+                        <li>
+                            <a ui-sref="web.profile" class="dark-link"><strong>Back To Profile</strong></a>
+                        </li>
+                        <li>
+                            <span class="text-light-black">Or</span>
+                        </li>
+                        <li><a class="dark-link" ui-sref="web.change-password">Change Password</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

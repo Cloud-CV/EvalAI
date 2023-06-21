@@ -356,7 +356,7 @@
             title: "Profile",
             controller: 'profileCtrl',
             controllerAs: 'profile',
-            redirectTo: "web.profile.AuthToken",
+            redirectTo: "web.profile.Updateprofile",
             authenticate: true
         };
 
