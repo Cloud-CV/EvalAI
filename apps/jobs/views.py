@@ -33,7 +33,7 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     StandardResultSetPagination,
     get_boto3_client,
-    get_or_create_sqs_queue_object,
+    get_or_create_sqs_queue,
     paginated_queryset,
 )
 from challenges.models import (
@@ -78,6 +78,7 @@ from .utils import (
     get_remaining_submission_for_a_phase,
     get_submission_model,
     handle_submission_rerun,
+    handle_submission_resume,
     is_url_valid,
     reorder_submissions_comparator,
     reorder_submissions_comparator_to_key,
@@ -256,6 +257,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         submissions_in_progress_status = [
             Submission.SUBMITTED,
             Submission.SUBMITTING,
+            Submission.RESUMING,
             Submission.RUNNING,
         ]
         submissions_in_progress = Submission.objects.filter(
@@ -1868,6 +1870,77 @@ def re_run_submission_by_host(request, submission_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def resume_submission_by_host(request, submission_pk):
+    """
+    API endpoint to resume a submission from failed or partially evaluated state.
+    Only challenge host has access to this endpoint.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {
+            "error": "Submission {} does not exist".format(submission_pk)
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    if submission.ignore_submission:
+        response_data = {
+            "error": "Deleted submissions can't be resumed"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if submission.status != Submission.FAILED:
+        response_data = {
+            "error": "Only failed submissions can be resumed"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if submission.status == Submission.RESUMING:
+        response_data = {
+            "error": "Submission is already resumed"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # get the challenge and challenge phase object
+    challenge_phase = submission.challenge_phase
+    challenge = challenge_phase.challenge
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Only challenge hosts are allowed to resume a submission"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if not challenge.is_active:
+        response_data = {
+            "error": "Challenge {} is not active".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge.remote_evaluation:
+        response_data = {
+            "error": "Challenge {} is not remote. Resuming is only supported for remote challenges.".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge.allow_resuming_submissions:
+        response_data = {
+            "error": "Challenge {} does not allow resuming submissions.".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    message = handle_submission_resume(submission, Submission.RESUMING)
+    publish_submission_message(message)
+    response_data = {
+        "success": "Submission is successfully resumed"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1887,6 +1960,7 @@ def get_submissions_for_challenge(request, challenge_pk):
     valid_submission_status = [
         Submission.SUBMITTED,
         Submission.RUNNING,
+        Submission.RESUMING,
         Submission.FAILED,
         Submission.CANCELLED,
         Submission.FINISHED,
@@ -1993,7 +2067,7 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_or_create_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     try:
         messages = queue.receive_messages()
         if len(messages):
@@ -2088,7 +2162,7 @@ def delete_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_or_create_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
@@ -2489,6 +2563,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     submissions_in_progress_status = [
         Submission.SUBMITTED,
         Submission.SUBMITTING,
+        Submission.RESUMING,
         Submission.RUNNING,
     ]
     submissions_in_progress = Submission.objects.filter(

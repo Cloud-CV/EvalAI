@@ -1,41 +1,32 @@
-import boto3
 import csv
 import io
 import json
-import mock
 import os
-import requests
-import responses
 import shutil
-
 from datetime import timedelta
-from moto import mock_s3
 from os.path import join
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse_lazy
+import boto3
+import mock
+import requests
+import responses
+from allauth.account.models import EmailAddress
+from challenges.models import (Challenge, ChallengeConfiguration,
+                               ChallengePhase, ChallengePhaseSplit,
+                               DatasetSplit, Leaderboard, StarChallenge)
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
+from django.urls import reverse_lazy
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from challenges.models import (
-    Challenge,
-    ChallengeConfiguration,
-    ChallengePhase,
-    ChallengePhaseSplit,
-    DatasetSplit,
-    Leaderboard,
-    StarChallenge,
-)
-from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
+from moto import mock_s3
+from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):
@@ -173,6 +164,9 @@ class GetChallengeTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
+                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -331,6 +325,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -416,6 +413,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -527,6 +527,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -587,6 +590,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "max_docker_image_size": self.challenge.max_docker_image_size,
             "cli_version": self.challenge.cli_version,
             "remote_evaluation": self.challenge.remote_evaluation,
+            "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -1154,6 +1160,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1220,6 +1229,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1286,6 +1298,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
+                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1352,6 +1367,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
                 "cli_version": self.challenge4.cli_version,
                 "remote_evaluation": self.challenge4.remote_evaluation,
+                "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1402,6 +1420,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1452,6 +1473,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1567,6 +1591,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
                 "cli_version": self.challenge3.cli_version,
                 "remote_evaluation": self.challenge3.remote_evaluation,
+                "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1705,6 +1732,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "max_docker_image_size": self.challenge3.max_docker_image_size,
             "cli_version": self.challenge3.cli_version,
             "remote_evaluation": self.challenge3.remote_evaluation,
+            "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
             "workers": self.challenge3.workers,
             "created_at": "{0}{1}".format(
                 self.challenge3.created_at.isoformat(), "Z"
@@ -1779,6 +1809,9 @@ class GetChallengeByPk(BaseAPITestClass):
             "max_docker_image_size": self.challenge4.max_docker_image_size,
             "cli_version": self.challenge4.cli_version,
             "remote_evaluation": self.challenge4.remote_evaluation,
+            "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
+            "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
+            "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
             "workers": self.challenge4.workers,
             "created_at": "{0}{1}".format(
                 self.challenge4.created_at.isoformat(), "Z"
@@ -1909,6 +1942,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1971,6 +2007,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2033,6 +2072,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2093,6 +2135,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge.max_docker_image_size,
                 "cli_version": self.challenge.cli_version,
                 "remote_evaluation": self.challenge.remote_evaluation,
+                "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -2143,6 +2188,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
                 "cli_version": self.challenge2.cli_version,
                 "remote_evaluation": self.challenge2.remote_evaluation,
+                "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
+                "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
+                "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -4970,3 +5018,77 @@ class TestAllowedEmailIds(BaseChallengePhaseClass):
         )
         response = self.client.get(self.url, {}, json)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class ChallengeSendApprovalRequestTest(BaseAPITestClass):
+    def setUp(self):
+        super(ChallengeSendApprovalRequestTest, self).setUp()
+
+    @responses.activate
+    def test_request_challenge_approval_when_challenge_has_finished_submissions(self):
+        responses.add(responses.POST, settings.APPROVAL_WEBHOOK_URL, body=b'ok', status=200, content_type='text/plain')
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"message": "Approval request sent!"})
+
+    def test_request_challenge_approval_when_challenge_has_unfinished_submissions(
+        self,
+    ):
+        self.user1 = User.objects.create(
+            username="otheruser1",
+            password="other_secret_password",
+            email="user1@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.participant_team1 = ParticipantTeam.objects.create(
+            team_name="Participant Team for Challenge8", created_by=self.user1
+        )
+
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
+            status=Participant.ACCEPTED,
+            team=self.participant_team1,
+        )
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        url = reverse_lazy(
+            "challenges:request_challenge_approval_by_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "The following challenge phases do not have finished submissions: Challenge Phase"
+            },
+        )
