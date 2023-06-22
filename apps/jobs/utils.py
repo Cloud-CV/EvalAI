@@ -234,6 +234,47 @@ def handle_submission_rerun(submission, updated_status):
     return message
 
 
+def handle_submission_resume(submission, updated_status):
+    """
+    Function to handle the submission resuming. It is handled in the following way -
+    1. Change the submissions status to resumed
+
+    Arguments:
+        submission {Submission Model class object} -- submission object
+        updated_status {str} -- Updated status for current submission
+    """
+
+    data = {"status": updated_status}
+    serializer = SubmissionSerializer(submission, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+
+    message = {
+        "challenge_pk": submission.challenge_phase.challenge.pk,
+        "phase_pk": submission.challenge_phase.pk,
+        "submission_pk": submission.pk,
+        "is_static_dataset_code_upload_submission": False,
+    }
+
+    if submission.challenge_phase.challenge.is_docker_based:
+        try:
+            response = requests.get(submission.input_file.url)
+        except Exception:
+            logger.exception("Failed to get input_file")
+            return
+
+        if response and response.status_code == 200:
+            message["submitted_image_uri"] = response.json()[
+                "submitted_image_uri"
+            ]
+            if (
+                submission.challenge_phase.challenge.is_static_dataset_code_upload
+            ):
+                message["is_static_dataset_code_upload_submission"] = True
+
+    return message
+
+
 def calculate_distinct_sorted_leaderboard_data(
     user, challenge_obj, challenge_phase_split, only_public_entries, order_by
 ):
@@ -494,6 +535,7 @@ def reorder_submissions_comparator(submission_1, submission_2):
     submissions_in_progress_status = [
         Submission.SUBMITTED,
         Submission.SUBMITTING,
+        Submission.RESUMING,
         Submission.RUNNING,
     ]
     if (

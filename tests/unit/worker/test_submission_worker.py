@@ -1,27 +1,25 @@
-import boto3
-import mock
 import os
-import responses
 import shutil
 import tempfile
 import zipfile
-
 from datetime import timedelta
-from moto import mock_sqs
 from io import BytesIO
 from os.path import join
 
+import boto3
+import mock
+import responses
+from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-
-from rest_framework.test import APITestCase
-
-from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from moto import mock_sqs
 from participants.models import ParticipantTeam
+from rest_framework.test import APITestCase
+
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
@@ -34,6 +32,7 @@ from scripts.workers.submission_worker import (
     return_file_url_per_environment,
     get_or_create_sqs_queue,
 )
+from settings.common import SQS_RETENTION_PERIOD
 
 
 class BaseAPITestClass(APITestCase):
@@ -279,7 +278,10 @@ class BaseAPITestClass(APITestCase):
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
-        self.sqs_client.create_queue(QueueName="test_queue")
+        self.sqs_client.create_queue(
+            QueueName="test_queue",
+            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+        )
         get_or_create_sqs_queue("test_queue")
         queue_url = self.sqs_client.get_queue_url(QueueName="test_queue")[
             "QueueUrl"
