@@ -5182,9 +5182,20 @@ class ValidateChallengeTest(APITestCase):
             ),
             "rb",
         )
+        self.zip_incorect_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example3", "wrong.zip"
+            ),
+            "rb",
+        )
         self.test_zip_file = SimpleUploadedFile(
             self.zip_file.name,
             self.zip_file.read(),
+            content_type="application/zip",
+        )
+        self.test_zip_incorect_file = SimpleUploadedFile(
+            self.zip_incorect_file.name,
+            self.zip_incorect_file.read(),
             content_type="application/zip",
         )
 
@@ -5222,5 +5233,29 @@ class ValidateChallengeTest(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), expected)
 
+    def test_validate_challenge_using_failure(self):
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
 
-# to add more test after pr is merged
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_incorect_file.read()
+            resp.status_code = 400
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "The challenge config has been validated successfully"
+            }
+
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), expected)
+
