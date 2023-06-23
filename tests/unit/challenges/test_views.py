@@ -5220,18 +5220,18 @@ class ValidateChallengeTest(APITestCase):
             ),
             "rb",
         )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
         self.zip_incorect_file = open(
             join(
                 settings.BASE_DIR, "examples", "example3", "wrong.zip"
             ),
             "rb",
         )
-        self.test_zip_file = SimpleUploadedFile(
-            self.zip_file.name,
-            self.zip_file.read(),
-            content_type="application/zip",
-        )
-        self.test_zip_incorect_file = SimpleUploadedFile(
+        self.test_zip_incorrect_file = SimpleUploadedFile(
             self.zip_incorect_file.name,
             self.zip_incorect_file.read(),
             content_type="application/zip",
@@ -5279,8 +5279,9 @@ class ValidateChallengeTest(APITestCase):
 
         with mock.patch("challenges.views.requests.get") as m:
             resp = mock.Mock()
-            resp.content = self.test_zip_incorect_file.read()
-            resp.status_code = 400
+            resp.content = self.test_zip_incorrect_file.read()
+            resp.status_code = 200
+
             m.return_value = resp
             response = self.client.post(
                 self.url,
@@ -5291,8 +5292,8 @@ class ValidateChallengeTest(APITestCase):
                 format="multipart",
             )
             expected = {
-                "Success": "The challenge config has been validated successfully"
-            }
+    "error": "Please add the challenge title\nPlease add the challenge description\nPlease add the evaluation details\nPlease add the terms and conditions.\nPlease add the submission guidelines.\nERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\nERROR: Please add the start_date and end_date.\nERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\nERROR: No codename found for the challenge phase. Please add a codename and try again!\n ERROR: There is no key for description in phase Dev Phase.\nERROR: Please add the start_date and end_date in challenge phase 1.\nERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\nERROR: Challenge phase 1 has the following schema errors:\n {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\nERROR: Invalid leaderboard id 1 found in challenge phase split 1.\nERROR: Invalid phased id 1 found in challenge phase split 1.\nERROR: Invalid leaderboard id 1 found in challenge phase split 2.\nERROR: Invalid leaderboard id 1 found in challenge phase split 3."
+}
 
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.json(), expected)
