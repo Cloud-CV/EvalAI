@@ -937,7 +937,7 @@ class ValidateChallengeConfigUtil:
                 ].format(current_dataset_split_config_id)
                 self.error_messages.append(message)
 
-    #Check for Tags and Domain
+    # Check for Tags and Domain
     def check_tags_and_domain(self):
         if "tags" in self.yaml_file_data:
             tags_data = self.yaml_file_data["tags"]
