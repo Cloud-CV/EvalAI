@@ -633,7 +633,7 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
             success = true;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
@@ -657,7 +657,7 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
             success = true;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
@@ -681,7 +681,7 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
             success = true;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
@@ -705,7 +705,7 @@ describe('Unit tests for challenge controller', function () {
 
         it('backend error', function () {
             success = false;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
@@ -745,7 +745,7 @@ describe('Unit tests for challenge controller', function () {
         it('succesfully submission', function () {
             success = true;
             vm.isParticipated = true;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.makeSubmission();
             expect(vm.startLoader).toHaveBeenCalledWith('Making Submission');
             expect($rootScope.notify).toHaveBeenCalledWith('success', 'Your submission has been recorded succesfully!');
@@ -757,7 +757,7 @@ describe('Unit tests for challenge controller', function () {
             status = 404;
             vm.isParticipated = true;
             vm.isSubmissionUsingUrl = false;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.makeSubmission();
             vm.fileVal = 'submission.zip';
             expect(vm.phaseId).toEqual(null);
@@ -774,7 +774,7 @@ describe('Unit tests for challenge controller', function () {
             status = 403;
             vm.isParticipated = true;
             vm.isSubmissionUsingUrl = false;
-            vm.approved_by_host = true;
+            vm.eligible_to_submit = true;
             vm.makeSubmission('submission.zip');
             expect(vm.phaseId).toEqual(null);
             expect(vm.methodName).toEqual(null);

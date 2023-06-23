@@ -78,7 +78,7 @@
         vm.currentPhaseMetaAttributesVisibility = {};
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
-        vm.approved_by_host = false;
+        vm.eligible_to_submit = false;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -277,7 +277,7 @@
                 onSuccess: function(response) {
                      var details = response.data;
                     vm.participated_team_name = details["team_name"];
-                    vm.approved_by_host = details["approved"];
+                    vm.eligible_to_submit = details["approved"];
                 },
             };
             utilities.sendRequest(parameters);
@@ -285,7 +285,7 @@
 
             vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
-            if (isDockerBased && isParticipated == true && vm.approved_by_host) {
+            if (isDockerBased && isParticipated == true && vm.eligible_to_submit) {
                 parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions/';
                 parameters.method = 'GET';
                 parameters.data = {};
@@ -607,7 +607,7 @@
         };
 
         vm.makeSubmission = function() {
-            if (vm.isParticipated && vm.approved_by_host) {
+            if (vm.isParticipated && vm.eligible_to_submit) {
                 var fileVal = angular.element(".file-path").val();
                 if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
                     vm.subErrors.msg = "Please upload file or enter submission URL!";
@@ -2920,6 +2920,5 @@
         };
 
     }
-    
 
 })();

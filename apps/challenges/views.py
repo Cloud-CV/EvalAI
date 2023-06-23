@@ -1579,15 +1579,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data = serializer.errors
                     raise RuntimeError()
 
-            # Check for Manual Approval
-            if "manual_participant_approval" in yaml_file_data:
-                manual_participant_approval = yaml_file_data["manual_participant_approval"]
-                if manual_participant_approval:
-                    challenge.manual_participant_approval = True
-                else:
-                    challenge.manual_participant_approval = False
-                challenge.save()
-
             # Create Dataset Splits
             yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
             dataset_split_ids = {}
@@ -3549,15 +3540,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["id"])
                         ] = serializer.instance.pk
 
-                    # Check for Manual Approval
-                    if "manual_participant_approval" in yaml_file_data:
-                        manual_participant_approval = yaml_file_data["manual_participant_approval"]
-                        if manual_participant_approval:
-                            challenge.manual_participant_approval = True
-                        else:
-                            challenge.manual_participant_approval = False
-                        challenge.save()
-
                     # Create Dataset Splits
                     yaml_file_data_of_dataset_split = yaml_file_data[
                         "dataset_splits"
@@ -3575,15 +3557,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         dataset_split_ids[
                             str(data["id"])
                         ] = serializer.instance.pk
-
-                    # Check for Manual Approval
-                    if "manual_participant_approval" in yaml_file_data:
-                        manual_participant_approval = yaml_file_data["manual_participant_approval"]
-                        if manual_participant_approval:
-                            challenge.manual_participant_approval = True
-                        else:
-                            challenge.manual_participant_approval = False
-                        challenge.save()
 
                     # Create Challenge Phase Splits
                     challenge_phase_splits_data = yaml_file_data[

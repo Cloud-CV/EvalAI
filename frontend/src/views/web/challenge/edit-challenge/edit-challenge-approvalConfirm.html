@@ -4,7 +4,7 @@
             <div class="ev-card-body">
                 <form name="approvalform" ng-submit="challenge.check_approval_status(challenge.dialog.challengeId, challenge.dialog.participant_team_id, challenge.dialog.approved_status, approvalform.$valid)">
                     <div class="pass-title">Approve Team</div>
-                    <div class="pass-title"><b>Participant Team with submission will no longer be disapproved</b></div>
+                    <div class="pass-title"><b>Note: Participant teams with existing submissions cannot be disapproved</b></div>
                     <ul class="inline-list">
                         <li>
                             <a ng-click="challenge.check_approval_status(challenge.dialog.challengeId, challenge.dialog.participant_team_id, challenge.dialog.approved_status, false)" class="dark-link pointer"><strong>Cancel</strong></a>
