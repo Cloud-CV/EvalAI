@@ -1,7 +1,6 @@
 import mock
 from rest_framework.test import APITestCase
 import os
-from scripts.workers.statsd_utils import increment_and_push_metrics_to_statsd
 
 from scripts.workers.code_upload_submission_worker import (
     get_volume_mount_object,
@@ -18,14 +17,6 @@ from scripts.workers.code_upload_submission_worker import (
     get_job_constraints,
     create_job_object,
     create_static_code_upload_submission_job_object,
-    get_job_constraints,
-    get_init_container,
-    get_volume_list,
-    get_volume_mount_list,
-    get_config_map_volume_object,
-    get_volume_mount_object,
-    get_empty_volume_object,
-    get_job_object,
     create_job,
     delete_job,
     process_submission_callback,
@@ -81,7 +72,10 @@ class BaseAPITestClass(APITestCase):
 
     def test_create_config_map_object(self):
         config_map_name = "config_map_name"
-        file_paths = ["/code/scripts/workers/code_upload_worker_utils/make_submission.sh", "/code/scripts/workers/code_upload_worker_utils/monitor_submission.sh"]
+        file_paths = [
+            "/code/scripts/workers/code_upload_worker_utils/make_submission.sh",
+            "/code/scripts/workers/code_upload_worker_utils/monitor_submission.sh",
+        ]
         config_map = create_config_map_object(config_map_name, file_paths)
         self.assertEqual(config_map.metadata.name, config_map_name)
         self.assertEqual(len(config_map.data), len(file_paths))
@@ -91,7 +85,9 @@ class BaseAPITestClass(APITestCase):
             file_content = open(file_path, "r").read()
             self.assertEqual(config_map.data[file_name], file_content)
 
-    @mock.patch("scripts.workers.code_upload_submission_worker.get_core_v1_api_object")
+    @mock.patch(
+        "scripts.workers.code_upload_submission_worker.get_core_v1_api_object"
+    )
     def test_create_configmap(self, mock_get_core_v1_api_object):
         config_map = mock.MagicMock()
         mock_list_namespaced_config_map = mock.MagicMock()
@@ -300,12 +296,9 @@ class BaseAPITestClass(APITestCase):
         init_container = mock.MagicMock()
         volume_mount_list = mock.MagicMock()
         volume_list = mock.MagicMock()
-        script_volume_name = "evalai-scripts"
         script_volume = mock.MagicMock()
         submission_volume_name = "submissions-dir"
         submission_volume = mock.MagicMock()
-        spec = mock.MagicMock()
-        
         # Call the function to create the job object
         job = create_static_code_upload_submission_job_object(
             message, challenge
@@ -320,8 +313,6 @@ class BaseAPITestClass(APITestCase):
         mock_get_init_container.return_value = init_container
         mock_get_job_object.return_value = job
 
-
-
         # Assert the expected values
         self.assertEqual(job, mock_get_job_object.return_value)
         mock_get_job_constraints.assert_called_once_with(challenge)
@@ -334,8 +325,6 @@ class BaseAPITestClass(APITestCase):
         mock_get_volume_list.assert_called_once()
         mock_get_volume_mount_list.assert_called_once_with("/dataset", True)
         mock_get_init_container.assert_called_once_with(submission_pk)
-
-
 
     @mock.patch("scripts.workers.code_upload_submission_worker.client")
     def test_create_job(self, mock_client):
