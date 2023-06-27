@@ -69,6 +69,8 @@ class Challenge(TimeStampedModel):
     leaderboard_description = models.TextField(null=True, blank=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
+    manual_participant_approval = models.BooleanField(default=False)
+    approved_participant_teams = models.ManyToManyField(ParticipantTeam, blank=True, related_name="approved_challenge_participant_teams")
     is_disabled = models.BooleanField(default=False, db_index=True)
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts")
