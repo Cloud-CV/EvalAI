@@ -777,6 +777,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description="Lorem ipsum dolor sit amet, consectetur adipiscing elit",
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
@@ -842,6 +843,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "enable_forum": self.challenge1.enable_forum,
                         "leaderboard_description": self.challenge1.leaderboard_description,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                        "manual_participant_approval": self.challenge1.manual_participant_approval,
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
@@ -922,6 +924,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "enable_forum": self.challenge1.enable_forum,
                 "leaderboard_description": self.challenge1.leaderboard_description,
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge1.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],

@@ -286,6 +286,16 @@
             },
         }; 
 
+        var approval_team = {
+            name: "web.challenge-main.challenge-page.approval_team",
+            parent: "web.challenge-main.challenge-page",
+            url: "/approval_team",
+            templateUrl: baseUrl + "/web/challenge/approval-team.html",
+            title: 'My Challenge Approved Teams',
+            authenticate: true,
+            
+        };
+
         var leaderboard = {
             name: "web.challenge-main.challenge-page.leaderboard",
             parent: "web.challenge-main.challenge-page",
@@ -563,6 +573,7 @@
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
         $stateProvider.state(my_challenge_all_submission);
+        $stateProvider.state(approval_team);
         $stateProvider.state(leaderboard);
         $stateProvider.state(challenge_phase_leaderboard);
         $stateProvider.state(challenge_phase_metric_leaderboard);

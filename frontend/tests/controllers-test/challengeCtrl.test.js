@@ -633,6 +633,7 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
             success = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
@@ -656,6 +657,7 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
             success = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
@@ -679,6 +681,7 @@ describe('Unit tests for challenge controller', function () {
                 ]
             };
             success = true;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(vm.phaseRemainingSubmissions).toEqual(successResponse);
             var details = vm.phaseRemainingSubmissions.phases;
@@ -702,6 +705,7 @@ describe('Unit tests for challenge controller', function () {
 
         it('backend error', function () {
             success = false;
+            vm.eligible_to_submit = true;
             vm.displayDockerSubmissionInstructions(true, true);
             expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
@@ -741,6 +745,7 @@ describe('Unit tests for challenge controller', function () {
         it('succesfully submission', function () {
             success = true;
             vm.isParticipated = true;
+            vm.eligible_to_submit = true;
             vm.makeSubmission();
             expect(vm.startLoader).toHaveBeenCalledWith('Making Submission');
             expect($rootScope.notify).toHaveBeenCalledWith('success', 'Your submission has been recorded succesfully!');
@@ -752,6 +757,7 @@ describe('Unit tests for challenge controller', function () {
             status = 404;
             vm.isParticipated = true;
             vm.isSubmissionUsingUrl = false;
+            vm.eligible_to_submit = true;
             vm.makeSubmission();
             vm.fileVal = 'submission.zip';
             expect(vm.phaseId).toEqual(null);
@@ -768,6 +774,7 @@ describe('Unit tests for challenge controller', function () {
             status = 403;
             vm.isParticipated = true;
             vm.isSubmissionUsingUrl = false;
+            vm.eligible_to_submit = true;
             vm.makeSubmission('submission.zip');
             expect(vm.phaseId).toEqual(null);
             expect(vm.methodName).toEqual(null);
@@ -1465,6 +1472,112 @@ describe('Unit tests for challenge controller', function () {
             vm.submissionVisibility[1] = true;
             vm.changeSubmissionVisibility(submissionId);
             expect(vm.submissionVisibility[submissionId]).toEqual(true);
+        });
+    });
+
+    describe('Unit tests for showapprovalparticipantteamDialog function', function () {
+        var $mdDialog;
+        
+        beforeEach(function () {
+            $mdDialog = $injector.get('$mdDialog');
+        });
+    
+        it('should open dialog when approved_status is true', function () {
+            var $mdDialogOpened = false;
+            $mdDialog.show = jasmine.createSpy().and.callFake(function () {
+                $mdDialogOpened = true;
+            });
+            
+            var challengeId = '123';
+            var participant_team_id = '456';
+            var approved_status = true;
+            
+            vm.showapprovalparticipantteamDialog(challengeId, participant_team_id, approved_status);
+            
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect($mdDialogOpened).toEqual(true);
+        });
+    
+        it('should call check_approval_status when approved_status is false', function () {
+            vm.check_approval_status = jasmine.createSpy();
+            
+            var challengeId = '123';
+            var participant_team_id = '456';
+            var approved_status = false;
+            
+            vm.showapprovalparticipantteamDialog(challengeId, participant_team_id, approved_status);
+            
+            expect(vm.check_approval_status).toHaveBeenCalledWith(challengeId, participant_team_id, approved_status, false);
+        });
+    });
+
+    describe('Unit tests for check_approval_status function', function () {
+        var success, errorResponse, secondfunction;
+    
+        beforeEach(function () {
+            spyOn($rootScope, 'notify');
+            spyOn($state, 'reload');
+            spyOn($mdDialog, 'hide');
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        status: 201
+                    });
+                } else if (secondfunction) {
+                    parameters.callback.onSuccess({
+                        status: 204
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse,
+                    });
+                }
+            };
+        });
+    
+        it('should handle successful approval of participant team', function () {
+            success = true;
+    
+            var challengeId = '123';
+            var participant_team_id = '456';
+            var approved_status = true;
+            var formvalid = true;
+    
+            vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participant Team Approved successfully.');
+            expect($mdDialog.hide).toHaveBeenCalled();
+        });
+    
+        it('should handle error during approval of participant team', function () {
+            success = false;
+            secondfunction = false;
+            errorResponse = {
+                    error: 'Approval failed'
+            };
+    
+            var challengeId = '123';
+            var participant_team_id = '456';
+            var approved_status = true;
+            var formvalid = true;
+    
+            vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith('error', 'Approval failed');
+        });
+    
+        it('should handle disapproval of participant team', function () {
+            success = false;
+            secondfunction = true;
+            var challengeId = '123';
+            var participant_team_id = '456';
+            var approved_status = false;
+            var formvalid = false;
+    
+            vm.check_approval_status(challengeId, participant_team_id, approved_status, formvalid);
+    
+            expect($rootScope.notify).toHaveBeenCalledWith('success', 'Participant Team Disapproved successfully.');
+            expect($state.reload).not.toHaveBeenCalled();
         });
     });
 

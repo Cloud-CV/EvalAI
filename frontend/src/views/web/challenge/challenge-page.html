@@ -122,6 +122,9 @@
                     <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission"
                             ui-sref-active="active-challenge" class="text-light-black w-300"><i class="fa fa-list"></i>
                             All Submissions</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.isChallengeHost && challenge.manual_participant_approval"><a ui-sref=".approval_team"
+                        ui-sref-active="active-challenge" class="text-light-black w-300"><i class="fa fa-check-circle"></i>
+                        Team Approval</a></li>
                     <li class="margin-btm-0"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-line-chart"></i> Leaderboard</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".manage" ui-sref-active="active-challenge"

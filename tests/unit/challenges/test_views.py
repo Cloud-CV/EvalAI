@@ -71,6 +71,7 @@ class BaseAPITestClass(APITestCase):
             is_registration_open=True,
             enable_forum=True,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
@@ -152,6 +153,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "enable_forum": self.challenge.enable_forum,
                 "leaderboard_description": self.challenge.leaderboard_description,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -216,7 +218,7 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         expected = "Participant Team for Challenge"
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["team_name"], expected)
+        self.assertEqual(response.data["participant_team"]["team_name"], expected)
 
     def test_team_name_for_challenge_with_participant_team_does_not_exist(
         self,
@@ -229,6 +231,82 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetApprovedParticipantTeamNameTest, self).setUp()
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+
+    def test_add_participant_team_to_approved_list_when_not_in_participant_team(self):
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_approved_list",
+            kwargs={"challenge_pk": self.challenge.pk,
+                    "participant_team_pk": self.participant_team.pk},
+        )
+        expected = {"error": "Participant isn't interested in challenge"}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_add_participant_team_to_approved_list_when_team_doesnt_exist(self):
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_approved_list",
+            kwargs={"challenge_pk": self.challenge.pk,
+                    "participant_team_pk": self.participant_team.pk + 1},
+        )
+        expected = {"error": "Participant Team does not exist"}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+    def test_team_in_approved_participant_team(self):
+        self.url = reverse_lazy(
+            "challenges:get_participant_teams_for_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_add_participant_team_already_approved(self):
+        self.challenge.approved_participant_teams.add(self.participant_team)
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_approved_list",
+            kwargs={"challenge_pk": self.challenge.pk,
+                    "participant_team_pk": self.participant_team.pk},
+        )
+        expected = {"error": "Participant Team already approved"}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_remove_participant_team_doesnt_exist(self):
+        self.url = reverse_lazy(
+            "challenges:remove_participant_team_from_approved_list",
+            kwargs={"challenge_pk": self.challenge.pk,
+                    "participant_team_pk": self.participant_team.pk + 1},
+        )
+        expected = {"error": "Participant Team does not exist"}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_remove_participant_team(self):
+        self.challenge.approved_participant_teams.add(self.participant_team)
+        self.url = reverse_lazy(
+            "challenges:remove_participant_team_from_approved_list",
+            kwargs={"challenge_pk": self.challenge.pk,
+                    "participant_team_pk": self.participant_team.pk},
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class CreateChallengeTest(BaseAPITestClass):
@@ -313,6 +391,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "manual_participant_approval": self.challenge.manual_participant_approval,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -399,6 +478,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "manual_participant_approval": self.challenge.manual_participant_approval,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -506,6 +586,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "manual_participant_approval": self.challenge.manual_participant_approval,
             "is_active": True,
             "start_date": "{0}{1}".format(
                 self.challenge.start_date.isoformat(), "Z"
@@ -569,6 +650,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "enable_forum": self.challenge.enable_forum,
             "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "manual_participant_approval": self.challenge.manual_participant_approval,
             "is_active": True,
             "start_date": "{0}{1}".format(
                 self.challenge.start_date.isoformat(), "Z"
@@ -1061,6 +1143,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             enable_forum=True,
             approved_by_admin=True,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
@@ -1079,6 +1162,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             approved_by_admin=True,
             leaderboard_description="Donec sollicitudin, nisi vel tempor semper, nulla odio dapibus felis",
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
         )
@@ -1096,6 +1180,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             enable_forum=True,
             approved_by_admin=True,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
@@ -1148,6 +1233,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge3.enable_forum,
                 "leaderboard_description": self.challenge3.leaderboard_description,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1217,6 +1303,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1286,6 +1373,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge4.enable_forum,
                 "leaderboard_description": self.challenge4.leaderboard_description,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge4.manual_participant_approval,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1355,6 +1443,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge4.enable_forum,
                 "leaderboard_description": self.challenge4.leaderboard_description,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge4.manual_participant_approval,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1408,6 +1497,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge3.enable_forum,
                 "leaderboard_description": self.challenge3.leaderboard_description,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1461,6 +1551,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1527,6 +1618,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             enable_forum=True,
             approved_by_admin=True,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
@@ -1545,6 +1637,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             approved_by_admin=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
             featured=True,
@@ -1579,6 +1672,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge3.enable_forum,
                 "leaderboard_description": self.challenge3.leaderboard_description,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge3.manual_participant_approval,
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
@@ -1639,6 +1733,7 @@ class GetChallengeByPk(BaseAPITestClass):
             is_registration_open=True,
             enable_forum=True,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
@@ -1656,6 +1751,7 @@ class GetChallengeByPk(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description="Curabitur nec placerat libero.",
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=False,
@@ -1674,6 +1770,7 @@ class GetChallengeByPk(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
+            manual_participant_approval=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             is_disabled=True,
@@ -1720,6 +1817,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "enable_forum": self.challenge3.enable_forum,
             "leaderboard_description": self.challenge3.leaderboard_description,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+            "manual_participant_approval": self.challenge3.manual_participant_approval,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -1797,6 +1895,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "enable_forum": self.challenge4.enable_forum,
             "leaderboard_description": self.challenge4.leaderboard_description,
             "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+            "manual_participant_approval": self.challenge4.manual_participant_approval,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
@@ -1930,6 +2029,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -1995,6 +2095,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2060,6 +2161,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2123,6 +2225,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "enable_forum": self.challenge.enable_forum,
                 "leaderboard_description": self.challenge.leaderboard_description,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
@@ -2176,6 +2279,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "manual_participant_approval": self.challenge2.manual_participant_approval,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],

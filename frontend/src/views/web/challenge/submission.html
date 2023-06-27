@@ -28,6 +28,8 @@
     </div>
 </section>
 
+<!-- To Check if Manual Approval is done or off-->
+<div ng-if="challenge.eligible_to_submit">
 <!-- If challenge is docker based -->
 <section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view margin-btm-0">
@@ -493,6 +495,14 @@
                 </div>
             </div>
         </div>
+    </div>
+</section>
+</div>
+
+<!-- Show error when the maunal approval is not done -->
+<section ng-if="!challenge.eligible_to_submit" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <p class="fs-16 w-300">Sorry, the participant team is not approved by host yet.</p>
     </div>
 </section>
 

@@ -1,0 +1,56 @@
+
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view" ng-init="challenge.team_approval_list()">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12">
+                <h5 class="w-300">Team Approval</h5>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12 approval-table-scroll">
+                <div class="ev-md-container ev-card-body exist-team-card">
+                <div ng-if="challenge.manual_participant_approval" class="page-msg"></div>
+                <ul class="collapsible" data-collapsible="accordion">
+                    <li ng-repeat="key in challenge.approved_teams.participant_teams">
+                        <div class="collapsible-header">
+                            <label for="{{key.id}}"></label>
+                            <div class="show-member-title pointer">
+                                <span ng-if="value.team_url != ''"><b class="text-med-black">Team: </b><a class="orange-text" href="{{key.team_url}}" target="_blank">{{key.team_name}}</a></span>
+                                <span ng-if="value.team_url == ''"><b class="text-med-black">Team: </b>{{key.team_name}}</span>
+                                <center class="list-icon text-highlight w-300 right approval-button">
+                                    <input ng-checked="key.approved"
+                                    ng-model="key.approved" type="checkbox"
+                                    id="isApprovedTeam{{ key.id }}"
+                                    ng-change="challenge.showapprovalparticipantteamDialog(challenge.challengeId, key.id, key.approved)" />
+                                    <label for="isApprovedTeam{{ key.id }}"></label>
+                                </center>
+                                <br>
+                                <span><b class="text-med-black">Created by: </b>{{key.created_by}}</span>
+                                <br>
+                                <span><b class="text-med-black">Team Id: </b>{{key.id}}</span>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="collapsible-body">
+                            <table class="highlight approval-table responsive-table fs-16 w-300">
+                                <thead>
+                                    <th class="fs-14 w-300 pd-7" data-field="team">#</th>
+                                    <th class="fs-14 w-300 pd-7" data-field="team">Team Member</th>
+                                    <th class="fs-14 w-300 pd-7" data-field="created-by">Affiliation</th>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="member in key.members" class="result-val">
+                                        <td>{{$index + 1}}</td>
+                                        <td>{{member.member_name}}</td>
+                                        <td>{{member.profile.affiliation}}</td>
+                                    </tr>
+                                </tbody>
+                            </table> 
+                        </div>
+                    </li>
+                </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

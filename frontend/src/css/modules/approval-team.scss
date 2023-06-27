@@ -1,0 +1,55 @@
+/* Styles for View all submissions page */
+
+.approval-table {
+	width: 100%;
+}
+
+.approval-table-scroll {
+	overflow-x: scroll;
+}
+
+.exist-team-card {
+    ul {
+        &.collapsible {
+            border: 0;
+            box-shadow: none;
+            li {
+                box-shadow: 0 0 5px #e0e0e0;
+            }
+        }
+        li {
+            margin: 20px 0px;
+            min-height: 40px;
+            .collapsible-header {
+                border-bottom: 0;
+                line-height: initial;
+                min-height: initial;
+                padding: 10px 5px;
+                i {
+                    display: inline-block;
+                    float: none;
+                    font-size: initial;
+                    line-height: 40px;
+                    margin-right: 0;
+                    text-align: center;
+                    width: 2rem;
+                }
+            }
+            .collapsible-body {
+                background-color: #fafafa;
+                border-top: 1px solid #e0e0e0;
+                padding: 10px 40px;
+                p {
+                    padding: 3px 0;
+                }
+            }
+        }
+    }
+    i.list-icon {
+        line-height: 25px;
+    }
+}
+
+.approval-button {
+    padding: 10px;
+}
