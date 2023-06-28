@@ -154,7 +154,7 @@ services:
 
   alert-manager:
     hostname: alert_manager
-    image: prom/alertmanager
+    image: prom/alertmanager:latest
     user: "1000"
     volumes:
       - ./monitoring/prometheus:/prometheus
