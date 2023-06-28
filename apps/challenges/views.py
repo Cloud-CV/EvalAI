@@ -331,12 +331,22 @@ def participant_team_detail_for_challenge(request, challenge_pk):
     if has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
+        challenge = get_challenge_model(challenge_pk)
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
         )
         participant_team = get_participant_model(participant_team_pk)
         serializer = ParticipantTeamDetailSerializer(participant_team)
-        response_data = serializer.data
+        if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
+            approved = True
+        elif not challenge.manual_participant_approval:
+            approved = True
+        else:
+            approved = False
+        response_data = {
+            "approved": approved,
+            "participant_team": serializer.data,
+        }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         message = "You are not a participant!"
@@ -385,7 +395,14 @@ def get_participant_teams_for_challenge(request, challenge_pk):
         serializer = ParticipantTeamDetailSerializer(
             participant_teams, many=True
         )
-        response_data = serializer.data
+        for participant_team in serializer.data:
+            if (challenge.approved_participant_teams.filter(id=participant_team["id"]).exists()):
+                participant_team["approved"] = True
+            else:
+                participant_team["approved"] = False
+        response_data = {
+            "participant_teams": serializer.data,
+        }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
@@ -504,6 +521,79 @@ def add_participant_team_to_challenge(
     else:
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def add_participant_team_to_approved_list(request, challenge_pk, participant_team_pk):
+    """
+    Add participant team to approved list
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "Participant Team does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
+        response_data = {"error": "Participant Team already approved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        if (ParticipantTeam.objects.filter(team_name__in=challenge.participant_teams.values_list('team_name', flat=True)).exists()):
+            challenge.approved_participant_teams.add(participant_team)
+            response_data = {"success": "Participant Team added to approved list"}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            response_data = {"error": "Participant isn't interested in challenge"}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def remove_participant_team_from_approved_list(request, challenge_pk, participant_team_pk):
+    """
+    Remove participant team from approved list
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+        team_name = participant_team.team_name
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "Participant Team does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    if (all_challenge_phases.count() > 0):
+        for challenge_phase in all_challenge_phases:
+            submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+            if submission_exist:
+                break
+    else:
+        submission_exist = False
+    if challenge.approved_participant_teams.filter(pk=participant_team_pk).exists() and not submission_exist:
+        challenge.approved_participant_teams.remove(participant_team)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif submission_exist:
+        response_data = {"error": f"Participant Team {team_name} has existing submissions and cannot be unapproved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        response_data = {"error": f"Participant Team {team_name} was not approved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["POST"])
