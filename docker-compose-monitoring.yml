@@ -34,7 +34,7 @@ services:
 
   alert-manager:
     hostname: alert_manager
-    image: prom/alertmanager
+    image: prom/alertmanager:latest
     user: "1000"
     volumes:
       - ./monitoring/prometheus:/prometheus
@@ -45,4 +45,4 @@ services:
       - '--storage.path=/data'
       - '--web.external-url=http://localhost:9093/alert_manager'
     ports:
-      - 9093:9093
+      - '9093:9093'
