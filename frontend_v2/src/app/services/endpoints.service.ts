@@ -369,7 +369,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    * @param submission submission id
    */
   reRunSubmissionURL(submission) {
-    return `${this.jobs}submissions/${submission}/re-run-by-host/`;
+    return `${this.jobs}submissions/${submission}/re-run/`;
   }
 
   /**

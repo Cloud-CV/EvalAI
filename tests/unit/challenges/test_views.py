@@ -169,6 +169,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -407,6 +408,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
             "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -496,6 +498,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
             "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -611,6 +614,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
             "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -675,6 +679,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
             "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
             "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
+            "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
             "workers": self.challenge.workers,
             "created_at": "{0}{1}".format(
                 self.challenge.created_at.isoformat(), "Z"
@@ -1249,6 +1254,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1319,6 +1325,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1389,6 +1396,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1459,6 +1467,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
                 "workers": self.challenge4.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge4.created_at.isoformat(), "Z"
@@ -1513,6 +1522,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1567,6 +1577,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -1688,6 +1699,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
                 "workers": self.challenge3.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge3.created_at.isoformat(), "Z"
@@ -1833,6 +1845,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "allow_resuming_submissions": self.challenge3.allow_resuming_submissions,
             "allow_host_cancel_submissions": self.challenge3.allow_host_cancel_submissions,
             "allow_cancel_running_submissions": self.challenge3.allow_cancel_running_submissions,
+            "allow_participants_resubmissions": self.challenge3.allow_participants_resubmissions,
             "workers": self.challenge3.workers,
             "created_at": "{0}{1}".format(
                 self.challenge3.created_at.isoformat(), "Z"
@@ -1911,6 +1924,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "allow_resuming_submissions": self.challenge4.allow_resuming_submissions,
             "allow_host_cancel_submissions": self.challenge4.allow_host_cancel_submissions,
             "allow_cancel_running_submissions": self.challenge4.allow_cancel_running_submissions,
+            "allow_participants_resubmissions": self.challenge4.allow_participants_resubmissions,
             "workers": self.challenge4.workers,
             "created_at": "{0}{1}".format(
                 self.challenge4.created_at.isoformat(), "Z"
@@ -2045,6 +2059,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2111,6 +2126,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2177,6 +2193,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
@@ -2241,6 +2258,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge.allow_participants_resubmissions,
                 "workers": self.challenge.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge.created_at.isoformat(), "Z"
@@ -2295,6 +2313,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allow_resuming_submissions": self.challenge2.allow_resuming_submissions,
                 "allow_host_cancel_submissions": self.challenge2.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge2.allow_cancel_running_submissions,
+                "allow_participants_resubmissions": self.challenge2.allow_participants_resubmissions,
                 "workers": self.challenge2.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge2.created_at.isoformat(), "Z"
