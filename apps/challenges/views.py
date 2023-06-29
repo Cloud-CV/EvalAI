@@ -396,10 +396,14 @@ def get_participant_teams_for_challenge(request, challenge_pk):
             participant_teams, many=True
         )
         for participant_team in serializer.data:
-            if (challenge.approved_participant_teams.filter(id=participant_team["id"]).exists()):
-                participant_team["approved"] = True
+            if challenge.manual_participant_approval:
+                if (challenge.approved_participant_teams.filter(id=participant_team["id"]).exists()):
+                    participant_team["approved"] = True
+                else:
+                    participant_team["approved"] = False
             else:
-                participant_team["approved"] = False
+                participant_team["approved"] = True
+
         response_data = {
             "participant_teams": serializer.data,
         }
