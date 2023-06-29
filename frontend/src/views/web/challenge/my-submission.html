@@ -73,6 +73,8 @@
                             </th>
                             <th class="fs-18 w-300">Edit</th>
                             <th class="fs-18 w-300">Cancel</th>
+                            <th class="fs-18 w-300" ng-if="challenge.allowParticipantsResubmissions" data-field="button">Rerun submission</th>
+                            <th class="fs-18 w-300" ng-if="challenge.allowParticipantsResubmissions && challenge.allowResumingSubmissions" data-field="button">Resume submission</th>
                         </thead>
                         <tbody>
                             <tr ng-repeat="key in challenge.submissionResult.results" class="result-val fs-16 w-300">
@@ -145,6 +147,14 @@
                                             class="fa fa-pencil" aria-hidden="true"></i></a></td>
                                 <td><a class="times" ng-click="challenge.showCancelSubmissionDialog(key.id, key.status)"><i
                                     class="fa fa-times" aria-hidden="true"></i></a></td>
+                                <td>
+                                    <center><a ng-if="challenge.allowParticipantsResubmissions" ng-class="key.classList" class="fa fa-refresh pointer" ng-click="challenge.reRunSubmission(key)"></a>
+                                    </center>
+                                </td>
+                                <td ng-if="challenge.allowParticipantsResubmissions && challenge.allowResumingSubmissions">
+                                    <center><a ng-class="key.classList2" class="fa fa-play pointer" ng-click="challenge.resumeSubmission(key)"></a>
+                                    </center>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

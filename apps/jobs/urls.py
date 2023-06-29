@@ -21,14 +21,14 @@ urlpatterns = [
         name="get_remaining_submissions",
     ),
     url(
-        r"^submissions/(?P<submission_pk>[0-9]+)/re-run-by-host/$",
-        views.re_run_submission_by_host,
-        name="re_run_submission_by_host",
+        r"^submissions/(?P<submission_pk>[0-9]+)/re-run/$",
+        views.re_run_submission,
+        name="re_run_submission",
     ),
     url(
-        r"^submissions/(?P<submission_pk>[0-9]+)/resume-by-host/$",
-        views.resume_submission_by_host,
-        name="resume_submission_by_host",
+        r"^submissions/(?P<submission_pk>[0-9]+)/resume/$",
+        views.resume_submission,
+        name="resume_submission",
     ),
     url(
         r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
