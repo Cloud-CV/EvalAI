@@ -370,6 +370,7 @@
                 vm.allowResumingSubmissions = details.allow_resuming_submissions;
                 vm.allowHostCancelSubmissions = details.allow_host_cancel_submissions,
                 vm.allowCancelRunningSubmissions = details.allow_cancel_running_submissions;
+                vm.allowParticipantsResubmissions = details.allow_participants_resubmissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_participant_approval = details.manual_participant_approval;
                 vm.queueName = details.queue;
@@ -1419,7 +1420,7 @@
 
         vm.reRunSubmission = function(submissionObject) {
             submissionObject.classList = ['spin', 'progress-indicator'];
-            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run-by-host/';
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
@@ -1438,7 +1439,7 @@
 
         vm.resumeSubmission = function(submissionObject) {
             submissionObject.classList2 = ['progress-indicator'];
-            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume-by-host/';
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/resume/';
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {

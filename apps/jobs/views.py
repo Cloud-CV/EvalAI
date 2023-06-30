@@ -1834,10 +1834,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def re_run_submission_by_host(request, submission_pk):
+def re_run_submission(request, submission_pk):
     """
     API endpoint to re-run a submission.
-    Only challenge host has access to this endpoint.
+    Only challenge host has access to this endpoint by default.
+    Participants can submit if the challenge allows.
     """
     try:
         submission = Submission.objects.get(pk=submission_pk)
@@ -1857,7 +1858,7 @@ def re_run_submission_by_host(request, submission_pk):
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             "error": "Only challenge hosts are allowed to re-run a submission"
         }
@@ -1881,7 +1882,7 @@ def re_run_submission_by_host(request, submission_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def resume_submission_by_host(request, submission_pk):
+def resume_submission(request, submission_pk):
     """
     API endpoint to resume a submission from failed or partially evaluated state.
     Only challenge host has access to this endpoint.
@@ -1916,7 +1917,7 @@ def resume_submission_by_host(request, submission_pk):
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             "error": "Only challenge hosts are allowed to resume a submission"
         }
