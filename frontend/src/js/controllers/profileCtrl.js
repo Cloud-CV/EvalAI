@@ -244,7 +244,6 @@
                 parameters.method = 'PUT';
                 parameters.data = {
                     "username": vm.user.username,
-                    "email": vm.user.email,
                     "first_name": vm.user.first_name,
                     "last_name": vm.user.last_name,
                     "affiliation": vm.user.affiliation,

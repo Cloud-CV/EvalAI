@@ -21,6 +21,8 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "password",
         )
 
+        read_only_fields = ("email",)
+
 
 class ProfileSerializer(UserDetailsSerializer):
     """
