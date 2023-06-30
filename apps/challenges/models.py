@@ -129,6 +129,9 @@ class Challenge(TimeStampedModel):
     aws_region = models.CharField(
         max_length=50, default="us-east-1", null=True, blank=True
     )
+    queue_aws_region = models.CharField(
+        max_length=50, default="us-east-1", null=True, blank=True
+    )
     use_host_credentials = models.BooleanField(default=False)
     use_host_sqs = models.BooleanField(default=False)
     allow_resuming_submissions = models.BooleanField(default=False)
