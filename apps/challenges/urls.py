@@ -230,6 +230,16 @@ urlpatterns = [
         name="get_participant_teams_for_challenge",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/approve_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        views.add_participant_team_to_approved_list,
+        name="add_participant_team_to_approved_list",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/disapprove_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        views.remove_participant_team_from_approved_list,
+        name="remove_participant_team_from_approved_list",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/update_challenge_tags_and_domain/$",
         views.update_challenge_tags_and_domain,
         name="update_challenge_tags_and_domain",
