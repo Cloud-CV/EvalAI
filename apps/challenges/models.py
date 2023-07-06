@@ -195,6 +195,7 @@ class Challenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "challenge"
+        ordering = ("title",)
 
     def __str__(self):
         """Returns the title of Challenge"""
