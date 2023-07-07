@@ -138,6 +138,7 @@ class Challenge(TimeStampedModel):
     allow_host_cancel_submissions = models.BooleanField(default=False)
     allow_cancel_running_submissions = models.BooleanField(default=False)
     allow_participants_resubmissions = models.BooleanField(default=False)
+    disable_logs = models.BooleanField(default=False)
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
