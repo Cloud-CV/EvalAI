@@ -576,7 +576,6 @@ def update_failed_jobs_and_send_logs(
     message,
     queue_name,
     is_remote,
-    disable_logs,
 ):
     clean_submission = False
     code_upload_environment_error = "Submission Job Failed."
@@ -591,51 +590,47 @@ def update_failed_jobs_and_send_logs(
                 label_selector=pod_label_selector,
                 timeout_seconds=10,
             )
-            if disable_logs:
-                code_upload_environment_error = None
-                submission_error = None
+            # Prevents monitoring when Job created with pending pods state (not assigned to node)
+            if pods_list.items[0].status.container_statuses:
+                container_state_map = {}
+                for container in pods_list.items[0].status.container_statuses:
+                    container_state_map[container.name] = container.state
+                for (
+                    container_name,
+                    container_state,
+                ) in container_state_map.items():
+                    if container_name in ["agent", "submission", "environment"]:
+                        if container_state.terminated is not None:
+                            pod_name = pods_list.items[0].metadata.name
+                            try:
+                                pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
+                                    name=pod_name,
+                                    namespace="default",
+                                    _return_http_data_only=True,
+                                    _preload_content=False,
+                                    container=container_name,
+                                )
+                                pod_log = pod_log_response.data.decode(
+                                    "utf-8"
+                                )
+                                pod_log = pod_log[-10000:]
+                                clean_submission = True
+                                if container_name == "environment":
+                                    code_upload_environment_error = pod_log
+                                else:
+                                    submission_error = pod_log
+                            except client.rest.ApiException as e:
+                                logger.exception(
+                                    "Exception while reading Job logs {}".format(
+                                        e
+                                    )
+                                )
             else:
-                # Prevents monitoring when Job created with pending pods state (not assigned to node)
-                if pods_list.items[0].status.container_statuses:
-                    container_state_map = {}
-                    for container in pods_list.items[0].status.container_statuses:
-                        container_state_map[container.name] = container.state
-                    for (
-                        container_name,
-                        container_state,
-                    ) in container_state_map.items():
-                        if container_name in ["agent", "submission", "environment"]:
-                            if container_state.terminated is not None:
-                                pod_name = pods_list.items[0].metadata.name
-                                try:
-                                    pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
-                                        name=pod_name,
-                                        namespace="default",
-                                        _return_http_data_only=True,
-                                        _preload_content=False,
-                                        container=container_name,
-                                    )
-                                    pod_log = pod_log_response.data.decode(
-                                        "utf-8"
-                                    )
-                                    pod_log = pod_log[-10000:]
-                                    clean_submission = True
-                                    if container_name == "environment":
-                                        code_upload_environment_error = pod_log
-                                    else:
-                                        submission_error = pod_log
-                                except client.rest.ApiException as e:
-                                    logger.exception(
-                                        "Exception while reading Job logs {}".format(
-                                            e
-                                        )
-                                    )
-                else:
-                    logger.info(
-                        "Job pods in pending state, waiting for node assignment for submission {}".format(
-                            submission_pk
-                        )
+                logger.info(
+                    "Job pods in pending state, waiting for node assignment for submission {}".format(
+                        submission_pk
                     )
+                )
         else:
             logger.exception(
                 "Exception while reading Job {}, does not exist.".format(
@@ -700,7 +695,6 @@ def main():
     )
     challenge = evalai.get_challenge_by_queue_name()
     is_remote = int(challenge.get("remote_evaluation"))
-    disable_logs = challenge.get("disable_logs")
     cluster_details = evalai.get_aws_eks_cluster_details(challenge.get("id"))
     cluster_name = cluster_details.get("name")
     cluster_endpoint = cluster_details.get("cluster_endpoint")
@@ -788,7 +782,6 @@ def main():
                         message,
                         QUEUE_NAME,
                         is_remote,
-                        disable_logs,
                     )
                 else:
                     logger.info(
