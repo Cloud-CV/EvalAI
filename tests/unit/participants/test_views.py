@@ -860,7 +860,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "allow_host_cancel_submissions": self.challenge1.allow_host_cancel_submissions,
                         "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                         "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
-                        "disable_logs": self.challenge1.disable_logs,
                         "workers": self.challenge1.workers,
                         "created_at": "{0}{1}".format(
                             self.challenge1.created_at.isoformat(), "Z"
@@ -943,7 +942,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "allow_host_cancel_submissions": self.challenge1.allow_host_cancel_submissions,
                 "allow_cancel_running_submissions": self.challenge1.allow_cancel_running_submissions,
                 "allow_participants_resubmissions": self.challenge1.allow_participants_resubmissions,
-                "disable_logs": self.challenge1.disable_logs,
                 "workers": self.challenge1.workers,
                 "created_at": "{0}{1}".format(
                     self.challenge1.created_at.isoformat(), "Z"
