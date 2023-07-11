@@ -749,8 +749,15 @@ def main():
                 ):
                     try:
                         # Fetch the last job name from the list as it is the latest running job
-                        job_name = submission.get("job_name")[-1]
-                        delete_job(api_instance, job_name)
+                        job_name = submission.get("job_name")
+                        if job_name:
+                            latest_job_name = job_name[-1]
+                            delete_job(api_instance, latest_job_name)
+                        else:
+                            logger.info(
+                                "No job name found corresponding to submission: {} with status: {}."
+                                "Deleting it from queue.".format(submission_pk, submission.get("status"))
+                            )
                         message_receipt_handle = message.get("receipt_handle")
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
