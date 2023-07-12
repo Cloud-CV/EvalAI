@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0092_challenge_allow_cancel_running_submissions'),
+        ('challenges', '0097_challengephase_disable_logs'),
     ]
 
     operations = [
