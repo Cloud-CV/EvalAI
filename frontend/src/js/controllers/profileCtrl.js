@@ -251,6 +251,11 @@
                     "google_scholar_url": vm.user.google_scholar_url,
                     "linkedin_url": vm.user.linkedin_url
                 };
+
+                if (vm.userdetails.email !== vm.user.email) {
+                    parameters.data.new_email = vm.user.email;
+                    parameters.url = 'accounts/user/change_email/';
+                }
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -266,20 +271,23 @@
                             vm.errorResponse = response;
 
                             vm.isFormError = true;
-                            var isUsername_valid, isFirstname_valid, isLastname_valid, isAffiliation_valid;
+                            var isUsername_valid, isFirstname_valid, isLastname_valid, isAffiliation_valid, isEmail_valid;
                             try {
                                 isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
                                 isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
                                 isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
                                 isAffiliation_valid = typeof(response.data.affiliation) !== 'undefined' ? true : false;
+                                isEmail_valid = typeof(response.data.email) !== 'undefined' ? true : false;
                                 if (isUsername_valid) {
                                     vm.FormError = response.data.username[0];
                                 } else if (isFirstname_valid) {
                                     vm.FormError = response.data.first_name[0];
                                 } else if (isLastname_valid) {
                                     vm.FormError = response.data.last_name[0];
-                                }else if (isAffiliation_valid) {
+                                } else if (isAffiliation_valid) {
                                     vm.FormError = response.data.affiliation[0]; 
+                                } else if (isEmail_valid) {
+                                    vm.FormError = response.data.email[0];
                                 } else {
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }

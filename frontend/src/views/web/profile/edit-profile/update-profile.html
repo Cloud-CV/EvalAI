@@ -12,6 +12,11 @@
                     </span>
                 </div>
                 <div class="text-light-black w-300">{{profile.userdetails.email}}
+                    <span>
+                        <a id="email" class="pointer" ng-click="profile.editprofileDialog($event)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </a>
+                    </span>
                 </div>
                 <br><br>
                 <div class="text-highlight"><span class="fs-12">
