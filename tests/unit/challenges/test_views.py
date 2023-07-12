@@ -2540,6 +2540,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2568,6 +2569,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
         ]
 
@@ -2604,6 +2606,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2650,6 +2653,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2678,6 +2682,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
+                "disable_logs": self.private_challenge_phase.disable_logs,
             },
         ]
 
@@ -3028,6 +3033,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -3067,6 +3073,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -3129,6 +3136,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -3230,6 +3238,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -4756,6 +4765,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4831,6 +4841,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+                "disable_logs": self.private_challenge_phase.disable_logs,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4864,6 +4875,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
         ]
         response = self.client.get(self.url, {})

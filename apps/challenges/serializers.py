@@ -123,6 +123,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "is_submission_public",
+            "disable_logs",
         )
 
 
@@ -383,6 +384,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "disable_logs",
         )
 
 
