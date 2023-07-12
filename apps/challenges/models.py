@@ -324,6 +324,7 @@ class ChallengePhase(TimeStampedModel):
     default_submission_meta_attributes = JSONField(
         default=None, blank=True, null=True
     )
+    disable_logs = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"

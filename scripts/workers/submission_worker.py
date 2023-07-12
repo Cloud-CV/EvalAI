@@ -454,18 +454,19 @@ def run_submission(
                     SUBMISSION_LOGS_PREFIX, submission.id
                 )
             )
-            with stdout_redirect(
-                MultiOut(stdout, sys.__stdout__)
-            ) as new_stdout, stderr_redirect(  # noqa
-                MultiOut(stderr, sys.__stderr__)
-            ) as new_stderr:  # noqa
-                submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
-                    annotation_file_path,
-                    user_annotation_file_path,
-                    challenge_phase.codename,
-                    submission_metadata=submission_serializer.data,
-                )
-                return
+            if not challenge_phase.disable_logs:
+                with stdout_redirect(
+                    MultiOut(stdout, sys.__stdout__)
+                ) as new_stdout, stderr_redirect(  # noqa
+                    MultiOut(stderr, sys.__stderr__)
+                ) as new_stderr:  # noqa
+                    submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                        annotation_file_path,
+                        user_annotation_file_path,
+                        challenge_phase.codename,
+                        submission_metadata=submission_serializer.data,
+                    )
+            return
         except Exception:
             stderr.write(traceback.format_exc())
             stderr.close()
@@ -491,17 +492,18 @@ def run_submission(
     # call `main` from globals and set `status` to running and hence `started_at`
     try:
         successful_submission_flag = True
-        with stdout_redirect(
-            MultiOut(stdout, sys.__stdout__)
-        ) as new_stdout, stderr_redirect(  # noqa
-            MultiOut(stderr, sys.__stderr__)
-        ) as new_stderr:  # noqa
-            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
-                annotation_file_path,
-                user_annotation_file_path,
-                challenge_phase.codename,
-                submission_metadata=submission_serializer.data,
-            )
+        if not challenge_phase.disable_logs:
+            with stdout_redirect(
+                MultiOut(stdout, sys.__stdout__)
+            ) as new_stdout, stderr_redirect(  # noqa
+                MultiOut(stderr, sys.__stderr__)
+            ) as new_stderr:  # noqa
+                submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                    annotation_file_path,
+                    user_annotation_file_path,
+                    challenge_phase.codename,
+                    submission_metadata=submission_serializer.data,
+                )
         """
         A submission will be marked successful only if it is of the format
             {
