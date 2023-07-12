@@ -254,7 +254,7 @@
                         var details = response.data;
                         var anchor = angular.element('<a/>');
                         anchor.attr({
-                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                            href: 'data:attachment/csv;charset=utf-8,' + encodeURIComponent(details),
                             download: 'participant_teams_' + vm.challengeId + '.csv'
                         })[0].click();
                     },

@@ -195,6 +195,7 @@ class Challenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "challenge"
+        ordering = ("title",)
 
     def __str__(self):
         """Returns the title of Challenge"""
@@ -323,6 +324,7 @@ class ChallengePhase(TimeStampedModel):
     default_submission_meta_attributes = JSONField(
         default=None, blank=True, null=True
     )
+    disable_logs = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"

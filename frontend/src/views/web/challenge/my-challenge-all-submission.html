@@ -96,7 +96,8 @@
                         <th class="fs-18 w-300" data-field="button">Rerun submission</th>
                         <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
                                 challenge.allowResumingSubmissions" data-field="button">Resume submission</th>
-                        <th class="fs-18 w-300">Cancel submission</th>
+                        <th class="fs-18 w-300" ng-if="challenge.isChallengeHost && 
+                                challenge.allowHostCancelSubmissions">Cancel submission</th>
                         <th class="fs-18 w-300" data-field="button">Verify submission</th>
                     </thead>
                     <tbody>
@@ -143,14 +144,14 @@
                             </td>
                             <td ng-if="!key.submission_metadata_file">None</td>
 
-                            <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                            <!-- <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
                                 <input ng-checked="key.is_public" ng-if="key.status == 'finished'"
                                     ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                     id="isPublic{{ key.id }}"
                                     ng-change="challenge.changeSubmissionVisibility(key.id)" />
                                 <label for="isPublic{{ key.id }}"></label>
                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
-                            </td>
+                            </td> -->
                             <td>
                                 <center><a ng-class="key.classList" class="fa fa-refresh pointer"
                                         ng-click="challenge.reRunSubmission(key)"></a></center>
