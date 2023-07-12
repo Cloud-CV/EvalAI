@@ -286,8 +286,6 @@
                                     vm.FormError = response.data.last_name[0];
                                 } else if (isAffiliation_valid) {
                                     vm.FormError = response.data.affiliation[0]; 
-                                } else if (isEmail_valid) {
-                                    vm.FormError = response.data.email[0];
                                 } else {
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
