@@ -271,13 +271,12 @@
                             vm.errorResponse = response;
 
                             vm.isFormError = true;
-                            var isUsername_valid, isFirstname_valid, isLastname_valid, isAffiliation_valid, isEmail_valid;
+                            var isUsername_valid, isFirstname_valid, isLastname_valid, isAffiliation_valid;
                             try {
                                 isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
                                 isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
                                 isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
                                 isAffiliation_valid = typeof(response.data.affiliation) !== 'undefined' ? true : false;
-                                isEmail_valid = typeof(response.data.email) !== 'undefined' ? true : false;
                                 if (isUsername_valid) {
                                     vm.FormError = response.data.username[0];
                                 } else if (isFirstname_valid) {
