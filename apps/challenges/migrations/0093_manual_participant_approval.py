@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('participants', '0012_remove_docker_repository_uri_from_team'),
-        ('challenges', '0097_challengephase_disable_logs'),
+        ('challenges', '0092_challenge_allow_cancel_running_submissions'),
     ]
 
     operations = [
