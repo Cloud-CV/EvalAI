@@ -21,6 +21,7 @@
                         Get your Auth Token
                     </button>
                 </div>
+
             </div>
             <div class="row">
                 <div class="col s12 m4 l4 center user-info">
@@ -78,3 +79,24 @@
         </div>
     </div>
 </div>
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 challenge-title-container ">
+        <div class="row">
+            <div>
+                <div class="text-highlight"><h5>Challenge History</h5>
+            </div>
+                <br>
+        </div>
+        <div class="row rm-row-bot">
+            <div class="col s12">
+                <ul class="inline-list rm-gut">
+                    <li class="margin-btm-0"><a ui-sref=".active" ui-sref-active="active-challenge"
+                            class="text-light-black w-300">Active </a></li>
+                    <li class="margin-btm-0"><a ui-sref=".past" ui-sref-active="active-challenge"
+                            class="text-light-black w-300">Past</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<ui-view></ui-view>

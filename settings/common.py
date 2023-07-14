@@ -163,6 +163,7 @@ REST_FRAMEWORK = {
     ),
     "PAGE_SIZE": 150,
     "TEAM_PAGE_SIZE": 10,
+    "PROFILE_CHALLENGE_PAGE_SIZE": 4,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],

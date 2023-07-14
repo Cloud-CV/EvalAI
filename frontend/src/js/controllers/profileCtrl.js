@@ -8,10 +8,15 @@
         .module('evalai')
         .controller('profileCtrl', profileCtrl);
 
-    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog', 'moment'];
+    profileCtrl.$inject = ['utilities','loaderService', '$rootScope','$http', '$scope', '$mdDialog', 'moment'];
 
-    function profileCtrl(utilities, $rootScope, $scope, $mdDialog, moment) {
+    function profileCtrl(utilities,loaderService, $rootScope,$http, $scope, $mdDialog, moment) {
         var vm = this;
+
+        // show loader
+        vm.startLoader = loaderService.startLoader;
+        // stop loader
+        vm.stopLoader = loaderService.stopLoader;
 
         vm.user = {};
         vm.countLeft = 0;
@@ -73,6 +78,139 @@
         };
 
         utilities.sendRequest(parameters);
+
+        parameters.url = 'challenges/challenges/participated/present';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var status = response.status;
+                var result = response.data;
+                if (status == 200) {
+                    vm.present = result;
+                    if (result.count === 0) {
+                        vm.present.showPagination = false;
+                        vm.present.paginationMsg = "No present challenge for now. Start by participating in one!";
+                    }
+                    else {
+                        vm.present.showPagination = true;
+                        vm.present.paginationMsg = "Present Challenges";
+                    }
+                    if (vm.present.next === null) {
+                        vm.present.isNext = 'disabled';
+                    } else {
+                        vm.present.isNext = '';
+                    }
+
+                    if (vm.present.previous === null) {
+                        vm.present.isPrev = 'disabled';
+                    } else {
+                        vm.present.isPrev = '';
+                    }
+                    if (vm.present.next != null) {
+                        vm.present.currentPage = vm.present.next.split('page=')[1] - 1;
+                    } else {
+                        vm.present.currentPage = 1;
+                    }
+                     vm.present.isExistLoader = true;
+                }
+            },
+            onError: function(response) {
+                var details = response.data;
+                $rootScope.notify("error", details['detail']);
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+        parameters.url = 'challenges/challenges/participated/past';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var status = response.status;
+                var result = response.data;
+                if (status == 200) {
+                    vm.past = result;
+                    if (result.count === 0) {
+                        vm.past.showPagination = false;
+                        vm.past.paginationMsg = "No past challenges for now";
+                    }
+                    else {
+                        vm.past.showPagination = true;
+                        vm.past.paginationMsg = "Past Challenges";
+                    }
+                    if (vm.past.next === null) {
+                        vm.past.isNext = 'disabled';
+                    } else {
+                        vm.past.isNext = '';
+                    }
+
+                    if (vm.past.previous === null) {
+                        vm.past.isPrev = 'disabled';
+                    } else {
+                        vm.past.isPrev = '';
+                    }
+                    if (vm.past.next != null) {
+                        vm.past.currentPage = vm.past.next.split('page=')[1] - 1;
+                    } else {
+                        vm.past.currentPage = 1;
+                    }
+                     vm.past.isExistLoader = true;
+                }
+            },
+            onError: function(response) {
+                var details = response.data;
+                $rootScope.notify("error", details['detail']);
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+
+        vm.load = function(url , category) {
+
+            // loader for challenge history
+            // url has pagination's next url
+            // category would be either present or past
+
+            vm.isExistLoader = true;
+            vm.loaderTitle = '';
+            vm.loaderContainer = angular.element('.exist-team-card');
+
+            vm.startLoader("Loading Challenges");
+
+            if (url !== null) {
+                //store the header data in a variable
+                var headers = {
+                    'Authorization': "Token " + userKey
+                };
+
+                //Add headers with in your request
+                $http.get(url, { headers: headers }).then(function(response) {
+                    // reinitialized data
+                    var details = response.data;
+                    vm[category] = details;
+                    // condition for pagination
+                    if (vm[category]['next'] === null) {
+                        vm[category]['isNext'] = 'disabled';
+                        vm[category]['currentPage'] = vm[category]['count'] / 4;
+                    } else {
+                        vm[category]['isNext'] = '';
+                        vm[category]['currentPage'] = parseInt(vm[category]['next'].split('page=')[1] - 1);
+                    }
+
+                    if (vm[category]['previous'] === null) {
+                        vm[category]['isPrev'] = 'disabled';
+                    } else {
+                        vm[category]['isPrev'] = '';
+                    }
+                    vm[category]['showPagination'] = true;
+
+                    vm.stopLoader();
+                });
+            }
+        };
 
         parameters.url = 'accounts/user/get_auth_token';
         parameters.method = 'GET';
@@ -170,5 +308,4 @@
             utilities.sendRequest(parameters);
         };
     }
-
 })();

@@ -1,0 +1,47 @@
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <div class="challenge-page-title" id = "ongoing-challenges"><strong class="text-med-black fs-18">
+                    <p>{{profile.past.paginationMsg}}</p>
+                </strong></div>
+        <div class="row">
+            <div class="col s12 m3" ng-repeat="challenge in profile.past.results"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                    <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card-image ev-card-image">
+                            <img class="bg-img" ng-src="{{challenge.image}}">
+                            <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                        </div>
+                        <div class="card-content">
+                            <p><strong class="text-light-black fs-12">Organized by</strong>
+                                <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Starts on</strong>
+                                <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.start_zone}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Ends on</strong>
+                                <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.end_zone}}</strong></p>
+                        </div>
+                        <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+            <section class="pagination" ng-if="profile.past.showPagination" id="challenge-history">
+                                <div class="row rm-gut">
+                                    <div class="center">
+                                        <a ng-class="profile.past.isPrev"
+                                            class="btn-floating btn-pagination waves-effect waves-light "
+                                            ng-click="profile.load(profile.past.previous ,'past')">
+                                            <i class="fa fa-chevron-left"></i>
+                                        </a>
+                                        <span class="pagination-title"> <strong class="fs-16 w-300"> Page
+                                                {{profile.past.currentPage | ceil}} of
+                                                {{profile.past.count/4 | ceil}} </strong></span>
+                                        <a ng-class="profile.past.isNext"
+                                            class="btn-floating btn-pagination waves-effect waves-light "
+                                            ng-click="profile.load(profile.past.next, 'past')">
+                                            <i class="fa fa-chevron-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+            </section>
+    </div>
+</section>
