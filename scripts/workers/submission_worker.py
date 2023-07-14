@@ -454,45 +454,6 @@ def run_submission(
                     SUBMISSION_LOGS_PREFIX, submission.id
                 )
             )
-            if not challenge_phase.disable_logs:
-                with stdout_redirect(
-                    MultiOut(stdout, sys.__stdout__)
-                ) as new_stdout, stderr_redirect(  # noqa
-                    MultiOut(stderr, sys.__stderr__)
-                ) as new_stderr:  # noqa
-                    submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
-                        annotation_file_path,
-                        user_annotation_file_path,
-                        challenge_phase.codename,
-                        submission_metadata=submission_serializer.data,
-                    )
-            return
-        except Exception:
-            stderr.write(traceback.format_exc())
-            stderr.close()
-            stdout.close()
-            submission.status = Submission.FAILED
-            submission.completed_at = timezone.now()
-            submission.save()
-            with open(stdout_file, "r") as stdout:
-                stdout_content = stdout.read()
-                submission.stdout_file.save(
-                    "stdout.txt", ContentFile(stdout_content)
-                )
-            with open(stderr_file, "r") as stderr:
-                stderr_content = stderr.read()
-                submission.stderr_file.save(
-                    "stderr.txt", ContentFile(stderr_content)
-                )
-
-            # delete the complete temp run directory
-            shutil.rmtree(temp_run_dir)
-            return
-
-    # call `main` from globals and set `status` to running and hence `started_at`
-    try:
-        successful_submission_flag = True
-        if not challenge_phase.disable_logs:
             with stdout_redirect(
                 MultiOut(stdout, sys.__stdout__)
             ) as new_stdout, stderr_redirect(  # noqa
@@ -504,6 +465,44 @@ def run_submission(
                     challenge_phase.codename,
                     submission_metadata=submission_serializer.data,
                 )
+            return
+        except Exception:
+            stderr.write(traceback.format_exc())
+            stderr.close()
+            stdout.close()
+            submission.status = Submission.FAILED
+            submission.completed_at = timezone.now()
+            submission.save()
+            if not challenge_phase.disable_logs:
+                with open(stdout_file, "r") as stdout:
+                    stdout_content = stdout.read()
+                    submission.stdout_file.save(
+                        "stdout.txt", ContentFile(stdout_content)
+                    )
+                with open(stderr_file, "r") as stderr:
+                    stderr_content = stderr.read()
+                    submission.stderr_file.save(
+                        "stderr.txt", ContentFile(stderr_content)
+                    )
+
+            # delete the complete temp run directory
+            shutil.rmtree(temp_run_dir)
+            return
+
+    # call `main` from globals and set `status` to running and hence `started_at`
+    try:
+        successful_submission_flag = True
+        with stdout_redirect(
+            MultiOut(stdout, sys.__stdout__)
+        ) as new_stdout, stderr_redirect(  # noqa
+            MultiOut(stderr, sys.__stderr__)
+        ) as new_stderr:  # noqa
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                annotation_file_path,
+                user_annotation_file_path,
+                challenge_phase.codename,
+                submission_metadata=submission_serializer.data,
+            )
         """
         A submission will be marked successful only if it is of the format
             {
@@ -638,15 +637,16 @@ def run_submission(
     stdout_content = open(stdout_file, "r").read()
 
     # TODO :: see if two updates can be combine into a single update.
-    with open(stdout_file, "r") as stdout:
-        stdout_content = stdout.read()
-        submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
-    if submission_status is Submission.FAILED:
-        with open(stderr_file, "r") as stderr:
-            stderr_content = stderr.read().encode("utf-8")
-            submission.stderr_file.save(
-                "stderr.txt", ContentFile(stderr_content)
-            )
+    if not challenge_phase.disable_logs:
+        with open(stdout_file, "r") as stdout:
+            stdout_content = stdout.read()
+            submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
+        if submission_status is Submission.FAILED:
+            with open(stderr_file, "r") as stderr:
+                stderr_content = stderr.read().encode("utf-8")
+                submission.stderr_file.save(
+                    "stderr.txt", ContentFile(stderr_content)
+                )
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
