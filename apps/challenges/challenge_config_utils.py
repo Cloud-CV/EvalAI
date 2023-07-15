@@ -319,11 +319,13 @@ class ValidateChallengeConfigUtil:
             self.extracted_folder_name,
         ) = get_yaml_files_from_challenge_config(self.zip_ref)
 
-        self.challenge_config_location = join(
-            self.base_location,
-            self.unique_folder_name,
-            self.extracted_folder_name,
-        )
+        self.valid_yaml = self.read_and_validate_yaml()
+        if self.valid_yaml:
+            self.challenge_config_location = join(
+                self.base_location,
+                self.unique_folder_name,
+                self.extracted_folder_name,
+            )
         self.phase_ids = []
         self.leaderboard_ids = []
 
@@ -331,12 +333,14 @@ class ValidateChallengeConfigUtil:
         if not self.yaml_file_count:
             message = self.error_messages_dict.get("no_yaml_file")
             self.error_messages.append(message)
+            return False
 
         if self.yaml_file_count > 1:
             message = self.error_messages_dict.get(
                 "multiple_yaml_files"
             ).format(self.yaml_file_count)
             self.error_messages.append(message)
+            return False
 
         # YAML Read Error
         try:
@@ -344,6 +348,7 @@ class ValidateChallengeConfigUtil:
                 self.base_location, self.unique_folder_name, self.yaml_file
             )
             self.yaml_file_data = read_yaml_file(self.yaml_file_path, "r")
+            return True
         except (yaml.YAMLError, ScannerError) as exc:
             (
                 error_description,
@@ -354,6 +359,7 @@ class ValidateChallengeConfigUtil:
                 "yaml_file_read_error"
             ).format(error_description, line_number, column_number)
             self.error_messages.append(message)
+            return False
 
     def validate_challenge_title(self):
         challenge_title = self.yaml_file_data.get("title")
@@ -963,84 +969,81 @@ def validate_challenge_config_util(
         zip_ref,
         current_challenge,
     )
+    if val_config_util.valid_yaml:
+        # # Validate challenge title
+        val_config_util.validate_challenge_title()
 
-    # Read and validate YAML file
-    val_config_util.read_and_validate_yaml()
+        # Validate challenge logo
+        val_config_util.validate_challenge_logo()
 
-    # # Validate challenge title
-    val_config_util.validate_challenge_title()
+        # Validate challenge description
+        val_config_util.validate_challenge_description()
 
-    # Validate challenge logo
-    val_config_util.validate_challenge_logo()
+        # Validate evaluation details
+        val_config_util.validate_evaluation_details_file()
 
-    # Validate challenge description
-    val_config_util.validate_challenge_description()
+        # Validate terms and conditions
+        val_config_util.validate_terms_and_conditions_file()
 
-    # Validate evaluation details
-    val_config_util.validate_evaluation_details_file()
+        # Validate submission guidelines
+        val_config_util.validate_submission_guidelines_file()
 
-    # Validate terms and conditions
-    val_config_util.validate_terms_and_conditions_file()
+        # Validate evaluation script
+        val_config_util.validate_evaluation_script_file()
 
-    # Validate submission guidelines
-    val_config_util.validate_submission_guidelines_file()
+        val_config_util.validate_dates()
 
-    # Validate evaluation script
-    val_config_util.validate_evaluation_script_file()
+        val_config_util.validate_serializer()
 
-    val_config_util.validate_dates()
-
-    val_config_util.validate_serializer()
-
-    # Get existing config IDs for leaderboards and dataset splits
-    if current_challenge:
-        current_challenge_phases = ChallengePhase.objects.filter(
-            challenge=current_challenge.id
-        )
-        current_challenge_phase_splits = ChallengePhaseSplit.objects.filter(
-            challenge_phase__in=current_challenge_phases
-        )
-        current_leaderboards = Leaderboard.objects.filter(
-            id__in=current_challenge_phase_splits.values("leaderboard")
-        )
-        current_dataset_splits = DatasetSplit.objects.filter(
-            id__in=current_challenge_phase_splits.values("dataset_split")
-        )
-
-        current_leaderboard_config_ids = [
-            int(x.config_id) for x in current_leaderboards
-        ]
-        current_dataset_config_ids = [
-            int(x.config_id) for x in current_dataset_splits
-        ]
-        current_phase_config_ids = [
-            int(x.config_id) for x in current_challenge_phases
-        ]
-        current_phase_split_ids = [
-            (
-                split.leaderboard.config_id,
-                split.challenge_phase.config_id,
-                split.dataset_split.config_id,
+        # Get existing config IDs for leaderboards and dataset splits
+        if current_challenge:
+            current_challenge_phases = ChallengePhase.objects.filter(
+                challenge=current_challenge.id
             )
-            for split in current_challenge_phase_splits
-        ]
-    else:
-        current_leaderboard_config_ids = []
-        current_dataset_config_ids = []
-        current_phase_config_ids = []
-        current_phase_split_ids = []
+            current_challenge_phase_splits = ChallengePhaseSplit.objects.filter(
+                challenge_phase__in=current_challenge_phases
+            )
+            current_leaderboards = Leaderboard.objects.filter(
+                id__in=current_challenge_phase_splits.values("leaderboard")
+            )
+            current_dataset_splits = DatasetSplit.objects.filter(
+                id__in=current_challenge_phase_splits.values("dataset_split")
+            )
 
-    # Validate leaderboards
-    val_config_util.validate_leaderboards(current_leaderboard_config_ids)
+            current_leaderboard_config_ids = [
+                int(x.config_id) for x in current_leaderboards
+            ]
+            current_dataset_config_ids = [
+                int(x.config_id) for x in current_dataset_splits
+            ]
+            current_phase_config_ids = [
+                int(x.config_id) for x in current_challenge_phases
+            ]
+            current_phase_split_ids = [
+                (
+                    split.leaderboard.config_id,
+                    split.challenge_phase.config_id,
+                    split.dataset_split.config_id,
+                )
+                for split in current_challenge_phase_splits
+            ]
+        else:
+            current_leaderboard_config_ids = []
+            current_dataset_config_ids = []
+            current_phase_config_ids = []
+            current_phase_split_ids = []
 
-    # Validate challenge phases
-    val_config_util.validate_challenge_phases(current_phase_config_ids)
+        # Validate leaderboards
+        val_config_util.validate_leaderboards(current_leaderboard_config_ids)
 
-    # Validate dataset splits
-    val_config_util.validate_dataset_splits(current_dataset_config_ids)
+        # Validate challenge phases
+        val_config_util.validate_challenge_phases(current_phase_config_ids)
 
-    # Validate challenge phase splits
-    val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
+        # Validate dataset splits
+        val_config_util.validate_dataset_splits(current_dataset_config_ids)
+
+        # Validate challenge phase splits
+        val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
 
     return (
         val_config_util.error_messages,
