@@ -65,6 +65,11 @@ urlpatterns = [
         name="get_challenges_based_on_teams",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/request_approval",
+        views.request_challenge_approval_by_pk,
+        name="request_challenge_approval_by_pk",
+    ),
+    url(
         r"^(?P<challenge_pk>[0-9]+)/challenge_phase_split$",
         views.challenge_phase_split_list,
         name="challenge_phase_split_list",
@@ -223,6 +228,16 @@ urlpatterns = [
         r"^challenge/(?P<challenge_pk>[0-9]+)/get_participant_teams/$",
         views.get_participant_teams_for_challenge,
         name="get_participant_teams_for_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/approve_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        views.add_participant_team_to_approved_list,
+        name="add_participant_team_to_approved_list",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/disapprove_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        views.remove_participant_team_from_approved_list,
+        name="remove_participant_team_from_approved_list",
     ),
 ]
 

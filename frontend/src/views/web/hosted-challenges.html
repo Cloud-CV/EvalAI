@@ -16,9 +16,9 @@
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
                         <div class="margin-top-btm">
                             <span ng-if="challenge.approved_by_admin">
                                 <div class="chip green white-text">Approved</div>
