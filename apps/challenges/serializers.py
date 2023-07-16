@@ -50,6 +50,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
+            "manual_participant_approval",
             "is_active",
             "leaderboard_description",
             "allowed_email_domains",
@@ -64,6 +65,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "cli_version",
             "remote_evaluation",
             "allow_resuming_submissions",
+            "allow_host_cancel_submissions",
+            "allow_cancel_running_submissions",
+            "allow_participants_resubmissions",
             "workers",
             "created_at",
             "queue",
@@ -112,6 +116,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "is_submission_public",
+            "disable_logs",
         )
 
 
@@ -261,6 +266,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "forum_url",
             "remote_evaluation",
             "allow_resuming_submissions",
+            "allow_host_cancel_submissions",
+            "allow_cancel_running_submissions",
+            "allow_participants_resubmissions",
             "is_docker_based",
             "is_static_dataset_code_upload",
             "slug",
@@ -369,6 +377,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "disable_logs",
         )
 
 
