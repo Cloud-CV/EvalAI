@@ -53,8 +53,9 @@ def get_yaml_files_from_challenge_config(zip_ref):
     yaml_file_name = None
     extracted_folder_name = None
     for name in zip_ref.namelist():
-        if (name.endswith(".yaml") or name.endswith(".yml")) and (
-            not name.startswith("__MACOSX")
+        if (
+            (name == "challenge_config.yaml" or name == "challenge_config.yml")
+            and not name.startswith("__MACOSX")
         ):
             yaml_file_name = name
             extracted_folder_name = yaml_file_name.split(
