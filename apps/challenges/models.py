@@ -65,7 +65,7 @@ class Challenge(TimeStampedModel):
         ("RL", "Reinforcement Learning"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
-    list_tags = ArrayField(models.TextField(null=True, blank=True), default=[], blank=True)
+    list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )

@@ -2879,11 +2879,8 @@
         };
 
         vm.editchallengeTagDialog = function(ev) {
-            vm.tags = [];
-            for (var i = 0; i < vm.page.list_tags.length; i++) {
-                vm.tags[i] = vm.page.list_tags[i];
-            }
-            vm.domainoptions = vm.domain_choices();
+            vm.tags = vm.page.list_tags;
+            vm.domain_choices();
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -2935,19 +2932,18 @@
         };
 
         vm.domain_choices = function() {
-            var domain_choices = [];
             parameters.url = "challenges/challenge/get_domain_choices/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
-                    var details = response.data;
-                    for (var i = 0; i < details.length; i++) {
-                        domain_choices.push(details[i]);
-                        if (details[i][0] == vm.page.domain) {
-                            vm.domain = details[i][0];
+                    var domain_choices = response.data;
+                    for (var i = 0; i < domain_choices.length; i++) {
+                        if (domain_choices[i][0] == vm.page.domain) {
+                            vm.domain = domain_choices[i][0];
                         }
                     }
+                    vm.domainoptions = domain_choices;
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -2955,7 +2951,6 @@
                 }
             };
             utilities.sendRequest(parameters);
-            return domain_choices;
         };
 
         $scope.$on('$destroy', function() {

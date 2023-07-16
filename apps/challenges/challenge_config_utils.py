@@ -938,7 +938,7 @@ class ValidateChallengeConfigUtil:
                 self.error_messages.append(message)
 
     # Check for Tags and Domain
-    def check_tags_and_domain(self):
+    def check_tags(self):
         if "tags" in self.yaml_file_data:
             tags_data = self.yaml_file_data["tags"]
             # Verify Tags are limited to 4
@@ -946,6 +946,8 @@ class ValidateChallengeConfigUtil:
                 message = self.error_messages_dict["extra_tags"]
                 self.error_messages.append(message)
 
+
+    def check_domain(self):
         # Verify Domain name is correct
         if "domain" in self.yaml_file_data:
             domain_value = self.yaml_file_data["domain"]

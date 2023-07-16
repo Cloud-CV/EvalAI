@@ -6,15 +6,19 @@
                 <div class="pass-title font-size-16">Edit Challenge Tags and Domain</div>
                 <div class="input-field align-left">
                     <span class="text-med-black w-400 fs-16">Tags</span>
-                    <input type="text" id="tags" name="tags" autocomplete="off" ng-model="challenge.tags" placeholder="Tags" required>
+                    <input type="text" id="tags" name="tags" autocomplete="off" ng-model="challenge.tags" placeholder="Tags">
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
                 <div class="input-field align-left">
+                    <md-input-container style="width: 100%;">
                     <span class="text-med-black w-400 fs-16">Domain</span>
-                    <md-select id="domain" name="domain" ng-model="challenge.domain" aria-label="Domain Selection" required>
+                    <md-select id="domain" name="domain" aria-label="Domain Selection" ng-model="challenge.domain" required>
                         <md-option ng-repeat="option in challenge.domainoptions" value="{{ option[0] }}">{{ option[1] }}</md-option>
-                    </md-select>
-                    <span class="form-icon"><i class="fa fa-text"></i></span>
+                      </md-select>
+                      <div ng-messages="editChallengeTagDomainForm.$error" role="alert">
+                        <div ng-message="required">This field is required.</div>
+                      </div>
+                    </md-input-container>
                 </div>
                 <div class="align-left text-med-black w-400">
                     <ul class="inline-list pointer">
@@ -24,7 +28,7 @@
                         </li>
                         <li>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
-                                type="submit" value="submit">Submit
+                                type="submit" value="submit" ng-disabled="editChallengeTagDomainForm.$error.required">Submit
                             </button>
                         </li>
                     </ul>
