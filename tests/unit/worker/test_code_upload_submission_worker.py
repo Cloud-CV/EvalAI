@@ -665,6 +665,7 @@ class BaseAPITestClass(APITestCase):
         message = {"receipt_handle": "receipt_handle"}
         queue_name = "queue_name"
         is_remote = 1
+        disable_logs = False
 
         job_def = mock.MagicMock()
         job_def.metadata.labels = {"controller-uid": "controller_uid"}
@@ -711,6 +712,7 @@ class BaseAPITestClass(APITestCase):
             message,
             queue_name,
             is_remote,
+            disable_logs,
         )
 
         mock_read_job.assert_called_once_with(api_instance, job_name)
