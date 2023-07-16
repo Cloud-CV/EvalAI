@@ -13,7 +13,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification
+from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -134,3 +134,12 @@ class TestSlackNotification(BaseAPITestClass):
         response = send_slack_notification(message=message)
         self.assertEqual(type(response), requests.models.Response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestEncodeDecodeData(BaseAPITestClass):
+    def setUp(self):
+        super(TestEncodeDecodeData, self).setUp()
+
+    def test_encode_decode_data(self):
+        self.testString = ['Test String'.encode('utf-8')]
+        self.assertEqual(decode_data(encode_data(self.testString)), self.testString)
