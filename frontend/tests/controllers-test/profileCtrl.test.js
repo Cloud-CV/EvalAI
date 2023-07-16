@@ -183,7 +183,7 @@ describe('Unit tests for profile controller', function () {
             spyOn($state, 'go');
             spyOn($state, 'reload');
             vm.user.username = "abc123";
-            vm.user.email = "example@example.com"
+            vm.user.email = "example@example.com";
             vm.user.first_name = "firstname";
             vm.user.last_name = "lastname";
             vm.user.affiliation = "affiliation";

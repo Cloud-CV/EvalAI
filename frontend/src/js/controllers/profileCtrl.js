@@ -14,6 +14,7 @@
         var vm = this;
 
         vm.user = {};
+        vm.userdetails = {};
         vm.countLeft = 0;
         vm.compPerc = 0;
         var count = 0;
