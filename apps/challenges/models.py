@@ -129,11 +129,15 @@ class Challenge(TimeStampedModel):
     aws_region = models.CharField(
         max_length=50, default="us-east-1", null=True, blank=True
     )
+    queue_aws_region = models.CharField(
+        max_length=50, default="us-east-1", null=True, blank=True
+    )
     use_host_credentials = models.BooleanField(default=False)
     use_host_sqs = models.BooleanField(default=False)
     allow_resuming_submissions = models.BooleanField(default=False)
     allow_host_cancel_submissions = models.BooleanField(default=False)
     allow_cancel_running_submissions = models.BooleanField(default=False)
+    allow_participants_resubmissions = models.BooleanField(default=False)
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
@@ -191,6 +195,7 @@ class Challenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "challenge"
+        ordering = ("title",)
 
     def __str__(self):
         """Returns the title of Challenge"""
@@ -319,6 +324,7 @@ class ChallengePhase(TimeStampedModel):
     default_submission_meta_attributes = JSONField(
         default=None, blank=True, null=True
     )
+    disable_logs = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
