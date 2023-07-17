@@ -672,17 +672,7 @@ def get_all_challenges_submission_metrics(request):
     challenges = Challenge.objects.all()
     submission_metrics = {}
 
-    submission_statuses = [
-        "submitted",
-        "running",
-        "failed",
-        "cancelled",
-        "resuming",
-        "finished",
-        "submitting",
-        "archived",
-        "partially_evaluated",
-    ]
+    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
 
     for challenge in challenges:
         challenge_id = challenge.id
