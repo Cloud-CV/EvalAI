@@ -4020,7 +4020,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
 
         expected_response = {
-            1: {
+            292: {
                 'archived': 0,
                 'cancelled': 0,
                 'failed': 0,
@@ -4031,7 +4031,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'submitted': 0,
                 'submitting': 0
             },
-            2: {
+            293: {
                 'archived': 0,
                 'cancelled': 0,
                 'failed': 0,
