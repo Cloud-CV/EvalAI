@@ -853,7 +853,7 @@ describe('Unit tests for challenge controller', function () {
                     duration: 'year',
                     results: [
                         {
-                            
+                            id: 1,
                             leaderboard__schema:
                                 {
                                     labels: ['label1', 'label2'],

@@ -79,7 +79,7 @@
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
         vm.eligible_to_submit = false;
-        vm.choosenmatrix = ['0'];
+        vm.chosenmetrics = ['0'];
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -1045,12 +1045,9 @@
                             vm.showSubmissionMetaAttributesOnLeaderboard = true;
                         }
 
-                        for (var k = 0; k < vm.leaderboard[i].leaderboard__schema.labels.length; k++) {
-                            if (vm.orderLeaderboardBy == vm.leaderboard[i].leaderboard__schema.labels[k]) {
-                                vm.choosenmatrix.push(k.toString());
-                                break;
-                            }
-                        }
+                        var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
+                        var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
+                        vm.chosenmetrics = index !== -1 ? [index.toString()] : ['0'];
 
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
