@@ -1496,7 +1496,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             # Add Tags
             add_tags(yaml_file_data, challenge)
 
-
             # Add Domain
             add_domain(yaml_file_data, challenge)
 
@@ -3539,7 +3538,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     # Add Tags
                     add_tags(yaml_file_data, challenge)
 
-
                     # Add Domain
                     add_domain(yaml_file_data, challenge)
 
@@ -4287,7 +4285,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
 
 def add_tags(yaml_file_data, challenge):
     tags_data = yaml_file_data["tags"]

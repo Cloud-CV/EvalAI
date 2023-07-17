@@ -946,7 +946,6 @@ class ValidateChallengeConfigUtil:
                 message = self.error_messages_dict["extra_tags"]
                 self.error_messages.append(message)
 
-
     def check_domain(self):
         # Verify Domain name is correct
         if "domain" in self.yaml_file_data:
