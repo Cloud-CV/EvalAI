@@ -1048,7 +1048,6 @@
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
                         var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
                         vm.chosenmetrics = index !== -1 ? [index.toString()] : ['0'];
-
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
