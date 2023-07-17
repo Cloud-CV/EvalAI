@@ -4288,18 +4288,19 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 
 
 def add_tags(yaml_file_data, challenge):
-    tags_data = yaml_file_data["tags"]
-    new_tags = set(tags_data)
-    # Remove tags not present in the YAML file
-    challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+    if "tags" in yaml_file_data:
+        tags_data = yaml_file_data["tags"]
+        new_tags = set(tags_data)
+        # Remove tags not present in the YAML file
+        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
 
-    # Add new tags to the challenge
-    for tag_name in new_tags:
-        if tag_name not in challenge.list_tags:
-            challenge.list_tags.append(tag_name)
-        else:
-            # Remove all existing tags if no tags are defined in the YAML file
-            challenge.list_tags = []
+        # Add new tags to the challenge
+        for tag_name in new_tags:
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
+    else:
+        # Remove all existing tags if no tags are defined in the YAML file
+        challenge.list_tags = []
 
 
 def add_domain(yaml_file_data, challenge):
