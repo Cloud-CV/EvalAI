@@ -345,14 +345,14 @@ def deregister_participant_team_from_challenge(request, challenge_pk):
         else:
             submission_exist = False
         if submission_exist:
-            response_data = {"error": "You cannot deregister as you already have a submission in the challenge"}
+            response_data = {"error": "Participant teams which have made submissions to a challenge cannot be deregistered."}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             challenge.participant_teams.remove(participant_team)
             response_data = {"success": "Successfully deregistered!"}
             return Response(response_data, status=status.HTTP_200_OK)
     else:
-        response_data = {"error": "You are not registered in this challenge"}
+        response_data = {"error": "Your participant team is not registered for this challenge."}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
