@@ -45,6 +45,11 @@ urlpatterns = [
         name="get_all_challenges",
     ),
     url(
+        r"^challenge/get_submission_metrics$",
+        views.get_all_challenges_submission_metrics,
+        name="get_all_challenges_submission_metrics",
+    ),
+    url(
         r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
         views.get_all_participated_challenges,
         name="get_all_participated_challenges",
@@ -238,6 +243,11 @@ urlpatterns = [
         r"^challenge/(?P<challenge_pk>[0-9]+)/disapprove_participant_team/(?P<participant_team_pk>[0-9]+)$",
         views.remove_participant_team_from_approved_list,
         name="remove_participant_team_from_approved_list",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/deregister/$",
+        views.deregister_participant_team_from_challenge,
+        name="deregister_participant_team_from_challenge",
     ),
     url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/update_challenge_tags_and_domain/$",
