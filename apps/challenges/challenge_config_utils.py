@@ -796,31 +796,13 @@ class ValidateChallengeConfigUtil:
                     "challenge_phase_id",
                 }
                 if expected_keys.issubset(data.keys()):
-                    if (
-                        current_phase_split_ids
-                        and (
+                    challenge_phase_split_uuids.append(
+                        (
                             data["leaderboard_id"],
                             data["challenge_phase_id"],
                             data["dataset_split_id"],
                         )
-                        not in current_phase_split_ids
-                    ):
-                        message = self.error_messages_dict[
-                            "challenge_phase_split_not_exist"
-                        ].format(
-                            data["leaderboard_id"],
-                            data["challenge_phase_id"],
-                            data["dataset_split_id"],
-                        )
-                        # self.error_messages.append(message)
-                    else:
-                        challenge_phase_split_uuids.append(
-                            (
-                                data["leaderboard_id"],
-                                data["challenge_phase_id"],
-                                data["dataset_split_id"],
-                            )
-                        )
+                    )
 
                     (
                         is_mapping_valid,
@@ -894,6 +876,14 @@ class ValidateChallengeConfigUtil:
                     ].format(split["id"], serializer_error)
                     self.error_messages.append(message)
                 else:
+                    if (
+                        current_dataset_config_ids
+                        and int(split["id"]) not in current_dataset_config_ids
+                    ):
+                        message = self.error_messages_dict[
+                            "dataset_split_addition"
+                        ].format(split["id"])
+                        self.error_messages.append(message)
                     self.dataset_splits_ids.append(split["id"])
         else:
             message = self.error_messages_dict["missing_dataset_splits_key"]
