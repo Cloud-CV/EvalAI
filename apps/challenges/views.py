@@ -316,6 +316,46 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def deregister_participant_team_from_challenge(request, challenge_pk):
+    """
+    Deregister a participant team from a challenge
+    Arguments:
+        challenge_pk {int} -- Challenge primary key
+    Returns:
+        {String} -- Success message
+    """
+    if has_user_participated_in_challenge(
+        user=request.user, challenge_id=challenge_pk
+    ):
+        challenge = get_challenge_model(challenge_pk)
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+        participant_team = get_participant_model(participant_team_pk)
+        all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+        if (all_challenge_phases.count() > 0):
+            for challenge_phase in all_challenge_phases:
+                submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+                if submission_exist:
+                    break
+        else:
+            submission_exist = False
+        if submission_exist:
+            response_data = {"error": "Participant teams which have made submissions to a challenge cannot be deregistered."}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            challenge.participant_teams.remove(participant_team)
+            response_data = {"success": "Successfully deregistered!"}
+            return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Your participant team is not registered for this challenge."}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
