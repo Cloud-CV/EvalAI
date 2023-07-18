@@ -479,7 +479,7 @@ def parse_submission_meta_attributes(submission):
     return submission_meta_attributes
 
 
-def add_tags(yaml_file_data, challenge):
+def add_tags_to_challenge(yaml_file_data, challenge):
     if "tags" in yaml_file_data:
         tags_data = yaml_file_data["tags"]
         new_tags = set(tags_data)
@@ -495,7 +495,7 @@ def add_tags(yaml_file_data, challenge):
         challenge.list_tags = []
 
 
-def add_domain(yaml_file_data, challenge):
+def add_domain_to_challenge(yaml_file_data, challenge):
     if "domain" in yaml_file_data:
         domain_value = yaml_file_data["domain"]
         valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
