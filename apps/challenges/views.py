@@ -67,8 +67,8 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
-    add_domain,
-    add_tags,
+    add_domain_to_challenge,
+    add_tags_to_challenge,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -1563,10 +1563,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             # Add Tags
-            add_tags(yaml_file_data, challenge)
+            add_tags_to_challenge(yaml_file_data, challenge)
 
             # Add Domain
-            add_domain(yaml_file_data, challenge)
+            add_domain_to_challenge(yaml_file_data, challenge)
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -3605,10 +3605,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge.save()
 
                     # Add Tags
-                    add_tags(yaml_file_data, challenge)
+                    add_tags_to_challenge(yaml_file_data, challenge)
 
                     # Add Domain
-                    add_domain(yaml_file_data, challenge)
+                    add_domain_to_challenge(yaml_file_data, challenge)
 
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
@@ -3854,10 +3854,10 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge = serializer.instance
 
                 # Add Tags
-                add_tags(yaml_file_data, challenge)
+                add_tags_to_challenge(yaml_file_data, challenge)
 
                 # Add Domain
-                add_domain(yaml_file_data, challenge)
+                add_domain_to_challenge(yaml_file_data, challenge)
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}
