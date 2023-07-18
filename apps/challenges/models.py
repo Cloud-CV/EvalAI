@@ -66,6 +66,7 @@ class Challenge(TimeStampedModel):
     is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
+    leaderboard_visibility = models.BooleanField(default=True)
     leaderboard_description = models.TextField(null=True, blank=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)

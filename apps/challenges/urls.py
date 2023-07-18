@@ -239,6 +239,11 @@ urlpatterns = [
         views.remove_participant_team_from_approved_list,
         name="remove_participant_team_from_approved_list",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/toggle_challenge_leaderboard_visibility/$",
+        views.toggle_challenge_leaderboard_visibility,
+        name="toggle_challenge_leaderboard_visibility",
+    ),
 ]
 
 app_name = "challenges"

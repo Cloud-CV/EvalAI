@@ -933,6 +933,13 @@ def challenge_phase_split_list(request, challenge_pk):
     challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 
     if not challenge_host:
+        if not challenge.leaderboard_visibility:
+            response_data = {
+                "error": "Sorry, the leaderboard is not public!"
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
         challenge_phase_split = challenge_phase_split.filter(
             visibility=ChallengePhaseSplit.PUBLIC
         )
@@ -4220,3 +4227,33 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def toggle_challenge_leaderboard_visibility(request, challenge_pk):
+    """
+    Toggle the visibility of the challenge leaderboard
+    """
+    try:
+        challenge = get_challenge_model(challenge_pk)
+        challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+        if(challenge_host):
+            challenge.leaderboard_visibility = not challenge.leaderboard_visibility
+            challenge.save()
+            response_data = {
+                "message": "Leaderboard visibility updated successfully!"
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            response_data = {
+                "error": "Sorry, you are not authorized to perform this action!"
+            }
+            return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge does not exist!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)

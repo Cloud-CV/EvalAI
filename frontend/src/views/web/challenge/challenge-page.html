@@ -58,6 +58,21 @@
                             </a>
                         </span>
                     </span>
+                    <span ng-if="challenge.isChallengeHost" class="fs-16 w-300">
+                        <br>
+                        <span ng-if="challenge.leaderboard_visibility">
+                            <a class="pointer" ng-click="challenge.toggle_leaderboard_visibility($event)">
+                                <strong class="text-light-black">Leaderboard </strong>
+                                <i class="fa fa-eye green-text" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                        <span ng-if="!challenge.leaderboard_visibility">
+                            <a class="pointer" ng-click="challenge.toggle_leaderboard_visibility($event)">
+                                <strong class="text-light-black">Leaderboard </strong>
+                                <i class="fa fa-eye red-text" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    </span>
                     <br>
                     <span class="fs-16 w-300">
                         <strong class="text-light-black">Starts on:</strong>
@@ -125,7 +140,7 @@
                     <li class="margin-btm-0" ng-if="challenge.isChallengeHost && challenge.manual_participant_approval"><a ui-sref=".approval_team"
                         ui-sref-active="active-challenge" class="text-light-black w-300"><i class="fa fa-check-circle"></i>
                         Team Approval</a></li>
-                    <li class="margin-btm-0"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
+                    <li class="margin-btm-0" ng-if="challenge.page.leaderboard_visibility || challenge.isChallengeHost"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-line-chart"></i> Leaderboard</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".manage" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-cogs"></i> Manage</a></li>

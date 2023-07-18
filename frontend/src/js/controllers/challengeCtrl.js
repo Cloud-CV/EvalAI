@@ -52,6 +52,7 @@
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
         vm.isPublished = false;
+        vm.leaderboard_visibility = true;
         vm.approved_by_admin = false;
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
@@ -360,6 +361,7 @@
                 vm.page.gmt_zone = gmtZone;
                 vm.isActive = details.is_active;
                 vm.isPublished = vm.page.published;
+                vm.leaderboard_visibility = vm.page.leaderboard_visibility;
                 vm.isForumEnabled = details.enable_forum;
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
@@ -785,7 +787,6 @@
             onError: function(response) {
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
-                $state.go('web.permission-denied');
                 utilities.hideLoader();
             }
         };
@@ -894,7 +895,6 @@
             onError: function(response) {
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
-                $state.go('web.permission-denied');
                 utilities.hideLoader();
             }
         };
@@ -2918,6 +2918,42 @@
 
         vm.encodeMetricURI = function(metric) {
             return encodeURIComponent(metric);
+        };
+
+        vm.toggle_leaderboard_visibility = function(ev) {
+            if (vm.leaderboard_visibility)
+            vm.toggleChallengeState = "private";
+            else
+                vm.toggleChallengeState = "public";
+
+            var confirm = $mdDialog.confirm()
+            .title('Make this leaderboard ' + vm.toggleChallengeState + '?')
+            .ariaLabel('')
+            .targetEvent(ev)
+            .ok('Yes')
+            .cancel('No');
+
+            $mdDialog.show(confirm).then(function() {
+                parameters.url = "challenges/challenge/" + vm.challengeId + "/toggle_challenge_leaderboard_visibility/";
+                parameters.method = 'PATCH';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            vm.leaderboard_visibility = !vm.leaderboard_visibility;
+                            $rootScope.notify("success", "The leaderboard visibility is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }, function() {
+            // Nope
+            });
         };
 
     }
