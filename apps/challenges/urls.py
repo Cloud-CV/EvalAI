@@ -45,6 +45,11 @@ urlpatterns = [
         name="get_all_challenges",
     ),
     url(
+        r"^challenge/get_submission_metrics$",
+        views.get_all_challenges_submission_metrics,
+        name="get_all_challenges_submission_metrics",
+    ),
+    url(
         r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
         views.get_all_participated_challenges,
         name="get_all_participated_challenges",
