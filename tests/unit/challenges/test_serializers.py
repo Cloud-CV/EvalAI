@@ -225,6 +225,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
+                    "disable_logs",
                 ]
             ),
         )
@@ -309,6 +310,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
+                    "disable_logs",
                 ]
             ),
         )
@@ -389,6 +391,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
+                    "disable_logs",
                 ]
             ),
         )

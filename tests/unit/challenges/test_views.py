@@ -310,6 +310,110 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
+class DeregisterParticipantTeamTest(BaseAPITestClass):
+    def setUp(self):
+        super(DeregisterParticipantTeamTest, self).setUp()
+
+        self.user5 = User.objects.create(
+            username="otheruser",
+            password="other_secret_password",
+            email="user5@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user5,
+            email="user5@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Other Test Challenge Host Team", created_by=self.user5
+        )
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user5,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+    def create_submission(self):
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase1 = ChallengePhase.objects.create(
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.submission1 = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase1,
+                created_by=self.challenge_host_team.created_by,
+                status="submitted",
+                input_file=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                method_name="Test Method 1",
+                method_description="Test Description 1",
+                project_url="http://testserver1/",
+                publication_url="http://testserver1/",
+                is_public=True,
+                is_flagged=True,
+            )
+
+    def test_deregister_participant_team(self):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["success"], "Successfully deregistered!")
+
+    def test_deregister_participant_team_with_challenge_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk + 2},
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_deregister_participant_team_with_submission_exist(
+        self
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.create_submission()
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
 class CreateChallengeTest(BaseAPITestClass):
     def setUp(self):
         super(CreateChallengeTest, self).setUp()
@@ -2463,6 +2567,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2491,6 +2596,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
         ]
 
@@ -2527,6 +2633,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -2573,6 +2680,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "is_submission_public": self.challenge_phase.is_submission_public,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -2601,6 +2709,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.private_challenge_phase.allowed_email_ids,
                 "is_submission_public": self.private_challenge_phase.is_submission_public,
+                "disable_logs": self.private_challenge_phase.disable_logs,
             },
         ]
 
@@ -2951,6 +3060,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
@@ -2990,6 +3100,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -3052,6 +3163,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -3153,6 +3265,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -4005,6 +4118,41 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_get_all_challenges_submission_metrics(self):
+        self.maxDiff = None
+
+        url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
+
+        expected_response = {
+            292: {
+                'archived': 0,
+                'cancelled': 0,
+                'failed': 0,
+                'finished': 0,
+                'partially_evaluated': 0,
+                'resuming': 0,
+                'running': 0,
+                'submitted': 0,
+                'submitting': 0
+            },
+            293: {
+                'archived': 0,
+                'cancelled': 0,
+                'failed': 0,
+                'finished': 0,
+                'partially_evaluated': 0,
+                'resuming': 0,
+                'running': 0,
+                'submitted': 3,
+                'submitting': 0
+            }
+        }
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_response)
+
 
 class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def setUp(self):
@@ -4679,6 +4827,7 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "is_submission_public": self.challenge_phase.is_submission_public,
+            "disable_logs": self.challenge_phase.disable_logs,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -4754,6 +4903,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+                "disable_logs": self.private_challenge_phase.disable_logs,
             },
             {
                 "id": self.challenge_phase.id,
@@ -4787,6 +4937,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "allowed_submission_file_types": self.challenge_phase.allowed_submission_file_types,
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
+                "disable_logs": self.challenge_phase.disable_logs,
             },
         ]
         response = self.client.get(self.url, {})
@@ -5215,3 +5366,225 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 "error": "The following challenge phases do not have finished submissions: Challenge Phase"
             },
         )
+
+
+class CreateOrUpdateGithubChallengeTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username="host", email="host@test.com", password="secret_password"
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_challenge_using_github_success(self):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+            }
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json(), expected)
+        self.assertEqual(Challenge.objects.count(), 1)
+        self.assertEqual(DatasetSplit.objects.count(), 1)
+        self.assertEqual(Leaderboard.objects.count(), 1)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+    def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk + 10
+            },
+        )
+        expected = {
+            "detail": "ChallengeHostTeam {} does not exist".format(
+                self.challenge_host_team.pk + 10
+            )
+        }
+        response = self.client.post(
+            self.url,
+            {
+                "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                "zip_configuration": self.input_zip_file,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_challenge_using_github_when_user_is_not_authenticated(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        self.client.force_authenticate(user=None)
+        expected = {"error": "Authentication credentials were not provided."}
+        response = self.client.post(self.url, {})
+        self.assertEqual(list(response.data.values())[0], expected["error"])
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ValidateChallengeTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username="host", email="host@test.com", password="secret_password"
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+        self.zip_incorect_file = open(
+            join(settings.BASE_DIR, "examples", "example3", "incorrect_zip_file.zip"),
+            "rb",
+        )
+        self.test_zip_incorrect_file = SimpleUploadedFile(
+            self.zip_incorect_file.name,
+            self.zip_incorect_file.read(),
+            content_type="application/zip",
+        )
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_validate_challenge_using_success(self):
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "The challenge config has been validated successfully"
+            }
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected)
+
+    def test_validate_challenge_using_failure(self):
+        self.maxDiff = None
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_incorrect_file.read()
+            resp.status_code = 200
+
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "error": "Please add the challenge title\n"
+                         "Please add the challenge description\n"
+                         "Please add the evaluation details\n"
+                         "Please add the terms and conditions.\n"
+                         "Please add the submission guidelines.\n"
+                         "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
+                         "ERROR: Please add the start_date and end_date.\n"
+                         "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
+                         "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
+                         " ERROR: There is no key for description in phase Dev Phase.\n"
+                         "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
+                         "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
+                         "ERROR: Challenge phase 1 has the following schema errors:\n"
+                         " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
+                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
+                         "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
+                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"
+                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 3."
+            }
+
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), expected)
