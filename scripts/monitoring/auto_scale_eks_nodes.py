@@ -151,7 +151,7 @@ def scale_up_workers(challenge, desired_size, pending_submissions, evalai_interf
         )
     else:
         print(
-            "Existing workers and pending pending submissions found for Challenge ID: {}, Title: {}. Skipping.".format(
+            "Existing workers and pending submissions found for Challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
@@ -162,7 +162,7 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
         pending_submissions = get_pending_submission_count_by_pk(metrics, challenge["id"])
     except Exception:  # noqa: F841
         print(
-            "Unable to get the queue length for challenge ID: {}, Title: {}. Skipping.".format(
+            "Unable to get the pending submissions for challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
