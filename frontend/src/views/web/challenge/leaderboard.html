@@ -78,6 +78,7 @@
                             <md-option value="{{i}}" ng-repeat="(i,key) in challenge.leaderboard[0].leaderboard__schema.labels">
                                 <span class="fs-16 w-300">{{key}}</span>
                         </md-select>
+                        <span class="fs-16 w-300 visible-matrics right">Visible Matrics </span>
                     </div>
                 </div>
                 <table ng-if="challenge.isResult && challenge.leaderboard.length" ng-attr-id="leaderboard_table" ng-class="['highlight', {'watermarked': challenge.showBackground}]">
