@@ -244,6 +244,11 @@ urlpatterns = [
         views.remove_participant_team_from_approved_list,
         name="remove_participant_team_from_approved_list",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/deregister/$",
+        views.deregister_participant_team_from_challenge,
+        name="deregister_participant_team_from_challenge",
+    ),
 ]
 
 app_name = "challenges"

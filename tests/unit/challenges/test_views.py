@@ -310,6 +310,110 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
+class DeregisterParticipantTeamTest(BaseAPITestClass):
+    def setUp(self):
+        super(DeregisterParticipantTeamTest, self).setUp()
+
+        self.user5 = User.objects.create(
+            username="otheruser",
+            password="other_secret_password",
+            email="user5@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user5,
+            email="user5@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Other Test Challenge Host Team", created_by=self.user5
+        )
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user5,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+    def create_submission(self):
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase1 = ChallengePhase.objects.create(
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.submission1 = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase1,
+                created_by=self.challenge_host_team.created_by,
+                status="submitted",
+                input_file=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                method_name="Test Method 1",
+                method_description="Test Description 1",
+                project_url="http://testserver1/",
+                publication_url="http://testserver1/",
+                is_public=True,
+                is_flagged=True,
+            )
+
+    def test_deregister_participant_team(self):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["success"], "Successfully deregistered!")
+
+    def test_deregister_participant_team_with_challenge_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk + 2},
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_deregister_participant_team_with_submission_exist(
+        self
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.create_submission()
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
 class CreateChallengeTest(BaseAPITestClass):
     def setUp(self):
         super(CreateChallengeTest, self).setUp()
