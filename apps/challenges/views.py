@@ -67,6 +67,8 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
+    add_domain,
+    add_tags,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -4285,35 +4287,3 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-def add_tags(yaml_file_data, challenge):
-    if "tags" in yaml_file_data:
-        tags_data = yaml_file_data["tags"]
-        new_tags = set(tags_data)
-        # Remove tags not present in the YAML file
-        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
-
-        # Add new tags to the challenge
-        for tag_name in new_tags:
-            if tag_name not in challenge.list_tags:
-                challenge.list_tags.append(tag_name)
-    else:
-        # Remove all existing tags if no tags are defined in the YAML file
-        challenge.list_tags = []
-
-
-def add_domain(yaml_file_data, challenge):
-    if "domain" in yaml_file_data:
-        domain_value = yaml_file_data["domain"]
-        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
-        if domain_value in valid_domains:
-            challenge.domain = domain_value
-            challenge.save()
-        else:
-            message = f"Invalid domain value: {domain_value}, valid values are: {valid_domains}"
-            response_data = {"error": message}
-            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-    else:
-        challenge.domain = None
-        challenge.save()
