@@ -243,7 +243,7 @@
                             if (utcTime) {
                               utcTime = utcTime[0].substring(1, 20);
                               var date = new Date(utcTime + 'Z');
-                              var localTime = date.toLocaleString();
+                              var localTime = date.toLocaleString("sv-SE");
                               var modifiedLog = log.replace(utcTime, localTime);
                               vm.workerLogs.push(modifiedLog);
                             } else {
