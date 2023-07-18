@@ -3755,6 +3755,18 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
+
+                # Delete the challenge phase if it is not present in the yaml file
+                existing_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+                existing_challenge_phase_ids = [str(challenge_phase.config_id) for challenge_phase in existing_challenge_phases]
+                challenge_phases_data_ids = [str(challenge_phase_data["id"]) for challenge_phase_data in challenge_phases_data]
+                challenge_phase_ids_to_delete = list(set(existing_challenge_phase_ids) - set(challenge_phases_data_ids))
+                for challenge_phase_id_to_delete in challenge_phase_ids_to_delete:
+                    challenge_phase = ChallengePhase.objects.filter(
+                        challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete
+                    ).first()
+                    challenge_phase.delete()
+
                 for data, challenge_test_annotation_file in zip(
                     challenge_phases_data, files["challenge_test_annotation_files"]
                 ):
@@ -3774,7 +3786,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ).first()
                     if (
                         challenge_test_annotation_file
-                        and not challenge_phase.annotations_uploaded_using_cli
                     ):
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,

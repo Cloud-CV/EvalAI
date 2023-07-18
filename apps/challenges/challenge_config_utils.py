@@ -772,22 +772,7 @@ class ValidateChallengeConfigUtil:
                 ].format(data["id"], serializer_error)
                 self.error_messages.append(message)
             else:
-                if (
-                    current_phase_config_ids
-                    and int(data["id"]) not in current_phase_config_ids
-                ):
-                    message = self.error_messages_dict[
-                        "challenge_phase_addition"
-                    ].format(data["id"])
-                    self.error_messages.append(message)
                 self.phase_ids.append(data["id"])
-
-        for current_challenge_phase_id in current_phase_config_ids:
-            if current_challenge_phase_id not in self.phase_ids:
-                message = self.error_messages_dict[
-                    "challenge_phase_not_found"
-                ].format(current_challenge_phase_id)
-                self.error_messages.append(message)
 
     def validate_challenge_phase_splits(self, current_phase_split_ids):
         challenge_phase_splits = self.yaml_file_data.get(
@@ -827,7 +812,7 @@ class ValidateChallengeConfigUtil:
                             data["challenge_phase_id"],
                             data["dataset_split_id"],
                         )
-                        self.error_messages.append(message)
+                        # self.error_messages.append(message)
                     else:
                         challenge_phase_split_uuids.append(
                             (
@@ -865,12 +850,6 @@ class ValidateChallengeConfigUtil:
                     message = self.error_messages_dict[
                         "missing_keys_in_challenge_phase_splits"
                     ].format(phase_split, missing_keys_string)
-                    self.error_messages.append(message)
-            for uuid in current_phase_split_ids:
-                if uuid not in challenge_phase_split_uuids:
-                    message = self.error_messages_dict[
-                        "challenge_phase_split_not_found"
-                    ].format(uuid[0], uuid[1], uuid[2])
                     self.error_messages.append(message)
         else:
             message = self.error_messages_dict[
@@ -915,14 +894,6 @@ class ValidateChallengeConfigUtil:
                     ].format(split["id"], serializer_error)
                     self.error_messages.append(message)
                 else:
-                    if (
-                        current_dataset_config_ids
-                        and int(split["id"]) not in current_dataset_config_ids
-                    ):
-                        message = self.error_messages_dict[
-                            "dataset_split_addition"
-                        ].format(split["id"])
-                        self.error_messages.append(message)
                     self.dataset_splits_ids.append(split["id"])
         else:
             message = self.error_messages_dict["missing_dataset_splits_key"]
