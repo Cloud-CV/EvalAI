@@ -3792,7 +3792,14 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete
                     ).first()
-                    challenge_phase.delete()
+                    submission_exist = Submission.objects.filter(challenge_phase=challenge_phase).exists()
+                    if submission_exist:
+                        response_data = {
+                            "error": "Sorry, you cannot delete a challenge phase with submissions."
+                        }
+                        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        challenge_phase.delete()
 
                 for data, challenge_test_annotation_file in zip(
                     challenge_phases_data, files["challenge_test_annotation_files"]
