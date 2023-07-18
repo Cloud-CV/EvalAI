@@ -2920,6 +2920,42 @@
             return encodeURIComponent(metric);
         };
 
+        vm.deregisterdialog = function(ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-deregister.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.deregister = function(deregisterformvalid) {
+            if (deregisterformvalid) {
+                parameters.url = 'challenges/challenge/' + vm.challengeId + '/deregister/';
+                parameters.method = 'POST';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $rootScope.notify("success", "You have successfully deregistered from the challenge.");
+                            $state.go('web.challenge-main.challenge-page.overview');
+                            $state.reload();
+                        }
+                    },
+                    onError: function(response) {
+                        $rootScope.notify("error", response.data.error);
+                        $mdDialog.hide();
+                    }
+                };
+            utilities.sendRequest(parameters);
+            }
+            else {
+                $mdDialog.hide();
+            }
+        };
+
     }
 
 })();
