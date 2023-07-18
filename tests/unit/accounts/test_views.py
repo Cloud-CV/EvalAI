@@ -126,13 +126,3 @@ class RefreshAuthTokenTest(BaseAPITestClass):
         with self.assertRaises(TokenError) as context:
             RefreshToken(token.refresh_token)
         self.assertTrue("Token is blacklisted" in str(context.exception))
-
-
-class ChangeEmailTest(BaseAPITestClass):
-
-    url = reverse_lazy("accounts:change_email")
-
-    def test_change_email(self):
-        self.data = {"new_email": "example@example.com"}
-        response = self.client.put(self.url, self.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)

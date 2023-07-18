@@ -14,7 +14,6 @@
         var vm = this;
 
         vm.user = {};
-        vm.userdetails = {};
         vm.countLeft = 0;
         vm.compPerc = 0;
         var count = 0;
@@ -185,38 +184,36 @@
         };
 
         vm.editprofileDialog = function(ev) {
-            if (ev.currentTarget.id === "username") {
-                vm.titleInput = "Username";
-                vm.editid = "username";
-            }
-            else if (ev.currentTarget.id === "email") {
-                vm.titleInput = "Email";
-                vm.editid = "email";
-            }
-            else if (ev.currentTarget.id === "first_name") {
-                vm.titleInput = "First Name";
-                vm.editid = "first_name";
-            }
-            else if (ev.currentTarget.id === "last_name") {
-                vm.titleInput = "Last Name";
-                vm.editid = "last_name";
-            }
-            else if (ev.currentTarget.id === "affiliation") {
-                vm.titleInput = "Affiliation";
-                vm.editid = "affiliation";
-            }
-            else if (ev.currentTarget.id === "github_url") {
-                vm.titleInput = "Github URL";
-                vm.editid = "github_url";
-            }
-            else if (ev.currentTarget.id === "google_scholar_url") {
-                vm.titleInput = "Google Scholar URL";
-                vm.editid = "google_scholar_url";
-            }
-            else if (ev.currentTarget.id === "linkedin_url") {
-                vm.titleInput = "Linkedin URL";
-                vm.editid = "linkedin_url";
-            }
+            switch (ev.currentTarget.id) {
+                case "username":
+                  vm.titleInput = "Username";
+                  vm.editid = "username";
+                  break;
+                case "first_name":
+                  vm.titleInput = "First Name";
+                  vm.editid = "first_name";
+                  break;
+                case "last_name":
+                  vm.titleInput = "Last Name";
+                  vm.editid = "last_name";
+                  break;
+                case "affiliation":
+                  vm.titleInput = "Affiliation";
+                  vm.editid = "affiliation";
+                  break;
+                case "github_url":
+                  vm.titleInput = "Github URL";
+                  vm.editid = "github_url";
+                  break;
+                case "google_scholar_url":
+                  vm.titleInput = "Google Scholar URL";
+                  vm.editid = "google_scholar_url";
+                  break;
+                case "linkedin_url":
+                  vm.titleInput = "Linkedin URL";
+                  vm.editid = "linkedin_url";
+                  break;
+              }
 
             $mdDialog.show({
                 scope: $scope,
@@ -252,11 +249,6 @@
                     "google_scholar_url": vm.user.google_scholar_url,
                     "linkedin_url": vm.user.linkedin_url
                 };
-
-                if (vm.userdetails.email !== vm.user.email) {
-                    parameters.data.new_email = vm.user.email;
-                    parameters.url = 'accounts/user/change_email/';
-                }
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
