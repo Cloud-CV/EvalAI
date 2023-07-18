@@ -2927,7 +2927,7 @@
                 vm.toggleChallengeState = "public";
 
             var confirm = $mdDialog.confirm()
-            .title('Make this leaderboard ' + vm.toggleChallengeState + '?')
+            .title('Make the leaderboard to ' + vm.toggleChallengeState + '?')
             .ariaLabel('')
             .targetEvent(ev)
             .ok('Yes')
