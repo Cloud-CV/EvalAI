@@ -9,6 +9,8 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
+from rest_framework.response import Response
+from rest_framework import status
 
 from base.utils import (
     get_model_object,
