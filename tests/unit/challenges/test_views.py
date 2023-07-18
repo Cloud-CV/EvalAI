@@ -4014,6 +4014,41 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_get_all_challenges_submission_metrics(self):
+        self.maxDiff = None
+
+        url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
+
+        expected_response = {
+            292: {
+                'archived': 0,
+                'cancelled': 0,
+                'failed': 0,
+                'finished': 0,
+                'partially_evaluated': 0,
+                'resuming': 0,
+                'running': 0,
+                'submitted': 0,
+                'submitting': 0
+            },
+            293: {
+                'archived': 0,
+                'cancelled': 0,
+                'failed': 0,
+                'finished': 0,
+                'partially_evaluated': 0,
+                'resuming': 0,
+                'running': 0,
+                'submitted': 3,
+                'submitting': 0
+            }
+        }
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_response)
+
 
 class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def setUp(self):
