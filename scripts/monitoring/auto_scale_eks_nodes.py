@@ -83,7 +83,7 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge, queue_length, evalai_interface, aws_keys, desired_size=None):
+def start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys, desired_size=None):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(
         challenge, evalai_interface, aws_keys
     )
