@@ -54,6 +54,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "started_at",
             "completed_at",
             "submitted_at",
+            "rerun_resumed_at",
             "method_name",
             "method_description",
             "project_url",
