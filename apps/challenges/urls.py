@@ -249,6 +249,16 @@ urlpatterns = [
         views.deregister_participant_team_from_challenge,
         name="deregister_participant_team_from_challenge",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/update_challenge_tags_and_domain/$",
+        views.update_challenge_tags_and_domain,
+        name="update_challenge_tags_and_domain",
+    ),
+    url(
+        r"^challenge/get_domain_choices/$",
+        views.get_domain_choices,
+        name="get_domain_choices",
+    ),
 ]
 
 app_name = "challenges"
