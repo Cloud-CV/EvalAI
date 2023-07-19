@@ -67,6 +67,8 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
+    add_domain_to_challenge,
+    add_tags_to_challenge,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -314,6 +316,46 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
     elif request.method == "DELETE":
         challenge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def deregister_participant_team_from_challenge(request, challenge_pk):
+    """
+    Deregister a participant team from a challenge
+    Arguments:
+        challenge_pk {int} -- Challenge primary key
+    Returns:
+        {String} -- Success message
+    """
+    if has_user_participated_in_challenge(
+        user=request.user, challenge_id=challenge_pk
+    ):
+        challenge = get_challenge_model(challenge_pk)
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+        participant_team = get_participant_model(participant_team_pk)
+        all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+        if (all_challenge_phases.count() > 0):
+            for challenge_phase in all_challenge_phases:
+                submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+                if submission_exist:
+                    break
+        else:
+            submission_exist = False
+        if submission_exist:
+            response_data = {"error": "Participant teams which have made submissions to a challenge cannot be deregistered."}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            challenge.participant_teams.remove(participant_team)
+            response_data = {"success": "Successfully deregistered!"}
+            return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Your participant team is not registered for this challenge."}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(["GET"])
@@ -661,6 +703,33 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     )
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_all_challenges_submission_metrics(request):
+    """
+    Returns the submission metrics for all challenges and their phases
+    """
+    challenges = Challenge.objects.all()
+    submission_metrics = {}
+
+    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
+
+    for challenge in challenges:
+        challenge_id = challenge.id
+        challenge_metrics = {}
+
+        # Fetch challenge phases for the challenge
+        challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+
+        for submission_status in submission_statuses:
+            count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
+            challenge_metrics[submission_status] = count
+
+        submission_metrics[challenge_id] = challenge_metrics
+
+    return Response(submission_metrics)
 
 
 @api_view(["GET"])
@@ -1492,6 +1561,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 raise RuntimeError()
                 # transaction.set_rollback(True)
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+            # Add Tags
+            add_tags_to_challenge(yaml_file_data, challenge)
+
+            # Add Domain
+            add_domain_to_challenge(yaml_file_data, challenge)
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -2501,6 +2576,53 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_tags_and_domain(request, challenge_pk):
+    """
+    Returns or Updates challenge tags and domain
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if request.method == "PATCH":
+        new_tags = request.data.get("list_tags", [])
+        domain_value = request.data.get("domain")
+        # Remove tags not present in the YAML file
+        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+        # Add new tags to the challenge
+        for tag_name in new_tags:
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
+        # Verifying Domain name
+        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
+        if domain_value in valid_domains:
+            challenge.domain = domain_value
+            challenge.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            message = f"Invalid domain value:{domain_value}"
+            response_data = {"error": message}
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_domain_choices(request):
+    """
+    Returns domain choices
+    """
+    if request.method == "GET":
+        domain_choices = Challenge.DOMAIN_OPTIONS
+        return Response(domain_choices, status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Method not allowed"}
+        return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
@@ -3482,6 +3604,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge.queue = queue_name
                     challenge.save()
 
+                    # Add Tags
+                    add_tags_to_challenge(yaml_file_data, challenge)
+
+                    # Add Domain
+                    add_domain_to_challenge(yaml_file_data, challenge)
+
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
                         "leaderboard"
@@ -3724,6 +3852,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     error_messages = serializer.errors
                     raise RuntimeError()
                 challenge = serializer.instance
+
+                # Add Tags
+                add_tags_to_challenge(yaml_file_data, challenge)
+
+                # Add Domain
+                add_domain_to_challenge(yaml_file_data, challenge)
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}
