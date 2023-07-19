@@ -14,7 +14,7 @@ warnings.filterwarnings("ignore")
 
 utc = pytz.UTC
 
-DEFAULT_AWS_EKS_KEYS = { # NOTE: These are habitat challenge keys as most challenges are habitat
+DEFAULT_AWS_EKS_KEYS = {  # NOTE: These are habitat challenge keys as most challenges are habitat
     "AWS_ACCOUNT_ID": os.environ.get("EKS_AWS_ACCOUNT_ID"),
     "AWS_ACCESS_KEY_ID": os.environ.get("EKS_AWS_ACCESS_KEY_ID"),
     "AWS_SECRET_ACCESS_KEY": os.environ.get("EKS_AWS_SECRET_ACCESS_KEY"),
