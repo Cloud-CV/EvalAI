@@ -507,7 +507,7 @@ def add_domain_to_challenge(yaml_file_data, challenge):
         else:
             message = f"Invalid domain value: {domain_value}, valid values are: {valid_domains}"
             response_data = {"error": message}
-            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+            return response_data
     else:
         challenge.domain = None
         challenge.save()
