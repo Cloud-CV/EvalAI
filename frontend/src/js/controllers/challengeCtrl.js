@@ -239,7 +239,17 @@
                         var details = response.data;
                         vm.workerLogs = [];
                         for (var i = 0; i<details.logs.length; i++){
-                            vm.workerLogs.push(details.logs[i]);
+                            var log = details.logs[i];
+                            var utcTime = log.match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
+                            if (utcTime) {
+                              utcTime = utcTime[0].substring(1, 20);
+                              var date = new Date(utcTime + 'Z');
+                              var localTime = date.toLocaleString("sv-SE");
+                              var modifiedLog = log.replace(utcTime, localTime);
+                              vm.workerLogs.push(modifiedLog);
+                            } else {
+                              vm.workerLogs.push(log);
+                            }
                         }
                     },
                     onError: function(response) {
@@ -2880,6 +2890,81 @@
             } else {
                 $mdDialog.hide();
             }
+        };
+
+        vm.editchallengeTagDialog = function(ev) {
+            vm.tags = vm.page.list_tags;
+            vm.domain_choices();
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-tag.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeTag = function(editChallengeTagDomainForm) {
+            var new_tags;
+            if (!editChallengeTagDomainForm) {
+                $mdDialog.hide();
+                return;
+            }
+            new_tags = typeof vm.tags === 'string'
+                ? vm.tags.split(",").map(item => item.trim())
+                : vm.page.list_tags.map(tag => tag);
+
+            if (typeof vm.tags === 'string' && (new_tags.length > 4 || new_tags.some(tag => tag.length > 15))) {
+                $rootScope.notify("error", "Invalid tags! Maximum 4 tags are allowed, and each tag must be 15 characters or less.");
+                return;
+            }
+            parameters.url = "challenges/challenge/" + vm.challengeId + "/update_challenge_tags_and_domain/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "list_tags": new_tags,
+                "domain": vm.domain
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    utilities.hideLoader();
+                    if (status === 200) {
+                        $rootScope.notify("success", "The challenge tags and domain is successfully updated!");
+                        $state.reload();
+                        $mdDialog.hide();
+                    }
+                },
+                onError: function(response) {
+                    utilities.hideLoader();
+                    $mdDialog.hide();
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.showLoader();
+            utilities.sendRequest(parameters);
+        };
+
+        vm.domain_choices = function() {
+            parameters.url = "challenges/challenge/get_domain_choices/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var domain_choices = response.data;
+                    for (var i = 0; i < domain_choices.length; i++) {
+                        if (domain_choices[i][0] == vm.page.domain) {
+                            vm.domain = domain_choices[i][0];
+                        }
+                    }
+                    vm.domainoptions = domain_choices;
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
         };
 
         $scope.$on('$destroy', function() {
