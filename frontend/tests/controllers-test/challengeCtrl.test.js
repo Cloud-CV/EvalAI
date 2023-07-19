@@ -2031,6 +2031,80 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 
+    describe('Unit tests for editchallengeTagDialog function', function () {
+        it('open dialog for edit challenge tag', function () {
+            var $mdDialog = $injector.get('$mdDialog');
+            var $mdDialogOpened = false;
+            vm.page.list_tags = ['tag1', 'tag2'];
+            $mdDialog.show = jasmine.createSpy().and.callFake(function () {
+                $mdDialogOpened = true;
+            });
+
+            vm.editchallengeTagDialog();
+            expect($mdDialog.show).toHaveBeenCalled();
+            expect($mdDialogOpened).toEqual(true);
+        });
+    });
+
+    describe('Unit test for editChallengeTag function', function () {
+        var success;
+        var errorResponse = 'error';
+        beforeEach(function () {
+            spyOn($mdDialog, 'hide');
+            spyOn($rootScope, 'notify');
+
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        status: 200
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse
+                    });
+                }
+            };
+        });
+
+        it('valid edit challenge tag', function () {
+            var editChallengeTagDomainForm = true;
+            success = true;
+            vm.tags = "tag1, tag2";
+            vm.domain = 'CV';
+            spyOn($state, 'reload');
+            vm.editChallengeTag(editChallengeTagDomainForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "The challenge tags and domain is successfully updated!");
+            expect($state.reload).toHaveBeenCalled();
+        });
+
+        it('invalid edit challenge tag', function () {
+            var editChallengeTagDomainForm = false;
+            success = true;
+            vm.tags = "tag1, tag2";
+            vm.domain = 'CV';
+            vm.editChallengeTag(editChallengeTagDomainForm);
+            expect($mdDialog.hide).toHaveBeenCalled();
+        });
+
+        it('invalid edit challenge domain and backend error', function () {
+            var editChallengeTagDomainForm = true;
+            success = false;
+            vm.tags = "tag1, tag2";
+            vm.domain = 'domain';
+            vm.editChallengeTag(editChallengeTagDomainForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "error");
+        });
+
+        it('valid edit challenge more than 4 error', function () {
+            var editChallengeTagDomainForm = true;
+            success = true;
+            vm.tags = "tag1, tag2, tag3, tag4, tag5WithMorethan15Charactersd";
+            vm.domain = 'CV';
+            vm.editChallengeTag(editChallengeTagDomainForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Invalid tags! Maximum 4 tags are allowed, and each tag must be 15 characters or less.");
+        });
+    });
+
     describe('Unit tests for deleteChallengeDialog function', function () {
         it('open dialog for delete challenge', function () {
             var $mdDialog = $injector.get('$mdDialog');
