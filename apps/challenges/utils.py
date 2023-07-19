@@ -9,6 +9,8 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
+from rest_framework.response import Response
+from rest_framework import status
 
 from base.utils import (
     get_model_object,
@@ -477,3 +479,35 @@ def parse_submission_meta_attributes(submission):
                 meta_attribute["name"]
             ] = meta_attribute.get("value")
     return submission_meta_attributes
+
+
+def add_tags_to_challenge(yaml_file_data, challenge):
+    if "tags" in yaml_file_data:
+        tags_data = yaml_file_data["tags"]
+        new_tags = set(tags_data)
+        # Remove tags not present in the YAML file
+        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+
+        # Add new tags to the challenge
+        for tag_name in new_tags:
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
+    else:
+        # Remove all existing tags if no tags are defined in the YAML file
+        challenge.list_tags = []
+
+
+def add_domain_to_challenge(yaml_file_data, challenge):
+    if "domain" in yaml_file_data:
+        domain_value = yaml_file_data["domain"]
+        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
+        if domain_value in valid_domains:
+            challenge.domain = domain_value
+            challenge.save()
+        else:
+            message = f"Invalid domain value: {domain_value}, valid values are: {valid_domains}"
+            response_data = {"error": message}
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        challenge.domain = None
+        challenge.save()

@@ -80,6 +80,16 @@
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </a>
                     </span>
+                    <ul class="list-unstyled list-inline">
+                        <li ng-if="challenge.page.list_tags[0]" ng-repeat="tags in challenge.page.list_tags" class="list-inline-item chip orange white-text">{{tags}}</li>
+                        <li ng-if="challenge.page.domain_name" class="list-inline-item chip light-blue white-text">{{challenge.page.domain_name}}</li>
+                        <span ng-if="challenge.isChallengeHost">
+                            <a class="pointer" ng-click="challenge.editchallengeTagDialog($event)">
+                                <span ng-if="!(challenge.page.domain_name && challenge.page.list_tags)">Add Tags or Domain</span>
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    </ul>
                 </div>
             </div>
             <div class="col m2 l2 fs-16 w-300 center">

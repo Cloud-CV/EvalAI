@@ -67,6 +67,8 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
+    add_domain_to_challenge,
+    add_tags_to_challenge,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -1560,6 +1562,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 # transaction.set_rollback(True)
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
+            # Add Tags
+            add_tags_to_challenge(yaml_file_data, challenge)
+
+            # Add Domain
+            add_domain_to_challenge(yaml_file_data, challenge)
+
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
             leaderboard_ids = {}
@@ -2568,6 +2576,53 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_tags_and_domain(request, challenge_pk):
+    """
+    Returns or Updates challenge tags and domain
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if request.method == "PATCH":
+        new_tags = request.data.get("list_tags", [])
+        domain_value = request.data.get("domain")
+        # Remove tags not present in the YAML file
+        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+        # Add new tags to the challenge
+        for tag_name in new_tags:
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
+        # Verifying Domain name
+        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
+        if domain_value in valid_domains:
+            challenge.domain = domain_value
+            challenge.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            message = f"Invalid domain value:{domain_value}"
+            response_data = {"error": message}
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_domain_choices(request):
+    """
+    Returns domain choices
+    """
+    if request.method == "GET":
+        domain_choices = Challenge.DOMAIN_OPTIONS
+        return Response(domain_choices, status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Method not allowed"}
+        return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
@@ -3549,6 +3604,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge.queue = queue_name
                     challenge.save()
 
+                    # Add Tags
+                    add_tags_to_challenge(yaml_file_data, challenge)
+
+                    # Add Domain
+                    add_domain_to_challenge(yaml_file_data, challenge)
+
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
                         "leaderboard"
@@ -3791,6 +3852,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     error_messages = serializer.errors
                     raise RuntimeError()
                 challenge = serializer.instance
+
+                # Add Tags
+                add_tags_to_challenge(yaml_file_data, challenge)
+
+                # Add Domain
+                add_domain_to_challenge(yaml_file_data, challenge)
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}
