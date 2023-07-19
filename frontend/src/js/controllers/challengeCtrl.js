@@ -238,7 +238,17 @@
                         var details = response.data;
                         vm.workerLogs = [];
                         for (var i = 0; i<details.logs.length; i++){
-                            vm.workerLogs.push(details.logs[i]);
+                            var log = details.logs[i];
+                            var utcTime = log.match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
+                            if (utcTime) {
+                              utcTime = utcTime[0].substring(1, 20);
+                              var date = new Date(utcTime + 'Z');
+                              var localTime = date.toLocaleString("sv-SE");
+                              var modifiedLog = log.replace(utcTime, localTime);
+                              vm.workerLogs.push(modifiedLog);
+                            } else {
+                              vm.workerLogs.push(log);
+                            }
                         }
                     },
                     onError: function(response) {
