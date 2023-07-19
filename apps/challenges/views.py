@@ -3507,6 +3507,66 @@ def finish_annotation_file_upload(request, challenge_phase_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def scale_resources_by_challenge_pk(request, challenge_pk):
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if request.data.get("cores") is None:
+        response_data = {
+            "error": "Number of cores is missing from request."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if request.data.get("memory") is None:
+        response_data = {
+            "error": "Amount of memory is missing from request."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge = get_challenge_model(challenge_pk)
+    cores = request.data["cores"]
+    memory = request.data["memory"]
+    try:
+        cores = int(cores)
+        memory = int(memory)
+    except Exception:
+        response_data = {
+            "error": "Enter integer numbers for cores and memory."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # validate cores and memory number - aws supported configurations
+    if (
+        cores == 256 and memory in (512, 1024, 2048)
+        or cores == 512 and memory in (1024, 2048, 3072, 4096)
+        or cores == 1024 and memory in (2048, 3072, 4096, 5120, 6144, 7168, 8192)
+        or cores == 2048 and memory >= 4096 and memory <= 16384 and memory % 1024 == 0
+        or cores == 4096 and memory >= 8192 and memory <= 30720 and memory % 1024 == 0
+    ):
+        response = scale_resources(challenge, cores, memory)
+        if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+            response_data = {
+                "error": "Issue with ECS."
+            }
+            return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        else:
+            response_data = {
+                "Success": "The challenge {} has been scaled successfully".format(
+                    challenge.title
+                )
+            }
+    else:
+        response_data = {
+            "error": "Invalid core and memory combination."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_or_update_github_challenge(request, challenge_host_team_pk):
     try:
         challenge_host_team = get_challenge_host_team_model(

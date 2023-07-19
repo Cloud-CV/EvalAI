@@ -197,6 +197,11 @@ urlpatterns = [
         name="manage_worker",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/scale_resources/$",
+        views.scale_resources_by_challenge_pk,
+        name="scale_resources_by_challenge_pk",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",

@@ -425,6 +425,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
+   * Scale worker resources
+   * @param challengeId challenge id
+   */
+  scaleWorkerResourcesURL(challengeId) {
+      return `${this.challenges}${challengeId}/scale_resources/`;
+    }
+
+  /**
    * Refresh auth token
    */
   refreshAuthTokenURL() {

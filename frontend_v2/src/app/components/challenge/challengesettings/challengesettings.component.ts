@@ -1467,6 +1467,52 @@ export class ChallengesettingsComponent implements OnInit, OnDestroy {
   
   }
 
+  scaleWorkerResources() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const BODY = JSON.stringify(params);
+      SELF.apiService
+        .postUrl(SELF.endpointsService.scaleWorkerResourcesURL(SELF.challenge.id), BODY)
+        .subscribe(
+          (data) => {
+            console.log(SELF.challenge);
+            SELF.globalService.showToast('success', "Successfully scaled challenge worker");
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => {}
+        );
+    };
+    
+    const PARAMS = {
+      title: 'Scale Worker Resources',
+      content: 'Enter new cores and memory',
+      confirm: 'Confirm',
+      deny: 'Cancel',
+      form: [
+        {
+          isRequired: true,
+          label: 'cores',
+          placeholder: 'New Cores',
+          type: 'number',
+          value: '',
+        },
+        {
+          isRequired: true,
+          label: 'memory',
+          placeholder: 'New Memory',
+          type: 'number',
+          value: '',
+        },
+      ],
+      isButtonDisabled: true,
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
   /**
    * API call to manage the worker from UI.
    * Response data will be like: {action: "Success" or "Failure", error: <String to include only if action is Failure.>}
