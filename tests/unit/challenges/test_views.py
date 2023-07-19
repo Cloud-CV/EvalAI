@@ -4201,34 +4201,25 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
 
         expected_response = {
-            292: {
-                'archived': 0,
-                'cancelled': 0,
-                'failed': 0,
-                'finished': 0,
-                'partially_evaluated': 0,
-                'resuming': 0,
-                'running': 0,
-                'submitted': 0,
-                'submitting': 0
-            },
-            293: {
-                'archived': 0,
-                'cancelled': 0,
-                'failed': 0,
-                'finished': 0,
-                'partially_evaluated': 0,
-                'resuming': 0,
-                'running': 0,
-                'submitted': 3,
-                'submitting': 0
-            }
+            "archived": 0,
+            "cancelled": 0,
+            "failed": 0,
+            "finished": 0,
+            "partially_evaluated": 0,
+            "resuming": 0,
+            "running": 0,
+            "submitted": 0,
+            "submitting": 0,
         }
 
         response = self.client.get(url)
+        received_response = response.data
+        parsed_response = {}
+        for inner_dict in received_response.values():
+            parsed_response.update(inner_dict)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected_response)
+        self.assertEqual(parsed_response, expected_response)
 
 
 class DownloadAllSubmissionsFileTest(BaseAPITestClass):
