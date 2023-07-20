@@ -75,10 +75,10 @@
                             <span  class="fs-16 w-300 complete-leaderboard"> {{ challenge.getAllEntriesTestOption }}</span>
                         </div>
                         <md-select class="right" ng-model="challenge.chosenmetrics" placeholder="Labels" class="rm-margin" multiple>
-                            <md-option value="{{i}}" ng-repeat="(i,key) in challenge.leaderboard[0].leaderboard__schema.labels">
+                            <md-option value="{{i}}" ng-repeat="(i, key) in challenge.leaderboard[0].leaderboard__schema.labels">
                                 <span class="fs-16 w-300">{{key}}</span>
+                            </md-option>
                         </md-select>
-                        <span class="fs-16 w-300 visible-matrics right">Visible Matrics </span>
                     </div>
                 </div>
                 <table ng-if="challenge.isResult && challenge.leaderboard.length" ng-attr-id="leaderboard_table" ng-class="['highlight', {'watermarked': challenge.showBackground}]">
