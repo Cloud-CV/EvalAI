@@ -1586,6 +1586,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             # Create Challenge Phase
             challenge_phase_ids = {}
+
+            # Delete the challenge phase if it is not present in the yaml file
+            existing_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+            existing_challenge_phase_ids = [str(challenge_phase.config_id) for challenge_phase in existing_challenge_phases]
+            challenge_phases_data_ids = [str(challenge_phase_data["id"]) for challenge_phase_data in challenge_phases_data]
+            challenge_phase_ids_to_delete = list(set(existing_challenge_phase_ids) - set(challenge_phases_data_ids))
+            for challenge_phase_id_to_delete in challenge_phase_ids_to_delete:
+                challenge_phase = ChallengePhase.objects.filter(challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete).first()
+                submission_exist = Submission.objects.filter(challenge_phase=challenge_phase).exists()
+                if submission_exist:
+                    response_data = {
+                        "error": "Sorry, you cannot delete a challenge phase with submissions."
+                    }
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    challenge_phase.delete()
+
             for data in challenge_phases_data:
                 # Check for challenge phase description file
                 phase_description_file_path = join(
