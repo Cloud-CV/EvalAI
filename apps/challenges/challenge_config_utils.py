@@ -1062,6 +1062,12 @@ def validate_challenge_config_util(
     # Validate challenge phase splits
     val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
 
+    # Validate tags
+    val_config_util.check_tags()
+
+    # Validate domain
+    val_config_util.check_domain()
+
     return (
         val_config_util.error_messages,
         val_config_util.yaml_file_data,
