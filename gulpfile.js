@@ -17,7 +17,7 @@ var gulp = require('gulp'),
     cachebust = require('gulp-cache-bust'),
     connectModRewrite = require('connect-modrewrite'),
     connect = require('gulp-connect'),
-    through = require('through2');
+    through = require('through2'),
     gulp_if = require('gulp-if'),
     replace = require('gulp-replace');
 
