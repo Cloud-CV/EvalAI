@@ -15,6 +15,25 @@ angular
 		'angularMoment',
 		'ngclipboard',
 		'moment-picker'
-	]).config(['$compileProvider', function($compileProvider) {
-    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
-}]);
+	])
+	.service('preventTemplateCache', [function() {
+		var service = this;
+		service.request = function(config) {
+			var urlSegments = config.url.split('/');
+			// Check each segment for "/dist/"
+			var isDistUrl = urlSegments.some(function(segment) {
+				return segment === 'dist';
+			});
+			if (isDistUrl) {
+				config.url = config.url + '?t=___REPLACE_IN_GULP___';
+
+			}
+			return config;
+		};
+	}])
+	.config(['$httpProvider',function ($httpProvider) {
+		$httpProvider.interceptors.push('preventTemplateCache');
+	}])
+	.config(['$compileProvider', function($compileProvider) {
+		$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
+	}]);
