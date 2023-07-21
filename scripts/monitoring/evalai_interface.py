@@ -132,10 +132,8 @@ class EvalAI_Interface:
         response = self.make_request(url, "GET")
         return response
 
-    def get_challenges(self, next_page_url=None):
+    def get_challenges(self):
         url = URLS.get("get_challenges")
         url = self.return_url_per_environment(url)
-        if next_page_url:
-            url = next_page_url
         response = self.make_request(url, "GET")
         return response
