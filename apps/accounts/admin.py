@@ -95,9 +95,10 @@ class EmailAddressResource(resources.ModelResource):
     class Meta:
         model = EmailAddress
 
-   
+
 class EmailAddressAdmin(ExportMixin, EmailAddressAdmin):
     resource_class = EmailAddressResource
+
 
 admin.site.unregister(EmailAddress)
 admin.site.register(EmailAddress, EmailAddressAdmin)
