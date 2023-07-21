@@ -23,6 +23,8 @@
         vm.currentList = [];
         vm.upcomingList = [];
         vm.pastList = [];
+        vm.searchTitle = [];
+        vm.selecteddomain = [];
 
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
@@ -112,6 +114,20 @@
                 }
             });
         };
+
+            parameters.url = "challenges/challenge/get_domain_choices/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.domain_choices = response.data;
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    utilities.showToast(error.error);
+                }
+            };
+            utilities.sendRequest(parameters);
     }
 
 })();

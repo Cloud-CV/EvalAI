@@ -21,6 +21,8 @@
 
         vm.challengeList = [];
         vm.challengeCreator = {};
+        vm.searchTitle = [];
+        vm.selecteddomain = [];
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -56,6 +58,20 @@
             },
             onError: function() {
                 utilities.hideLoader();
+            }
+        };
+        utilities.sendRequest(parameters);
+
+        parameters.url = "challenges/challenge/get_domain_choices/";
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.callback = {
+            onSuccess: function(response) {
+                vm.domain_choices = response.data;
+            },
+            onError: function(response) {
+                var error = response.data;
+                utilities.showToast(error.error);
             }
         };
         utilities.sendRequest(parameters);
