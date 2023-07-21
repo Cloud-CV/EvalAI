@@ -14,14 +14,16 @@ var gulp = require('gulp'),
     inject = require('gulp-inject'),
     uglify = require('gulp-uglify'),
     eslint = require('gulp-eslint'),
+    cachebust = require('gulp-cache-bust'),
     connectModRewrite = require('connect-modrewrite'),
     connect = require('gulp-connect'),
+    through = require('through2'),
     gulp_if = require('gulp-if'),
     replace = require('gulp-replace');
 
 // development task
 var production = false;
-
+let timestamp;
 var scripts = JSON.parse(fs.readFileSync('frontend/app.scripts.json'));
 var styles = JSON.parse(fs.readFileSync('frontend/app.styles.json'));
 var configJson = JSON.parse(fs.readFileSync('frontend/src/js/config.json'));
@@ -233,12 +235,30 @@ function injectpaths() {
     ], { read: false });
     return target
         .pipe(inject(sources, { ignorePath: 'frontend', addRootSlash: true }))
+        .pipe(gulp_if('*.js', production ? uglify() : gulp.dest('dist')))
+        .pipe(gulp_if('*.css', production ? cleanCSS() : gulp.dest('dist')))
+        .pipe(production ? cachebust({ type: 'timestamp' }) : gulp.dest('dist'))
+        .pipe(through.obj((file, enc, cb) => {
+            // Extract the timestamp value from the file contents
+            const fileContents = file.contents.toString();
+            const regex = /\?t=(\d+)/;
+            const matches = fileContents.match(regex);
+            if (matches && matches[1]) {
+              timestamp = matches[1];
+            }
+            cb(null, file);
+          }))
         .pipe(rename({
             basename: "index"
         }))
         .pipe(gulp.dest('frontend/'));
 }
 
+function replacetimestamp() {
+    return gulp.src('frontend/dist/**/*.*')
+    .pipe(replace('___REPLACE_IN_GULP___', timestamp))
+    .pipe(gulp.dest('frontend/dist'));
+}
 
 /*
 js linting
@@ -305,12 +325,12 @@ var parallelTasks = gulp.parallel(vendorcss, vendorjs, css, js, html, images, fo
 gulp.task('production', gulp.series(clean, function(done) {
     production = true;
     done();
-}, parallelTasks, configProd, injectpaths, lint));
+}, parallelTasks, configProd, injectpaths, replacetimestamp, lint));
 
 gulp.task('staging', gulp.series(clean, function(done) {
     production = true;
     done();
-}, parallelTasks, configStaging, injectpaths, lint));
+}, parallelTasks, configStaging, injectpaths, replacetimestamp, lint));
 
 gulp.task('dev', gulp.series(clean, function(done) {
     production = false;
