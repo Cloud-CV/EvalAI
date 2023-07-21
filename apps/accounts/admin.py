@@ -2,6 +2,8 @@ from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from allauth.account.models import EmailAddress
+from allauth.account.admin import EmailAddressAdmin
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -87,3 +89,16 @@ class JwtTokenAdmin(ImportExportTimeStampedAdmin):
 
 admin.site.unregister(JwtToken)
 admin.site.register(JwtToken, JwtTokenAdmin)
+
+
+class EmailAddressResource(resources.ModelResource):
+    class Meta:
+        model = EmailAddress
+
+
+class EmailAddressAdmin(ExportMixin, EmailAddressAdmin):
+    resource_class = EmailAddressResource
+
+
+admin.site.unregister(EmailAddress)
+admin.site.register(EmailAddress, EmailAddressAdmin)
