@@ -584,7 +584,8 @@ class ChallengePrizeSerializer(serializers.ModelSerializer):
         fields = (
             "challenge",
             "amount",
-            "rank"
+            "rank",
+            "description"
         )
 
 
@@ -605,6 +606,6 @@ class ChallengeSponsorSerializer(serializers.ModelSerializer):
         model = ChallengeSponsor
         fields = (
             "challenge",
-            "sponsor",
-            "sponsor_url"
+            "name",
+            "website"
         )

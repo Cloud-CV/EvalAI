@@ -3975,7 +3975,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         response_data, status=status.HTTP_201_CREATED
                     )
 
-            except Exception as e:  # noqa: E722
+            except:  # noqa: E722
                 response_data = {
                     "error": "Error in creating challenge. Please check the yaml configuration!"
                 }

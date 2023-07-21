@@ -539,11 +539,13 @@ def add_prizes_to_challenge(yaml_file_data, challenge):
 
             rank = prize['rank']
             amount = prize["amount"]
+            description = prize["description"]
 
             prize_obj = ChallengePrize.objects.filter(rank=rank, challenge=challenge).first()
             if prize_obj:
                 data = {
                     "amount": amount,
+                    "description": description,
                 }
                 serializer = ChallengePrizeSerializer(
                     prize_obj, data=data,
@@ -557,6 +559,7 @@ def add_prizes_to_challenge(yaml_file_data, challenge):
                     "challenge": challenge,
                     "amount": amount,
                     "rank": rank,
+                    "description": description,
                 }
                 serializer = ChallengePrizeSerializer(
                     data=data,
@@ -578,58 +581,46 @@ def add_prizes_to_challenge(yaml_file_data, challenge):
 
 
 def add_sponsors_to_challenge(yaml_file_data, challenge):
-    try:
-        if "sponsors" in yaml_file_data:
-            sponsors_data = yaml_file_data['sponsors']
-            for sponsor in sponsors_data:
-                # Check if the sponsor exist in database. but not in the YAML file.
-                existing_sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
-                existing_sponsors_names = [sponsor.sponsor for sponsor in existing_sponsors]
-                for existing_sponsor in existing_sponsors_names:
-                    if existing_sponsor is not None and existing_sponsor not in sponsor['name']:
-                        ChallengeSponsor.objects.filter(challenge=challenge, sponsor=existing_sponsor).delete()
+    if "sponsors" in yaml_file_data:
+        sponsors_data = yaml_file_data['sponsors']
+        sponsor_name_set = set()
 
+        for sponsor in sponsors_data:
+            # Checking if the sponsors already exists in the database.
+            sponsor_name_set.add(sponsor['name'])
+            check_sponsor_status = ChallengeSponsor.objects.filter(name=sponsor['name'], challenge=challenge).exists()
+            if not check_sponsor_status:
+                if 'name' not in sponsor or 'website' not in sponsor:
+                    message = "Sponsor name or url not found in YAML data."
+                    response_data = {"error": message}
+                    return response_data
+                data = {
+                    "name": sponsor['name'],
+                    "website": sponsor['website'],
+                }
+                serializer = ChallengeSponsorSerializer(
+                    data=data,
+                    context={
+                        "challenge": challenge,
+                    }
+                )
+            if serializer.is_valid():
+                serializer.save()
+                challenge.has_sponsors = True
+                challenge.save()
+            else:
+                message = serializer.errors
+                challenge.has_sponsors = False
+                challenge.save()
+                raise response_data
 
-                # Checking if the sponsors already exists in the database.
-                check_sponsor_status = ChallengeSponsor.objects.filter(sponsor=sponsor['name'], challenge=challenge).exists()
-                if not check_sponsor_status:
-                    if 'name' not in sponsor or 'url' not in sponsor:
-                        message = "Sponsor name or url not found in YAML data."
-                        response_data = {"error": message}
-                        return response_data
-                    data = {
-                        "sponsor": sponsor['name'],
-                        "sponsor_url": sponsor['url'],
-                    }
-                    serializer = ChallengeSponsorSerializer(
-                        data=data,
-                        context={
-                            "challenge": challenge,
-                        }
-                    )
-                # Allow Partial edit of sponsor details like url.
-                else:
-                    data = {
-                        "sponsor_url": sponsor['url'],
-                    }
-                    serializer = ChallengeSponsorSerializer(
-                        data=data,
-                        context={
-                            "challenge": challenge,
-                        },
-                        partial=True
-                    )
-                if serializer.is_valid():
-                    serializer.save()
-                    challenge.has_sponsors = True
-                    challenge.save()
-                else:
-                    message = serializer.errors
-                    challenge.has_sponsors = False
-                    challenge.save()
-                    raise response_data
-        else:
-            challenge.has_sponsors = False
-            challenge.save()
-    except Exception as e:
-        print(e)
+        # Check if the sponsor exist in database. but not in the YAML file.
+        existing_sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
+        existing_sponsors_names = [sponsor.name for sponsor in existing_sponsors]
+        for existing_sponsor in existing_sponsors_names:
+            if existing_sponsor is not None and existing_sponsor not in sponsor_name_set:
+                ChallengeSponsor.objects.filter(challenge=challenge, name=existing_sponsor).delete()
+
+    else:
+        challenge.has_sponsors = False
+        challenge.save()

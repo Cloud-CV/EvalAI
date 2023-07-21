@@ -404,7 +404,7 @@
 
 
                 // Get challenge prizes
-                vm.prizes = {};
+                vm.prizes = [];
                 if (vm.hasPrizes) {
                     parameters.url = 'challenges/challenge/' + vm.challengeId + '/prizes/';
                     parameters.method = 'GET';
@@ -3106,6 +3106,21 @@
             }
             vm.leaderboardDropdown = !vm.leaderboardDropdown;
         };
+
+        vm.getTrophySize = function(rank) {
+            switch (rank) {
+                case 1:
+                  return 'trophy-gold';
+                case 2:
+                  return 'trophy-silver';
+                case 3:
+                  return 'trophy-bronze';
+                // Add more cases for other ranks if needed
+                default:
+                  return 'trophy-black'; // Default size, change this according to your preference
+              }
+        };
+
     }
 
 })();

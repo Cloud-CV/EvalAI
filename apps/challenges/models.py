@@ -670,8 +670,6 @@ class PWCChallengeLeaderboard(TimeStampedModel):
         db_table = "pwc_challenge_leaderboard"
 
 
-
-
 class ChallengeSponsor(TimeStampedModel):
     """
     Model to store challenge sponsors
@@ -681,15 +679,15 @@ class ChallengeSponsor(TimeStampedModel):
     """
 
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
-    sponsor = models.CharField(max_length=200, blank=True, null=True)
-    sponsor_url = models.URLField(max_length=200, blank=True, null=True)
+    name = models.CharField(max_length=200, blank=True, null=True)
+    website = models.URLField(max_length=200, blank=True, null=True)
 
     class Meta:
         app_label = "challenges"
         db_table = "challenge_sponsor"
 
     def __str__(self):
-        return f"Sponsor for {self.challenge}: {self.sponsor}"
+        return f"Sponsor for {self.challenge}: {self.name}"
 
 
 class ChallengePrize(TimeStampedModel):
@@ -702,6 +700,7 @@ class ChallengePrize(TimeStampedModel):
 
     challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
     amount = models.CharField(max_length=10)
+    description = models.CharField(max_length=25, blank=True, null=True)
     rank = models.PositiveIntegerField()
 
     class Meta:

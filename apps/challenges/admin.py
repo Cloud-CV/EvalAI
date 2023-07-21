@@ -438,9 +438,9 @@ class PWCChallengeLeaderboardAdmin(ImportExportTimeStampedAdmin):
 
 @admin.register(ChallengeSponsor)
 class ChallengeSponsorAdmin(ImportExportTimeStampedAdmin):
-    list_display = ("id", "sponsor", "sponsor_url")
-    list_filter = ("sponsor",)
-    search_fields = ("id", "sponsor")
+    list_display = ("id", "name", "website")
+    list_filter = ("name",)
+    search_fields = ("id", "name")
 
 
 @admin.register(ChallengePrize)

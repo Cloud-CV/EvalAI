@@ -4,7 +4,7 @@ import zipfile
 import yaml
 
 from django.core.files.base import ContentFile
-
+import re
 from os.path import basename, isfile, join
 from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
 from rest_framework import status
@@ -284,6 +284,8 @@ error_message_dict = {
     "sponsor_not_found": "ERROR: Sponsor name or url not found in YAML data.",
     "prize_not_found": "ERROR: Prize rank or amount not found in YAML data.",
     "duplicate_rank": "ERROR: Duplicate rank {} found in YAML data.",
+    "prize_amount_wrong": "ERROR: Invalid amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).",
+    "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
 }
 
 
@@ -998,7 +1000,7 @@ class ValidateChallengeConfigUtil:
         # Verify Sponsor is correct
         if "sponsors" in self.yaml_file_data:
             for sponsor in self.yaml_file_data["sponsors"]:
-                if 'name' not in sponsor or 'url' not in sponsor:
+                if 'name' not in sponsor or 'website' not in sponsor:
                     message = self.error_messages_dict["sponsor_not_found"]
                     self.error_messages.append(message)
 
@@ -1010,15 +1012,18 @@ class ValidateChallengeConfigUtil:
                 if 'rank' not in prize or 'amount' not in prize:
                     message = self.error_messages_dict["prize_not_found"]
                     self.error_messages.append(message)
-
                 # Check for duplicate rank.
                 rank = prize['rank']
                 if rank in rank_set:
                     message = self.error_messages_dict["duplicate_rank"].format(rank)
                     self.error_messages.append(message)
                 rank_set.add(rank)
-
-
+                if not isinstance(rank, int) or rank < 1:
+                    message = self.error_messages_dict["invalid_rank"].format(rank)
+                    self.error_messages.append(message)
+                if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', prize["amount"]):
+                    message = self.error_messages_dict["invalid_amount"].format(prize["amount"])
+                    self.error_messages.append(message)
 
 
 def validate_challenge_config_util(
