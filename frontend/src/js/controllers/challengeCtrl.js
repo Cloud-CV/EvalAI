@@ -3045,6 +3045,9 @@
             }
         };
 
+        vm.openleaderboarddropdown = function() {
+            vm.leaderboarddropdown = !vm.leaderboarddropdown;
+        };
     }
 
 })();
