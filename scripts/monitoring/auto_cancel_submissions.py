@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 import pytz  # Use this to handle timezones if needed
 import os
-import logging
-import requests
 from evalai_interface import EvalAI_Interface
 
 
