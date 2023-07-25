@@ -67,12 +67,10 @@ class EvalAI_Interface:
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")
         return response
-    
+
     def get_submissions_for_challenge(self, submission_pk, status=None):
         url_template = URLS.get("get_submissions_for_challenge")
         url = url_template.format(submission_pk)
-
-
         url = self.return_url_per_environment(url)
         # If status is provided, add it as a query parameter to the URL
         if status:
