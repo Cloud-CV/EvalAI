@@ -58,7 +58,7 @@
                             if (i === "linkedin_url" || i === "github_url" || i === "google_scholar_url") {
                                 result[i] = "";
                             } else {
-                                result[i] = "-";
+                                result[i] = "";
                             }
                             vm.countLeft = vm.countLeft + 1;
                         }

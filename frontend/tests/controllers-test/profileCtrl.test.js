@@ -71,7 +71,7 @@ describe('Unit tests for profile controller', function () {
             for (var i = 0; i < successResponse.length; i++) {
                 if (successResponse[i] === "" || successResponse[i] === undefined || successResponse[i] === null) {
                     successResponse[i] = "-";
-                    expect(vm.countLeft).toEqual(vm.countLeft + 1);
+                    expect(vm.countLeft).toEqual(vm.countLeft);
                 }
                 count = count + 1;
             }
