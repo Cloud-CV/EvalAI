@@ -21,7 +21,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "password",
         )
 
-        read_only_fields = ("email",)
+        read_only_fields = ("email", "username")
 
 
 class ProfileSerializer(UserDetailsSerializer):
@@ -44,7 +44,6 @@ class ProfileSerializer(UserDetailsSerializer):
         fields = (
             "pk",
             "email",
-            "username",
             "first_name",
             "last_name",
             "affiliation",
@@ -54,7 +53,6 @@ class ProfileSerializer(UserDetailsSerializer):
         )
 
     def update(self, instance, validated_data):
-        username = validated_data.get("username")
         profile_data = validated_data.pop("profile", {})
         affiliation = profile_data.get("affiliation")
         github_url = profile_data.get("github_url")
@@ -67,7 +65,6 @@ class ProfileSerializer(UserDetailsSerializer):
 
         profile = instance.profile
         if profile_data:
-            profile.username = username
             profile.affiliation = affiliation
             profile.github_url = github_url
             profile.google_scholar_url = google_scholar_url

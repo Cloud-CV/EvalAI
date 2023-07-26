@@ -370,39 +370,30 @@
             authenticate: true
         };
 
-        var AuthToken = {
+        var auth_token = {
             name: "web.profile.AuthToken",
             parent: "web.profile",
             url: "/auth-token",
             templateUrl: baseUrl + "/web/auth/get-token.html",
-            title: 'AuthToken',
+            title: 'Auth Token',
             authenticate: true
         };
 
-        var Updateprofile = {
+        var update_profile = {
             name: "web.profile.Updateprofile",
             parent: "web.profile",
             url: "/update-profile",
             templateUrl: baseUrl + "/web/profile/edit-profile/update-profile.html",
-            title: 'Updateprofile',
+            title: 'Update profile',
             authenticate: true
         };
 
-        var Editprofile = {
+        var edit_profile = {
             name: "web.profile.Editprofile",
             parent: "web.profile",
             url: "/edit-profile",
             templateUrl: baseUrl + "/web/profile/edit-profile/edit-profile.html",
-            title: 'Editprofile',
-            authenticate: true
-        };
-
-        var ChangePassword = {
-            name: "web.profile.ChangePassword",
-            parent: "web.profile",
-            url: "/change-password",
-            templateUrl: baseUrl + "/web/change-password.html",
-            title: 'ChangePassword',
+            title: 'Edit profile',
             authenticate: true
         };
 
@@ -616,9 +607,8 @@
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
-        $stateProvider.state(AuthToken);
-        $stateProvider.state(Updateprofile);
-        $stateProvider.state(ChangePassword);
+        $stateProvider.state(auth_token);
+        $stateProvider.state(update_profile);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
@@ -626,7 +616,7 @@
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
-        $stateProvider.state(Editprofile);
+        $stateProvider.state(edit_profile);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);

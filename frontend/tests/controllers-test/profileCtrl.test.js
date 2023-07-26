@@ -71,7 +71,7 @@ describe('Unit tests for profile controller', function () {
             for (var i = 0; i < successResponse.length; i++) {
                 if (successResponse[i] === "" || successResponse[i] === undefined || successResponse[i] === null) {
                     successResponse[i] = "-";
-                    expect(vm.countLeft).toEqual(vm.countLeft);
+                    expect(vm.countLeft).toEqual(vm.countLeft + 1);
                 }
                 count = count + 1;
             }
@@ -182,7 +182,6 @@ describe('Unit tests for profile controller', function () {
             spyOn($rootScope, 'notify');
             spyOn($state, 'go');
             spyOn($state, 'reload');
-            vm.user.username = "abc123";
             vm.user.first_name = "firstname";
             vm.user.last_name = "lastname";
             vm.user.affiliation = "affiliation";
@@ -214,16 +213,6 @@ describe('Unit tests for profile controller', function () {
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
             expect($state.reload());
             $mdDialog.hide();
-        });
-
-        it('when username is invalid', function () {
-            var resetconfirmFormValid = true;
-            tryClauseResponse = usernameInvalid;
-            success = false;
-
-            vm.updateProfile(resetconfirmFormValid);
-            expect(vm.isFormError).toBeTruthy();
-            expect(vm.FormError).toEqual(tryClauseResponse.username[0]);
         });
 
         it('when firstname is invalid', function () {
