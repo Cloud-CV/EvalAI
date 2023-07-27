@@ -1606,7 +1606,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.host_participant_team_submission.submitted_at.isoformat(),
                 "Z",
             ).replace("+00:00", ""),
-           "rerun_resumed_at": self.host_participant_team_submission.rerun_resumed_at,
+            "rerun_resumed_at": self.host_participant_team_submission.rerun_resumed_at,
             "is_public": self.host_participant_team_submission.is_public,
             "is_flagged": self.host_participant_team_submission.is_flagged,
             "ignore_submission": False,
