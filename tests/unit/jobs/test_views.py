@@ -682,6 +682,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "submitted_at": "{0}{1}".format(
                     self.submission.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "rerun_resumed_at": self.submission.rerun_resumed_at,
                 "is_public": self.submission.is_public,
                 "is_flagged": self.submission.is_flagged,
                 "ignore_submission": False,
@@ -1391,6 +1392,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "rerun_resumed_at": self.submission.rerun_resumed_at,
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
             "ignore_submission": False,
@@ -1444,6 +1446,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.private_submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "rerun_resumed_at": self.private_submission.rerun_resumed_at,
             "is_public": self.private_submission.is_public,
             "is_flagged": self.private_submission.is_flagged,
             "ignore_submission": False,
@@ -1514,6 +1517,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "rerun_resumed_at": self.submission.rerun_resumed_at,
             "is_public": self.data["is_public"],
             "is_flagged": self.submission.is_flagged,
             "ignore_submission": False,
@@ -1602,6 +1606,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.host_participant_team_submission.submitted_at.isoformat(),
                 "Z",
             ).replace("+00:00", ""),
+            "rerun_resumed_at": self.host_participant_team_submission.rerun_resumed_at,
             "is_public": self.host_participant_team_submission.is_public,
             "is_flagged": self.host_participant_team_submission.is_flagged,
             "ignore_submission": False,
@@ -1684,6 +1689,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "rerun_resumed_at": self.submission.rerun_resumed_at,
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
             "ignore_submission": False,
@@ -1732,6 +1738,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "submitted_at": "{0}{1}".format(
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
+            "rerun_resumed_at": self.submission.rerun_resumed_at,
             "is_public": self.submission.is_public,
             "is_flagged": self.submission.is_flagged,
             "ignore_submission": False,
