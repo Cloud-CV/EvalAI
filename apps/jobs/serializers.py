@@ -135,6 +135,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "is_flagged",
             "submission_number",
             "submitted_at",
+            "rerun_resumed_at",
             "execution_time",
             "input_file",
             "submission_input_file",
