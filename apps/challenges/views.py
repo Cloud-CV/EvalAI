@@ -4023,6 +4023,31 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_splits_data = yaml_file_data[
                     "challenge_phase_splits"
                 ]
+
+                # Delete the challenge phase split if it is not present in the yaml file
+                existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
+                challenge_phase_splits_set = set()
+                for challenge_phase_split in existing_challenge_phase_splits:
+                    challenge_phase = challenge_phase_split.challenge_phase
+                    dataset_split = challenge_phase_split.dataset_split
+                    leaderboard = challenge_phase_split.leaderboard
+                    combination = (challenge_phase, dataset_split, leaderboard)
+                    challenge_phase_splits_set.add(combination)
+                for data in challenge_phase_splits_data:
+                    challenge_phase = challenge_phase_ids[str(data["challenge_phase_id"])]
+                    dataset_split = dataset_split_ids[str(data["dataset_split_id"])]
+                    leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
+                    combination = (challenge_phase, dataset_split, leaderboard)
+                    if combination in challenge_phase_splits_set:
+                        challenge_phase_splits_set.remove(combination)
+                for challenge_phase_split in challenge_phase_splits_set:
+                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
+                        challenge_phase=challenge_phase_split[0],
+                        dataset_split=challenge_phase_split[1],
+                        leaderboard=challenge_phase_split[2]
+                    )
+                    challenge_phase_split_qs.delete()
+
                 for data in challenge_phase_splits_data:
                     if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
                         message = (
