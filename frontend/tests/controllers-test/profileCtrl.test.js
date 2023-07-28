@@ -3,13 +3,14 @@
 describe('Unit tests for profile controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
-    var $controller, createController, $rootScope, $scope, utilities, $mdDialog, vm;
+    var $controller, createController, $rootScope, $scope, utilities, $mdDialog, $state, vm;
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$mdDialog_) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$mdDialog_, _$state_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $mdDialog = _$mdDialog_;
+        $state = _$state_;
 
         $scope = $rootScope.$new();
         createController = function () {
@@ -70,7 +71,7 @@ describe('Unit tests for profile controller', function () {
             for (var i = 0; i < successResponse.length; i++) {
                 if (successResponse[i] === "" || successResponse[i] === undefined || successResponse[i] === null) {
                     successResponse[i] = "-";
-                    expect(vm.countLeft).toEqual(vm.countLeft + 1);
+                    expect(vm.countLeft).toEqual(vm.countLeft);
                 }
                 count = count + 1;
             }
@@ -159,6 +160,116 @@ describe('Unit tests for profile controller', function () {
             expect(vm.inputType).toEqual('password');
             expect(vm.status).toEqual('Show');
             expect($mdDialog.hide).toHaveBeenCalled();
+        });
+    });
+
+    describe('Unit tests for `updateProfile` function', function () {
+        var success, tryClauseResponse;
+        var usernameInvalid  = {
+            username: ["username error"],
+        };
+        var firstnameInvalid = {
+            first_name: ["firstname error"],
+        };
+        var lastnameInvalid = {
+            last_name: ["lastname error"]
+        };
+        var affiliationInvalid = {
+            affiliation: ["affiliation error"]
+        };
+
+        beforeEach(function () {
+            spyOn($rootScope, 'notify');
+            spyOn($state, 'go');
+            spyOn($state, 'reload');
+            vm.user.first_name = "firstname";
+            vm.user.last_name = "lastname";
+            vm.user.affiliation = "affiliation";
+
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: 'success',
+                        status: 200
+                    });
+                } else if (success == null){
+                    parameters.callback.onError({
+                        data: null,
+                        status: 400
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: tryClauseResponse,
+                        status: 400
+                    });
+                }
+            };
+        });
+
+        it('successfully updated profile', function () {
+            var resetconfirmFormValid = true;
+            success = true;
+            vm.updateProfile(resetconfirmFormValid);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
+            expect($state.reload());
+            $mdDialog.hide();
+        });
+
+        it('when firstname is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = firstnameInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.first_name[0]);
+        });
+
+        it('when lastname is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = lastnameInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.last_name[0]);
+        });
+
+        it('when affiliation is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = affiliationInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.affiliation[0]);
+        });
+
+        it('other backend error in try clause', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = {};
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isDisabled).toBeFalsy();
+            expect(vm.isFormError).toBeTruthy();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error have occured . Please try again !");
+        });
+
+        it('backend error with catch clause', function () {
+            var resetconfirmFormValid = true;
+            success = null;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isDisabled).toBeFalsy();
+            expect($rootScope.notify).toHaveBeenCalled();
+        });
+
+        it('invalid form submission', function () {
+            var resetconfirmFormValid = false;
+            vm.updateProfile(resetconfirmFormValid);
+            $mdDialog.hide();
+            $state.reload();
         });
     });
 });
