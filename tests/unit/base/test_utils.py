@@ -140,7 +140,7 @@ class TestUserisStaff(BaseAPITestClass):
 
     def test_if_user_is_staff(self):
         self.user = User.objects.create(
-            username="someuser",
+            username="someuser1",
             email="user@test.com",
             password="secret_password",
             is_staff=True,
@@ -149,7 +149,7 @@ class TestUserisStaff(BaseAPITestClass):
 
     def test_if_user_is_not_staff(self):
         self.user = User.objects.create(
-            username="someuser",
+            username="someuser2",
             email="user@test.com",
             password="secret_password",
             is_staff=False,
