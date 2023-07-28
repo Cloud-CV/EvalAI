@@ -1,17 +1,22 @@
-name: autoupdate
+# name: autoupdate
+# This workflow triggers if commits are pushed to the master branch
 on:
-  # Triggers if commits are pushed to master branch
   push:
     branches:
       - master
+
 jobs:
   autoupdate:
-    name: autoupdate
+    name: Auto Update
     runs-on: ubuntu-20.04
+
     steps:
-      - uses: docker://chinthakagodawita/autoupdate-action:v1
+      # Step 1: Use the Docker container for the auto-update action
+      - name: Auto Update with Docker
+        uses: docker://chinthakagodawita/autoupdate-action:v1
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          # Step 2: Set environment variables
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: 'false'
           PR_FILTER: 'labelled'
           PR_LABELS: 'can-be-merged'
