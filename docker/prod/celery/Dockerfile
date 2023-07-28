@@ -1,7 +1,13 @@
-ARG AWS_ACCOUNT_ID
-ARG COMMIT_ID
-ARG TRAVIS_BRANCH
+FROM python:3.7.5
 
-FROM ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-${TRAVIS_BRANCH}-backend:${COMMIT_ID}
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update
+RUN mkdir /code
+WORKDIR /code
+
+ADD requirements/* /code/
+
+RUN pip install -r dev.txt
 
 CMD ["sh", "/code/docker/prod/celery/container-start.sh"]
