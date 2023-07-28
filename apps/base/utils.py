@@ -316,3 +316,16 @@ def is_model_field_changed(model_obj, field_name):
     if prev != curr:
         return True
     return False
+
+
+def is_user_a_staff(user):
+    """
+    Function to check if a user is staff or not
+
+    Args:
+        user ([User Class Object]): User model class object
+
+    Return:
+        {bool} : True/False if the user is staff or not
+    """
+    return user.is_staff
