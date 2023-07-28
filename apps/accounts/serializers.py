@@ -20,7 +20,6 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "last_name",
             "password",
         )
-
         read_only_fields = ("email", "username")
 
 
@@ -44,6 +43,7 @@ class ProfileSerializer(UserDetailsSerializer):
         fields = (
             "pk",
             "email",
+            "username",
             "first_name",
             "last_name",
             "affiliation",
