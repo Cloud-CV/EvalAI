@@ -362,10 +362,38 @@
             name: "web.profile",
             parent: "web",
             url: "/profile",
-            templateUrl: baseUrl + "/web/profile.html",
+            templateUrl: baseUrl + "/web/profile/profile.html",
             title: "Profile",
             controller: 'profileCtrl',
             controllerAs: 'profile',
+            redirectTo: "web.profile.Updateprofile",
+            authenticate: true
+        };
+
+        var auth_token = {
+            name: "web.profile.AuthToken",
+            parent: "web.profile",
+            url: "/auth-token",
+            templateUrl: baseUrl + "/web/auth/get-token.html",
+            title: 'Auth Token',
+            authenticate: true
+        };
+
+        var update_profile = {
+            name: "web.profile.Updateprofile",
+            parent: "web.profile",
+            url: "/update-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/update-profile.html",
+            title: 'Update profile',
+            authenticate: true
+        };
+
+        var edit_profile = {
+            name: "web.profile.Editprofile",
+            parent: "web.profile",
+            url: "/edit-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/edit-profile.html",
+            title: 'Edit profile',
             authenticate: true
         };
 
@@ -442,17 +470,6 @@
             url: "/get-involved",
             templateUrl: baseUrl + "/web/get-involved.html",
             title: "Get Involved"
-        };
-
-        var update_profile = {
-            name: "web.update-profile",
-            parent: "web",
-            url: "/update-profile",
-            templateUrl: baseUrl + "/web/update-profile.html",
-            title: "Update Profile",
-            controller: 'updateProfileCtrl',
-            controllerAs: 'updateProfile',
-            authenticate: true
         };
 
         var contact_us = {
@@ -590,6 +607,8 @@
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
+        $stateProvider.state(auth_token);
+        $stateProvider.state(update_profile);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
@@ -597,7 +616,7 @@
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
-        $stateProvider.state(update_profile);
+        $stateProvider.state(edit_profile);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);

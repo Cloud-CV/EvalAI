@@ -1,0 +1,24 @@
+<section class="ev-md-container text-center rm-overflow-y">
+    <div class="row">
+        <div class="col s12 m12">
+            <div class="ev-card-body pd-20 font-size-16">
+                <form name="editprofileForm" ng-submit="profile.updateProfile(editprofileForm.$valid, profile.editid)">
+                    <div class="pass-title">Edit {{profile.titleInput}}</div>
+                      <div class="input-field align-left">
+                        <input type="text" id="title" name="title" ng-model="profile.user[profile.editid]" value="profile.user[profile.editid]" focus-if="profile.user[profile.editid]" required>
+                        <span class="form-icon"><i class="fa fa-text"></i></span>
+                        <label for="title">{{profile.titleInput}}</label>
+                      </div>
+                      <ul class="inline-list pointer">
+                        <li>
+                            <a ng-click="profile.updateProfile(false)" class="dark-link pointer"><strong>Cancel</strong></a>
+                        </li>
+                        <li>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="submit">Submit</button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
