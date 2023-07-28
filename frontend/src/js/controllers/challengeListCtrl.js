@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$rootScope'];
 
-    function ChallengeListCtrl(utilities, $window, moment) {
+    function ChallengeListCtrl(utilities, $window, moment, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
@@ -124,7 +124,7 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    utilities.showToast(error.error);
+                    $rootScope.notify("error", error);
                 }
             };
             utilities.sendRequest(parameters);

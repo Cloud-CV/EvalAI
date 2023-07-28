@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('HostedChallengesCtrl', HostedChallengesCtrl);
 
-    HostedChallengesCtrl.$inject = ['utilities'];
+    HostedChallengesCtrl.$inject = ['utilities', '$rootScope'];
 
-    function HostedChallengesCtrl(utilities) {
+    function HostedChallengesCtrl(utilities, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -71,7 +71,7 @@
             },
             onError: function(response) {
                 var error = response.data;
-                utilities.showToast(error.error);
+                $rootScope.notify("error", error);
             }
         };
         utilities.sendRequest(parameters);
