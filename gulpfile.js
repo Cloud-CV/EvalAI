@@ -235,9 +235,9 @@ function injectpaths() {
     ], { read: false });
     return target
         .pipe(inject(sources, { ignorePath: 'frontend', addRootSlash: true }))
-        .pipe(gulp_if('*.js', production ? uglify() : gulp.dest('dist')))
-        .pipe(gulp_if('*.css', production ? cleanCSS() : gulp.dest('dist')))
-        .pipe(production ? cachebust({ type: 'timestamp' }) : gulp.dest('dist'))
+        .pipe(gulp_if('*.js', production ? uglify() : through.obj()))
+        .pipe(gulp_if('*.css', production ? cleanCSS() : through.obj()))
+        .pipe(production ? cachebust({ type: 'timestamp' }) : through.obj())
         .pipe(through.obj((file, enc, cb) => {
             // Extract the timestamp value from the file contents
             const fileContents = file.contents.toString();
