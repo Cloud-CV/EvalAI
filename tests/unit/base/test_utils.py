@@ -136,7 +136,7 @@ class TestSlackNotification(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TestUserisStaff(BaseAPITestClass):
+class TestUserIsStaff(BaseAPITestClass):
 
     def test_if_user_is_staff(self):
         self.user = User.objects.create(
