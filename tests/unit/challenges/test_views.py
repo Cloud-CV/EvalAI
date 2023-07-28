@@ -4096,6 +4096,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submitted_at": "{0}{1}".format(
                         submission.submitted_at.isoformat(), "Z"
                     ).replace("+00:00", ""),
+                    "rerun_resumed_at": submission.rerun_resumed_at,
                     "execution_time": submission.execution_time,
                     "input_file": "http://testserver%s"
                     % (submission.input_file.url),
@@ -4159,6 +4160,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submitted_at": "{0}{1}".format(
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "rerun_resumed_at": self.submission1.rerun_resumed_at,
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
                 "ignore_submission": False,
