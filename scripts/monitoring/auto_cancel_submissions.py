@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import time
 import pytz  # Use this to handle timezones if needed
 import os
 from evalai_interface import EvalAI_Interface
@@ -7,11 +8,10 @@ from evalai_interface import EvalAI_Interface
 def get_submission_time(submission):
     # Get the submission time based on the presence of "rerun_resumed_at"
     if "rerun_resumed_at" in submission and submission["rerun_resumed_at"]:
-        return datetime.fromisoformat(
-            submission["rerun_resumed_at"].rstrip("Z")
-        )
+        return datetime.strptime(submission["rerun_resumed_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+
     else:
-        return datetime.fromisoformat(submission["submitted_at"].rstrip("Z"))
+        return datetime.strptime(submission["submitted_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def auto_cancel_submissions(challenge_pk, days_threshold=14):
@@ -46,7 +46,7 @@ def auto_cancel_submissions(challenge_pk, days_threshold=14):
                     "submission": submission["id"],
                     "submission_status": "cancelled",
                 }
-                # evalai.update_submission_status(data, challenge_pk)
+                evalai.update_submission_status(data, challenge_pk)
                 print(
                     f"Cancelled submission with PK {submission['id']}. Previous status: {status}. Time Lapsed: {time_difference}"
                 )
@@ -80,3 +80,4 @@ if __name__ == "__main__":
         challenge_pk = challenge["id"]
         print(f"Running auto-cancel script for challenge {challenge_pk}")
         auto_cancel_submissions(challenge_pk)
+        time.sleep(1)

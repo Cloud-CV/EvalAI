@@ -19,6 +19,6 @@ fi
 
 # crontab doesn't have access to env variable, define explicitly
 export AUTH_TOKEN=${auth_token};
-export EVALAI_API_SERVER=${api_host_url};
+export API_HOST_URL=${api_host_url};
 
 /home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_stop_workers.py
