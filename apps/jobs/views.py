@@ -1113,7 +1113,7 @@ def update_submission(request, challenge_pk):
                 "foo": "bar"
             }
     """
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
