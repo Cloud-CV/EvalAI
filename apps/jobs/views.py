@@ -35,6 +35,7 @@ from base.utils import (
     get_boto3_client,
     get_or_create_sqs_queue,
     paginated_queryset,
+    is_user_a_staff,
 )
 from challenges.models import (
     ChallengePhase,
@@ -1957,7 +1958,7 @@ def get_submissions_for_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.id):
+    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
