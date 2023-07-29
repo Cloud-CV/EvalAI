@@ -536,6 +536,7 @@ def reorder_submissions_comparator(submission_1, submission_2):
         Submission.SUBMITTED,
         Submission.SUBMITTING,
         Submission.RESUMING,
+        Submission.QUEUED,
         Submission.RUNNING,
     ]
     if (
