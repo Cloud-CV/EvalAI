@@ -135,7 +135,7 @@ class EvalAI_Interface:
             url += f"?status={status}"
         response = self.make_request(url, "GET")
         return response
-    
+
     def get_challenges_submission_metrics(self):
         url = URLS.get("get_challenges_submission_metrics")
         url = self.return_url_per_environment(url)
