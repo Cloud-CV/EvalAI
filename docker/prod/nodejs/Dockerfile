@@ -15,7 +15,7 @@ RUN npm install -g bower gulp
 RUN npm install phantomjs-prebuilt
 RUN npm link gulp
 RUN npm cache clean -f
-RUN npm install
+RUN npm install --loglevel silly
 RUN npm install -g qs
 RUN bower install --allow-root
 ADD frontend /code/frontend
