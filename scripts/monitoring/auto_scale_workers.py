@@ -1,22 +1,15 @@
 import os
-import time
 import pytz
-import requests
 import warnings
 
 from datetime import datetime
 from dateutil.parser import parse
 from auto_stop_workers import start_worker, stop_worker
-from prometheus_api_client import PrometheusConnect
+from evalai_interface import EvalAI_Interface
 
 warnings.filterwarnings("ignore")
 
 utc = pytz.UTC
-NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
-NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
-PROMETHEUS_URL = os.environ.get(
-    "MONITORING_API_URL", "https://monitoring-staging.eval.ai/prometheus/"
-)
 PROD_EXCLUDED_CHALLENGE_QUEUES = [
     "textvqa-challenge-2021-874-production-41966973-4d99-4326-a402-b749b1d89aad",
     "vqa-challenge-2021-830-production-6343db53-af82-4618-8c51-0e294611315a",
@@ -42,52 +35,14 @@ PROD_EXCLUDED_CHALLENGE_QUEUES = [
 ENV = os.environ.get("ENV", "dev")
 
 evalai_endpoint = os.environ.get("API_HOST_URL")
-authorization_header = {
-    "Authorization": "Bearer {}".format(os.environ.get("AUTH_TOKEN"))
-}
-
-prom = PrometheusConnect(url=PROMETHEUS_URL, disable_ssl=True)
+auth_token = os.environ.get("AUTH_TOKEN")
 
 
-def execute_get_request(url):
-    response = requests.get(url, headers=authorization_header)
-    return response.json()
-
-
-def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
-        evalai_endpoint
-    )
-    response = execute_get_request(all_challenge_endpoint)
-
-    return response
-
-
-def get_queue_length(queue_name):
-    try:
-        num_processed_submissions = int(
-            prom.custom_query(
-                f"num_processed_submissions{{queue_name='{queue_name}'}}"
-            )[0]["value"][1]
-        )
-    except Exception:  # noqa: F841
-        num_processed_submissions = 0
-
-    try:
-        num_submissions_in_queue = int(
-            prom.custom_query(
-                f"num_submissions_in_queue{{queue_name='{queue_name}'}}"
-            )[0]["value"][1]
-        )
-    except Exception:  # noqa: F841
-        num_submissions_in_queue = 0
-
-    return num_submissions_in_queue - num_processed_submissions
-
-
-def get_queue_length_by_challenge(challenge):
-    queue_name = challenge["queue"]
-    return get_queue_length(queue_name)
+def get_pending_submission_count(challenge_metrics):
+    pending_submissions = 0
+    for status in ["running", "submitted", "queued", "resuming"]:
+        pending_submissions += challenge_metrics.get(status, 0)
+    return pending_submissions
 
 
 def scale_down_workers(challenge, num_workers):
@@ -101,7 +56,7 @@ def scale_down_workers(challenge, num_workers):
         )
     else:
         print(
-            "No workers and queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+            "No workers and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
@@ -118,18 +73,18 @@ def scale_up_workers(challenge, num_workers):
         )
     else:
         print(
-            "Existing workers and pending queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+            "Existing workers and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
 
 
-def scale_up_or_down_workers(challenge):
+def scale_up_or_down_workers(challenge, challenge_metrics):
     try:
-        queue_length = get_queue_length_by_challenge(challenge)
+        pending_submissions = get_pending_submission_count(challenge_metrics)
     except Exception:  # noqa: F841
         print(
-            "Unable to get the queue length for challenge ID: {}, Title: {}. Skipping.".format(
+            "Unable to get the pending submissions for challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
@@ -140,11 +95,11 @@ def scale_up_or_down_workers(challenge):
     )
 
     print(
-        "Num Workers: {}, Queue Length: {}".format(num_workers, queue_length)
+        "Num Workers: {}, Pending Submissions: {}".format(num_workers, pending_submissions)
     )
 
     if (
-        queue_length == 0
+        pending_submissions == 0
         or parse(challenge["end_date"])
         < pytz.UTC.localize(datetime.utcnow())
     ):
@@ -154,35 +109,30 @@ def scale_up_or_down_workers(challenge):
 
 
 # TODO: Factor in limits for the APIs
-def scale_up_or_down_workers_for_challenges(response):
+def scale_up_or_down_workers_for_challenges(response, metrics):
     for challenge in response["results"]:
-        if (
-            not challenge["is_docker_based"]
-            and not challenge["remote_evaluation"]
-        ):
-            if ENV == "prod":
-                if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
-                    scale_up_or_down_workers(challenge)
-            else:
-                scale_up_or_down_workers(challenge)
-            time.sleep(1)
-
+        if ENV == "prod":
+            if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
+                scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
         else:
-            print(
-                "Challenge ID: {}, Title: {} is either docker-based or remote-evaluation. Skipping.".format(
-                    challenge["id"], challenge["title"]
-                )
-            )
+            scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
+
+
+def create_evalai_interface(auth_token, evalai_endpoint):
+    evalai_interface = EvalAI_Interface(auth_token, evalai_endpoint)
+    return evalai_interface
 
 
 # Cron Job
 def start_job():
-    response = get_challenges()
-    scale_up_or_down_workers_for_challenges(response)
+    evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
+    response = evalai_interface.get_challenges()
+    metrics = evalai_interface.get_challenges_submission_metrics()
+    scale_up_or_down_workers_for_challenges(response, metrics)
     next_page = response["next"]
     while next_page is not None:
-        response = execute_get_request(next_page)
-        scale_up_or_down_workers_for_challenges(response)
+        response = evalai_interface.make_request(next_page, "GET")
+        scale_up_or_down_workers_for_challenges(response, metrics)
         next_page = response["next"]
 
 
