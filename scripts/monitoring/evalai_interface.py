@@ -17,6 +17,7 @@ URLS = {
     "get_aws_eks_cluster_details": "/api/challenges/{}/evaluation_cluster/",
     "get_challenge_by_pk": "/api/challenges/challenge/{}/",
     "get_challenges": "/api/challenges/challenge/all/all/all",
+    "get_submissions_for_challenge": "/api/jobs/challenge/{}/submission/",
 }
 
 
@@ -122,5 +123,14 @@ class EvalAI_Interface:
     def get_challenges(self):
         url = URLS.get("get_challenges")
         url = self.return_url_per_environment(url)
+        response = self.make_request(url, "GET")
+        return response
+
+    def get_submissions_for_challenge(self, submission_pk, status=None):
+        url_template = URLS.get("get_submissions_for_challenge")
+        url = url_template.format(submission_pk)
+        url = self.return_url_per_environment(url)
+        if status:
+            url += f"?status={status}"
         response = self.make_request(url, "GET")
         return response
