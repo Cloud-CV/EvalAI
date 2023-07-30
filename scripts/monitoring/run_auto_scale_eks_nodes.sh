@@ -38,7 +38,7 @@ if [ ! -z "$8" ]; then
 fi
 
 if [ ! -z "$9" ]; then
-  eks_aws_region=$89
+  eks_aws_region=$9
 fi
 
 if [ ! -z "${10}" ]; then
