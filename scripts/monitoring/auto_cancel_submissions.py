@@ -46,7 +46,7 @@ def auto_cancel_submissions(challenge_pk, days_threshold=14):
                     "submission": submission["id"],
                     "submission_status": "cancelled",
                 }
-                evalai.update_submission_status(data, challenge_pk)
+                evalai.update_submission_data(data, challenge_pk)
                 print(
                     f"Cancelled submission with PK {submission['id']}. Previous status: {status}. Time Lapsed: {time_difference}"
                 )
@@ -80,4 +80,4 @@ if __name__ == "__main__":
         challenge_pk = challenge["id"]
         print(f"Running auto-cancel script for challenge {challenge_pk}")
         auto_cancel_submissions(challenge_pk)
-        time.sleep(1)
+        time.sleep(5)
