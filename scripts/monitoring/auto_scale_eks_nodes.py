@@ -25,7 +25,7 @@ SCALE_UP_DESIRED_SIZE = 1
 
 # Env Variables
 ENV = os.environ.get("ENV", "production")
-# AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
+AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 EVALAI_ENDPOINT = os.environ.get("API_HOST_URL", "https://eval.ai")
 
 json_path = os.environ.get("JSON_PATH", "~/prod_eks_auth_tokens.json")
@@ -80,7 +80,7 @@ def start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys,
     scaling_config = {
         "minSize": 1,
         "maxSize": max(1, pending_submissions) if not desired_size else max(desired_size, pending_submissions),
-        "desiredSize": min(1, pending_submissions) if not desired_size else desired_size,
+        "desiredSize": min(1, pending_submissions) if not desired_size else min(desired_size, pending_submissions),
     }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
@@ -189,6 +189,10 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
 
 # Cron Job
 def start_job():
+    
+    # Get metrics
+    evalai_interface = create_evalai_interface(AUTH_TOKEN)
+    metrics = evalai_interface.get_challenges_submission_metrics()
 
     for challenge_id, details in INCLUDED_CHALLENGE_PKS.items():
         # Auth Token
@@ -208,7 +212,6 @@ def start_job():
             aws_keys = DEFAULT_AWS_EKS_KEYS
 
         evalai_interface = create_evalai_interface(details["auth_token"])
-        metrics = evalai_interface.get_challenges_submission_metrics()
         challenge = evalai_interface.get_challenge_by_pk(challenge_id)
 
         assert (
