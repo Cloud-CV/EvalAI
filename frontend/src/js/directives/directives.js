@@ -336,3 +336,24 @@ function dashboardFooterController($scope) {
         }
     }
 })();
+
+(function() {
+    'use strict';
+
+    angular.module('evalai').directive("mathjaxBind", ['$compile', '$timeout', function($compile, $timeout) {
+      return {
+        restrict: "A",
+        link: function(scope, element, attrs) {
+          scope.$watch(attrs.mathjaxBind, function(texExpression) {
+            var template = angular.element('<div>').html(texExpression).contents();
+            var compiledTemplate = $compile(template)(scope);
+            element.empty().append(compiledTemplate);
+            $timeout(function() {
+                /* eslint-disable no-undef */
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, element[0]]);
+            }, 0);
+          });
+        }
+      };
+    }]);
+  }());

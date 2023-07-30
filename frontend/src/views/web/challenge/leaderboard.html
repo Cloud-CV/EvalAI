@@ -16,7 +16,7 @@
             </div>
         </div>
         <div class="row" ng-if="challenge.page.leaderboard_description.length">
-            <div class="col s12 md-body-1 fs-16 w-300" ng-bind-html="challenge.page.leaderboard_description"></div>
+            <div class="col s12 md-body-1 fs-16 w-300" mathjax-bind="challenge.page.leaderboard_description"></div>
         </div>
         <div class="row">
             <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page"
