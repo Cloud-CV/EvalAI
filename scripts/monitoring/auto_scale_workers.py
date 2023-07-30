@@ -1,13 +1,11 @@
 import os
 import time
 import pytz
-import requests
 import warnings
 
 from datetime import datetime
 from dateutil.parser import parse
 from auto_stop_workers import start_worker, stop_worker
-from prometheus_api_client import PrometheusConnect
 from evalai_interface import EvalAI_Interface
 
 warnings.filterwarnings("ignore")
@@ -130,9 +128,11 @@ def scale_up_or_down_workers_for_challenges(response, metrics):
                 )
             )
 
+
 def create_evalai_interface(auth_token, evalai_endpoint):
     evalai_interface = EvalAI_Interface(auth_token, evalai_endpoint)
     return evalai_interface
+
 
 # Cron Job
 def start_job():
