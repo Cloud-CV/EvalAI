@@ -191,7 +191,7 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
 
 # Cron Job
 def start_job():
-    
+
     # Get metrics
     evalai_interface = create_evalai_interface(AUTH_TOKEN)
     metrics = evalai_interface.get_challenges_submission_metrics()
