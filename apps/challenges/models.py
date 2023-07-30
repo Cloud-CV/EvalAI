@@ -59,6 +59,13 @@ class Challenge(TimeStampedModel):
         related_name="challenge_creator",
         on_delete=models.CASCADE,
     )
+    DOMAIN_OPTIONS = (
+        ("CV", "Computer Vision"),
+        ("NLP", "Natural Language Processing"),
+        ("RL", "Reinforcement Learning"),
+    )
+    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
+    list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )

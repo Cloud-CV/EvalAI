@@ -6,7 +6,7 @@ import yaml
 from django.core.files.base import ContentFile
 
 from os.path import basename, isfile, join
-from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
+from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -277,6 +277,8 @@ error_message_dict = {
     "start_date_greater_than_end_date": "ERROR: Start date cannot be greater than end date.",
     "missing_dates_challenge_phase": "ERROR: Please add the start_date and end_date in challenge phase {}.",
     "start_date_greater_than_end_date_challenge_phase": "ERROR: Start date cannot be greater than end date in challenge phase {}.",
+    "extra_tags": "ERROR: Tags are limited to 4. Please remove extra tags then try again!",
+    "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name then try again!",
 }
 
 
@@ -935,6 +937,24 @@ class ValidateChallengeConfigUtil:
                 ].format(current_dataset_split_config_id)
                 self.error_messages.append(message)
 
+    # Check for Tags and Domain
+    def check_tags(self):
+        if "tags" in self.yaml_file_data:
+            tags_data = self.yaml_file_data["tags"]
+            # Verify Tags are limited to 4
+            if len(tags_data) > 4:
+                message = self.error_messages_dict["extra_tags"]
+                self.error_messages.append(message)
+
+    def check_domain(self):
+        # Verify Domain name is correct
+        if "domain" in self.yaml_file_data:
+            domain_value = self.yaml_file_data["domain"]
+            domain_choice = [option[0] for option in Challenge.DOMAIN_OPTIONS]
+            if domain_value not in domain_choice:
+                message = self.error_messages_dict["wrong_domain"]
+                self.error_messages.append(message)
+
 
 def validate_challenge_config_util(
     request,
@@ -1041,6 +1061,12 @@ def validate_challenge_config_util(
 
     # Validate challenge phase splits
     val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
+
+    # Validate tags
+    val_config_util.check_tags()
+
+    # Validate domain
+    val_config_util.check_domain()
 
     return (
         val_config_util.error_messages,
