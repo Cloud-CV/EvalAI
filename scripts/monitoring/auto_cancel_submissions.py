@@ -50,6 +50,7 @@ def auto_cancel_submissions(challenge_pk, days_threshold=14):
                 print(
                     f"Cancelled submission with PK {submission['id']}. Previous status: {status}. Time Lapsed: {time_difference}"
                 )
+                time.sleep(1)
     except Exception as e:
         raise (f"Error in auto-cancel script: {str(e)}")
 
