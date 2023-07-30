@@ -39,8 +39,10 @@ evalai_endpoint = os.environ.get("API_HOST_URL")
 auth_token = os.environ.get("AUTH_TOKEN")
 
 
-def get_pending_submission_count_by_pk(metrics, challenge_pk):
-    pending_submissions = metrics["submitted"] + metrics["running"]
+def get_pending_submission_count(challenge_metrics):
+    pending_submissions = 0
+    for status in ["running", "submitted", "queued", "resuming"]:
+        pending_submissions += challenge_metrics.get(status, None)
     return pending_submissions
 
 
@@ -78,9 +80,9 @@ def scale_up_workers(challenge, num_workers):
         )
 
 
-def scale_up_or_down_workers(challenge, metrics):
+def scale_up_or_down_workers(challenge, challenge_metrics):
     try:
-        pending_submissions = get_pending_submission_count_by_pk(metrics, challenge["id"])
+        pending_submissions = get_pending_submission_count(challenge_metrics)
     except Exception:  # noqa: F841
         print(
             "Unable to get the pending submissions for challenge ID: {}, Title: {}. Skipping.".format(
@@ -110,23 +112,11 @@ def scale_up_or_down_workers(challenge, metrics):
 # TODO: Factor in limits for the APIs
 def scale_up_or_down_workers_for_challenges(response, metrics):
     for challenge in response["results"]:
-        if (
-            not challenge["is_docker_based"]
-            and not challenge["remote_evaluation"]
-        ):
-            if ENV == "prod":
-                if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
-                    scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
-            else:
+        if ENV == "prod":
+            if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
                 scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
-            time.sleep(1)
-
         else:
-            print(
-                "Challenge ID: {}, Title: {} is either docker-based or remote-evaluation. Skipping.".format(
-                    challenge["id"], challenge["title"]
-                )
-            )
+            scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
 
 
 def create_evalai_interface(auth_token, evalai_endpoint):

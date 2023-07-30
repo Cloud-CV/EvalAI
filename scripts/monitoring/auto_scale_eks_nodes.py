@@ -8,7 +8,6 @@ import boto3
 import pytz
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
-from prometheus_api_client import PrometheusConnect
 
 warnings.filterwarnings("ignore")
 
@@ -28,9 +27,6 @@ SCALE_UP_DESIRED_SIZE = 1
 ENV = os.environ.get("ENV", "production")
 # AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 EVALAI_ENDPOINT = os.environ.get("API_HOST_URL", "https://eval.ai")
-PROMETHEUS_URL = os.environ.get(
-    "MONITORING_API_URL", "https://monitoring.eval.ai/prometheus/"
-)
 
 json_path = os.environ.get("JSON_PATH", "~/prod_eks_auth_tokens.json")
 # QUEUES
@@ -38,16 +34,10 @@ with open(json_path, "r") as f:
     # Load the JSON data into a Python dictionary
     INCLUDED_CHALLENGE_PKS = json.load(f)
 
-NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
-NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
-
 
 def create_evalai_interface(auth_token):
     evalai_interface = EvalAI_Interface(auth_token, EVALAI_ENDPOINT)
     return evalai_interface
-
-
-prom = PrometheusConnect(url=PROMETHEUS_URL, disable_ssl=True)
 
 
 def get_boto3_client(resource, aws_keys):
