@@ -41,7 +41,7 @@ auth_token = os.environ.get("AUTH_TOKEN")
 def get_pending_submission_count(challenge_metrics):
     pending_submissions = 0
     for status in ["running", "submitted", "queued", "resuming"]:
-        pending_submissions += challenge_metrics.get(status, None)
+        pending_submissions += challenge_metrics.get(status, 0)
     return pending_submissions
 
 

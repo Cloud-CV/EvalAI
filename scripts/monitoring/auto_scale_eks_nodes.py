@@ -108,8 +108,10 @@ def stop_eks_worker(challenge, evalai_interface, aws_keys):
 
 
 def get_pending_submission_count_by_pk(metrics, challenge_pk):
-    metrics = metrics[challenge_pk]
-    pending_submissions = metrics["submitted"] + metrics["running"]
+    challenge_metrics = metrics[str(challenge_pk)]
+    pending_submissions = 0
+    for status in ["running", "submitted", "queued", "resuming"]:
+        pending_submissions += challenge_metrics.get(status, 0)
     return pending_submissions
 
 
