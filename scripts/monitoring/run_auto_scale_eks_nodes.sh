@@ -1,5 +1,6 @@
 #!/bin/bash
 path=$PWD
+auth_token=''
 json_path=''
 api_host_url=''
 eks_aws_storage_bucket_name=''
@@ -9,15 +10,15 @@ if [ ! -z "$1" ]; then
 fi
 
 if [ ! -z "$2" ]; then
-  json_path=$2
+    auth_token=$2
 fi
 
 if [ ! -z "$3" ]; then
-  api_host_url=$3
+  json_path=$3
 fi
 
 if [ ! -z "$4" ]; then
-  monitoring_api_url=$4
+  api_host_url=$4
 fi
 
 if [ ! -z "$5" ]; then
@@ -45,9 +46,9 @@ if [ ! -z "${10}" ]; then
 fi
 
 # crontab doesn't have access to env variable, define explicitly
+export AUTH_TOKEN=${auth_token};
 export JSON_PATH=${json_path}
 export API_HOST_URL=${api_host_url}
-export MONITORING_API_URL=${monitoring_api_url}
 export ENV=${env}
 export EKS_AWS_ACCOUNT_ID=${eks_aws_account_id}
 export EKS_AWS_ACCESS_KEY_ID=${eks_aws_access_key_id}
