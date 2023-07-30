@@ -22,6 +22,8 @@ DEFAULT_AWS_EKS_KEYS = {  # NOTE: These are habitat challenge keys as most chall
     "AWS_STORAGE_BUCKET_NAME": os.environ.get("EKS_AWS_STORAGE_BUCKET_NAME"),
 }
 
+SCALE_UP_DESIRED_SIZE = 1
+
 # Env Variables
 ENV = os.environ.get("ENV", "production")
 # AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
@@ -81,14 +83,14 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge, queue_length, evalai_interface, aws_keys):
+def start_eks_worker(challenge, queue_length, evalai_interface, aws_keys, desired_size=None):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(
         challenge, evalai_interface, aws_keys
     )
     scaling_config = {
         "minSize": 1,
-        "maxSize": max(1, queue_length),
-        "desiredSize": min(1, queue_length),
+        "maxSize": max(1, queue_length) if not desired_size else max(desired_size, queue_length),
+        "desiredSize": min(1, queue_length) if not desired_size else desired_size,
     }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
@@ -159,9 +161,9 @@ def scale_down_workers(challenge, desired_size, evalai_interface, aws_keys):
         )
 
 
-def scale_up_workers(challenge, desired_size, queue_length, evalai_interface, aws_keys):
+def scale_up_workers(challenge, desired_size, queue_length, evalai_interface, aws_keys, scale_up_desired_size=None):
     if desired_size == 0:
-        response = start_eks_worker(challenge, queue_length, evalai_interface, aws_keys)
+        response = start_eks_worker(challenge, queue_length, evalai_interface, aws_keys, scale_up_desired_size)
         print("AWS API Response: {}".format(response))
         print(
             "Increased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
@@ -176,7 +178,7 @@ def scale_up_workers(challenge, desired_size, queue_length, evalai_interface, aw
         )
 
 
-def scale_up_or_down_workers(challenge, evalai_interface, aws_keys):
+def scale_up_or_down_workers(challenge, evalai_interface, aws_keys, scale_up_desired_size=None):
     try:
         queue_length = get_queue_length_by_challenge(challenge)
     except Exception:  # noqa: F841
@@ -212,7 +214,7 @@ def scale_up_or_down_workers(challenge, evalai_interface, aws_keys):
         scale_down_workers(challenge, desired_size, evalai_interface, aws_keys)
     else:
         scale_up_workers(
-            challenge, desired_size, queue_length, evalai_interface, aws_keys
+            challenge, desired_size, queue_length, evalai_interface, aws_keys, scale_up_desired_size
         )
 
 
@@ -220,20 +222,31 @@ def scale_up_or_down_workers(challenge, evalai_interface, aws_keys):
 def start_job():
 
     for challenge_id, details in INCLUDED_CHALLENGE_PKS.items():
+        # Auth Token
         if "auth_token" not in details:
             raise NotImplementedError("auth_token is needed for all challenges")
-        evalai_interface = create_evalai_interface(details["auth_token"])
-        challenge = evalai_interface.get_challenge_by_pk(challenge_id)
+
+        # Desired Scale Up Size
+        if "scale_up_desired_size" not in details:
+            scale_up_desired_size = SCALE_UP_DESIRED_SIZE
+        else:
+            scale_up_desired_size = details["scale_up_desired_size"]
+
+        # AWS Keys
         if "aws_keys" in details:
             aws_keys = details["aws_keys"]
         else:
             aws_keys = DEFAULT_AWS_EKS_KEYS
+
+        evalai_interface = create_evalai_interface(details["auth_token"])
+        challenge = evalai_interface.get_challenge_by_pk(challenge_id)
+
         assert (
             challenge["is_docker_based"] and not challenge["remote_evaluation"]
         ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
             challenge["id"], challenge["title"]
         )
-        scale_up_or_down_workers(challenge, evalai_interface, aws_keys)
+        scale_up_or_down_workers(challenge, evalai_interface, aws_keys, scale_up_desired_size)
         time.sleep(1)
 
 
