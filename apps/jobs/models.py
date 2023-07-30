@@ -59,7 +59,7 @@ class Submission(TimeStampedModel):
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
         (RESUMING, RESUMING),
-        (QUEUED, QUEUED)
+        (QUEUED, QUEUED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
