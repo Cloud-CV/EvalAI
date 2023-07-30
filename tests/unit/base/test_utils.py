@@ -13,7 +13,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification
+from base.utils import RandomFileName, send_slack_notification, is_user_a_staff
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -134,3 +134,26 @@ class TestSlackNotification(BaseAPITestClass):
         response = send_slack_notification(message=message)
         self.assertEqual(type(response), requests.models.Response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestUserIsStaff(BaseAPITestClass):
+
+    def test_if_user_is_staff(self):
+        self.user = User.objects.create(
+            username="someuser1",
+            email="user@test.com",
+            password="secret_password",
+            is_staff=True,
+        )
+        self.assertTrue(is_user_a_staff(self.user))
+
+    def test_if_user_is_not_staff(self):
+        self.user = User.objects.create(
+            username="someuser2",
+            email="user@test.com",
+            password="secret_password",
+            is_staff=False,
+        )
+        self.user.is_staff = False
+        self.user.save()
+        self.assertFalse(is_user_a_staff(self.user))

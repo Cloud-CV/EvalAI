@@ -1,4 +1,5 @@
-<section class="text-center pd-20 width-1200">
+<section class="ev-md-container-ui">
+    <div class="ev-md-container ev-card-panel">
     <div class="row ht-wt-100p">
         <div class="col s12 m12">
             <div class="ev-card-body">
@@ -10,7 +11,9 @@
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </div>
-                    <div><strong>Expires at:</strong> {{profile.expiresAt | date:'medium'}} {{profile.expiresAtTimezone}} ({{profile.gmtZone}})</div>
+                    <br>
+                    <br>
+                    <div class="pd-20"><strong>Expires at:</strong> {{profile.expiresAt | date:'medium'}} {{profile.expiresAtTimezone}} ({{profile.gmtZone}})</div>
                     <br>
                     <ul class="inline-list">
                         <li>
@@ -29,5 +32,6 @@
                 </form>
             </div>
         </div>
+    </div>
     </div>
 </section>
