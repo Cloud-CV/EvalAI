@@ -4096,6 +4096,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submitted_at": "{0}{1}".format(
                         submission.submitted_at.isoformat(), "Z"
                     ).replace("+00:00", ""),
+                    "rerun_resumed_at": submission.rerun_resumed_at,
                     "execution_time": submission.execution_time,
                     "input_file": "http://testserver%s"
                     % (submission.input_file.url),
@@ -4159,6 +4160,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submitted_at": "{0}{1}".format(
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "rerun_resumed_at": self.submission1.rerun_resumed_at,
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
                 "ignore_submission": False,
@@ -4196,6 +4198,20 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_all_challenges_submission_metrics(self):
+
+        self.user8 = User.objects.create(
+            username="admin_test",
+            password="admin@123",
+            is_staff=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user8,
+            email="user8@test.com",
+            primary=True,
+            verified=True,
+        )
+
         self.maxDiff = None
 
         url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
@@ -4225,6 +4241,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             }
         }
 
+        self.client.force_authenticate(user=self.user8)
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
