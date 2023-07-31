@@ -168,6 +168,9 @@ describe('Unit tests for profile controller', function () {
         var usernameInvalid  = {
             username: ["username error"],
         };
+        var emailInvalid = {
+            email: ["email error"],
+        };
         var firstnameInvalid = {
             first_name: ["firstname error"],
         };
@@ -182,6 +185,7 @@ describe('Unit tests for profile controller', function () {
             spyOn($rootScope, 'notify');
             spyOn($state, 'go');
             spyOn($state, 'reload');
+            vm.user.email = "example@example.com";
             vm.user.first_name = "firstname";
             vm.user.last_name = "lastname";
             vm.user.affiliation = "affiliation";
@@ -243,6 +247,16 @@ describe('Unit tests for profile controller', function () {
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.isFormError).toBeTruthy();
             expect(vm.FormError).toEqual(tryClauseResponse.affiliation[0]);
+        });
+
+        it('when email is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = emailInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.email[0]);
         });
 
         it('other backend error in try clause', function () {

@@ -10,6 +10,17 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     Make username as a read_only field.
     """
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+    def validate_email(self, value):
+        User = get_user_model()
+        if User.objects.exclude(pk=self.instance.pk).filter(email=value).exists():
+            raise serializers.ValidationError("Email must be unique.")
+        else:
+            return value
+
     class Meta:
         model = get_user_model()
         fields = (
@@ -20,7 +31,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "last_name",
             "password",
         )
-        read_only_fields = ("email", "username")
+        read_only_fields = ("username",)
 
 
 class ProfileSerializer(UserDetailsSerializer):

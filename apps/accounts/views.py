@@ -2,6 +2,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
 from allauth.account.utils import send_email_confirmation
+from allauth.account.models import EmailAddress
 
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -21,7 +22,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
-from .serializers import JwtTokenSerializer
+from .serializers import JwtTokenSerializer, UserDetailsSerializer
 
 from .throttles import ResendEmailThrottle
 
@@ -128,3 +129,25 @@ def refresh_auth_token(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT"])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def change_email(request):
+    """
+    Changes the email of the user
+    """
+    user = request.user
+    new_email = request.data.get("new_email", None)
+    if new_email is None:
+        response_data = {"error": "New email is required."}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = UserDetailsSerializer(user, data={"email": new_email}, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save(request=request)
+    EmailAddress.objects.filter(user=user).update(verified=False)
+    send_email_confirmation(request._request, user)
+    response_data = {"message": "Email changed successfully."}
+    return Response(response_data, status=status.HTTP_200_OK)
