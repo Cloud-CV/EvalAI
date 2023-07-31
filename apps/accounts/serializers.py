@@ -17,7 +17,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         User = get_user_model()
         if User.objects.exclude(pk=self.instance.pk).filter(email=value).exists():
-            raise serializers.ValidationError("Email must be unique.")
+            raise serializers.ValidationError("Email already exist.")
         else:
             return value
 
