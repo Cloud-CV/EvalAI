@@ -4030,6 +4030,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__pk=challenge_phase,
                         dataset_split__pk=dataset_split,
+                        leaderboard__pk=leaderboard,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
