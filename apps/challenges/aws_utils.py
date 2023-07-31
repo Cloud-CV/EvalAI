@@ -1476,3 +1476,173 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                             challenge.id, failures[0]["message"]
                         )
                     )
+
+
+@app.task
+def setup_ec2(challenge):
+    """
+    Creates EC2 instance for the challenge and runs the worker setup on it
+
+    Arguments:
+        challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+
+    # challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    ec2_client = get_boto3_client("ec2", challenge_aws_keys)
+
+    start_script = """#!/bin/bash
+
+git clone https://github.com/Cloud-CV/EvalAI.git
+sudo mv /EvalAI/ ~
+cd ~/EvalAI
+sudo apt update
+sudo apt install -y software-properties-common
+echo | sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt install python3.8 -y
+sudo apt install python3.8-venv -y
+sudo apt-get install python3.8-dev -y
+sudo  python3.8 -m venv ./venv
+source ./venv/bin/activate
+sudo chmod -R a+rwx ./venv/
+sudo apt-get install build-essential -y
+pip install wheel
+pip install -U cffi service_identity cython==0.29 numpy==1.18.1
+sudo apt install postgresql-server-dev-all -y
+sudo apt install libcurl4-openssl-dev libssl-dev -y
+pip install -r requirements/prod.txt
+pip install -r requirements/worker.txt
+
+export AWS_ACCESS_KEY_ID={0}
+export AWS_ACCOUNT_ID={1}
+export AWS_DEFAULT_REGION={2}
+export AWS_SECRET_ACCESS_KEY={3}
+export AWS_SES_REGION_NAME={4}
+export AWS_SES_REGION_ENDPOINT={5}
+export AWS_SQS_MESSAGE_GROUP_ID={6}
+export AWS_STORAGE_BUCKET_NAME={7}
+
+export C_FORCE_ROOT=true
+export CELERY_QUEUE_NAME={8}
+export CHALLENGE_QUEUE=evalai_submission_queue
+
+export DATADOG_APP_NAME={9}
+export DATADOG_APP_KEY={10}
+export DATADOG_API_KEY={11}
+
+export DEBUG=False
+export DJANGO_SETTINGS_MODULE=settings.prod
+export DJANGO_SERVER=django
+
+export API_HOST_URL={12}
+export EMAIL_HOST={13}
+export EMAIL_HOST_PASSWORD={14}
+export EMAIL_HOST_USER={15}
+export EMAIL_PORT=123
+export EMAIL_USE_TLS=True
+export HOSTNAME=evalai.cloudcv.org
+export MEMCACHED_LOCATION=None
+
+export RDS_DB_NAME={16}
+export RDS_HOSTNAME={17}
+export RDS_USERNAME={18}
+export RDS_PASSWORD={19}
+
+export SECRET_KEY=some-secret-key
+export SENTRY_URL={20}
+export SENDGRID_API_KEY={21}
+
+export CIDR={22}
+
+export CLUSTER=cluster
+export CPU=0
+export EXECUTION_ROLE_ARN={23}
+export MEMORY=0
+export SUBNET_1={24}
+export SUBNET_2={25}
+export SUBNET_SECURITY_GROUP={26}
+export WORKER_IMAGE={27}
+
+export CODE_UPLOAD_WORKER_IMAGE={28}
+export EKS_CLUSTER_ROLE_ARN={29}
+export EKS_NODEGROUP_ROLE_ARN={30}
+
+export SLACK_WEB_HOOK_URL={31}
+export APPROVAL_WEBHOOK_URL={32}
+export ENVIRONMENT=production
+export SERVICE_DNS={33}
+export CHALLENGE_PK={34}
+export CHALLENGE_QUEUE={35}
+python -m scripts.workers.submission_worker
+""".format(
+        os.environ.get("AWS_ACCESS_KEY_ID"),
+        os.environ.get("AWS_ACCOUNT_ID"),
+        os.environ.get("AWS_DEFAULT_REGION"),
+        os.environ.get("AWS_SECRET_ACCESS_KEY"),
+        os.environ.get("AWS_SES_REGION_NAME"),
+        os.environ.get("AWS_SES_REGION_ENDPOINT"),
+        os.environ.get("AWS_SQS_MESSAGE_GROUP_ID"),
+        os.environ.get("AWS_STORAGE_BUCKET_NAME"),
+        os.environ.get("CELERY_QUEUE_NAME"),
+        os.environ.get("DATADOG_APP_NAME"),
+        os.environ.get("DATADOG_APP_KEY"),
+        os.environ.get("DATADOG_API_KEY"),
+        os.environ.get("API_HOST_URL"),
+        os.environ.get("EMAIL_HOST"),
+        os.environ.get("EMAIL_HOST_PASSWORD"),
+        os.environ.get("EMAIL_HOST_USER"),
+        os.environ.get("RDS_DB_NAME"),
+        os.environ.get("RDS_HOSTNAME"),
+        os.environ.get("RDS_USERNAME"),
+        os.environ.get("RDS_PASSWORD"),
+        os.environ.get("SENTRY_URL"),
+        os.environ.get("SENDGRID_API_KEY"),
+        os.environ.get("CIDR"),
+        os.environ.get("EXECUTION_ROLE_ARN"),
+        os.environ.get("SUBNET_1"),
+        os.environ.get("SUBNET_2"),
+        os.environ.get("SUBNET_SECURITY_GROUP"),
+        os.environ.get("WORKER_IMAGE"),
+        os.environ.get("CODE_UPLOAD_WORKER_IMAGE"),
+        os.environ.get("EKS_CLUSTER_ROLE_ARN"),
+        os.environ.get("EKS_NODEGROUP_ROLE_ARN"),
+        os.environ.get("SLACK_WEB_HOOK_URL"),
+        os.environ.get("APPROVAL_WEBHOOK_URL"),
+        os.environ.get("SERVICE_DNS"),
+        os.environ.get("CHALLENGE_PK"),
+        os.environ.get("CHALLENGE_QUEUE"),
+    )
+    insatancetype = (os.environ.get("INSTANCE_TYPE"),)
+    imageid = (os.environ.get("IMAGE_ID"),)
+    subnetid = (os.environ.get("SUBNET_2"),)
+    keyname = (os.environ.get("KEY_NAME"),)
+    # Create the EC2 instance
+    instance_name = f"ec2-submission-worker-{challenge_obj.pk}"
+    try:
+        response = ec2_client.run_instances(
+            ImageId=imageid,  # Replace with your desired AMI ID
+            InstanceType=insatancetype,  # Replace with your desired instance type
+            MinCount=1,
+            MaxCount=1,
+            SubnetId=subnetid,
+            KeyName=keyname,
+            TagSpecifications=[
+                {
+                    "ResourceType": "instance",
+                    "Tags": [
+                        {"Key": "Name", "Value": instance_name},
+                    ],
+                }
+            ],
+            UserData=start_script,
+        )
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return
