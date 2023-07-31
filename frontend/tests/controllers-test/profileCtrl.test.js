@@ -215,6 +215,16 @@ describe('Unit tests for profile controller', function () {
             $mdDialog.hide();
         });
 
+        it('when username is invalid', function () {
+            var resetconfirmFormValid = true;
+            tryClauseResponse = usernameInvalid;
+            success = false;
+
+            vm.updateProfile(resetconfirmFormValid);
+            expect(vm.isFormError).toBeTruthy();
+            expect(vm.FormError).toEqual(tryClauseResponse.username[0]);
+        });
+
         it('when firstname is invalid', function () {
             var resetconfirmFormValid = true;
             tryClauseResponse = firstnameInvalid;
