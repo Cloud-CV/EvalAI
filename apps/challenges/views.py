@@ -3190,6 +3190,10 @@ def get_worker_logs(request, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
     response_data = []
 
+    if challenge.errors:
+        response_data = {"logs": [challenge.errors]}
+        return Response(response_data, status=status.HTTP_200_OK)
+
     log_group_name = get_log_group_name(challenge.pk)
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.

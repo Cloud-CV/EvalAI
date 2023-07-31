@@ -15,7 +15,7 @@ import time
 import traceback
 import zipfile
 from os.path import join
-
+import traceback
 import boto3
 import botocore
 import django
@@ -330,6 +330,11 @@ def extract_challenge_data(challenge, phases):
         )
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except Exception:
+        # Catch the exception and save the traceback in the Challenge object's errors attribute
+        traceback_msg = traceback.format_exc()
+        challenge.errors = traceback_msg
+        challenge.save()
+
         logger.exception(
             "{} Exception raised while creating Python module for challenge_id: {}".format(
                 WORKER_LOGS_PREFIX, challenge.id
