@@ -397,6 +397,15 @@
             authenticate: true
         };
 
+        var disable_user = {
+            name: "web.profile.disable-profile",
+            parent: "web.profile",
+            url: "/disable-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/disable-profile.html",
+            title: 'Disable profile',
+            authenticate: true
+        };
+
         var host_challenge = {
             name: "web.host-challenge",
             parent: "web",
@@ -617,6 +626,7 @@
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
         $stateProvider.state(edit_profile);
+        $stateProvider.state(disable_user);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);

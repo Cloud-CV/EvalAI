@@ -354,6 +354,37 @@
                 $rootScope.notify("error", "Something went wrong! Please refresh the page and try again.");
             }
         };
+
+        // Disable User Account
+        vm.confirmdisableUserAccount = function(disableuserform) {
+            if (disableuserform) {
+                parameters.token = userKey;
+                parameters.method = 'POST';
+                parameters.url = 'accounts/user/disable';
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status == 200) {
+                            $mdDialog.hide();
+                            utilities.resetStorage();
+                            $rootScope.isLoader = false;
+                            $state.go("home");
+                            $rootScope.isAuth = false;
+                            $rootScope.notify("success", "Your account has been disabled successfully.");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide(); 
+                        var details = response.data;
+                        $rootScope.notify("error", details.error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+            else {
+                $mdDialog.hide();
+            }
+        };
     }
 
 })();
