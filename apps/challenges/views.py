@@ -713,25 +713,27 @@ def get_all_challenges_submission_metrics(request):
     Returns the submission metrics for all challenges and their phases
     """
     if not is_user_a_staff(request.user):
-        challenges = Challenge.objects.all()
-        submission_metrics = {}
+        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    challenges = Challenge.objects.all()
+    submission_metrics = {}
 
-        submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
+    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
 
-        for challenge in challenges:
-            challenge_id = challenge.id
-            challenge_metrics = {}
+    for challenge in challenges:
+        challenge_id = challenge.id
+        challenge_metrics = {}
 
-            # Fetch challenge phases for the challenge
-            challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+        # Fetch challenge phases for the challenge
+        challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
 
-            for submission_status in submission_statuses:
-                count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
-                challenge_metrics[submission_status] = count
+        for submission_status in submission_statuses:
+            count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
+            challenge_metrics[submission_status] = count
 
-            submission_metrics[challenge_id] = challenge_metrics
+        submission_metrics[challenge_id] = challenge_metrics
 
-        return Response(submission_metrics)
+    return Response(submission_metrics, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
