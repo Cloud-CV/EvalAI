@@ -175,6 +175,9 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
+    if challenge.worker_image_url:
+        COMMON_SETTINGS_DICT["WORKER_IMAGE"] = challenge.worker_image_url
+
     if execution_role_arn:
         from .utils import get_aws_credentials_for_challenge
 
@@ -668,6 +671,9 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         e.response["Message"] = "Scaling inactive workers not supported"
         logger.exception(e)
         return e.response
+
+    if challenge.worker_image_url:
+        COMMON_SETTINGS_DICT["WORKER_IMAGE"] = challenge.worker_image_url
 
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
