@@ -53,6 +53,7 @@ from base.utils import (
     paginated_queryset,
     send_email,
     send_slack_notification,
+    is_user_a_staff,
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -711,6 +712,9 @@ def get_all_challenges_submission_metrics(request):
     """
     Returns the submission metrics for all challenges and their phases
     """
+    if not is_user_a_staff(request.user):
+        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     challenges = Challenge.objects.all()
     submission_metrics = {}
 
@@ -729,7 +733,7 @@ def get_all_challenges_submission_metrics(request):
 
         submission_metrics[challenge_id] = challenge_metrics
 
-    return Response(submission_metrics)
+    return Response(submission_metrics, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
