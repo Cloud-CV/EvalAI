@@ -713,9 +713,6 @@ def get_all_challenges_submission_metrics(request):
     Returns the submission metrics for all challenges and their phases
     """
     if not is_user_a_host_of_challenge(request.user):
-        response_data = {"error": "You are not authorized to make this request"}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-    else:
         challenges = Challenge.objects.all()
         submission_metrics = {}
 
