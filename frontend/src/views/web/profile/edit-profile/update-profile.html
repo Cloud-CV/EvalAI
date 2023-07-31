@@ -5,6 +5,11 @@
             <div class="col s12 m3 l3 center">
                 <img src="dist/images/pro-pic.png" class="profile-pic">
                 <div>{{profile.userdetails.username}}
+                    <span>
+                        <a id="username" class="pointer" ng-click="profile.editprofileDialog($event)">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </a>
+                    </span>
                 </div>
                 <div class="text-light-black w-300">{{profile.userdetails.email}}
                 </div>

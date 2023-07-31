@@ -185,6 +185,10 @@
 
         vm.editprofileDialog = function(ev) {
             switch (ev.currentTarget.id) {
+                case "username":
+                  vm.titleInput = "Username";
+                  vm.editid = "username";
+                  break;
                 case "first_name":
                   vm.titleInput = "First Name";
                   vm.editid = "first_name";
@@ -237,6 +241,7 @@
                 parameters.url = 'auth/user/';
                 parameters.method = 'PUT';
                 parameters.data = {
+                    "username": vm.user.username,
                     "first_name": vm.user.first_name,
                     "last_name": vm.user.last_name,
                     "affiliation": vm.user.affiliation,
@@ -259,12 +264,15 @@
                             vm.errorResponse = response;
 
                             vm.isFormError = true;
-                            var isFirstname_valid, isLastname_valid, isAffiliation_valid;
+                            var isUsername_valid, isFirstname_valid, isLastname_valid, isAffiliation_valid;
                             try {
+                                isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
                                 isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
                                 isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
                                 isAffiliation_valid = typeof(response.data.affiliation) !== 'undefined' ? true : false;
-                                if (isFirstname_valid) {
+                                if (isUsername_valid) {
+                                    vm.FormError = response.data.username[0];
+                                } else if (isFirstname_valid) {
                                     vm.FormError = response.data.first_name[0];
                                 } else if (isLastname_valid) {
                                     vm.FormError = response.data.last_name[0];
