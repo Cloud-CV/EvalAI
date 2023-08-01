@@ -22,7 +22,7 @@
                 </strong>
             </div>
             <div class="col s12">
-                <div ng-bind-html="challenge.page.submission_guidelines" class="fs-16 w-300 submission-guidelines trix-container"></div>
+                <div mathjax-bind="challenge.page.submission_guidelines" class="fs-16 w-300 submission-guidelines trix-container"></div>
             </div>
         </div>
     </div>
@@ -326,14 +326,14 @@
                                                     <div class="input-field align-left col s10">
                                                         <input type="text" ng-model="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                        <label for="{{attribute.name}}" class ng-bind-html="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
+                                                        <label for="{{attribute.name}}" class mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label for="{{attribute.name}}" class="label-radio" ng-bind-html="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
+                                                        <label for="{{attribute.name}}" class="label-radio" mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
                                                             <md-radio-group ng-model="attribute.value" id="{{$parent.$index}}_{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
@@ -347,7 +347,7 @@
                                             <div ng-if="attribute.type == 'checkbox'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label for="{{attribute.name}}" class="label-checkbox" ng-bind-html="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
+                                                        <label for="{{attribute.name}}" class="label-checkbox" mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
                                                             <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{$parent.$index}}_{{option}}" ng-value="option">
@@ -361,7 +361,7 @@
                                             <div ng-if="attribute.type == 'boolean'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label for="{{attribute.name}}" class="label-radio" ng-bind-html="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
+                                                        <label for="{{attribute.name}}" class="label-radio" mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
                                                             <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>

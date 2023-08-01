@@ -53,6 +53,7 @@ from base.utils import (
     paginated_queryset,
     send_email,
     send_slack_notification,
+    is_user_a_staff,
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -711,6 +712,9 @@ def get_all_challenges_submission_metrics(request):
     """
     Returns the submission metrics for all challenges and their phases
     """
+    if not is_user_a_staff(request.user):
+        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     challenges = Challenge.objects.all()
     submission_metrics = {}
 
@@ -729,7 +733,7 @@ def get_all_challenges_submission_metrics(request):
 
         submission_metrics[challenge_id] = challenge_metrics
 
-    return Response(submission_metrics)
+    return Response(submission_metrics, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -1566,7 +1570,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             add_tags_to_challenge(yaml_file_data, challenge)
 
             # Add Domain
-            add_domain_to_challenge(yaml_file_data, challenge)
+            verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+            if verify_complete is not None:
+                return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -3608,7 +3614,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     add_tags_to_challenge(yaml_file_data, challenge)
 
                     # Add Domain
-                    add_domain_to_challenge(yaml_file_data, challenge)
+                    verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+                    if verify_complete is not None:
+                        return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
@@ -3857,7 +3865,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 add_tags_to_challenge(yaml_file_data, challenge)
 
                 # Add Domain
-                add_domain_to_challenge(yaml_file_data, challenge)
+                verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+                if verify_complete is not None:
+                    return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}
@@ -4024,6 +4034,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__pk=challenge_phase,
                         dataset_split__pk=dataset_split,
+                        leaderboard__pk=leaderboard,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
