@@ -15,7 +15,6 @@ import time
 import traceback
 import zipfile
 from os.path import join
-import traceback
 import boto3
 import botocore
 import django
