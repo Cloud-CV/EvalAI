@@ -272,4 +272,45 @@ describe('Unit tests for profile controller', function () {
             $state.reload();
         });
     });
+
+    describe('Unit tests for `disable user` function', function () {
+        var success, disableuserform;
+        var errorResponse = {
+            error: 'error'
+        };
+
+        beforeEach(function () {
+            spyOn($rootScope, 'notify');
+            spyOn($state, 'go');
+
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: 'success',
+                        status: 200
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse,
+                        status: 400
+                    });
+                }
+            };
+        });
+
+        it('successfully disabled user', function () {
+            success = true;
+            disableuserform = true;
+            vm.confirmdisableUserAccount(disableuserform);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your account has been disabled successfully.");
+            expect($state.go).toHaveBeenCalledWith("home");
+        });
+
+        it('backend error', function () {
+            success = false;
+            disableuserform = true;
+            vm.confirmdisableUserAccount(disableuserform);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
+        });
+    });
 });

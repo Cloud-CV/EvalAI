@@ -365,7 +365,6 @@
                     onSuccess: function(response) {
                         var status = response.status;
                         if (status == 200) {
-                            $mdDialog.hide();
                             utilities.resetStorage();
                             $rootScope.isLoader = false;
                             $state.go("home");
@@ -374,15 +373,11 @@
                         }
                     },
                     onError: function(response) {
-                        $mdDialog.hide(); 
                         var details = response.data;
                         $rootScope.notify("error", details.error);
                     }
                 };
                 utilities.sendRequest(parameters);
-            }
-            else {
-                $mdDialog.hide();
             }
         };
     }
