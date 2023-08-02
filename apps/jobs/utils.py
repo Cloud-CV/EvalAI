@@ -206,6 +206,7 @@ def handle_submission_rerun(submission, updated_status):
     submission.submission_metadata_file = None
     with suppress_autotime(submission, ["submitted_at"]):
         submission.submitted_at = submission.submitted_at
+        submission.rerun_resumed_at = timezone.now()
         submission.save()
 
     message = {
@@ -247,6 +248,7 @@ def handle_submission_resume(submission, updated_status):
     data = {"status": updated_status}
     serializer = SubmissionSerializer(submission, data=data, partial=True)
     if serializer.is_valid():
+        submission.rerun_resumed_at = timezone.now()
         serializer.save()
 
     message = {
