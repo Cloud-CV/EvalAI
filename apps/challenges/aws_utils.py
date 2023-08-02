@@ -932,6 +932,20 @@ def get_logs_from_cloudwatch(
             )
             for event in response["events"]:
                 logs.append(event["message"])
+            nextToken = response.get("nextToken", None)
+            while nextToken is not None:
+                response = client.filter_log_events(
+                    logGroupName=log_group_name,
+                    logStreamNamePrefix=log_stream_prefix,
+                    startTime=start_time,
+                    endTime=end_time,
+                    filterPattern=pattern,
+                    limit=limit,
+                    nextToken=nextToken
+                )
+                nextToken = response.get("nextToken", None)
+                for event in response["events"]:
+                    logs.append(event["message"])
         except Exception as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 return logs

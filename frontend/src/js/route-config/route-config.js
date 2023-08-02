@@ -429,8 +429,8 @@
         };
 
         var change_password = {
-            name: "web.change-password",
-            parent: "web",
+            name: "web.profile.change-password",
+            parent: "web.profile",
             url: "/change-password",
             templateUrl: baseUrl + "/web/change-password.html",
             title: "Change Password",
