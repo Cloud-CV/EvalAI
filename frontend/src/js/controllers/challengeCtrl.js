@@ -3044,12 +3044,13 @@
         };
 
         vm.openleaderboarddropdown = function() {
-            var index = [];
-            for (var k=0; k<vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
-                k = k.toString();
-                index.push(k);
-            }
             if (vm.chosenmetrics == undefined) {
+                var index = [];
+                for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
+                    var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();
+                    index.push(label);
+                }
+                
                 vm.chosenmetrics = index;
             }
             vm.leaderboarddropdown = !vm.leaderboarddropdown;
