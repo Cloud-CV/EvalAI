@@ -4225,6 +4225,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'partially_evaluated': 0,
                 'resuming': 0,
                 'running': 0,
+                'queued': 0,
                 'submitted': 0,
                 'submitting': 0
             },
@@ -4236,6 +4237,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'partially_evaluated': 0,
                 'resuming': 0,
                 'running': 0,
+                'queued': 0,
                 'submitted': 3,
                 'submitting': 0
             }
