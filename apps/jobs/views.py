@@ -266,6 +266,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             Submission.SUBMITTED,
             Submission.SUBMITTING,
             Submission.RESUMING,
+            Submission.QUEUED,
             Submission.RUNNING,
         ]
         submissions_in_progress = Submission.objects.filter(
@@ -1969,6 +1970,7 @@ def get_submissions_for_challenge(request, challenge_pk):
     valid_submission_status = [
         Submission.SUBMITTED,
         Submission.RUNNING,
+        Submission.QUEUED,
         Submission.RESUMING,
         Submission.FAILED,
         Submission.CANCELLED,
@@ -2573,6 +2575,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         Submission.SUBMITTED,
         Submission.SUBMITTING,
         Submission.RESUMING,
+        Submission.QUEUED,
         Submission.RUNNING,
     ]
     submissions_in_progress = Submission.objects.filter(

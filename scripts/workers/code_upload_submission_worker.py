@@ -185,6 +185,21 @@ def get_init_container(submission_pk):
     return init_container
 
 
+def get_pods_from_job(api_instance, core_v1_api_instance, job_name):
+    pods_list = []
+    job_def = read_job(api_instance, job_name)
+    if job_def:
+        controller_uid = job_def.metadata.labels["controller-uid"]
+        pod_label_selector = "controller-uid=" + controller_uid
+        pods_list = core_v1_api_instance.list_namespaced_pod(
+            namespace="default",
+            label_selector=pod_label_selector,
+            timeout_seconds=10,
+        )
+
+    return pods_list
+
+
 def get_job_constraints(challenge):
     constraints = {}
     if not challenge.get("cpu_only_jobs"):
@@ -428,7 +443,7 @@ def process_submission_callback(api_instance, body, challenge_phase, challenge, 
             job = create_job_object(body, environment_image, challenge)
         response = create_job(api_instance, job)
         submission_data = {
-            "submission_status": "running",
+            "submission_status": "queued",
             "submission": body["submission_pk"],
             "job_name": response.metadata.name,
         }
@@ -582,15 +597,8 @@ def update_failed_jobs_and_send_logs(
     code_upload_environment_error = "Submission Job Failed."
     submission_error = "Submission Job Failed."
     try:
-        job_def = read_job(api_instance, job_name)
-        if job_def:
-            controller_uid = job_def.metadata.labels["controller-uid"]
-            pod_label_selector = "controller-uid=" + controller_uid
-            pods_list = core_v1_api_instance.list_namespaced_pod(
-                namespace="default",
-                label_selector=pod_label_selector,
-                timeout_seconds=10,
-            )
+        pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
+        if pods_list:
             if disable_logs:
                 code_upload_environment_error = None
                 submission_error = None
@@ -783,6 +791,16 @@ def main():
                         increment_and_push_metrics_to_statsd(
                             QUEUE_NAME, is_remote
                         )
+                elif submission.get("status") == "queued":
+                    pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
+                    if pods_list and pods_list.items[0].status.container_statuses:
+                        # Update submission to running
+                        submission_data = {
+                            "submission_status": "running",
+                            "submission": submission_pk,
+                            "job_name": job_name,
+                        }
+                        evalai.update_submission_status(submission_data, challenge_pk)
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(
