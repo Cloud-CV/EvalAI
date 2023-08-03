@@ -329,3 +329,17 @@ def is_user_a_staff(user):
         {bool} : True/False if the user is staff or not
     """
     return user.is_staff
+
+
+def is_user_a_staff_or_host(user, challenge):
+    """
+    Function to check if a user is staff or host
+
+    Args:
+        user ([User Class Object]): User model class object
+        challenge.pk ([int]): Challenge primary key
+
+    Return:
+        {bool} : True/False if the user is staff or host
+    """
+    return user.is_staff or user == challenge.creator
