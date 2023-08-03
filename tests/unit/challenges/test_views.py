@@ -4198,6 +4198,20 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_all_challenges_submission_metrics(self):
+
+        self.user8 = User.objects.create(
+            username="admin_test",
+            password="admin@123",
+            is_staff=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user8,
+            email="user8@test.com",
+            primary=True,
+            verified=True,
+        )
+
         self.maxDiff = None
 
         url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
@@ -4211,6 +4225,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'partially_evaluated': 0,
                 'resuming': 0,
                 'running': 0,
+                'queued': 0,
                 'submitted': 0,
                 'submitting': 0
             },
@@ -4222,11 +4237,13 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'partially_evaluated': 0,
                 'resuming': 0,
                 'running': 0,
+                'queued': 0,
                 'submitted': 3,
                 'submitting': 0
             }
         }
 
+        self.client.force_authenticate(user=self.user8)
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

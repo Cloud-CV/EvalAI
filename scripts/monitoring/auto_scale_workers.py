@@ -30,6 +30,7 @@ PROD_EXCLUDED_CHALLENGE_QUEUES = [
     "vizwiz-caption-challenge-2021-739-production-a6420029-bf1c-4339-9c55-36a8913cca8",
     "textcaps-challenge-2020-906-production-fcc74455-ce3e-4622-b6fe-0340bcc3d228",
     "vizwiz-vqa-challenge-2021-743-production-862e0cf8-0611-4aa5-a05a-14e07576a513",
+    "cvpr2023-bdd100k-multiple-object-tracking-challeng-1989-production-cdba4595-fb13",
 ]
 
 ENV = os.environ.get("ENV", "dev")

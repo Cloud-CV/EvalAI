@@ -279,6 +279,7 @@ error_message_dict = {
     "start_date_greater_than_end_date_challenge_phase": "ERROR: Start date cannot be greater than end date in challenge phase {}.",
     "extra_tags": "ERROR: Tags are limited to 4. Please remove extra tags then try again!",
     "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name then try again!",
+    "duplicate_combinations_in_challenge_phase_splits": "ERROR: Duplicate combinations of leaderboard_id {}, challenge_phase_id {} and dataset_split_id {} found in challenge phase splits.",
 }
 
 
@@ -795,6 +796,34 @@ class ValidateChallengeConfigUtil:
         challenge_phase_splits = self.yaml_file_data.get(
             "challenge_phase_splits"
         )
+        # Check for duplicate combinations
+        challenge_phase_split_set = set()
+        duplicates_found = False
+        total_duplicates = []
+
+        for data in challenge_phase_splits:
+            combination = (
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+            if combination in challenge_phase_split_set:
+                duplicates_found = True
+                total_duplicates += [combination]
+            else:
+                challenge_phase_split_set.add(combination)
+
+        if duplicates_found:
+            message = self.error_messages_dict[
+                "duplicate_combinations_in_challenge_phase_splits"
+            ]
+            self.error_messages.append(message)
+            for combination in total_duplicates:
+                message = self.error_messages_dict[
+                    "duplicate_combinations_in_challenge_phase_splits"
+                ].format(combination[0], combination[1], combination[2])
+                self.error_messages.append(message)
+
         challenge_phase_split_uuids = []
         if challenge_phase_splits:
             phase_split = 1
