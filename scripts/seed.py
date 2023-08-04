@@ -248,6 +248,8 @@ def create_challenge(
         approved_by_admin=True,
         leaderboard_description=fake.paragraph(),
         creator=host_team,
+        domain="CV",
+        list_tags=["Paper", "Dataset"],
         published=True,
         enable_forum=True,
         anonymous_leaderboard=anon_leaderboard,
