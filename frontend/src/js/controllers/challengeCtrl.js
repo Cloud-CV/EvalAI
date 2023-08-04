@@ -233,7 +233,7 @@
             vm.logs_poller = $interval(function () {
                 if (vm.evaluation_module_error) {
                     vm.workerLogs = [];
-                    vm.workerLogs.push(vm.evaluation_module_error)
+                    vm.workerLogs.push(vm.evaluation_module_error);
                 }
                 else {
                     parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
@@ -391,7 +391,7 @@
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_participant_approval = details.manual_participant_approval;
                 vm.queueName = details.queue;
-                vm.evaluation_module_error = details.evaluation_module_error
+                vm.evaluation_module_error = details.evaluation_module_error;
                 vm.getTeamName(vm.challengeId);
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
