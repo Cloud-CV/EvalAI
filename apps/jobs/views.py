@@ -1208,7 +1208,6 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                
                 try:
                     leaderboard_data = get_leaderboard_data_model(
                         submission_pk, challenge_phase_split.pk
@@ -1604,7 +1603,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
-                
+
                 try:
                     leaderboard_data = get_leaderboard_data_model(
                         submission_pk, challenge_phase_split.pk
