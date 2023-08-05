@@ -4383,6 +4383,12 @@ def get_leaderboard_data(request, challenge_phase_split, submission_id):
     Returns:
         {dict} -- Response object
     """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
     challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split)
     leaderboard_data = get_leaderboard_data_model(submission_id, challenge_phase_split)
     serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request})
@@ -4405,6 +4411,11 @@ def delete_leaderboard_data(request, leaderboard_data_id):
     Returns:
         {dict} -- Response object
     """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     leaderboard_data = get_leaderboard_data_model(leaderboard_data_id)
     leaderboard_data.delete()
     response_data = {
