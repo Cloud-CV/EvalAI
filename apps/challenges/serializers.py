@@ -527,7 +527,7 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         # PWC requires the default sorted by metric at the index "0" of the array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
-    
+
 
 class LeaderboardDataSerializer(serializers.ModelSerializer):
     """
@@ -544,7 +544,6 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
             submission = context.get("submission")
             if submission:
                 kwargs["data"]["submission"] = submission.pk
-
 
     class Meta:
         model = LeaderboardData

@@ -106,6 +106,7 @@ from .models import (
     ChallengePhaseSplit,
     ChallengeTemplate,
     ChallengeConfiguration,
+    LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
@@ -4371,11 +4372,12 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def get_leaderboard_data(request, challenge_phase_split, submission_id):
+def get_leaderboard_data(request, challenge_phase_split_pk, submission_pk):
     """
     API to get leaderboard data for a challenge phase split
     Arguments:
@@ -4389,25 +4391,27 @@ def get_leaderboard_data(request, challenge_phase_split, submission_id):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split)
-    leaderboard_data = get_leaderboard_data_model(submission_id, challenge_phase_split)
+    try:
+        leaderboard_data = get_leaderboard_data_model(submission_pk, challenge_phase_split_pk)
+    except LeaderboardData.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard data not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request})
-    if serializer.is_valid():
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
 
 @api_view(["DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def delete_leaderboard_data(request, leaderboard_data_id):
+def delete_leaderboard_data(request, leaderboard_data_pk):
     """
     API to delete leaderboard data
     Arguments:
-        leaderboard_data_id {int} -- Leaderboard data primary key
+        leaderboard_data_pk {int} -- Leaderboard data primary key
     Returns:
         {dict} -- Response object
     """
@@ -4416,9 +4420,15 @@ def delete_leaderboard_data(request, leaderboard_data_id):
             "error": "Sorry, you are not authorized to access this resource!"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-    leaderboard_data = get_leaderboard_data_model(leaderboard_data_id)
+    try:
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+    except LeaderboardData.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard data not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     leaderboard_data.delete()
     response_data = {
         "message": "Leaderboard data deleted successfully!"
     }
-    return Response(response_data, status=status.HTTP_200_OK)
+    return Response(response_data, status=status.HTTP_204_NO_CONTENT)
