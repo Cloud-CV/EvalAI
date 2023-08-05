@@ -126,6 +126,7 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
+    LeaderboardDataSerializer
 )
 
 from .aws_utils import (
@@ -144,6 +145,10 @@ from .utils import (
     get_challenge_template_data,
     send_emails,
 )
+from jobs.utils import (
+    get_leaderboard_data_model,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -4365,3 +4370,44 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_leaderboard_data(request, challenge_phase_split, submission_id):
+    """
+    API to get leaderboard data for a challenge phase split
+    Arguments:
+        challenge_phase_split {int} -- Challenge phase split primary key
+    Returns:
+        {dict} -- Response object
+    """
+    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split)
+    leaderboard_data = get_leaderboard_data_model(submission_id, challenge_phase_split)
+    serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request})
+    if serializer.is_valid():
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(["DELETE"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def delete_leaderboard_data(request, leaderboard_data_id):
+    """
+    API to delete leaderboard data
+    Arguments:
+        leaderboard_data_id {int} -- Leaderboard data primary key
+    Returns:
+        {dict} -- Response object
+    """
+    leaderboard_data = get_leaderboard_data_model(leaderboard_data_id)
+    leaderboard_data.delete()
+    response_data = {
+        "message": "Leaderboard data deleted successfully!"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
