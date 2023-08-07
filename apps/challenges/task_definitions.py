@@ -6,7 +6,7 @@ task_definition = """
     "containerDefinitions":[
         {{
             "name": "{container_name}",
-            "image": "{WORKER_IMAGE}" if not ({worker_image_url} or {worker_image_url} == "") else "{worker_image_url}",
+            "image": "{WORKER_IMAGE}",
             "essential": True,
             "environment": [
                 {{
