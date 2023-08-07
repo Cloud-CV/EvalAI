@@ -548,6 +548,7 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaderboardData
         fields = (
+            "id",
             "challenge_phase_split",
             "submission",
             "leaderboard",
