@@ -146,9 +146,6 @@ from .utils import (
     get_challenge_template_data,
     send_emails,
 )
-from jobs.utils import (
-    get_leaderboard_data_model,
-)
 
 
 logger = logging.getLogger(__name__)
