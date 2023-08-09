@@ -1504,12 +1504,15 @@ sudo mv /EvalAI/ ~
 cd ~/EvalAI
 sudo apt  install awscli  -y
 sudo apt install docker-compose -y
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
 aws configure set aws_access_key_id {0}
 aws configure set aws_secret_access_key {1}
 aws configure set default.region {2}
-
 export COMMIT_ID="latest"
 export AWS_DEFAULT_REGION={2}
+export TRAVIS_BRANCH={5}
 eval $(aws ecr get-login --no-include-email)
 aws s3 cp s3://cloudcv-secrets/evalai/${5}/docker_${5}.env ./docker/prod/docker_${5}.env
 echo "Completed pulling Queue name"
