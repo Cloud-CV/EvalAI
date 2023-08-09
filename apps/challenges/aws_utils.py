@@ -1476,3 +1476,72 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                             challenge.id, failures[0]["message"]
                         )
                     )
+
+
+@app.task
+def setup_ec2(challenge):
+    """
+    Creates EC2 instance for the challenge and spawns a worker container.
+
+    Arguments:
+        challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+
+    # challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+    ec2_client = get_boto3_client("ec2", aws_keys)
+
+    with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
+        ec2_worker_script = f.read()
+
+    # Define the values for placeholders
+    variables = {
+        "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
+        "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
+        "AWS_REGION": aws_keys["AWS_REGION"],
+        "PK": challenge_obj.pk,
+        "QUEUE": challenge_obj.queue,
+        "ENVIRONMENT": settings.ENVIRONMENT,
+    }
+
+    # Replace placeholders in the script
+    for key, value in variables.items():
+        ec2_worker_script = ec2_worker_script.replace("${" + key + "}", value)
+
+    # Create the EC2 instance
+    instance_name = "{}-{} Instance".format(settings.ENVIRONMENT, challenge_obj.pk)
+    blockDeviceMappings = [
+        {
+            'DeviceName': '/dev/sda1',
+            'Ebs': {
+                'DeleteOnTermination': True,
+                'VolumeSize': 8,  # TODO: Make this customizable
+                'VolumeType': 'gp2'
+            }
+        },
+    ]
+    # Storage
+    try:
+        response = ec2_client.run_instances(
+            BlockDeviceMappings=blockDeviceMappings,
+            ImageId='ami-0747bdcabd34c712a',  # TODO: Make this customizable
+            InstanceType=challenge.worker_instance_type,
+            MinCount=1,
+            MaxCount=1,
+            SubnetId=VPC_DICT["SUBNET_1"],
+            KeyName="cloudcv_2016",  # TODO: Remove hardcoding
+            TagSpecifications=[
+                {
+                    "ResourceType": "instance",
+                    "Tags": [
+                        {"Key": "Name", "Value": instance_name},
+                    ],
+                }
+            ],
+            UserData=ec2_worker_script,
+        )
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return

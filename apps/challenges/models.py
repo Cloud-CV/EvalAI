@@ -85,6 +85,9 @@ class Challenge(TimeStampedModel):
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
     )
+    uses_ec2_worker = models.BooleanField(
+        default=False, verbose_name="Uses separate EC2 worker instance", db_index=True
+    )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
     )
@@ -238,7 +241,7 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
+def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -250,6 +253,12 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_eks_cluster.delay(serialized_obj)
+        elif (
+            instance.approved_by_admin is True
+            and instance.uses_ec2_worker is True
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_ec2.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
