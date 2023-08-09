@@ -5759,27 +5759,13 @@ class TestLeaderboardData(BaseAPITestClass):
     def test_get_leaderboard_data_success(self):
         self.url = reverse_lazy(
             "challenges:get_leaderboard_data",
-            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk, "submission_pk": self.submission.pk},
         )
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_leaderboard_data_when_challenge_phase_split_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_leaderboard_data",
-            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk + 1000, "submission_pk": self.submission.pk},
-        )
-        expected = {
-            "error": "Leaderboard data not found!"
-        }
-        response = self.client.get(self.url)
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
     def test_get_leaderboard_data_when_not_staff(self):
         self.url = reverse_lazy(
             "challenges:get_leaderboard_data",
-            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk, "submission_pk": self.submission.pk},
         )
         self.user.is_staff = False
         self.user.save()
