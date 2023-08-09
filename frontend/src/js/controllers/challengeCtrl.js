@@ -3025,8 +3025,11 @@
                         var status = response.status;
                         if (status === 200) {
                             $rootScope.notify("success", "You have successfully deregistered from the challenge.");
+                            $mdDialog.hide();
                             $state.go('web.challenge-main.challenge-page.overview');
+                            setTimeout(function() {
                             $state.reload();
+                            }, 100);
                         }
                     },
                     onError: function(response) {
