@@ -239,7 +239,28 @@
             url: "/submission",
             templateUrl: baseUrl + "/web/challenge/submission.html",
             title: 'Submit',
-            authenticate: true
+            authenticate: true,
+            resolve: {
+                challenge: function(utilities, $state, $stateParams) {
+                  return new Promise(function(resolve) {
+                    var parameters = {};
+                    parameters.token = utilities.getData('userKey');
+                    parameters.url = 'challenges/' + $stateParams.challengeId + '/participant_team/team_detail';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            resolve(details);
+                        },
+                      onError: function() {
+                        $state.go('error-404');
+                      }
+                    };
+                    utilities.sendRequest(parameters);
+                  });
+                }
+              },
         };
 
         var my_submission = {
@@ -394,6 +415,15 @@
             url: "/edit-profile",
             templateUrl: baseUrl + "/web/profile/edit-profile/edit-profile.html",
             title: 'Edit profile',
+            authenticate: true
+        };
+
+        var deactivate_account = {
+            name: "web.profile.deactivate-account",
+            parent: "web.profile",
+            url: "/deactivate-account",
+            templateUrl: baseUrl + "/web/profile/edit-profile/deactivate-account.html",
+            title: 'Deactivate Account',
             authenticate: true
         };
 
@@ -617,6 +647,7 @@
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
         $stateProvider.state(edit_profile);
+        $stateProvider.state(deactivate_account);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);

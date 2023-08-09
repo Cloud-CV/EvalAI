@@ -266,6 +266,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             Submission.SUBMITTED,
             Submission.SUBMITTING,
             Submission.RESUMING,
+            Submission.QUEUED,
             Submission.RUNNING,
         ]
         submissions_in_progress = Submission.objects.filter(
@@ -1300,7 +1301,7 @@ def update_submission(request, challenge_pk):
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
-        if submission_status not in [Submission.RUNNING]:
+        if submission_status not in [Submission.QUEUED, Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1969,6 +1970,7 @@ def get_submissions_for_challenge(request, challenge_pk):
     valid_submission_status = [
         Submission.SUBMITTED,
         Submission.RUNNING,
+        Submission.QUEUED,
         Submission.RESUMING,
         Submission.FAILED,
         Submission.CANCELLED,
@@ -2573,6 +2575,7 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         Submission.SUBMITTED,
         Submission.SUBMITTING,
         Submission.RESUMING,
+        Submission.QUEUED,
         Submission.RUNNING,
     ]
     submissions_in_progress = Submission.objects.filter(
