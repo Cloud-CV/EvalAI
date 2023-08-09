@@ -792,6 +792,7 @@ def main():
                             QUEUE_NAME, is_remote
                         )
                 elif submission.get("status") == "queued":
+                    job_name = submission.get("job_name")[-1]
                     pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
                     if pods_list and pods_list.items[0].status.container_statuses:
                         # Update submission to running
