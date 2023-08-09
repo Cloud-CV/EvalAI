@@ -248,7 +248,7 @@
                     "google_scholar_url": vm.user.google_scholar_url,
                     "linkedin_url": vm.user.linkedin_url
                 };
-
+                // check if email change dialog is opened
                 if (editid === "email" && vm.userdetails.email !== vm.user.email) {
                     parameters.data.new_email = vm.user.email;
                     parameters.url = 'accounts/user/change_email/';
@@ -282,7 +282,6 @@
                                     vm.FormError = response.data.affiliation[0]; 
                                 } else if (isEmail_valid) {
                                     vm.FormError = response.data.email[0];
-                                
                                 } else {
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
