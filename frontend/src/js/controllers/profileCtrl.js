@@ -355,9 +355,9 @@
             }
         };
 
-        // Disable User Account
-        vm.confirmdisableUserAccount = function(disableuserform) {
-            if (disableuserform) {
+        // Deactivate User Account
+        vm.confirmDeactivateAccount = function(deactivateAccountForm) {
+            if (deactivateAccountForm) {
                 parameters.token = userKey;
                 parameters.method = 'POST';
                 parameters.url = 'accounts/user/disable';
@@ -369,7 +369,7 @@
                             $rootScope.isLoader = false;
                             $state.go("home");
                             $rootScope.isAuth = false;
-                            $rootScope.notify("success", "Your account has been disabled successfully.");
+                            $rootScope.notify("success", "Your account has been deactivated successfully.");
                         }
                     },
                     onError: function(response) {

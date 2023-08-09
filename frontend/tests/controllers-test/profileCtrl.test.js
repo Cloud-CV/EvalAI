@@ -273,8 +273,8 @@ describe('Unit tests for profile controller', function () {
         });
     });
 
-    describe('Unit tests for `disable user` function', function () {
-        var success, disableuserform;
+    describe('Unit tests for `deactivate user` function', function () {
+        var success, deactivateAccountForm;
         var errorResponse = {
             error: 'error'
         };
@@ -298,18 +298,18 @@ describe('Unit tests for profile controller', function () {
             };
         });
 
-        it('successfully disabled user', function () {
+        it('successfully deactivated user', function () {
             success = true;
-            disableuserform = true;
-            vm.confirmdisableUserAccount(disableuserform);
-            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your account has been disabled successfully.");
+            deactivateAccountForm = true;
+            vm.confirmDeactivateAccount(deactivateAccountForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your account has been deactivated successfully.");
             expect($state.go).toHaveBeenCalledWith("home");
         });
 
         it('backend error', function () {
             success = false;
-            disableuserform = true;
-            vm.confirmdisableUserAccount(disableuserform);
+            deactivateAccountForm = true;
+            vm.confirmDeactivateAccount(deactivateAccountForm);
             expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
         });
     });

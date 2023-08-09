@@ -397,12 +397,12 @@
             authenticate: true
         };
 
-        var disable_user = {
-            name: "web.profile.disable-profile",
+        var deactivate_account = {
+            name: "web.profile.deactivate-account",
             parent: "web.profile",
-            url: "/disable-profile",
-            templateUrl: baseUrl + "/web/profile/edit-profile/disable-profile.html",
-            title: 'Disable profile',
+            url: "/deactivate-account",
+            templateUrl: baseUrl + "/web/profile/edit-profile/deactivate-account.html",
+            title: 'Deactivate Account',
             authenticate: true
         };
 
@@ -626,7 +626,7 @@
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
         $stateProvider.state(edit_profile);
-        $stateProvider.state(disable_user);
+        $stateProvider.state(deactivate_account);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);
