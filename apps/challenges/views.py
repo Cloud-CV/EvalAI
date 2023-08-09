@@ -4387,7 +4387,6 @@ def get_leaderboard_data(request):
             "error": "Sorry, you are not authorized to access this resource!"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
     try:
         leaderboard_data = LeaderboardData.objects.all()
     except LeaderboardData.DoesNotExist:
