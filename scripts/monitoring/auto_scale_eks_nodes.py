@@ -8,7 +8,6 @@ import boto3
 import pytz
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
-from prometheus_api_client import PrometheusConnect
 
 warnings.filterwarnings("ignore")
 
@@ -22,13 +21,12 @@ DEFAULT_AWS_EKS_KEYS = {  # NOTE: These are habitat challenge keys as most chall
     "AWS_STORAGE_BUCKET_NAME": os.environ.get("EKS_AWS_STORAGE_BUCKET_NAME"),
 }
 
+SCALE_UP_DESIRED_SIZE = 1
+
 # Env Variables
 ENV = os.environ.get("ENV", "production")
-# AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
+AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 EVALAI_ENDPOINT = os.environ.get("API_HOST_URL", "https://eval.ai")
-PROMETHEUS_URL = os.environ.get(
-    "MONITORING_API_URL", "https://monitoring.eval.ai/prometheus/"
-)
 
 json_path = os.environ.get("JSON_PATH", "~/prod_eks_auth_tokens.json")
 # QUEUES
@@ -36,16 +34,10 @@ with open(json_path, "r") as f:
     # Load the JSON data into a Python dictionary
     INCLUDED_CHALLENGE_PKS = json.load(f)
 
-NUM_PROCESSED_SUBMISSIONS = "num_processed_submissions"
-NUM_SUBMISSIONS_IN_QUEUE = "num_submissions_in_queue"
-
 
 def create_evalai_interface(auth_token):
     evalai_interface = EvalAI_Interface(auth_token, EVALAI_ENDPOINT)
     return evalai_interface
-
-
-prom = PrometheusConnect(url=PROMETHEUS_URL, disable_ssl=True)
 
 
 def get_boto3_client(resource, aws_keys):
@@ -81,14 +73,14 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge, queue_length, evalai_interface, aws_keys):
+def start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys, new_desired_size):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(
         challenge, evalai_interface, aws_keys
     )
     scaling_config = {
         "minSize": 1,
-        "maxSize": max(1, queue_length),
-        "desiredSize": min(1, queue_length),
+        "maxSize": max(new_desired_size, pending_submissions),
+        "desiredSize": new_desired_size,
     }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
@@ -115,31 +107,12 @@ def stop_eks_worker(challenge, evalai_interface, aws_keys):
     return response
 
 
-def get_queue_length(queue_name):
-    try:
-        num_processed_submissions = int(
-            prom.custom_query(
-                f"num_processed_submissions{{queue_name='{queue_name}'}}"
-            )[0]["value"][1]
-        )
-    except Exception:  # noqa: F841
-        num_processed_submissions = 0
-
-    try:
-        num_submissions_in_queue = int(
-            prom.custom_query(
-                f"num_submissions_in_queue{{queue_name='{queue_name}'}}"
-            )[0]["value"][1]
-        )
-    except Exception:  # noqa: F841
-        num_submissions_in_queue = 0
-
-    return num_submissions_in_queue - num_processed_submissions
-
-
-def get_queue_length_by_challenge(challenge):
-    queue_name = challenge["queue"]
-    return get_queue_length(queue_name)
+def get_pending_submission_count_by_pk(metrics, challenge_pk):
+    challenge_metrics = metrics[str(challenge_pk)]
+    pending_submissions = 0
+    for status in ["running", "submitted", "queued", "resuming"]:
+        pending_submissions += challenge_metrics.get(status, 0)
+    return pending_submissions
 
 
 def scale_down_workers(challenge, desired_size, evalai_interface, aws_keys):
@@ -153,15 +126,17 @@ def scale_down_workers(challenge, desired_size, evalai_interface, aws_keys):
         )
     else:
         print(
-            "No workers and queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+            "No workers and pending submissions found for Challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
 
 
-def scale_up_workers(challenge, desired_size, queue_length, evalai_interface, aws_keys):
-    if desired_size == 0:
-        response = start_eks_worker(challenge, queue_length, evalai_interface, aws_keys)
+def scale_up_workers(challenge, original_desired_size, pending_submissions, evalai_interface, aws_keys, new_desired_size):
+    if original_desired_size < new_desired_size:
+        response = start_eks_worker(
+            challenge, pending_submissions, evalai_interface, aws_keys, new_desired_size
+        )
         print("AWS API Response: {}".format(response))
         print(
             "Increased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
@@ -170,18 +145,18 @@ def scale_up_workers(challenge, desired_size, queue_length, evalai_interface, aw
         )
     else:
         print(
-            "Existing workers and pending queue messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+            "Existing workers and pending submissions found for Challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
 
 
-def scale_up_or_down_workers(challenge, evalai_interface, aws_keys):
+def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size):
     try:
-        queue_length = get_queue_length_by_challenge(challenge)
+        pending_submissions = get_pending_submission_count_by_pk(metrics, challenge["id"])
     except Exception:  # noqa: F841
         print(
-            "Unable to get the queue length for challenge ID: {}, Title: {}. Skipping.".format(
+            "Unable to get the pending submissions for challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
@@ -194,46 +169,75 @@ def scale_up_or_down_workers(challenge, evalai_interface, aws_keys):
         eks_client, cluster_name, nodegroup_name
     )
     min_size = scaling_config["minSize"]
-    desired_size = scaling_config["desiredSize"]
+    original_desired_size = scaling_config["desiredSize"]
     print(
         "Challenge ID : {}, Title: {}".format(
             challenge["id"], challenge["title"]
         )
     )
     print(
-        "Min Size: {}, Desired Size: {}, Queue Length: {}".format(
-            min_size, desired_size, queue_length
+        "Min Size: {}, Desired Size: {}, Pending Submissions: {}".format(
+            min_size, original_desired_size, pending_submissions
         )
     )
 
-    if queue_length == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
+    if pending_submissions == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
         datetime.utcnow()
     ):
-        scale_down_workers(challenge, desired_size, evalai_interface, aws_keys)
+        scale_down_workers(challenge, original_desired_size, evalai_interface, aws_keys)
     else:
-        scale_up_workers(
-            challenge, desired_size, queue_length, evalai_interface, aws_keys
-        )
+        if pending_submissions > original_desired_size:
+            # Scale up again if needed, up to the maximum allowed scale_up_desired_size (if provided)
+            new_desired_size = min(pending_submissions, scale_up_desired_size)
+            scale_up_workers(
+                challenge,
+                original_desired_size,
+                pending_submissions,
+                evalai_interface,
+                aws_keys,
+                new_desired_size,
+            )
+        else:
+            print(
+                "Existing workers and pending submissions found for Challenge ID: {}, Title: {}. Skipping.".format(
+                    challenge["id"], challenge["title"]
+                )
+            )
 
 
 # Cron Job
 def start_job():
 
+    # Get metrics
+    evalai_interface = create_evalai_interface(AUTH_TOKEN)
+    metrics = evalai_interface.get_challenges_submission_metrics()
+
     for challenge_id, details in INCLUDED_CHALLENGE_PKS.items():
+        # Auth Token
         if "auth_token" not in details:
             raise NotImplementedError("auth_token is needed for all challenges")
-        evalai_interface = create_evalai_interface(details["auth_token"])
-        challenge = evalai_interface.get_challenge_by_pk(challenge_id)
+
+        # Desired Scale Up Size
+        if "scale_up_desired_size" not in details:
+            scale_up_desired_size = SCALE_UP_DESIRED_SIZE
+        else:
+            scale_up_desired_size = details["scale_up_desired_size"]
+
+        # AWS Keys
         if "aws_keys" in details:
             aws_keys = details["aws_keys"]
         else:
             aws_keys = DEFAULT_AWS_EKS_KEYS
+
+        evalai_interface = create_evalai_interface(details["auth_token"])
+        challenge = evalai_interface.get_challenge_by_pk(challenge_id)
+
         assert (
             challenge["is_docker_based"] and not challenge["remote_evaluation"]
         ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
             challenge["id"], challenge["title"]
         )
-        scale_up_or_down_workers(challenge, evalai_interface, aws_keys)
+        scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size)
         time.sleep(1)
 
 
