@@ -1517,7 +1517,7 @@ eval $(aws ecr get-login --no-include-email)
 aws s3 cp s3://cloudcv-secrets/evalai/${5}/docker_${5}.env ./docker/prod/docker_${5}.env
 echo "Completed pulling Queue name"
 # preprocess the python list to bash array
-queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
+queue_name=($(echo ${queue_name//,/ } | tr -d '[]')) # noqa: F524
 queue=$(echo $queue_name | tr -d '"')
 echo "Deploying worker for queue: " $queue
 docker-compose -f docker-compose-${5}.yml run --name=worker_{4} -e CHALLENGE_QUEUE={4} -e CHALLENGE_PK={3} -d worker
