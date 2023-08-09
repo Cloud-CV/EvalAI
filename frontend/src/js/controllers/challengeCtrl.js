@@ -1056,7 +1056,7 @@
 
                         var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
                         var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
-                        vm.chosenmetrics = index !== -1 ? [index.toString()]: undefined;
+                        vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -3044,16 +3044,16 @@
             }
         };
 
-        vm.openleaderboarddropdown = function() {
-            if (vm.chosenmetrics == undefined) {
+        vm.openLeaderboardDropdown = function() {
+            if (vm.chosenMetrics == undefined) {
                 var index = [];
                 for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
                     var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();
                     index.push(label);
                 }
-                vm.chosenmetrics = index;
+                vm.chosenMetrics = index;
             }
-            vm.leaderboarddropdown = !vm.leaderboarddropdown;
+            vm.leaderboardDropdown = !vm.leaderboardDropdown;
         };
     }
 
