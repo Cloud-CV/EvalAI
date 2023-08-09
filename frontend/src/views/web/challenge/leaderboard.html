@@ -76,7 +76,7 @@
                         </div>
                         <md-select name="leaderboarddropdownmenu" class="right" ng-model="challenge.chosenmetrics" placeholder="Visible Metrics" class="rm-margin" md-on-open="challenge.openleaderboarddropdown()" md-on-close="challenge.openleaderboarddropdown()" multiple>
                             <md-option value="{{i}}" ng-repeat="(i, key) in challenge.leaderboard[0].leaderboard__schema.labels">
-                                <span ng-if="!challenge.leaderboarddropdown" class="fs-16 w-300">Visible Matrics</span>
+                                <span ng-if="!challenge.leaderboarddropdown" class="fs-16 w-300">Visible Metrics</span>
                                 <span ng-if="challenge.leaderboarddropdown" class="fs-16 w-300">{{key}}</span>
                             </md-option>
                         </md-select>
