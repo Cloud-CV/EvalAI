@@ -1513,7 +1513,7 @@ def setup_ec2(challenge):
     instance_name = "{}-{} Instance".format(settings.ENVIRONMENT, challenge_obj.pk)
     blockDeviceMappings = [
         {
-            'DeviceName': '/dev/xvda',
+            'DeviceName': '/dev/sda1',
             'Ebs': {
                 'DeleteOnTermination': True,
                 'VolumeSize': 8,  # TODO: Make this customizable
