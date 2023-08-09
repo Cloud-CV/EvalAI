@@ -1486,9 +1486,6 @@ def setup_ec2(challenge):
     Arguments:
         challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
-
-    from .utils import get_aws_credentials_for_challenge
-
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
 
@@ -1497,7 +1494,7 @@ def setup_ec2(challenge):
 
     with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
         ec2_worker_script = f.read()
-    
+
     # Define the values for placeholders
     variables = {
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -1510,8 +1507,7 @@ def setup_ec2(challenge):
 
     # Replace placeholders in the script
     for key, value in variables.items():
-        ec2_worker_script = ec2_worker_script.replace("${"+key+"}", value)
-
+        ec2_worker_script = ec2_worker_script.replace("${" + key + "}", value)
 
     # Create the EC2 instance
     instance_name = "{}-{} Instance".format(settings.ENVIRONMENT, challenge_obj.pk)
@@ -1520,7 +1516,7 @@ def setup_ec2(challenge):
             'DeviceName': '/dev/xvda',
             'Ebs': {
                 'DeleteOnTermination': True,
-                'VolumeSize': 8, # TODO: Make this customizable
+                'VolumeSize': 8,  # TODO: Make this customizable
                 'VolumeType': 'gp2'
             }
         },
@@ -1529,12 +1525,12 @@ def setup_ec2(challenge):
     try:
         response = ec2_client.run_instances(
             BlockDeviceMappings=blockDeviceMappings,
-            ImageId='ami-0747bdcabd34c712a', # TODO: Make this customizable
+            ImageId='ami-0747bdcabd34c712a',  # TODO: Make this customizable
             InstanceType=challenge.worker_instance_type,
             MinCount=1,
             MaxCount=1,
             SubnetId=VPC_DICT["SUBNET_1"],
-            KeyName="cloudcv_2016", # TODO: Remove hardcoding
+            KeyName="cloudcv_2016",  # TODO: Remove hardcoding
             TagSpecifications=[
                 {
                     "ResourceType": "instance",
