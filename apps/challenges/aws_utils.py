@@ -175,6 +175,11 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
+    if challenge.worker_image_url:
+        updated_settings = {**COMMON_SETTINGS_DICT, "WORKER_IMAGE": challenge.worker_image_url}
+    else:
+        updated_settings = COMMON_SETTINGS_DICT
+
     if execution_role_arn:
         from .utils import get_aws_credentials_for_challenge
 
@@ -208,7 +213,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                         log_group_name=log_group_name,
                         EVALAI_DNS=EVALAI_DNS,
                         EFS_ID=efs_id,
-                        **COMMON_SETTINGS_DICT,
+                        **updated_settings,
                         **challenge_aws_keys,
                     )
                 )
@@ -221,7 +226,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                         log_group_name=log_group_name,
                         AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                         AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                        **COMMON_SETTINGS_DICT,
+                        **updated_settings,
                         **aws_keys,
                     )
                 )
@@ -231,7 +236,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     submission_container=submission_container,
                     CPU=worker_cpu_cores,
                     MEMORY=worker_memory,
-                    **COMMON_SETTINGS_DICT,
+                    **updated_settings,
                 )
             else:
                 definition = task_definition_code_upload_worker.format(
@@ -248,7 +253,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     log_group_name=log_group_name,
                     EVALAI_DNS=EVALAI_DNS,
                     EFS_ID=efs_id,
-                    **COMMON_SETTINGS_DICT,
+                    **updated_settings,
                     **challenge_aws_keys,
                 )
         else:
@@ -262,7 +267,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 log_group_name=log_group_name,
                 AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                 AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                **COMMON_SETTINGS_DICT,
+                **updated_settings,
                 **challenge_aws_keys,
             )
         definition = eval(definition)
@@ -669,6 +674,11 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         logger.exception(e)
         return e.response
 
+    if challenge.worker_image_url:
+        updated_settings = {**COMMON_SETTINGS_DICT, "WORKER_IMAGE": challenge.worker_image_url}
+    else:
+        updated_settings = COMMON_SETTINGS_DICT
+
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
     log_group_name = get_log_group_name(challenge.pk)
@@ -683,7 +693,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         log_group_name=log_group_name,
         AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
         AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
-        **COMMON_SETTINGS_DICT,
+        **updated_settings,
         **challenge_aws_keys,
     )
     task_def = eval(task_def)
