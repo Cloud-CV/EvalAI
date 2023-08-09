@@ -1481,7 +1481,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
 @app.task
 def setup_ec2(challenge):
     """
-    Creates EC2 instance for the challenge and runs the worker setup on it
+    Creates EC2 instance for the challenge and spawns a worker container.
 
     Arguments:
         challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
@@ -1492,58 +1492,49 @@ def setup_ec2(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
 
-    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
-
     # challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
-    ec2_client = get_boto3_client("ec2", challenge_aws_keys)
+    ec2_client = get_boto3_client("ec2", aws_keys)
 
-    start_script = """#!/bin/bash
-sudo apt-get update
-git clone https://github.com/Cloud-CV/EvalAI.git
-sudo mv /EvalAI/ ~
-cd ~/EvalAI
-sudo apt  install awscli  -y
-sudo apt install docker-compose -y
-sudo groupadd docker
-sudo usermod -aG docker $USER
-newgrp docker
-aws configure set aws_access_key_id {0}
-aws configure set aws_secret_access_key {1}
-aws configure set default.region {2}
-export COMMIT_ID="latest"
-export AWS_DEFAULT_REGION={2}
-export TRAVIS_BRANCH={5}
-eval $(aws ecr get-login --no-include-email)
-aws s3 cp s3://cloudcv-secrets/evalai/${5}/docker_${5}.env ./docker/prod/docker_${5}.env
-echo "Completed pulling Queue name"
-# preprocess the python list to bash array
-queue_name=($(echo ${queue_name//,/ } | tr -d '[]')) # noqa: F524
-queue=$(echo $queue_name | tr -d '"')
-echo "Deploying worker for queue: " $queue
-docker-compose -f docker-compose-${5}.yml run --name=worker_{4} -e CHALLENGE_QUEUE={4} -e CHALLENGE_PK={3} -d worker
-echo "Deployed worker docker container for queue: " $queue
-""".format(
-        os.environ.get("AWS_ACCESS_KEY_ID"),
-        os.environ.get("AWS_SECRET_ACCESS_KEY"),
-        os.environ.get("AWS_DEFAULT_REGION"),
-        os.environ.get("CHALLENGE_PK"),
-        os.environ.get("CHALLENGE_QUEUE"),
-        os.environ.get("env")
-    )
-    insatancetype = (os.environ.get("INSTANCE_TYPE"),)
-    imageid = (os.environ.get("IMAGE_ID"),)
-    subnetid = (os.environ.get("SUBNET_2"),)
-    keyname = (os.environ.get("KEY_NAME"),)
+    with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
+        ec2_worker_script = f.read()
+    
+    # Define the values for placeholders
+    variables = {
+        "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
+        "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
+        "AWS_REGION": aws_keys["AWS_REGION"],
+        "PK": challenge_obj.pk,
+        "QUEUE": challenge_obj.queue,
+        "ENVIRONMENT": settings.ENVIRONMENT,
+    }
+
+    # Replace placeholders in the script
+    for key, value in variables.items():
+        ec2_worker_script = ec2_worker_script.replace("${"+key+"}", value)
+
+
     # Create the EC2 instance
-    instance_name = f"ec2-submission-worker-{challenge_obj.pk}"
+    instance_name = "{}-{} Instance".format(settings.ENVIRONMENT, challenge_obj.pk)
+    blockDeviceMappings = [
+        {
+            'DeviceName': '/dev/xvda',
+            'Ebs': {
+                'DeleteOnTermination': True,
+                'VolumeSize': 8, # TODO: Make this customizable
+                'VolumeType': 'gp2'
+            }
+        },
+    ]
+    # Storage
     try:
         response = ec2_client.run_instances(
-            ImageId=imageid,  # Replace with your desired AMI ID
-            InstanceType=insatancetype,  # Replace with your desired instance type
+            BlockDeviceMappings=blockDeviceMappings,
+            ImageId='ami-0747bdcabd34c712a', # TODO: Make this customizable
+            InstanceType=challenge.worker_instance_type,
             MinCount=1,
             MaxCount=1,
-            SubnetId=subnetid,
-            KeyName=keyname,
+            SubnetId=VPC_DICT["SUBNET_1"],
+            KeyName="cloudcv_2016", # TODO: Remove hardcoding
             TagSpecifications=[
                 {
                     "ResourceType": "instance",
@@ -1552,7 +1543,7 @@ echo "Deployed worker docker container for queue: " $queue
                     ],
                 }
             ],
-            UserData=start_script,
+            UserData=ec2_worker_script,
         )
         return response
     except ClientError as e:
