@@ -272,4 +272,45 @@ describe('Unit tests for profile controller', function () {
             $state.reload();
         });
     });
+
+    describe('Unit tests for `deactivate user` function', function () {
+        var success, deactivateAccountForm;
+        var errorResponse = {
+            error: 'error'
+        };
+
+        beforeEach(function () {
+            spyOn($rootScope, 'notify');
+            spyOn($state, 'go');
+
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: 'success',
+                        status: 200
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: errorResponse,
+                        status: 400
+                    });
+                }
+            };
+        });
+
+        it('successfully deactivated user', function () {
+            success = true;
+            deactivateAccountForm = true;
+            vm.confirmDeactivateAccount(deactivateAccountForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Your account has been deactivated successfully.");
+            expect($state.go).toHaveBeenCalledWith("home");
+        });
+
+        it('backend error', function () {
+            success = false;
+            deactivateAccountForm = true;
+            vm.confirmDeactivateAccount(deactivateAccountForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
+        });
+    });
 });

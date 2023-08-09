@@ -397,6 +397,15 @@
             authenticate: true
         };
 
+        var deactivate_account = {
+            name: "web.profile.deactivate-account",
+            parent: "web.profile",
+            url: "/deactivate-account",
+            templateUrl: baseUrl + "/web/profile/edit-profile/deactivate-account.html",
+            title: 'Deactivate Account',
+            authenticate: true
+        };
+
         var host_challenge = {
             name: "web.host-challenge",
             parent: "web",
@@ -617,6 +626,7 @@
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
         $stateProvider.state(edit_profile);
+        $stateProvider.state(deactivate_account);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);

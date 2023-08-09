@@ -354,6 +354,32 @@
                 $rootScope.notify("error", "Something went wrong! Please refresh the page and try again.");
             }
         };
+
+        // Deactivate User Account
+        vm.confirmDeactivateAccount = function(deactivateAccountForm) {
+            if (deactivateAccountForm) {
+                parameters.token = userKey;
+                parameters.method = 'POST';
+                parameters.url = 'accounts/user/disable';
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status == 200) {
+                            utilities.resetStorage();
+                            $rootScope.isLoader = false;
+                            $state.go("home");
+                            $rootScope.isAuth = false;
+                            $rootScope.notify("success", "Your account has been deactivated successfully.");
+                        }
+                    },
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify("error", details.error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+        };
     }
 
 })();
