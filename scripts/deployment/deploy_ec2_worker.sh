@@ -8,6 +8,7 @@ sudo apt-get update
 echo "Step 2/10: Cloning EvalAI repository"
 cd /home/ubuntu
 git clone https://github.com/Cloud-CV/EvalAI.git
+cd EvalAI
 
 # Step 3: Installing awscli
 echo "Step 3/10: Installing awscli"
