@@ -3375,7 +3375,7 @@ def manage_ec2_instance(request, challenge_pk, action):
 
     if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
         response_data = {
-            "error": "Action {} worker is not supported for an inactive challenge.".format(action)
+            "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
