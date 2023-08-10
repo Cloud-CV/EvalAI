@@ -1507,7 +1507,7 @@ def setup_ec2(challenge):
     for key, value in variables.items():
         ec2_worker_script = ec2_worker_script.replace("${" + key + "}", value)
 
-    instance_name = "{}-{} Instance".format(settings.ENVIRONMENT, challenge_obj.pk)
+    instance_name = "Worker-Instance-{}-{}".format(settings.ENVIRONMENT, challenge_obj.pk)
     blockDeviceMappings = [
         {
             'DeviceName': '/dev/sda1',
