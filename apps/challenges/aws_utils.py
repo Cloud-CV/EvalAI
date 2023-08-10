@@ -482,40 +482,41 @@ def stop_ec2_workers(challenge):
                 'status' (str): The status of the stop operation, e.g., "InstanceNotRunning", "NoInstanceFound", etc.
                 'message' (str): A message indicating the outcome of the stop operation.
     """
-    target_instance_id = challenge.ec2_instance_id
+    try:
+        target_instance_id = challenge.ec2_instance_id
 
-    ec2 = get_boto3_client("ec2", aws_keys)
-    response = ec2.describe_instances(InstanceIds=[target_instance_id])
+        ec2 = get_boto3_client("ec2", aws_keys)
+        response = ec2.describe_instances(InstanceIds=[target_instance_id])
 
-    instances = [
-        instance
-        for reservation in response["Reservations"]
-        for instance in reservation["Instances"]
-    ]
+        instances = [
+            instance
+            for reservation in response["Reservations"]
+            for instance in reservation["Instances"]
+        ]
 
-    if instances:
-        instance = instances[0]
-        instance_id = instance["InstanceId"]
+        if instances:
+            instance = instances[0]
+            instance_id = instance["InstanceId"]
 
-        if instance["State"]["Name"] == "running":
-            response = ec2.stop_instances(InstanceIds=[instance_id])
-            status = response["StoppingInstances"][0]["CurrentState"]["Name"]
-            message = "Stopped worker for Challenge ID: {}, Title: {}. Status: {}.".format(
-                challenge.id, challenge.title, status
-            )
+            if instance["State"]["Name"] == "running":
+                response = ec2.stop_instances(InstanceIds=[instance_id])
+                status = response["StoppingInstances"][0]["CurrentState"]["Name"]
+                message = "Stopped worker for Challenge ID: {}, Title: {}. Status: {}.".format(
+                    challenge.id, challenge.title, status
+                )
+            else:
+                status = "InstanceNotRunning"
+                message = "Instance for Challenge ID: {}, Title: {} is not in a running state. Skipping.".format(
+                    challenge.id, challenge.title
+                )
         else:
-            status = "InstanceNotRunning"
-            message = "Instance for Challenge ID: {}, Title: {} is not in a running state. Skipping.".format(
-                challenge.id, challenge.title
+            status = "NoInstanceFound"
+            message = "No instances found with the specified ID for Challenge ID: {}, Title: {}. Skipping.".format(
+                challenge.id, challenge.title,
             )
-    else:
-        status = "NoInstanceFound"
-        message = "No instances found with the specified ID for Challenge ID: {}, Title: {}. Skipping.".format(
-            challenge.id, challenge.title,
-        )
-
-    return {"status": status, "message": message}
-
+        return {"status": status, "message": message}
+    except Exception as e:
+        return {"status": "Error", "message": str(e)}
 
 def start_ec2_worker(challenge):
     """
@@ -530,39 +531,41 @@ def start_ec2_worker(challenge):
                 'status' (str): The status of the start operation, e.g., "InstanceNotStopped", "NoInstanceFound", etc.
                 'message' (str): A message indicating the outcome of the start operation.
     """
-    target_instance_id = challenge.ec2_instance_id
+    try:
+        target_instance_id = challenge.ec2_instance_id
 
-    ec2 = get_boto3_client("ec2", aws_keys)
-    response = ec2.describe_instances(InstanceIds=[target_instance_id])
+        ec2 = get_boto3_client("ec2", aws_keys)
+        response = ec2.describe_instances(InstanceIds=[target_instance_id])
 
-    instances = [
-        instance
-        for reservation in response["Reservations"]
-        for instance in reservation["Instances"]
-    ]
+        instances = [
+            instance
+            for reservation in response["Reservations"]
+            for instance in reservation["Instances"]
+        ]
 
-    if instances:
-        instance = instances[0]
-        instance_id = instance["InstanceId"]
+        if instances:
+            instance = instances[0]
+            instance_id = instance["InstanceId"]
 
-        if instance["State"]["Name"] == "stopped":
-            response = ec2.start_instances(InstanceIds=[instance_id])
-            status = response["StartingInstances"][0]["CurrentState"]["Name"]
-            message = "Started worker for Challenge ID: {}, Title: {}. Status: {}.".format(
-                challenge.id, challenge.title, status
-            )
+            if instance["State"]["Name"] == "stopped":
+                response = ec2.start_instances(InstanceIds=[instance_id])
+                status = response["StartingInstances"][0]["CurrentState"]["Name"]
+                message = "Started worker for Challenge ID: {}, Title: {}. Status: {}.".format(
+                    challenge.id, challenge.title, status
+                )
+            else:
+                status = "InstanceNotStopped"
+                message = "Instance for Challenge ID: {}, Title: {} is not in a stopped state. Skipping.".format(
+                    challenge.id, challenge.title
+                )
         else:
-            status = "InstanceNotStopped"
-            message = "Instance for Challenge ID: {}, Title: {} is not in a stopped state. Skipping.".format(
+            status = "NoInstanceFound"
+            message = "No instances found with the specified ID for Challenge ID: {}, Title: {}. Skipping.".format(
                 challenge.id, challenge.title
             )
-    else:
-        status = "NoInstanceFound"
-        message = "No instances found with the specified ID for Challenge ID: {}, Title: {}. Skipping.".format(
-            challenge.id, challenge.title
-        )
-
-    return {"status": status, "message": message}
+        return {"status": status, "message": message}
+    except Exception as e:
+        return {"status": "Error", "message": str(e)}
 
 
 def start_workers(queryset):
