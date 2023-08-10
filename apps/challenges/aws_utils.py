@@ -36,7 +36,6 @@ logger = logging.getLogger(__name__)
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 EVALAI_DNS = os.environ.get("SERVICE_DNS")
-
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
@@ -1613,7 +1612,7 @@ def setup_ec2(challenge):
             'DeviceName': '/dev/sda1',
             'Ebs': {
                 'DeleteOnTermination': True,
-                'VolumeSize': 8,  # TODO: Make this customizable
+                'VolumeSize': challenge_obj.ec2_storage,  # TODO: Make this customizable
                 'VolumeType': 'gp2'
             }
         },
