@@ -147,7 +147,6 @@ from .utils import (
     send_emails,
 )
 
-
 logger = logging.getLogger(__name__)
 
 try:
