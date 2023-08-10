@@ -3375,6 +3375,13 @@ def manage_ec2_worker(request, challenge_pk, action):
 
     challenge = get_challenge_model(challenge_pk)
 
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Current Challenge doesn't uses ec2 worker."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
     if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
         response_data = {
             "error": "Action {} worker is not supported for an inactive challenge.".format(action)
