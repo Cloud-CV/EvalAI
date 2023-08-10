@@ -135,8 +135,8 @@ from .aws_utils import (
     start_workers,
     stop_workers,
     restart_workers,
-    start_ec2_worker,
-    stop_ec2_workers,
+    start_ec2_instance,
+    stop_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -3350,13 +3350,12 @@ def manage_worker(request, challenge_pk, action):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def manage_ec2_worker(request, challenge_pk, action):
+def manage_ec2_instance(request, challenge_pk, action):
     if not request.user.is_staff:
-        if not is_user_a_host_of_challenge(request.user, challenge_pk):
-            response_data = {
-                "error": "Sorry, you are not authorized for access worker operations."
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
     if action not in ("start", "stop"):
@@ -3365,18 +3364,11 @@ def manage_ec2_worker(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # Only allow EvalAI admins to delete workers
-    if action == "delete" and not request.user.is_staff:
-        response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     challenge = get_challenge_model(challenge_pk)
 
     if not challenge.uses_ec2_worker:
         response_data = {
-            "error": "Current Challenge doesn't uses ec2 worker."
+            "error": "Challenge does not use EC2 worker instance."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3387,28 +3379,30 @@ def manage_ec2_worker(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    response_data = {}
-
     if action == "start":
-        response = start_ec2_worker(challenge)
+        response = start_ec2_instance(challenge)
     elif action == "stop":
-        response = stop_ec2_workers(challenge)
+        response = stop_ec2_instance(challenge)
 
     if response:
-        status_code = status.HTTP_200_OK
-        response_data["status"] = response["status"]
-        response_data["message"] = response["message"]
-
-        if response["status"] == "NoInstanceFound":
-            status_code = status.HTTP_404_NOT_FOUND
-
-        logging.info(response_data["message"])
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data= {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data= {
+                "message": response["error"],
+                "action": "Failure",
+            }
     else:
-        response_data = {
-            "error": "An error occurred while processing the action."
-        }
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-
+        reponse_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
     return Response(response_data, status=status_code)
 
 
