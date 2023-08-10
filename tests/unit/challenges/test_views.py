@@ -13,7 +13,8 @@ import responses
 from allauth.account.models import EmailAddress
 from challenges.models import (Challenge, ChallengeConfiguration,
                                ChallengePhase, ChallengePhaseSplit,
-                               DatasetSplit, Leaderboard, StarChallenge)
+                               DatasetSplit, Leaderboard, StarChallenge,
+                               LeaderboardData)
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -5684,3 +5685,127 @@ class ValidateChallengeTest(APITestCase):
 
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.json(), expected)
+
+
+class TestLeaderboardData(BaseAPITestClass):
+    def setUp(self):
+        super(TestLeaderboardData, self).setUp()
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Challenge Phase",
+            description="Description for Challenge Phase",
+            leaderboard_public=False,
+            is_public=True,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge,
+            test_annotation=SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+        )
+
+        self.leaderboard = Leaderboard.objects.create(
+            schema=json.dumps(
+                {
+                    "labels": ["yes/no", "number", "others", "overall"],
+                    "default_order_by": "overall",
+                }
+            )
+        )
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+            method_name="Test Method 1",
+            method_description="Test Description 1",
+            project_url="http://testserver1/",
+            publication_url="http://testserver1/",
+            is_public=True,
+            is_flagged=True,
+        )
+
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Test Dataset Split", codename="test-split"
+        )
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True,
+            show_leaderboard_by_latest_submission=False,
+        )
+
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=[0.5, 0.6, 0.7, 0.8],
+            error="",
+        )
+        self.user.is_staff = True
+        self.user.save()
+
+    def test_get_leaderboard_data_success(self):
+        self.url = reverse_lazy(
+            "challenges:get_leaderboard_data",
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_leaderboard_data_when_not_staff(self):
+        self.url = reverse_lazy(
+            "challenges:get_leaderboard_data",
+        )
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_leaderboard_data_success(self):
+        self.url = reverse_lazy(
+            "challenges:delete_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_leaderboard_data_when_leaderboard_data_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:delete_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk + 1000},
+        )
+        expected = {
+            "error": "Leaderboard data not found!"
+        }
+        response = self.client.delete(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_leaderboard_data_when_not_staff(self):
+        self.url = reverse_lazy(
+            "challenges:delete_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        response = self.client.delete(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
