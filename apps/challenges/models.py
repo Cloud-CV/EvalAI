@@ -91,6 +91,9 @@ class Challenge(TimeStampedModel):
     ec2_instance_id = models.CharField(
         max_length=200, default="", null=True, blank=True
     )
+    ec2_storage = models.PositiveIntegerField(
+        default=8, verbose_name="EC2 storage (GB)"
+    )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
     )
