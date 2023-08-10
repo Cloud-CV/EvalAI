@@ -86,7 +86,10 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Approved By Admin", db_index=True
     )
     uses_ec2_worker = models.BooleanField(
-        default=False, verbose_name="Uses separate EC2 worker instance", db_index=True
+        default=False, verbose_name="Uses EC2 worker instance", db_index=True
+    )
+    ec2_instance_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
     )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True

@@ -1538,6 +1538,8 @@ def setup_ec2(challenge):
             ],
             UserData=ec2_worker_script,
         )
+        challenge_obj.ec2_instance_id = response['Instances'][0]['InstanceId']
+        challenge_obj.save()
         return response
     except ClientError as e:
         logger.exception(e)
