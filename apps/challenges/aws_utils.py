@@ -469,6 +469,78 @@ def service_manager(
         return response
 
 
+def stop_ec2_workers(challenge):
+    target_instance_name = "Worker-Instance-{}-{}".format(
+        ENV, challenge["id"]
+    )
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    response = ec2.describe_instances(
+        Filters=[
+            {"Name": "tag:Name", "Values": [target_instance_name]},
+            {"Name": "instance-state-name", "Values": ["running"]},
+        ]
+    )
+
+    instances = [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
+
+    if instances:
+        for instance in instances:
+            instance_id = instance["InstanceId"]
+            response = ec2.stop_instances(InstanceIds=[instance_id])
+            status = response["StoppingInstances"][0]["CurrentState"]["Name"]
+            message = "Stopped worker for Challenge ID: {}, Title: {}. Status: {}.".format(
+                challenge["id"], challenge["title"], status
+            )
+    else:
+        status = "NoInstanceFound"
+        message = "No running instances with the specified name found for Challenge ID: {}, Title: {}. Skipping.".format(
+            challenge["id"], challenge["title"]
+        )
+
+    return {"status": status, "message": message}
+
+
+def start_ec2_worker(challenge):
+    target_instance_name = "Worker-Instance-{}-{}".format(
+        ENV, challenge["id"]
+    )
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    response = ec2.describe_instances(
+        Filters=[
+            {"Name": "tag:Name", "Values": [target_instance_name]},
+            {"Name": "instance-state-name", "Values": ["stopped"]},
+        ]
+    )
+
+    instances = [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
+
+    if instances:
+        instance = instances[0]  # Get the first instance
+        instance_id = instance["InstanceId"]
+        response = ec2.start_instances(InstanceIds=[instance_id])
+        status = response["StartingInstances"][0]["CurrentState"]["Name"]
+        message = "Started worker for Challenge ID: {}, Title: {}. Status: {}.".format(
+            challenge["id"], challenge["title"], status
+        )
+    else:
+        status = "NoInstanceFound"
+        message = "No stopped instances with the specified id found for Challenge ID: {}, Title: {}. Skipping.".format(
+            challenge["id"], challenge["title"]
+        )
+
+    return {"status": status, "message": message}
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
