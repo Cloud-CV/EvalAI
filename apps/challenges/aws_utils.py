@@ -1497,6 +1497,7 @@ def setup_ec2(challenge):
 
     # Define the values for placeholders
     variables = {
+        "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
         "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
         "AWS_REGION": aws_keys["AWS_REGION"],
