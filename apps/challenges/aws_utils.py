@@ -1500,7 +1500,7 @@ def setup_ec2(challenge):
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
         "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
         "AWS_REGION": aws_keys["AWS_REGION"],
-        "PK": challenge_obj.pk,
+        "PK": str(challenge_obj.pk),
         "QUEUE": challenge_obj.queue,
         "ENVIRONMENT": settings.ENVIRONMENT,
     }
