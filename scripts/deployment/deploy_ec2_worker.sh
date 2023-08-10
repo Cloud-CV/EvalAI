@@ -41,7 +41,6 @@ aws s3 cp s3://cloudcv-secrets/evalai/${ENVIRONMENT}/docker_${ENVIRONMENT}.env .
 
 # Step 8: Pulling worker Docker image
 echo "Step 8/10: Pulling worker Docker image"
-echo "Deploying worker for queue: " ${QUEUE}
 docker-compose -f docker-compose-${ENVIRONMENT}.yml pull worker
 
 # Step 9: Running worker Docker container
