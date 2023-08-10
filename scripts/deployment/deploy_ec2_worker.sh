@@ -20,7 +20,6 @@ sudo apt install docker-compose -y
 
 # Step 5: Adding user to docker group
 echo "Step 5/X: Adding user to docker group"
-sudo groupadd docker
 sudo apt -V install gnupg2 pass -y
 sudo usermod -aG docker $USER
 newgrp docker
@@ -56,3 +55,4 @@ crontab -l > workercron
 echo "@reboot docker restart worker_${QUEUE}" >> workercron
 crontab workercron
 rm workercron
+
