@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 EVALAI_DNS = os.environ.get("SERVICE_DNS")
+
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
@@ -470,17 +471,22 @@ def service_manager(
 
 
 def stop_ec2_workers(challenge):
-    target_instance_name = "Worker-Instance-{}-{}".format(
-        ENV, challenge["id"]
-    )
+    """
+    Stop the EC2 worker instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 worker needs to be stopped.
+
+    Returns:
+        dict: A dictionary containing the status and message of the stop operation.
+            Keys:
+                'status' (str): The status of the stop operation, e.g., "InstanceNotRunning", "NoInstanceFound", etc.
+                'message' (str): A message indicating the outcome of the stop operation.
+    """
+    target_instance_id = challenge.ec2_instance_id
 
     ec2 = get_boto3_client("ec2", aws_keys)
-    response = ec2.describe_instances(
-        Filters=[
-            {"Name": "tag:Name", "Values": [target_instance_name]},
-            {"Name": "instance-state-name", "Values": ["running"]},
-        ]
-    )
+    response = ec2.describe_instances(InstanceIds=[target_instance_id])
 
     instances = [
         instance
@@ -489,34 +495,46 @@ def stop_ec2_workers(challenge):
     ]
 
     if instances:
-        for instance in instances:
-            instance_id = instance["InstanceId"]
+        instance = instances[0]
+        instance_id = instance["InstanceId"]
+
+        if instance["State"]["Name"] == "running":
             response = ec2.stop_instances(InstanceIds=[instance_id])
             status = response["StoppingInstances"][0]["CurrentState"]["Name"]
             message = "Stopped worker for Challenge ID: {}, Title: {}. Status: {}.".format(
-                challenge["id"], challenge["title"], status
+                challenge.id, challenge.title, status
+            )
+        else:
+            status = "InstanceNotRunning"
+            message = "Instance for Challenge ID: {}, Title: {} is not in a running state. Skipping.".format(
+                challenge.id, challenge.title
             )
     else:
         status = "NoInstanceFound"
-        message = "No running instances with the specified name found for Challenge ID: {}, Title: {}. Skipping.".format(
-            challenge["id"], challenge["title"]
+        message = "No instances found with the specified ID for Challenge ID: {}, Title: {}. Skipping.".format(
+            challenge.id, challenge.title,
         )
 
     return {"status": status, "message": message}
 
 
 def start_ec2_worker(challenge):
-    target_instance_name = "Worker-Instance-{}-{}".format(
-        ENV, challenge["id"]
-    )
+    """
+    Start the EC2 worker instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 worker needs to be started.
+
+    Returns:
+        dict: A dictionary containing the status and message of the start operation.
+            Keys:
+                'status' (str): The status of the start operation, e.g., "InstanceNotStopped", "NoInstanceFound", etc.
+                'message' (str): A message indicating the outcome of the start operation.
+    """
+    target_instance_id = challenge.ec2_instance_id
 
     ec2 = get_boto3_client("ec2", aws_keys)
-    response = ec2.describe_instances(
-        Filters=[
-            {"Name": "tag:Name", "Values": [target_instance_name]},
-            {"Name": "instance-state-name", "Values": ["stopped"]},
-        ]
-    )
+    response = ec2.describe_instances(InstanceIds=[target_instance_id])
 
     instances = [
         instance
@@ -525,17 +543,24 @@ def start_ec2_worker(challenge):
     ]
 
     if instances:
-        instance = instances[0]  # Get the first instance
+        instance = instances[0]
         instance_id = instance["InstanceId"]
-        response = ec2.start_instances(InstanceIds=[instance_id])
-        status = response["StartingInstances"][0]["CurrentState"]["Name"]
-        message = "Started worker for Challenge ID: {}, Title: {}. Status: {}.".format(
-            challenge["id"], challenge["title"], status
-        )
+
+        if instance["State"]["Name"] == "stopped":
+            response = ec2.start_instances(InstanceIds=[instance_id])
+            status = response["StartingInstances"][0]["CurrentState"]["Name"]
+            message = "Started worker for Challenge ID: {}, Title: {}. Status: {}.".format(
+                challenge.id, challenge.title, status
+            )
+        else:
+            status = "InstanceNotStopped"
+            message = "Instance for Challenge ID: {}, Title: {} is not in a stopped state. Skipping.".format(
+                challenge.id, challenge.title
+            )
     else:
         status = "NoInstanceFound"
-        message = "No stopped instances with the specified id found for Challenge ID: {}, Title: {}. Skipping.".format(
-            challenge["id"], challenge["title"]
+        message = "No instances found with the specified ID for Challenge ID: {}, Title: {}. Skipping.".format(
+            challenge.id, challenge.title
         )
 
     return {"status": status, "message": message}
@@ -1562,6 +1587,9 @@ def setup_ec2(challenge):
         challenge_obj = obj.object
 
     ec2_client = get_boto3_client("ec2", aws_keys)
+
+    if challenge_obj.ec2_instance_id:
+        return start_ec2_worker(challenge_obj)
 
     with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
         ec2_worker_script = f.read()
