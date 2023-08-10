@@ -1513,7 +1513,7 @@ def setup_ec2(challenge):
             'DeviceName': '/dev/sda1',
             'Ebs': {
                 'DeleteOnTermination': True,
-                'VolumeSize': 8,  # TODO: Make this customizable
+                'VolumeSize': challenge_obj.ec2_storage,  # TODO: Make this customizable
                 'VolumeType': 'gp2'
             }
         },
