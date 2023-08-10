@@ -74,6 +74,12 @@
                             <label for="getAllEntries"></label>
                             <span  class="fs-16 w-300 complete-leaderboard"> {{ challenge.getAllEntriesTestOption }}</span>
                         </div>
+                        <md-select name="leaderboarddropDownmenu" class="right" ng-model="challenge.chosenMetrics" placeholder="Visible Metrics" class="rm-margin" md-on-open="challenge.openLeaderboardDropdown()" md-on-close="challenge.openLeaderboardDropdown()" multiple>
+                            <md-option value="{{i}}" ng-repeat="(i, key) in challenge.leaderboard[0].leaderboard__schema.labels">
+                                <span ng-if="!challenge.leaderboardDropdown" class="fs-16 w-300">Visible Metrics</span>
+                                <span ng-if="challenge.leaderboardDropdown" class="fs-16 w-300">{{key}}</span>
+                            </md-option>
+                        </md-select>
                     </div>
                 </div>
                 <table ng-if="challenge.isResult && challenge.leaderboard.length" ng-attr-id="leaderboard_table" ng-class="['highlight', {'watermarked': challenge.showBackground}]">
@@ -101,7 +107,7 @@
                                     </span>
                                 </a>
                             </td>
-                            <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
+                            <td ng-repeat="(i, key) in challenge.leaderboard[0].leaderboard__schema.labels track by $index" ng-if="challenge.chosenMetrics.indexOf($index.toString()) !== -1">
                                 <a href="#"
                                     ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
                                     <span class="w-300 fs-20 leaderboard-label" ng-if="challenge.isMetricOrderedAscending(key) && key != challenge.orderLeaderboardBy ">{{key}} (&#x2193;) <span class="description" ng-if="challenge.getLabelDescription(key).length != 0">{{challenge.getLabelDescription(key)}}</span></span>
@@ -162,7 +168,7 @@
                                     id="verified-badge" class="new badge green-background baseline-tag" data-badge-caption="V"
                                     ng-if="key.submission__is_verified_by_host"></span>
                             </td>
-                            <td ng-repeat="(i, score) in key.result track by $index">
+                            <td ng-repeat="(i, score) in key.result track by $index" ng-if="challenge.chosenMetrics.indexOf($index.toString()) !== -1">
                                 <span class="w-400 fs-16" ng-if="challenge.leaderboard[0].leaderboard__schema.labels[i] == challenge.orderLeaderboardBy">{{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                                 <span class="w-300 fs-16" ng-if="challenge.leaderboard[0].leaderboard__schema.labels[i] != challenge.orderLeaderboardBy">{{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                                 <span class="new badge orange-background fs-16 w-300 partial-evaluation"

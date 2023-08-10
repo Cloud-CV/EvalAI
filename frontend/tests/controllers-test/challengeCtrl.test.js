@@ -854,6 +854,11 @@ describe('Unit tests for challenge controller', function () {
                     results: [
                         {
                             id: 1,
+                            leaderboard__schema:
+                                {
+                                    labels: ['label1', 'label2'],
+                                    default_order_by: 'default_order_by',
+                                },
                             submission__submitted_at: (new Date() - new Date().setFullYear(new Date().getFullYear() - 1)),
                         },
                     ]
