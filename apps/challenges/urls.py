@@ -259,6 +259,16 @@ urlpatterns = [
         views.get_domain_choices,
         name="get_domain_choices",
     ),
+    url(
+        r"^challenge/get_leaderboard_data/$",
+        views.get_leaderboard_data,
+        name="get_leaderboard_data",
+    ),
+    url(
+        r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
+        views.delete_leaderboard_data,
+        name="delete_leaderboard_data",
+    ),
 ]
 
 app_name = "challenges"
