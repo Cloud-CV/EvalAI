@@ -1489,13 +1489,11 @@ def setup_ec2(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
 
-    # challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     ec2_client = get_boto3_client("ec2", aws_keys)
 
     with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
         ec2_worker_script = f.read()
 
-    # Define the values for placeholders
     variables = {
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
         "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
@@ -1505,11 +1503,9 @@ def setup_ec2(challenge):
         "ENVIRONMENT": settings.ENVIRONMENT,
     }
 
-    # Replace placeholders in the script
     for key, value in variables.items():
         ec2_worker_script = ec2_worker_script.replace("${" + key + "}", value)
 
-    # Create the EC2 instance
     instance_name = "{}-{} Instance".format(settings.ENVIRONMENT, challenge_obj.pk)
     blockDeviceMappings = [
         {
@@ -1521,12 +1517,12 @@ def setup_ec2(challenge):
             }
         },
     ]
-    # Storage
+
     try:
         response = ec2_client.run_instances(
             BlockDeviceMappings=blockDeviceMappings,
             ImageId='ami-0747bdcabd34c712a',  # TODO: Make this customizable
-            InstanceType=challenge.worker_instance_type,
+            InstanceType=challenge_obj.worker_instance_type,
             MinCount=1,
             MaxCount=1,
             SubnetId=VPC_DICT["SUBNET_1"],
