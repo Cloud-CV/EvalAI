@@ -47,7 +47,7 @@ def get_pending_submission_count(challenge_metrics):
 
 
 def stop_workers(challenge):
-    target_instance_name = "Worker-Instance-{}-{}-ayushr1-delete".format(
+    target_instance_name = "Worker-Instance-{}-{}".format(
         ENV, challenge["id"]
     )
 
@@ -84,7 +84,7 @@ def stop_workers(challenge):
 
 
 def start_workers(challenge):
-    target_instance_name = "Worker-Instance-{}-{}-ayushr1-delete".format(
+    target_instance_name = "Worker-Instance-{}-{}".format(
         ENV, challenge["id"]
     )
 
