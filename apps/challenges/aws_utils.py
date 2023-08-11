@@ -482,14 +482,15 @@ def stop_ec2_instance(challenge):
     target_instance_id = challenge.ec2_instance_id
 
     ec2 = get_boto3_client("ec2", aws_keys)
-    response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
+    status_response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
 
-    instance_statuses = response["InstanceStatuses"]
+    if status_response["InstanceStatuses"]:
+        instance_status = status_response["InstanceStatuses"][0]
+        system_status = instance_status["SystemStatus"]["Status"]
+        instance_status_check = instance_status["InstanceStatus"]["Status"]
 
-    if instance_statuses:
-        instance_status = instance_statuses[0]
-        if instance_status["SystemStatus"]["Status"] == "ok" and instance_status["InstanceStatus"]["Status"] == "ok":
-            instance_state = ec2.describe_instances(InstanceIds=[target_instance_id])["Reservations"][0]["Instances"][0]["State"]["Name"]
+        if system_status == "ok" and instance_status_check == "ok":
+            instance_state = instance_status["InstanceState"]["Name"]
 
             if instance_state == "running":
                 try:
