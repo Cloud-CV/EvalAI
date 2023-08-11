@@ -137,6 +137,7 @@ from .aws_utils import (
     restart_workers,
     start_ec2_instance,
     stop_ec2_instance,
+    describe_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -3344,6 +3345,48 @@ def manage_worker(request, challenge_pk, action):
             response_data = {"action": "Failure", "error": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_ec2_instance_details(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Challenge does not use EC2 worker instance."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = describe_ec2_instance(challenge)
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
 
 
 @api_view(["PUT"])
