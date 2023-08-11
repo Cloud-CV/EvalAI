@@ -471,10 +471,10 @@ def service_manager(
 
 def stop_ec2_instance(challenge):
     """
-    Stop the EC2 instance associated with a challenge.
+    Stop the EC2 instance associated with a challenge if status checks are ready.
 
     Args:
-        challenge (Challenge): The challenge for which the EC2 instnace needs to be stopped.
+        challenge (Challenge): The challenge for which the EC2 instance needs to be stopped.
 
     Returns:
         dict: A dictionary containing the status and message of the stop operation.
@@ -482,43 +482,40 @@ def stop_ec2_instance(challenge):
     target_instance_id = challenge.ec2_instance_id
 
     ec2 = get_boto3_client("ec2", aws_keys)
-    response = ec2.describe_instances(InstanceIds=[target_instance_id])
+    response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
 
-    instances = [
-        instance
-        for reservation in response["Reservations"]
-        for instance in reservation["Instances"]
-    ]
+    instance_statuses = response["InstanceStatuses"]
 
-    if instances:
-        instance = instances[0]
-        instance_id = instance["InstanceId"]
-        if instance["State"]["Name"] == "running":
-            try:
-                response = ec2.stop_instances(InstanceIds=[instance_id])
-                message = "Instance for challenge {} successfully stopped.".format(
-                    challenge.pk
-                )
+    if instance_statuses:
+        instance_status = instance_statuses[0]
+        if instance_status["SystemStatus"]["Status"] == "ok" and instance_status["InstanceStatus"]["Status"] == "ok":
+            instance_state = ec2.describe_instances(InstanceIds=[target_instance_id])["Reservations"][0]["Instances"][0]["State"]["Name"]
+
+            if instance_state == "running":
+                try:
+                    response = ec2.stop_instances(InstanceIds=[target_instance_id])
+                    message = "Instance for challenge {} successfully stopped.".format(challenge.pk)
+                    return {
+                        "response": response,
+                        "message": message,
+                    }
+                except ClientError as e:
+                    logger.exception(e)
+                    return {
+                        "error": e.response,
+                    }
+            else:
+                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(challenge.pk)
                 return {
-                    "response": response,
-                    "message": message,
-                }
-            except ClientError as e:
-                logger.exception(e)
-                return {
-                    "error": e.response,
+                    "error": message,
                 }
         else:
-            message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(
-                challenge.pk
-            )
+            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(challenge.pk)
             return {
                 "error": message,
             }
     else:
-        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
-            challenge.pk
-        )
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(challenge.pk)
         return {
             "error": message,
         }
