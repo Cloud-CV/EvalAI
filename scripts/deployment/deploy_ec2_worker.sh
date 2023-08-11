@@ -51,7 +51,6 @@ echo "Deployed worker docker container for queue: " ${QUEUE}
 
 # Step 10: Setting up crontab
 echo "Step 10/10: Setting up crontab"
-crontab -l > workercron
 echo "@reboot docker restart worker_${QUEUE}" >> workercron
 crontab workercron
 rm workercron
