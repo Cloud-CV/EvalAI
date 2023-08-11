@@ -35,14 +35,41 @@ def get_pending_submission_count(challenge_metrics):
 
 
 def stop_instance(challenge, evalai_interface):
-    response = evalai_interface.stop_challenge_ec2_instance(challenge["id"])
-    print("AWS API Response: {}".format(response))
+    instance_details = evalai_interface.get_ec2_instance_details(challenge["id"])
+    instance = instance_details["message"]
+    if instance["State"]["Name"] == "running":
+        response = evalai_interface.stop_challenge_ec2_instance(challenge["id"])
+        print("AWS API Response: {}".format(response))
+        print(
+            "Stopped EC2 instance for Challenge ID: {}, Title: {}".format(
+                challenge["id"], challenge["title"]
+            )
+        )
+    else:
+        print(
+            "No running EC2 instance and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+                challenge["id"], challenge["title"]
+            )
+        )
 
 
 def start_instance(challenge, evalai_interface):
-    response = evalai_interface.start_challenge_ec2_instance(challenge["id"])
-    print("AWS API Response: {}".format(response))
-
+    instance_details = evalai_interface.get_ec2_instance_details(challenge["id"])
+    instance = instance_details["message"]
+    if instance["State"]["Name"] == "stopped":
+        response = evalai_interface.start_challenge_ec2_instance(challenge["id"])
+        print("AWS API Response: {}".format(response))
+        print(
+            "Started EC2 instance for Challenge ID: {}, Title: {}.".format(
+                challenge["id"], challenge["title"]
+            )
+        )
+    else:
+        print(
+            "Existing running EC2 instance and pending messages found for Challenge ID: {}, Title: {}. Skipping.".format(
+                challenge["id"], challenge["title"]
+            )
+        )
 
 def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
     try:
