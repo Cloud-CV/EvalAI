@@ -84,8 +84,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "cpu_only_jobs",
             "job_cpu_cores",
             "job_memory",
-            "uses_ec2_worker"
-        )
+            "uses_ec2_worker",
+            "ec2_storage",
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
@@ -296,6 +296,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "cpu_only_jobs",
             "job_cpu_cores",
             "job_memory",
+            "uses_ec2_worker",
+            "ec2_storage",
         )
 
 
