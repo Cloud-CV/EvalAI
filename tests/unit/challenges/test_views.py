@@ -186,6 +186,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge.cpu_only_jobs,
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
+                "ec2_storage": self.challenge.ec2_storage,
             }
         ]
 
@@ -532,6 +533,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -625,6 +627,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -744,6 +747,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -812,6 +816,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1396,6 +1401,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1470,6 +1476,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "ec2_storage": self.challenge.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1544,6 +1551,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge4.cpu_only_jobs,
                 "job_cpu_cores": self.challenge4.job_cpu_cores,
                 "job_memory": self.challenge4.job_memory,
+                "ec2_storage": self.challenge4.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1618,6 +1626,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "ec2_storage": self.challenge3.ec2_storage,
             },
             {
                 "id": self.challenge3.pk,
@@ -1676,6 +1685,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "ec2_storage": self.challenge3.ec2_storage,
             },
             {
                 "id": self.challenge2.pk,
@@ -1734,6 +1744,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1863,6 +1874,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2016,6 +2028,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "cpu_only_jobs": self.challenge3.cpu_only_jobs,
             "job_cpu_cores": self.challenge3.job_cpu_cores,
             "job_memory": self.challenge3.job_memory,
+            "ec2_storage": self.challenge3.ec2_storage,
         }
 
         response = self.client.get(self.url, {})
@@ -2098,6 +2111,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "cpu_only_jobs": self.challenge4.cpu_only_jobs,
             "job_cpu_cores": self.challenge4.job_cpu_cores,
             "job_memory": self.challenge4.job_memory,
+            "ec2_storage": self.challenge4.ec2_storage,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2240,6 +2254,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
 
@@ -2310,6 +2325,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
 
@@ -2380,6 +2396,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
 
@@ -2448,6 +2465,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge.cpu_only_jobs,
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
+                "ec2_storage": self.challenge.ec2_storage,
             },
             {
                 "id": self.challenge2.pk,
@@ -2506,6 +2524,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
 
