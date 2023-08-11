@@ -83,7 +83,10 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
         )
         return
 
-    print("Pending Submissions: {}".format(pending_submissions))
+    print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(
+            pending_submissions,challenge["id"], challenge["title"]
+        )
+    )
 
     if pending_submissions == 0 or parse(
         challenge["end_date"]
@@ -110,7 +113,7 @@ def start_job():
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
     response = evalai_interface.get_challenges()
     metrics = evalai_interface.get_challenges_submission_metrics()
-    start_or_stop_workers_for_challenges(response, metrics)
+    start_or_stop_workers_for_challenges(response, metrics, evalai_interface)
     next_page = response["next"]
     while next_page is not None:
         response = evalai_interface.make_request(next_page, "GET")
@@ -119,6 +122,6 @@ def start_job():
 
 
 if __name__ == "__main__":
-    print("Starting worker auto scaling script")
+    print("Starting EC2 workers auto scaling script")
     start_job()
-    print("Quitting worker auto scaling script!")
+    print("Quitting EC2 workers auto scaling script!")
