@@ -27,4 +27,4 @@ export AUTH_TOKEN=${auth_token};
 export API_HOST_URL=${api_host_url};
 export ENV=${env}
 
-/home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_manage_ec2_workers.py
+/home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_scale_ec2_workers.py
