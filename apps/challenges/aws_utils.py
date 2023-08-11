@@ -1645,6 +1645,8 @@ def setup_ec2(challenge):
         "PK": str(challenge_obj.pk),
         "QUEUE": challenge_obj.queue,
         "ENVIRONMENT": settings.ENVIRONMENT,
+        "CUSTOM_WORKER_IMAGE": challenge_obj.worker_image_url,
+
     }
 
     for key, value in variables.items():
