@@ -63,6 +63,8 @@ class Challenge(TimeStampedModel):
         ("CV", "Computer Vision"),
         ("NLP", "Natural Language Processing"),
         ("RL", "Reinforcement Learning"),
+        ("MM", "Multimodal"),
+        ("AL", "Audio"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
