@@ -875,6 +875,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "cpu_only_jobs": self.challenge1.cpu_only_jobs,
                         "job_cpu_cores": self.challenge1.job_cpu_cores,
                         "job_memory": self.challenge1.job_memory,
+                        "ec2_storage": self.challenge1.ec2_storage,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -960,6 +961,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge1.cpu_only_jobs,
                 "job_cpu_cores": self.challenge1.job_cpu_cores,
                 "job_memory": self.challenge1.job_memory,
+                "ec2_storage": self.challenge1.ec2_storage,
             }
         ]
 
