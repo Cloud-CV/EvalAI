@@ -1637,6 +1637,8 @@ def setup_ec2(challenge):
     with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
         ec2_worker_script = f.read()
 
+    challenge_obj.worker_image_url = "" if challenge_obj.worker_image_url is None else challenge_obj.worker_image_url
+
     variables = {
         "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -1645,6 +1647,7 @@ def setup_ec2(challenge):
         "PK": str(challenge_obj.pk),
         "QUEUE": challenge_obj.queue,
         "ENVIRONMENT": settings.ENVIRONMENT,
+        "CUSTOM_WORKER_IMAGE": challenge_obj.worker_image_url,
     }
 
     for key, value in variables.items():
