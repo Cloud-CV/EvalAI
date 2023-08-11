@@ -132,7 +132,7 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
-    LeaderboardDataSerializer
+    LeaderboardDataSerializer,
     ChallengePrizeSerializer,
     ChallengeSponsorSerializer,
 )
