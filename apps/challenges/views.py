@@ -135,6 +135,8 @@ from .aws_utils import (
     start_workers,
     stop_workers,
     restart_workers,
+    start_ec2_instance,
+    stop_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -3342,6 +3344,65 @@ def manage_worker(request, challenge_pk, action):
             response_data = {"action": "Failure", "error": message}
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def manage_ec2_instance(request, challenge_pk, action):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # make sure that the action is valid.
+    if action not in ("start", "stop"):
+        response_data = {
+            "error": "The action {} is invalid for worker".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Challenge does not use EC2 worker instance."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
+        response_data = {
+            "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if action == "start":
+        response = start_ec2_instance(challenge)
+    elif action == "stop":
+        response = stop_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
 
 
 @api_view(["POST"])

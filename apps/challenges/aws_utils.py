@@ -469,6 +469,117 @@ def service_manager(
         return response
 
 
+def stop_ec2_instance(challenge):
+    """
+    Stop the EC2 instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 instnace needs to be stopped.
+
+    Returns:
+        dict: A dictionary containing the status and message of the stop operation.
+    """
+    target_instance_id = challenge.ec2_instance_id
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    response = ec2.describe_instances(InstanceIds=[target_instance_id])
+
+    instances = [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
+
+    if instances:
+        instance = instances[0]
+        instance_id = instance["InstanceId"]
+        if instance["State"]["Name"] == "running":
+            try:
+                response = ec2.start_instances(InstanceIds=[instance_id])
+                message = "Instance for challenge {} successfully stopped.".format(
+                    challenge.pk
+                )
+                return {
+                    "response": response,
+                    "message": message,
+                }
+            except ClientError as e:
+                logger.exception(e)
+                return {
+                    "error": e.response,
+                }
+        else:
+            message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(
+                challenge.pk
+            )
+            return {
+                "error": message,
+            }
+    else:
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
+            challenge.pk
+        )
+        return {
+            "error": message,
+        }
+
+
+def start_ec2_instance(challenge):
+    """
+    Start the EC2 instance instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 instance needs to be started.
+
+    Returns:
+        dict: A dictionary containing the status and message of the start operation.
+    """
+
+    target_instance_id = challenge.ec2_instance_id
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    response = ec2.describe_instances(InstanceIds=[target_instance_id])
+
+    instances = [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
+
+    if instances:
+        instance = instances[0]
+        instance_id = instance["InstanceId"]
+        if instance["State"]["Name"] == "stopped":
+            try:
+                response = ec2.start_instances(InstanceIds=[instance_id])
+                message = "Instance for challenge {} successfully started.".format(
+                    challenge.pk
+                )
+                return {
+                    "response": response,
+                    "message": message,
+                }
+            except ClientError as e:
+                logger.exception(e)
+                return {
+                    "error": e.response,
+                }
+        else:
+            message = "Instance for challenge {} is running. Please ensure the instance is stopped.".format(
+                challenge.pk
+            )
+            return {
+                "error": message,
+            }
+    else:
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
+            challenge.pk
+        )
+        return {
+            "error": message,
+        }
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -1490,6 +1601,9 @@ def setup_ec2(challenge):
         challenge_obj = obj.object
 
     ec2_client = get_boto3_client("ec2", aws_keys)
+
+    if challenge_obj.ec2_instance_id:
+        return start_ec2_instance(challenge_obj)
 
     with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
         ec2_worker_script = f.read()
