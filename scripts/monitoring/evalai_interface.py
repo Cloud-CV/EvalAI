@@ -19,6 +19,8 @@ URLS = {
     "get_challenges": "/api/challenges/challenge/all/all/all",
     "get_submissions_for_challenge": "/api/jobs/challenge/{}/submission/",
     "get_challenges_submission_metrics": "/api/challenges/challenge/get_submission_metrics",
+    "manage_ec2_instance": "/api/challenges/{}/manage_ec2_instance/{}",
+    "get_ec2_instance_details": "/api/challenges/{}/get_ec2_instance_details/",
 }
 
 
@@ -140,4 +142,26 @@ class EvalAI_Interface:
         url = URLS.get("get_challenges_submission_metrics")
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")
+        return response
+
+    def get_ec2_instance_details(self, challenge_pk):
+        url = URLS.get("get_ec2_instance_details")
+        url_template = URLS.get("manage_ec2_instance")
+        url = url_template.format(challenge_pk)
+        url = self.return_url_per_environment(url)
+        response = self.make_request(url, "GET")
+        return response
+
+    def start_challenge_ec2_instance(self, challenge_pk):
+        url_template = URLS.get("manage_ec2_instance")
+        url = url_template.format(challenge_pk, "start")
+        url = self.return_url_per_environment(url)
+        response = self.make_request(url, "PUT")
+        return response
+
+    def stop_challenge_ec2_instance(self, challenge_pk):
+        url_template = URLS.get("manage_ec2_instance")
+        url = url_template.format(challenge_pk, "stop")
+        url = self.return_url_per_environment(url)
+        response = self.make_request(url, "PUT")
         return response
