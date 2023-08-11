@@ -1590,7 +1590,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
     challenge = instance
     challenge._original_approved_by_admin = curr
 
-    if not challenge.is_docker_based and challenge.remote_evaluation is False:
+    if not challenge.is_docker_based and not challenge.uses_ec2_worker and challenge.remote_evaluation is False:
         if curr and not prev:
             if not challenge.workers:
                 response = start_workers([challenge])
@@ -1635,6 +1635,8 @@ def setup_ec2(challenge):
     with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
         ec2_worker_script = f.read()
 
+    challenge_obj.worker_image_url = "" if challenge_obj.worker_image_url is None else challenge_obj.worker_image_url
+
     variables = {
         "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
         "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
@@ -1643,6 +1645,7 @@ def setup_ec2(challenge):
         "PK": str(challenge_obj.pk),
         "QUEUE": challenge_obj.queue,
         "ENVIRONMENT": settings.ENVIRONMENT,
+        "CUSTOM_WORKER_IMAGE": challenge_obj.worker_image_url,
     }
 
     for key, value in variables.items():
