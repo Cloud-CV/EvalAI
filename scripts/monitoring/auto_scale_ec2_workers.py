@@ -71,6 +71,7 @@ def start_instance(challenge, evalai_interface):
             )
         )
 
+
 def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
     try:
         pending_submissions = get_pending_submission_count(challenge_metrics)
