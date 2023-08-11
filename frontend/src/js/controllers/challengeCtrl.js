@@ -1054,6 +1054,9 @@
                             vm.showSubmissionMetaAttributesOnLeaderboard = true;
                         }
 
+                        var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
+                        var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
+                        vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -3025,8 +3028,11 @@
                         var status = response.status;
                         if (status === 200) {
                             $rootScope.notify("success", "You have successfully deregistered from the challenge.");
+                            $mdDialog.hide();
                             $state.go('web.challenge-main.challenge-page.overview');
+                            setTimeout(function() {
                             $state.reload();
+                            }, 100);
                         }
                     },
                     onError: function(response) {
@@ -3041,6 +3047,17 @@
             }
         };
 
+        vm.openLeaderboardDropdown = function() {
+            if (vm.chosenMetrics == undefined) {
+                var index = [];
+                for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
+                    var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();
+                    index.push(label);
+                }
+                vm.chosenMetrics = index;
+            }
+            vm.leaderboardDropdown = !vm.leaderboardDropdown;
+        };
     }
 
 })();
