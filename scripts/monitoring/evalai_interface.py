@@ -145,8 +145,7 @@ class EvalAI_Interface:
         return response
 
     def get_ec2_instance_details(self, challenge_pk):
-        url = URLS.get("get_ec2_instance_details")
-        url_template = URLS.get("manage_ec2_instance")
+        url_template = URLS.get("get_ec2_instance_details")
         url = url_template.format(challenge_pk)
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")
