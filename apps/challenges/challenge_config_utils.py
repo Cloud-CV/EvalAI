@@ -53,8 +53,9 @@ def get_yaml_files_from_challenge_config(zip_ref):
     yaml_file_name = None
     extracted_folder_name = None
     for name in zip_ref.namelist():
-        if (name.endswith(".yaml") or name.endswith(".yml")) and (
-            not name.startswith("__MACOSX")
+        if (
+            (name == "challenge_config.yaml" or name == "challenge_config.yml")
+            and not name.startswith("__MACOSX")
         ):
             yaml_file_name = name
             extracted_folder_name = yaml_file_name.split(
@@ -222,7 +223,7 @@ def get_value_from_field(data, base_location, field_name):
 
 error_message_dict = {
     "no_yaml_file": "There is no YAML file in the zip file you uploaded!",
-    "multiple_yaml_files": "There are {} YAML files instead of one in the zip file!",
+    "multiple_yaml_files": "There are {} challenge config YAML files instead of 1 in the zip file!",
     "yaml_file_read_error": "\n{} in line {}, column {}\n",
     "missing_challenge_title": "Please add the challenge title",
     "missing_challenge_description": "Please add the challenge description",
@@ -322,11 +323,13 @@ class ValidateChallengeConfigUtil:
             self.extracted_folder_name,
         ) = get_yaml_files_from_challenge_config(self.zip_ref)
 
-        self.challenge_config_location = join(
-            self.base_location,
-            self.unique_folder_name,
-            self.extracted_folder_name,
-        )
+        self.valid_yaml = self.read_and_validate_yaml()
+        if self.valid_yaml:
+            self.challenge_config_location = join(
+                self.base_location,
+                self.unique_folder_name,
+                self.extracted_folder_name,
+            )
         self.phase_ids = []
         self.leaderboard_ids = []
 
@@ -334,12 +337,14 @@ class ValidateChallengeConfigUtil:
         if not self.yaml_file_count:
             message = self.error_messages_dict.get("no_yaml_file")
             self.error_messages.append(message)
+            return False
 
         if self.yaml_file_count > 1:
             message = self.error_messages_dict.get(
                 "multiple_yaml_files"
             ).format(self.yaml_file_count)
             self.error_messages.append(message)
+            return False
 
         # YAML Read Error
         try:
@@ -347,6 +352,7 @@ class ValidateChallengeConfigUtil:
                 self.base_location, self.unique_folder_name, self.yaml_file
             )
             self.yaml_file_data = read_yaml_file(self.yaml_file_path, "r")
+            return True
         except (yaml.YAMLError, ScannerError) as exc:
             (
                 error_description,
@@ -357,6 +363,7 @@ class ValidateChallengeConfigUtil:
                 "yaml_file_read_error"
             ).format(error_description, line_number, column_number)
             self.error_messages.append(message)
+            return False
 
     def validate_challenge_title(self):
         challenge_title = self.yaml_file_data.get("title")
@@ -1012,9 +1019,12 @@ def validate_challenge_config_util(
         zip_ref,
         current_challenge,
     )
-
-    # Read and validate YAML file
-    val_config_util.read_and_validate_yaml()
+    if not val_config_util.valid_yaml:
+        return (
+            val_config_util.error_messages,
+            val_config_util.yaml_file_data,
+            val_config_util.files,
+        )
 
     # # Validate challenge title
     val_config_util.validate_challenge_title()
