@@ -3346,6 +3346,7 @@ def manage_worker(request, challenge_pk, action):
 
     return Response(response_data, status=status.HTTP_200_OK)
 
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -3363,7 +3364,7 @@ def get_ec2_instance_details(request, challenge_pk):
         response_data = {
             "error": "Challenge does not use EC2 worker instance."
         }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)          
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     response = describe_ec2_instance(challenge)
     if response:
@@ -3384,7 +3385,7 @@ def get_ec2_instance_details(request, challenge_pk):
         response_data = {
             "message": "No Response",
             "action": "Failure",
-        } 
+        }
     return Response(response_data, status=status_code)
 
 
