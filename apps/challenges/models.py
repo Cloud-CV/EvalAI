@@ -65,6 +65,7 @@ class Challenge(TimeStampedModel):
         ("RL", "Reinforcement Learning"),
         ("MM", "Multimodal"),
         ("AL", "Audio"),
+        ("TAB", "Tabular"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
