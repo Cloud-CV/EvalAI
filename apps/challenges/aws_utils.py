@@ -1592,7 +1592,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
     challenge = instance
     challenge._original_approved_by_admin = curr
 
-    if not challenge.is_docker_based and challenge.remote_evaluation is False:
+    if not challenge.is_docker_based and not challenge.uses_ec2_worker and challenge.remote_evaluation is False:
         if curr and not prev:
             if not challenge.workers:
                 response = start_workers([challenge])
