@@ -3372,7 +3372,6 @@ def manage_ec2_instance(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-
     if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
         response_data = {
             "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
@@ -3387,19 +3386,19 @@ def manage_ec2_instance(request, challenge_pk, action):
     if response:
         if "error" not in response:
             status_code = status.HTTP_200_OK
-            response_data= {
+            response_data = {
                 "message": response["message"],
                 "action": "Success",
             }
         else:
             status_code = status.HTTP_400_BAD_REQUEST
-            response_data= {
+            response_data = {
                 "message": response["error"],
                 "action": "Failure",
             }
     else:
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        reponse_data = {
+        response_data = {
             "message": "No Response",
             "action": "Failure",
         }

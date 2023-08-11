@@ -508,7 +508,7 @@ def stop_ec2_instance(challenge):
                 return {
                     "error": e.response,
                 }
-        else: 
+        else:
             message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(
                 challenge.pk
             )
@@ -522,6 +522,7 @@ def stop_ec2_instance(challenge):
         return {
             "error": message,
         }
+
 
 def start_ec2_instance(challenge):
     """
@@ -563,7 +564,7 @@ def start_ec2_instance(challenge):
                 return {
                     "error": e.response,
                 }
-        else: 
+        else:
             message = "Instance for challenge {} is running. Please ensure the instance is stopped.".format(
                 challenge.pk
             )
