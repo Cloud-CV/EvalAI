@@ -83,10 +83,7 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
         )
         return
 
-    print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(
-            pending_submissions,challenge["id"], challenge["title"]
-        )
-    )
+    print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(pending_submissions, challenge["id"], challenge["title"]))
 
     if pending_submissions == 0 or parse(
         challenge["end_date"]
