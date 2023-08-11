@@ -13,7 +13,8 @@ import responses
 from allauth.account.models import EmailAddress
 from challenges.models import (Challenge, ChallengeConfiguration,
                                ChallengePhase, ChallengePhaseSplit,
-                               DatasetSplit, Leaderboard, StarChallenge)
+                               DatasetSplit, Leaderboard, StarChallenge,
+                               LeaderboardData)
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -67,6 +68,8 @@ class BaseAPITestClass(APITestCase):
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -147,6 +150,9 @@ class GetChallengeTest(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "domain": self.challenge.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge.list_tags,
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -180,6 +186,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge.cpu_only_jobs,
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
+                "uses_ec2_worker": self.challenge.uses_ec2_worker,
+                "ec2_storage": self.challenge.ec2_storage,
             }
         ]
 
@@ -310,6 +318,110 @@ class GetApprovedParticipantTeamNameTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
+class DeregisterParticipantTeamTest(BaseAPITestClass):
+    def setUp(self):
+        super(DeregisterParticipantTeamTest, self).setUp()
+
+        self.user5 = User.objects.create(
+            username="otheruser",
+            password="other_secret_password",
+            email="user5@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user5,
+            email="user5@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Other Test Challenge Host Team", created_by=self.user5
+        )
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user5,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
+    def create_submission(self):
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase1 = ChallengePhase.objects.create(
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+            )
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.submission1 = Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase1,
+                created_by=self.challenge_host_team.created_by,
+                status="submitted",
+                input_file=SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain",
+                ),
+                method_name="Test Method 1",
+                method_description="Test Description 1",
+                project_url="http://testserver1/",
+                publication_url="http://testserver1/",
+                is_public=True,
+                is_flagged=True,
+            )
+
+    def test_deregister_participant_team(self):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["success"], "Successfully deregistered!")
+
+    def test_deregister_participant_team_with_challenge_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk + 2},
+        )
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_deregister_participant_team_with_submission_exist(
+        self
+    ):
+        self.url = reverse_lazy(
+            "challenges:deregister_participant_team_from_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.create_submission()
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
 class CreateChallengeTest(BaseAPITestClass):
     def setUp(self):
         super(CreateChallengeTest, self).setUp()
@@ -386,6 +498,9 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
+            "list_tags": self.challenge.list_tags,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -419,6 +534,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -474,6 +591,9 @@ class GetParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
+            "list_tags": self.challenge.list_tags,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -509,6 +629,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -583,6 +705,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
+            "list_tags": self.challenge.list_tags,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -625,6 +750,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -648,6 +775,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 "created_by": self.challenge.creator.created_by.username,
                 "team_url": self.challenge.creator.team_url,
             },
+            "domain": self.challenge.domain,
+            "domain_name": 'Computer Vision',
+            "list_tags": self.challenge.list_tags,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -690,6 +820,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "cpu_only_jobs": self.challenge.cpu_only_jobs,
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
+            "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1143,6 +1275,8 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 2",
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1161,6 +1295,8 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1180,6 +1316,8 @@ class GetAllChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1232,6 +1370,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "domain": self.challenge3.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge3.list_tags,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1265,6 +1406,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1303,6 +1446,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge2.list_tags,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1336,6 +1482,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "ec2_storage": self.challenge.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1374,6 +1522,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "domain": self.challenge4.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge4.list_tags,
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1407,6 +1558,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge4.cpu_only_jobs,
                 "job_cpu_cores": self.challenge4.job_cpu_cores,
                 "job_memory": self.challenge4.job_memory,
+                "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "ec2_storage": self.challenge4.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1445,6 +1598,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge4.creator.created_by.username,
                     "team_url": self.challenge4.creator.team_url,
                 },
+                "domain": self.challenge4.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge4.list_tags,
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1478,6 +1634,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "ec2_storage": self.challenge3.ec2_storage,
             },
             {
                 "id": self.challenge3.pk,
@@ -1500,6 +1658,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "domain": self.challenge3.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge3.list_tags,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1533,6 +1694,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "ec2_storage": self.challenge3.ec2_storage,
             },
             {
                 "id": self.challenge2.pk,
@@ -1555,6 +1718,9 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge2.list_tags,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1588,6 +1754,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1624,6 +1792,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 2",
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1642,6 +1812,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1677,6 +1849,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     "created_by": self.challenge3.creator.created_by.username,
                     "team_url": self.challenge3.creator.team_url,
                 },
+                "domain": self.challenge3.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge3.list_tags,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1710,6 +1885,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge3.cpu_only_jobs,
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
+                "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1741,6 +1918,8 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 3",
             submission_guidelines="Submission guidelines for test challenge 3",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -1758,6 +1937,8 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 4",
             submission_guidelines="Submission guidelines for test challenge 4",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1823,6 +2004,9 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge3.creator.created_by.username,
                 "team_url": self.challenge3.creator.team_url,
             },
+            "domain": self.challenge3.domain,
+            "domain_name": 'Computer Vision',
+            "list_tags": self.challenge3.list_tags,
             "published": self.challenge3.published,
             "submission_time_limit": self.challenge3.submission_time_limit,
             "is_registration_open": self.challenge3.is_registration_open,
@@ -1856,6 +2040,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "cpu_only_jobs": self.challenge3.cpu_only_jobs,
             "job_cpu_cores": self.challenge3.job_cpu_cores,
             "job_memory": self.challenge3.job_memory,
+            "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+            "ec2_storage": self.challenge3.ec2_storage,
         }
 
         response = self.client.get(self.url, {})
@@ -1902,6 +2088,9 @@ class GetChallengeByPk(BaseAPITestClass):
                 "created_by": self.challenge4.creator.created_by.username,
                 "team_url": self.challenge4.creator.team_url,
             },
+            "domain": self.challenge4.domain,
+            "domain_name": 'Computer Vision',
+            "list_tags": self.challenge4.list_tags,
             "published": self.challenge4.published,
             "submission_time_limit": self.challenge4.submission_time_limit,
             "is_registration_open": self.challenge4.is_registration_open,
@@ -1935,6 +2124,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "cpu_only_jobs": self.challenge4.cpu_only_jobs,
             "job_cpu_cores": self.challenge4.job_cpu_cores,
             "job_memory": self.challenge4.job_memory,
+            "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+            "ec2_storage": self.challenge4.ec2_storage,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1974,6 +2165,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge",
             submission_guidelines="Submission guidelines for test challenge",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -1991,6 +2184,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for some test challenge",
             submission_guidelines="Submission guidelines for some test challenge",
             creator=self.challenge_host_team2,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=True,
             is_registration_open=True,
             enable_forum=True,
@@ -2037,6 +2232,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge2.list_tags,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2070,6 +2268,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
 
@@ -2104,6 +2304,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge2.list_tags,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2137,6 +2340,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
 
@@ -2171,6 +2376,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge2.list_tags,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2204,6 +2412,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
 
@@ -2236,6 +2446,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge.creator.created_by.username,
                     "team_url": self.challenge.creator.team_url,
                 },
+                "domain": self.challenge.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge.list_tags,
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -2269,6 +2482,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge.cpu_only_jobs,
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
+                "uses_ec2_worker": self.challenge.uses_ec2_worker,
+                "ec2_storage": self.challenge.ec2_storage,
             },
             {
                 "id": self.challenge2.pk,
@@ -2291,6 +2506,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                     "created_by": self.challenge2.creator.created_by.username,
                     "team_url": self.challenge2.creator.team_url,
                 },
+                "domain": self.challenge2.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge2.list_tags,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2324,6 +2542,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge2.cpu_only_jobs,
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
+                "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
 
@@ -3915,6 +4135,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submitted_at": "{0}{1}".format(
                         submission.submitted_at.isoformat(), "Z"
                     ).replace("+00:00", ""),
+                    "rerun_resumed_at": submission.rerun_resumed_at,
                     "execution_time": submission.execution_time,
                     "input_file": "http://testserver%s"
                     % (submission.input_file.url),
@@ -3978,6 +4199,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submitted_at": "{0}{1}".format(
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
+                "rerun_resumed_at": self.submission1.rerun_resumed_at,
                 "is_public": self.submission1.is_public,
                 "is_flagged": self.submission1.is_flagged,
                 "ignore_submission": False,
@@ -4013,6 +4235,58 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_all_challenges_submission_metrics(self):
+
+        self.user8 = User.objects.create(
+            username="admin_test",
+            password="admin@123",
+            is_staff=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user8,
+            email="user8@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.maxDiff = None
+
+        url = reverse_lazy("challenges:get_all_challenges_submission_metrics")
+
+        expected_response = {
+            self.challenge.pk: {
+                'archived': 0,
+                'cancelled': 0,
+                'failed': 0,
+                'finished': 0,
+                'partially_evaluated': 0,
+                'resuming': 0,
+                'running': 0,
+                'queued': 0,
+                'submitted': 0,
+                'submitting': 0
+            },
+            self.challenge5.pk: {
+                'archived': 0,
+                'cancelled': 0,
+                'failed': 0,
+                'finished': 0,
+                'partially_evaluated': 0,
+                'resuming': 0,
+                'running': 0,
+                'queued': 0,
+                'submitted': 3,
+                'submitting': 0
+            }
+        }
+
+        self.client.force_authenticate(user=self.user8)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_response)
 
 
 class DownloadAllSubmissionsFileTest(BaseAPITestClass):
@@ -5227,3 +5501,349 @@ class ChallengeSendApprovalRequestTest(BaseAPITestClass):
                 "error": "The following challenge phases do not have finished submissions: Challenge Phase"
             },
         )
+
+
+class CreateOrUpdateGithubChallengeTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username="host", email="host@test.com", password="secret_password"
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_challenge_using_github_success(self):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+            }
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json(), expected)
+        self.assertEqual(Challenge.objects.count(), 1)
+        self.assertEqual(DatasetSplit.objects.count(), 1)
+        self.assertEqual(Leaderboard.objects.count(), 1)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+    def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk + 10
+            },
+        )
+        expected = {
+            "detail": "ChallengeHostTeam {} does not exist".format(
+                self.challenge_host_team.pk + 10
+            )
+        }
+        response = self.client.post(
+            self.url,
+            {
+                "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                "zip_configuration": self.input_zip_file,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_challenge_using_github_when_user_is_not_authenticated(
+        self,
+    ):
+        self.url = reverse_lazy(
+            "challenges:create_or_update_github_challenge",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        self.client.force_authenticate(user=None)
+        expected = {"error": "Authentication credentials were not provided."}
+        response = self.client.post(self.url, {})
+        self.assertEqual(list(response.data.values())[0], expected["error"])
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ValidateChallengeTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username="host", email="host@test.com", password="secret_password"
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+        self.zip_incorect_file = open(
+            join(settings.BASE_DIR, "examples", "example3", "incorrect_zip_file.zip"),
+            "rb",
+        )
+        self.test_zip_incorrect_file = SimpleUploadedFile(
+            self.zip_incorect_file.name,
+            self.zip_incorect_file.read(),
+            content_type="application/zip",
+        )
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+    def test_validate_challenge_using_success(self):
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "Success": "The challenge config has been validated successfully"
+            }
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected)
+
+    def test_validate_challenge_using_failure(self):
+        self.maxDiff = None
+        self.url = reverse_lazy(
+            "challenges:validate_challenge_config",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_incorrect_file.read()
+            resp.status_code = 200
+
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {
+                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "zip_configuration": self.input_zip_file,
+                },
+                format="multipart",
+            )
+            expected = {
+                "error": "Please add the challenge title\n"
+                         "Please add the challenge description\n"
+                         "Please add the evaluation details\n"
+                         "Please add the terms and conditions.\n"
+                         "Please add the submission guidelines.\n"
+                         "ERROR: There is no key for the evaluation script in the YAML file. Please add it and then try again!\n"
+                         "ERROR: Please add the start_date and end_date.\n"
+                         "ERROR: The 'default_order_by' value 'aa' in the schema for the leaderboard with ID: 1 is not a valid label.\n"
+                         "ERROR: No codename found for the challenge phase. Please add a codename and try again!\n"
+                         " ERROR: There is no key for description in phase Dev Phase.\n"
+                         "ERROR: Please add the start_date and end_date in challenge phase 1.\n"
+                         "ERROR: Please enter the following fields for the submission meta attribute in challenge phase 1: description, type\n"
+                         "ERROR: Challenge phase 1 has the following schema errors:\n"
+                         " {'description': [ErrorDetail(string='This field is required.', code='required')], 'max_submissions_per_month': [ErrorDetail(string='This field may not be null.', code='null')]}\n"
+                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 1.\n"
+                         "ERROR: Invalid phased id 1 found in challenge phase split 1.\n"
+                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 2.\n"
+                         "ERROR: Invalid leaderboard id 1 found in challenge phase split 3."
+            }
+
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), expected)
+
+
+class TestLeaderboardData(BaseAPITestClass):
+    def setUp(self):
+        super(TestLeaderboardData, self).setUp()
+        self.challenge_phase = ChallengePhase.objects.create(
+            name="Challenge Phase",
+            description="Description for Challenge Phase",
+            leaderboard_public=False,
+            is_public=True,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            challenge=self.challenge,
+            test_annotation=SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+        )
+
+        self.leaderboard = Leaderboard.objects.create(
+            schema=json.dumps(
+                {
+                    "labels": ["yes/no", "number", "others", "overall"],
+                    "default_order_by": "overall",
+                }
+            )
+        )
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+            method_name="Test Method 1",
+            method_description="Test Description 1",
+            project_url="http://testserver1/",
+            publication_url="http://testserver1/",
+            is_public=True,
+            is_flagged=True,
+        )
+
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Test Dataset Split", codename="test-split"
+        )
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True,
+            show_leaderboard_by_latest_submission=False,
+        )
+
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=[0.5, 0.6, 0.7, 0.8],
+            error="",
+        )
+        self.user.is_staff = True
+        self.user.save()
+
+    def test_get_leaderboard_data_success(self):
+        self.url = reverse_lazy(
+            "challenges:get_leaderboard_data",
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_leaderboard_data_when_not_staff(self):
+        self.url = reverse_lazy(
+            "challenges:get_leaderboard_data",
+        )
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_leaderboard_data_success(self):
+        self.url = reverse_lazy(
+            "challenges:delete_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_leaderboard_data_when_leaderboard_data_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:delete_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk + 1000},
+        )
+        expected = {
+            "error": "Leaderboard data not found!"
+        }
+        response = self.client.delete(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_leaderboard_data_when_not_staff(self):
+        self.url = reverse_lazy(
+            "challenges:delete_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        response = self.client.delete(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

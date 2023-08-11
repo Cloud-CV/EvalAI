@@ -772,6 +772,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             terms_and_conditions="Terms and conditions for test challenge 1",
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
+            domain="CV",
+            list_tags=["Paper", "Dataset", "Environment", "Workshop"],
             published=False,
             is_registration_open=True,
             enable_forum=True,
@@ -837,6 +839,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "created_by": self.challenge_host_team.created_by.username,
                             "team_url": self.challenge_host_team.team_url,
                         },
+                        "domain": self.challenge1.domain,
+                        "domain_name": 'Computer Vision',
+                        "list_tags": self.challenge1.list_tags,
                         "published": self.challenge1.published,
                         "submission_time_limit": self.challenge1.submission_time_limit,
                         "is_registration_open": self.challenge1.is_registration_open,
@@ -870,6 +875,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "cpu_only_jobs": self.challenge1.cpu_only_jobs,
                         "job_cpu_cores": self.challenge1.job_cpu_cores,
                         "job_memory": self.challenge1.job_memory,
+                        "uses_ec2_worker": self.challenge1.uses_ec2_worker,
+                        "ec2_storage": self.challenge1.ec2_storage,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -919,6 +926,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "created_by": self.challenge_host_team.created_by.username,
                     "team_url": self.challenge_host_team.team_url,
                 },
+                "domain": self.challenge1.domain,
+                "domain_name": 'Computer Vision',
+                "list_tags": self.challenge1.list_tags,
                 "published": self.challenge1.published,
                 "submission_time_limit": self.challenge1.submission_time_limit,
                 "is_registration_open": self.challenge1.is_registration_open,
@@ -952,6 +962,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "cpu_only_jobs": self.challenge1.cpu_only_jobs,
                 "job_cpu_cores": self.challenge1.job_cpu_cores,
                 "job_memory": self.challenge1.job_memory,
+                "uses_ec2_worker": self.challenge1.uses_ec2_worker,
+                "ec2_storage": self.challenge1.ec2_storage,
             }
         ]
 

@@ -45,6 +45,11 @@ urlpatterns = [
         name="get_all_challenges",
     ),
     url(
+        r"^challenge/get_submission_metrics$",
+        views.get_all_challenges_submission_metrics,
+        name="get_all_challenges_submission_metrics",
+    ),
+    url(
         r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
         views.get_all_participated_challenges,
         name="get_all_participated_challenges",
@@ -192,6 +197,16 @@ urlpatterns = [
         name="manage_worker",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/manage_ec2_instance/(?P<action>[\w-]+)/$",
+        views.manage_ec2_instance,
+        name="manage_ec2_instance",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/get_ec2_instance_details/$",
+        views.get_ec2_instance_details,
+        name="get_ec2_instance_details",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
@@ -238,6 +253,31 @@ urlpatterns = [
         r"^challenge/(?P<challenge_pk>[0-9]+)/disapprove_participant_team/(?P<participant_team_pk>[0-9]+)$",
         views.remove_participant_team_from_approved_list,
         name="remove_participant_team_from_approved_list",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/deregister/$",
+        views.deregister_participant_team_from_challenge,
+        name="deregister_participant_team_from_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/update_challenge_tags_and_domain/$",
+        views.update_challenge_tags_and_domain,
+        name="update_challenge_tags_and_domain",
+    ),
+    url(
+        r"^challenge/get_domain_choices/$",
+        views.get_domain_choices,
+        name="get_domain_choices",
+    ),
+    url(
+        r"^challenge/get_leaderboard_data/$",
+        views.get_leaderboard_data,
+        name="get_leaderboard_data",
+    ),
+    url(
+        r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
+        views.delete_leaderboard_data,
+        name="delete_leaderboard_data",
     ),
 ]
 

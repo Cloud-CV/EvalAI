@@ -12,6 +12,7 @@ from .models import (
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
+    LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
@@ -21,6 +22,10 @@ from .models import (
 class ChallengeSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
+    domain_name = serializers.SerializerMethodField()
+
+    def get_domain_name(self, obj):
+        return obj.get_domain_display()
 
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
@@ -45,6 +50,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "creator",
+            "domain",
+            "domain_name",
+            "list_tags",
             "published",
             "submission_time_limit",
             "is_registration_open",
@@ -76,6 +84,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "cpu_only_jobs",
             "job_cpu_cores",
             "job_memory",
+            "uses_ec2_worker",
+            "ec2_storage",
         )
 
 
@@ -287,6 +297,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "cpu_only_jobs",
             "job_cpu_cores",
             "job_memory",
+            "uses_ec2_worker",
+            "ec2_storage",
         )
 
 
@@ -519,3 +531,31 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         # PWC requires the default sorted by metric at the index "0" of the array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
+
+
+class LeaderboardDataSerializer(serializers.ModelSerializer):
+    """
+    Serializer to store the leaderboard data
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(LeaderboardDataSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            challenge_phase_split = context.get("challenge_phase_split")
+            if challenge_phase_split:
+                kwargs["data"]["challenge_phase_split"] = challenge_phase_split.pk
+            submission = context.get("submission")
+            if submission:
+                kwargs["data"]["submission"] = submission.pk
+
+    class Meta:
+        model = LeaderboardData
+        fields = (
+            "id",
+            "challenge_phase_split",
+            "submission",
+            "leaderboard",
+            "result",
+            "error",
+        )
