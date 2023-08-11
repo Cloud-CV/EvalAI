@@ -202,6 +202,11 @@ urlpatterns = [
         name="manage_ec2_instance",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/get_ec2_instance_details/$",
+        views.get_ec2_instance_details,
+        name="get_ec2_instance_details",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",

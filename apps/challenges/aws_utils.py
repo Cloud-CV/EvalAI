@@ -524,9 +524,38 @@ def stop_ec2_instance(challenge):
         }
 
 
+def describe_ec2_instance(challenge):
+    """
+    Describe the EC2 instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 instance description is needed.
+
+    Returns:
+        dict: A dictionary containing the status and message of the operation.
+    """
+    target_instance_id = challenge.ec2_instance_id
+    try:
+        ec2 = get_boto3_client("ec2", aws_keys)
+        response = ec2.describe_instances(InstanceIds=[target_instance_id])
+
+        instances = [
+            instance
+            for reservation in response["Reservations"]
+            for instance in reservation["Instances"]
+        ]
+        instance = instances[0]
+        return {"message": instance}
+    except Exception as e:
+        logger.exception(e)
+        return {
+            "error": e.response,
+        }
+
+
 def start_ec2_instance(challenge):
     """
-    Start the EC2 instance instance associated with a challenge.
+    Start the EC2 instance associated with a challenge.
 
     Args:
         challenge (Challenge): The challenge for which the EC2 instance needs to be started.
