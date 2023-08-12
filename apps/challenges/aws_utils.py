@@ -635,7 +635,7 @@ def start_ec2_workers_list(queryset):
     failures = []
     for challenge in queryset:
         if challenge.uses_ec2_worker:
-            setup_ec2(challenge)
+            response = setup_ec2(challenge)
             if "error" in response:
                 failures.append(
                     {"message": response["error"], "challenge_pk": challenge.pk}
