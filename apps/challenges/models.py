@@ -63,6 +63,9 @@ class Challenge(TimeStampedModel):
         ("CV", "Computer Vision"),
         ("NLP", "Natural Language Processing"),
         ("RL", "Reinforcement Learning"),
+        ("MM", "Multimodal"),
+        ("AUD", "Audio"),
+        ("TAB", "Tabular"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
@@ -90,6 +93,9 @@ class Challenge(TimeStampedModel):
     )
     ec2_instance_id = models.CharField(
         max_length=200, default="", null=True, blank=True
+    )
+    ec2_storage = models.PositiveIntegerField(
+        default=8, verbose_name="EC2 storage (GB)"
     )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
