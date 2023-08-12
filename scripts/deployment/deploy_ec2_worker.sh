@@ -40,26 +40,26 @@ eval $(aws ecr get-login --no-include-email)
 echo "Step 7/10: Copying Docker environment file"
 aws s3 cp s3://cloudcv-secrets/evalai/${ENVIRONMENT}/docker_${ENVIRONMENT}.env ./docker/prod/docker_${ENVIRONMENT}.env
 
-if [ -z "$CUSTOM_WORKER_IMAGE" ]; 
+if [ "${CUSTOM_WORKER_IMAGE}" = "" ]; 
 then
     # Step 8: Pulling worker Docker image
     echo "Step 8/10: Pulling worker Docker image"
     docker-compose -f docker-compose-${ENVIRONMENT}.yml pull worker
 else
     # if using custom image from worker_image_url
-    echo "Using custom worker image: $CUSTOM_WORKER_IMAGE"
-    docker pull $CUSTOM_WORKER_IMAGE
+    echo "Using custom worker image: ${CUSTOM_WORKER_IMAGE}"
+    docker pull ${CUSTOM_WORKER_IMAGE}
 fi
 
 # Step 9: Running worker Docker container
 echo "Step 9/10: Running worker Docker container"
-if [ -z "$CUSTOM_WORKER_IMAGE" ]; 
+if [ "${CUSTOM_WORKER_IMAGE}" = "" ]; 
 then
     # If using default image from Step 8
     docker-compose -f docker-compose-${ENVIRONMENT}.yml run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d worker
 else
     # If using custom image from worker_image_url
-    docker run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d $CUSTOM_WORKER_IMAGE
+    docker run --name=worker_${QUEUE} -e CHALLENGE_QUEUE=${QUEUE} -e CHALLENGE_PK=${PK} -d ${CUSTOM_WORKER_IMAGE}
 fi
 
 # Step 10: Setting up crontab
