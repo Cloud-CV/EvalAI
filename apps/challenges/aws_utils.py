@@ -607,6 +607,49 @@ def start_ec2_instance(challenge):
         }
 
 
+def start_ec2_workers_list(queryset):
+    """
+    The function called by the admin action method to start all the selected ec2 workers.
+
+    Calls the setup ec2 method. Before calling, checks if it uses ec2 worker.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        if challenge.uses_ec2_worker:
+            setup_ec2(challenge)
+            if "error" in response:
+                failures.append(
+                    {"message": response["error"], "challenge_pk": challenge.pk}
+                )
+            else:
+                count += 1
+        else:
+            response = "Please select challenge with inactive workers only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+    return {"count": count, "failures": failures}
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -648,6 +691,49 @@ def start_workers(queryset):
                 )
                 continue
             count += 1
+        else:
+            response = "Please select challenge with inactive workers only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+    return {"count": count, "failures": failures}
+
+
+def stop_ec2_workers_list(queryset):
+    """
+    The function called by the admin action method to start all the selected ec2 workers.
+
+    Calls the stop ec2 instance method. Before calling, checks if it uses ec2 worker.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        if challenge.uses_ec2_worker:
+            response = stop_ec2_instance(challenge)
+            if "error" in response:
+                failures.append(
+                    {"message": response["error"], "challenge_pk": challenge.pk}
+                ) 
+            else:           
+                count += 1
         else:
             response = "Please select challenge with inactive workers only."
             failures.append(
@@ -1690,4 +1776,6 @@ def setup_ec2(challenge):
         return response
     except ClientError as e:
         logger.exception(e)
-        return
+        return {
+            "error": e.response
+        }

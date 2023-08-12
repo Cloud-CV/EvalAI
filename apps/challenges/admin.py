@@ -11,6 +11,8 @@ from .aws_utils import (
     scale_workers,
     start_workers,
     stop_workers,
+    start_ec2_workers_list,
+    stop_ec2_workers_list
 )
 
 from .admin_filters import ChallengeFilter
@@ -83,8 +85,57 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "scale_selected_workers",
         "restart_selected_workers",
         "delete_selected_workers",
+        "start_selected_ec2_instance_workers",
+        "stop_selected_ec2_instance_workers"
+        
     ]
     action_form = UpdateNumOfWorkersForm
+
+    def start_selected_ec2_instance_workers(self, request, queryset):
+        response = start_ec2_workers_list(queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count == queryset.count():
+            message = "All selected challenge workers successfully started."
+            messages.success(request, message)
+        else:
+            messages.success(
+                request,
+                "{} challenge workers were succesfully started.".format(count),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+
+    start_selected_ec2_instance_workers.short_description = (
+        "Start all selected ec2 instance challenge workers."
+    )
+
+    def stop_selected_ec2_instance_workers(self, request, queryset):
+        response = stop_ec2_workers_list(queryset)
+        count, failures = response["count"], response["failures"]
+
+        if count == queryset.count():
+            message = "All selected challenge workers successfully stopped."
+            messages.success(request, message)
+        else:
+            messages.success(
+                request,
+                "{} challenge workers were succesfully stopped.".format(count),
+            )
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(
+                    challenge_pk, message
+                )
+                messages.error(request, display_message)
+
+    stop_selected_ec2_instance_workers.short_description = (
+        "Stop all selected ec2 instance challenge workers."
+    )
 
     def start_selected_workers(self, request, queryset):
         response = start_workers(queryset)
@@ -131,6 +182,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     stop_selected_workers.short_description = (
         "Stop all selected challenge workers."
     )
+
 
     def scale_selected_workers(self, request, queryset):
         num_of_tasks = int(request.POST["num_of_tasks"])
