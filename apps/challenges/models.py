@@ -64,7 +64,7 @@ class Challenge(TimeStampedModel):
         ("NLP", "Natural Language Processing"),
         ("RL", "Reinforcement Learning"),
         ("MM", "Multimodal"),
-        ("AL", "Audio"),
+        ("AUD", "Audio"),
         ("TAB", "Tabular"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
