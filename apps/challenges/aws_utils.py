@@ -175,6 +175,11 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
+    if challenge.worker_image_url:
+        updated_settings = {**COMMON_SETTINGS_DICT, "WORKER_IMAGE": challenge.worker_image_url}
+    else:
+        updated_settings = COMMON_SETTINGS_DICT
+
     if execution_role_arn:
         from .utils import get_aws_credentials_for_challenge
 
@@ -208,7 +213,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                         log_group_name=log_group_name,
                         EVALAI_DNS=EVALAI_DNS,
                         EFS_ID=efs_id,
-                        **COMMON_SETTINGS_DICT,
+                        **updated_settings,
                         **challenge_aws_keys,
                     )
                 )
@@ -221,7 +226,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                         log_group_name=log_group_name,
                         AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                         AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                        **COMMON_SETTINGS_DICT,
+                        **updated_settings,
                         **aws_keys,
                     )
                 )
@@ -231,7 +236,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     submission_container=submission_container,
                     CPU=worker_cpu_cores,
                     MEMORY=worker_memory,
-                    **COMMON_SETTINGS_DICT,
+                    **updated_settings,
                 )
             else:
                 definition = task_definition_code_upload_worker.format(
@@ -248,7 +253,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     log_group_name=log_group_name,
                     EVALAI_DNS=EVALAI_DNS,
                     EFS_ID=efs_id,
-                    **COMMON_SETTINGS_DICT,
+                    **updated_settings,
                     **challenge_aws_keys,
                 )
         else:
@@ -262,7 +267,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 log_group_name=log_group_name,
                 AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                 AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
-                **COMMON_SETTINGS_DICT,
+                **updated_settings,
                 **challenge_aws_keys,
             )
         definition = eval(definition)
@@ -462,6 +467,144 @@ def service_manager(
             client, challenge, client_token
         )
         return response
+
+
+def stop_ec2_instance(challenge):
+    """
+    Stop the EC2 instance associated with a challenge if status checks are ready.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 instance needs to be stopped.
+
+    Returns:
+        dict: A dictionary containing the status and message of the stop operation.
+    """
+    target_instance_id = challenge.ec2_instance_id
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    status_response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
+
+    if status_response["InstanceStatuses"]:
+        instance_status = status_response["InstanceStatuses"][0]
+        system_status = instance_status["SystemStatus"]["Status"]
+        instance_status_check = instance_status["InstanceStatus"]["Status"]
+
+        if system_status == "ok" and instance_status_check == "ok":
+            instance_state = instance_status["InstanceState"]["Name"]
+
+            if instance_state == "running":
+                try:
+                    response = ec2.stop_instances(InstanceIds=[target_instance_id])
+                    message = "Instance for challenge {} successfully stopped.".format(challenge.pk)
+                    return {
+                        "response": response,
+                        "message": message,
+                    }
+                except ClientError as e:
+                    logger.exception(e)
+                    return {
+                        "error": e.response,
+                    }
+            else:
+                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(challenge.pk)
+                return {
+                    "error": message,
+                }
+        else:
+            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(challenge.pk)
+            return {
+                "error": message,
+            }
+    else:
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(challenge.pk)
+        return {
+            "error": message,
+        }
+
+
+def describe_ec2_instance(challenge):
+    """
+    Describe the EC2 instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 instance description is needed.
+
+    Returns:
+        dict: A dictionary containing the status and message of the operation.
+    """
+    target_instance_id = challenge.ec2_instance_id
+    try:
+        ec2 = get_boto3_client("ec2", aws_keys)
+        response = ec2.describe_instances(InstanceIds=[target_instance_id])
+
+        instances = [
+            instance
+            for reservation in response["Reservations"]
+            for instance in reservation["Instances"]
+        ]
+        instance = instances[0]
+        return {"message": instance}
+    except Exception as e:
+        logger.exception(e)
+        return {
+            "error": e.response,
+        }
+
+
+def start_ec2_instance(challenge):
+    """
+    Start the EC2 instance associated with a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the EC2 instance needs to be started.
+
+    Returns:
+        dict: A dictionary containing the status and message of the start operation.
+    """
+
+    target_instance_id = challenge.ec2_instance_id
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    response = ec2.describe_instances(InstanceIds=[target_instance_id])
+
+    instances = [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
+
+    if instances:
+        instance = instances[0]
+        instance_id = instance["InstanceId"]
+        if instance["State"]["Name"] == "stopped":
+            try:
+                response = ec2.start_instances(InstanceIds=[instance_id])
+                message = "Instance for challenge {} successfully started.".format(
+                    challenge.pk
+                )
+                return {
+                    "response": response,
+                    "message": message,
+                }
+            except ClientError as e:
+                logger.exception(e)
+                return {
+                    "error": e.response,
+                }
+        else:
+            message = "Instance for challenge {} is running. Please ensure the instance is stopped.".format(
+                challenge.pk
+            )
+            return {
+                "error": message,
+            }
+    else:
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
+            challenge.pk
+        )
+        return {
+            "error": message,
+        }
 
 
 def start_workers(queryset):
@@ -669,6 +812,11 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         logger.exception(e)
         return e.response
 
+    if challenge.worker_image_url:
+        updated_settings = {**COMMON_SETTINGS_DICT, "WORKER_IMAGE": challenge.worker_image_url}
+    else:
+        updated_settings = COMMON_SETTINGS_DICT
+
     queue_name = challenge.queue
     container_name = "worker_{}".format(queue_name)
     log_group_name = get_log_group_name(challenge.pk)
@@ -683,7 +831,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         log_group_name=log_group_name,
         AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
         AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
-        **COMMON_SETTINGS_DICT,
+        **updated_settings,
         **challenge_aws_keys,
     )
     task_def = eval(task_def)
@@ -932,6 +1080,20 @@ def get_logs_from_cloudwatch(
             )
             for event in response["events"]:
                 logs.append(event["message"])
+            nextToken = response.get("nextToken", None)
+            while nextToken is not None:
+                response = client.filter_log_events(
+                    logGroupName=log_group_name,
+                    logStreamNamePrefix=log_stream_prefix,
+                    startTime=start_time,
+                    endTime=end_time,
+                    filterPattern=pattern,
+                    limit=limit,
+                    nextToken=nextToken
+                )
+                nextToken = response.get("nextToken", None)
+                for event in response["events"]:
+                    logs.append(event["message"])
         except Exception as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 return logs
@@ -1428,7 +1590,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
     challenge = instance
     challenge._original_approved_by_admin = curr
 
-    if not challenge.is_docker_based and challenge.remote_evaluation is False:
+    if not challenge.is_docker_based and not challenge.uses_ec2_worker and challenge.remote_evaluation is False:
         if curr and not prev:
             if not challenge.workers:
                 response = start_workers([challenge])
@@ -1452,3 +1614,77 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                             challenge.id, failures[0]["message"]
                         )
                     )
+
+
+@app.task
+def setup_ec2(challenge):
+    """
+    Creates EC2 instance for the challenge and spawns a worker container.
+
+    Arguments:
+        challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+
+    ec2_client = get_boto3_client("ec2", aws_keys)
+
+    if challenge_obj.ec2_instance_id:
+        return start_ec2_instance(challenge_obj)
+
+    with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
+        ec2_worker_script = f.read()
+
+    challenge_obj.worker_image_url = "" if challenge_obj.worker_image_url is None else challenge_obj.worker_image_url
+
+    variables = {
+        "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
+        "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
+        "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
+        "AWS_REGION": aws_keys["AWS_REGION"],
+        "PK": str(challenge_obj.pk),
+        "QUEUE": challenge_obj.queue,
+        "ENVIRONMENT": settings.ENVIRONMENT,
+        "CUSTOM_WORKER_IMAGE": challenge_obj.worker_image_url,
+    }
+
+    for key, value in variables.items():
+        ec2_worker_script = ec2_worker_script.replace("${" + key + "}", value)
+
+    instance_name = "Worker-Instance-{}-{}".format(settings.ENVIRONMENT, challenge_obj.pk)
+    blockDeviceMappings = [
+        {
+            'DeviceName': '/dev/sda1',
+            'Ebs': {
+                'DeleteOnTermination': True,
+                'VolumeSize': challenge_obj.ec2_storage,  # TODO: Make this customizable
+                'VolumeType': 'gp2'
+            }
+        },
+    ]
+
+    try:
+        response = ec2_client.run_instances(
+            BlockDeviceMappings=blockDeviceMappings,
+            ImageId='ami-0747bdcabd34c712a',  # TODO: Make this customizable
+            InstanceType=challenge_obj.worker_instance_type,
+            MinCount=1,
+            MaxCount=1,
+            SubnetId=VPC_DICT["SUBNET_1"],
+            KeyName="cloudcv_2016",  # TODO: Remove hardcoding
+            TagSpecifications=[
+                {
+                    "ResourceType": "instance",
+                    "Tags": [
+                        {"Key": "Name", "Value": instance_name},
+                    ],
+                }
+            ],
+            UserData=ec2_worker_script,
+        )
+        challenge_obj.ec2_instance_id = response['Instances'][0]['InstanceId']
+        challenge_obj.save()
+        return response
+    except ClientError as e:
+        logger.exception(e)
+        return

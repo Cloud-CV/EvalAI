@@ -73,14 +73,14 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys, desired_size=None):
+def start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys, new_desired_size):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(
         challenge, evalai_interface, aws_keys
     )
     scaling_config = {
         "minSize": 1,
-        "maxSize": max(1, pending_submissions) if not desired_size else max(desired_size, pending_submissions),
-        "desiredSize": min(1, pending_submissions) if not desired_size else min(desired_size, pending_submissions),
+        "maxSize": max(new_desired_size, pending_submissions),
+        "desiredSize": new_desired_size,
     }
     response = eks_client.update_nodegroup_config(
         clusterName=cluster_name,
@@ -132,9 +132,11 @@ def scale_down_workers(challenge, desired_size, evalai_interface, aws_keys):
         )
 
 
-def scale_up_workers(challenge, desired_size, pending_submissions, evalai_interface, aws_keys, scale_up_desired_size=None):
-    if desired_size == 0:
-        response = start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys, scale_up_desired_size)
+def scale_up_workers(challenge, original_desired_size, pending_submissions, evalai_interface, aws_keys, new_desired_size):
+    if original_desired_size < new_desired_size:
+        response = start_eks_worker(
+            challenge, pending_submissions, evalai_interface, aws_keys, new_desired_size
+        )
         print("AWS API Response: {}".format(response))
         print(
             "Increased nodegroup sizes for Challenge ID: {}, Title: {}.".format(
@@ -149,7 +151,7 @@ def scale_up_workers(challenge, desired_size, pending_submissions, evalai_interf
         )
 
 
-def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size=None):
+def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size):
     try:
         pending_submissions = get_pending_submission_count_by_pk(metrics, challenge["id"])
     except Exception:  # noqa: F841
@@ -167,7 +169,7 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
         eks_client, cluster_name, nodegroup_name
     )
     min_size = scaling_config["minSize"]
-    desired_size = scaling_config["desiredSize"]
+    original_desired_size = scaling_config["desiredSize"]
     print(
         "Challenge ID : {}, Title: {}".format(
             challenge["id"], challenge["title"]
@@ -175,18 +177,32 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
     )
     print(
         "Min Size: {}, Desired Size: {}, Pending Submissions: {}".format(
-            min_size, desired_size, pending_submissions
+            min_size, original_desired_size, pending_submissions
         )
     )
 
     if pending_submissions == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
         datetime.utcnow()
     ):
-        scale_down_workers(challenge, desired_size, evalai_interface, aws_keys)
+        scale_down_workers(challenge, original_desired_size, evalai_interface, aws_keys)
     else:
-        scale_up_workers(
-            challenge, desired_size, pending_submissions, evalai_interface, aws_keys, scale_up_desired_size
-        )
+        if pending_submissions > original_desired_size:
+            # Scale up again if needed, up to the maximum allowed scale_up_desired_size (if provided)
+            new_desired_size = min(pending_submissions, scale_up_desired_size)
+            scale_up_workers(
+                challenge,
+                original_desired_size,
+                pending_submissions,
+                evalai_interface,
+                aws_keys,
+                new_desired_size,
+            )
+        else:
+            print(
+                "Existing workers and pending submissions found for Challenge ID: {}, Title: {}. Skipping.".format(
+                    challenge["id"], challenge["title"]
+                )
+            )
 
 
 # Cron Job

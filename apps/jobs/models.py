@@ -47,6 +47,7 @@ class Submission(TimeStampedModel):
     FAILED = "failed"
     CANCELLED = "cancelled"
     RESUMING = "resuming"
+    QUEUED = "queued"
     FINISHED = "finished"
     SUBMITTING = "submitting"
     ARCHIVED = "archived"
@@ -58,6 +59,7 @@ class Submission(TimeStampedModel):
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
         (RESUMING, RESUMING),
+        (QUEUED, QUEUED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
