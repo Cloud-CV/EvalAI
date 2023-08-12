@@ -1710,11 +1710,8 @@ def setup_ec2(challenge):
     Arguments:
         challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
-    if isinstance(challenge, str):
-        for obj in serializers.deserialize("json", challenge):
-            challenge_obj = obj.object
-    else:
-        challenge_obj = challenge
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
 
     ec2_client = get_boto3_client("ec2", aws_keys)
 

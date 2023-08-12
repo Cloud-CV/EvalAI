@@ -137,7 +137,6 @@ from .aws_utils import (
     restart_workers,
     start_ec2_instance,
     stop_ec2_instance,
-    setup_ec2,
     describe_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
@@ -3402,7 +3401,7 @@ def manage_ec2_instance(request, challenge_pk, action):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
-    if action not in ("start", "stop", "create"):
+    if action not in ("start", "stop"):
         response_data = {
             "error": "The action {} is invalid for worker".format(action)
         }
@@ -3426,8 +3425,6 @@ def manage_ec2_instance(request, challenge_pk, action):
         response = start_ec2_instance(challenge)
     elif action == "stop":
         response = stop_ec2_instance(challenge)
-    elif action == "create":
-        response = setup_ec2(challenge)
 
     if response:
         if "error" not in response:
