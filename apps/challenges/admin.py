@@ -87,7 +87,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "delete_selected_workers",
         "start_selected_ec2_instance_workers",
         "stop_selected_ec2_instance_workers"
-        
     ]
     action_form = UpdateNumOfWorkersForm
 
@@ -182,7 +181,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     stop_selected_workers.short_description = (
         "Stop all selected challenge workers."
     )
-
 
     def scale_selected_workers(self, request, queryset):
         num_of_tasks = int(request.POST["num_of_tasks"])

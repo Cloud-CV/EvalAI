@@ -731,8 +731,8 @@ def stop_ec2_workers_list(queryset):
             if "error" in response:
                 failures.append(
                     {"message": response["error"], "challenge_pk": challenge.pk}
-                ) 
-            else:           
+                )
+            else:
                 count += 1
         else:
             response = "Please select challenge with inactive workers only."
