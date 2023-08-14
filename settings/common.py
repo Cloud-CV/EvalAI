@@ -259,20 +259,24 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django": {"handlers": ["console"], "propagate": False},
+        "django": {
+            "handlers": ["console"], 
+            "level": "DEBUG",
+            "propagate": False
+        },
         "django.request": {
             "handlers": ["mail_admins", "console"],
-            "level": "ERROR",
+            "level": "DEBUG",
             "propagate": False,
         },
         "django.security": {
             "handlers": ["mail_admins", "console"],
-            "level": "ERROR",
+            "level": "DEBUG",
             "propagate": False,
         },
         "django.db.backends": {
             "handlers": ["mail_admins", "console"],
-            "level": "ERROR",
+            "level": "DEBUG",
             "propagate": False,
         },
     },
