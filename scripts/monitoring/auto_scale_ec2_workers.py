@@ -15,6 +15,10 @@ evalai_endpoint = os.environ.get("API_HOST_URL", "http://localhost:8000")
 auth_token = os.environ.get(
     "AUTH_TOKEN",
 )
+CHALLENGE_EXCLUDE = [
+    356,
+    830,
+]
 
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
@@ -95,7 +99,7 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 
     print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(pending_submissions, challenge["id"], challenge["title"]))
 
-    if challenge["id"] == 356 or challenge["id"] == 830:
+    if (challenge["id"] in CHALLENGE_EXCLUDE):
         if pending_submissions == 0 or parse(
             challenge["end_date"]
         ) < pytz.UTC.localize(datetime.utcnow()):
@@ -114,7 +118,7 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 # TODO: Factor in limits for the APIs
 def start_or_stop_workers_for_challenges(response, metrics, evalai_interface):
     for challenge in response["results"]:
-        if challenge["uses_ec2_worker"] or (challenge["id"] == 356 or challenge["id"] == 830):
+        if challenge["uses_ec2_worker"] or (challenge["id"] in CHALLENGE_EXCLUDE):
             start_or_stop_workers(challenge, metrics[str(challenge["id"])], evalai_interface)
 
 
@@ -126,6 +130,7 @@ def custom__instance_interface(challenge, action):
     )
     state = ec2["Reservations"]["Instances"]["State"]["Name"]
     id = ec2["Reservations"]["Instances"]["InstanceId"]
+
     if action == "start" and (state == "stopped"):
         client.start_instances(InstanceIds=[id])
         print("Started EC2 instance for Challenge ID: {}, Title: {}.".format(
