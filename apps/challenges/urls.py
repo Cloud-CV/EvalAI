@@ -270,7 +270,7 @@ urlpatterns = [
         name="get_domain_choices",
     ),
     url(
-        r"^challenge/get_leaderboard_data/$",
+        r"^challenge/(?P<challenge_phase_split_pk>[0-9]+)/get_leaderboard_data/$",
         views.get_leaderboard_data,
         name="get_leaderboard_data",
     ),

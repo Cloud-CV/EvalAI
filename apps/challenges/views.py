@@ -4477,7 +4477,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def get_leaderboard_data(request):
+def get_leaderboard_data(request, challenge_phase_split_pk):
     """
     API to get leaderboard data for a challenge phase split
     Arguments:
@@ -4491,7 +4491,8 @@ def get_leaderboard_data(request):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
-        leaderboard_data = LeaderboardData.objects.all()
+        challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split)
     except LeaderboardData.DoesNotExist:
         response_data = {
             "error": "Leaderboard data not found!"

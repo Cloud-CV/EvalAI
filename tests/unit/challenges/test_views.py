@@ -5797,6 +5797,7 @@ class TestLeaderboardData(BaseAPITestClass):
     def test_get_leaderboard_data_success(self):
         self.url = reverse_lazy(
             "challenges:get_leaderboard_data",
+            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
         )
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -5804,6 +5805,7 @@ class TestLeaderboardData(BaseAPITestClass):
     def test_get_leaderboard_data_when_not_staff(self):
         self.url = reverse_lazy(
             "challenges:get_leaderboard_data",
+            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
         )
         self.user.is_staff = False
         self.user.save()

@@ -36,6 +36,7 @@ from base.utils import (
     get_or_create_sqs_queue,
     paginated_queryset,
     is_user_a_staff,
+    is_user_a_staff_or_host
 )
 from challenges.models import (
     ChallengePhase,
@@ -800,7 +801,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
     # Allow access only to challenge host
-    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+    if not is_user_a_staff_or_host(request.user, challenge_obj.pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
