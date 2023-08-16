@@ -16,6 +16,16 @@ auth_token = os.environ.get(
     "AUTH_TOKEN",
 )
 
+aws_keys = {
+    "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
+    "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
+    "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+    "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+    "AWS_STORAGE_BUCKET_NAME": os.environ.get(
+        "AWS_STORAGE_BUCKET_NAME", "evalai-s3-bucket"
+    ),
+}
+
 
 def get_boto3_client(resource, aws_keys):
     client = boto3.client(
@@ -85,6 +95,14 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 
     print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(pending_submissions, challenge["id"], challenge["title"]))
 
+    if challenge["id"] == 356 or challenge["id"] == 830:
+        if pending_submissions == 0 or parse(
+            challenge["end_date"]
+        ) < pytz.UTC.localize(datetime.utcnow()):
+            custom__instance_interface(challenge, "stop")
+        else:
+            custom__instance_interface(challenge, "start")
+
     if pending_submissions == 0 or parse(
         challenge["end_date"]
     ) < pytz.UTC.localize(datetime.utcnow()):
@@ -96,8 +114,28 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 # TODO: Factor in limits for the APIs
 def start_or_stop_workers_for_challenges(response, metrics, evalai_interface):
     for challenge in response["results"]:
-        if challenge["uses_ec2_worker"]:
+        if challenge["uses_ec2_worker"] or (challenge["id"] == 356 or challenge["id"] == 830):
             start_or_stop_workers(challenge, metrics[str(challenge["id"])], evalai_interface)
+
+
+def custom__instance_interface(challenge, action):
+    client = get_boto3_client("ec2", aws_keys)
+    instance_name = "Worker-Instance-production-{}".format(challenge["id"])
+    ec2 = client.describe_instances(
+        Filters=[{"Name": instance_name }]
+    )
+    state = ec2["Reservations"]["Instances"]["State"]["Name"]
+    id = ec2["Reservations"]["Instances"]["InstanceId"]
+    if action == "start" and (state == "stopped"):
+        client.start_instances(InstanceIds=[id])
+        print("Started EC2 instance for Challenge ID: {}, Title: {}.".format(
+            challenge["id"], challenge["title"]))
+    elif action == "stop" and (state == "running"):
+        client.stop_instances(InstanceIds=[id])
+        print("Stopped EC2 instance for Challenge ID: {}, Title: {}.".format(
+            challenge["id"], challenge["title"]))
+    else:
+        print("Instance is already in the desired state. Skipping.")
 
 
 def create_evalai_interface(auth_token, evalai_endpoint):
