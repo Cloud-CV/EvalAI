@@ -106,6 +106,7 @@ from .models import (
     ChallengePhaseSplit,
     ChallengeTemplate,
     ChallengeConfiguration,
+    LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
@@ -126,6 +127,7 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
+    LeaderboardDataSerializer
 )
 
 from .aws_utils import (
@@ -133,6 +135,9 @@ from .aws_utils import (
     start_workers,
     stop_workers,
     restart_workers,
+    start_ec2_instance,
+    stop_ec2_instance,
+    describe_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -3342,6 +3347,107 @@ def manage_worker(request, challenge_pk, action):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_ec2_instance_details(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Challenge does not use EC2 worker instance."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = describe_ec2_instance(challenge)
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def manage_ec2_instance(request, challenge_pk, action):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access worker operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # make sure that the action is valid.
+    if action not in ("start", "stop"):
+        response_data = {
+            "error": "The action {} is invalid for worker".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Challenge does not use EC2 worker instance."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
+        response_data = {
+            "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if action == "start":
+        response = start_ec2_instance(challenge)
+    elif action == "stop":
+        response = stop_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -4365,3 +4471,64 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_leaderboard_data(request, challenge_phase_split_pk):
+    """
+    API to get leaderboard data for a challenge phase split
+    Arguments:
+        challenge_phase_split {int} -- Challenge phase split primary key
+    Returns:
+        {dict} -- Response object
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split)
+    except LeaderboardData.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard data not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request}, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["DELETE"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def delete_leaderboard_data(request, leaderboard_data_pk):
+    """
+    API to delete leaderboard data
+    Arguments:
+        leaderboard_data_pk {int} -- Leaderboard data primary key
+    Returns:
+        {dict} -- Response object
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+    except LeaderboardData.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard data not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    leaderboard_data.delete()
+    response_data = {
+        "message": "Leaderboard data deleted successfully!"
+    }
+    return Response(response_data, status=status.HTTP_204_NO_CONTENT)

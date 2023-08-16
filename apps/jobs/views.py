@@ -36,6 +36,7 @@ from base.utils import (
     get_or_create_sqs_queue,
     paginated_queryset,
     is_user_a_staff,
+    is_user_a_staff_or_host
 )
 from challenges.models import (
     ChallengePhase,
@@ -800,7 +801,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
     # Allow access only to challenge host
-    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+    if not is_user_a_staff_or_host(request.user, challenge_obj.pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
@@ -1208,15 +1209,34 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                try:
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
+                except LeaderboardData.DoesNotExist:
+                    leaderboard_data = None
+
                 data = {"result": accuracies}
-                serializer = CreateLeaderboardDataSerializer(
-                    data=data,
-                    context={
-                        "challenge_phase_split": challenge_phase_split,
-                        "submission": submission,
-                        "request": request,
-                    },
-                )
+                if leaderboard_data is not None:
+                    serializer = CreateLeaderboardDataSerializer(
+                        leaderboard_data,
+                        data=data,
+                        partial=True,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
+                else:
+                    serializer = CreateLeaderboardDataSerializer(
+                        data=data,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -1301,7 +1321,7 @@ def update_submission(request, challenge_pk):
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
-        if submission_status not in [Submission.RUNNING]:
+        if submission_status not in [Submission.QUEUED, Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1585,15 +1605,34 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                try:
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
+                except LeaderboardData.DoesNotExist:
+                    leaderboard_data = None
+
                 data = {"result": accuracies}
-                serializer = CreateLeaderboardDataSerializer(
-                    data=data,
-                    context={
-                        "challenge_phase_split": challenge_phase_split,
-                        "submission": submission,
-                        "request": request,
-                    },
-                )
+                if leaderboard_data is not None:
+                    serializer = CreateLeaderboardDataSerializer(
+                        leaderboard_data,
+                        data=data,
+                        partial=True,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
+                else:
+                    serializer = CreateLeaderboardDataSerializer(
+                        data=data,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:

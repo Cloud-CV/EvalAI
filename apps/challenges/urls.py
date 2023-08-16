@@ -197,6 +197,16 @@ urlpatterns = [
         name="manage_worker",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/manage_ec2_instance/(?P<action>[\w-]+)/$",
+        views.manage_ec2_instance,
+        name="manage_ec2_instance",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/get_ec2_instance_details/$",
+        views.get_ec2_instance_details,
+        name="get_ec2_instance_details",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
@@ -258,6 +268,16 @@ urlpatterns = [
         r"^challenge/get_domain_choices/$",
         views.get_domain_choices,
         name="get_domain_choices",
+    ),
+    url(
+        r"^challenge/(?P<challenge_phase_split_pk>[0-9]+)/get_leaderboard_data/$",
+        views.get_leaderboard_data,
+        name="get_leaderboard_data",
+    ),
+    url(
+        r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
+        views.delete_leaderboard_data,
+        name="delete_leaderboard_data",
     ),
 ]
 

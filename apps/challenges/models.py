@@ -63,6 +63,9 @@ class Challenge(TimeStampedModel):
         ("CV", "Computer Vision"),
         ("NLP", "Natural Language Processing"),
         ("RL", "Reinforcement Learning"),
+        ("MM", "Multimodal"),
+        ("AUD", "Audio"),
+        ("TAB", "Tabular"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
@@ -84,6 +87,15 @@ class Challenge(TimeStampedModel):
     )  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
+    )
+    uses_ec2_worker = models.BooleanField(
+        default=False, verbose_name="Uses EC2 worker instance", db_index=True
+    )
+    ec2_instance_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    ec2_storage = models.PositiveIntegerField(
+        default=8, verbose_name="EC2 storage (GB)"
     )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
@@ -198,6 +210,7 @@ class Challenge(TimeStampedModel):
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
+    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default=None)
 
     class Meta:
         app_label = "challenges"
@@ -237,7 +250,7 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
+def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -249,6 +262,12 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_eks_cluster.delay(serialized_obj)
+        elif (
+            instance.approved_by_admin is True
+            and instance.uses_ec2_worker is True
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_ec2.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
