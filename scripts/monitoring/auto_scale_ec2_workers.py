@@ -126,7 +126,7 @@ def custom__instance_interface(challenge, action):
     client = get_boto3_client("ec2", aws_keys)
     instance_name = "Worker-Instance-production-{}".format(challenge["id"])
     ec2 = client.describe_instances(
-        Filters=[{"Name": instance_name }]
+        Filters=[{"Name": instance_name}]
     )
     state = ec2["Reservations"]["Instances"]["State"]["Name"]
     id = ec2["Reservations"]["Instances"]["InstanceId"]

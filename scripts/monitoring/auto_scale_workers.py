@@ -112,7 +112,7 @@ def scale_up_or_down_workers(challenge, challenge_metrics):
 # TODO: Factor in limits for the APIs
 def scale_up_or_down_workers_for_challenges(response, metrics):
     for challenge in response["results"]:
-        if ENV == "prod" and not challenge["uses_ec2_worker"] :
+        if ENV == "prod" and not challenge["uses_ec2_worker"]:
             if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
                 scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
         else:
