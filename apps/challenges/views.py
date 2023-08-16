@@ -4574,7 +4574,10 @@ def update_challenge_approval(request):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     challenge.approved_by_admin = approved_by_admin
-    challenge.save()
+    try:
+        challenge.save()
+    except Exception as e:  # noqa: E722
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     response_data = {
         "message": "Challenge updated successfully!"
     }
