@@ -56,6 +56,8 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
 
     # Check if the queue exists. If not, then create one.
     try:
+        if challenge.sqs_rentension_time:
+            SQS_RETENTION_PERIOD = challenge.sqs_retention_time
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if (

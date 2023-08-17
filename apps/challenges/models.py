@@ -211,6 +211,7 @@ class Challenge(TimeStampedModel):
         max_length=256, null=True, blank=True, default="8Gi"
     )
     worker_image_url = models.CharField(max_length=200, blank=True, null=True, default=None)
+    sqs_retention_time = models.IntegerField(null=True, blank=True, default=1209600)
 
     class Meta:
         app_label = "challenges"
