@@ -279,6 +279,11 @@ urlpatterns = [
         views.delete_leaderboard_data,
         name="delete_leaderboard_data",
     ),
+    url(
+        r"^challenge/update_challenge_approval/$",
+        views.update_challenge_approval,
+        name="update_challenge_approval",
+    ),
 ]
 
 app_name = "challenges"

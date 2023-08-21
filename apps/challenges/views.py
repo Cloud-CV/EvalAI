@@ -4532,3 +4532,53 @@ def delete_leaderboard_data(request, leaderboard_data_pk):
         "message": "Leaderboard data deleted successfully!"
     }
     return Response(response_data, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_approval(request):
+    """
+    API to update challenge
+    Arguments:
+        request {dict} -- Request object
+
+    Query Parameters:
+        challenge_pk {int} -- Challenge primary key
+        approved_by_admin {bool} -- Challenge approved by admin
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_pk = request.data.get("challenge_pk")
+    approved_by_admin = request.data.get("approved_by_admin")
+    if not challenge_pk:
+        response_data = {
+            "error": "Challenge primary key is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if not approved_by_admin:
+        response_data = {
+            "error": "approved_by_admin is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        challenge = get_challenge_model(challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    challenge.approved_by_admin = approved_by_admin
+    try:
+        challenge.save()
+    except Exception as e:  # noqa: E722
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    response_data = {
+        "message": "Challenge updated successfully!"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
