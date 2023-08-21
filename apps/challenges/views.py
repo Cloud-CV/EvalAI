@@ -4543,7 +4543,7 @@ def update_challenge_approval(request):
     API to update challenge
     Arguments:
         request {dict} -- Request object
-        
+
     Query Parameters:
         challenge_pk {int} -- Challenge primary key
         approved_by_admin {bool} -- Challenge approved by admin
@@ -4582,4 +4582,3 @@ def update_challenge_approval(request):
         "message": "Challenge updated successfully!"
     }
     return Response(response_data, status=status.HTTP_200_OK)
-
