@@ -24,8 +24,6 @@ import yaml
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
-from settings.common import SQS_RETENTION_PERIOD
-
 from .statsd_utils import increment_and_push_metrics_to_statsd
 
 # all challenge and submission will be stored in temp directory
@@ -766,6 +764,8 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     try:
         if challenge.sqs_rentension_time:
             SQS_RETENTION_PERIOD = challenge.sqs_retention_time
+        else:
+            SQS_RETENTION_PERIOD = settings.SQS_RETENTION_TIME
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if (
