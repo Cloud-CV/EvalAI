@@ -342,7 +342,7 @@ def calculate_distinct_sorted_leaderboard_data(
         [] if not is_challenge_phase_public else challenge_hosts_emails
     )
 
-    challenge_host_or_staff = is_user_a_staff_or_host(user, challenge_obj.pk)
+    challenge_host_or_staff = is_user_a_staff_or_host(user, challenge_obj)
 
     all_banned_email_ids = challenge_obj.banned_email_ids
 
