@@ -207,6 +207,8 @@ class TestUserisStafforHost(BaseAPITestClass):
         self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge))
 
     def test_if_user_is_host(self):
+        self.user.is_staff = False
+        self.user.save()
         self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge))
 
     def test_if_user_is_not_host(self):

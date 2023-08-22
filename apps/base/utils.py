@@ -342,4 +342,4 @@ def is_user_a_staff_or_host(user, challenge):
     Return:
         {bool} : True/False if the user is staff or host
     """
-    return user.is_staff or user == challenge.creator
+    return user.is_staff or user == challenge.creator.created_by
