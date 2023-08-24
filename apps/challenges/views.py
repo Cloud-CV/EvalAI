@@ -54,6 +54,7 @@ from base.utils import (
     send_email,
     send_slack_notification,
     is_user_a_staff,
+    is_user_a_staff_or_host
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -1007,8 +1008,8 @@ def challenge_phase_split_list(request, challenge_pk):
         challenge_phase__challenge=challenge
     ).order_by("pk")
 
-    # Check if user is a challenge host or participant
-    challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+    # Check if user is a challenge host or staff
+    challenge_host = is_user_a_staff_or_host(request.user, challenge)
 
     if not challenge_host:
         challenge_phase_split = challenge_phase_split.filter(

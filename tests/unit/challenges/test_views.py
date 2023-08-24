@@ -3466,6 +3466,13 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
         except OSError:
             pass
 
+        self.user2 = User.objects.create(
+            username="someuser2",
+            email="user2@test.com",
+            password="secret_password2",
+            is_staff=True,
+        )
+
         self.participant_user = User.objects.create(
             username="someuser1",
             email="participant@test.com",
@@ -3475,6 +3482,13 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
         EmailAddress.objects.create(
             user=self.participant_user,
             email="participant@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
             primary=True,
             verified=True,
         )
@@ -3614,6 +3628,42 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             },
         ]
         self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phase_split_when_user_is_staff(self):
+        self.url = reverse_lazy(
+            "challenges:challenge_phase_split_list",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        expected = [
+            {
+                "id": self.challenge_phase_split.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split.id,
+                "dataset_split_name": self.dataset_split.name,
+                "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
+                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
+                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
+            },
+            {
+                "id": self.challenge_phase_split_host.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split_host.id,
+                "dataset_split_name": self.dataset_split_host.name,
+                "visibility": self.challenge_phase_split_host.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
+                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
+                "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
+            },
+        ]
+        self.client.force_authenticate(user=self.user2)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
