@@ -1009,7 +1009,7 @@ def challenge_phase_split_list(request, challenge_pk):
     ).order_by("pk")
 
     # Check if user is a challenge host or staff
-    challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
+    challenge_host = is_user_a_staff_or_host(request.user, challenge)
 
     if not challenge_host:
         challenge_phase_split = challenge_phase_split.filter(
