@@ -187,6 +187,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
+                "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
             }
         ]
@@ -535,6 +536,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.get(self.url, {})
@@ -630,6 +632,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(
@@ -751,6 +754,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.patch(self.url, self.partial_update_data)
@@ -821,6 +825,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(self.url, self.data)
@@ -1407,6 +1412,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
@@ -1483,6 +1489,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
             }
         ]
@@ -1559,6 +1566,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge4.job_cpu_cores,
                 "job_memory": self.challenge4.job_memory,
                 "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,
                 "ec2_storage": self.challenge4.ec2_storage,
             }
         ]
@@ -1635,6 +1643,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             },
             {
@@ -1695,6 +1704,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             },
             {
@@ -1755,6 +1765,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
@@ -1886,6 +1897,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
@@ -2041,6 +2053,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "job_cpu_cores": self.challenge3.job_cpu_cores,
             "job_memory": self.challenge3.job_memory,
             "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+            "evaluation_module_error": self.challenge3.evaluation_module_error,
             "ec2_storage": self.challenge3.ec2_storage,
         }
 
@@ -2125,6 +2138,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "job_cpu_cores": self.challenge4.job_cpu_cores,
             "job_memory": self.challenge4.job_memory,
             "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+            "evaluation_module_error": self.challenge4.evaluation_module_error,
             "ec2_storage": self.challenge4.ec2_storage,
         }
 
@@ -2269,6 +2283,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
@@ -2341,6 +2356,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
@@ -2413,6 +2429,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
@@ -2483,6 +2500,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
+                "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
             },
             {
@@ -2543,6 +2561,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             },
         ]

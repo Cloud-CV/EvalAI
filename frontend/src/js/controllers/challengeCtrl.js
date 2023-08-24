@@ -79,6 +79,7 @@
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
         vm.eligible_to_submit = false;
+        vm.evaluation_module_error = null;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -228,35 +229,41 @@
         };
         
         // Get the logs from worker if submissions are failing.
-        vm.startLoadingLogs = function() {
-            vm.logs_poller = $interval(function(){
-                parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
-                parameters.method = 'GET';
-                parameters.data = {};
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        vm.workerLogs = [];
-                        for (var i = 0; i<details.logs.length; i++){
-                            var log = details.logs[i];
-                            var utcTime = log.match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
-                            if (utcTime) {
-                              utcTime = utcTime[0].substring(1, 20);
-                              var date = new Date(utcTime + 'Z');
-                              var localTime = date.toLocaleString("sv-SE");
-                              var modifiedLog = log.replace(utcTime, localTime);
-                              vm.workerLogs.push(modifiedLog);
-                            } else {
-                              vm.workerLogs.push(log);
+        vm.startLoadingLogs = function () {
+            vm.logs_poller = $interval(function () {
+                if (vm.evaluation_module_error) {
+                    vm.workerLogs = [];
+                    vm.workerLogs.push(vm.evaluation_module_error);
+                }
+                else {
+                    parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function (response) {
+                            var details = response.data;
+                            vm.workerLogs = [];
+                            for (var i = 0; i < details.logs.length; i++) {
+                                var log = details.logs[i];
+                                var utcTime = log.match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
+                                if (utcTime) {
+                                    utcTime = utcTime[0].substring(1, 20);
+                                    var date = new Date(utcTime + 'Z');
+                                    var localTime = date.toLocaleString("sv-SE");
+                                    var modifiedLog = log.replace(utcTime, localTime);
+                                    vm.workerLogs.push(modifiedLog);
+                                } else {
+                                    vm.workerLogs.push(log);
+                                }
                             }
+                        },
+                        onError: function (response) {
+                            var error = response.data.error;
+                            vm.workerLogs.push(error);
                         }
-                    },
-                    onError: function(response) {
-                        var error = response.data.error;
-                        vm.workerLogs.push(error);
-                    }
-                };
-                utilities.sendRequest(parameters);
+                    };
+                    utilities.sendRequest(parameters);
+                }
             }, 5000);
         };
 
@@ -384,8 +391,8 @@
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_participant_approval = details.manual_participant_approval;
                 vm.queueName = details.queue;
+                vm.evaluation_module_error = details.evaluation_module_error;
                 vm.getTeamName(vm.challengeId);
-
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
 
