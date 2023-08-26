@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='challenge',
             name='sqs_retention_time',
-            field=models.IntegerField(blank=True, default=1209600, null=True),
+            field=models.IntegerField(default=259200),
         ),
     ]
