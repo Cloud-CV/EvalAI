@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0103_challenge_worker_image_url_alter'),
+        ('challenges', '0104_challenge_evaluation_module_error'),
     ]
 
     operations = [
