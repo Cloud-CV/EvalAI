@@ -63,6 +63,9 @@ class Challenge(TimeStampedModel):
         ("CV", "Computer Vision"),
         ("NLP", "Natural Language Processing"),
         ("RL", "Reinforcement Learning"),
+        ("MM", "Multimodal"),
+        ("AUD", "Audio"),
+        ("TAB", "Tabular"),
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
@@ -207,7 +210,8 @@ class Challenge(TimeStampedModel):
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
-    worker_image_url = models.URLField(max_length=200, blank=True, null=True, default=None)
+    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default=None)
+    evaluation_module_error = models.TextField(null=True, blank=True)
 
     class Meta:
         app_label = "challenges"

@@ -187,6 +187,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
+                "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
             }
         ]
@@ -535,6 +536,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.get(self.url, {})
@@ -630,6 +632,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(
@@ -751,6 +754,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.patch(self.url, self.partial_update_data)
@@ -821,6 +825,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "job_cpu_cores": self.challenge.job_cpu_cores,
             "job_memory": self.challenge.job_memory,
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
+            "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
         }
         response = self.client.put(self.url, self.data)
@@ -1407,6 +1412,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
@@ -1483,6 +1489,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
             }
         ]
@@ -1559,6 +1566,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge4.job_cpu_cores,
                 "job_memory": self.challenge4.job_memory,
                 "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+                "evaluation_module_error": self.challenge4.evaluation_module_error,
                 "ec2_storage": self.challenge4.ec2_storage,
             }
         ]
@@ -1635,6 +1643,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             },
             {
@@ -1695,6 +1704,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             },
             {
@@ -1755,6 +1765,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
@@ -1886,6 +1897,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "job_cpu_cores": self.challenge3.job_cpu_cores,
                 "job_memory": self.challenge3.job_memory,
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+                "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
             }
         ]
@@ -2041,6 +2053,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "job_cpu_cores": self.challenge3.job_cpu_cores,
             "job_memory": self.challenge3.job_memory,
             "uses_ec2_worker": self.challenge3.uses_ec2_worker,
+            "evaluation_module_error": self.challenge3.evaluation_module_error,
             "ec2_storage": self.challenge3.ec2_storage,
         }
 
@@ -2125,6 +2138,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "job_cpu_cores": self.challenge4.job_cpu_cores,
             "job_memory": self.challenge4.job_memory,
             "uses_ec2_worker": self.challenge4.uses_ec2_worker,
+            "evaluation_module_error": self.challenge4.evaluation_module_error,
             "ec2_storage": self.challenge4.ec2_storage,
         }
 
@@ -2269,6 +2283,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
@@ -2341,6 +2356,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
@@ -2413,6 +2429,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             }
         ]
@@ -2483,6 +2500,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge.job_cpu_cores,
                 "job_memory": self.challenge.job_memory,
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
+                "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
             },
             {
@@ -2543,6 +2561,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "job_cpu_cores": self.challenge2.job_cpu_cores,
                 "job_memory": self.challenge2.job_memory,
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
+                "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
             },
         ]
@@ -3447,6 +3466,13 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
         except OSError:
             pass
 
+        self.user2 = User.objects.create(
+            username="someuser2",
+            email="user2@test.com",
+            password="secret_password2",
+            is_staff=True,
+        )
+
         self.participant_user = User.objects.create(
             username="someuser1",
             email="participant@test.com",
@@ -3456,6 +3482,13 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
         EmailAddress.objects.create(
             user=self.participant_user,
             email="participant@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
             primary=True,
             verified=True,
         )
@@ -3595,6 +3628,42 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             },
         ]
         self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phase_split_when_user_is_staff(self):
+        self.url = reverse_lazy(
+            "challenges:challenge_phase_split_list",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        expected = [
+            {
+                "id": self.challenge_phase_split.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split.id,
+                "dataset_split_name": self.dataset_split.name,
+                "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
+                "leaderboard_schema": self.challenge_phase_split.leaderboard.schema,
+                "is_multi_metric_leaderboard": self.challenge_phase_split.is_multi_metric_leaderboard,
+            },
+            {
+                "id": self.challenge_phase_split_host.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split_host.id,
+                "dataset_split_name": self.dataset_split_host.name,
+                "visibility": self.challenge_phase_split_host.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
+                "show_execution_time": False,
+                "leaderboard_schema": self.challenge_phase_split_host.leaderboard.schema,
+                "is_multi_metric_leaderboard": self.challenge_phase_split_host.is_multi_metric_leaderboard,
+            },
+        ]
+        self.client.force_authenticate(user=self.user2)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -5797,6 +5866,7 @@ class TestLeaderboardData(BaseAPITestClass):
     def test_get_leaderboard_data_success(self):
         self.url = reverse_lazy(
             "challenges:get_leaderboard_data",
+            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
         )
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -5804,6 +5874,7 @@ class TestLeaderboardData(BaseAPITestClass):
     def test_get_leaderboard_data_when_not_staff(self):
         self.url = reverse_lazy(
             "challenges:get_leaderboard_data",
+            kwargs={"challenge_phase_split_pk": self.challenge_phase_split.pk},
         )
         self.user.is_staff = False
         self.user.save()
@@ -5845,5 +5916,40 @@ class TestLeaderboardData(BaseAPITestClass):
             "error": "Sorry, you are not authorized to access this resource!"
         }
         response = self.client.delete(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestUpdateChallenge(BaseAPITestClass):
+    def setUp(self):
+        settings.AWS_SES_REGION_NAME = "us-east-1"
+        settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
+        return super().setUp()
+
+    def test_update_challenge_when_challenge_exists(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.url = reverse_lazy("challenges:update_challenge_approval")
+        expected = {
+            "message": "Challenge updated successfully!"
+        }
+        response = self.client.post(self.url, {
+            "challenge_pk": self.challenge.pk,
+            "approved_by_admin": True
+        })
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_when_not_a_staff(self):
+        self.url = reverse_lazy("challenges:update_challenge_approval")
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        response = self.client.post(self.url, {
+            "challenge_pk": self.challenge.pk,
+            "approved_by_admin": True
+        })
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
