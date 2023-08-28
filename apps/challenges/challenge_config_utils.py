@@ -1142,7 +1142,7 @@ def validate_challenge_config_util(
     # Validate domain
     val_config_util.check_domain()
     # Check for Sponsor
-    val_config_util.check_sponsor()
+    # val_config_util.check_sponsor()
 
     # Check for Prize
     val_config_util.check_prizes()
