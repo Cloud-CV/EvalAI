@@ -270,7 +270,7 @@ urlpatterns = [
         name="get_domain_choices",
     ),
     url(
-        r"^challenge/get_leaderboard_data/$",
+        r"^challenge/(?P<challenge_phase_split_pk>[0-9]+)/get_leaderboard_data/$",
         views.get_leaderboard_data,
         name="get_leaderboard_data",
     ),
@@ -278,6 +278,11 @@ urlpatterns = [
         r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
         views.delete_leaderboard_data,
         name="delete_leaderboard_data",
+    ),
+    url(
+        r"^challenge/update_challenge_approval/$",
+        views.update_challenge_approval,
+        name="update_challenge_approval",
     ),
 ]
 
