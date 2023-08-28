@@ -14,8 +14,7 @@ from allauth.account.models import EmailAddress
 from challenges.models import (Challenge, ChallengeConfiguration,
                                ChallengePhase, ChallengePhaseSplit,
                                DatasetSplit, Leaderboard, StarChallenge,
-                               LeaderboardData)
-                               ChallengePrize, ChallengeSponsor)
+                               LeaderboardData, ChallengePrize, ChallengeSponsor)
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile

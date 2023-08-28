@@ -564,7 +564,7 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
             "result",
             "error",
         )
-    
+
 
 class ChallengePrizeSerializer(serializers.ModelSerializer):
     """
