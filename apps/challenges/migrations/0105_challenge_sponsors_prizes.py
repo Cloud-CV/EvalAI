@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0102_challenge_ec2_storage'),
+        ('challenges', '0104_challenge_evaluation_module_error'),
     ]
 
     operations = [
