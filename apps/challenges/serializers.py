@@ -86,6 +86,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "job_memory",
             "uses_ec2_worker",
             "ec2_storage",
+            "evaluation_module_error"
         )
 
 
