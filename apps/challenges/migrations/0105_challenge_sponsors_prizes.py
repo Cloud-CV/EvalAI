@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0105_challenge_github_branch'),
+        ('challenges', '0104_challenge_evaluation_module_error'),
     ]
 
     operations = [
