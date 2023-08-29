@@ -5773,6 +5773,7 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH": "yourbranchname",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -5887,6 +5888,7 @@ class ValidateChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH": "yourbranchname",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",
@@ -5915,6 +5917,7 @@ class ValidateChallengeTest(APITestCase):
                 self.url,
                 {
                     "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                    "GITHUB_BRANCH": "yourbranchname",
                     "zip_configuration": self.input_zip_file,
                 },
                 format="multipart",

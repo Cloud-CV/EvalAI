@@ -3723,7 +3723,8 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_queryset = Challenge.objects.filter(
-        github_repository=request.data["GITHUB_REPOSITORY"]
+        github_repository=request.data["GITHUB_REPOSITORY"],
+        github_branch=request.data["GITHUB_BRANCH"]
     )
 
     if challenge_queryset:
@@ -3783,7 +3784,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         zip_ref,
         challenge_queryset[0] if challenge_queryset else None
     )
-
     if not len(error_messages):
         if not challenge_queryset:
             error_messages = None
@@ -3800,6 +3800,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             ],
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
+                            ],
+                            "github_branch": request.data[
+                                "GITHUB_BRANCH"
                             ],
                         },
                     )
