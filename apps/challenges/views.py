@@ -71,6 +71,8 @@ from challenges.utils import (
     parse_submission_meta_attributes,
     add_domain_to_challenge,
     add_tags_to_challenge,
+    add_prizes_to_challenge,
+    add_sponsors_to_challenge,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -111,6 +113,8 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
+    ChallengeSponsor,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -128,7 +132,9 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
-    LeaderboardDataSerializer
+    LeaderboardDataSerializer,
+    ChallengePrizeSerializer,
+    ChallengeSponsorSerializer,
 )
 
 from .aws_utils import (
@@ -1580,6 +1586,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if verify_complete is not None:
                 return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
+            # Add Sponsors
+            error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+            if error_messages is not None:
+                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+            # Add Prizes
+            error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+            if error_messages is not None:
+                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
             leaderboard_ids = {}
@@ -2676,6 +2692,42 @@ def get_domain_choices(request):
         return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def get_prizes_by_challenge(request, challenge_pk):
+    """
+    Returns a list of prizes for a given challenge.
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    prizes = ChallengePrize.objects.filter(challenge=challenge)
+    serializer = ChallengePrizeSerializer(prizes, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def get_sponsors_by_challenge(request, challenge_pk):
+    """
+    Returns a list of sponsors for a given challenge.
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
+    serializer = ChallengeSponsorSerializer(sponsors, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
@@ -3766,6 +3818,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if verify_complete is not None:
                         return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
+                    # Add Sponsors
+                    error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+                    if error_messages is not None:
+                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Add Prizes
+                    error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+                    if error_messages is not None:
+                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
                         "leaderboard"
@@ -4016,6 +4078,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
                 if verify_complete is not None:
                     return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+
+                # Add/Update Sponsors
+                error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+                if error_messages is not None:
+                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+                # Add/Update Prizes
+                error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+                if error_messages is not None:
+                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}

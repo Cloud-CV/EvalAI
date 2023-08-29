@@ -137,6 +137,10 @@
                         Team Approval</a></li>
                     <li class="margin-btm-0"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-line-chart"></i> Leaderboard</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.hasPrizes"><a ui-sref=".prizes" ui-sref-active="active-challenge"
+                        class="text-light-black w-300"><i class="fa fa-trophy"></i> Prizes</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.has_sponsors"><a ui-sref=".sponsors" ui-sref-active="active-challenge"
+                        class="text-light-black w-300"><i class="fa fa-trophy"></i> Sponsors</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".manage" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-cogs"></i> Manage</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isForumEnabled && challenge.forumURL"><a
