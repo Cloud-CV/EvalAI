@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('HostedChallengesCtrl', HostedChallengesCtrl);
 
-    HostedChallengesCtrl.$inject = ['utilities'];
+    HostedChallengesCtrl.$inject = ['utilities', '$rootScope'];
 
-    function HostedChallengesCtrl(utilities) {
+    function HostedChallengesCtrl(utilities, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -21,6 +21,8 @@
 
         vm.challengeList = [];
         vm.challengeCreator = {};
+        vm.searchTitle = [];
+        vm.selecteddomain = [];
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -56,6 +58,20 @@
             },
             onError: function() {
                 utilities.hideLoader();
+            }
+        };
+        utilities.sendRequest(parameters);
+
+        parameters.url = "challenges/challenge/get_domain_choices/";
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.callback = {
+            onSuccess: function(response) {
+                vm.domain_choices = response.data;
+            },
+            onError: function(response) {
+                var error = response.data;
+                $rootScope.notify("error", error);
             }
         };
         utilities.sendRequest(parameters);
