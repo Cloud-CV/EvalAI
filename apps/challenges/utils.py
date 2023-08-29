@@ -409,6 +409,24 @@ def is_user_in_blocked_email_domains(email, challenge_pk):
     return False
 
 
+def is_user_email_exact_match_in_allowed_email_domains(email, challenge_pk):
+    challenge = get_challenge_model(challenge_pk)
+    email_domain = email.split('@')[-1].lower()
+    for domain in challenge.allowed_email_domains:
+        if domain.lower() == email_domain:
+            return True
+    return False
+
+
+def is_user_email_exact_match_in_blocked_email_domains(email, challenge_pk):
+    challenge = get_challenge_model(challenge_pk)
+    email_domain = email.split('@')[-1].lower()
+    for domain in challenge.blocked_email_domains:
+        if domain.lower() == email_domain:
+            return True
+    return False
+
+
 def get_unique_alpha_numeric_key(length):
     """
     Returns unique alpha numeric key of length

@@ -108,6 +108,7 @@ class Challenge(TimeStampedModel):
     blocked_email_domains = ArrayField(
         models.CharField(max_length=50, blank=True), default=list, blank=True
     )
+    exact_match = models.BooleanField(default=False)
     banned_email_ids = ArrayField(
         models.TextField(null=True, blank=True),
         default=list,

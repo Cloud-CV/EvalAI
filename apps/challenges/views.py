@@ -68,6 +68,8 @@ from challenges.utils import (
     get_unique_alpha_numeric_key,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    is_user_email_exact_match_in_allowed_email_domains,
+    is_user_email_exact_match_in_blocked_email_domains,
     parse_submission_meta_attributes,
     add_domain_to_challenge,
     add_tags_to_challenge,
@@ -520,23 +522,42 @@ def add_participant_team_to_challenge(
             domains = "{}{}{}".format(domains, "/", domain)
         domains = domains[1:]
         for participant_email in participant_team.get_all_participants_email():
-            if not is_user_in_allowed_email_domains(participant_email, challenge_pk):
-                message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
-                    to participate in this challenge."
-                response_data = {"error": message.format(domains)}
-                return Response(
-                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-                )
+            if challenge.exact_match:
+                if not is_user_email_exact_match_in_allowed_email_domains(participant_email, challenge_pk):
+                    message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
+                        to participate in this challenge."
+                    response_data = {"error": message.format(domains)}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+            else:
+                if not is_user_in_allowed_email_domains(participant_email, challenge_pk):
+                    message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
+                        to participate in this challenge."
+                    response_data = {"error": message.format(domains)}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
 
     # Check if user is in blocked list.
-    if is_user_in_blocked_email_domains(user_email, challenge_pk):
-        message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-        domains = ""
-        for domain in challenge.blocked_email_domains:
-            domains = "{}{}{}".format(domains, "/", domain)
-        domains = domains[1:]
-        response_data = {"error": message.format(domains)}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if challenge.exact_match:
+        if is_user_email_exact_match_in_blocked_email_domains(user_email, challenge_pk):
+            message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+            domains = ""
+            for domain in challenge.blocked_email_domains:
+                domains = "{}{}{}".format(domains, "/", domain)
+            domains = domains[1:]
+            response_data = {"error": message.format(domains)}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        if is_user_in_blocked_email_domains(user_email, challenge_pk):
+            message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+            domains = ""
+            for domain in challenge.blocked_email_domains:
+                domains = "{}{}{}".format(domains, "/", domain)
+            domains = domains[1:]
+            response_data = {"error": message.format(domains)}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check to disallow the user if he is a Challenge Host for this challenge
     participant_team_user_ids = set(

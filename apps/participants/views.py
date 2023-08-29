@@ -25,6 +25,8 @@ from challenges.utils import (
     get_participant_model,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
+    is_user_email_exact_match_in_allowed_email_domains,
+    is_user_email_exact_match_in_blocked_email_domains,
 )
 from jobs.models import Submission
 from hosts.utils import is_user_a_host_of_challenge
@@ -264,28 +266,52 @@ def invite_participant_to_team(request, pk):
 
             # Check if user is in allowed list.
             if len(challenge.allowed_email_domains) > 0:
-                if not is_user_in_allowed_email_domains(email, challenge_pk):
-                    message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+                if challenge.exact_match:
+                    if not is_user_email_exact_match_in_allowed_email_domains(email, challenge_pk):
+                        message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+                        domains = ""
+                        for domain in challenge.allowed_email_domains:
+                            domains = "{}{}{}".format(domains, "/", domain)
+                        domains = domains[1:]
+                        response_data = {"error": message.format(domains)}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                else:
+                    if not is_user_in_allowed_email_domains(email, challenge_pk):
+                        message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+                        domains = ""
+                        for domain in challenge.allowed_email_domains:
+                            domains = "{}{}{}".format(domains, "/", domain)
+                        domains = domains[1:]
+                        response_data = {"error": message.format(domains)}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
+
+            # Check if user is in blocked list.
+            if challenge.exact_match:
+                if is_user_email_exact_match_in_blocked_email_domains(email, challenge_pk):
+                    message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
                     domains = ""
-                    for domain in challenge.allowed_email_domains:
+                    for domain in challenge.blocked_email_domains:
                         domains = "{}{}{}".format(domains, "/", domain)
                     domains = domains[1:]
                     response_data = {"error": message.format(domains)}
                     return Response(
                         response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                     )
-
-            # Check if user is in blocked list.
-            if is_user_in_blocked_email_domains(email, challenge_pk):
-                message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-                domains = ""
-                for domain in challenge.blocked_email_domains:
-                    domains = "{}{}{}".format(domains, "/", domain)
-                domains = domains[1:]
-                response_data = {"error": message.format(domains)}
-                return Response(
-                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-                )
+            else:
+                if is_user_in_blocked_email_domains(email, challenge_pk):
+                    message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+                    domains = ""
+                    for domain in challenge.blocked_email_domains:
+                        domains = "{}{}{}".format(domains, "/", domain)
+                    domains = domains[1:]
+                    response_data = {"error": message.format(domains)}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
 
     serializer = InviteParticipantToTeamSerializer(
         data=request.data,
