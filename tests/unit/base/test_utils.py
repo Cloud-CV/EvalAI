@@ -13,9 +13,10 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification, is_user_a_staff, is_user_a_staff_or_host
+from base.utils import RandomFileName, send_slack_notification, is_user_a_staff
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
+from hosts.utils import is_user_a_staff_or_host
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 
@@ -201,18 +202,18 @@ class TestUserisStafforHost(BaseAPITestClass):
         )
 
     def test_if_user_is_staff(self):
-        self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge))
+        self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge.pk))
 
     def test_if_user_is_not_staff(self):
-        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge))
+        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge.pk))
 
     def test_if_user_is_host(self):
         self.user.is_staff = False
         self.user.save()
-        self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge))
+        self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge.pk))
 
     def test_if_user_is_not_host(self):
-        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge))
+        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge.pk))
 
     def test_if_user_is_not_host_or_staff(self):
-        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge))
+        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge.pk))
