@@ -284,16 +284,6 @@ urlpatterns = [
         views.update_challenge_approval,
         name="update_challenge_approval",
     ),
-    url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/prizes/$",
-        views.get_prizes_by_challenge,
-        name="get_prizes_by_challenge",
-    ),
-    url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/sponsors/$",
-        views.get_sponsors_by_challenge,
-        name="get_sponsors_by_challenge",
-    ),
 ]
 
 app_name = "challenges"

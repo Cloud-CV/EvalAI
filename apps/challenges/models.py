@@ -69,8 +69,6 @@ class Challenge(TimeStampedModel):
     )
     domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
     list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
-    has_prize = models.BooleanField(default=False)
-    has_sponsors = models.BooleanField(default=False)
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
@@ -668,44 +666,3 @@ class PWCChallengeLeaderboard(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "pwc_challenge_leaderboard"
-
-
-class ChallengeSponsor(TimeStampedModel):
-    """
-    Model to store challenge sponsors
-    Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
-    """
-
-    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
-    name = models.CharField(max_length=200, blank=True, null=True)
-    website = models.URLField(max_length=200, blank=True, null=True)
-
-    class Meta:
-        app_label = "challenges"
-        db_table = "challenge_sponsor"
-
-    def __str__(self):
-        return f"Sponsor for {self.challenge}: {self.name}"
-
-
-class ChallengePrize(TimeStampedModel):
-    """
-    Model to store challenge prizes
-    Arguments:
-        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
-                                            `modified_at` fields.
-    """
-
-    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
-    amount = models.CharField(max_length=10)
-    description = models.CharField(max_length=25, blank=True, null=True)
-    rank = models.PositiveIntegerField()
-
-    class Meta:
-        app_label = "challenges"
-        db_table = "challenge_prize"
-
-    def __str__(self):
-        return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"
