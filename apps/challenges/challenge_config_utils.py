@@ -5,7 +5,6 @@ import yaml
 
 from django.core.files.base import ContentFile
 
-import re
 from os.path import basename, isfile, join
 from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
 from rest_framework import status
@@ -282,11 +281,6 @@ error_message_dict = {
     "extra_tags": "ERROR: Tags are limited to 4. Please remove extra tags then try again!",
     "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name then try again!",
     "duplicate_combinations_in_challenge_phase_splits": "ERROR: Duplicate combinations of leaderboard_id {}, challenge_phase_id {} and dataset_split_id {} found in challenge phase splits.",
-    "sponsor_not_found": "ERROR: Sponsor name or url not found in YAML data.",
-    "prize_not_found": "ERROR: Prize rank or amount not found in YAML data.",
-    "duplicate_rank": "ERROR: Duplicate rank {} found in YAML data.",
-    "prize_amount_wrong": "ERROR: Invalid amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).",
-    "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
 }
 
 
@@ -997,35 +991,6 @@ class ValidateChallengeConfigUtil:
                 message = self.error_messages_dict["wrong_domain"]
                 self.error_messages.append(message)
 
-    def check_sponsor(self):
-        # Verify Sponsor is correct
-        if "sponsors" in self.yaml_file_data:
-            for sponsor in self.yaml_file_data["sponsors"]:
-                if 'name' not in sponsor or 'website' not in sponsor:
-                    message = self.error_messages_dict["sponsor_not_found"]
-                    self.error_messages.append(message)
-
-    def check_prizes(self):
-        # Verify Prizes are correct
-        if "prizes" in self.yaml_file_data:
-            rank_set = set()
-            for prize in self.yaml_file_data["prizes"]:
-                if 'rank' not in prize or 'amount' not in prize:
-                    message = self.error_messages_dict["prize_not_found"]
-                    self.error_messages.append(message)
-                # Check for duplicate rank.
-                rank = prize['rank']
-                if rank in rank_set:
-                    message = self.error_messages_dict["duplicate_rank"].format(rank)
-                    self.error_messages.append(message)
-                rank_set.add(rank)
-                if not isinstance(rank, int) or rank < 1:
-                    message = self.error_messages_dict["invalid_rank"].format(rank)
-                    self.error_messages.append(message)
-                if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', prize["amount"]):
-                    message = self.error_messages_dict["invalid_amount"].format(prize["amount"])
-                    self.error_messages.append(message)
-
 
 def validate_challenge_config_util(
     request,
@@ -1141,11 +1106,6 @@ def validate_challenge_config_util(
 
     # Validate domain
     val_config_util.check_domain()
-    # Check for Sponsor
-    # val_config_util.check_sponsor()
-
-    # Check for Prize
-    val_config_util.check_prizes()
 
     return (
         val_config_util.error_messages,

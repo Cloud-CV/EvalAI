@@ -16,8 +16,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 
 
@@ -55,8 +53,6 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "domain",
             "domain_name",
             "list_tags",
-            "has_prize",
-            "has_sponsors",
             "published",
             "submission_time_limit",
             "is_registration_open",
@@ -563,49 +559,4 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
             "leaderboard",
             "result",
             "error",
-        )
-
-
-class ChallengePrizeSerializer(serializers.ModelSerializer):
-    """
-    Serialize the ChallengePrize Model.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(ChallengePrizeSerializer, self).__init__(*args, **kwargs)
-        context = kwargs.get("context")
-        if context:
-            challenge = context.get("challenge")
-            if challenge:
-                kwargs["data"]["challenge"] = challenge.pk
-
-    class Meta:
-        model = ChallengePrize
-        fields = (
-            "challenge",
-            "amount",
-            "rank",
-            "description"
-        )
-
-
-class ChallengeSponsorSerializer(serializers.ModelSerializer):
-    """
-    Serialize the ChallengeSponsor Model.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(ChallengeSponsorSerializer, self).__init__(*args, **kwargs)
-        context = kwargs.get("context")
-        if context:
-            challenge = context.get("challenge")
-            if challenge:
-                kwargs["data"]["challenge"] = challenge.pk
-
-    class Meta:
-        model = ChallengeSponsor
-        fields = (
-            "challenge",
-            "name",
-            "website"
         )
