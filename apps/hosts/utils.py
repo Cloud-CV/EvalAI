@@ -1,4 +1,4 @@
-from base.utils import get_model_object
+from base.utils import get_model_object, is_user_a_staff
 from challenges.models import Challenge
 
 from .models import ChallengeHost, ChallengeHostTeam
@@ -26,6 +26,20 @@ def is_user_part_of_host_team(user, host_team):
     return ChallengeHost.objects.filter(
         user=user, team_name=host_team
     ).exists()
+
+
+def is_user_a_staff_or_host(user, challenge_pk):
+    """
+    Function to check if a user is staff or host
+
+    Args:
+        user ([User Class Object]): User model class object
+        challenge_pk ([int]): Challenge primary key
+
+    Return:
+        {bool} : True/False if the user is staff or host
+    """
+    return is_user_a_staff(user) or is_user_a_host_of_challenge(user, challenge_pk)
 
 
 get_challenge_host_team_model = get_model_object(ChallengeHostTeam)
