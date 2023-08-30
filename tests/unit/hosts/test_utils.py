@@ -122,6 +122,13 @@ class TestUserisStafforHost(BaseTestClass):
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             description="Description for test challenge",
