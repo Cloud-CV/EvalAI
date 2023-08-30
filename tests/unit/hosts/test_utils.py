@@ -94,7 +94,6 @@ class TestChallengeHost(BaseTestClass):
         self.assertEqual(output, expected)
 
 
-
 class TestUserisStafforHost(BaseTestClass):
     def setUp(self):
         self.user = User.objects.create(
