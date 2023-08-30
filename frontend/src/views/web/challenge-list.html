@@ -1,23 +1,9 @@
 <section class="ev-sm-container ev-view challenge-container">
-    <div class="row">
-        <div class="col s12 m8">
-            <i class="material-icons prefix"></i>
-            <strong class="text-med-black fs-18">Search</strong>
-            <input type="text" ng-model="challengeList.searchTitle" placeholder="Search challenges by title, tag or domain" style="font-weight: bold;">
-        </div>
-        <div class="col s12 m4 domain-filter">
-            <md-select class="right" id="domain" name="domain" placeholder="Domain Filter" aria-label="Domain Filter" ng-model="challengeList.selecteddomain">
-                <md-option ng-repeat="option in challengeList.domain_choices" value="{{ option[1] }}">{{ option[1] }}</md-option>
-            </md-select>
-            <i class="fa fa-filter right filter-icon" aria-hidden="true"></i>
-        </div>
-    </div>
-    
     <!-- ongoing challenges -->
     <div class="challenge-page-title" id = "ongoing-challenges"><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
     <div ng-if="challengeList.noneCurrentChallenge">None</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList | filter:challengeList.searchTitle | filter:challengeList.selecteddomain"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.image}}">
@@ -60,7 +46,7 @@
     <div class="challenge-page-title"><strong class="text-med-black fs-18">Upcoming Challenges</strong></div>
     <div ng-if="challengeList.noneUpcomingChallenge">None</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList | filter:challengeList.searchTitle | filter:challengeList.selecteddomain"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.image}}">
@@ -85,7 +71,7 @@
     <div class="challenge-page-title"><strong class="text-med-black fs-18">Past Challenges</strong></div>
     <div ng-if="challengeList.nonePastChallenge">None</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList | filter:challengeList.searchTitle | filter:challengeList.selecteddomain">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList">
             <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
