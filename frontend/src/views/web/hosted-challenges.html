@@ -6,9 +6,11 @@
             <input type="text" ng-model="hostedChallenges.searchTitle" placeholder="Search challenges by title, tag or domain" style="font-weight: bold;">
         </div>
         <div class="input-field col s12 m4 domain-filter">
+            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challengeList.resetFilter()">Reset Filter</button>
             <md-select class="right" id="domain" name="domain" placeholder="Domain Filter" aria-label="Domain Filter" ng-model="challengeList.selecteddomain">
                 <md-option ng-repeat="option in hostedChallenges.domain_choices" value="{{ option[1] }}">{{ option[1] }}</md-option>
             </md-select>
+            <i class="fa fa-filter right filter-icon" aria-hidden="true"></i>
         </div>
     </div>
 

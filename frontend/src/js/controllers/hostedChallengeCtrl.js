@@ -75,5 +75,10 @@
             }
         };
         utilities.sendRequest(parameters);
+
+        vm.resetFilter = function() {
+            vm.selecteddomain = [];
+            vm.searchTitle = [];
+        };
     }
 })();
