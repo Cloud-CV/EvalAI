@@ -36,7 +36,6 @@ from base.utils import (
     get_or_create_sqs_queue,
     paginated_queryset,
     is_user_a_staff,
-    is_user_a_staff_or_host
 )
 from challenges.models import (
     ChallengePhase,
@@ -55,7 +54,7 @@ from challenges.utils import (
     get_participant_model,
 )
 from hosts.models import ChallengeHost
-from hosts.utils import is_user_a_host_of_challenge
+from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_model,
