@@ -35,4 +35,22 @@
         };
     }
 
+    angular.module('evalai')
+    .filter('customTitleFilter', customTitleFilter);
+
+    function customTitleFilter() {
+        return function(challenges, searchText) {
+          if (searchText === undefined) {
+            return challenges;
+          }
+          searchText = searchText.toString().toLowerCase();
+          var searchlist = searchText.split(" ");
+          return challenges.filter(function(challenge) {
+            return searchlist.some(function(term) {
+                return challenge.title.toLowerCase().indexOf(term) !== -1;
+              });
+            });
+        };
+      }
+
 })();
