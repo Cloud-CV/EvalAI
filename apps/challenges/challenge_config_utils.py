@@ -5,7 +5,6 @@ import yaml
 
 from django.core.files.base import ContentFile
 
-import re
 from os.path import basename, isfile, join
 from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
 from rest_framework import status
@@ -259,8 +258,10 @@ error_message_dict = {
     "dataset_split_schema_errors": "ERROR: Dataset split {} has the following schema errors:\n {}",
     "dataset_split_addition": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
     "missing_existing_dataset_split_id": "ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
+    "challenge_phase_split_not_exist": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.",
     "challenge_phase_split_schema_errors": "ERROR: Challenge phase split {} has the following schema errors:\n {}",
     "missing_keys_in_challenge_phase_splits": "ERROR: The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}",
+    "challenge_phase_split_not_found": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.",
     "no_key_for_challenge_phase_splits": "ERROR: There is no key for challenge phase splits.",
     "no_codename_for_challenge_phase": "ERROR: No codename found for the challenge phase. Please add a codename and try again!",
     "duplicate_codename_for_phase": "ERROR: Duplicate codename {} for phase {}. Please ensure codenames are unique",
@@ -268,6 +269,8 @@ error_message_dict = {
     "submission_meta_attribute_option_missing": "ERROR: Please include at least one option in the attribute for challenge phase {}",
     "missing_submission_meta_attribute_fields": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
     "challenge_phase_schema_errors": "ERROR: Challenge phase {} has the following schema errors:\n {}",
+    "challenge_phase_addition": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
+    "challenge_phase_not_found": "ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.",
     "is_submission_public_restricted": "ERROR: is_submission_public can't be 'True' for challenge phase '{}' with is_restricted_to_select_one_submission 'True'. Please change is_submission_public to 'False' and try again!",
     "missing_option_in_submission_meta_attribute": "ERROR: Please include at least one option in the attribute for challenge phase {}",
     "missing_fields_in_submission_meta_attribute": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
@@ -278,11 +281,6 @@ error_message_dict = {
     "extra_tags": "ERROR: Tags are limited to 4. Please remove extra tags then try again!",
     "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name then try again!",
     "duplicate_combinations_in_challenge_phase_splits": "ERROR: Duplicate combinations of leaderboard_id {}, challenge_phase_id {} and dataset_split_id {} found in challenge phase splits.",
-    "sponsor_not_found": "ERROR: Sponsor name or url not found in YAML data.",
-    "prize_not_found": "ERROR: Prize rank or amount not found in YAML data.",
-    "duplicate_rank": "ERROR: Duplicate rank {} found in YAML data.",
-    "prize_amount_wrong": "ERROR: Invalid amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).",
-    "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
 }
 
 
@@ -784,7 +782,22 @@ class ValidateChallengeConfigUtil:
                 ].format(data["id"], serializer_error)
                 self.error_messages.append(message)
             else:
+                if (
+                    current_phase_config_ids
+                    and int(data["id"]) not in current_phase_config_ids
+                ):
+                    message = self.error_messages_dict[
+                        "challenge_phase_addition"
+                    ].format(data["id"])
+                    self.error_messages.append(message)
                 self.phase_ids.append(data["id"])
+
+        for current_challenge_phase_id in current_phase_config_ids:
+            if current_challenge_phase_id not in self.phase_ids:
+                message = self.error_messages_dict[
+                    "challenge_phase_not_found"
+                ].format(current_challenge_phase_id)
+                self.error_messages.append(message)
 
     def validate_challenge_phase_splits(self, current_phase_split_ids):
         challenge_phase_splits = self.yaml_file_data.get(
@@ -836,13 +849,31 @@ class ValidateChallengeConfigUtil:
                     "challenge_phase_id",
                 }
                 if expected_keys.issubset(data.keys()):
-                    challenge_phase_split_uuids.append(
-                        (
+                    if (
+                        current_phase_split_ids
+                        and (
                             data["leaderboard_id"],
                             data["challenge_phase_id"],
                             data["dataset_split_id"],
                         )
-                    )
+                        not in current_phase_split_ids
+                    ):
+                        message = self.error_messages_dict[
+                            "challenge_phase_split_not_exist"
+                        ].format(
+                            data["leaderboard_id"],
+                            data["challenge_phase_id"],
+                            data["dataset_split_id"],
+                        )
+                        self.error_messages.append(message)
+                    else:
+                        challenge_phase_split_uuids.append(
+                            (
+                                data["leaderboard_id"],
+                                data["challenge_phase_id"],
+                                data["dataset_split_id"],
+                            )
+                        )
 
                     (
                         is_mapping_valid,
@@ -872,6 +903,12 @@ class ValidateChallengeConfigUtil:
                     message = self.error_messages_dict[
                         "missing_keys_in_challenge_phase_splits"
                     ].format(phase_split, missing_keys_string)
+                    self.error_messages.append(message)
+            for uuid in current_phase_split_ids:
+                if uuid not in challenge_phase_split_uuids:
+                    message = self.error_messages_dict[
+                        "challenge_phase_split_not_found"
+                    ].format(uuid[0], uuid[1], uuid[2])
                     self.error_messages.append(message)
         else:
             message = self.error_messages_dict[
@@ -953,35 +990,6 @@ class ValidateChallengeConfigUtil:
             if domain_value not in domain_choice:
                 message = self.error_messages_dict["wrong_domain"]
                 self.error_messages.append(message)
-
-    def check_sponsor(self):
-        # Verify Sponsor is correct
-        if "sponsors" in self.yaml_file_data:
-            for sponsor in self.yaml_file_data["sponsors"]:
-                if 'name' not in sponsor or 'website' not in sponsor:
-                    message = self.error_messages_dict["sponsor_not_found"]
-                    self.error_messages.append(message)
-
-    def check_prizes(self):
-        # Verify Prizes are correct
-        if "prizes" in self.yaml_file_data:
-            rank_set = set()
-            for prize in self.yaml_file_data["prizes"]:
-                if 'rank' not in prize or 'amount' not in prize:
-                    message = self.error_messages_dict["prize_not_found"]
-                    self.error_messages.append(message)
-                # Check for duplicate rank.
-                rank = prize['rank']
-                if rank in rank_set:
-                    message = self.error_messages_dict["duplicate_rank"].format(rank)
-                    self.error_messages.append(message)
-                rank_set.add(rank)
-                if not isinstance(rank, int) or rank < 1:
-                    message = self.error_messages_dict["invalid_rank"].format(rank)
-                    self.error_messages.append(message)
-                if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', prize["amount"]):
-                    message = self.error_messages_dict["invalid_amount"].format(prize["amount"])
-                    self.error_messages.append(message)
 
 
 def validate_challenge_config_util(
@@ -1098,11 +1106,6 @@ def validate_challenge_config_util(
 
     # Validate domain
     val_config_util.check_domain()
-    # Check for Sponsor
-    # val_config_util.check_sponsor()
-
-    # Check for Prize
-    val_config_util.check_prizes()
 
     return (
         val_config_util.error_messages,

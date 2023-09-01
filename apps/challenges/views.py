@@ -54,7 +54,6 @@ from base.utils import (
     send_email,
     send_slack_notification,
     is_user_a_staff,
-    is_user_a_staff_or_host
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -73,8 +72,6 @@ from challenges.utils import (
     parse_submission_meta_attributes,
     add_domain_to_challenge,
     add_tags_to_challenge,
-    add_prizes_to_challenge,
-    add_sponsors_to_challenge,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -85,6 +82,7 @@ from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_teams_for_user,
     is_user_a_host_of_challenge,
+    is_user_a_staff_or_host,
     get_challenge_host_team_model,
 )
 from jobs.filters import SubmissionFilter
@@ -115,8 +113,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -134,9 +130,7 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
-    LeaderboardDataSerializer,
-    ChallengePrizeSerializer,
-    ChallengeSponsorSerializer,
+    LeaderboardDataSerializer
 )
 
 from .aws_utils import (
@@ -1036,7 +1030,7 @@ def challenge_phase_split_list(request, challenge_pk):
     ).order_by("pk")
 
     # Check if user is a challenge host or staff
-    challenge_host = is_user_a_staff_or_host(request.user, challenge)
+    challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
 
     if not challenge_host:
         challenge_phase_split = challenge_phase_split.filter(
@@ -1607,16 +1601,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if verify_complete is not None:
                 return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
-            # Add Sponsors
-            error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
-            if error_messages is not None:
-                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
-
-            # Add Prizes
-            error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
-            if error_messages is not None:
-                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
-
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
             leaderboard_ids = {}
@@ -1633,23 +1617,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             # Create Challenge Phase
             challenge_phase_ids = {}
-
-            # Delete the challenge phase if it is not present in the yaml file
-            existing_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-            existing_challenge_phase_ids = [str(challenge_phase.config_id) for challenge_phase in existing_challenge_phases]
-            challenge_phases_data_ids = [str(challenge_phase_data["id"]) for challenge_phase_data in challenge_phases_data]
-            challenge_phase_ids_to_delete = list(set(existing_challenge_phase_ids) - set(challenge_phases_data_ids))
-            for challenge_phase_id_to_delete in challenge_phase_ids_to_delete:
-                challenge_phase = ChallengePhase.objects.filter(challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete).first()
-                submission_exist = Submission.objects.filter(challenge_phase=challenge_phase).exists()
-                if submission_exist:
-                    response_data = {
-                        "error": "Sorry, you cannot delete a challenge phase with submissions."
-                    }
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    challenge_phase.delete()
-
             for data in challenge_phases_data:
                 # Check for challenge phase description file
                 phase_description_file_path = join(
@@ -1747,30 +1714,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
                 response_data = {"error": message}
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-
-            # Delete the challenge phase split if it is not present in the yaml file
-            existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-            challenge_phase_splits_set = set()
-            for challenge_phase_split in existing_challenge_phase_splits:
-                challenge_phase = challenge_phase_split.challenge_phase
-                dataset_split = challenge_phase_split.dataset_split
-                leaderboard = challenge_phase_split.leaderboard
-                combination = (challenge_phase, dataset_split, leaderboard)
-                challenge_phase_splits_set.add(combination)
-            for data in challenge_phase_splits_data:
-                challenge_phase = challenge_phase_ids[str(data["challenge_phase_id"])]
-                dataset_split = dataset_split_ids[str(data["dataset_split_id"])]
-                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                combination = (challenge_phase, dataset_split, leaderboard)
-                if combination in challenge_phase_splits_set:
-                    challenge_phase_splits_set.remove(combination)
-            for challenge_phase_split in challenge_phase_splits_set:
-                challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                    challenge_phase=challenge_phase_split[0],
-                    dataset_split=challenge_phase_split[1],
-                    leaderboard=challenge_phase_split[2]
-                )
-                challenge_phase_split_qs.delete()
 
             for data in challenge_phase_splits_data:
                 if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
@@ -2711,42 +2654,6 @@ def get_domain_choices(request):
     else:
         response_data = {"error": "Method not allowed"}
         return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-@api_view(["GET"])
-@throttle_classes([UserRateThrottle])
-def get_prizes_by_challenge(request, challenge_pk):
-    """
-    Returns a list of prizes for a given challenge.
-    """
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {"error": "Challenge does not exist"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    prizes = ChallengePrize.objects.filter(challenge=challenge)
-    serializer = ChallengePrizeSerializer(prizes, many=True)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-@throttle_classes([UserRateThrottle])
-def get_sponsors_by_challenge(request, challenge_pk):
-    """
-    Returns a list of sponsors for a given challenge.
-    """
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {"error": "Challenge does not exist"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
-    serializer = ChallengeSponsorSerializer(sponsors, many=True)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET", "POST"])
@@ -3744,8 +3651,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_queryset = Challenge.objects.filter(
-        github_repository=request.data["GITHUB_REPOSITORY"],
-        github_branch=request.data["GITHUB_BRANCH"]
+        github_repository=request.data["GITHUB_REPOSITORY"]
     )
 
     if challenge_queryset:
@@ -3805,6 +3711,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         zip_ref,
         challenge_queryset[0] if challenge_queryset else None
     )
+
     if not len(error_messages):
         if not challenge_queryset:
             error_messages = None
@@ -3822,9 +3729,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
                             ],
-                            "github_branch": request.data[
-                                "GITHUB_BRANCH"
-                            ],
                         },
                     )
                     if serializer.is_valid():
@@ -3841,16 +3745,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
                     if verify_complete is not None:
                         return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
-
-                    # Add Sponsors
-                    error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
-                    if error_messages is not None:
-                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
-
-                    # Add Prizes
-                    error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
-                    if error_messages is not None:
-                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
 
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
@@ -4103,16 +3997,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 if verify_complete is not None:
                     return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
 
-                # Add/Update Sponsors
-                error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
-                if error_messages is not None:
-                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
-
-                # Add/Update Prizes
-                error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
-                if error_messages is not None:
-                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
-
                 # Updating Leaderboard object
                 leaderboard_ids = {}
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -4143,25 +4027,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
-
-                # Delete the challenge phase if it is not present in the yaml file
-                existing_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-                existing_challenge_phase_ids = [str(challenge_phase.config_id) for challenge_phase in existing_challenge_phases]
-                challenge_phases_data_ids = [str(challenge_phase_data["id"]) for challenge_phase_data in challenge_phases_data]
-                challenge_phase_ids_to_delete = list(set(existing_challenge_phase_ids) - set(challenge_phases_data_ids))
-                for challenge_phase_id_to_delete in challenge_phase_ids_to_delete:
-                    challenge_phase = ChallengePhase.objects.filter(
-                        challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete
-                    ).first()
-                    submission_exist = Submission.objects.filter(challenge_phase=challenge_phase).exists()
-                    if submission_exist:
-                        response_data = {
-                            "error": "Sorry, you cannot delete a challenge phase with submissions."
-                        }
-                        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        challenge_phase.delete()
-
                 for data, challenge_test_annotation_file in zip(
                     challenge_phases_data, files["challenge_test_annotation_files"]
                 ):
@@ -4181,6 +4046,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ).first()
                     if (
                         challenge_test_annotation_file
+                        and not challenge_phase.annotations_uploaded_using_cli
                     ):
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
@@ -4254,31 +4120,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_splits_data = yaml_file_data[
                     "challenge_phase_splits"
                 ]
-
-                # Delete the challenge phase split if it is not present in the yaml file
-                existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-                challenge_phase_splits_set = set()
-                for challenge_phase_split in existing_challenge_phase_splits:
-                    challenge_phase = challenge_phase_split.challenge_phase
-                    dataset_split = challenge_phase_split.dataset_split
-                    leaderboard = challenge_phase_split.leaderboard
-                    combination = (challenge_phase, dataset_split, leaderboard)
-                    challenge_phase_splits_set.add(combination)
-                for data in challenge_phase_splits_data:
-                    challenge_phase = challenge_phase_ids[str(data["challenge_phase_id"])]
-                    dataset_split = dataset_split_ids[str(data["dataset_split_id"])]
-                    leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                    combination = (challenge_phase, dataset_split, leaderboard)
-                    if combination in challenge_phase_splits_set:
-                        challenge_phase_splits_set.remove(combination)
-                for challenge_phase_split in challenge_phase_splits_set:
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase=challenge_phase_split[0],
-                        dataset_split=challenge_phase_split[1],
-                        leaderboard=challenge_phase_split[2]
-                    )
-                    challenge_phase_split_qs.delete()
-
                 for data in challenge_phase_splits_data:
                     if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
                         message = (
