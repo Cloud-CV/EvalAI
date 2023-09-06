@@ -17,6 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
 from settings.common import SQS_RETENTION_PERIOD
+
 logger = logging.getLogger(__name__)
 
 
