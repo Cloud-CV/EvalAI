@@ -16,7 +16,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from sendgrid.helpers.mail import Email, Mail, Personalization
 
-
+from settings.common import SQS_RETENTION_PERIOD
 logger = logging.getLogger(__name__)
 
 
@@ -195,8 +195,6 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     try:
         if challenge.sqs_rentension_time:
             SQS_RETENTION_PERIOD = challenge.sqs_retention_time
-        else:
-            SQS_RETENTION_PERIOD = settings.SQS_RETENTION_TIME
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if (
