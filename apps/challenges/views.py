@@ -54,7 +54,6 @@ from base.utils import (
     send_email,
     send_slack_notification,
     is_user_a_staff,
-    is_user_a_staff_or_host
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -81,6 +80,7 @@ from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_teams_for_user,
     is_user_a_host_of_challenge,
+    is_user_a_staff_or_host,
     get_challenge_host_team_model,
 )
 from jobs.filters import SubmissionFilter
@@ -1009,7 +1009,7 @@ def challenge_phase_split_list(request, challenge_pk):
     ).order_by("pk")
 
     # Check if user is a challenge host or staff
-    challenge_host = is_user_a_staff_or_host(request.user, challenge)
+    challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
 
     if not challenge_host:
         challenge_phase_split = challenge_phase_split.filter(
