@@ -14,7 +14,7 @@ from allauth.account.models import EmailAddress
 from challenges.models import (Challenge, ChallengeConfiguration,
                                ChallengePhase, ChallengePhaseSplit,
                                DatasetSplit, Leaderboard, StarChallenge,
-                               LeaderboardData)
+                               LeaderboardData, ChallengePrize, ChallengeSponsor)
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -153,6 +153,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "domain": self.challenge.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge.list_tags,
+                "has_prize": self.challenge.has_prize,
+                "has_sponsors": self.challenge.has_sponsors,
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -502,6 +504,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "domain": self.challenge.domain,
             "domain_name": 'Computer Vision',
             "list_tags": self.challenge.list_tags,
+            "has_prize": self.challenge.has_prize,
+            "has_sponsors": self.challenge.has_sponsors,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -596,6 +600,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "domain": self.challenge.domain,
             "domain_name": 'Computer Vision',
             "list_tags": self.challenge.list_tags,
+            "has_prize": self.challenge.has_prize,
+            "has_sponsors": self.challenge.has_sponsors,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -711,6 +717,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "domain": self.challenge.domain,
             "domain_name": 'Computer Vision',
             "list_tags": self.challenge.list_tags,
+            "has_prize": self.challenge.has_prize,
+            "has_sponsors": self.challenge.has_sponsors,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -782,6 +790,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "domain": self.challenge.domain,
             "domain_name": 'Computer Vision',
             "list_tags": self.challenge.list_tags,
+            "has_prize": self.challenge.has_prize,
+            "has_sponsors": self.challenge.has_sponsors,
             "published": self.challenge.published,
             "submission_time_limit": self.challenge.submission_time_limit,
             "is_registration_open": self.challenge.is_registration_open,
@@ -1378,6 +1388,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "domain": self.challenge3.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge3.list_tags,
+                "has_prize": self.challenge3.has_prize,
+                "has_sponsors": self.challenge3.has_sponsors,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1455,6 +1467,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "domain": self.challenge2.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1532,6 +1546,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "domain": self.challenge4.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge4.list_tags,
+                "has_prize": self.challenge4.has_prize,
+                "has_sponsors": self.challenge4.has_sponsors,
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1609,6 +1625,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "domain": self.challenge4.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge4.list_tags,
+                "has_prize": self.challenge4.has_prize,
+                "has_sponsors": self.challenge4.has_sponsors,
                 "published": self.challenge4.published,
                 "submission_time_limit": self.challenge4.submission_time_limit,
                 "is_registration_open": self.challenge4.is_registration_open,
@@ -1670,6 +1688,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "domain": self.challenge3.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge3.list_tags,
+                "has_prize": self.challenge3.has_prize,
+                "has_sponsors": self.challenge3.has_sponsors,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -1731,6 +1751,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "domain": self.challenge2.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -1863,6 +1885,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "domain": self.challenge3.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge3.list_tags,
+                "has_prize": self.challenge3.has_prize,
+                "has_sponsors": self.challenge3.has_sponsors,
                 "published": self.challenge3.published,
                 "submission_time_limit": self.challenge3.submission_time_limit,
                 "is_registration_open": self.challenge3.is_registration_open,
@@ -2019,6 +2043,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "domain": self.challenge3.domain,
             "domain_name": 'Computer Vision',
             "list_tags": self.challenge3.list_tags,
+            "has_prize": self.challenge3.has_prize,
+            "has_sponsors": self.challenge3.has_sponsors,
             "published": self.challenge3.published,
             "submission_time_limit": self.challenge3.submission_time_limit,
             "is_registration_open": self.challenge3.is_registration_open,
@@ -2104,6 +2130,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "domain": self.challenge4.domain,
             "domain_name": 'Computer Vision',
             "list_tags": self.challenge4.list_tags,
+            "has_prize": self.challenge4.has_prize,
+            "has_sponsors": self.challenge4.has_sponsors,
             "published": self.challenge4.published,
             "submission_time_limit": self.challenge4.submission_time_limit,
             "is_registration_open": self.challenge4.is_registration_open,
@@ -2249,6 +2277,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "domain": self.challenge2.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2322,6 +2352,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "domain": self.challenge2.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2395,6 +2427,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "domain": self.challenge2.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2466,6 +2500,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "domain": self.challenge.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge.list_tags,
+                "has_prize": self.challenge.has_prize,
+                "has_sponsors": self.challenge.has_sponsors,
                 "published": self.challenge.published,
                 "submission_time_limit": self.challenge.submission_time_limit,
                 "is_registration_open": self.challenge.is_registration_open,
@@ -2527,6 +2563,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "domain": self.challenge2.domain,
                 "domain_name": 'Computer Vision',
                 "list_tags": self.challenge2.list_tags,
+                "has_prize": self.challenge2.has_prize,
+                "has_sponsors": self.challenge2.has_sponsors,
                 "published": self.challenge2.published,
                 "submission_time_limit": self.challenge2.submission_time_limit,
                 "is_registration_open": self.challenge2.is_registration_open,
@@ -2594,6 +2632,118 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         )
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class ChallengePrizesTest(BaseAPITestClass):
+
+    def setUp(self):
+        super().setUp()
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_challenge_has_prize_false(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_by_pk",
+            kwargs={"pk": self.challenge.pk},
+        )
+
+        self.challenge.has_prize = False
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["has_prize"])
+
+    def test_challenge_has_prize_true(self):
+        self.url = reverse_lazy(
+            "challenges:get_prizes_by_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.challenge.has_prize = True
+        self.challenge.save()
+        prize = ChallengePrize.objects.create(
+            challenge=self.challenge,
+            amount="100USD",
+            rank=1,
+        )
+        prize1 = ChallengePrize.objects.create(
+            challenge=self.challenge,
+            amount="500USD",
+            rank=2,
+        )
+        response = self.client.get(self.url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["challenge"], prize.challenge.pk)
+        self.assertEqual(response.data[0]["amount"], prize.amount)
+        self.assertEqual(response.data[0]["rank"], prize.rank)
+        self.assertEqual(response.data[1]["challenge"], prize1.challenge.pk)
+        self.assertEqual(response.data[1]["amount"], prize1.amount)
+        self.assertEqual(response.data[1]["rank"], prize1.rank)
+
+
+class ChallengeSponsorTest(BaseAPITestClass):
+
+    def setUp(self):
+        super().setUp()
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=True,
+            is_registration_open=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_challenge_has_sponsor_false(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_by_pk",
+            kwargs={"pk": self.challenge.pk},
+        )
+
+        self.challenge.has_sponsors = False
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["has_sponsors"])
+
+    def test_challenge_has_sponsor_true(self):
+        self.url = reverse_lazy(
+            "challenges:get_sponsors_by_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.challenge.has_sponsors = True
+        self.challenge.save()
+        sponsor = ChallengeSponsor.objects.create(
+            challenge=self.challenge,
+            name="Sponsor 1",
+            website="https://evalai.com",
+        )
+        response = self.client.get(self.url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["challenge"], sponsor.challenge.pk)
+        self.assertEqual(response.data[0]["name"], sponsor.name)
+        self.assertEqual(response.data[0]["website"], sponsor.website)
 
 
 class BaseChallengePhaseClass(BaseAPITestClass):
