@@ -11,6 +11,7 @@ from challenges.models import Challenge
 from django.conf import settings
 
 from monitoring.statsd.metrics import NUM_SUBMISSIONS_IN_QUEUE, increment_statsd_counter
+from settings.common import SQS_RETENTION_PERIOD
 
 from .utils import get_submission_model
 
@@ -57,8 +58,6 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     try:
         if challenge.sqs_rentension_time:
             SQS_RETENTION_PERIOD = challenge.sqs_retention_time
-        else:
-            SQS_RETENTION_PERIOD = settings.SQS_RETENTION_TIME
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if (
