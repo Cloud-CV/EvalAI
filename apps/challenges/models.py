@@ -274,11 +274,11 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def update_sqs_rendezvous_time(sender, instance, created, **kwargs):
+def update_sqs_retention_time(sender, instance, created, **kwargs):
     """
     Function to update the retention time of the SQS queue
     """
-    field_name = "approved_by_admin"
+    field_name = "sqs_retention_time"
     import boto3
     import os
 
@@ -289,13 +289,9 @@ def update_sqs_rendezvous_time(sender, instance, created, **kwargs):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
-        challenges = Challenge.object.all()
-        for challenge in challenges:
-            if challenge.queue is None:
-                continue
-            queue_name = challenge.queue
-            queue = sqs.get_queue_by_name(QueueName=queue_name)
-            queue.set_attributes(Attributes={"MessageRetentionPeriod": challenge.sqs_retention_time})
+        queue_name = instance.queue
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+        queue.set_attributes(Attributes={"MessageRetentionPeriod": instance.sqs_retention_time})
 
 
 class DatasetSplit(TimeStampedModel):
