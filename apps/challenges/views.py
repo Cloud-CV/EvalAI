@@ -54,7 +54,6 @@ from base.utils import (
     send_email,
     send_slack_notification,
     is_user_a_staff,
-    is_user_a_staff_or_host
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -85,6 +84,7 @@ from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_teams_for_user,
     is_user_a_host_of_challenge,
+    is_user_a_staff_or_host,
     get_challenge_host_team_model,
 )
 from jobs.filters import SubmissionFilter
@@ -1036,7 +1036,7 @@ def challenge_phase_split_list(request, challenge_pk):
     ).order_by("pk")
 
     # Check if user is a challenge host or staff
-    challenge_host = is_user_a_staff_or_host(request.user, challenge)
+    challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
 
     if not challenge_host:
         challenge_phase_split = challenge_phase_split.filter(
@@ -3744,8 +3744,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_queryset = Challenge.objects.filter(
-        github_repository=request.data["GITHUB_REPOSITORY"],
-        github_branch=request.data["GITHUB_BRANCH"]
+        github_repository=request.data["GITHUB_REPOSITORY"]
     )
 
     if challenge_queryset:
@@ -3805,6 +3804,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         zip_ref,
         challenge_queryset[0] if challenge_queryset else None
     )
+
     if not len(error_messages):
         if not challenge_queryset:
             error_messages = None
@@ -3821,9 +3821,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             ],
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
-                            ],
-                            "github_branch": request.data[
-                                "GITHUB_BRANCH"
                             ],
                         },
                     )
