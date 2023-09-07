@@ -977,10 +977,10 @@ class ValidateChallengeConfigUtil:
                     self.error_messages.append(message)
                 rank_set.add(rank)
                 if not isinstance(rank, int) or rank < 1:
-                    message = self.error_messages_dict["invalid_rank"].format(rank)
+                    message = self.error_messages_dict["prize_rank_wrong"].format(rank)
                     self.error_messages.append(message)
                 if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', prize["amount"]):
-                    message = self.error_messages_dict["invalid_amount"].format(prize["amount"])
+                    message = self.error_messages_dict["prize_amount_wrong"].format(prize["amount"])
                     self.error_messages.append(message)
 
 
