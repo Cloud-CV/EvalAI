@@ -144,7 +144,10 @@ from .aws_utils import (
     restart_workers,
     start_ec2_instance,
     stop_ec2_instance,
+    restart_ec2_instance,
     describe_ec2_instance,
+    create_ec2_instance,
+    terminate_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -3448,7 +3451,7 @@ def manage_worker(request, challenge_pk, action):
 def get_ec2_instance_details(request, challenge_pk):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3487,15 +3490,133 @@ def get_ec2_instance_details(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.ec2_instance_id:
+        response_data = {
+            "error": "No EC2 instance ID found for the challenge. Please ensure instance ID exists."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = terminate_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, worker_instance_type, worker_image_url):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()):
+        response_data = {
+            "error": "Creation of EC2 instance is not supported for an inactive challenge."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not isinstance(ec2_storage, int):
+        response_data = {
+            "error": "Passed value of EC2 storage should be integer."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not isinstance(worker_instance_type, str):
+        response_data = {
+            "error": "Passed value of worker instance type should be string."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not isinstance(worker_image_url, str):
+        response_data = {
+            "error": "Passed value of worker image URL should be string."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not ec2_storage:
+        ec2_storage = challenge.ec2_storage
+
+    if not worker_instance_type:
+        worker_instance_type = challenge.worker_instance_type
+
+    if not worker_image_url:
+        worker_image_url = challenge.worker_image_url
+
+    response = create_ec2_instance(
+        challenge,
+        ec2_storage,
+        worker_instance_type,
+        worker_image_url
+    )
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def manage_ec2_instance(request, challenge_pk, action):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
-    if action not in ("start", "stop"):
+    if action not in ("start", "stop", "restart"):
         response_data = {
             "error": "The action {} is invalid for worker".format(action)
         }
@@ -3509,7 +3630,7 @@ def manage_ec2_instance(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "restart"):
         response_data = {
             "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
         }
@@ -3519,6 +3640,8 @@ def manage_ec2_instance(request, challenge_pk, action):
         response = start_ec2_instance(challenge)
     elif action == "stop":
         response = stop_ec2_instance(challenge)
+    elif action == "restart":
+        response = restart_ec2_instance(challenge)
 
     if response:
         if "error" not in response:
