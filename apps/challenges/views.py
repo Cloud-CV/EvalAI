@@ -147,6 +147,7 @@ from .aws_utils import (
     restart_ec2_instance,
     describe_ec2_instance,
     create_ec2_instance,
+    terminate_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -3450,7 +3451,7 @@ def manage_worker(request, challenge_pk, action):
 def get_ec2_instance_details(request, challenge_pk):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3489,10 +3490,53 @@ def get_ec2_instance_details(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.ec2_instance_id:
+        response_data = {
+            "error": "No EC2 instance ID found for the challenge. Please ensure instance ID exists."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = terminate_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, worker_instance_type, worker_image_url):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3567,7 +3611,7 @@ def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, work
 def manage_ec2_instance(request, challenge_pk, action):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
