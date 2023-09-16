@@ -212,7 +212,7 @@ class Challenge(TimeStampedModel):
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
-    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default=None)
+    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default="")
     evaluation_module_error = models.TextField(null=True, blank=True)
 
     class Meta:
