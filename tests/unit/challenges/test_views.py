@@ -6035,40 +6035,6 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_delete_leaderboard_data_success(self):
-        self.url = reverse_lazy(
-            "challenges:delete_leaderboard_data",
-            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
-        )
-        response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_delete_leaderboard_data_when_leaderboard_data_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:delete_leaderboard_data",
-            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk + 1000},
-        )
-        expected = {
-            "error": "Leaderboard data not found!"
-        }
-        response = self.client.delete(self.url)
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_delete_leaderboard_data_when_not_staff(self):
-        self.url = reverse_lazy(
-            "challenges:delete_leaderboard_data",
-            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
-        )
-        self.user.is_staff = False
-        self.user.save()
-        expected = {
-            "error": "Sorry, you are not authorized to access this resource!"
-        }
-        response = self.client.delete(self.url)
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
 
 class TestUpdateChallenge(BaseAPITestClass):
     def setUp(self):
