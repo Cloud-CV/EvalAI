@@ -4783,37 +4783,6 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["DELETE"])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def delete_leaderboard_data(request, leaderboard_data_pk):
-    """
-    API to delete leaderboard data
-    Arguments:
-        leaderboard_data_pk {int} -- Leaderboard data primary key
-    Returns:
-        {dict} -- Response object
-    """
-    if not is_user_a_staff(request.user):
-        response_data = {
-            "error": "Sorry, you are not authorized to access this resource!"
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-    try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
-    except LeaderboardData.DoesNotExist:
-        response_data = {
-            "error": "Leaderboard data not found!"
-        }
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-    leaderboard_data.delete()
-    response_data = {
-        "message": "Leaderboard data deleted successfully!"
-    }
-    return Response(response_data, status=status.HTTP_204_NO_CONTENT)
-
-
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
