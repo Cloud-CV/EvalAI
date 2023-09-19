@@ -285,11 +285,6 @@ urlpatterns = [
         name="get_leaderboard_data",
     ),
     url(
-        r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
-        views.delete_leaderboard_data,
-        name="delete_leaderboard_data",
-    ),
-    url(
         r"^challenge/update_challenge_approval/$",
         views.update_challenge_approval,
         name="update_challenge_approval",
