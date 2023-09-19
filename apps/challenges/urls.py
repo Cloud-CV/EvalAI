@@ -207,6 +207,16 @@ urlpatterns = [
         name="get_ec2_instance_details",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/create_ec2_instance/(?P<ec2_storage>[0-9]+)/(?P<worker_instance_type>[\w-]+)/(?P<worker_image_url>[\w-]+)/$",
+        views.create_ec2_instance_by_challenge_pk,
+        name="create_ec2_instance_by_challenge_pk",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/delete_ec2_instance/$",
+        views.delete_ec2_instance_by_challenge_pk,
+        name="delete_ec2_instance_by_challenge_pk",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
@@ -273,11 +283,6 @@ urlpatterns = [
         r"^challenge/(?P<challenge_phase_split_pk>[0-9]+)/get_leaderboard_data/$",
         views.get_leaderboard_data,
         name="get_leaderboard_data",
-    ),
-    url(
-        r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
-        views.delete_leaderboard_data,
-        name="delete_leaderboard_data",
     ),
     url(
         r"^challenge/update_challenge_approval/$",
