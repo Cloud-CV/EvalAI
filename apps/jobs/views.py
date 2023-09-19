@@ -3007,3 +3007,127 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+def create_or_update_leaderboard_data(request):
+    """
+    API Endpoint for creating or updating the leaderboard data for a submission.
+    Query parameters:
+    - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
+    - ``submission``: submission id, e.g. 123 (**required**)
+    - ``leaderboard``: leaderboard id, e.g. 123 (**required**)
+    - ``result``: contains accuracies for each metric, (**required**) e.g.
+        [
+            {
+                "split": "split1-codename",
+                "show_to_participant": True,
+                "accuracies": {
+                    "metric1": 90
+                }
+            },
+            {
+                "split": "split2-codename",
+                "show_to_participant": False,
+                "accuracies": {
+                    "metric1": 50,
+                    "metric2": 40
+                }
+            }
+        ]
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    if request.method == "PUT":
+        challenge_phase_split_id = request.data.get("challenge_phase_split")
+        submission_id = request.data.get("submission")
+        leaderboard_id = request.data.get("leaderboard")
+        result = request.data.get("result")
+
+        try:
+            results = json.loads(result)
+        except (ValueError, TypeError) as exc:
+            response_data = {
+                "error": "`result` key contains invalid data with error {}."
+                "Please try again with correct format.".format(str(exc))
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        for phase_result in results:
+            accuracies = phase_result.get("accuracies")
+        challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_id)
+        leaderboard_metrics = (
+            challenge_phase_split.leaderboard.schema.get("labels")
+        )
+        missing_metrics = []
+        malformed_metrics = []
+        for metric, value in accuracies.items():
+            if metric not in leaderboard_metrics:
+                missing_metrics.append(metric)
+
+            if not (
+                isinstance(value, float) or isinstance(value, int)
+            ):
+                malformed_metrics.append((metric, type(value)))
+
+        if len(missing_metrics):
+            response_data = {
+                "error": "Following metrics are missing in the"
+                "leaderboard data: {}".format(missing_metrics)
+            }
+            return Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(malformed_metrics):
+            response_data = {
+                "error": "Values for following metrics are not of"
+                "float/int: {}".format(malformed_metrics)
+            }
+            return Response(
+                response_data, status=status.HTTP_400_BAD_REQUEST
+            )
+        leaderboard = leaderboard.objects.get(id=leaderboard_id)
+        submission = get_submission_by_pk(submission_id)
+        data = {"result": accuracies}
+        try:
+            leaderboard_data = LeaderboardData.objects.get(
+                leaderboard=leaderboard, submission=submission, challenge_phase_split=challenge_phase_split
+            )
+        except LeaderboardData.DoesNotExist:
+            leaderboard_data = None
+
+        if leaderboard_data:
+            serializer = CreateLeaderboardDataSerializer(
+                leaderboard_data,
+                data=data,
+                partial=True,
+                context={
+                    "challenge_phase_split": challenge_phase_split,
+                    "submission": submission,
+                    "request": request
+                    },
+            )
+        else:
+            serializer = CreateLeaderboardDataSerializer(
+                data=data,
+                context={
+                    "challenge_phase_split": challenge_phase_split,
+                    "submission": submission,
+                    "request": request
+                    },
+            )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )

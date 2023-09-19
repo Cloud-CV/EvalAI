@@ -121,6 +121,11 @@ urlpatterns = [
         views.update_submission_meta,
         name="update_submission_meta",
     ),
+    url(
+        r"^challenges/create_or_update_leaderboard_data",
+        views.create_or_update_leaderboard_data,
+        name="create_or_update_leaderboard_data",
+    ),
 ]
 
 app_name = "jobs"
