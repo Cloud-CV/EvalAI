@@ -42,6 +42,7 @@ from challenges.models import (
     Challenge,
     ChallengeEvaluationCluster,
     ChallengePhaseSplit,
+    Leaderboard,
     LeaderboardData,
 )
 from challenges.utils import (
@@ -3012,11 +3013,14 @@ def update_submission_meta(request, challenge_pk, submission_pk):
 @api_view(["PUT"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_or_update_leaderboard_data(request):
     """
     API Endpoint for creating or updating the leaderboard data for a submission.
+    Arguments:
+        request {HttpRequest} -- The request object
     Query parameters:
-    - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
+    - ``challenge_phase_split``: challenge phase split id, e.g. 123 (**required**)
     - ``submission``: submission id, e.g. 123 (**required**)
     - ``leaderboard``: leaderboard id, e.g. 123 (**required**)
     - ``result``: contains accuracies for each metric, (**required**) e.g.
@@ -3048,6 +3052,9 @@ def create_or_update_leaderboard_data(request):
         submission_id = request.data.get("submission")
         leaderboard_id = request.data.get("leaderboard")
         result = request.data.get("result")
+
+        leaderboard = Leaderboard.objects.get(id=leaderboard_id)
+        submission = get_submission_model(submission_id)
 
         try:
             results = json.loads(result)
@@ -3092,8 +3099,6 @@ def create_or_update_leaderboard_data(request):
             return Response(
                 response_data, status=status.HTTP_400_BAD_REQUEST
             )
-        leaderboard = leaderboard.objects.get(id=leaderboard_id)
-        submission = get_submission_by_pk(submission_id)
         data = {"result": accuracies}
         try:
             leaderboard_data = LeaderboardData.objects.get(

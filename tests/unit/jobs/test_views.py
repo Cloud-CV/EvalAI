@@ -2692,3 +2692,142 @@ class PresignedURLSubmissionTest(BaseAPITestClass):
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class CreateOrUpdateLeaderboardData(BaseAPITestClass):
+    def setUp(self):
+        super(CreateOrUpdateLeaderboardData, self).setUp()
+
+        self.leaderboard = Leaderboard.objects.create(
+            schema={"labels": ["metric1", "metric2"]}
+        )
+        self.challengephasesplit = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.leaderboard,
+            visibility=3,
+        )
+
+    def test_create_leaderboard_data_when_user_is_not_staff(self):
+        self.url = reverse_lazy(
+            "jobs:create_or_update_leaderboard_data",
+        )
+        self.data = {
+            "challenge_phase_split": self.challengephasesplit.id,
+            "submission": self.submission.id,
+            "leaderbard": self.leaderboard.id,
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.dataset_split.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                    }
+                ]
+            ),
+        }
+
+        expected = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_leaderboard_data_when_challenge_phase_split_not_exist(self):
+        self.url = reverse_lazy(
+            "jobs:create_or_update_leaderboard_data",
+        )
+        self.data = {
+            "challenge_phase_split": self.challengephasesplit.id + 2,
+            "submission": self.submission.id,
+            "leaderbard": self.leaderboard.id,
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.dataset_split.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                    }
+                ]
+            ),
+        }
+
+        expected = {
+            "error": "ChallengePhaseSplit {} does not exist".format(
+                self.challengephasesplit.id + 2
+            )
+        }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_leaderboard_data_when_submission_not_exist(self):
+        self.url = reverse_lazy(
+            "jobs:create_or_update_leaderboard_data",
+        )
+        self.data = {
+            "challenge_phase_split": self.challengephasesplit.id,
+            "submission": self.submission.id + 2,
+            "leaderbard": self.leaderboard.id,
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.dataset_split.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                    }
+                ]
+            ),
+        }
+
+        expected = {
+            "error": "Submission {} does not exist".format(
+                self.submission.id + 2
+            )
+        }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_leaderboard_data_successful(self):
+        self.url = reverse_lazy(
+            "jobs:create_or_update_leaderboard_data",
+        )
+        self.data = {
+            "challenge_phase_split": self.challengephasesplit.id,
+            "submission": self.submission.id,
+            "leaderbard": self.leaderboard.id,
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.dataset_split.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                    }
+                ]
+            ),
+        }
+
+        expected = {
+            "challenge_phase_split": self.challengephasesplit.id,
+            "submission": self.submission.id,
+            "result": {
+                "split": self.dataset_split.codename,
+                "show_to_participant": True,
+                "accuracies": {"metric1": 60, "metric2": 30},
+            },
+        }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data["challenge_phase_split"], expected["challenge_phase_split"])
+        self.assertEqual(response.data["submission"], expected["submission"])
+        self.assertEqual(response.data["result"], expected["result"])
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+
+    
