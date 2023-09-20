@@ -1860,9 +1860,9 @@ def re_run_submission(request, submission_pk):
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if not challenge.allow_participants_resubmissions and not is_user_a_staff_or_host(request.user, challenge.pk):
         response_data = {
-            "error": "Only challenge hosts are allowed to re-run a submission"
+            "error": "Only challenge hosts or admins are allowed to re-run a submission"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
