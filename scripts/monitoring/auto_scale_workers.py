@@ -114,9 +114,15 @@ def scale_up_or_down_workers_for_challenges(response, metrics):
     for challenge in response["results"]:
         if ENV == "prod":
             if challenge["queue"] not in PROD_EXCLUDED_CHALLENGE_QUEUES:
-                scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
+                try:
+                    scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
+                except Exception as e:
+                    print(e)
         else:
-            scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
+            try:
+                scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
+            except Exception as e:
+                print(e)
 
 
 def create_evalai_interface(auth_token, evalai_endpoint):

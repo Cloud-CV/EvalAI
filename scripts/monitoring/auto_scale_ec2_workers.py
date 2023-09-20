@@ -97,7 +97,10 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 def start_or_stop_workers_for_challenges(response, metrics, evalai_interface):
     for challenge in response["results"]:
         if challenge["uses_ec2_worker"]:
-            start_or_stop_workers(challenge, metrics[str(challenge["id"])], evalai_interface)
+            try:
+                start_or_stop_workers(challenge, metrics[str(challenge["id"])], evalai_interface)
+            except Exception as e:
+                print(e)
 
 
 def create_evalai_interface(auth_token, evalai_endpoint):
