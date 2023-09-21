@@ -54,7 +54,7 @@ from challenges.utils import (
     get_participant_model,
 )
 from hosts.models import ChallengeHost
-from hosts.utils import is_user_a_host_of_challenge
+from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_model,
@@ -800,7 +800,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
     # Allow access only to challenge host
-    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+    if not is_user_a_staff_or_host(request.user, challenge_obj.pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
@@ -1208,34 +1208,15 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                try:
-                    leaderboard_data = get_leaderboard_data_model(
-                        submission_pk, challenge_phase_split.pk
-                    )
-                except LeaderboardData.DoesNotExist:
-                    leaderboard_data = None
-
                 data = {"result": accuracies}
-                if leaderboard_data is not None:
-                    serializer = CreateLeaderboardDataSerializer(
-                        leaderboard_data,
-                        data=data,
-                        partial=True,
-                        context={
-                            "challenge_phase_split": challenge_phase_split,
-                            "submission": submission,
-                            "request": request,
-                        },
-                    )
-                else:
-                    serializer = CreateLeaderboardDataSerializer(
-                        data=data,
-                        context={
-                            "challenge_phase_split": challenge_phase_split,
-                            "submission": submission,
-                            "request": request,
-                        },
-                    )
+                serializer = CreateLeaderboardDataSerializer(
+                    data=data,
+                    context={
+                        "challenge_phase_split": challenge_phase_split,
+                        "submission": submission,
+                        "request": request,
+                    },
+                )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -1604,34 +1585,15 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                try:
-                    leaderboard_data = get_leaderboard_data_model(
-                        submission_pk, challenge_phase_split.pk
-                    )
-                except LeaderboardData.DoesNotExist:
-                    leaderboard_data = None
-
                 data = {"result": accuracies}
-                if leaderboard_data is not None:
-                    serializer = CreateLeaderboardDataSerializer(
-                        leaderboard_data,
-                        data=data,
-                        partial=True,
-                        context={
-                            "challenge_phase_split": challenge_phase_split,
-                            "submission": submission,
-                            "request": request,
-                        },
-                    )
-                else:
-                    serializer = CreateLeaderboardDataSerializer(
-                        data=data,
-                        context={
-                            "challenge_phase_split": challenge_phase_split,
-                            "submission": submission,
-                            "request": request,
-                        },
-                    )
+                serializer = CreateLeaderboardDataSerializer(
+                    data=data,
+                    context={
+                        "challenge_phase_split": challenge_phase_split,
+                        "submission": submission,
+                        "request": request,
+                    },
+                )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -1898,9 +1860,9 @@ def re_run_submission(request, submission_pk):
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if not challenge.allow_participants_resubmissions and not is_user_a_staff_or_host(request.user, challenge.pk):
         response_data = {
-            "error": "Only challenge hosts are allowed to re-run a submission"
+            "error": "Only challenge hosts or admins are allowed to re-run a submission"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
