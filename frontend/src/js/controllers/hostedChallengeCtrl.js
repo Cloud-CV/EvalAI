@@ -23,6 +23,7 @@
         vm.challengeCreator = {};
         vm.searchTitle = [];
         vm.selecteddomain = [];
+        vm.domain_choices = [];
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
