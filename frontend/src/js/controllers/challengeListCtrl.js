@@ -118,9 +118,14 @@
             parameters.url = "challenges/challenge/get_domain_choices/";
             parameters.method = 'GET';
             parameters.data = {};
+            vm.domain_choices = [];
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.domain_choices = response.data;
+                    vm.domain_choices.push(["All", "All"]);
+                    for(var i=0; i<response.data.length; i++) {
+                        vm.domain_choices.push([response.data[i][0], response.data[i][1]]);
+                    }
+                    vm.domain_choices.push(["None", "None"]);
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -128,6 +133,11 @@
                 }
             };
             utilities.sendRequest(parameters);
+
+        vm.resetFilter = function() {
+            vm.selecteddomain = [];
+            vm.searchTitle = [];
+        };
     }
 
 })();
