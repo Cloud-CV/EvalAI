@@ -144,7 +144,10 @@ from .aws_utils import (
     restart_workers,
     start_ec2_instance,
     stop_ec2_instance,
+    restart_ec2_instance,
     describe_ec2_instance,
+    create_ec2_instance,
+    terminate_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -1612,23 +1615,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             # Create Challenge Phase
             challenge_phase_ids = {}
-
-            # Delete the challenge phase if it is not present in the yaml file
-            existing_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-            existing_challenge_phase_ids = [str(challenge_phase.config_id) for challenge_phase in existing_challenge_phases]
-            challenge_phases_data_ids = [str(challenge_phase_data["id"]) for challenge_phase_data in challenge_phases_data]
-            challenge_phase_ids_to_delete = list(set(existing_challenge_phase_ids) - set(challenge_phases_data_ids))
-            for challenge_phase_id_to_delete in challenge_phase_ids_to_delete:
-                challenge_phase = ChallengePhase.objects.filter(challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete).first()
-                submission_exist = Submission.objects.filter(challenge_phase=challenge_phase).exists()
-                if submission_exist:
-                    response_data = {
-                        "error": "Sorry, you cannot delete a challenge phase with submissions."
-                    }
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    challenge_phase.delete()
-
             for data in challenge_phases_data:
                 # Check for challenge phase description file
                 phase_description_file_path = join(
@@ -1726,30 +1712,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
                 response_data = {"error": message}
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-
-            # Delete the challenge phase split if it is not present in the yaml file
-            existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-            challenge_phase_splits_set = set()
-            for challenge_phase_split in existing_challenge_phase_splits:
-                challenge_phase = challenge_phase_split.challenge_phase
-                dataset_split = challenge_phase_split.dataset_split
-                leaderboard = challenge_phase_split.leaderboard
-                combination = (challenge_phase, dataset_split, leaderboard)
-                challenge_phase_splits_set.add(combination)
-            for data in challenge_phase_splits_data:
-                challenge_phase = challenge_phase_ids[str(data["challenge_phase_id"])]
-                dataset_split = dataset_split_ids[str(data["dataset_split_id"])]
-                leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                combination = (challenge_phase, dataset_split, leaderboard)
-                if combination in challenge_phase_splits_set:
-                    challenge_phase_splits_set.remove(combination)
-            for challenge_phase_split in challenge_phase_splits_set:
-                challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                    challenge_phase=challenge_phase_split[0],
-                    dataset_split=challenge_phase_split[1],
-                    leaderboard=challenge_phase_split[2]
-                )
-                challenge_phase_split_qs.delete()
 
             for data in challenge_phase_splits_data:
                 if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
@@ -3448,7 +3410,7 @@ def manage_worker(request, challenge_pk, action):
 def get_ec2_instance_details(request, challenge_pk):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3487,15 +3449,133 @@ def get_ec2_instance_details(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.ec2_instance_id:
+        response_data = {
+            "error": "No EC2 instance ID found for the challenge. Please ensure instance ID exists."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = terminate_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, worker_instance_type, worker_image_url):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()):
+        response_data = {
+            "error": "Creation of EC2 instance is not supported for an inactive challenge."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not isinstance(ec2_storage, int):
+        response_data = {
+            "error": "Passed value of EC2 storage should be integer."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not isinstance(worker_instance_type, str):
+        response_data = {
+            "error": "Passed value of worker instance type should be string."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not isinstance(worker_image_url, str):
+        response_data = {
+            "error": "Passed value of worker image URL should be string."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not ec2_storage:
+        ec2_storage = challenge.ec2_storage
+
+    if not worker_instance_type:
+        worker_instance_type = challenge.worker_instance_type
+
+    if not worker_image_url:
+        worker_image_url = challenge.worker_image_url
+
+    response = create_ec2_instance(
+        challenge,
+        ec2_storage,
+        worker_instance_type,
+        worker_image_url
+    )
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def manage_ec2_instance(request, challenge_pk, action):
     if not request.user.is_staff:
         response_data = {
-            "error": "Sorry, you are not authorized for access worker operations."
+            "error": "Sorry, you are not authorized for access EC2 operations."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # make sure that the action is valid.
-    if action not in ("start", "stop"):
+    if action not in ("start", "stop", "restart"):
         response_data = {
             "error": "The action {} is invalid for worker".format(action)
         }
@@ -3509,7 +3589,7 @@ def manage_ec2_instance(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop"):
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "restart"):
         response_data = {
             "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
         }
@@ -3519,6 +3599,8 @@ def manage_ec2_instance(request, challenge_pk, action):
         response = start_ec2_instance(challenge)
     elif action == "stop":
         response = stop_ec2_instance(challenge)
+    elif action == "restart":
+        response = restart_ec2_instance(challenge)
 
     if response:
         if "error" not in response:
@@ -4119,25 +4201,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 # Updating ChallengePhase objects
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
-
-                # Delete the challenge phase if it is not present in the yaml file
-                existing_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-                existing_challenge_phase_ids = [str(challenge_phase.config_id) for challenge_phase in existing_challenge_phases]
-                challenge_phases_data_ids = [str(challenge_phase_data["id"]) for challenge_phase_data in challenge_phases_data]
-                challenge_phase_ids_to_delete = list(set(existing_challenge_phase_ids) - set(challenge_phases_data_ids))
-                for challenge_phase_id_to_delete in challenge_phase_ids_to_delete:
-                    challenge_phase = ChallengePhase.objects.filter(
-                        challenge__pk=challenge.pk, config_id=challenge_phase_id_to_delete
-                    ).first()
-                    submission_exist = Submission.objects.filter(challenge_phase=challenge_phase).exists()
-                    if submission_exist:
-                        response_data = {
-                            "error": "Sorry, you cannot delete a challenge phase with submissions."
-                        }
-                        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        challenge_phase.delete()
-
                 for data, challenge_test_annotation_file in zip(
                     challenge_phases_data, files["challenge_test_annotation_files"]
                 ):
@@ -4157,6 +4220,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     ).first()
                     if (
                         challenge_test_annotation_file
+                        and not challenge_phase.annotations_uploaded_using_cli
                     ):
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
@@ -4230,31 +4294,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_splits_data = yaml_file_data[
                     "challenge_phase_splits"
                 ]
-
-                # Delete the challenge phase split if it is not present in the yaml file
-                existing_challenge_phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-                challenge_phase_splits_set = set()
-                for challenge_phase_split in existing_challenge_phase_splits:
-                    challenge_phase = challenge_phase_split.challenge_phase
-                    dataset_split = challenge_phase_split.dataset_split
-                    leaderboard = challenge_phase_split.leaderboard
-                    combination = (challenge_phase, dataset_split, leaderboard)
-                    challenge_phase_splits_set.add(combination)
-                for data in challenge_phase_splits_data:
-                    challenge_phase = challenge_phase_ids[str(data["challenge_phase_id"])]
-                    dataset_split = dataset_split_ids[str(data["dataset_split_id"])]
-                    leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                    combination = (challenge_phase, dataset_split, leaderboard)
-                    if combination in challenge_phase_splits_set:
-                        challenge_phase_splits_set.remove(combination)
-                for challenge_phase_split in challenge_phase_splits_set:
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase=challenge_phase_split[0],
-                        dataset_split=challenge_phase_split[1],
-                        leaderboard=challenge_phase_split[2]
-                    )
-                    challenge_phase_split_qs.delete()
-
                 for data in challenge_phase_splits_data:
                     if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
                         message = (
@@ -4658,37 +4697,6 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
     serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request}, many=True)
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["DELETE"])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def delete_leaderboard_data(request, leaderboard_data_pk):
-    """
-    API to delete leaderboard data
-    Arguments:
-        leaderboard_data_pk {int} -- Leaderboard data primary key
-    Returns:
-        {dict} -- Response object
-    """
-    if not is_user_a_staff(request.user):
-        response_data = {
-            "error": "Sorry, you are not authorized to access this resource!"
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-    try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
-    except LeaderboardData.DoesNotExist:
-        response_data = {
-            "error": "Leaderboard data not found!"
-        }
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-    leaderboard_data.delete()
-    response_data = {
-        "message": "Leaderboard data deleted successfully!"
-    }
-    return Response(response_data, status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
