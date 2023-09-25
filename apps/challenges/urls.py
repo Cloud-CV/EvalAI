@@ -207,7 +207,7 @@ urlpatterns = [
         name="get_ec2_instance_details",
     ),
     url(
-        r"^challenge/create_ec2_instance/$",
+        r"^(?P<challenge_pk>[0-9]+)/create_ec2_instance/$",
         views.create_ec2_instance_by_challenge_pk,
         name="create_ec2_instance_by_challenge_pk",
     ),
