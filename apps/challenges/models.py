@@ -512,6 +512,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission", on_delete=models.CASCADE)
     leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     result = JSONField()
+    is_active = models.BooleanField(default=True)
     error = JSONField(null=True, blank=True)
 
     def __str__(self):
