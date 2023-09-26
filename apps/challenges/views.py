@@ -3492,7 +3492,23 @@ def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, worker_instance_type, worker_image_url):
+def create_ec2_instance_by_challenge_pk(request, challenge_pk):
+    """
+    API to create EC2 instance for a challenge
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which the EC2 instance is to be created
+    Query Parameters:
+        ec2_storage -- Storage size for EC2 instance
+        worker_instance_type -- Instance type for EC2 instance
+        worker_image_url -- Image URL for EC2 instance
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+    if request.method == "PUT":
+        ec2_storage = request.data.get("ec2_storage")
+        worker_instance_type = request.data.get("worker_instance_type")
+        worker_image_url = request.data.get("worker_image_url")
     if not request.user.is_staff:
         response_data = {
             "error": "Sorry, you are not authorized for access EC2 operations."
