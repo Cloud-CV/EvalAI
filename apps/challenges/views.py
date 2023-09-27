@@ -4784,7 +4784,7 @@ def update_leaderboard_data(request):
         challenge_phase_split {int} -- Challenge phase split primary key
         submission {int} -- Submission primary key
         leaderboard {int} -- Leaderboard primary key
-        is_active {int} -- Leaderboard data is active
+        is_disabled {int} -- Leaderboard data is disabled
     """
     if not is_user_a_staff(request.user):
         response_data = {
@@ -4818,7 +4818,7 @@ def update_leaderboard_data(request):
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-        # Update the 'is_active' attribute
+        # Update the 'is_disabled' attribute
         leaderboard_data.is_disabled = bool(int(is_disabled))
         leaderboard_data.save()
 
