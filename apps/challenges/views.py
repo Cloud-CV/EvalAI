@@ -4709,7 +4709,7 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
         challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_active=True)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=True)
     except LeaderboardData.DoesNotExist:
         response_data = {
             "error": "Leaderboard data not found!"
@@ -4797,7 +4797,7 @@ def update_leaderboard_data(request):
         leaderboard_pk = request.data.get("leaderboard")
         challenge_phase_split_pk = request.data.get("challenge_phase_split")
         submission_pk = request.data.get("submission")
-        is_active = request.data.get("is_active")
+        is_disabled = request.data.get("is_disabled")
 
         # Perform lookups and handle errors
         try:
@@ -4819,7 +4819,7 @@ def update_leaderboard_data(request):
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         # Update the 'is_active' attribute
-        leaderboard_data.is_active = bool(int(is_active))
+        leaderboard_data.is_disabled = bool(int(is_disabled))
         leaderboard_data.save()
 
         # Serialize and return the updated data

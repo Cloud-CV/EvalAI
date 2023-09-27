@@ -6088,7 +6088,7 @@ class TestLeaderboardData(BaseAPITestClass):
         self.url = reverse_lazy(
             "challenges:update_leaderboard_data")
         data = {"leaderboard_data": self.leaderboard_data.pk,
-                "is_active": 0
+                "is_disabled": 0
                 }
         expected = {
             "message": "Leaderboard data updated successfully!"
@@ -6102,7 +6102,7 @@ class TestLeaderboardData(BaseAPITestClass):
         data = {"leaderboard": self.leaderboard.pk,
                 "challenge_phase_split": self.challenge_phase_split.pk,
                 "submission": self.submission.pk,
-                "is_active": 0
+                "is_disabled": 0
                 }
         expected = {
             "message": "Leaderboard data updated successfully!"
