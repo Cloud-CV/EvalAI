@@ -519,7 +519,7 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     leaderboard_data = LeaderboardData.objects.get(
         submission=submission_pk,
         challenge_phase_split__pk=challenge_phase_split_pk,
-        is_disabled=True,
+        is_disabled=False,
     )
     return leaderboard_data
 
