@@ -4709,7 +4709,7 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
         challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=True)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=False)
     except LeaderboardData.DoesNotExist:
         response_data = {
             "error": "Leaderboard data not found!"
