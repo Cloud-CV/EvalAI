@@ -20,4 +20,4 @@ for folder in tmp_folders:
         shutil.rmtree(folder_path)
         print(f"Deleted folder: {folder_path}")
     else:
-        print(f"Skipped folder: {folder_path} (created less than 60 hours ago)")
+        print(f"Skipped folder: {folder_path} (created less than 60 seconds ago)")
