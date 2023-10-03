@@ -3506,9 +3506,9 @@ def create_ec2_instance_by_challenge_pk(request, challenge_pk):
         Response object -- Response object with appropriate response code (200/400/403/404)
     """
     if request.method == "PUT":
-        ec2_storage = request.data.get("ec2_storage")
-        worker_instance_type = request.data.get("worker_instance_type")
-        worker_image_url = request.data.get("worker_image_url")
+        ec2_storage = request.data.get("ec2_storage", None)
+        worker_instance_type = request.data.get("worker_instance_type", None)
+        worker_image_url = request.data.get("worker_image_url", None)
     if not request.user.is_staff:
         response_data = {
             "error": "Sorry, you are not authorized for access EC2 operations."
@@ -3523,19 +3523,19 @@ def create_ec2_instance_by_challenge_pk(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not isinstance(ec2_storage, int):
+    if ec2_storage and not isinstance(ec2_storage, int):
         response_data = {
             "error": "Passed value of EC2 storage should be integer."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not isinstance(worker_instance_type, str):
+    if worker_instance_type and not isinstance(worker_instance_type, str):
         response_data = {
             "error": "Passed value of worker instance type should be string."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not isinstance(worker_image_url, str):
+    if worker_image_url and not isinstance(worker_image_url, str):
         response_data = {
             "error": "Passed value of worker image URL should be string."
         }
