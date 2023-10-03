@@ -191,6 +191,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
                 "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
+                "worker_image_url": self.challenge.worker_image_url,
             }
         ]
 
@@ -542,6 +543,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "worker_image_url": self.challenge.worker_image_url,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -640,6 +642,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "worker_image_url": self.challenge.worker_image_url,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -764,6 +767,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "worker_image_url": self.challenge.worker_image_url,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -837,6 +841,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "worker_image_url": self.challenge.worker_image_url,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1426,6 +1431,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "worker_image_url": self.challenge3.worker_image_url,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1505,6 +1511,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
+                "worker_image_url": self.challenge.worker_image_url,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1584,6 +1591,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge4.uses_ec2_worker,
                 "evaluation_module_error": self.challenge4.evaluation_module_error,
                 "ec2_storage": self.challenge4.ec2_storage,
+                "worker_image_url": self.challenge4.worker_image_url,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1663,6 +1671,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "worker_image_url": self.challenge3.worker_image_url,
             },
             {
                 "id": self.challenge3.pk,
@@ -1726,6 +1735,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "worker_image_url": self.challenge3.worker_image_url,
             },
             {
                 "id": self.challenge2.pk,
@@ -1789,6 +1799,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1923,6 +1934,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "worker_image_url": self.challenge3.worker_image_url,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2081,6 +2093,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "uses_ec2_worker": self.challenge3.uses_ec2_worker,
             "evaluation_module_error": self.challenge3.evaluation_module_error,
             "ec2_storage": self.challenge3.ec2_storage,
+            "worker_image_url": self.challenge3.worker_image_url,
         }
 
         response = self.client.get(self.url, {})
@@ -2168,6 +2181,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "uses_ec2_worker": self.challenge4.uses_ec2_worker,
             "evaluation_module_error": self.challenge4.evaluation_module_error,
             "ec2_storage": self.challenge4.ec2_storage,
+            "worker_image_url": self.challenge4.worker_image_url,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2315,6 +2329,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
             }
         ]
 
@@ -2390,6 +2405,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
             }
         ]
 
@@ -2465,6 +2481,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
             }
         ]
 
@@ -2538,6 +2555,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
                 "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
+                "worker_image_url": self.challenge.worker_image_url,
             },
             {
                 "id": self.challenge2.pk,
@@ -2601,6 +2619,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "worker_image_url": self.challenge2.worker_image_url,
             },
         ]
 

@@ -90,7 +90,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "job_memory",
             "uses_ec2_worker",
             "ec2_storage",
-            "evaluation_module_error"
+            "evaluation_module_error",
+            "worker_image_url"
         )
 
 
@@ -304,6 +305,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "job_memory",
             "uses_ec2_worker",
             "ec2_storage",
+            "evaluation_module_error",
+            "worker_image_url"
         )
 
 
