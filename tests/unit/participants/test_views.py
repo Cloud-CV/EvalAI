@@ -880,6 +880,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "uses_ec2_worker": self.challenge1.uses_ec2_worker,
                         "ec2_storage": self.challenge1.ec2_storage,
                         "evaluation_module_error": self.challenge1.evaluation_module_error,
+                        "worker_image_url": self.challenge1.worker_image_url,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -970,6 +971,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge1.uses_ec2_worker,
                 "ec2_storage": self.challenge1.ec2_storage,
                 "evaluation_module_error": self.challenge1.evaluation_module_error,
+                "worker_image_url": self.challenge1.worker_image_url,
             }
         ]
 
