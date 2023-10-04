@@ -192,6 +192,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
                 "worker_image_url": self.challenge.worker_image_url,
+                "worker_instance_type": self.challenge.worker_instance_type,
             }
         ]
 
@@ -544,6 +545,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_instance_type": self.challenge.worker_instance_type,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -643,6 +645,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_instance_type": self.challenge.worker_instance_type,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -768,6 +771,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_instance_type": self.challenge.worker_instance_type,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -842,6 +846,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
             "worker_image_url": self.challenge.worker_image_url,
+            "worker_instance_type": self.challenge.worker_instance_type,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1432,6 +1437,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_instance_type": self.challenge3.worker_instance_type,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1512,6 +1518,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
                 "worker_image_url": self.challenge.worker_image_url,
+                "worker_instance_type": self.challenge.worker_instance_type,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1592,6 +1599,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge4.evaluation_module_error,
                 "ec2_storage": self.challenge4.ec2_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
+                "worker_instance_type": self.challenge4.worker_instance_type,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1672,6 +1680,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_instance_type": self.challenge3.worker_instance_type,
             },
             {
                 "id": self.challenge3.pk,
@@ -1736,6 +1745,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_instance_type": self.challenge3.worker_instance_type,
             },
             {
                 "id": self.challenge2.pk,
@@ -1800,6 +1810,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1935,6 +1946,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
+                "worker_instance_type": self.challenge3.worker_instance_type,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2094,6 +2106,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "evaluation_module_error": self.challenge3.evaluation_module_error,
             "ec2_storage": self.challenge3.ec2_storage,
             "worker_image_url": self.challenge3.worker_image_url,
+            "worker_instance_type": self.challenge3.worker_instance_type,
         }
 
         response = self.client.get(self.url, {})
@@ -2182,6 +2195,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "evaluation_module_error": self.challenge4.evaluation_module_error,
             "ec2_storage": self.challenge4.ec2_storage,
             "worker_image_url": self.challenge4.worker_image_url,
+            "worker_instance_type": self.challenge4.worker_instance_type,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2330,6 +2344,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
             }
         ]
 
@@ -2406,6 +2421,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
             }
         ]
 
@@ -2482,6 +2498,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
             }
         ]
 
@@ -2556,6 +2573,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
                 "worker_image_url": self.challenge.worker_image_url,
+                "worker_instance_type": self.challenge.worker_instance_type,
             },
             {
                 "id": self.challenge2.pk,
@@ -2620,6 +2638,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
+                "worker_instance_type": self.challenge2.worker_instance_type,
             },
         ]
 
