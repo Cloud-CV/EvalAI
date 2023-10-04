@@ -91,7 +91,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "uses_ec2_worker",
             "ec2_storage",
             "evaluation_module_error",
-            "worker_image_url"
+            "worker_image_url",
+            "worker_instance_type"
         )
 
 
