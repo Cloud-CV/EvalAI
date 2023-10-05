@@ -70,7 +70,7 @@ docker cp "scripts/deployment/delete_old_submissions.py" "worker_${QUEUE}:/code/
 # Step 11: Setting up crontab
 echo "Step 11/11: Setting up crontab"
 echo "@reboot docker restart worker_${QUEUE}" >> workercron
-echo "@reboot docker exec -it worker_${QUEUE} python delete_old_submissions.py" >> workercron
+echo "@reboot docker exec -it worker_${QUEUE} python delete_old_submissions.py > delete_old_submissions.txt" >> workercron
 crontab workercron
 rm workercron
 
