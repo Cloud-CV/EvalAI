@@ -740,7 +740,7 @@ def get_all_challenges_submission_metrics(request):
         challenge_metrics = {}
 
         # Fetch challenge phases for the challenge
-        challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+        challenge_phases = ChallengePhase.objects.filter(challenge=challenge, is_disabled=False)
 
         for submission_status in submission_statuses:
             count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
@@ -895,11 +895,11 @@ def challenge_phase_list(request, challenge_pk):
     if request.method == "GET":
         if is_user_a_host_of_challenge(request.user, challenge_pk):
             challenge_phase = ChallengePhase.objects.filter(
-                challenge=challenge
+                challenge=challenge, is_disabled=False
             ).order_by("pk")
         else:
             challenge_phase = ChallengePhase.objects.filter(
-                challenge=challenge, is_public=True
+                challenge=challenge, is_public=True, is_disabled=False
             ).order_by("pk")
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
@@ -938,7 +938,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
 
     try:
         challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, pk=pk
+            challenge=challenge, pk=pk, is_disabled=False
         )
     except ChallengePhase.DoesNotExist:
         response_data = {
@@ -1014,7 +1014,7 @@ def challenge_phase_split_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(
-        challenge_phase__challenge=challenge
+        challenge_phase__challenge=challenge, is_disabled=False
     ).order_by("pk")
 
     # Check if user is a challenge host or staff
@@ -2041,7 +2041,7 @@ def get_all_submissions_of_challenge(
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge
+            pk=challenge_phase_pk, challenge=challenge, is_disabled=False
         )
     except ChallengePhase.DoesNotExist:
         response_data = {
@@ -2200,7 +2200,7 @@ def download_all_submissions(
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge
+            pk=challenge_phase_pk, challenge=challenge, is_disabled=False
         )
     except ChallengePhase.DoesNotExist:
         response_data = {
@@ -3044,7 +3044,7 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk)
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk, is_disabled=False)
     serializer = ChallengePhaseCreateSerializer(
         challenge_phases, context={"request": request}, many=True
     )
@@ -3073,7 +3073,7 @@ def get_challenge_phase_by_slug(request, slug):
     Returns a particular challenge phase details by pk
     """
     try:
-        challenge_phase = ChallengePhase.objects.get(slug=slug)
+        challenge_phase = ChallengePhase.objects.get(slug=slug, is_disabled=False)
     except ChallengePhase.DoesNotExist:
         response_data = {
             "error": "Challenge phase with slug {} does not exist".format(slug)
@@ -3093,7 +3093,7 @@ def get_challenge_phase_environment_url(request, slug):
     Returns environment image url and tag required for RL challenge evaluation
     """
     try:
-        challenge_phase = ChallengePhase.objects.get(slug=slug)
+        challenge_phase = ChallengePhase.objects.get(slug=slug, is_disabled=False)
     except ChallengePhase.DoesNotExist:
         response_data = {
             "error": "Challenge phase with slug {} does not exist".format(slug)
@@ -4194,6 +4194,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__challenge__pk=challenge.pk,
                         leaderboard__config_id=data["config_id"],
+                        is_disabled=False,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -4231,12 +4232,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if default_submission_meta_attributes is None:
                         data["default_submission_meta_attributes"] = None
 
+                    # Override the is_disabled when they are missing
+                    is_disabled = data.get("is_disabled")
+                    if is_disabled is None:
+                        data["is_disabled"] = False
+
                     challenge_phase = ChallengePhase.objects.filter(
-                        challenge__pk=challenge.pk, config_id=data["id"]
+                        challenge__pk=challenge.pk, config_id=data["id"], is_disabled=False
                     ).first()
                     if (
                         challenge_test_annotation_file
-                        and not challenge_phase.annotations_uploaded_using_cli
                     ):
                         serializer = ChallengePhaseCreateSerializer(
                             challenge_phase,
@@ -4286,6 +4291,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__challenge__pk=challenge.pk,
                         dataset_split__config_id=data["id"],
+                        is_disabled=False,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -4329,6 +4335,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         response_data = {"error": message}
                         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+                    # Override the is_disabled when they are missing
+                    is_disabled = data.get("is_disabled")
+                    if is_disabled is None:
+                        data["is_disabled"] = False
+
                     challenge_phase = challenge_phase_ids[
                         str(data["challenge_phase_id"])
                     ]
@@ -4346,13 +4358,15 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "dataset_split": dataset_split,
                         "visibility": visibility,
                         "is_leaderboard_order_descending": is_leaderboard_order_descending,
-                        "leaderboard_decimal_precision": leaderboard_decimal_precision
+                        "leaderboard_decimal_precision": leaderboard_decimal_precision,
+                        "is_disabled": data["is_disabled"],
                     }
 
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__pk=challenge_phase,
                         dataset_split__pk=dataset_split,
                         leaderboard__pk=leaderboard,
+                        is_disabled=False,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -4527,7 +4541,7 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
 
     try:
         challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, pk=phase_pk
+            challenge=challenge, pk=phase_pk, is_disabled=False
         )
     except ChallengePhase.DoesNotExist:
         response_data = {
@@ -4622,7 +4636,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     and send approval request for the challenge
     """
     challenge = get_challenge_model(challenge_pk)
-    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge, is_disabled=False)
     unfinished_phases = []
 
     for challenge_phase in challenge_phases:

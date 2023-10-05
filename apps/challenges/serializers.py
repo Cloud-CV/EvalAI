@@ -337,6 +337,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "is_leaderboard_order_descending",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "is_disabled",
         )
 
 
@@ -395,6 +396,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "default_submission_meta_attributes",
             "allowed_email_ids",
             "disable_logs",
+            "is_disabled",
         )
 
 

@@ -259,7 +259,6 @@ error_message_dict = {
     "dataset_split_schema_errors": "ERROR: Dataset split {} has the following schema errors:\n {}",
     "dataset_split_addition": "ERROR: Dataset split {} doesn't exist. Addition of a new dataset split after challenge creation is not allowed.",
     "missing_existing_dataset_split_id": "ERROR: Dataset split {} not found in config. Deletion of existing dataset split after challenge creation is not allowed.",
-    "challenge_phase_split_not_exist": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) doesn't exist. Addition of challenge phase split after challenge creation is not allowed.",
     "challenge_phase_split_schema_errors": "ERROR: Challenge phase split {} has the following schema errors:\n {}",
     "missing_keys_in_challenge_phase_splits": "ERROR: The following keys are missing in the challenge phase splits of YAML file (phase_split: {}): {}",
     "challenge_phase_split_not_found": "ERROR: Challenge phase split (leaderboard_id: {}, challenge_phase_id: {}, dataset_split_id: {}) not found in config. Deletion of existing challenge phase split after challenge creation is not allowed.",
@@ -270,7 +269,6 @@ error_message_dict = {
     "submission_meta_attribute_option_missing": "ERROR: Please include at least one option in the attribute for challenge phase {}",
     "missing_submission_meta_attribute_fields": "ERROR: Please enter the following fields for the submission meta attribute in challenge phase {}: {}",
     "challenge_phase_schema_errors": "ERROR: Challenge phase {} has the following schema errors:\n {}",
-    "challenge_phase_addition": "ERROR: Challenge phase {} doesn't exist. Addition of a new challenge phase after challenge creation is not allowed.",
     "challenge_phase_not_found": "ERROR: Challenge phase {} not found in config. Deletion of existing challenge phase after challenge creation is not allowed.",
     "is_submission_public_restricted": "ERROR: is_submission_public can't be 'True' for challenge phase '{}' with is_restricted_to_select_one_submission 'True'. Please change is_submission_public to 'False' and try again!",
     "missing_option_in_submission_meta_attribute": "ERROR: Please include at least one option in the attribute for challenge phase {}",
@@ -788,14 +786,6 @@ class ValidateChallengeConfigUtil:
                 ].format(data["id"], serializer_error)
                 self.error_messages.append(message)
             else:
-                if (
-                    current_phase_config_ids
-                    and int(data["id"]) not in current_phase_config_ids
-                ):
-                    message = self.error_messages_dict[
-                        "challenge_phase_addition"
-                    ].format(data["id"])
-                    self.error_messages.append(message)
                 self.phase_ids.append(data["id"])
 
         for current_challenge_phase_id in current_phase_config_ids:
@@ -855,31 +845,13 @@ class ValidateChallengeConfigUtil:
                     "challenge_phase_id",
                 }
                 if expected_keys.issubset(data.keys()):
-                    if (
-                        current_phase_split_ids
-                        and (
+                    challenge_phase_split_uuids.append(
+                        (
                             data["leaderboard_id"],
                             data["challenge_phase_id"],
                             data["dataset_split_id"],
                         )
-                        not in current_phase_split_ids
-                    ):
-                        message = self.error_messages_dict[
-                            "challenge_phase_split_not_exist"
-                        ].format(
-                            data["leaderboard_id"],
-                            data["challenge_phase_id"],
-                            data["dataset_split_id"],
-                        )
-                        self.error_messages.append(message)
-                    else:
-                        challenge_phase_split_uuids.append(
-                            (
-                                data["leaderboard_id"],
-                                data["challenge_phase_id"],
-                                data["dataset_split_id"],
-                            )
-                        )
+                    )
 
                     (
                         is_mapping_valid,

@@ -145,7 +145,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
     # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge
+            pk=challenge_phase_id, challenge=challenge, is_disabled=False
         )
     except ChallengePhase.DoesNotExist:
         response_data = {"error": "Challenge Phase does not exist"}
@@ -869,7 +869,7 @@ def get_remaining_submissions(request, challenge_pk):
     phases_data = {}
     challenge = get_challenge_model(challenge_pk)
     challenge_phases = ChallengePhase.objects.filter(
-        challenge=challenge
+        challenge=challenge, is_disabled=False
     ).order_by("pk")
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         challenge_phases = challenge_phases.filter(
@@ -1166,6 +1166,7 @@ def update_submission(request, challenge_pk):
                     challenge_phase_split = ChallengePhaseSplit.objects.get(
                         challenge_phase__pk=challenge_phase_pk,
                         dataset_split__codename=split,
+                        is_disabled=False,
                     )
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {
@@ -1538,6 +1539,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     challenge_phase_split = ChallengePhaseSplit.objects.get(
                         challenge_phase__pk=challenge_phase_pk,
                         dataset_split__codename=split,
+                        is_disabled=False,
                     )
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {
@@ -1707,6 +1709,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     challenge_phase_split = ChallengePhaseSplit.objects.get(
                         challenge_phase__pk=challenge_phase_pk,
                         dataset_split__codename=split,
+                        is_disabled=False,
                     )
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {

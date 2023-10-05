@@ -72,7 +72,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        challenge_host_team = ChallengePhase.objects.get(pk=ret["challenge_phase"]).challenge.creator
+        challenge_host_team = ChallengePhase.objects.get(pk=ret["challenge_phase"], is_disabled=False).challenge.creator
         challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
             "user__pk", flat=True
         )
