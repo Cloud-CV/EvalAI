@@ -3386,6 +3386,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
             "allowed_email_ids": self.challenge_phase.allowed_email_ids,
             "disable_logs": self.challenge_phase.disable_logs,
+            "is_disabled": self.challenge_phase.is_disabled,
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
@@ -5258,6 +5259,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.private_challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.private_challenge_phase.disable_logs,
+                "is_disabled": self.private_challenge_phase.is_disabled,
             },
             {
                 "id": self.challenge_phase.id,
@@ -5292,6 +5294,7 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "default_submission_meta_attributes": self.challenge_phase.default_submission_meta_attributes,
                 "allowed_email_ids": self.challenge_phase.allowed_email_ids,
                 "disable_logs": self.challenge_phase.disable_logs,
+                "is_disabled": self.challenge_phase.is_disabled,
             },
         ]
         response = self.client.get(self.url, {})
