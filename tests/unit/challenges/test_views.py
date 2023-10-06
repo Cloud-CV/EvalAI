@@ -1190,7 +1190,7 @@ class DisableChallengeTest(BaseAPITestClass):
         super(DisableChallengeTest, self).setUp()
 
         self.user1 = User.objects.create(
-            username="otheruser", password="other_secret_password"
+            username="admin_user.username", password="other_secret_password"
         )
 
         self.challenge_host_team1 = ChallengeHostTeam.objects.create(
