@@ -5037,6 +5037,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
             "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
             "show_execution_time": False,
+            "is_disabled": self.challenge_phase_split.is_disabled,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
