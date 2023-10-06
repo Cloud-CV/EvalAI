@@ -97,9 +97,9 @@ class TestChallengeHost(BaseTestClass):
 class TestUserisStafforHost(BaseTestClass):
     def setUp(self):
         self.user = User.objects.create(
-            username="someuser1",
-            email="user@test.com",
-            password="secret_password",
+            username=text_type("someuser1"),
+            email=text_type("user@test.com"),
+            password=text_type("secret_password"),
             is_staff=True,
         )
 
