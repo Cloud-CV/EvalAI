@@ -4231,7 +4231,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if default_submission_meta_attributes is None:
                         data["default_submission_meta_attributes"] = None
 
-
                     challenge_phase = ChallengePhase.objects.filter(
                         challenge__pk=challenge.pk, config_id=data["id"]
                     ).first()
@@ -4337,7 +4336,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                         response_data = {"error": message}
                         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-
 
                     challenge_phase = challenge_phase_ids[
                         str(data["challenge_phase_id"])
