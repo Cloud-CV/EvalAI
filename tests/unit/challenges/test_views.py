@@ -1134,7 +1134,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         response = self.client.post(self.url, {})
         message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-        expected = {"error": message.format("test.com/test1")}
+        expected = {"error": message.format("test.com/test1.com")}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
