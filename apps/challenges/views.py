@@ -4194,7 +4194,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__challenge__pk=challenge.pk,
                         leaderboard__config_id=data["config_id"],
-                        is_disabled=False,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -4232,14 +4231,18 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if default_submission_meta_attributes is None:
                         data["default_submission_meta_attributes"] = None
 
-                    # Override the is_disabled when they are missing
-                    is_disabled = data.get("is_disabled")
-                    if is_disabled is None:
-                        data["is_disabled"] = False
 
                     challenge_phase = ChallengePhase.objects.filter(
-                        challenge__pk=challenge.pk, config_id=data["id"], is_disabled=False
+                        challenge__pk=challenge.pk, config_id=data["id"]
                     ).first()
+
+                    # Override the is_disabled when they are missing or if submission exists
+                    if (Submission.objects.filter(challenge_phase=challenge_phase).exists()):
+                        data["is_disabled"] = False
+                    else:
+                        is_disabled = data.get("is_disabled")
+                        if is_disabled is None:
+                            data["is_disabled"] = False
                     if (
                         challenge_test_annotation_file
                     ):
@@ -4291,7 +4294,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__challenge__pk=challenge.pk,
                         dataset_split__config_id=data["id"],
-                        is_disabled=False,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -4336,14 +4338,19 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         response_data = {"error": message}
                         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
-                    # Override the is_disabled when they are missing
-                    is_disabled = data.get("is_disabled")
-                    if is_disabled is None:
-                        data["is_disabled"] = False
 
                     challenge_phase = challenge_phase_ids[
                         str(data["challenge_phase_id"])
                     ]
+
+                    # Override the is_disabled when they are missing or if submission exists
+                    if (Submission.objects.filter(challenge_phase=challenge_phase).exists()):
+                        data["is_disabled"] = False
+                    else:
+                        is_disabled = data.get("is_disabled")
+                        if is_disabled is None:
+                            data["is_disabled"] = False
+
                     leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
                     dataset_split = dataset_split_ids[
                         str(data["dataset_split_id"])
@@ -4366,7 +4373,6 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         challenge_phase__pk=challenge_phase,
                         dataset_split__pk=dataset_split,
                         leaderboard__pk=leaderboard,
-                        is_disabled=False,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()

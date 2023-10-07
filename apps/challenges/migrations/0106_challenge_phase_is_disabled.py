@@ -20,9 +20,4 @@ class Migration(migrations.Migration):
             name='is_disabled',
             field=models.BooleanField(default=False),
         ),
-        migrations.AlterField(
-            model_name='challenge',
-            name='worker_image_url',
-            field=models.CharField(blank=True, default='', max_length=200, null=True),
-        ),
     ]
