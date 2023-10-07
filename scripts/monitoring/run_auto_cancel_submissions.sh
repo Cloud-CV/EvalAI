@@ -21,4 +21,4 @@ fi
 export AUTH_TOKEN=${auth_token};
 export API_HOST_URL=${api_host_url};
 
-/home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_stop_workers.py
+/home/ubuntu/venv/bin/python ${path}/scripts/monitoring/auto_cancel_submissions.py

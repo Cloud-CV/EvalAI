@@ -394,17 +394,18 @@ def get_aws_credentials_for_submission(challenge, participant_team):
 
 def is_user_in_allowed_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
+    email_domain = email.split('@')[-1].lower()
     for domain in challenge.allowed_email_domains:
-        if domain.lower() in email.lower():
+        if email_domain.endswith(domain.lower()):
             return True
     return False
 
 
 def is_user_in_blocked_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
+    email_domain = email.split('@')[-1].lower()
     for domain in challenge.blocked_email_domains:
-        domain = "@" + domain
-        if domain.lower() in email.lower():
+        if email_domain.endswith(domain.lower()):
             return True
     return False
 
