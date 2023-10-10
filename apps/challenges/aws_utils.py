@@ -1823,6 +1823,7 @@ def setup_ec2(challenge):
         return start_ec2_instance(challenge_obj)
     return create_ec2_instance(challenge_obj)
 
+
 @app.task
 def update_sqs_retention_period_task(challenge):
     """
@@ -1834,4 +1835,3 @@ def update_sqs_retention_period_task(challenge):
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     return update_sqs_retention_period(challenge_obj)
-    

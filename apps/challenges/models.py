@@ -292,7 +292,6 @@ def update_sqs_retention_period_for_challenge(sender, instance, **kwargs):
         aws.update_sqs_retention_period_task.delay(serialized_obj)
 
 
-
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
