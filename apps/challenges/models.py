@@ -35,6 +35,7 @@ class Challenge(TimeStampedModel):
         super(Challenge, self).__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
+        self._original_sqs_retention_period = self.sqs_retention_period
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -289,6 +290,11 @@ def update_sqs_retention_period_for_challenge(sender, instance, created, **kwarg
     if not created and is_model_field_changed(instance, field_name):
         serialized_obj = serializers.serialize("json", [instance])
         aws.update_sqs_retention_period_task.delay(serialized_obj)
+        # Update challenge
+        curr = getattr(instance, "{}".format(field_name))
+        challenge = instance
+        challenge._original_sqs_retention_period = curr
+        challenge.save()
 
 
 class DatasetSplit(TimeStampedModel):
