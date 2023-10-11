@@ -282,12 +282,11 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def update_sqs_retention_period_for_challenge(sender, instance, **kwargs):
+def update_sqs_retention_period_for_challenge(sender, instance, created, **kwargs):
     field_name = "sqs_retention_period"
     import challenges.aws_utils as aws
 
-    # TODO: Check if we need 'created'
-    if is_model_field_changed(instance, field_name):
+    if not created and is_model_field_changed(instance, field_name):
         serialized_obj = serializers.serialize("json", [instance])
         aws.update_sqs_retention_period_task.delay(serialized_obj)
 
