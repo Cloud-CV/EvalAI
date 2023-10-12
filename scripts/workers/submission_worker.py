@@ -450,6 +450,7 @@ def run_submission(
     stderr_file = join(temp_run_dir, "temp_stderr.txt")
 
     stdout = open(stdout_file, "a+")
+
     stderr = open(stderr_file, "a+")
 
     remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
