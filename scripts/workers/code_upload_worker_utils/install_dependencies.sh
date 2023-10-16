@@ -28,7 +28,18 @@ mv ./kubectl /usr/local/bin/kubectl
 echo "### Kubectl Installed"
 
 # Install aws-container-insights
-curl https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/quickstart/cwagent-fluentd-quickstart.yaml | sed "s/{{cluster_name}}/$CLUSTER_NAME/;s/{{region_name}}/$AWS_DEFAULT_REGION/" | kubectl apply -f -
+# Create amazon-cloudwatch namespace
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cloudwatch-namespace.yaml
+# Create configmap for fluent bit
+kubectl create configmap fluent-bit-cluster-info \
+--from-literal=cluster.name=$CLUSTER_NAME \
+--from-literal=http.server='On' \
+--from-literal=http.port='2020' \
+--from-literal=read.head='On' \
+--from-literal=read.tail='Off' \
+--from-literal=logs.region=$AWS_DEFAULT_REGION -n amazon-cloudwatch
+# Use FluentD compatible FluentBit insights
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/fluent-bit/fluent-bit-compatible.yaml
 echo "### Container Insights Installed"
 
 # Setup EFS as persistent volume
