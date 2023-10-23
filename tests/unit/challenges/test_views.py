@@ -1687,7 +1687,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
-                "ephemeral_storage": self.challenge3.ephemeral_storage,s
+                "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
             },
