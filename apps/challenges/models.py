@@ -99,7 +99,7 @@ class Challenge(TimeStampedModel):
     ec2_storage = models.PositiveIntegerField(
         default=8, verbose_name="EC2 storage (GB)"
     )
-    ephemeral_storage = models.PositiveBigIntegerField(
+    ephemeral_storage = models.PositiveIntegerField(
         default=20, verbose_name="Ephemeral Storage (GB)"
     )
     featured = models.BooleanField(
