@@ -357,7 +357,7 @@ def calculate_distinct_sorted_leaderboard_data(
     leaderboard_data = LeaderboardData.objects.exclude(
         Q(submission__created_by__email__in=challenge_hosts_emails)
         & Q(submission__is_baseline=False)
-    )
+    ).filter(is_disabled=False)
 
     # Get all the successful submissions related to the challenge phase split
     all_valid_submission_status = [Submission.FINISHED]
@@ -519,6 +519,7 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     leaderboard_data = LeaderboardData.objects.get(
         submission=submission_pk,
         challenge_phase_split__pk=challenge_phase_split_pk,
+        is_disabled=False,
     )
     return leaderboard_data
 

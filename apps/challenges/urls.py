@@ -299,6 +299,11 @@ urlpatterns = [
         views.get_sponsors_by_challenge,
         name="get_sponsors_by_challenge",
     ),
+    url(
+        r"^challenge/update_leaderboard_data/$",
+        views.update_leaderboard_data,
+        name="update_leaderboard_data",
+    )
 ]
 
 app_name = "challenges"
