@@ -160,7 +160,7 @@ from .utils import (
     send_emails,
 )
 
-from jobs.utils import (get_submission_model,)
+from jobs.utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
