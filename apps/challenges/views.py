@@ -2,7 +2,6 @@ import csv
 import json
 import logging
 import os
-from django.shortcuts import get_object_or_404
 import pytz
 import random
 import requests
@@ -161,9 +160,7 @@ from .utils import (
     send_emails,
 )
 
-from jobs.utils import (
-    get_submission_model,
-)
+from jobs.utils import (get_submission_model,)
 
 logger = logging.getLogger(__name__)
 
@@ -4802,7 +4799,7 @@ def update_leaderboard_data(request):
         # Perform lookups and handle errors
         try:
             if leaderboard_data_pk:
-                leaderboard_data = get_object_or_404(LeaderboardData, pk=leaderboard_data_pk)
+                leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
             else:
                 submission = get_submission_model(submission_pk)
                 challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
