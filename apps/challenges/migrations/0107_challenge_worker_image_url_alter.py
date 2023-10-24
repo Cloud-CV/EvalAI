@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0105_challenge_sponsors_prizes'),
+        ('challenges', '0106_challenge_leaderboard_data'),
     ]
 
     operations = [
