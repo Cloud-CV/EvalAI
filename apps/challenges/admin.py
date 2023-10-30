@@ -329,7 +329,6 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
         "challenge_phase_split",
         "submission",
         "leaderboard",
-        "is_disabled",
         "result",
     )
     list_filter = ("challenge_phase_split", "created_at", "modified_at")

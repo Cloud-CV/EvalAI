@@ -160,8 +160,6 @@ from .utils import (
     send_emails,
 )
 
-from jobs.utils import get_submission_model
-
 logger = logging.getLogger(__name__)
 
 try:
@@ -4706,7 +4704,7 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
         challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=False)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split)
     except LeaderboardData.DoesNotExist:
         response_data = {
             "error": "Leaderboard data not found!"
@@ -4765,62 +4763,3 @@ def update_challenge_approval(request):
         "message": "Challenge updated successfully!"
     }
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["PUT"])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def update_leaderboard_data(request):
-    """
-    API to update leaderboard data
-    Arguments:
-        request {dict} -- Request object
-    Query Parameters:
-        leaderboard_data {list} -- List of leaderboard data
-        challenge_phase_split {int} -- Challenge phase split primary key
-        submission {int} -- Submission primary key
-        leaderboard {int} -- Leaderboard primary key
-        is_disabled {int} -- Leaderboard data is disabled
-    """
-    if not is_user_a_staff(request.user):
-        response_data = {
-            "error": "Sorry, you are not authorized to access this resource!"
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-    if request.method == "PUT":
-        leaderboard_data_pk = request.data.get("leaderboard_data")
-        leaderboard_pk = request.data.get("leaderboard")
-        challenge_phase_split_pk = request.data.get("challenge_phase_split")
-        submission_pk = request.data.get("submission")
-        is_disabled = request.data.get("is_disabled")
-
-        # Perform lookups and handle errors
-        try:
-            if leaderboard_data_pk:
-                leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
-            else:
-                submission = get_submission_model(submission_pk)
-                challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-                leaderboard = get_leaderboard_model(leaderboard_pk)
-                leaderboard_data = LeaderboardData.objects.get(
-                    submission=submission,
-                    challenge_phase_split=challenge_phase_split,
-                    leaderboard=leaderboard
-                )
-        except Exception:
-            response_data = {
-                "error": "Resource not found!"
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-
-        # Update the 'is_disabled' attribute
-        leaderboard_data.is_disabled = bool(int(is_disabled))
-        leaderboard_data.save()
-
-        # Serialize and return the updated data
-        response_data = {
-            "message": "Leaderboard data updated successfully!"
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
