@@ -6073,8 +6073,8 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_leaderboard_data_when_not_staff(self):
-        self.url = reverse_lazy("challenges:update_leaderboard_data")
+    def test_modify_leaderboard_data_when_not_staff(self):
+        self.url = reverse_lazy("challenges:modify_leaderboard_data")
         self.user.is_staff = False
         self.user.save()
         expected = {
@@ -6084,9 +6084,9 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_leaderboard_data_success(self):
+    def test_modify_leaderboard_data_success(self):
         self.url = reverse_lazy(
-            "challenges:update_leaderboard_data")
+            "challenges:modify_leaderboard_data")
         data = {"leaderboard_data": self.leaderboard_data.pk,
                 "is_disabled": 0
                 }
@@ -6097,8 +6097,8 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_leaderboard_data_with_other_parameters(self):
-        self.url = reverse_lazy("challenges:update_leaderboard_data")
+    def test_modify_leaderboard_data_with_other_parameters(self):
+        self.url = reverse_lazy("challenges:modify_leaderboard_data")
         data = {"leaderboard": self.leaderboard.pk,
                 "challenge_phase_split": self.challenge_phase_split.pk,
                 "submission": self.submission.pk,
