@@ -587,6 +587,7 @@ def run_submission(
                 leaderboard_data.result = split_result.get(
                     dataset_split.codename
                 )
+                leaderboard_data.is_disabled = False
 
                 if "error" in submission_output:
                     leaderboard_data.error = error_bars_dict.get(

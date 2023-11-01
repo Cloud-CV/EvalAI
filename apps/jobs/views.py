@@ -2265,7 +2265,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
     """
 
     try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk, is_disabled=False)
     except LeaderboardData.DoesNotExist:
         response_data = {"error": "Leaderboard data does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
