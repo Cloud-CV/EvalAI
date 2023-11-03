@@ -329,7 +329,14 @@ def extract_challenge_data(challenge, phases):
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id)
         )
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
+        challenge.evaluation_module_error = None
+        challenge.save()
     except Exception:
+        # Catch the exception and save the traceback in the Challenge object's errors attribute
+        traceback_msg = traceback.format_exc()
+        challenge.evaluation_module_error = traceback_msg
+        challenge.save()
+
         logger.exception(
             "{} Exception raised while creating Python module for challenge_id: {}".format(
                 WORKER_LOGS_PREFIX, challenge.id
@@ -580,6 +587,7 @@ def run_submission(
                 leaderboard_data.result = split_result.get(
                     dataset_split.codename
                 )
+                leaderboard_data.is_disabled = False
 
                 if "error" in submission_output:
                     leaderboard_data.error = error_bars_dict.get(

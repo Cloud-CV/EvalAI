@@ -54,7 +54,7 @@ from challenges.utils import (
     get_participant_model,
 )
 from hosts.models import ChallengeHost
-from hosts.utils import is_user_a_host_of_challenge
+from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_model,
@@ -800,7 +800,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
     # Allow access only to challenge host
-    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+    if not is_user_a_staff_or_host(request.user, challenge_obj.pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
@@ -1898,9 +1898,9 @@ def re_run_submission(request, submission_pk):
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if not challenge.allow_participants_resubmissions and not is_user_a_staff_or_host(request.user, challenge.pk):
         response_data = {
-            "error": "Only challenge hosts are allowed to re-run a submission"
+            "error": "Only challenge hosts or admins are allowed to re-run a submission"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -2303,7 +2303,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
     """
 
     try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk, is_disabled=False)
     except LeaderboardData.DoesNotExist:
         response_data = {"error": "Leaderboard data does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
