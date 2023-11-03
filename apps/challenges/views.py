@@ -4771,7 +4771,7 @@ def update_challenge_approval(request):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def update_leaderboard_data(request):
+def modify_leaderboard_data(request):
     """
     API to update leaderboard data
     Arguments:
