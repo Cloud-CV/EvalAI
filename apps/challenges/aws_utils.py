@@ -992,6 +992,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         challenge_pk=challenge.pk,
         CPU=worker_cpu_cores,
         MEMORY=worker_memory,
+        ephemeral_storage=challenge.ephemeral_storage,
         log_group_name=log_group_name,
         AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
         AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
