@@ -515,6 +515,10 @@ class LeaderboardData(TimeStampedModel):
     is_disabled = models.BooleanField(default=False)
     error = JSONField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.is_disabled is None:
+            self.is_disabled = False
+
     def __str__(self):
         return "{0} : {1}".format(self.challenge_phase_split, self.submission)
 
