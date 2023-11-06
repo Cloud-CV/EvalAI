@@ -140,9 +140,9 @@ task_definition = """
     ],
     "cpu": "{CPU}",
     "memory": "{MEMORY}",
-    "ephemeralStorage": {
+    "ephemeralStorage": {{
         "sizeInGiB" : {ephemeral_storage}
-    },
+    }},
 }}
 """
 
@@ -236,9 +236,9 @@ task_definition_code_upload_worker = """
     ],
     "cpu": "{CPU}",
     "memory": "{MEMORY}",
-    "ephemeralStorage": {
+    "ephemeralStorage": {{
         "sizeInGiB" : {ephemeral_storage}
-    },
+    }},
 }}
 """
 
@@ -256,9 +256,9 @@ task_definition_static_code_upload_worker = """
     ],
     "cpu": "{CPU}",
     "memory": "{MEMORY}",
-    "ephemeralStorage": {
+    "ephemeralStorage": {{
         "sizeInGiB" : {ephemeral_storage}
-    },
+    }},
 }}
 """
 
