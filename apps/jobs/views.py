@@ -19,6 +19,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
 from django.db.models import Count
 from django.utils import timezone
+from django.db.models import Q
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
@@ -2265,7 +2266,10 @@ def update_leaderboard_data(request, leaderboard_data_pk):
     """
 
     try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk, is_disabled=False)
+        leaderboard_data = LeaderboardData.objects.get(
+            Q(is_disabled=False) | Q(is_disabled__isnull=True),
+            pk=leaderboard_data_pk
+        )
     except LeaderboardData.DoesNotExist:
         response_data = {"error": "Leaderboard data does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
