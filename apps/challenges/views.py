@@ -24,6 +24,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
+from django.db.models import Q
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -4706,7 +4707,10 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
         challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=False)
+        leaderboard_data = LeaderboardData.objects.filter(
+            Q(is_disabled=False) | Q(is_disabled__isnull=True),
+            challenge_phase_split=challenge_phase_split
+        )
     except LeaderboardData.DoesNotExist:
         response_data = {
             "error": "Leaderboard data not found!"
