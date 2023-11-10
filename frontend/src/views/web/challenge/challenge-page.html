@@ -80,6 +80,16 @@
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </a>
                     </span>
+                    <ul class="list-unstyled list-inline">
+                        <li ng-if="challenge.page.list_tags[0]" ng-repeat="tags in challenge.page.list_tags" class="list-inline-item chip orange white-text">{{tags}}</li>
+                        <li ng-if="challenge.page.domain_name" class="list-inline-item chip light-blue white-text">{{challenge.page.domain_name}}</li>
+                        <span ng-if="challenge.isChallengeHost">
+                            <a class="pointer" ng-click="challenge.editchallengeTagDialog($event)">
+                                <span ng-if="!(challenge.page.domain_name && challenge.page.list_tags)">Add Tags or Domain</span>
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    </ul>
                 </div>
             </div>
             <div class="col m2 l2 fs-16 w-300 center">
@@ -127,6 +137,10 @@
                         Team Approval</a></li>
                     <li class="margin-btm-0"><a ui-sref=".leaderboard" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-line-chart"></i> Leaderboard</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.hasPrizes"><a ui-sref=".prizes" ui-sref-active="active-challenge"
+                        class="text-light-black w-300"><i class="fa fa-trophy"></i> Prizes</a></li>
+                    <li class="margin-btm-0" ng-if="challenge.has_sponsors"><a ui-sref=".sponsors" ui-sref-active="active-challenge"
+                        class="text-light-black w-300"><i class="fa fa-trophy"></i> Sponsors</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isChallengeHost"><a ui-sref=".manage" ui-sref-active="active-challenge"
                             class="text-light-black w-300"><i class="fa fa-cogs"></i> Manage</a></li>
                     <li class="margin-btm-0" ng-if="challenge.isForumEnabled && challenge.forumURL"><a

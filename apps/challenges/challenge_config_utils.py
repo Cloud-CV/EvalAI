@@ -5,8 +5,9 @@ import yaml
 
 from django.core.files.base import ContentFile
 
+import re
 from os.path import basename, isfile, join
-from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
+from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -53,8 +54,9 @@ def get_yaml_files_from_challenge_config(zip_ref):
     yaml_file_name = None
     extracted_folder_name = None
     for name in zip_ref.namelist():
-        if (name.endswith(".yaml") or name.endswith(".yml")) and (
-            not name.startswith("__MACOSX")
+        if (
+            (name == "challenge_config.yaml" or name == "challenge_config.yml")
+            and not name.startswith("__MACOSX")
         ):
             yaml_file_name = name
             extracted_folder_name = yaml_file_name.split(
@@ -222,7 +224,7 @@ def get_value_from_field(data, base_location, field_name):
 
 error_message_dict = {
     "no_yaml_file": "There is no YAML file in the zip file you uploaded!",
-    "multiple_yaml_files": "There are {} YAML files instead of one in the zip file!",
+    "multiple_yaml_files": "There are {} challenge config YAML files instead of 1 in the zip file!",
     "yaml_file_read_error": "\n{} in line {}, column {}\n",
     "missing_challenge_title": "Please add the challenge title",
     "missing_challenge_description": "Please add the challenge description",
@@ -277,6 +279,14 @@ error_message_dict = {
     "start_date_greater_than_end_date": "ERROR: Start date cannot be greater than end date.",
     "missing_dates_challenge_phase": "ERROR: Please add the start_date and end_date in challenge phase {}.",
     "start_date_greater_than_end_date_challenge_phase": "ERROR: Start date cannot be greater than end date in challenge phase {}.",
+    "extra_tags": "ERROR: Tags are limited to 4. Please remove extra tags then try again!",
+    "wrong_domain": "ERROR: Domain name is incorrect. Please enter correct domain name then try again!",
+    "duplicate_combinations_in_challenge_phase_splits": "ERROR: Duplicate combinations of leaderboard_id {}, challenge_phase_id {} and dataset_split_id {} found in challenge phase splits.",
+    "sponsor_not_found": "ERROR: Sponsor name or url not found in YAML data.",
+    "prize_not_found": "ERROR: Prize rank or amount not found in YAML data.",
+    "duplicate_rank": "ERROR: Duplicate rank {} found in YAML data.",
+    "prize_amount_wrong": "ERROR: Invalid amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).",
+    "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
 }
 
 
@@ -319,11 +329,13 @@ class ValidateChallengeConfigUtil:
             self.extracted_folder_name,
         ) = get_yaml_files_from_challenge_config(self.zip_ref)
 
-        self.challenge_config_location = join(
-            self.base_location,
-            self.unique_folder_name,
-            self.extracted_folder_name,
-        )
+        self.valid_yaml = self.read_and_validate_yaml()
+        if self.valid_yaml:
+            self.challenge_config_location = join(
+                self.base_location,
+                self.unique_folder_name,
+                self.extracted_folder_name,
+            )
         self.phase_ids = []
         self.leaderboard_ids = []
 
@@ -331,12 +343,14 @@ class ValidateChallengeConfigUtil:
         if not self.yaml_file_count:
             message = self.error_messages_dict.get("no_yaml_file")
             self.error_messages.append(message)
+            return False
 
         if self.yaml_file_count > 1:
             message = self.error_messages_dict.get(
                 "multiple_yaml_files"
             ).format(self.yaml_file_count)
             self.error_messages.append(message)
+            return False
 
         # YAML Read Error
         try:
@@ -344,6 +358,7 @@ class ValidateChallengeConfigUtil:
                 self.base_location, self.unique_folder_name, self.yaml_file
             )
             self.yaml_file_data = read_yaml_file(self.yaml_file_path, "r")
+            return True
         except (yaml.YAMLError, ScannerError) as exc:
             (
                 error_description,
@@ -354,6 +369,7 @@ class ValidateChallengeConfigUtil:
                 "yaml_file_read_error"
             ).format(error_description, line_number, column_number)
             self.error_messages.append(message)
+            return False
 
     def validate_challenge_title(self):
         challenge_title = self.yaml_file_data.get("title")
@@ -793,6 +809,34 @@ class ValidateChallengeConfigUtil:
         challenge_phase_splits = self.yaml_file_data.get(
             "challenge_phase_splits"
         )
+        # Check for duplicate combinations
+        challenge_phase_split_set = set()
+        duplicates_found = False
+        total_duplicates = []
+
+        for data in challenge_phase_splits:
+            combination = (
+                data["leaderboard_id"],
+                data["challenge_phase_id"],
+                data["dataset_split_id"],
+            )
+            if combination in challenge_phase_split_set:
+                duplicates_found = True
+                total_duplicates += [combination]
+            else:
+                challenge_phase_split_set.add(combination)
+
+        if duplicates_found:
+            message = self.error_messages_dict[
+                "duplicate_combinations_in_challenge_phase_splits"
+            ]
+            self.error_messages.append(message)
+            for combination in total_duplicates:
+                message = self.error_messages_dict[
+                    "duplicate_combinations_in_challenge_phase_splits"
+                ].format(combination[0], combination[1], combination[2])
+                self.error_messages.append(message)
+
         challenge_phase_split_uuids = []
         if challenge_phase_splits:
             phase_split = 1
@@ -935,6 +979,53 @@ class ValidateChallengeConfigUtil:
                 ].format(current_dataset_split_config_id)
                 self.error_messages.append(message)
 
+    # Check for Tags and Domain
+    def check_tags(self):
+        if "tags" in self.yaml_file_data:
+            tags_data = self.yaml_file_data["tags"]
+            # Verify Tags are limited to 4
+            if len(tags_data) > 4:
+                message = self.error_messages_dict["extra_tags"]
+                self.error_messages.append(message)
+
+    def check_domain(self):
+        # Verify Domain name is correct
+        if "domain" in self.yaml_file_data:
+            domain_value = self.yaml_file_data["domain"]
+            domain_choice = [option[0] for option in Challenge.DOMAIN_OPTIONS]
+            if domain_value not in domain_choice:
+                message = self.error_messages_dict["wrong_domain"]
+                self.error_messages.append(message)
+
+    def check_sponsor(self):
+        # Verify Sponsor is correct
+        if "sponsors" in self.yaml_file_data:
+            for sponsor in self.yaml_file_data["sponsors"]:
+                if 'name' not in sponsor or 'website' not in sponsor:
+                    message = self.error_messages_dict["sponsor_not_found"]
+                    self.error_messages.append(message)
+
+    def check_prizes(self):
+        # Verify Prizes are correct
+        if "prizes" in self.yaml_file_data:
+            rank_set = set()
+            for prize in self.yaml_file_data["prizes"]:
+                if 'rank' not in prize or 'amount' not in prize:
+                    message = self.error_messages_dict["prize_not_found"]
+                    self.error_messages.append(message)
+                # Check for duplicate rank.
+                rank = prize['rank']
+                if rank in rank_set:
+                    message = self.error_messages_dict["duplicate_rank"].format(rank)
+                    self.error_messages.append(message)
+                rank_set.add(rank)
+                if not isinstance(rank, int) or rank < 1:
+                    message = self.error_messages_dict["prize_rank_wrong"].format(rank)
+                    self.error_messages.append(message)
+                if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', prize["amount"]):
+                    message = self.error_messages_dict["prize_amount_wrong"].format(prize["amount"])
+                    self.error_messages.append(message)
+
 
 def validate_challenge_config_util(
     request,
@@ -963,9 +1054,12 @@ def validate_challenge_config_util(
         zip_ref,
         current_challenge,
     )
-
-    # Read and validate YAML file
-    val_config_util.read_and_validate_yaml()
+    if not val_config_util.valid_yaml:
+        return (
+            val_config_util.error_messages,
+            val_config_util.yaml_file_data,
+            val_config_util.files,
+        )
 
     # # Validate challenge title
     val_config_util.validate_challenge_title()
@@ -1041,6 +1135,17 @@ def validate_challenge_config_util(
 
     # Validate challenge phase splits
     val_config_util.validate_challenge_phase_splits(current_phase_split_ids)
+
+    # Validate tags
+    val_config_util.check_tags()
+
+    # Validate domain
+    val_config_util.check_domain()
+    # Check for Sponsor
+    # val_config_util.check_sponsor()
+
+    # Check for Prize
+    val_config_util.check_prizes()
 
     return (
         val_config_util.error_messages,

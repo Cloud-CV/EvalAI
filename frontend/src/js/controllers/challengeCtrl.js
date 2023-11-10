@@ -31,6 +31,8 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.hasPrizes = false;
+        vm.has_sponsors = false;
         vm.orderLeaderboardBy = decodeURIComponent($stateParams.metric);
         vm.phaseSplitLeaderboardSchema = {};
         vm.submissionMetaAttributes = []; // Stores the attributes format and phase ID for all the phases of a challenge.
@@ -79,6 +81,7 @@
         vm.phaseLeaderboardPublic = [];
         vm.currentPhaseLeaderboardPublic = false;
         vm.eligible_to_submit = false;
+        vm.evaluation_module_error = null;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -228,25 +231,41 @@
         };
         
         // Get the logs from worker if submissions are failing.
-        vm.startLoadingLogs = function() {
-            vm.logs_poller = $interval(function(){
-                parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
-                parameters.method = 'GET';
-                parameters.data = {};
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        vm.workerLogs = [];
-                        for (var i = 0; i<details.logs.length; i++){
-                            vm.workerLogs.push(details.logs[i]);
+        vm.startLoadingLogs = function () {
+            vm.logs_poller = $interval(function () {
+                if (vm.evaluation_module_error) {
+                    vm.workerLogs = [];
+                    vm.workerLogs.push(vm.evaluation_module_error);
+                }
+                else {
+                    parameters.url = 'challenges/' + vm.challengeId + '/get_worker_logs/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function (response) {
+                            var details = response.data;
+                            vm.workerLogs = [];
+                            for (var i = 0; i < details.logs.length; i++) {
+                                var log = details.logs[i];
+                                var utcTime = log.match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
+                                if (utcTime) {
+                                    utcTime = utcTime[0].substring(1, 20);
+                                    var date = new Date(utcTime + 'Z');
+                                    var localTime = date.toLocaleString("sv-SE");
+                                    var modifiedLog = log.replace(utcTime, localTime);
+                                    vm.workerLogs.push(modifiedLog);
+                                } else {
+                                    vm.workerLogs.push(log);
+                                }
+                            }
+                        },
+                        onError: function (response) {
+                            var error = response.data.error;
+                            vm.workerLogs.push(error);
                         }
-                    },
-                    onError: function(response) {
-                        var error = response.data.error;
-                        vm.workerLogs.push(error);
-                    }
-                };
-                utilities.sendRequest(parameters);
+                    };
+                    utilities.sendRequest(parameters);
+                }
             }, 5000);
         };
 
@@ -373,12 +392,51 @@
                 vm.allowParticipantsResubmissions = details.allow_participants_resubmissions;
                 vm.selectedWorkerResources = [details.worker_cpu_cores, details.worker_memory];
                 vm.manual_participant_approval = details.manual_participant_approval;
+                vm.hasPrizes = details.has_prize;
+                vm.has_sponsors = details.has_sponsors;
                 vm.queueName = details.queue;
+                vm.evaluation_module_error = details.evaluation_module_error;
                 vm.getTeamName(vm.challengeId);
-
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
 
+                }
+
+
+                // Get challenge prizes
+                vm.prizes = [];
+                if (vm.hasPrizes) {
+                    parameters.url = 'challenges/challenge/' + vm.challengeId + '/prizes/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.prizes = response.data;
+                        },
+                        onError: function(response) {
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+
+                // Get challenge Sponsors
+                vm.sponsors = {};
+                if (vm.has_sponsors) {
+                    parameters.url = 'challenges/challenge/' + vm.challengeId + '/sponsors/';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.sponsors = response.data;
+                        },
+                        onError: function(response) {
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
                 }
 
                 if (userKey) {
@@ -1044,6 +1102,9 @@
                             vm.showSubmissionMetaAttributesOnLeaderboard = true;
                         }
 
+                        var leaderboardLabels = vm.leaderboard[i].leaderboard__schema.labels;
+                        var index = leaderboardLabels.findIndex(label => label === vm.orderLeaderboardBy);
+                        vm.chosenMetrics = index !== -1 ? [index.toString()]: undefined;
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -2878,6 +2939,81 @@
             }
         };
 
+        vm.editchallengeTagDialog = function(ev) {
+            vm.tags = vm.page.list_tags;
+            vm.domain_choices();
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-tag.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeTag = function(editChallengeTagDomainForm) {
+            var new_tags;
+            if (!editChallengeTagDomainForm) {
+                $mdDialog.hide();
+                return;
+            }
+            new_tags = typeof vm.tags === 'string'
+                ? vm.tags.split(",").map(item => item.trim())
+                : vm.page.list_tags.map(tag => tag);
+
+            if (typeof vm.tags === 'string' && (new_tags.length > 4 || new_tags.some(tag => tag.length > 15))) {
+                $rootScope.notify("error", "Invalid tags! Maximum 4 tags are allowed, and each tag must be 15 characters or less.");
+                return;
+            }
+            parameters.url = "challenges/challenge/" + vm.challengeId + "/update_challenge_tags_and_domain/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "list_tags": new_tags,
+                "domain": vm.domain
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    utilities.hideLoader();
+                    if (status === 200) {
+                        $rootScope.notify("success", "The challenge tags and domain is successfully updated!");
+                        $state.reload();
+                        $mdDialog.hide();
+                    }
+                },
+                onError: function(response) {
+                    utilities.hideLoader();
+                    $mdDialog.hide();
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.showLoader();
+            utilities.sendRequest(parameters);
+        };
+
+        vm.domain_choices = function() {
+            parameters.url = "challenges/challenge/get_domain_choices/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var domain_choices = response.data;
+                    for (var i = 0; i < domain_choices.length; i++) {
+                        if (domain_choices[i][0] == vm.page.domain) {
+                            vm.domain = domain_choices[i][0];
+                        }
+                    }
+                    vm.domainoptions = domain_choices;
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
@@ -2918,6 +3054,71 @@
 
         vm.encodeMetricURI = function(metric) {
             return encodeURIComponent(metric);
+        };
+
+        vm.deregisterdialog = function(ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-deregister.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.deregister = function(deregisterformvalid) {
+            if (deregisterformvalid) {
+                parameters.url = 'challenges/challenge/' + vm.challengeId + '/deregister/';
+                parameters.method = 'POST';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $rootScope.notify("success", "You have successfully deregistered from the challenge.");
+                            $mdDialog.hide();
+                            $state.go('web.challenge-main.challenge-page.overview');
+                            setTimeout(function() {
+                            $state.reload();
+                            }, 100);
+                        }
+                    },
+                    onError: function(response) {
+                        $rootScope.notify("error", response.data.error);
+                        $mdDialog.hide();
+                    }
+                };
+            utilities.sendRequest(parameters);
+            }
+            else {
+                $mdDialog.hide();
+            }
+        };
+
+        vm.openLeaderboardDropdown = function() {
+            if (vm.chosenMetrics == undefined) {
+                var index = [];
+                for (var k = 0; k < vm.leaderboard[0].leaderboard__schema.labels.length; k++) {
+                    var label = vm.leaderboard[0].leaderboard__schema.labels[k].toString().trim();
+                    index.push(label);
+                }
+                vm.chosenMetrics = index;
+            }
+            vm.leaderboardDropdown = !vm.leaderboardDropdown;
+        };
+
+        vm.getTrophySize = function(rank) {
+            switch (rank) {
+                case 1:
+                  return 'trophy-gold';
+                case 2:
+                  return 'trophy-silver';
+                case 3:
+                  return 'trophy-bronze';
+                // Add more cases for other ranks if needed
+                default:
+                  return 'trophy-black'; // Default size, change this according to your preference
+              }
         };
 
     }

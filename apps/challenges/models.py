@@ -59,6 +59,18 @@ class Challenge(TimeStampedModel):
         related_name="challenge_creator",
         on_delete=models.CASCADE,
     )
+    DOMAIN_OPTIONS = (
+        ("CV", "Computer Vision"),
+        ("NLP", "Natural Language Processing"),
+        ("RL", "Reinforcement Learning"),
+        ("MM", "Multimodal"),
+        ("AUD", "Audio"),
+        ("TAB", "Tabular"),
+    )
+    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
+    list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
+    has_prize = models.BooleanField(default=False)
+    has_sponsors = models.BooleanField(default=False)
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
@@ -77,6 +89,15 @@ class Challenge(TimeStampedModel):
     )  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True
+    )
+    uses_ec2_worker = models.BooleanField(
+        default=False, verbose_name="Uses EC2 worker instance", db_index=True
+    )
+    ec2_instance_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    ec2_storage = models.PositiveIntegerField(
+        default=8, verbose_name="EC2 storage (GB)"
     )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
@@ -191,6 +212,8 @@ class Challenge(TimeStampedModel):
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
+    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default="")
+    evaluation_module_error = models.TextField(null=True, blank=True)
 
     class Meta:
         app_label = "challenges"
@@ -230,7 +253,7 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
+def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -242,6 +265,12 @@ def create_eks_cluster_for_challenge(sender, instance, created, **kwargs):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_eks_cluster.delay(serialized_obj)
+        elif (
+            instance.approved_by_admin is True
+            and instance.uses_ec2_worker is True
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_ec2.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
@@ -483,6 +512,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission", on_delete=models.CASCADE)
     leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     result = JSONField()
+    is_disabled = models.BooleanField(default=False)
     error = JSONField(null=True, blank=True)
 
     def __str__(self):
@@ -639,3 +669,44 @@ class PWCChallengeLeaderboard(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "pwc_challenge_leaderboard"
+
+
+class ChallengeSponsor(TimeStampedModel):
+    """
+    Model to store challenge sponsors
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, blank=True, null=True)
+    website = models.URLField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_sponsor"
+
+    def __str__(self):
+        return f"Sponsor for {self.challenge}: {self.name}"
+
+
+class ChallengePrize(TimeStampedModel):
+    """
+    Model to store challenge prizes
+    Arguments:
+        TimeStampedModel {[model class]} -- An abstract base class model that provides self-managed `created_at` and
+                                            `modified_at` fields.
+    """
+
+    challenge = models.ForeignKey("Challenge", on_delete=models.CASCADE)
+    amount = models.CharField(max_length=10)
+    description = models.CharField(max_length=25, blank=True, null=True)
+    rank = models.PositiveIntegerField()
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "challenge_prize"
+
+    def __str__(self):
+        return f"Prize for {self.challenge}: Rank {self.rank}, Amount {self.amount}"
