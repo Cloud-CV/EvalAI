@@ -88,6 +88,9 @@ p.no-top-para {
     background-color: $light-gray;
     border-radius: 10px;
 }
+.fs-10 {
+    font-size: 12px;
+}
 
 .fs-12 {
     font-size: 12px;
@@ -325,6 +328,12 @@ nav {
 }
 
 .ev-btn-dark {
+    background: $dark-gray;
+}
+
+.ev-btn-approval {
+    padding: 0px;
+    width: 100%;
     background: $dark-gray;
 }
 

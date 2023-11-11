@@ -53,6 +53,7 @@ from base.utils import (
     paginated_queryset,
     send_email,
     send_slack_notification,
+    is_user_a_staff,
 )
 from challenges.utils import (
     complete_s3_multipart_file_upload,
@@ -67,6 +68,10 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
+    add_domain_to_challenge,
+    add_tags_to_challenge,
+    add_prizes_to_challenge,
+    add_sponsors_to_challenge,
 )
 from challenges.challenge_config_utils import (
     download_and_write_file,
@@ -77,6 +82,7 @@ from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_teams_for_user,
     is_user_a_host_of_challenge,
+    is_user_a_staff_or_host,
     get_challenge_host_team_model,
 )
 from jobs.filters import SubmissionFilter
@@ -103,9 +109,12 @@ from .models import (
     ChallengePhaseSplit,
     ChallengeTemplate,
     ChallengeConfiguration,
+    LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
+    ChallengeSponsor,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -123,6 +132,9 @@ from .serializers import (
     UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
+    LeaderboardDataSerializer,
+    ChallengePrizeSerializer,
+    ChallengeSponsorSerializer,
 )
 
 from .aws_utils import (
@@ -130,6 +142,12 @@ from .aws_utils import (
     start_workers,
     stop_workers,
     restart_workers,
+    start_ec2_instance,
+    stop_ec2_instance,
+    restart_ec2_instance,
+    describe_ec2_instance,
+    create_ec2_instance,
+    terminate_ec2_instance,
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
@@ -141,6 +159,8 @@ from .utils import (
     get_challenge_template_data,
     send_emails,
 )
+
+from jobs.utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
@@ -316,6 +336,46 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def deregister_participant_team_from_challenge(request, challenge_pk):
+    """
+    Deregister a participant team from a challenge
+    Arguments:
+        challenge_pk {int} -- Challenge primary key
+    Returns:
+        {String} -- Success message
+    """
+    if has_user_participated_in_challenge(
+        user=request.user, challenge_id=challenge_pk
+    ):
+        challenge = get_challenge_model(challenge_pk)
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+        participant_team = get_participant_model(participant_team_pk)
+        all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+        if (all_challenge_phases.count() > 0):
+            for challenge_phase in all_challenge_phases:
+                submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+                if submission_exist:
+                    break
+        else:
+            submission_exist = False
+        if submission_exist:
+            response_data = {"error": "Participant teams which have made submissions to a challenge cannot be deregistered."}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            challenge.participant_teams.remove(participant_team)
+            response_data = {"success": "Successfully deregistered!"}
+            return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Your participant team is not registered for this challenge."}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -331,12 +391,22 @@ def participant_team_detail_for_challenge(request, challenge_pk):
     if has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
+        challenge = get_challenge_model(challenge_pk)
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk
         )
         participant_team = get_participant_model(participant_team_pk)
         serializer = ParticipantTeamDetailSerializer(participant_team)
-        response_data = serializer.data
+        if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
+            approved = True
+        elif not challenge.manual_participant_approval:
+            approved = True
+        else:
+            approved = False
+        response_data = {
+            "approved": approved,
+            "participant_team": serializer.data,
+        }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         message = "You are not a participant!"
@@ -385,7 +455,14 @@ def get_participant_teams_for_challenge(request, challenge_pk):
         serializer = ParticipantTeamDetailSerializer(
             participant_teams, many=True
         )
-        response_data = serializer.data
+        for participant_team in serializer.data:
+            if (challenge.approved_participant_teams.filter(id=participant_team["id"]).exists()):
+                participant_team["approved"] = True
+            else:
+                participant_team["approved"] = False
+        response_data = {
+            "participant_teams": serializer.data,
+        }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
@@ -508,6 +585,79 @@ def add_participant_team_to_challenge(
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def add_participant_team_to_approved_list(request, challenge_pk, participant_team_pk):
+    """
+    Add participant team to approved list
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "Participant Team does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
+        response_data = {"error": "Participant Team already approved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        if (ParticipantTeam.objects.filter(team_name__in=challenge.participant_teams.values_list('team_name', flat=True)).exists()):
+            challenge.approved_participant_teams.add(participant_team)
+            response_data = {"success": "Participant Team added to approved list"}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            response_data = {"error": "Participant isn't interested in challenge"}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def remove_participant_team_from_approved_list(request, challenge_pk, participant_team_pk):
+    """
+    Remove participant team from approved list
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+        team_name = participant_team.team_name
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "Participant Team does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    if (all_challenge_phases.count() > 0):
+        for challenge_phase in all_challenge_phases:
+            submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+            if submission_exist:
+                break
+    else:
+        submission_exist = False
+    if challenge.approved_participant_teams.filter(pk=participant_team_pk).exists() and not submission_exist:
+        challenge.approved_participant_teams.remove(participant_team)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif submission_exist:
+        response_data = {"error": f"Participant Team {team_name} has existing submissions and cannot be unapproved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        response_data = {"error": f"Participant Team {team_name} was not approved"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
 @permission_classes(
     (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
 )
@@ -564,33 +714,43 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
     # don't return disabled challenges
     q_params["is_disabled"] = False
 
-    try:
-        challenge = Challenge.objects.filter(**q_params).order_by("-pk")
-    except Exception as e:
-        response_data = {"error": f"Error in fetching challenges from backend: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    try:
-        paginator, result_page = paginated_queryset(challenge, request)
-    except Exception as e:
-        response_data = {"error": f"Error in creating paginated queryset: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    try:
-        serializer = ChallengeSerializer(
-            result_page, many=True, context={"request": request}
-        )
-    except Exception as e:
-        response_data = {"error": f"Error in creating challenge serializer with the given results: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
+    challenge = Challenge.objects.filter(**q_params).order_by("-pk")
+    paginator, result_page = paginated_queryset(challenge, request)
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={"request": request}
+    )
     response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
 
-    try:
-        return paginator.get_paginated_response(response_data)
-    except Exception as e:
-        response_data = {"error": f"Error in getting paginated response: {e}"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_all_challenges_submission_metrics(request):
+    """
+    Returns the submission metrics for all challenges and their phases
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    challenges = Challenge.objects.all()
+    submission_metrics = {}
+
+    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
+
+    for challenge in challenges:
+        challenge_id = challenge.id
+        challenge_metrics = {}
+
+        # Fetch challenge phases for the challenge
+        challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+
+        for submission_status in submission_statuses:
+            count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
+            challenge_metrics[submission_status] = count
+
+        submission_metrics[challenge_id] = challenge_metrics
+
+    return Response(submission_metrics, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -859,8 +1019,8 @@ def challenge_phase_split_list(request, challenge_pk):
         challenge_phase__challenge=challenge
     ).order_by("pk")
 
-    # Check if user is a challenge host or participant
-    challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+    # Check if user is a challenge host or staff
+    challenge_host = is_user_a_staff_or_host(request.user, challenge_pk)
 
     if not challenge_host:
         challenge_phase_split = challenge_phase_split.filter(
@@ -1422,6 +1582,24 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 raise RuntimeError()
                 # transaction.set_rollback(True)
                 # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+            # Add Tags
+            add_tags_to_challenge(yaml_file_data, challenge)
+
+            # Add Domain
+            verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+            if verify_complete is not None:
+                return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+
+            # Add Sponsors
+            error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+            if error_messages is not None:
+                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+            # Add Prizes
+            error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+            if error_messages is not None:
+                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -2431,6 +2609,89 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_tags_and_domain(request, challenge_pk):
+    """
+    Returns or Updates challenge tags and domain
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if request.method == "PATCH":
+        new_tags = request.data.get("list_tags", [])
+        domain_value = request.data.get("domain")
+        # Remove tags not present in the YAML file
+        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+        # Add new tags to the challenge
+        for tag_name in new_tags:
+            if tag_name not in challenge.list_tags:
+                challenge.list_tags.append(tag_name)
+        # Verifying Domain name
+        valid_domains = [choice[0] for choice in challenge.DOMAIN_OPTIONS]
+        if domain_value in valid_domains:
+            challenge.domain = domain_value
+            challenge.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            message = f"Invalid domain value:{domain_value}"
+            response_data = {"error": message}
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_domain_choices(request):
+    """
+    Returns domain choices
+    """
+    if request.method == "GET":
+        domain_choices = Challenge.DOMAIN_OPTIONS
+        return Response(domain_choices, status.HTTP_200_OK)
+    else:
+        response_data = {"error": "Method not allowed"}
+        return Response(response_data, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def get_prizes_by_challenge(request, challenge_pk):
+    """
+    Returns a list of prizes for a given challenge.
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    prizes = ChallengePrize.objects.filter(challenge=challenge)
+    serializer = ChallengePrizeSerializer(prizes, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+def get_sponsors_by_challenge(request, challenge_pk):
+    """
+    Returns a list of sponsors for a given challenge.
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {"error": "Challenge does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
+    serializer = ChallengeSponsorSerializer(sponsors, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
@@ -3144,6 +3405,243 @@ def manage_worker(request, challenge_pk, action):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_ec2_instance_details(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Challenge does not use EC2 worker instance."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = describe_ec2_instance(challenge)
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.ec2_instance_id:
+        response_data = {
+            "error": "No EC2 instance ID found for the challenge. Please ensure instance ID exists."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response = terminate_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def create_ec2_instance_by_challenge_pk(request, challenge_pk):
+    """
+    API to create EC2 instance for a challenge
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which the EC2 instance is to be created
+    Query Parameters:
+        ec2_storage -- Storage size for EC2 instance
+        worker_instance_type -- Instance type for EC2 instance
+        worker_image_url -- Image URL for EC2 instance
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+    if request.method == "PUT":
+        ec2_storage = request.data.get("ec2_storage", None)
+        worker_instance_type = request.data.get("worker_instance_type", None)
+        worker_image_url = request.data.get("worker_image_url", None)
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()):
+        response_data = {
+            "error": "Creation of EC2 instance is not supported for an inactive challenge."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if ec2_storage and not isinstance(ec2_storage, int):
+        response_data = {
+            "error": "Passed value of EC2 storage should be integer."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if worker_instance_type and not isinstance(worker_instance_type, str):
+        response_data = {
+            "error": "Passed value of worker instance type should be string."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if worker_image_url and not isinstance(worker_image_url, str):
+        response_data = {
+            "error": "Passed value of worker image URL should be string."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not ec2_storage:
+        ec2_storage = challenge.ec2_storage
+
+    if not worker_instance_type:
+        worker_instance_type = challenge.worker_instance_type
+
+    if not worker_image_url:
+        worker_image_url = challenge.worker_image_url
+
+    response = create_ec2_instance(
+        challenge,
+        ec2_storage,
+        worker_instance_type,
+        worker_image_url
+    )
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def manage_ec2_instance(request, challenge_pk, action):
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized for access EC2 operations."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # make sure that the action is valid.
+    if action not in ("start", "stop", "restart"):
+        response_data = {
+            "error": "The action {} is invalid for worker".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.uses_ec2_worker:
+        response_data = {
+            "error": "Challenge does not use EC2 worker instance."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "restart"):
+        response_data = {
+            "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if action == "start":
+        response = start_ec2_instance(challenge)
+    elif action == "stop":
+        response = stop_ec2_instance(challenge)
+    elif action == "restart":
+        response = restart_ec2_instance(challenge)
+
+    if response:
+        if "error" not in response:
+            status_code = status.HTTP_200_OK
+            response_data = {
+                "message": response["message"],
+                "action": "Success",
+            }
+        else:
+            status_code = status.HTTP_400_BAD_REQUEST
+            response_data = {
+                "message": response["error"],
+                "action": "Failure",
+            }
+    else:
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        response_data = {
+            "message": "No Response",
+            "action": "Failure",
+        }
+    return Response(response_data, status=status_code)
+
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -3412,6 +3910,24 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge.queue = queue_name
                     challenge.save()
 
+                    # Add Tags
+                    add_tags_to_challenge(yaml_file_data, challenge)
+
+                    # Add Domain
+                    verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+                    if verify_complete is not None:
+                        return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Add Sponsors
+                    error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+                    if error_messages is not None:
+                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Add Prizes
+                    error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+                    if error_messages is not None:
+                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
                         "leaderboard"
@@ -3655,6 +4171,24 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     raise RuntimeError()
                 challenge = serializer.instance
 
+                # Add Tags
+                add_tags_to_challenge(yaml_file_data, challenge)
+
+                # Add Domain
+                verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+                if verify_complete is not None:
+                    return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+
+                # Add/Update Sponsors
+                error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+                if error_messages is not None:
+                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+                # Add/Update Prizes
+                error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+                if error_messages is not None:
+                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+
                 # Updating Leaderboard object
                 leaderboard_ids = {}
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -3820,6 +4354,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
                         challenge_phase__pk=challenge_phase,
                         dataset_split__pk=dataset_split,
+                        leaderboard__pk=leaderboard,
                     )
                     if challenge_phase_split_qs:
                         challenge_phase_split = challenge_phase_split_qs.first()
@@ -4077,3 +4612,215 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def request_challenge_approval_by_pk(request, challenge_pk):
+    """
+    Checks if all challenge phases have finished submissions for the given challenge
+    and send approval request for the challenge
+    """
+    challenge = get_challenge_model(challenge_pk)
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    unfinished_phases = []
+
+    for challenge_phase in challenge_phases:
+        submissions = Submission.objects.filter(
+            challenge_phase=challenge_phase,
+            status="finished"
+        )
+
+        if not submissions.exists():
+            unfinished_phases.append(challenge_phase.name)
+
+    if unfinished_phases:
+        error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not settings.DEBUG:
+        try:
+            evalai_api_server = settings.EVALAI_API_SERVER
+            approval_webhook_url = settings.APPROVAL_WEBHOOK_URL
+
+            if not evalai_api_server:
+                raise ValueError("EVALAI_API_SERVER environment variable is missing.")
+            if not approval_webhook_url:
+                raise ValueError("APPROVAL_WEBHOOK_URL environment variable is missing.")
+        except:  # noqa: E722
+            error_message = "Sorry, there was an error fetching required data for approval requests."
+            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        message = {
+            "text": f"Challenge {challenge_pk} has finished submissions and has requested for approval!",
+            "fields": [
+                {
+                    "title": "Admin URL",
+                    "value": f"{evalai_api_server}/api/admin/challenges/challenge/{challenge_pk}",
+                    "short": False,
+                },
+                {
+                    "title": "Challenge title",
+                    "value": challenge.title,
+                    "short": False,
+                },
+            ],
+        }
+
+        webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
+        if webhook_response:
+            if webhook_response.content.decode('utf-8') == "ok":
+                response_data = {
+                    "message": "Approval request sent!",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
+                return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
+            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        error_message = "Please approve the challenge using admin for local deployments."
+        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_leaderboard_data(request, challenge_phase_split_pk):
+    """
+    API to get leaderboard data for a challenge phase split
+    Arguments:
+        challenge_phase_split {int} -- Challenge phase split primary key
+    Returns:
+        {dict} -- Response object
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=False)
+    except LeaderboardData.DoesNotExist:
+        response_data = {
+            "error": "Leaderboard data not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request}, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_approval(request):
+    """
+    API to update challenge
+    Arguments:
+        request {dict} -- Request object
+
+    Query Parameters:
+        challenge_pk {int} -- Challenge primary key
+        approved_by_admin {bool} -- Challenge approved by admin
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_pk = request.data.get("challenge_pk")
+    approved_by_admin = request.data.get("approved_by_admin")
+    if not challenge_pk:
+        response_data = {
+            "error": "Challenge primary key is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if not approved_by_admin:
+        response_data = {
+            "error": "approved_by_admin is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        challenge = get_challenge_model(challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    challenge.approved_by_admin = approved_by_admin
+    try:
+        challenge.save()
+    except Exception as e:  # noqa: E722
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    response_data = {
+        "message": "Challenge updated successfully!"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def modify_leaderboard_data(request):
+    """
+    API to update leaderboard data
+    Arguments:
+        request {dict} -- Request object
+    Query Parameters:
+        leaderboard_data {list} -- List of leaderboard data
+        challenge_phase_split {int} -- Challenge phase split primary key
+        submission {int} -- Submission primary key
+        leaderboard {int} -- Leaderboard primary key
+        is_disabled {int} -- Leaderboard data is disabled
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == "PUT":
+        leaderboard_data_pk = request.data.get("leaderboard_data")
+        leaderboard_pk = request.data.get("leaderboard")
+        challenge_phase_split_pk = request.data.get("challenge_phase_split")
+        submission_pk = request.data.get("submission")
+        is_disabled = request.data.get("is_disabled")
+
+        # Perform lookups and handle errors
+        try:
+            if leaderboard_data_pk:
+                leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+            else:
+                submission = get_submission_model(submission_pk)
+                challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+                leaderboard = get_leaderboard_model(leaderboard_pk)
+                leaderboard_data = LeaderboardData.objects.get(
+                    submission=submission,
+                    challenge_phase_split=challenge_phase_split,
+                    leaderboard=leaderboard
+                )
+        except Exception:
+            response_data = {
+                "error": "Resource not found!"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the 'is_disabled' attribute
+        leaderboard_data.is_disabled = bool(int(is_disabled))
+        leaderboard_data.save()
+
+        # Serialize and return the updated data
+        response_data = {
+            "message": "Leaderboard data updated successfully!"
+        }
+        return Response(response_data, status=status.HTTP_200_OK)

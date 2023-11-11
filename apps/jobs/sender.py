@@ -1,22 +1,24 @@
 from __future__ import absolute_import
 
-import boto3
-import botocore
 import json
 import logging
 import os
 
-from django.conf import settings
-
+import boto3
+import botocore
 from base.utils import send_slack_notification
 from challenges.models import Challenge
-from .utils import get_submission_model
+from django.conf import settings
+
 from monitoring.statsd.metrics import NUM_SUBMISSIONS_IN_QUEUE, increment_statsd_counter
+from settings.common import SQS_RETENTION_PERIOD
+
+from .utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
 
-def get_or_create_sqs_queue(queue_name):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     """
     Args:
         queue_name: Name of the SQS Queue
@@ -34,12 +36,20 @@ def get_or_create_sqs_queue(queue_name):
         # Use default queue name in dev and test environment
         queue_name = "evalai_submission_queue"
     else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+        if challenge and challenge.use_host_sqs:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=challenge.queue_aws_region,
+                aws_secret_access_key=challenge.aws_secret_access_key,
+                aws_access_key_id=challenge.aws_access_key_id,
+            )
+        else:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            )
 
     if queue_name == "":
         queue_name = "evalai_submission_queue"
@@ -52,7 +62,10 @@ def get_or_create_sqs_queue(queue_name):
             ex.response["Error"]["Code"]
             == "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            queue = sqs.create_queue(QueueName=queue_name)
+            queue = sqs.create_queue(
+                QueueName=queue_name,
+                Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+            )
         else:
             logger.exception("Cannot get or create Queue")
     return queue
@@ -84,11 +97,11 @@ def publish_submission_message(message):
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
     is_remote = challenge.remote_evaluation
-    queue = get_or_create_sqs_queue(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     # increase counter for submission pushed into queue
     submission_metric_tags = [
         "queue_name:%s" % queue_name,
-        "is_remote:%d" % int(is_remote)
+        "is_remote:%d" % int(is_remote),
     ]
     increment_statsd_counter(NUM_SUBMISSIONS_IN_QUEUE, submission_metric_tags, 1)
     response = queue.send_message(MessageBody=json.dumps(message))

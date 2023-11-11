@@ -46,6 +46,8 @@ class Submission(TimeStampedModel):
     RUNNING = "running"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    RESUMING = "resuming"
+    QUEUED = "queued"
     FINISHED = "finished"
     SUBMITTING = "submitting"
     ARCHIVED = "archived"
@@ -56,6 +58,8 @@ class Submission(TimeStampedModel):
         (RUNNING, RUNNING),
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
+        (RESUMING, RESUMING),
+        (QUEUED, QUEUED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
@@ -78,6 +82,7 @@ class Submission(TimeStampedModel):
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    rerun_resumed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
