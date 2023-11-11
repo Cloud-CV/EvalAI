@@ -324,9 +324,9 @@ Here are the steps to configure remote evaluation:
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts are fixed due to architectural reasons.
 
-The starter templates for static code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/evaluation_script/main.py). Note that the evaluation file provided will be used on our submission workers, just like prediction upload challenges.
+The starter template for static code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/evaluation_script/main.py). Note that the evaluation file provided will be used on our submission workers, just like prediction upload challenges.
 
-The steps for writing an evaluation script for a static code-upload based challenge are the same as that for [prediction-upload based challenges] section (evaluation_scripts.html#writing-an-evaluation-script).
+The steps for writing an evaluation script for a static code-upload based challenge are the same as that for [prediction-upload based challenges](evaluation_scripts.html#writing-an-evaluation-script) section.
 
 Evaluation scripts are required to have an `evaluate()` function. This is the main function, which is used by workers to evaluate the submission messages.
 
