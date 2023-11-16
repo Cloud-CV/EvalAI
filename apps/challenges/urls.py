@@ -207,6 +207,16 @@ urlpatterns = [
         name="get_ec2_instance_details",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/create_ec2_instance/$",
+        views.create_ec2_instance_by_challenge_pk,
+        name="create_ec2_instance_by_challenge_pk",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/delete_ec2_instance/$",
+        views.delete_ec2_instance_by_challenge_pk,
+        name="delete_ec2_instance_by_challenge_pk",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
@@ -275,15 +285,25 @@ urlpatterns = [
         name="get_leaderboard_data",
     ),
     url(
-        r"^challenge/delete_leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
-        views.delete_leaderboard_data,
-        name="delete_leaderboard_data",
-    ),
-    url(
         r"^challenge/update_challenge_approval/$",
         views.update_challenge_approval,
         name="update_challenge_approval",
     ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/prizes/$",
+        views.get_prizes_by_challenge,
+        name="get_prizes_by_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/sponsors/$",
+        views.get_sponsors_by_challenge,
+        name="get_sponsors_by_challenge",
+    ),
+    url(
+        r"^challenge/modify_leaderboard_data/$",
+        views.modify_leaderboard_data,
+        name="modify_leaderboard_data",
+    )
 ]
 
 app_name = "challenges"

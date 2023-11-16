@@ -229,16 +229,18 @@ def start_job():
         else:
             aws_keys = DEFAULT_AWS_EKS_KEYS
 
-        evalai_interface = create_evalai_interface(details["auth_token"])
-        challenge = evalai_interface.get_challenge_by_pk(challenge_id)
-
-        assert (
-            challenge["is_docker_based"] and not challenge["remote_evaluation"]
-        ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
-            challenge["id"], challenge["title"]
-        )
-        scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size)
-        time.sleep(1)
+        try:
+            evalai_interface = create_evalai_interface(details["auth_token"])
+            challenge = evalai_interface.get_challenge_by_pk(challenge_id)
+            assert (
+                challenge["is_docker_based"] and not challenge["remote_evaluation"]
+            ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
+                challenge["id"], challenge["title"]
+            )
+            scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":

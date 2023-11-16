@@ -14,7 +14,7 @@ from participants.models import ParticipantTeam
 
 from base.utils import get_model_object, suppress_autotime
 from challenges.utils import get_challenge_model, get_challenge_phase_model
-from base.utils import is_user_a_staff_or_host
+from hosts.utils import is_user_a_staff_or_host
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
 
 from .constants import submission_status_to_exclude
@@ -342,7 +342,7 @@ def calculate_distinct_sorted_leaderboard_data(
         [] if not is_challenge_phase_public else challenge_hosts_emails
     )
 
-    challenge_host_or_staff = is_user_a_staff_or_host(user, challenge_obj)
+    challenge_host_or_staff = is_user_a_staff_or_host(user, challenge_obj.pk)
 
     all_banned_email_ids = challenge_obj.banned_email_ids
 
@@ -357,7 +357,7 @@ def calculate_distinct_sorted_leaderboard_data(
     leaderboard_data = LeaderboardData.objects.exclude(
         Q(submission__created_by__email__in=challenge_hosts_emails)
         & Q(submission__is_baseline=False)
-    )
+    ).filter(is_disabled=False)
 
     # Get all the successful submissions related to the challenge phase split
     all_valid_submission_status = [Submission.FINISHED]
@@ -519,6 +519,7 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     leaderboard_data = LeaderboardData.objects.get(
         submission=submission_pk,
         challenge_phase_split__pk=challenge_phase_split_pk,
+        is_disabled=False,
     )
     return leaderboard_data
 
