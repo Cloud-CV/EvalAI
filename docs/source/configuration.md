@@ -30,6 +30,10 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
 
+- **tags**: A list of tags to display the relevant areas of challenge. 
+
+- **domain**: Please choose the relevant domain for your challenge: (CV, NLP, RL, MM, AL, TAB).
+
 - **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
 
 - **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
