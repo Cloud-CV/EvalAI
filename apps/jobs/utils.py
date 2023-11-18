@@ -516,11 +516,11 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     Returns:
         [Class Object] -- LeaderboardData model object
     """
-    leaderboard_data = LeaderboardData.objects.get(
+    leaderboard_data = LeaderboardData.objects.filter(
         submission=submission_pk,
         challenge_phase_split__pk=challenge_phase_split_pk,
         is_disabled=False,
-    )
+    ).first()
     return leaderboard_data
 
 
