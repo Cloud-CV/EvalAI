@@ -80,16 +80,16 @@
                             <tr ng-repeat="key in challenge.submissionResult.results" class="result-val fs-16 w-300">
                                 <td>{{$index + 1 + (challenge.currentRefPage - 1) * 150}}</td>
                                 <td ng-if="key.method_name != '' && challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">{{key.method_name}}</td>
-                                <td ng-if="key.method_name == '' && challenge.currentPhaseMetaAttributesVisibility['method_name'] != false"> None </td>
+                                <td ng-if="key.method_name == ''" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] != false"> None </td>
 
                                 <td ng-if="key.method_description != '' && challenge.currentPhaseMetaAttributesVisibility['method_description'] != false">{{key.method_description}}</td>
-                                <td ng-if="key.method_description == '' && challenge.currentPhaseMetaAttributesVisibility['method_description'] != false"> None </td>
+                                <td ng-if="key.method_description == ''" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] != false"> None </td>
 
                                 <td ng-if="key.project_url != '' && challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">{{key.project_url}}</td>
                                 <td ng-if="key.project_url == ''" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false"> None </td>
 
                                 <td ng-if="key.publication_url != '' && challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">{{key.publication_url}}</td>
-                                <td ng-if="key.publication_url == '' && challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false"> None </td>
+                                <td ng-if="key.publication_url == ''" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false"> None </td>
 
                                 <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
                                 <td class="align-center">
