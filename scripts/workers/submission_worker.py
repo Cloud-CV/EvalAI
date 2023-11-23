@@ -215,7 +215,7 @@ def delete_old_temp_directories(prefix='tmp'):
                     creation_time = os.path.getctime(dir_path)
                     dir_creation_times[dir_path] = creation_time
                 except Exception as e:
-                    print(f"Error getting creation time for directory {dir_path}: {e}")
+                    logger.info(f"Error getting creation time for directory {dir_path}: {e}")
 
     latest_dir = max(dir_creation_times, key=dir_creation_times.get, default=None)
 
