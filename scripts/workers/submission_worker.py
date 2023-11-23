@@ -29,7 +29,7 @@ from settings.common import SQS_RETENTION_PERIOD
 from .statsd_utils import increment_and_push_metrics_to_statsd
 
 # all challenge and submission will be stored in temp directory
-BASE_TEMP_DIR = tempfile.mkdtemp()
+BASE_TEMP_DIR = tempfile.mkdtemp(prefix='tmp')
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 formatter = logging.Formatter(
@@ -199,6 +199,33 @@ def delete_submission_data_directory(location):
                 WORKER_LOGS_PREFIX, location, e
             )
         )
+
+
+def delete_old_temp_directories(prefix='tmp'):
+    temp_dir = tempfile.gettempdir()
+
+    dir_creation_times = {}
+
+    for root, dirs, files in os.walk(temp_dir):
+        for directory in dirs:
+            if directory.startswith(prefix):
+                dir_path = os.path.join(root, directory)
+
+                try:
+                    creation_time = os.path.getctime(dir_path)
+                    dir_creation_times[dir_path] = creation_time
+                except Exception as e:
+                    print(f"Error getting creation time for directory {dir_path}: {e}")
+
+    latest_dir = max(dir_creation_times, key=dir_creation_times.get, default=None)
+
+    for dir_path in dir_creation_times:
+        if dir_path != latest_dir:
+            try:
+                shutil.rmtree(dir_path)
+                logger.info(f"Deleted directory: {dir_path}")
+            except Exception as e:
+                logger.info(f"Error deleting directory {dir_path}: {e}")
 
 
 def download_and_extract_zip_file(url, download_location, extract_location):
@@ -810,6 +837,7 @@ def main():
             WORKER_LOGS_PREFIX, BASE_TEMP_DIR
         )
     )
+    delete_old_temp_directories()
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
