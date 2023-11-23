@@ -200,6 +200,7 @@ def delete_submission_data_directory(location):
             )
         )
 
+
 def delete_old_temp_directories(prefix='tmp'):
     temp_dir = tempfile.gettempdir()
 
