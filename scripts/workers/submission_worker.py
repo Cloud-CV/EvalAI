@@ -726,7 +726,7 @@ def process_submission_message(message):
         submission_instance,
         user_annotation_file_path,
     )
-    # # Delete submission data after processing submission
+    # Delete submission data after processing submission
     delete_submission_data_directory(
         SUBMISSION_DATA_DIR.format(submission_id=submission_id)
     )
