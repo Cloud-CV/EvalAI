@@ -646,4 +646,3 @@ def create_forum_for_challenge(challenge_pk):
         challenge.save()
     else:
         logger.exception(f"Failed to create forum for challenge {challenge_pk}")
-    
