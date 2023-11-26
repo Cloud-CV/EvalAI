@@ -407,3 +407,8 @@ EKS_CLUSTER_TRUST_RELATION = {
 
 # SQS Queue Message Retention Period
 SQS_RETENTION_PERIOD = "1209600"
+
+# Discourse settings
+DISCOURSE_API_KEY = os.environ.get("DISCOURSE_API_KEY")
+DISCOURSE_API_USERNAME = os.environ.get("DISCOURSE_API_USERNAME")
+DISCOURSE_URL = os.environ.get("DISCOURSE_URL")

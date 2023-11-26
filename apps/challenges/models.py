@@ -274,6 +274,13 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
+@receiver(signals.post_save, sender="challenges.Challenge")
+def create_forum(sender, instance, created, **kwargs):
+    if instance.forum_url is None and instance.enable_forum:
+        from .utils import create_forum_for_challenge
+        create_forum_for_challenge(instance.pk)
+
+
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
