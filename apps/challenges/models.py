@@ -256,6 +256,7 @@ class Challenge(TimeStampedModel):
 def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
+    from .utils import create_forum_for_challenge
 
     if not created and is_model_field_changed(instance, field_name):
         if (
@@ -271,14 +272,9 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
+        if(instance.approved_by_admin is True):
+            create_forum_for_challenge(instance.pk)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
-
-
-@receiver(signals.post_save, sender="challenges.Challenge")
-def create_forum(sender, instance, created, **kwargs):
-    if instance.forum_url is None and instance.enable_forum:
-        from .utils import create_forum_for_challenge
-        create_forum_for_challenge(instance.pk)
 
 
 class DatasetSplit(TimeStampedModel):
