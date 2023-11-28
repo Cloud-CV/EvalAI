@@ -170,6 +170,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     code_upload_container_name = "code_upload_worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
+    ephemeral_storage = challenge.ephemeral_storage
     log_group_name = get_log_group_name(challenge.pk)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
@@ -236,6 +237,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     submission_container=submission_container,
                     CPU=worker_cpu_cores,
                     MEMORY=worker_memory,
+                    ephemeral_storage=ephemeral_storage,
                     **updated_settings,
                 )
             else:
@@ -250,6 +252,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     certificate=cluster_certificate,
                     CPU=worker_cpu_cores,
                     MEMORY=worker_memory,
+                    ephemeral_storage=ephemeral_storage,
                     log_group_name=log_group_name,
                     EVALAI_DNS=EVALAI_DNS,
                     EFS_ID=efs_id,
@@ -264,6 +267,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 challenge_pk=challenge.pk,
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
+                ephemeral_storage=ephemeral_storage,
                 log_group_name=log_group_name,
                 AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                 AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
@@ -988,6 +992,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         challenge_pk=challenge.pk,
         CPU=worker_cpu_cores,
         MEMORY=worker_memory,
+        ephemeral_storage=challenge.ephemeral_storage,
         log_group_name=log_group_name,
         AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
         AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
