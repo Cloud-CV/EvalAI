@@ -6166,7 +6166,6 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-
 class TestUpdateChallengeAttributes(BaseAPITestClass):
     def setUp(self):
         settings.AWS_SES_REGION_NAME = "us-east-1"
