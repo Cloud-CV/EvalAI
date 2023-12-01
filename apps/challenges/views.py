@@ -4767,6 +4767,58 @@ def update_challenge_approval(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_attributes(request):
+    """
+    API to update attributes of the Challenge model
+    Arguments:
+        request {dict} -- Request object
+
+    Query Parameters:
+        challenge_pk {int} -- Challenge primary key
+        **kwargs {any} -- Key-value pairs representing attributes and their new values
+    """
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_pk = request.data.get("challenge_pk")
+
+    if not challenge_pk:
+        response_data = {
+            "error": "Challenge primary key is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": f"Challenge with primary key {challenge_pk} not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # Update attributes based on the request data
+    for key, value in request.data.items():
+        if key != "challenge_pk" and hasattr(challenge, key):
+            setattr(challenge, key, value)
+
+    try:
+        challenge.save()
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    response_data = {
+        "message": f"Challenge attributes updated successfully for challenge with primary key {challenge_pk}!"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
 @api_view(["PUT"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
