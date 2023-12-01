@@ -6194,7 +6194,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
 
     def test_update_challenge_attributes_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_attributes")
-        self.user.is_staff = True
+        self.user.is_staff = False
         self.user.save()
         expected = {
             "error": "Sorry, you are not authorized to access this resource!"
