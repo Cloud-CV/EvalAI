@@ -6186,7 +6186,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
             "title": "Updated Title",
             "description": "Updated Description",
             "approved_by_admin": True,
-            "ephemera_storage": 25,
+            "ephemeral_storage": 25,
         })
 
         self.assertEqual(response.data, expected)
@@ -6205,7 +6205,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
             "title": "Updated Title",
             "description": "Updated Description",
             "approved_by_admin": True,
-            "ephemera_storage": 25,
+            "ephemeral_storage": 25,
         })
 
         self.assertEqual(response.data, expected)
