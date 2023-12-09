@@ -629,8 +629,11 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
 
 
 def create_forum_for_challenge(challenge_pk):
-    if settings.DEBUG:
-        return
+    """
+    Creates Forum for a challenge
+    Arguments:
+        challenge_pk {int} -- challenge pk for which forum is to be created
+    """
     challenge = get_challenge_model(challenge_pk)
     discourse_url = f"{settings.DISCOURSE_URL}/posts.json"
     data = {
