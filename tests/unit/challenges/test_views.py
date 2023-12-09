@@ -6131,13 +6131,13 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TestUpdateChallenge(BaseAPITestClass):
+class TestUpdateChallengeApproval(BaseAPITestClass):
     def setUp(self):
         settings.AWS_SES_REGION_NAME = "us-east-1"
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
-    def test_update_challenge_when_challenge_exists(self):
+    def test_update_challenge_approval_when_challenge_exists(self):
         self.user.is_staff = True
         self.user.save()
         self.url = reverse_lazy("challenges:update_challenge_approval")
@@ -6151,7 +6151,7 @@ class TestUpdateChallenge(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_challenge_when_not_a_staff(self):
+    def test_update_challenge_approval_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_approval")
         self.user.is_staff = False
         self.user.save()
@@ -6162,5 +6162,51 @@ class TestUpdateChallenge(BaseAPITestClass):
             "challenge_pk": self.challenge.pk,
             "approved_by_admin": True
         })
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestUpdateChallengeAttributes(BaseAPITestClass):
+    def setUp(self):
+        settings.AWS_SES_REGION_NAME = "us-east-1"
+        settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
+        return super().setUp()
+
+    def test_update_challenge_attributes_when_challenge_exists(self):
+        self.url = reverse_lazy("challenges:update_challenge_attributes")
+        self.user.is_staff = True
+        self.user.save()
+
+        expected = {
+            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
+        }
+
+        response = self.client.post(self.url, {
+            "challenge_pk": self.challenge.pk,
+            "title": "Updated Title",
+            "description": "Updated Description",
+            "approved_by_admin": True,
+            "ephemeral_storage": 25,
+        })
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_attributes_when_not_a_staff(self):
+        self.url = reverse_lazy("challenges:update_challenge_attributes")
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+
+        response = self.client.post(self.url, {
+            "challenge_pk": self.challenge.pk,
+            "title": "Updated Title",
+            "description": "Updated Description",
+            "approved_by_admin": True,
+            "ephemeral_storage": 25,
+        })
+
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
