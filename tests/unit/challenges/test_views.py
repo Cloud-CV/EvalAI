@@ -6172,6 +6172,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
+    @mock.patch("challenges.utils.create_forum_for_challenge")
     def test_update_challenge_attributes_when_challenge_exists(self):
         self.url = reverse_lazy("challenges:update_challenge_attributes")
         self.user.is_staff = True
