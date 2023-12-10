@@ -35,6 +35,7 @@ class Challenge(TimeStampedModel):
         super(Challenge, self).__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
         self._original_approved_by_admin = self.approved_by_admin
+        self._original_sqs_retention_period = self.sqs_retention_period
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -125,6 +126,10 @@ class Challenge(TimeStampedModel):
         default="",
         verbose_name="SQS queue name",
         db_index=True,
+    )
+    sqs_retention_period = models.PositiveIntegerField(
+        default=259200,
+        verbose_name="SQS Retention Period"
     )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
@@ -275,6 +280,21 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
+
+
+@receiver(signals.post_save, sender="challenges.Challenge")
+def update_sqs_retention_period_for_challenge(sender, instance, created, **kwargs):
+    field_name = "sqs_retention_period"
+    import challenges.aws_utils as aws
+
+    if not created and is_model_field_changed(instance, field_name):
+        serialized_obj = serializers.serialize("json", [instance])
+        aws.update_sqs_retention_period_task.delay(serialized_obj)
+        # Update challenge
+        curr = getattr(instance, "{}".format(field_name))
+        challenge = instance
+        challenge._original_sqs_retention_period = curr
+        challenge.save()
 
 
 class DatasetSplit(TimeStampedModel):
