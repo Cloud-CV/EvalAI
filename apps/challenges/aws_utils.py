@@ -771,6 +771,34 @@ def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, 
         }
 
 
+def update_sqs_retention_period(challenge):
+    """
+    Update the SQS retention period for a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the SQS retention period is to be updated.
+
+    Returns:
+        dict: A dictionary containing the status and message of the operation.
+    """
+    sqs_retention_period = str(challenge.sqs_retention_period)
+    try:
+        sqs = get_boto3_client("sqs", aws_keys)
+        queue_url = sqs.get_queue_url(QueueName=challenge.queue)['QueueUrl']
+        response = sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={
+                'MessageRetentionPeriod': sqs_retention_period
+            }
+        )
+        return {"message": response.json()}
+    except Exception as e:
+        logger.exception(e)
+        return {
+            "error": e.response,
+        }
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -1794,3 +1822,16 @@ def setup_ec2(challenge):
     if challenge_obj.ec2_instance_id:
         return start_ec2_instance(challenge_obj)
     return create_ec2_instance(challenge_obj)
+
+
+@app.task
+def update_sqs_retention_period_task(challenge):
+    """
+    Updates sqs retention period for a challenge when the attribute is changed.
+
+    Arguments:
+        challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    return update_sqs_retention_period(challenge_obj)

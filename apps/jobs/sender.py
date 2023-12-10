@@ -62,9 +62,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             ex.response["Error"]["Code"]
             == "AWS.SimpleQueueService.NonExistentQueue"
         ):
+            sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
             queue = sqs.create_queue(
                 QueueName=queue_name,
-                Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+                Attributes={"MessageRetentionPeriod": sqs_retention_period},
             )
         else:
             logger.exception("Cannot get or create Queue")
