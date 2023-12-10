@@ -128,7 +128,7 @@ class Challenge(TimeStampedModel):
         db_index=True,
     )
     sqs_retention_period = models.PositiveIntegerField(
-        default=259200,
+        default=345600,
         verbose_name="SQS Retention Period"
     )
     is_docker_based = models.BooleanField(
