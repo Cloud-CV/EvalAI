@@ -92,7 +92,7 @@ def scale_up_or_down_workers_for_challenges(response, metrics):
     for challenge in response["results"]:
         if ENV == "prod":
             try:
-                if challenge["remote_evaluation"] == False:
+                if challenge["remote_evaluation"] is False:
                     scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
             except Exception as e:
                 print(e)
