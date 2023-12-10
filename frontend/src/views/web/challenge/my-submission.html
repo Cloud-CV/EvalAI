@@ -86,7 +86,7 @@
                                 <td ng-if="key.method_description == '' && challenge.currentPhaseMetaAttributesVisibility['method_description'] != false"> None </td>
 
                                 <td ng-if="key.project_url != '' && challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">{{key.project_url}}</td>
-                                <td ng-if="key.project_url == ''" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false"> None </td>
+                                <td ng-if="key.project_url == '' && challenge.currentPhaseMetaAttributesVisibility['project_url'] != false"> None </td>
 
                                 <td ng-if="key.publication_url != '' && challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">{{key.publication_url}}</td>
                                 <td ng-if="key.publication_url == '' && challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false"> None </td>

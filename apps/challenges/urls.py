@@ -207,7 +207,7 @@ urlpatterns = [
         name="get_ec2_instance_details",
     ),
     url(
-        r"^(?P<challenge_pk>[0-9]+)/create_ec2_instance/(?P<ec2_storage>[0-9]+)/(?P<worker_instance_type>[\w-]+)/(?P<worker_image_url>[\w-]+)/$",
+        r"^(?P<challenge_pk>[0-9]+)/create_ec2_instance/$",
         views.create_ec2_instance_by_challenge_pk,
         name="create_ec2_instance_by_challenge_pk",
     ),
@@ -290,6 +290,11 @@ urlpatterns = [
         name="update_challenge_approval",
     ),
     url(
+        r"^challenge/update_challenge_attributes/$",
+        views.update_challenge_attributes,
+        name="update_challenge_attributes",
+    ),
+    url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/prizes/$",
         views.get_prizes_by_challenge,
         name="get_prizes_by_challenge",
@@ -299,6 +304,11 @@ urlpatterns = [
         views.get_sponsors_by_challenge,
         name="get_sponsors_by_challenge",
     ),
+    url(
+        r"^challenge/modify_leaderboard_data/$",
+        views.modify_leaderboard_data,
+        name="modify_leaderboard_data",
+    )
 ]
 
 app_name = "challenges"

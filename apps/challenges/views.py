@@ -160,6 +160,8 @@ from .utils import (
     send_emails,
 )
 
+from jobs.utils import get_submission_model
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -3492,7 +3494,23 @@ def delete_ec2_instance_by_challenge_pk(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, worker_instance_type, worker_image_url):
+def create_ec2_instance_by_challenge_pk(request, challenge_pk):
+    """
+    API to create EC2 instance for a challenge
+    Arguments:
+        request {HttpRequest} -- The request object
+        challenge_pk {int} -- The challenge pk for which the EC2 instance is to be created
+    Query Parameters:
+        ec2_storage -- Storage size for EC2 instance
+        worker_instance_type -- Instance type for EC2 instance
+        worker_image_url -- Image URL for EC2 instance
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+    if request.method == "PUT":
+        ec2_storage = request.data.get("ec2_storage", None)
+        worker_instance_type = request.data.get("worker_instance_type", None)
+        worker_image_url = request.data.get("worker_image_url", None)
     if not request.user.is_staff:
         response_data = {
             "error": "Sorry, you are not authorized for access EC2 operations."
@@ -3507,19 +3525,19 @@ def create_ec2_instance_by_challenge_pk(request, challenge_pk, ec2_storage, work
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not isinstance(ec2_storage, int):
+    if ec2_storage and not isinstance(ec2_storage, int):
         response_data = {
             "error": "Passed value of EC2 storage should be integer."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not isinstance(worker_instance_type, str):
+    if worker_instance_type and not isinstance(worker_instance_type, str):
         response_data = {
             "error": "Passed value of worker instance type should be string."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not isinstance(worker_image_url, str):
+    if worker_image_url and not isinstance(worker_image_url, str):
         response_data = {
             "error": "Passed value of worker image URL should be string."
         }
@@ -3922,7 +3940,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"leaderboard {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
                         leaderboard_ids[
                             str(data["id"])
@@ -3962,7 +3980,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"challenge phase {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
                         challenge_phase_ids[
                             str(data["id"])
@@ -3980,7 +3998,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"dataset split {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
                         dataset_split_ids[
                             str(data["id"])
@@ -4037,7 +4055,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"challenge phase split (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
                             raise RuntimeError()
 
                 zip_config = ChallengeConfiguration.objects.get(
@@ -4100,7 +4118,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
             except:  # noqa: E722
                 response_data = {
-                    "error": "Error in creating challenge. Please check the yaml configuration!"
+                    "error": f"Error in creating challenge: {error_messages}. Please check the yaml configuration!"
                 }
                 if error_messages:
                     response_data["error_message"] = json.dumps(error_messages)
@@ -4149,7 +4167,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    error_messages = serializer.errors
+                    error_messages = f"challenge :{str(serializer.errors)}"
                     raise RuntimeError()
                 challenge = serializer.instance
 
@@ -4195,7 +4213,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         serializer.save()
                         leaderboard_ids[str(data["id"])] = serializer.instance.pk
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"leaderboard update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Updating ChallengePhase objects
@@ -4260,7 +4278,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["id"])
                         ] = serializer.instance.pk
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"challenge phase update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Updating DatasetSplit objects
@@ -4287,7 +4305,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         serializer.save()
                         dataset_split_ids[str(data["id"])] = serializer.instance.pk
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"dataset split update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Update ChallengePhaseSplit objects
@@ -4348,7 +4366,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"challenge phase split update (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
                         raise RuntimeError()
 
                 response_data = {
@@ -4359,7 +4377,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 return Response(response_data, status=status.HTTP_200_OK)
             except:  # noqa: E722
                 response_data = {
-                    "error": "Error in creating challenge. Please check the yaml configuration!"
+                    "error": f"Error in creating challenge: {error_messages}. Please check the yaml configuration!"
                 }
                 if error_messages:
                     response_data["error_message"] = json.dumps(error_messages)
@@ -4688,7 +4706,7 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
         challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split)
+        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=False)
     except LeaderboardData.DoesNotExist:
         response_data = {
             "error": "Leaderboard data not found!"
@@ -4747,3 +4765,114 @@ def update_challenge_approval(request):
         "message": "Challenge updated successfully!"
     }
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_attributes(request):
+    """
+    API to update attributes of the Challenge model
+    Arguments:
+        request {dict} -- Request object
+
+    Query Parameters:
+        challenge_pk {int} -- Challenge primary key
+        **kwargs {any} -- Key-value pairs representing attributes and their new values
+    """
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_pk = request.data.get("challenge_pk")
+
+    if not challenge_pk:
+        response_data = {
+            "error": "Challenge primary key is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": f"Challenge with primary key {challenge_pk} not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # Update attributes based on the request data
+    for key, value in request.data.items():
+        if key != "challenge_pk" and hasattr(challenge, key):
+            setattr(challenge, key, value)
+
+    try:
+        challenge.save()
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    response_data = {
+        "message": f"Challenge attributes updated successfully for challenge with primary key {challenge_pk}!"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["PUT"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def modify_leaderboard_data(request):
+    """
+    API to update leaderboard data
+    Arguments:
+        request {dict} -- Request object
+    Query Parameters:
+        leaderboard_data {list} -- List of leaderboard data
+        challenge_phase_split {int} -- Challenge phase split primary key
+        submission {int} -- Submission primary key
+        leaderboard {int} -- Leaderboard primary key
+        is_disabled {int} -- Leaderboard data is disabled
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == "PUT":
+        leaderboard_data_pk = request.data.get("leaderboard_data")
+        leaderboard_pk = request.data.get("leaderboard")
+        challenge_phase_split_pk = request.data.get("challenge_phase_split")
+        submission_pk = request.data.get("submission")
+        is_disabled = request.data.get("is_disabled")
+
+        # Perform lookups and handle errors
+        try:
+            if leaderboard_data_pk:
+                leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+            else:
+                submission = get_submission_model(submission_pk)
+                challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+                leaderboard = get_leaderboard_model(leaderboard_pk)
+                leaderboard_data = LeaderboardData.objects.get(
+                    submission=submission,
+                    challenge_phase_split=challenge_phase_split,
+                    leaderboard=leaderboard
+                )
+        except Exception:
+            response_data = {
+                "error": "Resource not found!"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the 'is_disabled' attribute
+        leaderboard_data.is_disabled = bool(int(is_disabled))
+        leaderboard_data.save()
+
+        # Serialize and return the updated data
+        response_data = {
+            "message": "Leaderboard data updated successfully!"
+        }
+        return Response(response_data, status=status.HTTP_200_OK)

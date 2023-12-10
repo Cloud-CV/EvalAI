@@ -287,6 +287,8 @@ error_message_dict = {
     "duplicate_rank": "ERROR: Duplicate rank {} found in YAML data.",
     "prize_amount_wrong": "ERROR: Invalid amount value {}. Amount should be in decimal format with three-letter currency code (e.g. 100.00USD, 500EUR, 1000INR).",
     "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
+    "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
+    "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
 }
 
 
@@ -503,24 +505,30 @@ class ValidateChallengeConfigUtil:
     def validate_evaluation_script_file(self):
         evaluation_script = self.yaml_file_data.get("evaluation_script")
         if evaluation_script:
-            evaluation_script_path = join(
-                self.challenge_config_location, evaluation_script
-            )
-            # Check for evaluation script file in extracted zip folder
-            if isfile(evaluation_script_path):
-                self.challenge_evaluation_script_file = (
-                    read_file_data_as_content_file(
-                        evaluation_script_path, "rb", evaluation_script_path
-                    )
-                )
-                self.files[
-                    "challenge_evaluation_script_file"
-                ] = self.challenge_evaluation_script_file
-            else:
+            if not evaluation_script.endswith('.zip'):
                 message = self.error_messages_dict.get(
-                    "missing_evaluation_script"
+                    "evaluation_script_not_zip"
                 )
                 self.error_messages.append(message)
+            else:
+                evaluation_script_path = join(
+                    self.challenge_config_location, evaluation_script
+                )
+                # Check for evaluation script file in extracted zip folder
+                if isfile(evaluation_script_path):
+                    self.challenge_evaluation_script_file = (
+                        read_file_data_as_content_file(
+                            evaluation_script_path, "rb", evaluation_script_path
+                        )
+                    )
+                    self.files[
+                        "challenge_evaluation_script_file"
+                    ] = self.challenge_evaluation_script_file
+                else:
+                    message = self.error_messages_dict.get(
+                        "missing_evaluation_script"
+                    )
+                    self.error_messages.append(message)
         else:
             message = self.error_messages_dict.get(
                 "missing_evaluation_script_key"

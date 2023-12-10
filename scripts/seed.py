@@ -338,6 +338,7 @@ def create_leaderboard_data(challenge_phase_split, submission):
         leaderboard=challenge_phase_split.leaderboard,
         result=result,
         error=None,
+        is_disabled=False,
     )
     return leaderboard_data
 

@@ -90,7 +90,10 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "job_memory",
             "uses_ec2_worker",
             "ec2_storage",
-            "evaluation_module_error"
+            "ephemeral_storage",
+            "evaluation_module_error",
+            "worker_image_url",
+            "worker_instance_type"
         )
 
 
@@ -304,6 +307,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "job_memory",
             "uses_ec2_worker",
             "ec2_storage",
+            "ephemeral_storage",
+            "evaluation_module_error",
+            "worker_image_url"
         )
 
 

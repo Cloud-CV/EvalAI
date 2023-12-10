@@ -47,6 +47,7 @@ then
     docker-compose -f docker-compose-${ENVIRONMENT}.yml pull worker
 else
     # if using custom image from worker_image_url
+    echo "Step 8/10: Pulling worker Docker image"
     echo "Using custom worker image: ${CUSTOM_WORKER_IMAGE}"
     docker pull ${CUSTOM_WORKER_IMAGE}
 fi

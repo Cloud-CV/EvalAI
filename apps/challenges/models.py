@@ -99,6 +99,9 @@ class Challenge(TimeStampedModel):
     ec2_storage = models.PositiveIntegerField(
         default=8, verbose_name="EC2 storage (GB)"
     )
+    ephemeral_storage = models.PositiveIntegerField(
+        default=21, verbose_name="Ephemeral Storage (GB)"
+    )
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True
     )
@@ -512,6 +515,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission", on_delete=models.CASCADE)
     leaderboard = models.ForeignKey("Leaderboard", on_delete=models.CASCADE)
     result = JSONField()
+    is_disabled = models.BooleanField(default=False)
     error = JSONField(null=True, blank=True)
 
     def __str__(self):

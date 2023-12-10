@@ -460,7 +460,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             published=False,
             is_registration_open=True,
             enable_forum=True,
-            blocked_email_domains=["platform"],
+            blocked_email_domains=["platform.com"],
             leaderboard_description="Lorem ipsum dolor sit amet, consectetur adipiscing elit",
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
@@ -476,7 +476,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
         response = self.client.post(self.url, self.data)
         message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-        expected = {"error": message.format("platform")}
+        expected = {"error": message.format("platform.com")}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -879,7 +879,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "job_memory": self.challenge1.job_memory,
                         "uses_ec2_worker": self.challenge1.uses_ec2_worker,
                         "ec2_storage": self.challenge1.ec2_storage,
+                        "ephemeral_storage": self.challenge1.ephemeral_storage,
                         "evaluation_module_error": self.challenge1.evaluation_module_error,
+                        "worker_image_url": self.challenge1.worker_image_url,
+                        "worker_instance_type": self.challenge1.worker_instance_type,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -969,7 +972,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "job_memory": self.challenge1.job_memory,
                 "uses_ec2_worker": self.challenge1.uses_ec2_worker,
                 "ec2_storage": self.challenge1.ec2_storage,
+                "ephemeral_storage": self.challenge1.ephemeral_storage,
                 "evaluation_module_error": self.challenge1.evaluation_module_error,
+                "worker_image_url": self.challenge1.worker_image_url,
+                "worker_instance_type": self.challenge1.worker_instance_type,
             }
         ]
 

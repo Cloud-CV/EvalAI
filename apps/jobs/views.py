@@ -1208,15 +1208,34 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                try:
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
+                except LeaderboardData.DoesNotExist:
+                    leaderboard_data = None
+
                 data = {"result": accuracies}
-                serializer = CreateLeaderboardDataSerializer(
-                    data=data,
-                    context={
-                        "challenge_phase_split": challenge_phase_split,
-                        "submission": submission,
-                        "request": request,
-                    },
-                )
+                if leaderboard_data is not None:
+                    serializer = CreateLeaderboardDataSerializer(
+                        leaderboard_data,
+                        data=data,
+                        partial=True,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
+                else:
+                    serializer = CreateLeaderboardDataSerializer(
+                        data=data,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -1585,15 +1604,34 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                try:
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
+                except LeaderboardData.DoesNotExist:
+                    leaderboard_data = None
+
                 data = {"result": accuracies}
-                serializer = CreateLeaderboardDataSerializer(
-                    data=data,
-                    context={
-                        "challenge_phase_split": challenge_phase_split,
-                        "submission": submission,
-                        "request": request,
-                    },
-                )
+                if leaderboard_data is not None:
+                    serializer = CreateLeaderboardDataSerializer(
+                        leaderboard_data,
+                        data=data,
+                        partial=True,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
+                else:
+                    serializer = CreateLeaderboardDataSerializer(
+                        data=data,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -2265,7 +2303,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
     """
 
     try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk, is_disabled=False)
     except LeaderboardData.DoesNotExist:
         response_data = {"error": "Leaderboard data does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
