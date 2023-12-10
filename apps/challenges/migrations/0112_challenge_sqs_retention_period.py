@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='challenge',
             name='sqs_retention_period',
-            field=models.PositiveIntegerField(default=259200, verbose_name='SQS Retention Period'),
+            field=models.PositiveIntegerField(default=345600, verbose_name='SQS Retention Period'),
         ),
     ]
