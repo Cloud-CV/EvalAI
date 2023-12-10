@@ -275,7 +275,7 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
-        if(instance.approved_by_admin is True, instance.enable_forum is True):
+        if(instance.approved_by_admin is True and instance.enable_forum is True):
             create_forum_for_challenge(instance.pk)
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
