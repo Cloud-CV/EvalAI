@@ -92,7 +92,7 @@ class TestChallengeStartNotifier(BaseTestClass):
     @mock.patch("challenges.challenge_notification_util.send_email")
     @mock.patch("challenges.aws_utils.start_workers")
     @mock.patch("challenges.utils.create_forum_for_challenge")
-    def test_feature(self, mock_start_workers, mock_send_email):
+    def test_feature(self, mock_start_workers, mock_send_email, mock_forum):
         challenge_url = "{}/web/challenges/challenge-page/{}".format(
             settings.EVALAI_API_SERVER, self.challenge.id
         )

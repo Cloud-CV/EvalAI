@@ -6136,8 +6136,9 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         settings.AWS_SES_REGION_NAME = "us-east-1"
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
-
-    def test_update_challenge_approval_when_challenge_exists(self):
+    
+    @mock.patch("challenges.utils.create_forum_for_challenge")
+    def test_update_challenge_approval_when_challenge_exists(self, mock_forum):
         self.user.is_staff = True
         self.user.save()
         self.url = reverse_lazy("challenges:update_challenge_approval")
@@ -6151,7 +6152,7 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_challenge_approval_when_not_a_staff(self):
+    def test_update_challenge_approval_when_not_a_staff(self): 
         self.url = reverse_lazy("challenges:update_challenge_approval")
         self.user.is_staff = False
         self.user.save()
@@ -6173,7 +6174,7 @@ class TestUpdateChallengeAttributes(BaseAPITestClass):
         return super().setUp()
 
     @mock.patch("challenges.utils.create_forum_for_challenge")
-    def test_update_challenge_attributes_when_challenge_exists(self):
+    def test_update_challenge_attributes_when_challenge_exists(self, mock_forum):
         self.url = reverse_lazy("challenges:update_challenge_attributes")
         self.user.is_staff = True
         self.user.save()
