@@ -791,11 +791,11 @@ def update_sqs_retention_period(challenge):
                 'MessageRetentionPeriod': sqs_retention_period
             }
         )
-        return {"message": response.json()}
+        return {"message": response}
     except Exception as e:
         logger.exception(e)
         return {
-            "error": e.response,
+            "error": str(e),
         }
 
 
