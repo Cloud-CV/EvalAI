@@ -806,9 +806,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
+        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
         queue = sqs.create_queue(
             QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+            Attributes={"MessageRetentionPeriod": sqs_retention_period},
         )
     return queue
 
