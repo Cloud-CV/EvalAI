@@ -6152,7 +6152,7 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_challenge_approval_when_not_a_staff(self): 
+    def test_update_challenge_approval_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_approval")
         self.user.is_staff = False
         self.user.save()
