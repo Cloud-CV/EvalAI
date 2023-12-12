@@ -194,6 +194,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
+                "sqs_retention_period": self.challenge.sqs_retention_period,
             }
         ]
 
@@ -548,6 +549,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -649,6 +651,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -776,6 +779,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -852,6 +856,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1444,6 +1449,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1526,6 +1532,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
+                "sqs_retention_period": self.challenge.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1608,6 +1615,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge4.ephemeral_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
+                "sqs_retention_period": self.challenge4.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1690,6 +1698,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             },
             {
                 "id": self.challenge3.pk,
@@ -1756,6 +1765,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             },
             {
                 "id": self.challenge2.pk,
@@ -1822,6 +1832,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1959,6 +1970,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2120,6 +2132,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "ephemeral_storage": self.challenge3.ephemeral_storage,
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
+            "sqs_retention_period": self.challenge3.sqs_retention_period,
         }
 
         response = self.client.get(self.url, {})
@@ -2210,6 +2223,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "ephemeral_storage": self.challenge4.ephemeral_storage,
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
+            "sqs_retention_period": self.challenge4.sqs_retention_period,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2360,6 +2374,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             }
         ]
 
@@ -2438,6 +2453,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             }
         ]
 
@@ -2516,6 +2532,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             }
         ]
 
@@ -2592,6 +2609,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
+                "sqs_retention_period": self.challenge.sqs_retention_period,
             },
             {
                 "id": self.challenge2.pk,
@@ -2658,6 +2676,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             },
         ]
 
