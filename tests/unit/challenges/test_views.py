@@ -6136,7 +6136,7 @@ class TestUpdateChallengeApproval(BaseAPITestClass):
         settings.AWS_SES_REGION_NAME = "us-east-1"
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
-    
+
     @mock.patch("challenges.utils.create_forum_for_challenge")
     def test_update_challenge_approval_when_challenge_exists(self, mock_forum):
         self.user.is_staff = True
