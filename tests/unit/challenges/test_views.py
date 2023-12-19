@@ -191,8 +191,10 @@ class GetChallengeTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
                 "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
+                "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
+                "sqs_retention_period": self.challenge.sqs_retention_period,
             }
         ]
 
@@ -544,8 +546,10 @@ class GetParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -644,8 +648,10 @@ class GetParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -770,8 +776,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -845,8 +853,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "uses_ec2_worker": self.challenge.uses_ec2_worker,
             "evaluation_module_error": self.challenge.evaluation_module_error,
             "ec2_storage": self.challenge.ec2_storage,
+            "ephemeral_storage": self.challenge.ephemeral_storage,
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
+            "sqs_retention_period": self.challenge.sqs_retention_period,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1436,8 +1446,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1517,8 +1529,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
+                "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
+                "sqs_retention_period": self.challenge.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1598,8 +1612,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge4.uses_ec2_worker,
                 "evaluation_module_error": self.challenge4.evaluation_module_error,
                 "ec2_storage": self.challenge4.ec2_storage,
+                "ephemeral_storage": self.challenge4.ephemeral_storage,
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
+                "sqs_retention_period": self.challenge4.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1679,8 +1695,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             },
             {
                 "id": self.challenge3.pk,
@@ -1744,8 +1762,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             },
             {
                 "id": self.challenge2.pk,
@@ -1809,8 +1829,10 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1945,8 +1967,10 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge3.uses_ec2_worker,
                 "evaluation_module_error": self.challenge3.evaluation_module_error,
                 "ec2_storage": self.challenge3.ec2_storage,
+                "ephemeral_storage": self.challenge3.ephemeral_storage,
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
+                "sqs_retention_period": self.challenge3.sqs_retention_period,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2105,8 +2129,10 @@ class GetChallengeByPk(BaseAPITestClass):
             "uses_ec2_worker": self.challenge3.uses_ec2_worker,
             "evaluation_module_error": self.challenge3.evaluation_module_error,
             "ec2_storage": self.challenge3.ec2_storage,
+            "ephemeral_storage": self.challenge3.ephemeral_storage,
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
+            "sqs_retention_period": self.challenge3.sqs_retention_period,
         }
 
         response = self.client.get(self.url, {})
@@ -2194,8 +2220,10 @@ class GetChallengeByPk(BaseAPITestClass):
             "uses_ec2_worker": self.challenge4.uses_ec2_worker,
             "evaluation_module_error": self.challenge4.evaluation_module_error,
             "ec2_storage": self.challenge4.ec2_storage,
+            "ephemeral_storage": self.challenge4.ephemeral_storage,
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
+            "sqs_retention_period": self.challenge4.sqs_retention_period,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2343,8 +2371,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             }
         ]
 
@@ -2420,8 +2450,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             }
         ]
 
@@ -2497,8 +2529,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             }
         ]
 
@@ -2572,8 +2606,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge.uses_ec2_worker,
                 "evaluation_module_error": self.challenge.evaluation_module_error,
                 "ec2_storage": self.challenge.ec2_storage,
+                "ephemeral_storage": self.challenge.ephemeral_storage,
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
+                "sqs_retention_period": self.challenge.sqs_retention_period,
             },
             {
                 "id": self.challenge2.pk,
@@ -2637,8 +2673,10 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "uses_ec2_worker": self.challenge2.uses_ec2_worker,
                 "evaluation_module_error": self.challenge2.evaluation_module_error,
                 "ec2_storage": self.challenge2.ec2_storage,
+                "ephemeral_storage": self.challenge2.ephemeral_storage,
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
+                "sqs_retention_period": self.challenge2.sqs_retention_period,
             },
         ]
 
@@ -6112,13 +6150,13 @@ class TestLeaderboardData(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TestUpdateChallenge(BaseAPITestClass):
+class TestUpdateChallengeApproval(BaseAPITestClass):
     def setUp(self):
         settings.AWS_SES_REGION_NAME = "us-east-1"
         settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
         return super().setUp()
 
-    def test_update_challenge_when_challenge_exists(self):
+    def test_update_challenge_approval_when_challenge_exists(self):
         self.user.is_staff = True
         self.user.save()
         self.url = reverse_lazy("challenges:update_challenge_approval")
@@ -6132,7 +6170,7 @@ class TestUpdateChallenge(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_challenge_when_not_a_staff(self):
+    def test_update_challenge_approval_when_not_a_staff(self):
         self.url = reverse_lazy("challenges:update_challenge_approval")
         self.user.is_staff = False
         self.user.save()
@@ -6143,5 +6181,51 @@ class TestUpdateChallenge(BaseAPITestClass):
             "challenge_pk": self.challenge.pk,
             "approved_by_admin": True
         })
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestUpdateChallengeAttributes(BaseAPITestClass):
+    def setUp(self):
+        settings.AWS_SES_REGION_NAME = "us-east-1"
+        settings.AWS_SES_REGION_ENDPOINT = "email.us-east-1.amazonaws.com"
+        return super().setUp()
+
+    def test_update_challenge_attributes_when_challenge_exists(self):
+        self.url = reverse_lazy("challenges:update_challenge_attributes")
+        self.user.is_staff = True
+        self.user.save()
+
+        expected = {
+            "message": f"Challenge attributes updated successfully for challenge with primary key {self.challenge.pk}!"
+        }
+
+        response = self.client.post(self.url, {
+            "challenge_pk": self.challenge.pk,
+            "title": "Updated Title",
+            "description": "Updated Description",
+            "approved_by_admin": True,
+            "ephemeral_storage": 25,
+        })
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_attributes_when_not_a_staff(self):
+        self.url = reverse_lazy("challenges:update_challenge_attributes")
+        self.user.is_staff = False
+        self.user.save()
+        expected = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+
+        response = self.client.post(self.url, {
+            "challenge_pk": self.challenge.pk,
+            "title": "Updated Title",
+            "description": "Updated Description",
+            "approved_by_admin": True,
+            "ephemeral_storage": 25,
+        })
+
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

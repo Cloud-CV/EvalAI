@@ -879,9 +879,11 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "job_memory": self.challenge1.job_memory,
                         "uses_ec2_worker": self.challenge1.uses_ec2_worker,
                         "ec2_storage": self.challenge1.ec2_storage,
+                        "ephemeral_storage": self.challenge1.ephemeral_storage,
                         "evaluation_module_error": self.challenge1.evaluation_module_error,
                         "worker_image_url": self.challenge1.worker_image_url,
                         "worker_instance_type": self.challenge1.worker_instance_type,
+                        "sqs_retention_period": self.challenge1.sqs_retention_period,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -971,9 +973,11 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "job_memory": self.challenge1.job_memory,
                 "uses_ec2_worker": self.challenge1.uses_ec2_worker,
                 "ec2_storage": self.challenge1.ec2_storage,
+                "ephemeral_storage": self.challenge1.ephemeral_storage,
                 "evaluation_module_error": self.challenge1.evaluation_module_error,
                 "worker_image_url": self.challenge1.worker_image_url,
                 "worker_instance_type": self.challenge1.worker_instance_type,
+                "sqs_retention_period": self.challenge1.sqs_retention_period,
             }
         ]
 

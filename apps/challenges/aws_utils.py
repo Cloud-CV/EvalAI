@@ -170,6 +170,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     code_upload_container_name = "code_upload_worker_{}".format(queue_name)
     worker_cpu_cores = challenge.worker_cpu_cores
     worker_memory = challenge.worker_memory
+    ephemeral_storage = challenge.ephemeral_storage
     log_group_name = get_log_group_name(challenge.pk)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
     AWS_SES_REGION_NAME = settings.AWS_SES_REGION_NAME
@@ -236,6 +237,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     submission_container=submission_container,
                     CPU=worker_cpu_cores,
                     MEMORY=worker_memory,
+                    ephemeral_storage=ephemeral_storage,
                     **updated_settings,
                 )
             else:
@@ -250,6 +252,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     certificate=cluster_certificate,
                     CPU=worker_cpu_cores,
                     MEMORY=worker_memory,
+                    ephemeral_storage=ephemeral_storage,
                     log_group_name=log_group_name,
                     EVALAI_DNS=EVALAI_DNS,
                     EFS_ID=efs_id,
@@ -264,6 +267,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 challenge_pk=challenge.pk,
                 CPU=worker_cpu_cores,
                 MEMORY=worker_memory,
+                ephemeral_storage=ephemeral_storage,
                 log_group_name=log_group_name,
                 AWS_SES_REGION_NAME=AWS_SES_REGION_NAME,
                 AWS_SES_REGION_ENDPOINT=AWS_SES_REGION_ENDPOINT,
@@ -767,6 +771,34 @@ def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, 
         }
 
 
+def update_sqs_retention_period(challenge):
+    """
+    Update the SQS retention period for a challenge.
+
+    Args:
+        challenge (Challenge): The challenge for which the SQS retention period is to be updated.
+
+    Returns:
+        dict: A dictionary containing the status and message of the operation.
+    """
+    sqs_retention_period = str(challenge.sqs_retention_period)
+    try:
+        sqs = get_boto3_client("sqs", aws_keys)
+        queue_url = sqs.get_queue_url(QueueName=challenge.queue)['QueueUrl']
+        response = sqs.set_queue_attributes(
+            QueueUrl=queue_url,
+            Attributes={
+                'MessageRetentionPeriod': sqs_retention_period
+            }
+        )
+        return {"message": response}
+    except Exception as e:
+        logger.exception(e)
+        return {
+            "error": str(e),
+        }
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -988,6 +1020,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         challenge_pk=challenge.pk,
         CPU=worker_cpu_cores,
         MEMORY=worker_memory,
+        ephemeral_storage=challenge.ephemeral_storage,
         log_group_name=log_group_name,
         AWS_SES_REGION_NAME=settings.AWS_SES_REGION_NAME,
         AWS_SES_REGION_ENDPOINT=settings.AWS_SES_REGION_ENDPOINT,
@@ -1789,3 +1822,16 @@ def setup_ec2(challenge):
     if challenge_obj.ec2_instance_id:
         return start_ec2_instance(challenge_obj)
     return create_ec2_instance(challenge_obj)
+
+
+@app.task
+def update_sqs_retention_period_task(challenge):
+    """
+    Updates sqs retention period for a challenge when the attribute is changed.
+
+    Arguments:
+        challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
+    """
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    return update_sqs_retention_period(challenge_obj)

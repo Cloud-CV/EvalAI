@@ -3940,7 +3940,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"leaderboard {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
                         leaderboard_ids[
                             str(data["id"])
@@ -3980,7 +3980,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"challenge phase {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
                         challenge_phase_ids[
                             str(data["id"])
@@ -3998,7 +3998,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"dataset split {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
                         dataset_split_ids[
                             str(data["id"])
@@ -4055,7 +4055,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         if serializer.is_valid():
                             serializer.save()
                         else:
-                            error_messages = serializer.errors
+                            error_messages = f"challenge phase split (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
                             raise RuntimeError()
 
                 zip_config = ChallengeConfiguration.objects.get(
@@ -4118,7 +4118,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
 
             except:  # noqa: E722
                 response_data = {
-                    "error": "Error in creating challenge. Please check the yaml configuration!"
+                    "error": f"Error in creating challenge: {error_messages}. Please check the yaml configuration!"
                 }
                 if error_messages:
                     response_data["error_message"] = json.dumps(error_messages)
@@ -4167,7 +4167,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    error_messages = serializer.errors
+                    error_messages = f"challenge :{str(serializer.errors)}"
                     raise RuntimeError()
                 challenge = serializer.instance
 
@@ -4213,7 +4213,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         serializer.save()
                         leaderboard_ids[str(data["id"])] = serializer.instance.pk
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"leaderboard update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Updating ChallengePhase objects
@@ -4278,7 +4278,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["id"])
                         ] = serializer.instance.pk
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"challenge phase update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Updating DatasetSplit objects
@@ -4305,7 +4305,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         serializer.save()
                         dataset_split_ids[str(data["id"])] = serializer.instance.pk
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"dataset split update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Update ChallengePhaseSplit objects
@@ -4366,7 +4366,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        error_messages = serializer.errors
+                        error_messages = f"challenge phase split update (phase:{data['challenge_phase_id']}, leaderboard:{data['leaderboard_id']}, dataset split: {data['dataset_split_id']}):{str(serializer.errors)}"
                         raise RuntimeError()
 
                 response_data = {
@@ -4377,7 +4377,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 return Response(response_data, status=status.HTTP_200_OK)
             except:  # noqa: E722
                 response_data = {
-                    "error": "Error in creating challenge. Please check the yaml configuration!"
+                    "error": f"Error in creating challenge: {error_messages}. Please check the yaml configuration!"
                 }
                 if error_messages:
                     response_data["error_message"] = json.dumps(error_messages)
@@ -4763,6 +4763,58 @@ def update_challenge_approval(request):
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     response_data = {
         "message": "Challenge updated successfully!"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def update_challenge_attributes(request):
+    """
+    API to update attributes of the Challenge model
+    Arguments:
+        request {dict} -- Request object
+
+    Query Parameters:
+        challenge_pk {int} -- Challenge primary key
+        **kwargs {any} -- Key-value pairs representing attributes and their new values
+    """
+    if not request.user.is_staff:
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource!"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_pk = request.data.get("challenge_pk")
+
+    if not challenge_pk:
+        response_data = {
+            "error": "Challenge primary key is missing!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": f"Challenge with primary key {challenge_pk} not found!"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # Update attributes based on the request data
+    for key, value in request.data.items():
+        if key != "challenge_pk" and hasattr(challenge, key):
+            setattr(challenge, key, value)
+
+    try:
+        challenge.save()
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    response_data = {
+        "message": f"Challenge attributes updated successfully for challenge with primary key {challenge_pk}!"
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
