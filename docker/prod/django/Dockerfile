@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /code
 WORKDIR /code
 ADD requirements/* /code/
-RUN pip install -r prod.txt
+RUN pip install --progress-bar off -r prod.txt
 
 ADD . /code
 
