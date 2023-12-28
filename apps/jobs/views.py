@@ -1327,7 +1327,7 @@ def update_submission(request, challenge_pk):
         data = {
             "status": submission_status,
             "started_at": str(timezone.now()),
-            "job_name": jobs,
+            "job_name": list(set(jobs)),
         }
         serializer = SubmissionSerializer(
             submission, data=data, partial=True, context={"request": request}
@@ -1698,7 +1698,7 @@ def update_partially_evaluated_submission(request, challenge_pk):
             data = {
                 "status": submission_status,
                 "started_at": str(timezone.now()),
-                "job_name": jobs,
+                "job_name": list(set(jobs)),
             }
             serializer = SubmissionSerializer(
                 submission,
