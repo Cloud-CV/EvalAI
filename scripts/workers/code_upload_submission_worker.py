@@ -382,7 +382,7 @@ def create_static_code_upload_submission_job_object(message, challenge):
             init_containers=[init_container],
             containers=[sidecar_container, submission_container],
             restart_policy="Never",
-            termination_grace_period_seconds=360,
+            termination_grace_period_seconds=600,
             volumes=volume_list,
         ),
     )
