@@ -223,7 +223,13 @@
 
                             <p class="fs-18 w-400">Select submission type:</p>
                             <li>
-                                
+                                <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="cliSubmission"
+                                    value="cliSubmission" ng-click="challenge.isSubmissionUsingCli = true; challenge.isSubmissionUsingFile = false; challenge.isSubmissionUsingUrl = false">
+                                <label for="cliSubmission"></label>
+                                <div class="show-member-title pointer">
+                                    <strong class="fs-16 w-300">Use CLI (for file size > 400MB)
+                                    </strong>
+                                </div>
                                 <input type="radio" name="submissionOptions" class="with-gap selectPhase"
                                     id="fileUpload" value="challenge.showFileUploadOption"
                                     ng-click="challenge.isSubmissionUsingFile = true; challenge.isSubmissionUsingUrl = false; challenge.isSubmissionUsingCli = false;">
