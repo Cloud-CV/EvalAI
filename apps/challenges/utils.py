@@ -386,14 +386,16 @@ def get_aws_credentials_for_submission(challenge, participant_team):
         )
         name = str(uuid.uuid4())[:32]
         docker_repository_uri = repository["repositoryUri"]
-        federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
+        federated_user = create_federated_user(
+            name, ecr_repository_name, aws_keys)
         return {
             "federated_user": federated_user,
             "docker_repository_uri": docker_repository_uri,
         }
 
     except Exception as e:
-         raise e 
+        raise e
+
 
 def is_user_in_allowed_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
@@ -496,7 +498,8 @@ def add_tags_to_challenge(yaml_file_data, challenge):
         tags_data = yaml_file_data["tags"]
         new_tags = set(tags_data)
         # Remove tags not present in the YAML file
-        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+        challenge.list_tags = [
+            tag for tag in challenge.list_tags if tag in new_tags]
 
         # Add new tags to the challenge
         for tag_name in new_tags:
@@ -545,7 +548,8 @@ def add_prizes_to_challenge(yaml_file_data, challenge):
             amount = prize["amount"]
             description = prize["description"]
 
-            prize_obj = ChallengePrize.objects.filter(rank=rank, challenge=challenge).first()
+            prize_obj = ChallengePrize.objects.filter(
+                rank=rank, challenge=challenge).first()
             if prize_obj:
                 data = {
                     "amount": amount,
@@ -592,7 +596,8 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
         for sponsor in sponsors_data:
             # Checking if the sponsors already exists in the database.
             sponsor_name_set.add(sponsor['name'])
-            check_sponsor_status = ChallengeSponsor.objects.filter(name=sponsor['name'], challenge=challenge).exists()
+            check_sponsor_status = ChallengeSponsor.objects.filter(
+                name=sponsor['name'], challenge=challenge).exists()
             if not check_sponsor_status:
                 if 'name' not in sponsor or 'website' not in sponsor:
                     message = "Sponsor name or url not found in YAML data."
@@ -619,11 +624,14 @@ def add_sponsors_to_challenge(yaml_file_data, challenge):
                 raise response_data
 
         # Check if the sponsor exist in database. but not in the YAML file.
-        existing_sponsors = ChallengeSponsor.objects.filter(challenge=challenge)
-        existing_sponsors_names = [sponsor.name for sponsor in existing_sponsors]
+        existing_sponsors = ChallengeSponsor.objects.filter(
+            challenge=challenge)
+        existing_sponsors_names = [
+            sponsor.name for sponsor in existing_sponsors]
         for existing_sponsor in existing_sponsors_names:
             if existing_sponsor is not None and existing_sponsor not in sponsor_name_set:
-                ChallengeSponsor.objects.filter(challenge=challenge, name=existing_sponsor).delete()
+                ChallengeSponsor.objects.filter(
+                    challenge=challenge, name=existing_sponsor).delete()
 
     else:
         challenge.has_sponsors = False

@@ -2836,7 +2836,6 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         participant_team = get_participant_team_of_user_for_a_challenge(
             request.user, challenge.pk
         )
-
         if not challenge.is_docker_based:
             response_data = {
                 "error": "Sorry, this is not a docker based challenge."
