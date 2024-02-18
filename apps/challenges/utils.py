@@ -373,24 +373,27 @@ def get_aws_credentials_for_submission(challenge, participant_team):
             "docker_repository_uri"
         }
     """
-    aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    ecr_repository_name = "{}-participant-team-{}".format(
-        challenge.slug, participant_team.pk
-    )
-    ecr_repository_name = convert_to_aws_ecr_compatible_format(
-        ecr_repository_name
-    )
-    repository, created = get_or_create_ecr_repository(
-        ecr_repository_name, aws_keys
-    )
-    name = str(uuid.uuid4())[:32]
-    docker_repository_uri = repository["repositoryUri"]
-    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
-    return {
-        "federated_user": federated_user,
-        "docker_repository_uri": docker_repository_uri,
-    }
+    try:
+        aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+        ecr_repository_name = "{}-participant-team-{}".format(
+            challenge.slug, participant_team.pk
+        )
+        ecr_repository_name = convert_to_aws_ecr_compatible_format(
+            ecr_repository_name
+        )
+        repository, created = get_or_create_ecr_repository(
+            ecr_repository_name, aws_keys
+        )
+        name = str(uuid.uuid4())[:32]
+        docker_repository_uri = repository["repositoryUri"]
+        federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
+        return {
+            "federated_user": federated_user,
+            "docker_repository_uri": docker_repository_uri,
+        }
 
+    except Exception as e:
+         raise e 
 
 def is_user_in_allowed_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
