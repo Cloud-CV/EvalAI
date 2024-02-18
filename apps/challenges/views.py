@@ -2852,10 +2852,9 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         data = get_aws_credentials_for_submission(challenge, participant_team)
         response_data = {"success": data}
         return Response(response_data, status=status.HTTP_200_OK)
-
     except Exception as e:
         response_data = {
-            "error": f"An error occurred: {str(e)}"
+            "error": f"An error occurred in fetching the credentials: {str(e)}"
         }
         return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
