@@ -10,6 +10,7 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
+        vm.warningFlag = false;
         vm.areSubmissionsFailing = false;
         vm.getAllEntriesTestOption = "Include private submissions";
         vm.showPrivateIds = [];
@@ -3044,6 +3045,7 @@
         vm.acceptTermsAndConditions = function (acceptTermsAndConditionsForm) {
             if (acceptTermsAndConditionsForm) {
                 if (vm.termsAndConditions) {
+                    vm.warningFlag=true;
                     vm.selectExistTeam();
                     $mdDialog.hide();
                 }
