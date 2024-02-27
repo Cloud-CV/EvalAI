@@ -2,8 +2,6 @@ import os
 import pytz
 import warnings
 import boto3
-from datetime import datetime
-from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 
 warnings.filterwarnings("ignore")
@@ -85,9 +83,7 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 
     print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(pending_submissions, challenge["id"], challenge["title"]))
 
-    if pending_submissions == 0 or parse(
-        challenge["end_date"]
-    ) < pytz.UTC.localize(datetime.utcnow()):
+    if pending_submissions == 0:
         stop_instance(challenge, evalai_interface)
     else:
         start_instance(challenge, evalai_interface)
