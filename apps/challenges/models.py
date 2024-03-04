@@ -377,6 +377,7 @@ class ChallengePhase(TimeStampedModel):
         default=None, blank=True, null=True
     )
     disable_logs = models.BooleanField(default=False)
+    is_disabled = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
@@ -476,6 +477,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     show_execution_time = models.BooleanField(default=False)
     # Allow ordering leaderboard by all metrics
     is_multi_metric_leaderboard = models.BooleanField(default=True)
+    is_disabled = models.BooleanField(default=False)
 
     def __str__(self):
         return "{0} : {1}".format(
