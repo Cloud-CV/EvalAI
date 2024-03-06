@@ -10,7 +10,6 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
-        vm.warningFlag = false;
         vm.areSubmissionsFailing = false;
         vm.getAllEntriesTestOption = "Include private submissions";
         vm.showPrivateIds = [];
@@ -3045,9 +3044,9 @@
         vm.acceptTermsAndConditions = function (acceptTermsAndConditionsForm) {
             if (acceptTermsAndConditionsForm) {
                 if (vm.termsAndConditions) {
-                    vm.warningFlag=true;
                     vm.selectExistTeam();
                     $mdDialog.hide();
+                    localStorage.setItem('warningFlag', 'true');
                 }
             } else {
                 $mdDialog.hide();
@@ -3056,6 +3055,32 @@
 
         vm.encodeMetricURI = function(metric) {
             return encodeURIComponent(metric);
+        };
+
+        vm.warningDialog = function(ev) {
+            if (!!localStorage.getItem('warningFlag') === true){
+                $mdDialog.show({
+                    scope: $scope,
+                    preserveScope: true,
+                    targetEvent: ev,
+                    templateUrl: 'dist/views/web/challenge/warning.html',
+                    escapeToClose: false
+                });
+            }
+            else {
+                this.makeSubmission();
+            }
+        };
+
+        vm.warning = function(warningformvalid) {
+            if (warningformvalid) {
+                this.makeSubmission();
+                $mdDialog.hide();
+                localStorage.removeItem('warningFlag');
+            }
+            else {
+                $mdDialog.hide();
+            }
         };
 
         vm.deregisterdialog = function(ev) {
