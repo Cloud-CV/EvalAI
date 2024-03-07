@@ -8,10 +8,12 @@ aws_login() {
     eval $(aws ecr get-login --no-include-email)
 }
 
-if [ -z ${AWS_ACCOUNT_ID} ]; then
-    echo "AWS_ACCOUNT_ID not set."
-    exit 0
-fi
+aws_account_id_check() {
+    if [ -z ${AWS_ACCOUNT_ID} ]; then
+        echo "AWS_ACCOUNT_ID not set."
+        exit 1
+    fi
+}
 
 if [ -z ${COMMIT_ID} ]; then
     export COMMIT_ID="latest"
@@ -19,6 +21,7 @@ fi
 
 if [ -z ${TRAVIS_BRANCH} ]; then
     echo "Please set the TRAVIS_BRANCH first."
+    exit 1
 fi
 
 env=${TRAVIS_BRANCH}
@@ -37,6 +40,7 @@ fi
 
 case $opt in
         auto_deploy)
+            aws_account_id_check;
             chmod 400 scripts/deployment/evalai.pem
             ssh-add scripts/deployment/evalai.pem
 			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no INSTANCE=${INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
@@ -55,6 +59,7 @@ case $opt in
 			ENDSSH
             ;;
         deploy-monitoring)
+            aws_account_id_check;
             chmod 400 scripts/deployment/evalai.pem
             ssh-add scripts/deployment/evalai.pem
 			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
