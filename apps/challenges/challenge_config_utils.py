@@ -379,7 +379,7 @@ class ValidateChallengeConfigUtil:
         if not challenge_title or len(challenge_title) == 0:
             message = self.error_messages_dict.get("missing_challenge_title")
             self.error_messages.append(message)
-        elif not re.match(r"^[a-zA-Z0-9 \-_.',!&:@#()\[\]{}\\\/]+$", challenge_title):
+        elif not re.match(r"^[a-zA-Z0-9 \t\n\r\v\f!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+$", challenge_title):
             message = self.error_messages_dict.get("invalid_challenge_title")
             self.error_messages.append(message)
 
