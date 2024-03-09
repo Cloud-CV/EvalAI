@@ -383,9 +383,9 @@ class ValidateChallengeConfigUtil:
             allowed_pattern = r"^[a-zA-Z0-9\s\-_\.\,\'\!\&]+$"
             match = re.match(allowed_pattern, challenge_title)
             if not match:
-            message = "Challenge title can only contain alphanumeric characters, spaces, hyphen, underscore, period, comma, apostrophe, exclamation point, and ampersand."
-            self.error_messages.append(message)
-        
+                message = "Challenge title can only contain alphanumeric characters, spaces, hyphen, underscore, period, comma, apostrophe, exclamation point, and ampersand."
+                self.error_messages.append(message)
+
     def validate_challenge_logo(self):
         image = self.yaml_file_data.get("image")
         if image and (
