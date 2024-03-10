@@ -379,7 +379,7 @@ class ValidateChallengeConfigUtil:
         if not challenge_title or len(challenge_title) == 0:
             message = self.error_messages_dict.get("missing_challenge_title")
             self.error_messages.append(message)
-        if not challenge_title.isascii():
+        elif not challenge_title.isascii():
             message = self.error_messages_dict.get("non_ascii_challenge_title")
             self.error_messages.append(message)
 
