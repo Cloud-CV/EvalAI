@@ -227,7 +227,7 @@ error_message_dict = {
     "multiple_yaml_files": "There are {} challenge config YAML files instead of 1 in the zip file!",
     "yaml_file_read_error": "\n{} in line {}, column {}\n",
     "missing_challenge_title": "Please add the challenge title",
-    "invalid_challenge_title": "Challenge title contains invalid characters.",
+    "invalid_challenge_title": "Challenge title contains invalid characters. Allowed characters include: Alphanumeric characters (letters a-z, A-Z, and numbers 0-9) and symbols (e.g., !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~).",
     "missing_challenge_description": "Please add the challenge description",
     "missing_evaluation_details": "Please add the evaluation details",
     "missing_terms_and_conditions": "Please add the terms and conditions.",
