@@ -1,13 +1,15 @@
-version: "3"
+version: "3.7"
 services:
   db:
     image: postgres:10.4
+    platform: linux/amd64
     ports:
       - "5432:5432"
 
   sqs:
     image: softwaremill/elasticmq
     hostname: sqs
+    platform: linux/amd64
     ports:
       - 9324:9324
 
@@ -18,6 +20,7 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/django/Dockerfile
+    platform: linux/amd64
     ports:
       - "8000:8000"
     depends_on:
@@ -33,6 +36,7 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/worker/Dockerfile
+    platform: linux/amd64
     depends_on:
       - django
     volumes:
@@ -44,6 +48,7 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/worker_py3.8/Dockerfile
+    platform: linux/amd64
     depends_on:
       - django
     volumes:
@@ -56,6 +61,7 @@ services:
       dockerfile: docker/dev/nodejs/Dockerfile
     environment:
       NODE_ENV: development
+    platform: linux/amd64
     ports:
       - "8888:8888"
       - "35729:35729"
@@ -70,6 +76,7 @@ services:
     command:
       - '--log.level=info'
       - '--web.telemetry-path=/statsd/metrics'
+    platform: linux/amd64
     ports:
       - '9125:9125'
       - '9102:9102'
