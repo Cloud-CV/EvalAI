@@ -28,8 +28,8 @@ after_success:
   - eval "$(ssh-agent -s)"
   - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv
     -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
-  - './scripts/deployment/push.sh'
-  - './scripts/deployment/deploy.sh auto_deploy'
+  - bash ./scripts/deployment/push.sh || travis_terminate 1;
+  - bash ./scripts/deployment/deploy.sh auto_deploy || travis_terminate 1;
 notifications:
   email:
     on_success: change
