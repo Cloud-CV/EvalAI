@@ -73,12 +73,19 @@ def notify_users_about_challenge(request):
                 return render(
                     request,
                     "notification_email_conformation.html",
-                    {"message": "All the emails are sent successfully!"},
+                    {
+                        "message": (
+                            "All the emails are sent successfully!** Please note:** "
+                            "If you don't receive the verification email immediately, "
+                            "it might be due to your browser cache. Try clearing your cache, "
+                            "using incognito mode, or refreshing the page.")
+                    },
                 )
             except SMTPException:
                 logger.exception(traceback.format_exc())
                 return render(
-                    request, "notification_email_data.html", {"errors": 1}
+                    request, "notification_email_data.html", {"errors": 1, "message": "Failed to send email. Try again clearing your browser cache, using incognito mode, or refreshing the page."}
+
                 )
         else:
             return render(request, "error404.html")
@@ -185,7 +192,7 @@ def our_team(request):
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     elif request.method == "POST":
-        # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester
+        # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester`
         request.data["team_type"] = request.data.get(
             "team_type", Team.CONTRIBUTOR
         )
