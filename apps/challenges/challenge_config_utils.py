@@ -227,6 +227,7 @@ error_message_dict = {
     "multiple_yaml_files": "There are {} challenge config YAML files instead of 1 in the zip file!",
     "yaml_file_read_error": "\n{} in line {}, column {}\n",
     "missing_challenge_title": "Please add the challenge title",
+    "invalid_challenge_title": "Challenge title allowed characters are alphanumeric characters (letters a-z, A-Z, and numbers 0-9) and symbols (like !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~).",
     "missing_challenge_description": "Please add the challenge description",
     "missing_evaluation_details": "Please add the evaluation details",
     "missing_terms_and_conditions": "Please add the terms and conditions.",
@@ -378,6 +379,12 @@ class ValidateChallengeConfigUtil:
         if not challenge_title or len(challenge_title) == 0:
             message = self.error_messages_dict.get("missing_challenge_title")
             self.error_messages.append(message)
+        else:
+            allowed_pattern = r"^[a-zA-Z0-9\s!\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]+$"
+            match = re.match(allowed_pattern, challenge_title)
+            if not match:
+                message = self.error_messages_dict.get("invalid_challenge_title")
+                self.error_messages.append(message)
 
     def validate_challenge_logo(self):
         image = self.yaml_file_data.get("image")
