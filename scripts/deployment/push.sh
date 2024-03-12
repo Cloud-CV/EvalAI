@@ -34,7 +34,7 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     exit 0
 elif [ "${TRAVIS_BRANCH}" == "staging" -o "${TRAVIS_BRANCH}" == "production" ]; then
     build_and_push $TRAVIS_BRANCH
-    exit 1
+    exit 0
 else
     echo "Skipping deploy!"
     exit 0
