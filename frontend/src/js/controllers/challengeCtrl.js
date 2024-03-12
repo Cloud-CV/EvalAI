@@ -82,7 +82,7 @@
         vm.currentPhaseLeaderboardPublic = false;
         vm.eligible_to_submit = false;
         vm.evaluation_module_error = null;
-
+        vm.warningFlag = false;
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
         // show loader
@@ -294,10 +294,14 @@
             parameters.data={};
             parameters.callback = {
                 onSuccess: function(response) {
-                     var details = response.data;
+                    var details = response.data;
                     vm.participated_team_name = details["team_name"];
                     vm.eligible_to_submit = details["approved"];
-                },
+                    vm.hasSubmission=(details["hasSubmissions"]);
+                    if(!vm.hasSubmission){      //if participant has made no submission before warn them for 1st submission
+                        vm.warningFlag = true;
+                    } 
+                },  
             };
             utilities.sendRequest(parameters);
         };
@@ -3046,7 +3050,6 @@
                 if (vm.termsAndConditions) {
                     vm.selectExistTeam();
                     $mdDialog.hide();
-                    localStorage.setItem('warningFlag', 'true');
                 }
             } else {
                 $mdDialog.hide();
@@ -3058,7 +3061,7 @@
         };
 
         vm.warningDialog = function(ev) {
-            if (!!localStorage.getItem('warningFlag') === true){
+            if (vm.warningFlag === true){
                 $mdDialog.show({
                     scope: $scope,
                     preserveScope: true,
@@ -3075,8 +3078,8 @@
         vm.warning = function(warningformvalid) {
             if (warningformvalid) {
                 this.makeSubmission();
+                vm.warningFlag=false;
                 $mdDialog.hide();
-                localStorage.removeItem('warningFlag');
             }
             else {
                 $mdDialog.hide();
