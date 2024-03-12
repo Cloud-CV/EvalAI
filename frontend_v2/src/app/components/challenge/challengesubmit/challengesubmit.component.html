@@ -475,6 +475,7 @@
                 <button
                   class="btn btn-waves-effect grad-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
                   (click)="formValidate()"
+                  [disabled]="!validFileUrl"
                 >
                   Submit
                 </button>
