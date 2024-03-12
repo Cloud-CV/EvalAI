@@ -13,5 +13,10 @@
         "EnvironmentConfig": {
             "API": "https://eval.ai/api/"
         }
+    },
+    "vm": {
+        "EnvironmentConfig": {
+            "API": "TYPE://DOMAIN_NAME/api/"
+        }
     }
 }
