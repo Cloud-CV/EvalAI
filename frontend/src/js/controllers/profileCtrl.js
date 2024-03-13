@@ -90,7 +90,7 @@
                 vm.expiresAt = moment.utc(response.data['expires_at']).local().format("MMM D, YYYY h:mm:ss A");
                 vm.is_expired= response.data['is_expired'];
                 if (vm.is_expired) {  //if token is expired notify user to refresh token
-                    $rootScope.notify("alert", "Refresh token as it has expired.");
+                    $rootScope.notify("warning", "Refresh token as it has expired.");
                 }
                 let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
                 var timezone = moment.tz.guess();
