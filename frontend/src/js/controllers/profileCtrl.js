@@ -88,10 +88,8 @@
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
                 vm.expiresAt = moment.utc(response.data['expires_at']).local().format("MMM D, YYYY h:mm:ss A");
-                var expirationDateStr = response.data['expires_at'];
-                var expirationDate = new Date(expirationDateStr);
-                var currentDate = new Date();
-                if (expirationDate < currentDate) {
+                vm.is_expired= response.data['is_expired'];
+                if (vm.is_expired) {  //if token is expired notify user to refresh token
                     $rootScope.notify("alert", "Refresh token as it has expired.");
                 }
                 let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
