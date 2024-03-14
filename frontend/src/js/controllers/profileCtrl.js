@@ -92,7 +92,7 @@
                 var expirationDate = new Date(expirationDateStr);
                 var currentDate = new Date();
                 if (expirationDate < currentDate) {
-                    $rootScope.notify("alert", "Refresh token as it has expired.");
+                    $rootScope.notify("warning", "Refresh token as it has expired.");
                 }
                 let expiresAtOffset = new Date(vm.expiresAt).getTimezoneOffset();
                 var timezone = moment.tz.guess();
