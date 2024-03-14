@@ -22,6 +22,7 @@ from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
+
 from .throttles import ResendEmailThrottle
 
 
