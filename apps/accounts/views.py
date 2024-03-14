@@ -22,7 +22,6 @@ from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
-from django.utils import timezone
 from .throttles import ResendEmailThrottle
 
 
@@ -45,8 +44,6 @@ def disable_user(request):
 def get_auth_token(request):
     try:
         user = User.objects.get(email=request.user.email)
-        outstanding_token = OutstandingToken.objects.filter(user=user).order_by("-created_at").first()
-        is_expired = outstanding_token.expires_at < timezone.now()
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         Response(response_data, status.HTTP_404_NOT_FOUND)
@@ -71,8 +68,7 @@ def get_auth_token(request):
     outstanding_token = OutstandingToken.objects.filter(user=user).order_by("-created_at")[0]
     response_data = {
         "token": "{}".format(token.refresh_token),
-        "expires_at": outstanding_token.expires_at,
-        "is_expired": is_expired,
+        "expires_at": outstanding_token.expires_at
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
