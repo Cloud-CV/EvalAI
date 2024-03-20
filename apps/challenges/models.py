@@ -222,6 +222,7 @@ class Challenge(TimeStampedModel):
     )
     worker_image_url = models.CharField(max_length=200, blank=True, null=True, default="")
     evaluation_module_error = models.TextField(null=True, blank=True)
+    submission_must_finish_before_end = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
