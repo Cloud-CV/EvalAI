@@ -27,6 +27,8 @@ from django.utils import timezone
 from settings.common import SQS_RETENTION_PERIOD
 
 from .statsd_utils import increment_and_push_metrics_to_statsd
+from django.db.models import Q
+from datetime import timedelta
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp(prefix='tmp')
@@ -814,13 +816,13 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
     return queue
 
 
-def load_challenge_and_return_max_submissions(q_params):
+def load_challenge_and_return_max_submissions(q_conditions):
     try:
-        challenge = Challenge.objects.get(**q_params)
+        challenge = Challenge.objects.get(q_conditions)
     except Challenge.DoesNotExist:
         logger.exception(
             "{} Challenge with pk {} doesn't exist".format(
-                WORKER_LOGS_PREFIX, q_params["pk"]
+                WORKER_LOGS_PREFIX, os.environ.get("CHALLENGE_PK")
             )
         )
         raise
@@ -842,12 +844,16 @@ def main():
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    q_params = {}
-    q_params["end_date__gt"] = timezone.now()
+    q_conditions = Q(end_date__gt=timezone.now()) | (
+        Q(submission_must_finish_before_end=False)
+        & Q(
+            end_date__gte=timezone.now() - timedelta(days=3)
+        )  # This condition is designed to avoid unnecessary querying of challenges
+    )
 
     challenge_pk = os.environ.get("CHALLENGE_PK")
     if challenge_pk:
-        q_params["pk"] = challenge_pk
+        q_conditions &= Q(pk=challenge_pk)
 
     if settings.DEBUG or settings.TEST:
         if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
@@ -861,16 +867,18 @@ def main():
             (
                 maximum_concurrent_submissions,
                 challenge,
-            ) = load_challenge_and_return_max_submissions(q_params)
+            ) = load_challenge_and_return_max_submissions(
+                q_conditions
+            )
         else:
-            challenges = Challenge.objects.filter(**q_params)
+            challenges = Challenge.objects.filter(q_conditions)
             for challenge in challenges:
                 load_challenge(challenge)
     else:
         (
             maximum_concurrent_submissions,
             challenge,
-        ) = load_challenge_and_return_max_submissions(q_params)
+        ) = load_challenge_and_return_max_submissions(q_conditions)
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
