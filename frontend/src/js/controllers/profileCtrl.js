@@ -274,6 +274,7 @@
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
 
+
                             } catch (error) {
                                 $rootScope.notify("error", error);
                             }
