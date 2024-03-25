@@ -41,11 +41,14 @@ services:
         tag: "docker.sqs"
 
   django:
+    hostname: django
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
       dockerfile: docker/dev/django/Dockerfile
+    ports:
+      - "8000:8000"
     depends_on:
       - db
       - sqs
