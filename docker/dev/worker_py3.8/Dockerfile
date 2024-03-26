@@ -6,6 +6,7 @@ RUN mkdir /code
 WORKDIR /code
 
 ADD requirements/* /code/
+RUN pip install --upgrade pip
 RUN pip install -r dev.txt
 
 RUN apt-get update && \
@@ -14,7 +15,7 @@ RUN apt-get update && \
     libgmp-dev libcgal-qt5-dev swig && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install -U cffi service_identity cython==0.29 numpy==1.14.5
+RUN pip install -U cffi service_identity cython==0.29 numpy==1.21.0
 RUN pip install -r worker.txt
 
 ADD . /code
