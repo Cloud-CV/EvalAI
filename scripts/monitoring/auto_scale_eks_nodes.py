@@ -242,7 +242,7 @@ def start_job():
         except KeyError as e:
             print(f"Error: Challenge data missing key. {e}")
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            print(f"Error: An unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":
