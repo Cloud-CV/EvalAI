@@ -933,28 +933,49 @@
         parameters.method = 'GET';
         parameters.data = {};
         parameters.callback = {
-            onSuccess: function(response) {
-                var details = response.data;
-                vm.phaseSplits = details;
-                if (details.length == 0) {
-                    vm.isChallengeLeaderboardPrivate = true; 
+        onSuccess: function(response) {
+            var details = response.data;
+            var groupedPhases = {};
+
+            // Grouping phases by challenge_phase_name
+            details.forEach(function(phase) {
+                if (!groupedPhases[phase.challenge_phase_name]) {
+                    groupedPhases[phase.challenge_phase_name] = [];
                 }
-                for(var i=0; i<details.length; i++) {
-                    if (details[i].visibility !== challengePhaseVisibility.public) {
-                        vm.phaseSplits[i].showPrivate = true;
-                        vm.showPrivateIds.push(vm.phaseSplits[i].id);
-                    }
-                    vm.isMultiMetricLeaderboardEnabled[vm.phaseSplits[i].id] = vm.phaseSplits[i].is_multi_metric_leaderboard;
-                    vm.phaseSplitLeaderboardSchema[vm.phaseSplits[i].id] = vm.phaseSplits[i].leaderboard_schema;
-                }
-                utilities.hideLoader();
-            },
-            onError: function(response) {
-                var error = response.data;
-                utilities.storeData('emailError', error.detail);
-                $state.go('web.permission-denied');
-                utilities.hideLoader();
+                groupedPhases[phase.challenge_phase_name].push(phase);
+            });
+
+            vm.phaseSplits = groupedPhases;
+
+            if (Object.keys(vm.phaseSplits).length === 0) {
+                vm.isChallengeLeaderboardPrivate = true; 
             }
+
+            // Iterate through each phase
+            for (var phaseName in vm.phaseSplits) {
+                if (vm.phaseSplits.hasOwnProperty(phaseName)) {
+                    var phaseData = vm.phaseSplits[phaseName];
+
+                    phaseData.forEach(function(phase) {
+                        if (phase.visibility !== challengePhaseVisibility.public) {
+                            phase.showPrivate = true;
+                            vm.showPrivateIds.push(phase.id);
+                        }
+
+                        vm.isMultiMetricLeaderboardEnabled[phase.id] = phase.is_multi_metric_leaderboard;
+                        vm.phaseSplitLeaderboardSchema[phase.id] = phase.leaderboard_schema;
+                    });
+                }
+            }
+
+            utilities.hideLoader();
+        },
+        onError: function(response) {
+            var error = response.data;
+            utilities.storeData('emailError', error.detail);
+            $state.go('web.permission-denied');
+            utilities.hideLoader();
+        }
         };
 
         utilities.sendRequest(parameters);
