@@ -239,8 +239,10 @@ def start_job():
             )
             scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size)
             time.sleep(1)
+        except KeyError as e:
+            print(f"Error: Challenge data missing key. {e}")
         except Exception as e:
-            print(e)
+            print(f"An unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":
