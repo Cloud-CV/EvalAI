@@ -37,7 +37,7 @@ services:
       - django
     volumes:
       - .:/code
-    platform: linux/amd64
+ 
 
   worker_py3_8:
     env_file:
@@ -49,7 +49,7 @@ services:
       - django
     volumes:
       - .:/code
-    platform: linux/amd64
+  
 
   nodejs:
     hostname: nodejs
@@ -65,7 +65,7 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
-    platform: linux/amd64
+   
 
   statsd-exporter:
     hostname: statsd
