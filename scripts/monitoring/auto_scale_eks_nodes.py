@@ -57,12 +57,22 @@ def get_nodegroup_name(eks_client, cluster_name):
 
 def get_eks_meta(challenge, evalai_interface, aws_keys):
     # TODO: Check if eks_client should be a global thing. Clients must have an expiry/timeout.
-    eks_client = get_boto3_client("eks", aws_keys)
-    cluster_name = evalai_interface.get_aws_eks_cluster_details(
-        challenge["id"]
-    )["name"]
-    nodegroup_name = get_nodegroup_name(eks_client, cluster_name)
-    return eks_client, cluster_name, nodegroup_name
+    try:
+        # Create boto3 client with appropriate expiry/timeout (if necessary)
+        eks_client = get_boto3_client("eks", aws_keys)
+
+        cluster_name = evalai_interface.get_aws_eks_cluster_details(
+            challenge["id"]
+        )["name"]
+
+        nodegroup_name = get_nodegroup_name(eks_client, cluster_name)
+
+        return eks_client, cluster_name, nodegroup_name
+    except Exception as e:
+        print(
+            f"Error retrieving EKS cluster and node group details for challenge ID: {challenge['id']}. Title: {challenge['title']}. Error: {e}"
+        )
+        raise
 
 
 def get_scaling_config(eks_client, cluster_name, nodegroup_name):
