@@ -2816,7 +2816,7 @@
                         }
                         else if (error.description) {
                             var errorMessage = error.description[0];
-                            $rootScope.notify("error",'Description: ',errorMessage);
+                            $rootScope.notify("error",'Description: '+errorMessage);
                         }
                         // Default error handling
                         else {
