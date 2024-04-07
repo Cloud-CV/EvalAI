@@ -232,6 +232,7 @@
                 };
                 parameters.callback = {
                     onSuccess: function(response) {
+                        utilities.deleteData("userKey");
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
                             vm.setRefreshJWT();
@@ -246,6 +247,7 @@
                         }
                     },
                     onError: function(response) {
+                        utilities.deleteData("userKey");
                         if (response.status == 400) {
                             vm.isFormError = true;
                             var non_field_errors;
