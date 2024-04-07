@@ -2861,7 +2861,6 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
     except Exception:
         response_data = {"error": "There was an unexpected error."}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
