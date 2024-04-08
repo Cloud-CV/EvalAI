@@ -2830,11 +2830,18 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             - When participant_team has not participanted in challenge
             - When Challenge is not Docker based
     """
-    challenge_phase = get_challenge_phase_model(phase_pk)
+    try:
+        challenge_phase = get_challenge_phase_model(phase_pk)
+    except Exception:
+        return Response({"error": f"An error occurred while retrieving the challenge phase with ID {phase_pk}"}, status=status.HTTP_400_BAD_REQUEST)
+
     challenge = challenge_phase.challenge
-    participant_team = get_participant_team_of_user_for_a_challenge(
-        request.user, challenge.pk
-    )
+    try:
+        participant_team = get_participant_team_of_user_for_a_challenge(
+            request.user, challenge.pk
+        )
+    except Exception:
+        return Response({"error": "An error occurred while retrieving the participant team"}, status=status.HTTP_400_BAD_REQUEST)
     if not challenge.is_docker_based:
         response_data = {
             "error": "Sorry, this is not a docker based challenge."
@@ -2846,8 +2853,11 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             "error": "You have not participated in this challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     data = get_aws_credentials_for_submission(challenge, participant_team)
-    response_data = {"success": data}
+    if not data:
+        return Response({"error": f"An error occurred while retrieving the AWS credentials for challenge {challenge.id} and participant team {participant_team.id}"}, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {"success": data}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
