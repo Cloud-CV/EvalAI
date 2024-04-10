@@ -2830,24 +2830,33 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             - When participant_team has not participanted in challenge
             - When Challenge is not Docker based
     """
-    challenge_phase = get_challenge_phase_model(phase_pk)
-    challenge = challenge_phase.challenge
-    participant_team = get_participant_team_of_user_for_a_challenge(
-        request.user, challenge.pk
-    )
-    if not challenge.is_docker_based:
-        response_data = {
-            "error": "Sorry, this is not a docker based challenge."
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        logging.debug(f"Retrieving challenge phase for ID: {phase_pk}")
+        challenge_phase = get_challenge_phase_model(phase_pk)
+        logging.debug(f"Challenge phase retrieved: {challenge_phase}")
 
-    if participant_team is None:
-        response_data = {
-            "error": "You have not participated in this challenge."
-        }
+        challenge = challenge_phase.challenge
+
+        participant_team = get_participant_team_of_user_for_a_challenge(
+            request.user, challenge.pk
+        )
+        if not challenge.is_docker_based:
+            response_data = {
+                "error": "Sorry, this is not a docker based challenge."
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if participant_team is None:
+            response_data = {
+                "error": "You have not participated in this challenge."
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        data = get_aws_credentials_for_submission(challenge, participant_team)
+        response_data = {"success": data}
+        return Response(response_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        response_data = {"error": e}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    data = get_aws_credentials_for_submission(challenge, participant_team)
-    response_data = {"success": data}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
