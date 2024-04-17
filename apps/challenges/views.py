@@ -2855,7 +2855,7 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         data = get_aws_credentials_for_submission(challenge, participant_team)
         if not data:
-            return Response({"error": f"An error occurred while retrieving the AWS credentials for challenge {challenge.id} and participant team {participant_team.id}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"An error occurred while retrieving the AWS credentials for the challenge {challenge.id} and participant team {participant_team.id}"}, status=status.HTTP_400_BAD_REQUEST)
         response_data = {"success": data}
         return Response(response_data, status=status.HTTP_200_OK)
     except Exception:
