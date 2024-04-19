@@ -647,7 +647,7 @@ def run_submission(
     submission.save()
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
-    if submission_output:
+    if submission_output and successful_submission_flag:
         output = {}
         output["result"] = submission_output.get("result", "")
         submission.output = output
