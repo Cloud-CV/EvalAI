@@ -11,7 +11,7 @@ ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
 # Install Prerequisites
-RUN npm install -g bower gulp
+RUN npm install -g bower gulp gulp-cli
 RUN npm install phantomjs-prebuilt
 RUN npm link gulp
 RUN npm cache clean -f
