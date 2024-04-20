@@ -68,6 +68,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "job_name",
             "submission_metadata",
             "is_verified_by_host",
+            "isSubmissionCliType",
         )
 
     def to_representation(self, instance):
