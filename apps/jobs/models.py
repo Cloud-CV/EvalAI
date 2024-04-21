@@ -142,7 +142,7 @@ class Submission(TimeStampedModel):
     is_verified_by_host = models.BooleanField(default=False)
     
     #flag for submission type: UI(False) and CLI(True)
-    isSubmissionCliType = models.BooleanField(default=True)
+    from_cli = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}".format(self.id)
