@@ -7,7 +7,6 @@
 [![codecov](https://codecov.io/gh/Cloud-CV/EvalAI/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-CV/EvalAI)
 [![Coverage Status](https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg)](https://coveralls.io/github/Cloud-CV/EvalAI)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Requirements Status](https://requires.io/github/Cloud-CV/EvalAI/requirements.svg?branch=master)](https://requires.io/github/Cloud-CV/EvalAI/requirements/?branch=master)
 [![Code Climate](https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg)](https://codeclimate.com/github/Cloud-CV/EvalAI)
 [![Documentation Status](https://readthedocs.org/projects/markdown-guide/badge/?version=latest)](http://evalai.readthedocs.io/en/latest/)
 [![Twitter Follow](https://img.shields.io/twitter/follow/eval_ai?style=social)](https://twitter.com/eval_ai)
@@ -80,7 +79,7 @@ If you are using EvalAI for hosting challenges, please cite the following techni
 
 ## Team
 
-EvalAI is currently maintained by [Rishabh Jain](https://rishabhjain.xyz/), [Deshraj Yadav](http://deshraj.xyz/), and [Ram Ramrakhya](https://ram81.github.io/). A non-exhaustive list of other major contributors includes: [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](https://taranjeet.cc/), [Shiv Baran Singh](https://github.com/spyshiv), [Harsh Agarwal](https://dexter1691.github.io/), [Prithvijit Chattopadhyay](https://prithv1.github.io/), [Devi Parikh](https://www.cc.gatech.edu/~parikh/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
+EvalAI is currently maintained by [Rishabh Jain](https://rishabhjain.xyz/), [Gunjan Chhablani](https://gchhablani.github.io/) . A non-exhaustive list of other major contributors includes: [Deshraj Yadav](http://deshraj.xyz/), [Ram Ramrakhya](https://ram81.github.io/),[Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](https://taranjeet.cc/), [Shiv Baran Singh](https://github.com/spyshiv), [Harsh Agarwal](https://dexter1691.github.io/), [Prithvijit Chattopadhyay](https://prithv1.github.io/), [Devi Parikh](https://www.cc.gatech.edu/~parikh/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
 
 ## Contribution guidelines
 
