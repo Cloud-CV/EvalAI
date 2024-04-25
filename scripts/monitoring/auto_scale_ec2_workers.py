@@ -108,11 +108,32 @@ def create_evalai_interface(auth_token, evalai_endpoint):
     return evalai_interface
 
 
+def get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id):
+    try:
+        response = evalai_interface.make_request(
+            "/api/challenges/challenge/get_submission_metrics_by_pk/{}".format(challenge_id),
+            method="GET"
+        )
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print("Failed to fetch submission metrics for challenge {}. Status code: {}".format(challenge_id, response.status_code))
+            return None
+    except Exception as e:
+        print("Error fetching submission metrics for challenge {}: {}".format(challenge_id, e))
+        return None
+
 # Cron Job
 def start_job():
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
     response = evalai_interface.get_challenges()
-    metrics = evalai_interface.get_challenges_submission_metrics()
+    for challenge in response["results"]:
+        try:
+            challenge_id = challenge["id"]
+            metrics = get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id)
+        except Exception as e:
+            print("Error processing challenge {}: {}".format(challenge_id, e))
+            
     start_or_stop_workers_for_challenges(response, metrics, evalai_interface)
     next_page = response["next"]
     while next_page is not None:

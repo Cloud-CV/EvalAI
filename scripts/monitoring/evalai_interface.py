@@ -19,6 +19,7 @@ URLS = {
     "get_challenges": "/api/challenges/challenge/all/all/all",
     "get_submissions_for_challenge": "/api/jobs/challenge/{}/submission/",
     "get_challenges_submission_metrics": "/api/challenges/challenge/get_submission_metrics",
+    "get_challenges_submission_metrics_by_pk": "/api/challenges/challenge/get_submission_metrics_by_pk/{}",
     "manage_ec2_instance": "/api/challenges/{}/manage_ec2_instance/{}",
     "get_ec2_instance_details": "/api/challenges/{}/get_ec2_instance_details/",
 }
