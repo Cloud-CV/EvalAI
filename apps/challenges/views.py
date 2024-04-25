@@ -755,6 +755,30 @@ def get_all_challenges_submission_metrics(request):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
+def get_challenge_submission_metrics_by_pk(request, pk):
+    """
+    Returns the submission metrics for a given challenge by primary key and their phases
+    """
+    if not is_user_a_staff(request.user):
+        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    challenge = get_challenge_model(pk)
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    submission_metrics = {}
+
+    submission_statuses = [status[0] for status in Submission.STATUS_OPTIONS]
+
+    # Fetch challenge phases for the challenge
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
+    for submission_status in submission_statuses:
+        count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
+        submission_metrics[submission_status] = count
+
+    return Response(submission_metrics, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
 def get_featured_challenges(request):
     """
     Returns the list of featured challenges
