@@ -39,7 +39,7 @@ kubectl create configmap fluent-bit-cluster-info \
 --from-literal=read.tail='Off' \
 --from-literal=logs.region=$AWS_DEFAULT_REGION -n amazon-cloudwatch
 # Use FluentBit insights
-kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/fluent-bit/fluent-bit.yaml
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/k8s/1.3.9/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/fluent-bit/fluent-bit.yaml
 echo "### Container Insights Installed"
 
 # Setup EFS as persistent volume
