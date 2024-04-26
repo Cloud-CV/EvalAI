@@ -88,19 +88,27 @@ def scale_up_or_down_workers(challenge, challenge_metrics):
 
 
 # TODO: Factor in limits for the APIs
-def scale_up_or_down_workers_for_challenges(response, metrics):
+def scale_up_or_down_workers_for_challenge(challenge, challenge_metrics):
+    if ENV == "prod":
+        try:
+            if challenge["remote_evaluation"] is False:
+                scale_up_or_down_workers(challenge, challenge_metrics)
+        except Exception as e:
+            print(e)
+    else:
+        try:
+            scale_up_or_down_workers(challenge, challenge_metrics)
+        except Exception as e:
+            print(e)
+
+
+def scale_up_or_down_workers_for_challenges(response, evalai_interface):
     for challenge in response["results"]:
-        if ENV == "prod":
-            try:
-                if challenge["remote_evaluation"] is False:
-                    scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
-            except Exception as e:
-                print(e)
-        else:
-            try:
-                scale_up_or_down_workers(challenge, metrics[str(challenge["id"])])
-            except Exception as e:
-                print(e)
+        try:
+            challenge_metrics = evalai_interface.get_challenge_submission_metrics_by_pk(challenge["id"])
+            scale_up_or_down_workers_for_challenge(challenge, challenge_metrics)
+        except Exception as e:
+            print(e)
 
 
 def create_evalai_interface(auth_token, evalai_endpoint):
@@ -112,12 +120,11 @@ def create_evalai_interface(auth_token, evalai_endpoint):
 def start_job():
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
     response = evalai_interface.get_challenges()
-    metrics = evalai_interface.get_challenges_submission_metrics()
-    scale_up_or_down_workers_for_challenges(response, metrics)
+    scale_up_or_down_workers_for_challenges(response, evalai_interface)
     next_page = response["next"]
     while next_page is not None:
         response = evalai_interface.make_request(next_page, "GET")
-        scale_up_or_down_workers_for_challenges(response, metrics)
+        scale_up_or_down_workers_for_challenges(response, evalai_interface)
         next_page = response["next"]
 
 
