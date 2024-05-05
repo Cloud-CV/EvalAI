@@ -546,7 +546,7 @@ describe('Unit tests for challenge controller', function () {
             selectExistTeamSuccess = null;
             challengePhaseSuccess = null;
             challengePhaseSplitSuccess = true;
-
+        
             challengePhaseSplit = true;
             // get challenge phase split details response
             successResponse = [
@@ -563,10 +563,20 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'hideLoader');
             vm.isParticipated = true;
             vm = createController();
+            var response = {
+                data: successResponse
+            };
+            vm.onSuccess(response);
             expect(vm.phaseSplits).toEqual(successResponse);
-            for(var i = 0; i < successResponse.length; i++) {
-                if (successResponse[i].visibility != challengePhaseVisibility.public) {
-                    expect(vm.phaseSplits[i].showPrivate).toBeTruthy();
+            for (var phaseName in vm.phaseSplits) {
+                if (vm.phaseSplits.hasOwnProperty(phaseName)) {
+                    var phaseData = vm.phaseSplits[phaseName];
+        
+                    phaseData.forEach(function(phase) {
+                        if (phase.visibility !== challengePhaseVisibility.public) {
+                            expect(phase.showPrivate).toBeTruthy();
+                        }
+                    });
                 }
             }
             expect(utilities.hideLoader).toHaveBeenCalled();
