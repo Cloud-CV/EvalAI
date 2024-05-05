@@ -950,8 +950,7 @@
             if (Object.keys(vm.phaseSplits).length === 0) {
                 vm.isChallengeLeaderboardPrivate = true; 
             }
-
-            // Iterate through each phase
+            
             for (var phaseName in vm.phaseSplits) {
                 if (vm.phaseSplits.hasOwnProperty(phaseName)) {
                     var phaseData = vm.phaseSplits[phaseName];
