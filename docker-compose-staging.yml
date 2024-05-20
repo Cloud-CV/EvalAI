@@ -6,7 +6,7 @@ services:
       - "11211:11211"
 
   django:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend
     env_file:
       - docker/prod/docker_staging.env
     build:
@@ -22,7 +22,7 @@ services:
         awslogs-create-group: 'true'
 
   celery:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-celery
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-celery
     env_file:
       - docker/prod/docker_staging.env
     build:
@@ -38,7 +38,7 @@ services:
         awslogs-create-group: 'true'
 
   worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
@@ -46,7 +46,7 @@ services:
       - docker/prod/docker_staging.env
 
   worker_py3.8:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.8
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.8
     build:
       context: ./
       dockerfile: docker/prod/worker_py3.8/Dockerfile
@@ -54,7 +54,7 @@ services:
       - docker/prod/docker_staging.env
 
   nodejs:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend
     build:
       context: ./
       dockerfile: docker/prod/nodejs/Dockerfile
@@ -74,7 +74,7 @@ services:
         awslogs-create-group: 'true'
 
   remote-worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-remote-worker
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-remote-worker
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
@@ -83,7 +83,7 @@ services:
       - docker/prod/docker_remote_worker.env
 
   code-upload-worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-code-upload-worker
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-code-upload-worker
     env_file:
       - docker/prod/docker_code_upload_worker.env
     build:
@@ -137,7 +137,7 @@ services:
       - '9100:9100'
   
   nginx-ingress:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nginx-ingress
+    image: 238101178196.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nginx-ingress
     build:
       context: ./
       dockerfile: docker/prod/nginx-ingress/Dockerfile
