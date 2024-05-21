@@ -20,21 +20,6 @@ services:
         awslogs-group: django_staging
         awslogs-create-group: 'true'
 
-  celery:
-    env_file:
-      - docker/prod/docker_staging.env
-    build:
-      context: ./
-      dockerfile: docker/prod/celery/Dockerfile
-    depends_on:
-      - django
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-1
-        awslogs-group: celery_staging
-        awslogs-create-group: 'true'
-
   worker:
     build:
       context: ./
