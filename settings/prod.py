@@ -5,12 +5,11 @@ import raven
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["eval.ai"]
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
-CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = (
     "https://evalai.s3.amazonaws.com",
