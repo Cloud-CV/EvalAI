@@ -9,13 +9,9 @@ DEBUG = False
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
-CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS = ["*"]
 
-CORS_ORIGIN_WHITELIST = (
-    "https://evalai.s3.amazonaws.com",
-    "https://eval.ai",
-    "http://beta.eval.ai:9999",
-)
+CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
     "default": {
