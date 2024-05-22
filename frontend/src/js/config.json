@@ -1,7 +1,7 @@
 {
     "local": {
         "EnvironmentConfig": {
-            "API": "http://localhost:8000/api/"
+            "API": "http://ec2-54-226-87-127.compute-1.amazonaws.com:8000/api/"
         }
     },
     "staging": {
