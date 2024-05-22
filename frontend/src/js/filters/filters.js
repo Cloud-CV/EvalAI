@@ -35,4 +35,49 @@
         };
     }
 
+    angular.module('evalai')
+    .filter('customTitleFilter', customTitleFilter);
+
+    function customTitleFilter() {
+        return function(challenges, searchText) {
+          if (searchText === undefined) {
+            return challenges;
+          }
+          searchText = searchText.toString().toLowerCase();
+          var searchlist = searchText.split(" ");
+          return challenges.filter(function(challenge) {
+            return searchlist.some(function(term) {
+                return challenge.title.toLowerCase().indexOf(term) !== -1;
+              });
+            });
+        };
+      }
+
+    angular.module('evalai')
+    .filter('customDomainFilter', customDomainFilter);
+
+    function customDomainFilter() {
+        return function(challenges, selecteddomain) {
+            selecteddomain = selecteddomain.toString().toLowerCase();
+            if (selecteddomain === "all") {
+                return challenges.filter(function(challenge) {
+                    return challenge.domain_name !== null;
+                });
+            }
+            else if (selecteddomain === "none") {
+                return challenges.filter(function(challenge) {
+                    return challenge.domain_name === null;
+                });
+            }
+            return challenges.filter(function(challenge) {
+                if (selecteddomain === "") {
+                    return true;
+                }
+                if (challenge.domain_name !== null) {
+                    return challenge.domain_name.toLowerCase().indexOf(selecteddomain) !== -1;
+                }
+                });
+        };
+    }
+
 })();
