@@ -11,12 +11,12 @@ ALLOWED_HOSTS = ["*"]
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
+    "https://ec2-54-226-87-127.compute-1.amazonaws.com",
     "http://ec2-54-226-87-127.compute-1.amazonaws.com",
-    "*",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-        ' http://ec2-54-226-87-127.compute-1.amazonaws.com',
+        'http://ec2-54-226-87-127.compute-1.amazonaws.com',
     ]
 
 DATABASES = {
