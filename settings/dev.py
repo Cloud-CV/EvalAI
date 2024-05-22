@@ -15,6 +15,9 @@ CORS_ALLOWED_ORIGINS = [
     "*",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+        ' http://ec2-54-226-87-127.compute-1.amazonaws.com',
+    ]
 
 DATABASES = {
     "default": {
