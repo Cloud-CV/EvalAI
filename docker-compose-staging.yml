@@ -6,7 +6,6 @@ services:
       - "11211:11211"
 
   django:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${COMMIT_ID}
     env_file:
       - docker/prod/docker_staging.env
     build:
@@ -21,24 +20,7 @@ services:
         awslogs-group: django_staging
         awslogs-create-group: 'true'
 
-  celery:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-celery:${COMMIT_ID}
-    env_file:
-      - docker/prod/docker_staging.env
-    build:
-      context: ./
-      dockerfile: docker/prod/celery/Dockerfile
-    depends_on:
-      - django
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-1
-        awslogs-group: celery_staging
-        awslogs-create-group: 'true'
-
   worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
@@ -46,7 +28,6 @@ services:
       - docker/prod/docker_staging.env
 
   worker_py3.8:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker-py3.8:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/worker_py3.8/Dockerfile
@@ -54,7 +35,6 @@ services:
       - docker/prod/docker_staging.env
 
   nodejs:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/nodejs/Dockerfile
@@ -74,7 +54,6 @@ services:
         awslogs-create-group: 'true'
 
   remote-worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-remote-worker:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
@@ -83,7 +62,6 @@ services:
       - docker/prod/docker_remote_worker.env
 
   code-upload-worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-code-upload-worker:${COMMIT_ID}
     env_file:
       - docker/prod/docker_code_upload_worker.env
     build:
@@ -137,7 +115,6 @@ services:
       - '9100:9100'
   
   nginx-ingress:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nginx-ingress:${COMMIT_ID}
     build:
       context: ./
       dockerfile: docker/prod/nginx-ingress/Dockerfile
