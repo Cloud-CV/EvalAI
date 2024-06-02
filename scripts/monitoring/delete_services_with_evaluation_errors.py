@@ -2,9 +2,7 @@ import os
 import pytz
 import warnings
 
-from datetime import datetime
-from dateutil.parser import parse
-from auto_stop_workers import start_worker, stop_worker
+from auto_stop_workers import stop_worker
 from evalai_interface import EvalAI_Interface
 
 warnings.filterwarnings("ignore")
@@ -39,7 +37,7 @@ def scale_down_workers_for_challenges(evalai_interface, response):
     for challenge in response["results"]:
         try:
             # this is the most important line
-            if challenge["evaluation_module_error"] != '':
+            if challenge["evaluation_module_error"] != "":
                 num_workers = (
                     0
                     if challenge["workers"] is None
