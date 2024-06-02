@@ -1087,7 +1087,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         return e.response
 
 
-### Delete Resources
+# Delete Resources
 
 
 # detach policies and delete role
@@ -1150,30 +1150,19 @@ def delete_efs_resources(challenge_evaluation_cluster):
     # Step 1: Retrieve and delete all mount targets associated with the EFS
     try:
         mount_targets = efs.describe_mount_targets(FileSystemId=efs_id)
-        for mount in mount_targets["MountTargets"]:
+        for mount in mount_targets['MountTargets']:
             # Retrieve security groups for cleanup reference
-            security_groups = ec2.describe_network_interfaces(
-                NetworkInterfaceIds=[mount["NetworkInterfaceId"]]
-            )
-            sg_ids = {
-                sg["GroupId"]
-                for interface in security_groups["NetworkInterfaces"]
-                for sg in interface.get("Groups", [])
-            }
-
+            # security_groups = ec2.describe_network_interfaces(NetworkInterfaceIds=[mount['NetworkInterfaceId']])
+            # sg_ids = {sg['GroupId'] for interface in security_groups['NetworkInterfaces'] for sg in interface['Groups']}
+            
             # Delete the mount target
-            efs.delete_mount_target(MountTargetId=mount["MountTargetId"])
-            print(
-                f"Deleted mount target {mount['MountTargetId']} successfully."
-            )
-
-            # Delete security groups if no longer needed (optional, be cautious)
+            efs.delete_mount_target(MountTargetId=mount['MountTargetId'])
+            print(f"Deleted mount target {mount['MountTargetId']} successfully.")
+            
+            # Delete security groups if no longer needed
             # for sg_id in sg_ids:
-            #     try:
-            #         ec2.delete_security_group(GroupId=sg_id)
-            #         print(f"Deleted security group {sg_id} successfully.")
-            #     except Exception as e:
-            #         print(f"Failed to delete security group {sg_id}: {e}")
+            #     ec2.delete_security_group(GroupId=sg_id)
+            #     print(f"Deleted security group {sg_id} successfully.")
 
         # Confirm deletion of all mount targets
         retry_count = 0
