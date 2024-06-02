@@ -177,7 +177,10 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_SES_REGION_ENDPOINT = settings.AWS_SES_REGION_ENDPOINT
 
     if challenge.worker_image_url:
-        updated_settings = {**COMMON_SETTINGS_DICT, "WORKER_IMAGE": challenge.worker_image_url}
+        updated_settings = {
+            **COMMON_SETTINGS_DICT,
+            "WORKER_IMAGE": challenge.worker_image_url,
+        }
     else:
         updated_settings = COMMON_SETTINGS_DICT
 
@@ -486,7 +489,9 @@ def stop_ec2_instance(challenge):
     target_instance_id = challenge.ec2_instance_id
 
     ec2 = get_boto3_client("ec2", aws_keys)
-    status_response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
+    status_response = ec2.describe_instance_status(
+        InstanceIds=[target_instance_id]
+    )
 
     if status_response["InstanceStatuses"]:
         instance_status = status_response["InstanceStatuses"][0]
@@ -498,8 +503,12 @@ def stop_ec2_instance(challenge):
 
             if instance_state == "running":
                 try:
-                    response = ec2.stop_instances(InstanceIds=[target_instance_id])
-                    message = "Instance for challenge {} successfully stopped.".format(challenge.pk)
+                    response = ec2.stop_instances(
+                        InstanceIds=[target_instance_id]
+                    )
+                    message = "Instance for challenge {} successfully stopped.".format(
+                        challenge.pk
+                    )
                     return {
                         "response": response,
                         "message": message,
@@ -510,17 +519,23 @@ def stop_ec2_instance(challenge):
                         "error": e.response,
                     }
             else:
-                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(challenge.pk)
+                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(
+                    challenge.pk
+                )
                 return {
                     "error": message,
                 }
         else:
-            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(challenge.pk)
+            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(
+                challenge.pk
+            )
             return {
                 "error": message,
             }
     else:
-        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(challenge.pk)
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
+            challenge.pk
+        )
         return {
             "error": message,
         }
@@ -583,8 +598,10 @@ def start_ec2_instance(challenge):
         if instance["State"]["Name"] == "stopped":
             try:
                 response = ec2.start_instances(InstanceIds=[instance_id])
-                message = "Instance for challenge {} successfully started.".format(
-                    challenge.pk
+                message = (
+                    "Instance for challenge {} successfully started.".format(
+                        challenge.pk
+                    )
                 )
                 return {
                     "response": response,
@@ -675,7 +692,12 @@ def terminate_ec2_instance(challenge):
         }
 
 
-def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, worker_image_url=None):
+def create_ec2_instance(
+    challenge,
+    ec2_storage=None,
+    worker_instance_type=None,
+    worker_image_url=None,
+):
     """
     Create the EC2 instance associated with a challenge.
 
@@ -690,12 +712,14 @@ def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, 
     if target_instance_id:
         return {
             "error": "Challenge {} has existing EC2 instance ID."
-            " Please ensure there is no existing associated instance before trying to create one.".format(challenge.pk)
+            " Please ensure there is no existing associated instance before trying to create one.".format(
+                challenge.pk
+            )
         }
 
     ec2 = get_boto3_client("ec2", aws_keys)
 
-    with open('/code/scripts/deployment/deploy_ec2_worker.sh') as f:
+    with open("/code/scripts/deployment/deploy_ec2_worker.sh") as f:
         ec2_worker_script = f.read()
 
     if ec2_storage:
@@ -707,7 +731,11 @@ def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, 
     if worker_image_url:
         challenge.worker_image_url = worker_image_url
     else:
-        challenge.worker_image_url = "" if challenge.worker_image_url is None else challenge.worker_image_url
+        challenge.worker_image_url = (
+            ""
+            if challenge.worker_image_url is None
+            else challenge.worker_image_url
+        )
 
     variables = {
         "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
@@ -723,22 +751,24 @@ def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, 
     for key, value in variables.items():
         ec2_worker_script = ec2_worker_script.replace("${" + key + "}", value)
 
-    instance_name = "Worker-Instance-{}-{}".format(settings.ENVIRONMENT, challenge.pk)
+    instance_name = "Worker-Instance-{}-{}".format(
+        settings.ENVIRONMENT, challenge.pk
+    )
     blockDeviceMappings = [
         {
-            'DeviceName': '/dev/sda1',
-            'Ebs': {
-                'DeleteOnTermination': True,
-                'VolumeSize': challenge.ec2_storage,  # TODO: Make this customizable
-                'VolumeType': 'gp2'
-            }
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+                "DeleteOnTermination": True,
+                "VolumeSize": challenge.ec2_storage,  # TODO: Make this customizable
+                "VolumeType": "gp2",
+            },
         },
     ]
 
     try:
         response = ec2.run_instances(
             BlockDeviceMappings=blockDeviceMappings,
-            ImageId='ami-0747bdcabd34c712a',  # TODO: Make this customizable
+            ImageId="ami-0747bdcabd34c712a",  # TODO: Make this customizable
             InstanceType=challenge.worker_instance_type,
             MinCount=1,
             MaxCount=1,
@@ -755,7 +785,7 @@ def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, 
             UserData=ec2_worker_script,
         )
         challenge.uses_ec2_worker = True
-        challenge.ec2_instance_id = response['Instances'][0]['InstanceId']
+        challenge.ec2_instance_id = response["Instances"][0]["InstanceId"]
         challenge.save()
         message = "Instance for challenge {} successfully created.".format(
             challenge.pk
@@ -784,12 +814,10 @@ def update_sqs_retention_period(challenge):
     sqs_retention_period = str(challenge.sqs_retention_period)
     try:
         sqs = get_boto3_client("sqs", aws_keys)
-        queue_url = sqs.get_queue_url(QueueName=challenge.queue)['QueueUrl']
+        queue_url = sqs.get_queue_url(QueueName=challenge.queue)["QueueUrl"]
         response = sqs.set_queue_attributes(
             QueueUrl=queue_url,
-            Attributes={
-                'MessageRetentionPeriod': sqs_retention_period
-            }
+            Attributes={"MessageRetentionPeriod": sqs_retention_period},
         )
         return {"message": response}
     except Exception as e:
@@ -972,7 +1000,10 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
     client = get_boto3_client("ecs", aws_keys)
 
-    if challenge.worker_cpu_cores == worker_cpu_cores and challenge.worker_memory == worker_memory:
+    if (
+        challenge.worker_cpu_cores == worker_cpu_cores
+        and challenge.worker_memory == worker_memory
+    ):
         return {
             "Success": True,
             "Message": "Worker not modified",
@@ -992,10 +1023,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         response = client.deregister_task_definition(
             taskDefinition=challenge.task_def_arn
         )
-        if (
-                response["ResponseMetadata"]["HTTPStatusCode"]
-                == HTTPStatus.OK
-        ):
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.task_def_arn = None
             challenge.save()
     except ClientError as e:
@@ -1005,7 +1033,10 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         return e.response
 
     if challenge.worker_image_url:
-        updated_settings = {**COMMON_SETTINGS_DICT, "WORKER_IMAGE": challenge.worker_image_url}
+        updated_settings = {
+            **COMMON_SETTINGS_DICT,
+            "WORKER_IMAGE": challenge.worker_image_url,
+        }
     else:
         updated_settings = COMMON_SETTINGS_DICT
 
@@ -1031,15 +1062,10 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
     try:
         response = client.register_task_definition(**task_def)
-        if (
-                response["ResponseMetadata"]["HTTPStatusCode"]
-                == HTTPStatus.OK
-        ):
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.worker_cpu_cores = worker_cpu_cores
             challenge.worker_memory = worker_memory
-            task_def_arn = response["taskDefinition"][
-                "taskDefinitionArn"
-            ]
+            task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
 
             challenge.task_def_arn = task_def_arn
             challenge.save()
@@ -1059,6 +1085,281 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
     except ClientError as e:
         logger.exception(e)
         return e.response
+
+
+### Delete Resources
+
+
+# detach policies and delete role
+def detach_policies_and_delete_role(challenge_evaluation_cluster):
+    # Initialize IAM client
+    iam = get_boto3_client("iam", aws_keys)
+
+    # Retrieve the role ARN
+    eks_arn_role = challenge_evaluation_cluster.eks_arn_role
+    node_group_arn_role = challenge_evaluation_cluster.node_group_arn_role
+
+    for role_arn in [eks_arn_role, node_group_arn_role]:
+        # Extract role name from ARN
+        role_name = role_arn.split("/")[-1]
+
+        # Detach all managed policies
+        try:
+            # List attached policies
+            attached_policies = iam.list_attached_role_policies(
+                RoleName=role_name
+            )
+            for policy in attached_policies["AttachedPolicies"]:
+                iam.detach_role_policy(
+                    RoleName=role_name, PolicyArn=policy["PolicyArn"]
+                )
+            print("All managed policies detached successfully.")
+        except Exception as e:
+            print(f"Failed to detach managed policies: {e}")
+            return  # Return early if unable to detach policies
+
+        # Delete all inline policies
+        try:
+            # List inline policies
+            inline_policies = iam.list_role_policies(RoleName=role_name)
+            for policy_name in inline_policies["PolicyNames"]:
+                iam.delete_role_policy(
+                    RoleName=role_name, PolicyName=policy_name
+                )
+            print("All inline policies deleted successfully.")
+        except Exception as e:
+            print(f"Failed to delete inline policies: {e}")
+            return  # Return early if unable to delete policies
+
+        # Delete the role
+        try:
+            iam.delete_role(RoleName=role_name)
+            print("IAM role deleted successfully.")
+        except Exception as e:
+            print(f"Failed to delete IAM role: {e}")
+
+
+# delete efs resources
+def delete_efs_resources(challenge_evaluation_cluster):
+    efs = get_boto3_client("efs", aws_keys)
+    ec2 = get_boto3_client("ec2", aws_keys)
+
+    # Retrieve efs_id
+    efs_id = challenge_evaluation_cluster.efs_id
+
+    # Step 1: Retrieve and delete all mount targets associated with the EFS
+    try:
+        mount_targets = efs.describe_mount_targets(FileSystemId=efs_id)
+        for mount in mount_targets["MountTargets"]:
+            # Retrieve security groups for cleanup reference
+            security_groups = ec2.describe_network_interfaces(
+                NetworkInterfaceIds=[mount["NetworkInterfaceId"]]
+            )
+            sg_ids = {
+                sg["GroupId"]
+                for interface in security_groups["NetworkInterfaces"]
+                for sg in interface.get("Groups", [])
+            }
+
+            # Delete the mount target
+            efs.delete_mount_target(MountTargetId=mount["MountTargetId"])
+            print(
+                f"Deleted mount target {mount['MountTargetId']} successfully."
+            )
+
+            # Delete security groups if no longer needed (optional, be cautious)
+            # for sg_id in sg_ids:
+            #     try:
+            #         ec2.delete_security_group(GroupId=sg_id)
+            #         print(f"Deleted security group {sg_id} successfully.")
+            #     except Exception as e:
+            #         print(f"Failed to delete security group {sg_id}: {e}")
+
+        # Confirm deletion of all mount targets
+        retry_count = 0
+        max_retries = 10
+        while retry_count < max_retries:
+            existing_mounts = efs.describe_mount_targets(FileSystemId=efs_id)
+            if not existing_mounts["MountTargets"]:
+                print("All mount targets deleted successfully.")
+                break
+            else:
+                print("Waiting for mount targets to be deleted...")
+                retry_count += 1
+    except Exception as e:
+        print(
+            f"Failed to delete mount targets or retrieve security groups: {e}"
+        )
+        return  # Return early if unable to proceed
+
+    # Step 2: Delete the EFS file system
+    try:
+        efs.delete_file_system(FileSystemId=efs_id)
+        print("EFS file system deleted successfully.")
+    except Exception as e:
+        print(f"Failed to delete EFS file system: {e}")
+
+
+# delete eks resource
+def delete_eks_resources(challenge_evaluation_cluster):
+    eks = get_boto3_client("eks", aws_keys)
+
+    # get cluster name
+    cluster_name = challenge_evaluation_cluster.name
+    # Step 1: Delete EKS Node Groups
+    try:
+        node_groups = eks.list_nodegroups(clusterName=cluster_name)[
+            "nodegroups"
+        ]
+        for nodegroup in node_groups:
+            eks.delete_nodegroup(
+                clusterName=cluster_name, nodegroupName=nodegroup
+            )
+            print(f"Initiated deletion of node group {nodegroup}")
+            eks.get_waiter("nodegroup_deleted").wait(
+                clusterName=cluster_name, nodegroupName=nodegroup
+            )
+            print(f"Node group {nodegroup} deleted successfully.")
+    except Exception as e:
+        print(f"Error deleting node groups: {e}")
+
+    # Step 2: Delete the EKS Cluster
+    try:
+        eks.delete_cluster(name=cluster_name)
+        eks.get_waiter("cluster_deleted").wait(name=cluster_name)
+        print(f"EKS cluster {cluster_name} deleted successfully.")
+    except Exception as e:
+        print(f"Error deleting EKS cluster: {e}")
+
+
+# delete VPC resources
+def delete_vpc_resources(challenge_evaluation_cluster):
+
+    # get the vpc_id
+    vpc_id = challenge_evaluation_cluster.vpc_id
+
+    ec2 = get_boto3_client("ec2", aws_keys)
+    ec2_vpc = ec2.Vpc(vpc_id)
+
+    try:
+        # Disassociate and release Elastic IPs
+        addresses = ec2.describe_addresses(
+            Filters=[{"Name": "domain", "Values": ["vpc"]}]
+        )
+        for address in addresses["Addresses"]:
+            if "AssociationId" in address:
+                print(
+                    f'Disassociating and releasing Elastic IP: {address["PublicIp"]}'
+                )
+                ec2.disassociate_address(
+                    AssociationId=address["AssociationId"]
+                )
+            ec2.release_address(AllocationId=address["AllocationId"])
+
+        # Detach and delete all gateways attached to the VPC
+        for gw in ec2_vpc.internet_gateways.all():
+            print(f"Detaching and deleting internet gateway: {gw.id}")
+            gw.detach_from_vpc(VpcId=vpc_id)
+            gw.delete()
+
+        # Delete NAT Gateways
+        nat_gateways = ec2.describe_nat_gateways(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )["NatGateways"]
+        for nat_gateway in nat_gateways:
+            print(f'Deleting NAT Gateway: {nat_gateway["NatGatewayId"]}')
+            ec2.delete_nat_gateway(NatGatewayId=nat_gateway["NatGatewayId"])
+
+        # Terminate any instances
+        for subnet in ec2_vpc.subnets.all():
+            for instance in subnet.instances.all():
+                print(f"Terminating instance: {instance.id}")
+                instance.terminate()
+                instance.wait_until_terminated()
+
+        # Delete any network interfaces
+        for eni in ec2.describe_network_interfaces(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )["NetworkInterfaces"]:
+            if eni["Status"] == "in-use":
+                print(
+                    f'Detaching network interface: {eni["NetworkInterfaceId"]}'
+                )
+                ec2.detach_network_interface(
+                    AttachmentId=eni["Attachment"]["AttachmentId"]
+                )
+            print(f'Deleting network interface: {eni["NetworkInterfaceId"]}')
+            ec2.delete_network_interface(
+                NetworkInterfaceId=eni["NetworkInterfaceId"]
+            )
+
+        # Delete any load balancers
+        elb = get_boto3_client("elb", aws_keys)
+        elbv2 = get_boto3_client("elbv2", aws_keys)
+
+        for lb in elb.describe_load_balancers()["LoadBalancerDescriptions"]:
+            if lb["VPCId"] == vpc_id:
+                print(f'Deleting load balancer: {lb["LoadBalancerName"]}')
+                elb.delete_load_balancer(
+                    LoadBalancerName=lb["LoadBalancerName"]
+                )
+
+        for lb in elbv2.describe_load_balancers()["LoadBalancers"]:
+            if lb["VpcId"] == vpc_id:
+                print(f'Deleting load balancer: {lb["LoadBalancerArn"]}')
+                elbv2.delete_load_balancer(
+                    LoadBalancerArn=lb["LoadBalancerArn"]
+                )
+
+        # Delete security group rules and then the security groups
+        for sg in ec2_vpc.security_groups.all():
+            if sg.group_name != "default":
+                print(f"Deleting security group: {sg.id}")
+                if sg.ip_permissions:
+                    sg.revoke_ingress(IpPermissions=sg.ip_permissions)
+                if sg.ip_permissions_egress:
+                    sg.revoke_egress(IpPermissions=sg.ip_permissions_egress)
+                sg.delete()
+
+        # Delete subnets
+        for subnet in ec2_vpc.subnets.all():
+            print(f"Deleting subnet: {subnet.id}")
+            subnet.delete()
+
+        # Delete route tables
+        for rt in ec2_vpc.route_tables.all():
+            if not rt.associations:  # Ignore the main route table
+                print(f"Deleting route table: {rt.id}")
+                rt.delete()
+            else:
+                for assoc in rt.associations:
+                    if (
+                        not assoc.main
+                    ):  # Ignore the main route table association
+                        print(
+                            f"Disassociating route table: {rt.id} from subnet: {assoc.subnet_id}"
+                        )
+                        assoc.delete()
+
+        # Delete network acls
+        for acl in ec2_vpc.network_acls.all():
+            if not acl.is_default:
+                print(f"Deleting network ACL: {acl.id}")
+                acl.delete()
+
+        # Delete VPC endpoints
+        for ep in ec2.describe_vpc_endpoints(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )["VpcEndpoints"]:
+            print(f'Deleting VPC endpoint: {ep["VpcEndpointId"]}')
+            ec2.delete_vpc_endpoints(VpcEndpointIds=[ep["VpcEndpointId"]])
+
+        # Finally, delete the VPC
+        print(f"Deleting VPC: {vpc_id}")
+        ec2_vpc.delete()
+
+    except ClientError as e:
+        print(f"Error: {e}")
 
 
 def delete_workers(queryset):
@@ -1089,6 +1390,8 @@ def delete_workers(queryset):
     failures = []
     for challenge in queryset:
         if challenge.workers is not None:
+
+            # delete the ECS service
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -1099,6 +1402,64 @@ def delete_workers(queryset):
                 )
                 continue
             count += 1
+
+            # get Challenge Evaluation Cluster
+            from .models import ChallengeEvaluationCluster
+
+            try:
+                challene_evaluation_cluster = (
+                    ChallengeEvaluationCluster.objects.get(challenge=challenge)
+                )
+            except ClientError as e:
+                logger.exception(e)
+                return e.response
+
+            # delete IAM role
+            response = detach_policies_and_delete_role(
+                challene_evaluation_cluster
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
+            # delete EFS resources
+            response = delete_efs_resources(challenge)
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
+            # delete EKS resources
+            response = delete_eks_resources(challenge)
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
+            # delete VPC resources
+            response = delete_vpc_resources(challenge)
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
             log_group_name = get_log_group_name(challenge.pk)
             delete_log_group(log_group_name)
         else:
@@ -1269,7 +1630,7 @@ def get_logs_from_cloudwatch(
                 startTime=start_time,
                 endTime=end_time,
                 filterPattern=pattern,
-                limit=limit
+                limit=limit,
             )
             for event in response["events"]:
                 logs.append(event["message"])
@@ -1282,7 +1643,7 @@ def get_logs_from_cloudwatch(
                     endTime=end_time,
                     filterPattern=pattern,
                     limit=limit,
-                    nextToken=nextToken
+                    nextToken=nextToken,
                 )
                 nextToken = response.get("nextToken", None)
                 for event in response["events"]:
@@ -1783,7 +2144,11 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
     challenge = instance
     challenge._original_approved_by_admin = curr
 
-    if not challenge.is_docker_based and not challenge.uses_ec2_worker and challenge.remote_evaluation is False:
+    if (
+        not challenge.is_docker_based
+        and not challenge.uses_ec2_worker
+        and challenge.remote_evaluation is False
+    ):
         if curr and not prev:
             if not challenge.workers:
                 response = start_workers([challenge])
