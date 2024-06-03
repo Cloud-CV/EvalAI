@@ -1061,7 +1061,267 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         return e.response
 
 
+def detach_policies_and_delete_role(challenge):
+    # Initialize IAM client
+    iam = get_boto3_client("iam", aws_keys)
+
+    # get challenge cluster evaluation role arn
+    eks_arn_role = challenge.eks_arn_role
+    node_group_arn_role = challenge.node_group_arn_role
+
+    for role_arn in [eks_arn_role, node_group_arn_role]:
+
+        # Extract role name from ARN
+        role_name = role_arn.split("/")[-1]
+
+        # Detach all managed policies
+        try:
+            # List attached policies
+            attached_policies = iam.list_attached_role_policies(
+                RoleName=role_name
+            )
+            for policy in attached_policies["AttachedPolicies"]:
+                iam.detach_role_policy(
+                    RoleName=role_name, PolicyArn=policy["PolicyArn"]
+                )
+            print("All managed policies detached successfully.")
+        except Exception as e:
+            print(f"Failed to detach managed policies: {e}")
+            return  # Return early if unable to detach policies
+
+        # Delete all inline policies
+        try:
+            # List inline policies
+            inline_policies = iam.list_role_policies(RoleName=role_name)
+            for policy_name in inline_policies["PolicyNames"]:
+                iam.delete_role_policy(
+                    RoleName=role_name, PolicyName=policy_name
+                )
+            print("All inline policies deleted successfully.")
+        except Exception as e:
+            print(f"Failed to delete inline policies: {e}")
+            return  # Return early if unable to delete policies
+
+        # Delete the role
+        try:
+            iam.delete_role(RoleName=role_name)
+            print("IAM role deleted successfully.")
+        except Exception as e:
+            print(f"Failed to delete IAM role: {e}")
+
+
+# Delete the EFS
+def delete_efs_resources(challenge):
+
+    # Initialize EFS client
+    efs = get_boto3_client("efs", aws_keys)
+
+    # get challenge cluster evaluation efs id
+    efs_id = challenge.efs_id
+
+    # Step 1: Retrieve and delete all mount targets associated with the EFS
+    try:
+        mount_targets = efs.describe_mount_targets(FileSystemId=efs_id)
+        for mount in mount_targets["MountTargets"]:
+            # Retrieve security groups for cleanup reference
+            # security_groups = ec2.describe_network_interfaces(NetworkInterfaceIds=[mount['NetworkInterfaceId']])
+            # sg_ids = {sg['GroupId'] for interface in security_groups['NetworkInterfaces'] for sg in interface['Groups']}
+
+            # Delete the mount target
+            efs.delete_mount_target(MountTargetId=mount["MountTargetId"])
+            print(
+                f"Deleted mount target {mount['MountTargetId']} successfully."
+            )
+
+            # Delete security groups if no longer needed
+            # for sg_id in sg_ids:
+            #     ec2.delete_security_group(GroupId=sg_id)
+            #     print(f"Deleted security group {sg_id} successfully.")
+
+        # Confirm deletion of all mount targets
+        while True:
+            existing_mounts = efs.describe_mount_targets(FileSystemId=efs_id)
+            if not existing_mounts["MountTargets"]:
+                print("All mount targets deleted successfully.")
+                break
+            else:
+                print("Waiting for mount targets to be deleted...")
+    except Exception as e:
+        print(
+            f"Failed to delete mount targets or retrieve security groups: {e}"
+        )
+        return  # Return early if unable to proceed
+
+    # Step 2: Delete the EFS file system
+    try:
+        efs.delete_file_system(FileSystemId=efs_id)
+        print("EFS file system deleted successfully.")
+    except Exception as e:
+        print(f"Failed to delete EFS file system: {e}")
+
+
+def delete_eks_resources(challenge):
+
+    # Initialize EKS client
+    eks = get_boto3_client("eks", aws_keys)
+
+    # get challenge cluster evaluation cluster name
+    cluster_name = challenge.name
+    # Step 1: Delete EKS Node Groups
+    try:
+        node_groups = eks.list_nodegroups(clusterName=cluster_name)[
+            "nodegroups"
+        ]
+        for nodegroup in node_groups:
+            eks.delete_nodegroup(
+                clusterName=cluster_name, nodegroupName=nodegroup
+            )
+            print(f"Initiated deletion of node group {nodegroup}")
+            eks.get_waiter("nodegroup_deleted").wait(
+                clusterName=cluster_name, nodegroupName=nodegroup
+            )
+            print(f"Node group {nodegroup} deleted successfully.")
+    except Exception as e:
+        print(f"Error deleting node groups: {e}")
+
+    # Step 2: Delete the EKS Cluster
+    try:
+        eks.delete_cluster(name=cluster_name)
+        eks.get_waiter("cluster_deleted").wait(name=cluster_name)
+        print(f"EKS cluster {cluster_name} deleted successfully.")
+    except Exception as e:
+        print(f"Error deleting EKS cluster: {e}")
+
+
+def delete_vpc_resources(vpc_id):
+    # Initialize EC2 client
+    ec2 = get_boto3_client("ec2", aws_keys)
+    ec2_vpc = ec2.Vpc(vpc_id)
+
+    try:
+        # Disassociate and release Elastic IPs
+        addresses = ec2.describe_addresses(
+            Filters=[{"Name": "domain", "Values": ["vpc"]}]
+        )
+        for address in addresses["Addresses"]:
+            if "AssociationId" in address:
+                print(
+                    f'Disassociating and releasing Elastic IP: {address["PublicIp"]}'
+                )
+                ec2.disassociate_address(
+                    AssociationId=address["AssociationId"]
+                )
+            ec2.release_address(AllocationId=address["AllocationId"])
+
+        # Detach and delete all gateways attached to the VPC
+        for gw in ec2_vpc.internet_gateways.all():
+            print(f"Detaching and deleting internet gateway: {gw.id}")
+            gw.detach_from_vpc(VpcId=vpc_id)
+            gw.delete()
+
+        # Delete NAT Gateways
+        nat_gateways = ec2.describe_nat_gateways(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )["NatGateways"]
+        for nat_gateway in nat_gateways:
+            print(f'Deleting NAT Gateway: {nat_gateway["NatGatewayId"]}')
+            ec2.delete_nat_gateway(NatGatewayId=nat_gateway["NatGatewayId"])
+
+        # Terminate any instances
+        for subnet in ec2_vpc.subnets.all():
+            for instance in subnet.instances.all():
+                print(f"Terminating instance: {instance.id}")
+                instance.terminate()
+                instance.wait_until_terminated()
+
+        # Delete any network interfaces
+        for eni in ec2.describe_network_interfaces(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )["NetworkInterfaces"]:
+            if eni["Status"] == "in-use":
+                print(
+                    f'Detaching network interface: {eni["NetworkInterfaceId"]}'
+                )
+                ec2.detach_network_interface(
+                    AttachmentId=eni["Attachment"]["AttachmentId"]
+                )
+            print(f'Deleting network interface: {eni["NetworkInterfaceId"]}')
+            ec2.delete_network_interface(
+                NetworkInterfaceId=eni["NetworkInterfaceId"]
+            )
+
+        # Delete any load balancers
+        elb = get_boto3_client("elb", aws_keys)
+        elbv2 = get_boto3_client("elbv2", aws_keys)
+
+        for lb in elb.describe_load_balancers()["LoadBalancerDescriptions"]:
+            if lb["VPCId"] == vpc_id:
+                print(f'Deleting load balancer: {lb["LoadBalancerName"]}')
+                elb.delete_load_balancer(
+                    LoadBalancerName=lb["LoadBalancerName"]
+                )
+
+        for lb in elbv2.describe_load_balancers()["LoadBalancers"]:
+            if lb["VpcId"] == vpc_id:
+                print(f'Deleting load balancer: {lb["LoadBalancerArn"]}')
+                elbv2.delete_load_balancer(
+                    LoadBalancerArn=lb["LoadBalancerArn"]
+                )
+
+        # Delete security group rules and then the security groups
+        for sg in ec2_vpc.security_groups.all():
+            if sg.group_name != "default":
+                print(f"Deleting security group: {sg.id}")
+                if sg.ip_permissions:
+                    sg.revoke_ingress(IpPermissions=sg.ip_permissions)
+                if sg.ip_permissions_egress:
+                    sg.revoke_egress(IpPermissions=sg.ip_permissions_egress)
+                sg.delete()
+
+        # Delete subnets
+        for subnet in ec2_vpc.subnets.all():
+            print(f"Deleting subnet: {subnet.id}")
+            subnet.delete()
+
+        # Delete route tables
+        for rt in ec2_vpc.route_tables.all():
+            if not rt.associations:  # Ignore the main route table
+                print(f"Deleting route table: {rt.id}")
+                rt.delete()
+            else:
+                for assoc in rt.associations:
+                    if (
+                        not assoc.main
+                    ):  # Ignore the main route table association
+                        print(
+                            f"Disassociating route table: {rt.id} from subnet: {assoc.subnet_id}"
+                        )
+                        assoc.delete()
+
+        # Delete network acls
+        for acl in ec2_vpc.network_acls.all():
+            if not acl.is_default:
+                print(f"Deleting network ACL: {acl.id}")
+                acl.delete()
+
+        # Delete VPC endpoints
+        for ep in ec2.describe_vpc_endpoints(
+            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+        )["VpcEndpoints"]:
+            print(f'Deleting VPC endpoint: {ep["VpcEndpointId"]}')
+            ec2.delete_vpc_endpoints(VpcEndpointIds=[ep["VpcEndpointId"]])
+
+        # Finally, delete the VPC
+        print(f"Deleting VPC: {vpc_id}")
+        ec2_vpc.delete()
+
+    except ClientError as e:
+        print(f"Error: {e}")
+
+
 def delete_workers(queryset):
+    from .models import ChallengeEvaluationCluster
+
     """
     The function called by the admin action method to delete all the selected workers.
 
@@ -1089,6 +1349,13 @@ def delete_workers(queryset):
     failures = []
     for challenge in queryset:
         if challenge.workers is not None:
+
+            # get the ChallengeClusterEvaluation
+            challenge_cluster_evaluation = (
+                ChallengeEvaluationCluster.objects.get(challenge=challenge)
+            )
+
+            # Delete the ECS service
             response = delete_service_by_challenge_pk(challenge=challenge)
             if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
@@ -1098,6 +1365,57 @@ def delete_workers(queryset):
                     }
                 )
                 continue
+
+            # Delete the IAM role
+            response = detach_policies_and_delete_role(
+                challenge_cluster_evaluation
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
+            # Delete EFS
+            response = delete_efs_resources(
+                challenge_cluster_evaluation.efs_id
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
+            # Delete EKS cluster
+            response = delete_eks_resources(challenge_cluster_evaluation)
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
+            # Delete the VPC
+            response = delete_vpc_resources(
+                challenge_cluster_evaluation.vpc_id
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+                continue
+
             count += 1
             log_group_name = get_log_group_name(challenge.pk)
             delete_log_group(log_group_name)
