@@ -105,6 +105,16 @@ def scale_up_or_down_workers_for_challenge(challenge, challenge_metrics):
 def scale_up_or_down_workers_for_challenges(response, evalai_interface):
     for challenge in response["results"]:
         try:
+            # Extract the evaluation_module_error from the challenge
+            evaluation_module_error = challenge.get("evaluation_module_error", "")
+            if evaluation_module_error != "":
+                print(
+                    "Evaluation Module Error for Challenge ID: {}, Title: {}. Skipping.".format(
+                        challenge["id"], challenge["title"]
+                    )
+                )
+                continue
+
             challenge_metrics = evalai_interface.get_challenge_submission_metrics_by_pk(challenge["id"])
             scale_up_or_down_workers_for_challenge(challenge, challenge_metrics)
         except Exception as e:
