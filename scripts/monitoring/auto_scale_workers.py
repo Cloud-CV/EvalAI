@@ -109,7 +109,7 @@ def scale_up_or_down_workers_for_challenges(response, evalai_interface):
             evaluation_module_error = challenge.get("evaluation_module_error", "")
             if evaluation_module_error != "":
                 print(
-                    "Evaluation Module Error for Challenge ID: {}, Title: {}. Skipping.".format(
+                    "Evaluation Module Error for Challenge ID: {}, Title: {}. Skip scaling of workers.".format(
                         challenge["id"], challenge["title"]
                     )
                 )
