@@ -1060,6 +1060,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         logger.exception(e)
         return e.response
 
+
 def detach_policies_and_delete_role(challenge):
     iam = get_boto3_client("iam", aws_keys)
 
@@ -1081,7 +1082,7 @@ def detach_policies_and_delete_role(challenge):
             print("All managed policies detached successfully.")
         except Exception as e:
             print(f"Failed to detach managed policies: {e}")
-            return 
+            return
 
         try:
             inline_policies = iam.list_role_policies(RoleName=role_name)
@@ -1092,7 +1093,7 @@ def detach_policies_and_delete_role(challenge):
             print("All inline policies deleted successfully.")
         except Exception as e:
             print(f"Failed to delete inline policies: {e}")
-            return 
+            return
 
         try:
             iam.delete_role(RoleName=role_name)
@@ -1137,7 +1138,7 @@ def delete_efs_resources(challenge):
         print(
             f"Failed to delete mount targets or retrieve security groups: {e}"
         )
-        return 
+        return
 
     try:
         efs.delete_file_system(FileSystemId=efs_id)
@@ -1287,11 +1288,14 @@ def delete_vpc_resources(vpc_id):
     except ClientError as e:
         print(f"Error: {e}")
 
+
 def delete_code_upload_challenge_infra_by_challenge_pk(challenge):
     from .models import ChallengeEvaluationCluster
-    
-    challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(challenge=challenge)
-    
+
+    challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge
+    )
+
     errors = {
         "delete_iam_role_response": None,
         "delete_efs_resources_response": None,
@@ -1299,29 +1303,37 @@ def delete_code_upload_challenge_infra_by_challenge_pk(challenge):
         "delete_vpc_resources_response": None,
     }
 
-    delete_iam_role_response = detach_policies_and_delete_role(challenge_cluster_evaluation)
+    delete_iam_role_response = detach_policies_and_delete_role(
+        challenge_cluster_evaluation
+    )
     errors["delete_iam_role_response"] = delete_iam_role_response
 
-    delete_efs_resources_response = delete_efs_resources(challenge_cluster_evaluation)
+    delete_efs_resources_response = delete_efs_resources(
+        challenge_cluster_evaluation
+    )
     errors["delete_efs_resources_response"] = delete_efs_resources_response
 
-    delete_eks_resources_response = delete_eks_resources(challenge_cluster_evaluation)
+    delete_eks_resources_response = delete_eks_resources(
+        challenge_cluster_evaluation
+    )
     errors["delete_eks_resources_response"] = delete_eks_resources_response
 
-    delete_vpc_resources_response = delete_vpc_resources(challenge_cluster_evaluation)
+    delete_vpc_resources_response = delete_vpc_resources(
+        challenge_cluster_evaluation
+    )
     errors["delete_vpc_resources_response"] = delete_vpc_resources_response
-    
+
     return errors
+
 
 def delete_code_upload_resources(queryset):
     """
     Function called by admin action method to delete all resources associated with code upload challenges.
     """
 
-    count = 0
-    failures = []
     for challenge in queryset:
-        response = delete_code_upload_challenge_infra_by_challenge_pk(challenge)
+        delete_code_upload_challenge_infra_by_challenge_pk(challenge)
+
 
 def delete_workers(queryset):
     """
@@ -2070,7 +2082,11 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                         )
                     )
     # If challenge is code-upload (docker based, remote evaluation false) and disapproved by admin. Then delete the infra
-    if challenge.approved_by_admin is False and challenge.is_docker_based and challenge.remote_evaluation is False:
+    if (
+        challenge.approved_by_admin is False
+        and challenge.is_docker_based
+        and challenge.remote_evaluation is False
+    ):
         response = delete_code_upload_resources([challenge])
 
 
