@@ -1364,7 +1364,7 @@ def delete_workers(queryset):
     for challenge in queryset:
         if challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
-            if  response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 failures.append(
                     {
                         "message": response["Error"],
