@@ -62,9 +62,7 @@
         return function(challenges, selecteddomain) {
             selecteddomain = selecteddomain.toString().toLowerCase();
             if (selecteddomain === "all") {
-                return challenges.filter(function(challenge) {
-                    return challenge.domain_name !== null;
-                });
+                return challenges;
             }
             else if (selecteddomain === "none") {
                 return challenges.filter(function(challenge) {
