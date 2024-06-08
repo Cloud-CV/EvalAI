@@ -1176,7 +1176,8 @@ def delete_eks_resources(challenge):
         print(f"Error deleting EKS cluster: {e}")
 
 
-def delete_vpc_resources(vpc_id):
+def delete_vpc_resources(challenge):
+    vpc_id = challenge.vpc_id
     ec2 = get_boto3_client("ec2", aws_keys)
     ec2_vpc = ec2.Vpc(vpc_id)
 
