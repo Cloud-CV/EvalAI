@@ -1290,12 +1290,7 @@ def delete_vpc_resources(challenge):
         print(f"Error: {e}")
 
 
-def delete_code_upload_challenge_infra_by_challenge_pk(challenge):
-    from .models import ChallengeEvaluationCluster
-
-    challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(
-        challenge=challenge
-    )
+def delete_code_upload_challenge_infra_by_challenge_pk(challenge_cluster_evaluation):
 
     errors = {
         "delete_iam_role_response": None,
@@ -1331,9 +1326,16 @@ def delete_code_upload_resources(queryset):
     """
     Function called by admin action method to delete all resources associated with code upload challenges.
     """
+    from .models import ChallengeEvaluationCluster
 
     for challenge in queryset:
-        delete_code_upload_challenge_infra_by_challenge_pk(challenge)
+        from .models import ChallengeEvaluationCluster
+
+        challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(
+            challenge=challenge
+        )
+
+        delete_code_upload_challenge_infra_by_challenge_pk(challenge_cluster_evaluation)
 
 
 def delete_workers(queryset):
