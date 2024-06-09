@@ -1321,13 +1321,13 @@ def delete_code_upload_challenge_infra_by_challenge_pk(challenge_cluster_evaluat
 
     return errors
 
+from .models import ChallengeEvaluationCluster
 
 def delete_code_upload_resources(queryset):
     """
     Function called by admin action method to delete all resources associated with code upload challenges.
     """
-    from .models import ChallengeEvaluationCluster
-
+    
     for challenge in queryset:
 
         challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(
@@ -2089,9 +2089,10 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
         and challenge.is_docker_based
         and challenge.remote_evaluation is False
     ):
-        response = delete_code_upload_resources([challenge])
-
-
+        if prev and not curr:
+            response = delete_code_upload_resources([instance])
+            errors = response
+            
 @app.task
 def setup_ec2(challenge):
     """
