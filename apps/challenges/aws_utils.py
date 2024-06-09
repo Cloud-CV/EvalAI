@@ -2096,7 +2096,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
     ):
         if prev and not curr:
             response = delete_code_upload_resources([instance])
-            
+
 
 @app.task
 def setup_ec2(challenge):
