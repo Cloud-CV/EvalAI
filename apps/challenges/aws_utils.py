@@ -12,6 +12,8 @@ from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from http import HTTPStatus
 
+from .models import ChallengeEvaluationCluster
+
 from .challenge_notification_util import (
     construct_and_send_worker_start_mail,
     construct_and_send_eks_cluster_creation_mail,
@@ -1290,7 +1292,9 @@ def delete_vpc_resources(challenge):
         print(f"Error: {e}")
 
 
-def delete_code_upload_challenge_infra_by_challenge_pk(challenge_cluster_evaluation):
+def delete_code_upload_challenge_infra_by_challenge_pk(
+    challenge_cluster_evaluation,
+):
 
     errors = {
         "delete_iam_role_response": None,
@@ -1321,20 +1325,21 @@ def delete_code_upload_challenge_infra_by_challenge_pk(challenge_cluster_evaluat
 
     return errors
 
-from .models import ChallengeEvaluationCluster
 
 def delete_code_upload_resources(queryset):
     """
     Function called by admin action method to delete all resources associated with code upload challenges.
     """
-    
+
     for challenge in queryset:
 
         challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(
             challenge=challenge
         )
 
-        delete_code_upload_challenge_infra_by_challenge_pk(challenge_cluster_evaluation)
+        delete_code_upload_challenge_infra_by_challenge_pk(
+            challenge_cluster_evaluation
+        )
 
 
 def delete_workers(queryset):
@@ -2092,7 +2097,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
         if prev and not curr:
             response = delete_code_upload_resources([instance])
             errors = response
-            
+
 @app.task
 def setup_ec2(challenge):
     """
