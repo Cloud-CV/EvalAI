@@ -1329,7 +1329,6 @@ def delete_code_upload_resources(queryset):
     from .models import ChallengeEvaluationCluster
 
     for challenge in queryset:
-        from .models import ChallengeEvaluationCluster
 
         challenge_cluster_evaluation = ChallengeEvaluationCluster.objects.get(
             challenge=challenge
