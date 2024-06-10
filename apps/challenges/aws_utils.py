@@ -1282,31 +1282,31 @@ def delete_code_upload_infrastructure(challenge):
     )
 
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    iam_client = get_boto3_client("iam", aws_keys)
-    eks_client = get_boto3_client("eks", aws_keys)
-    efs_client = get_boto3_client("efs", aws_keys)
-    ec2_client = get_boto3_client("ec2", aws_keys)
-    elb_client = get_boto3_client("elb", aws_keys)
-    elbv2_client = get_boto3_client("elbv2", aws_keys)
+    iam_client = get_boto3_client("iam", challenge_aws_keys)
+    eks_client = get_boto3_client("eks", challenge_aws_keys)
+    efs_client = get_boto3_client("efs", challenge_aws_keys)
+    ec2_client = get_boto3_client("ec2", challenge_aws_keys)
+    elb_client = get_boto3_client("elb", challenge_aws_keys)
+    elbv2_client = get_boto3_client("elbv2", challenge_aws_keys)
 
     try:
-        detach_policies_and_delete_role(challenge_obj, iam_client)
+        detach_policies_and_delete_role(challenge_evaluation_cluster, iam_client)
     except Exception as e:
         logger.exception(e)
 
     try:
-        delete_efs_resources(challenge_obj, efs_client)
+        delete_efs_resources(challenge_evaluation_cluster, efs_client)
     except Exception as e:
         logger.exception(e)
 
     try:
-        delete_eks_resources(challenge_obj, eks_client)
+        delete_eks_resources(challenge_evaluation_cluster, eks_client)
     except Exception as e:
         logger.exception(e)
 
     try:
         delete_vpc_resources(
-            challenge_obj, ec2_client, elb_client, elbv2_client
+            challenge_evaluation_cluster, ec2_client, elb_client, elbv2_client
         )
     except Exception as e:
         logger.exception(e)
