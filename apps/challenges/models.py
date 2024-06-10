@@ -279,7 +279,7 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
-        
+
     # if the challenge:
     # - the challenge model created
     # - the challenge is disapproved by admin
@@ -294,7 +294,7 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
     ):
         serialized_obj = serializers.serialize("json", [instance])
         aws.delete_code_upload_infrastructure.delay(serialized_obj)
-    
+
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 
 
