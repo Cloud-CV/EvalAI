@@ -1061,9 +1061,23 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
         return e.response
 
 
-def detach_policies_and_delete_role(challenge, iam):
-    eks_arn_role = challenge.eks_arn_role
-    node_group_arn_role = challenge.node_group_arn_role
+@app.task
+def detach_policies_and_delete_role(challenge):
+
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    iam = get_boto3_client("iam", challenge_aws_keys)
+    efs = get_boto3_client("efs", challenge_aws_keys)
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge_obj
+    )
+
+    eks_arn_role = challenge_evaluation_cluster.eks_arn_role
+    node_group_arn_role = challenge_evaluation_cluster.node_group_arn_role
 
     for role_arn in [eks_arn_role, node_group_arn_role]:
 
@@ -1096,12 +1110,29 @@ def detach_policies_and_delete_role(challenge, iam):
         except Exception as e:
             logger.exception(e)
             return
+        
+    try:
+        delete_efs_resources.delay(challenge)
+    except Exception as e:
+        logger.exception(e)
 
 
-def delete_efs_resources(challenge, efs):
+@app.task
+def delete_efs_resources(challenge):
     import time
 
-    efs_id = challenge.efs_id
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    efs = get_boto3_client("efs", challenge_aws_keys)
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge_obj
+    )
+
+    efs_id = challenge_evaluation_cluster.efs_id
 
     try:
         mount_targets = efs.describe_mount_targets(FileSystemId=efs_id)
@@ -1112,9 +1143,6 @@ def delete_efs_resources(challenge, efs):
 
             # Delete the mount target
             efs.delete_mount_target(MountTargetId=mount["MountTargetId"])
-            print(
-                f"Deleted mount target {mount['MountTargetId']} successfully."
-            )
 
             # Delete security groups if no longer needed
             # for sg_id in sg_ids:
@@ -1140,11 +1168,29 @@ def delete_efs_resources(challenge, efs):
     except Exception as e:
         logger.exception(e)
         return
+    
+    try:
+        delete_eks_resources.delay(challenge)
+    except Exception as e:
+        logger.exception(e)
 
 
-def delete_eks_resources(challenge, eks):
+@app.task
+def delete_eks_resources(challenge):
 
-    cluster_name = challenge.name
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    eks = get_boto3_client("eks", challenge_aws_keys)
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge_obj
+    )
+
+    cluster_name = challenge_evaluation_cluster.name
+    
     try:
         node_groups = eks.list_nodegroups(clusterName=cluster_name)[
             "nodegroups"
@@ -1153,11 +1199,9 @@ def delete_eks_resources(challenge, eks):
             eks.delete_nodegroup(
                 clusterName=cluster_name, nodegroupName=nodegroup
             )
-            print(f"Initiated deletion of node group {nodegroup}")
             eks.get_waiter("nodegroup_deleted").wait(
                 clusterName=cluster_name, nodegroupName=nodegroup
             )
-            print(f"Node group {nodegroup} deleted successfully.")
     except Exception as e:
         logger.exception(e)
         return
@@ -1169,10 +1213,31 @@ def delete_eks_resources(challenge, eks):
         logger.exception(e)
         return
 
+    try:
+        delete_vpc_resources.delay(challenge)
+    except Exception as e:
+        logger.exception(e)
+        
 
-def delete_vpc_resources(challenge, ec2, elb, elbv2):
-    vpc_id = challenge.vpc_id
-    ec2_vpc = ec2.Vpc(vpc_id)
+@app.task
+def delete_vpc_resources(challenge):
+    
+    from .models import ChallengeEvaluationCluster
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    ec2 = get_boto3_client("ec2", challenge_aws_keys)
+    elb = get_boto3_client("elb", challenge_aws_keys)
+    elbv2 = get_boto3_client("elbv2", challenge_aws_keys)
+    ec2_vpc = ec2.Vpc(challenge_obj.vpc_id)
+
+    challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
+        challenge=challenge_obj
+    )
+
+    vpc_id = challenge_evaluation_cluster.vpc_id
 
     try:
         addresses = ec2.describe_addresses(
@@ -1283,31 +1348,9 @@ def delete_code_upload_infrastructure(challenge):
 
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
     iam_client = get_boto3_client("iam", challenge_aws_keys)
-    eks_client = get_boto3_client("eks", challenge_aws_keys)
-    efs_client = get_boto3_client("efs", challenge_aws_keys)
-    ec2_client = get_boto3_client("ec2", challenge_aws_keys)
-    elb_client = get_boto3_client("elb", challenge_aws_keys)
-    elbv2_client = get_boto3_client("elbv2", challenge_aws_keys)
 
     try:
-        detach_policies_and_delete_role(challenge_evaluation_cluster, iam_client)
-    except Exception as e:
-        logger.exception(e)
-
-    try:
-        delete_efs_resources(challenge_evaluation_cluster, efs_client)
-    except Exception as e:
-        logger.exception(e)
-
-    try:
-        delete_eks_resources(challenge_evaluation_cluster, eks_client)
-    except Exception as e:
-        logger.exception(e)
-
-    try:
-        delete_vpc_resources(
-            challenge_evaluation_cluster, ec2_client, elb_client, elbv2_client
-        )
+        detach_policies_and_delete_role.delay(challenge_evaluation_cluster, iam_client)
     except Exception as e:
         logger.exception(e)
 
