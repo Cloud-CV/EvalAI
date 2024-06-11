@@ -1071,7 +1071,6 @@ def detach_policies_and_delete_role(challenge):
         challenge_obj = obj.object
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
     iam = get_boto3_client("iam", challenge_aws_keys)
-    efs = get_boto3_client("efs", challenge_aws_keys)
     challenge_evaluation_cluster = ChallengeEvaluationCluster.objects.get(
         challenge=challenge_obj
     )
@@ -1110,7 +1109,6 @@ def detach_policies_and_delete_role(challenge):
         except Exception as e:
             logger.exception(e)
             return
-        
     try:
         delete_efs_resources.delay(challenge)
     except Exception as e:
@@ -1168,7 +1166,7 @@ def delete_efs_resources(challenge):
     except Exception as e:
         logger.exception(e)
         return
-    
+
     try:
         delete_eks_resources.delay(challenge)
     except Exception as e:
@@ -1190,7 +1188,7 @@ def delete_eks_resources(challenge):
     )
 
     cluster_name = challenge_evaluation_cluster.name
-    
+
     try:
         node_groups = eks.list_nodegroups(clusterName=cluster_name)[
             "nodegroups"
@@ -1217,11 +1215,11 @@ def delete_eks_resources(challenge):
         delete_vpc_resources.delay(challenge)
     except Exception as e:
         logger.exception(e)
-        
+
 
 @app.task
 def delete_vpc_resources(challenge):
-    
+
     from .models import ChallengeEvaluationCluster
     from .utils import get_aws_credentials_for_challenge
 
