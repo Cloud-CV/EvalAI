@@ -1,8 +1,26 @@
 from __future__ import unicode_literals
 
-from django.db import models
+from urllib.parse import urlparse
 
 from base.models import TimeStampedModel
+from django.core.exceptions import ValidationError
+from django.db import models
+
+
+def validate_github_url(value):
+    if not value:
+        return
+    obj = urlparse(value)
+    if obj.hostname not in ("github.com"):
+        raise ValidationError("Only URLs from GitHub are allowed")
+
+
+def validate_linkedin_url(value):
+    if not value:
+        return
+    obj = urlparse(value)
+    if obj.hostname not in ("linkedin.com", "www.linkedin.com", "linkedin.in"):
+        raise ValidationError("Only URLs from LinkedIn are allowed")
 
 
 class Contact(TimeStampedModel):
@@ -55,8 +73,15 @@ class Team(models.Model):
     description = models.TextField(null=True, blank=True)
     headshot = models.ImageField(upload_to="headshots", null=True, blank=True)
     visible = models.BooleanField(default=False)
-    github_url = models.CharField(max_length=200, null=True, blank=True)
-    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
+    github_url = models.CharField(
+        max_length=200, null=True, blank=True, validators=[validate_github_url]
+    )
+    linkedin_url = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        validators=[validate_linkedin_url],
+    )
     personal_website = models.CharField(max_length=200, null=True, blank=True)
     background_image = models.ImageField(
         upload_to="bg-images", null=True, blank=True
