@@ -280,15 +280,9 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
 
-    # if the challenge:
-    # - the challenge model created
-    # - the challenge is disapproved by admin
-    # - the challenge is docker based
-    # - the challenge is not remote evaluation
-    # then removed the aws infrastructure for the code upload challenge (if exists)
     if (created and instance.approved_by_admin is False and instance.is_docker_based is True and instance.remote_evaluation is False):
         serialized_obj = serializers.serialize("json", [instance])
-        aws.delete_code_upload_infrastructure.delay(serialized_obj)
+        aws.detach_policies_and_delete_role.delay(serialized_obj)
 
     aws.challenge_approval_callback(sender, instance, field_name, **kwargs)
 

@@ -1101,24 +1101,27 @@ def detach_policies_and_delete_role(challenge):
             return
 
         try:
-            inline_policies = iam.list_role_policies(RoleName=role_name)
-            for policy_name in inline_policies["PolicyNames"]:
-                iam.delete_role_policy(
-                    RoleName=role_name, PolicyName=policy_name
-                )
-        except Exception as e:
-            logger.exception(e)
-            return
-
-        try:
             iam.delete_role(RoleName=role_name)
         except Exception as e:
             logger.exception(e)
             return
+
+    try:
+        iam.delete_policy(
+            PolicyArn=challenge_evaluation_cluster.ecr_all_access_policy_arn
+        )
+    except Exception as e:
+        logger.exception(e)
+        return
+
     try:
         serializer = ChallengeEvaluationClusterSerializer(
             challenge_evaluation_cluster,
-            data={"eks_arn_role": "", "node_group_arn_role": ""},
+            data={
+                "eks_arn_role": "",
+                "node_group_arn_role": "",
+                "ecr_all_access_policy_arn": "",
+            },
             partial=True,
         )
 
@@ -1278,11 +1281,8 @@ def delete_vpc_resources(challenge):
 
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     ec2 = get_boto3_client("ec2", challenge_aws_keys)
-    elb = get_boto3_client("elb", challenge_aws_keys)
-    elbv2 = get_boto3_client("elbv2", challenge_aws_keys)
 
     try:
-        # Disassociate and release EIPs
         addresses = ec2.describe_addresses(
             Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
         )
@@ -1293,21 +1293,18 @@ def delete_vpc_resources(challenge):
                 )
             ec2.release_address(AllocationId=address["AllocationId"])
 
-        # Detach and delete Internet Gateway
         if internet_gateway_id != "":
             ec2.detach_internet_gateway(
                 InternetGatewayId=internet_gateway_id, VpcId=vpc_id
             )
             ec2.delete_internet_gateway(InternetGatewayId=internet_gateway_id)
 
-        # Delete NAT Gateways
         nat_gateways = ec2.describe_nat_gateways(
             Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
         )
         for nat_gateway in nat_gateways["NatGateways"]:
             ec2.delete_nat_gateway(NatGatewayId=nat_gateway["NatGatewayId"])
 
-        # Terminate and delete EC2 Instances, Subnets
         subnets = [subnet_1_id, subnet_2_id]
         for subnet_id in subnets:
             instances = ec2.describe_instances(
@@ -1319,32 +1316,15 @@ def delete_vpc_resources(challenge):
                         InstanceIds=[instance["InstanceId"]]
                     )
 
-        # Delete Load Balancers
-        for lb in elb.describe_load_balancers()["LoadBalancerDescriptions"]:
-            if lb["VPCId"] == vpc_id:
-                elb.delete_load_balancer(
-                    LoadBalancerName=lb["LoadBalancerName"]
-                )
-
-        for lb in elbv2.describe_load_balancers()["LoadBalancers"]:
-            if lb["VpcId"] == vpc_id:
-                elbv2.delete_load_balancer(
-                    LoadBalancerArn=lb["LoadBalancerArn"]
-                )
-
-        # Delete Security Groups
         if security_group_id != "":
             ec2.delete_security_group(GroupId=security_group_id)
 
-        # Delete subnets
         for subnet_id in subnets:
             ec2.delete_subnet(SubnetId=subnet_id)
 
-        # Delete Route Tables
         if route_table_id != "":
             ec2.delete_route_table(RouteTableId=route_table_id)
 
-        # Finally, delete the VPC
         if vpc_id != "":
             ec2.delete_vpc(VpcId=vpc_id)
 
@@ -1369,22 +1349,6 @@ def delete_vpc_resources(challenge):
         if serializer.is_valid():
             serializer.save()
 
-    except Exception as e:
-        logger.exception(e)
-
-
-@app.task
-def delete_code_upload_infrastructure(challenge):
-    """
-    Delete the infrastructure associated with a challenge that uses code upload.
-    - Delete EKS Cluster and Nodegroup
-    - Delete EFS
-    - Delete VPC
-    - Delete IAM Roles
-    """
-
-    try:
-        detach_policies_and_delete_role.delay(challenge)
     except Exception as e:
         logger.exception(e)
 
