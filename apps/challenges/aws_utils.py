@@ -1062,7 +1062,7 @@ def scale_resources(challenge, worker_cpu_cores, worker_memory):
 
 
 @app.task
-def detach_policies_and_delete_role(challenge):
+def delete_eks_infra(challenge):
 
     from .models import ChallengeEvaluationCluster
     from .utils import get_aws_credentials_for_challenge
