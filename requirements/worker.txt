@@ -1,8 +1,9 @@
+setuptools==59.2
 matplotlib==3.3.3
 networkx==2.5
-numpy==1.21.0
+numpy==1.20.0
 pandas==1.1.4
 pycocotools==2.0.2
 scipy==1.5.4
-scikit-learn==0.23.2
+scikit-learn==0.24.0
 tqdm==4.54.0
