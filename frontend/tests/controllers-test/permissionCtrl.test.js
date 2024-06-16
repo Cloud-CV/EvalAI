@@ -34,7 +34,7 @@ describe('Unit tests for permission controller', function () {
 describe('PermCtrl', function() {
     beforeEach(angular.mock.module('evalai'));
     var utilities, $rootScope, vm;
-    var mockUserKey = 'User key'; //adding dummy value to mock userkey
+    var mockUserKey = 'User key'; //adding this to mock userkey
 
     beforeEach(inject(function(_utilities_, _$rootScope_, $controller) {
         utilities = _utilities_;
@@ -69,5 +69,29 @@ describe('PermCtrl', function() {
         };
 
         expect(utilities.sendRequest).toHaveBeenCalledWith(expectedParameters);
+    });
+
+    it('should notify success on successful request', function() {
+        vm.requestLink();
+        var successCallback = utilities.sendRequest.calls.mostRecent().args[0].callback.onSuccess;
+        successCallback();
+        expect(vm.sendMail).toBe(true);
+        expect($rootScope.notify).toHaveBeenCalledWith('success', 'The verification link was sent again.');
+    });
+
+    it('should notify error when request limit is exceeded', function() {
+        vm.requestLink();
+        var errorCallback = utilities.sendRequest.calls.mostRecent().args[0].callback.onError;
+        var response = {
+            status: 429,
+            data: {
+                detail: "Request limit exceeded. Please wait for 30 minutes."
+            }
+        };
+        errorCallback(response);
+
+        var message = response.data.detail;
+        var time = Math.floor(message.match(/\d+/g)[0] / 60);
+        expect($rootScope.notify).toHaveBeenCalledWith('error', 'Request limit exceeded. Please wait for ' + time + ' minutes and try again.');
     });
 });
