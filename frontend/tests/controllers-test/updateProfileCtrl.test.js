@@ -156,7 +156,7 @@ describe('Unit tests for update profile controller', function () {
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.isDisabled).toBeFalsy();
             expect(vm.isFormError).toBeTruthy();
-            expect($rootScope.notify("error", "Some error have occurred. Please try again!"));
+            expect($rootScope.notify).toHaveBeenCalledWith("error", "Some error have occured . Please try again !");
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
