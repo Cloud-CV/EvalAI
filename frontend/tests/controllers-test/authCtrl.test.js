@@ -403,6 +403,103 @@ describe('Unit tests for auth controller', function () {
         });
     });
 
+    describe('Unit tests for userSignUp function `auth/registration/`', function () {
+        var errors = {
+            username: 'username error',
+            email: 'email error',
+            password1: 'password error',
+            password2: 'password confirm error'
+        };
+
+        beforeEach(function () {
+            vm.regUser = {
+                name: 'ford',
+                email: 'fordprefect@hitchhikers.guide',
+                password: 'dontpanic',
+                confirm_password: 'dontpanic'
+            };
+
+            utilities.sendRequest = function (parameters) {
+                if (parameters.url === 'auth/registration/') {
+                    var emailRegex = /\S+@\S+\.\S+/;
+                    var usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
+                    var passwordRegex = /^[a-zA-Z0-9!@#$%^&*_]{8,30}$/;
+                    var isUsernameValid = usernameRegex.test(parameters.data.username);
+                    var isEmailValid = emailRegex.test(parameters.data.email);
+                    var isPassword1Valid = passwordRegex.test(parameters.data.password1);
+                    var isPassword2Valid = passwordRegex.test(parameters.data.password2);
+                    if (!isUsernameValid || !isEmailValid || !isPassword1Valid || !isPassword2Valid) {
+                        var data;
+                        if (!isUsernameValid) {
+                            data = {username: [errors.username]};
+                        } else if (!isEmailValid) {
+                            data = {email: [errors.email]};
+                        } else if (!isPassword1Valid || !isPassword2Valid) {
+                            data = {password1: [errors.password1]};
+                        }
+                        parameters.callback.onError({status: 400, data: data});
+                    } else if (parameters.data.password1 !== parameters.data.password2) {
+                        parameters.callback.onError({status: 400, data: {password2: [errors.password2]}});
+                    } else {
+                        parameters.callback.onSuccess({status: 201});
+                    }
+                } else if (parameters.url === 'auth/login/') {
+                    parameters.callback.onSuccess({status: 200, data: {token: 'fake-token'}});
+                }
+            };
+        });
+
+        it('should handle successful signup', function () {
+            spyOn($rootScope, 'notify');
+            spyOn($state, 'go');
+
+            vm.userSignUp(true);
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Registered successfully. Please verify your email address!");
+            expect($state.go).toHaveBeenCalledWith('web.dashboard');
+        });
+
+        it('should handle signup failure with username error', function () {
+            spyOn($rootScope, 'notify');
+
+            vm.regUser.name = '';
+            vm.userSignUp(true);
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual(errors.username);
+        });
+
+        it('should handle signup failure with email error', function () {
+            spyOn($rootScope, 'notify');
+
+            vm.regUser.email = '';
+            vm.userSignUp(true);
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual(errors.email);
+        });
+
+        it('should handle signup failure with password error', function () {
+            spyOn($rootScope, 'notify');
+
+            vm.regUser.password = '';
+            vm.userSignUp(true);
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual(errors.password1);
+        });
+
+        it('should handle signup failure with password mismatch error', function () {
+            spyOn($rootScope, 'notify');
+
+            vm.regUser.confirm_password = 'mismatch';
+            vm.userSignUp(true);
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual(errors.password2);
+        });
+
+        it('should handle invalid form submission', function () {
+            vm.userSignUp(false);
+            expect($rootScope.isLoader).toEqual(false);
+        });
+    });
+
     describe('Unit tests for setRefreshJWT function', function () {
         beforeEach(function () {
             utilities.sendRequest = function (parameters) {
@@ -453,6 +550,111 @@ describe('Unit tests for auth controller', function () {
             vm.setRefreshJWT();
             expect(vm.isFormError).toBe(true);
             expect(vm.FormError).toEqual('Invalid request');
+        });
+    });
+
+    describe('Unit tests for userLogin function `auth/login/`', function () {
+        var errors = {
+            non_field_errors: 'Invalid credentials'
+        };
+
+        beforeEach(function () {
+            vm.getUser = {
+                name: 'ford',
+                password: 'dontpanic'
+            };
+
+            utilities.sendRequest = function (parameters) {
+                if (parameters.url === 'auth/login/') {
+                    var usernameRegex = /^[a-zA-Z0-9]+$/;
+                    var passwordRegex = /^[a-zA-Z0-9!@#$%^&*_]{8,30}$/;
+                    var isUsernameValid = usernameRegex.test(parameters.data.username);
+                    var isPasswordValid = passwordRegex.test(parameters.data.password);
+                    if (!isUsernameValid || !isPasswordValid) {
+                        parameters.callback.onError({status: 400, data: {non_field_errors: [errors.non_field_errors]}});
+                    } else {
+                        parameters.callback.onSuccess({status: 200, data: {token: 'fake-token'}});
+                    }
+                }
+            };
+        });
+
+        it('should handle successful login', function () {
+            spyOn($state, 'go');
+            spyOn(utilities, 'storeData');
+
+            vm.userLogin(true);
+            expect(utilities.storeData).toHaveBeenCalledWith('userKey', 'fake-token');
+            expect($state.go).toHaveBeenCalledWith('web.dashboard');
+        });
+
+        it('should handle login failure with invalid credentials', function () {
+            spyOn($rootScope, 'notify');
+
+            vm.getUser.name = '';
+            vm.userLogin(true);
+            expect(vm.isFormError).toEqual(true);
+            expect(vm.FormError).toEqual(errors.non_field_errors);
+        });
+
+        it('should handle invalid form submission', function () {
+            vm.userLogin(false);
+            expect($rootScope.isLoader).toEqual(false);
+        });
+    });
+    describe('Unit tests for checkStrength function', function () {
+        var passwordStrengthCases = [
+            { password: 'password', expectedMessage: 'Weak', expectedColor: 'red' },
+            { password: 'password123', expectedMessage: 'Average', expectedColor: 'orange' },
+            { password: 'P@ssword1', expectedMessage: 'Strong', expectedColor: 'green' }
+        ];
+
+        beforeEach(function () {
+            utilities.passwordStrength = function (password) {
+                if (password === '') {
+                    return [null, null];
+                } else if (password === 'password') {
+                    return ['Weak', 'red'];
+                } else if (password === 'password123') {
+                    return ['Average', 'orange'];
+                } else if (password === 'P@ssword1') {
+                    return ['Strong', 'green'];
+                }
+            };
+        });
+
+        passwordStrengthCases.forEach(function (testCase) {
+            it('should correctly evaluate the strength of the password: ' + testCase.password, function () {
+                vm.checkStrength(testCase.password);
+                expect(vm.showPasswordStrength).toEqual(true);
+                expect(vm.message).toEqual(testCase.expectedMessage);
+                expect(vm.color).toEqual(testCase.expectedColor);
+            });
+        });
+
+        it('should hide password strength indicator for empty password', function () {
+            vm.checkStrength('');
+            expect(vm.showPasswordStrength).toEqual(false);
+        });
+    });
+
+    describe('Unit tests for resetForm function', function () {
+        it('should reset form variables correctly', function () {
+            vm.resetForm();
+            expect(vm.regUser).toEqual({});
+            expect(vm.getUser).toEqual({});
+            expect(vm.wrnMsg).toEqual({});
+            expect(vm.isFormError).toEqual(false);
+            expect(vm.isMail).toEqual(true);
+        });
+    });
+
+    describe('Unit tests for $stateChangeStart event', function () {
+        it('should call resetForm on state change', function () {
+            spyOn(vm, 'resetForm');
+
+            $rootScope.$broadcast('$stateChangeStart', { name: 'authpage' });
+            expect(vm.resetForm).toHaveBeenCalled();
         });
     });
 });
