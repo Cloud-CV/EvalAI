@@ -386,5 +386,73 @@ describe('Unit tests for auth controller', function () {
             vm.resetPasswordConfirm(false);
             expect($rootScope.isLoader).toEqual(false);
         });
+        it('should toggle canShowPassword', function() {
+            $rootScope.canShowPassword = false;
+            vm.togglePasswordVisibility();
+            expect($rootScope.canShowPassword).toEqual(true);
+            vm.togglePasswordVisibility();
+            expect($rootScope.canShowPassword).toEqual(false);
+        });
+        
+        it('should toggle canShowConfirmPassword', function() {
+            $rootScope.canShowConfirmPassword = false;
+            vm.toggleConfirmPasswordVisibility();
+            expect($rootScope.canShowConfirmPassword).toEqual(true);
+            vm.toggleConfirmPasswordVisibility();
+            expect($rootScope.canShowConfirmPassword).toEqual(false);
+        });
+    });
+
+    describe('Unit tests for setRefreshJWT function', function () {
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
+                var response;
+                if (parameters.url === 'accounts/user/get_auth_token' && parameters.method === 'GET') {
+                    response = {
+                        status: 200,
+                        data: {
+                            token: 'dummyToken'
+                        }
+                    };
+                } else {
+                    response = {
+                        status: 400,
+                        data: {
+                            non_field_errors: ['Invalid request']
+                        }
+                    };
+                }
+                if (response.status === 200) {
+                    parameters.callback.onSuccess(response);
+                } else {
+                    parameters.callback.onError(response);
+                }
+            };
+
+            spyOn(utilities, 'sendRequest').and.callThrough();
+            spyOn(utilities, 'storeData').and.callThrough();
+            spyOn(window, 'alert').and.callThrough();
+        });
+
+        it('should store JWT token on successful fetch', function () {
+            vm.setRefreshJWT();
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect(utilities.storeData).toHaveBeenCalledWith('refreshJWT', 'dummyToken');
+        });
+
+        it('should handle form errors on failed fetch with status 400', function () {
+            utilities.sendRequest = function (parameters) {
+                var response = {
+                    status: 400,
+                    data: {
+                        non_field_errors: ['Invalid request']
+                    }
+                };
+                parameters.callback.onError(response);
+            };
+            vm.setRefreshJWT();
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError).toEqual('Invalid request');
+        });
     });
 });
