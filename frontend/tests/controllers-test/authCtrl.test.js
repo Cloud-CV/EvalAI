@@ -150,64 +150,125 @@ describe('Unit tests for auth controller', function () {
             expect($rootScope.isLoader).toEqual(false);
         });
     });
-
     describe('Unit tests for userLogin function `auth/login/`', function () {
-        var nonFieldErrors, token;
-
+        var errors = {
+            non_field_errors: 'Unable to log in with provided credentials.'
+        };
+    
         beforeEach(function () {
-            nonFieldErrors = false;
-
             vm.getUser = {
                 username: 'ford',
                 password: 'dontpanic',
             };
-
+    
             utilities.sendRequest = function (parameters) {
-                var data, status, userKey;
-                var error = 'error';
-                var success = "success";
-                var usernameRegex = /^[a-zA-Z0-9]+$/;
-                var passwordRegex = /^[a-zA-Z0-9!@#$%^&*_]{8,30}$/;
-                var isUsernameValid = usernameRegex.test(parameters.username);
-                var isPasswordValid = passwordRegex.test(parameters.password);
-                if (!isUsernameValid || !isPasswordValid) {
-                    data = error;
-                    status = 400;
-                    userKey = "notFound";
-                } else {
-                    data = success;
-                    status = 200;
-                    userKey = "encrypted";
+                if (parameters.callback) {
+                    if (parameters.url === 'auth/login/' && parameters.method === 'POST') {
+                        var usernameRegex = /^[a-zA-Z0-9]+$/;
+                        var passwordRegex = /^[a-zA-Z0-9!@#$%^&*_]{8,30}$/;
+                        var isUsernameValid = usernameRegex.test(vm.getUser.username);
+                        var isPasswordValid = passwordRegex.test(vm.getUser.password);
+                        if (!isUsernameValid || !isPasswordValid) {
+                            parameters.callback.onError({data: {non_field_errors: errors.non_field_errors}});
+                        } else {
+                            parameters.callback.onSuccess({data: "success"});
+                        }
+                    }
                 }
-                return {
-                    "data": data,
-                    "status": parseInt(status),
-                    "userKey": userKey
-                };
             };
         });
-
-        it('correct login details', function () {
+    
+        it('handles successful login', function () {
             vm.userLogin(true);
-            var token = "encrypted";
-            var response = utilities.sendRequest(vm.getUser);
-            expect(response.status).toEqual(200);
-            expect(response.data).toEqual("success");
-            expect(angular.equals(response.userKey, token)).toEqual(true);
+            expect($rootScope.isLoader).toBe(true);
+            expect(vm.isAuth).toBe(false);
         });
-
-        it('backend error', function () {
+    
+        it('handles error on login', function () {
+            errors.non_field_errors = 'Unable to log in with provided credentials.';
+    
+            spyOn(vm, 'userLogin').and.callFake(function() {
+                vm.FormError = { non_field_errors: errors.non_field_errors };
+                vm.isFormError = true; 
+            });
             vm.getUser.username = '';
-            var token = "notFound";
-            var response = utilities.sendRequest(vm.getUser);
-            expect(response.status).toEqual(400);
-            expect(response.data).toEqual("error");
-            expect(angular.equals(response.userKey, token)).toEqual(true);
+            vm.userLogin(true);
+    
+            expect($rootScope.isLoader).toBe(undefined);
+            expect(vm.isFormError).toBe(true);
+            expect(vm.FormError.non_field_errors).toBe(errors.non_field_errors);
         });
+    });
 
-        it('invalid details', function () {
-            vm.userLogin(false);
-            expect($rootScope.isLoader).toEqual(false);
+
+    describe('Unit tests for userSignUp function `auth/registration/`', function () {
+        var errors = {
+            username: 'username error',
+            email: 'email error',
+            password1: 'password error',
+            password2: 'password confirm error'
+        };
+    
+        beforeEach(function () {
+            vm.regUser = {
+                username: 'ford',
+                email: 'fordprefect@hitchhikers.guide',
+                password1: 'dontpanic',
+                password2: 'dontpanic'
+            };
+    
+            utilities.sendRequest = function (parameters) {
+                if (parameters.callback) {
+                    if (parameters.url === 'auth/registration/' && parameters.method === 'POST') {
+                        var emailRegex = /\S+@\S+\.\S+/;
+                        var usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
+                        var passwordRegex = /^[a-zA-Z0-9!@#$%^&*_]{8,30}$/;
+                        var isUsernameValid = usernameRegex.test(vm.regUser.username);
+                        var isEmailValid = emailRegex.test(vm.regUser.email);
+                        var isPassword1Valid = passwordRegex.test(vm.regUser.password1);
+                        var isPassword2Valid = passwordRegex.test(vm.regUser.password2);
+                        if (!isUsernameValid) {
+                            parameters.callback.onError({data: {username: errors.username}});
+                        } else if (!isEmailValid) {
+                            parameters.callback.onError({data: {email: errors.email}});
+                        } else if (!isPassword1Valid) {
+                            parameters.callback.onError({data: {password1: errors.password1}});
+                        } else if (vm.regUser.password1 !== vm.regUser.password2) {
+                            parameters.callback.onError({data: {password2: errors.password2}});
+                        } else {
+                            parameters.callback.onSuccess({data: "success"});
+                        }
+                    }
+                }
+            };
+        });
+    
+        it('handles successful signup', function () {
+            vm.userSignUp(true);
+            expect($rootScope.isLoader).toBe(false);
+            expect(vm.isAuth).toBe(false);
+        });
+        it('handles error on username', function () {
+            errors.username = 'username error';
+            spyOn(vm, 'userSignUp').and.callFake(function() {
+                vm.FormError = { username: errors.username };
+            });
+            vm.regUser.username = '';
+            vm.userSignUp(true);
+            expect($rootScope.isLoader).toBe(undefined);    
+            expect(vm.isFormError).toBe(false);
+            expect(vm.FormError.username).toBe(errors.username);
+        });
+        it('handles error on email', function () {
+            errors.email = 'email error';
+            spyOn(vm, 'userSignUp').and.callFake(function() {
+                vm.FormError = { email: errors.email };
+            });
+            vm.regUser.email = '';
+            vm.userSignUp(true);
+            expect($rootScope.isLoader).toBe(undefined);
+            expect(vm.isFormError).toBe(false);
+            expect(vm.FormError.email).toBe(errors.email);
         });
     });
 
