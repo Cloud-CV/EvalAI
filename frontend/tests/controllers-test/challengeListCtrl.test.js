@@ -508,4 +508,36 @@ describe('Unit tests for resetFilter function', function() {
         expect(vm.selecteddomain).toEqual([]);
         expect(vm.searchTitle).toEqual([]);
     });
+    
+    describe('Scroll up tests', function() {
+        var $window, utilities, vm, $controller;
+    
+        beforeEach(inject(function(_$window_, _utilities_, _$controller_) {
+            $window = _$window_;
+            utilities = _utilities_;
+            $controller = _$controller_;
+    
+            vm = $controller('ChallengeListCtrl');
+        }));      
+        it('should call utilities.showButton when pageYOffset is greater than or equal to 100', function() {
+            spyOn(utilities, 'showButton');
+            spyOn(utilities, 'hideButton');
+            $window.pageYOffset = 100;
+            vm.scrollUp();
+            angular.element($window).triggerHandler('scroll');
+            expect(utilities.showButton).toHaveBeenCalled();
+            expect(utilities.hideButton).not.toHaveBeenCalled();
+        });
+    
+        it('should call utilities.hideButton when pageYOffset is less than 100', function() {
+            spyOn(utilities, 'showButton');
+            spyOn(utilities, 'hideButton');
+            $window.pageYOffset = 99;
+            vm.scrollUp();
+            angular.element($window).triggerHandler('scroll');
+            expect(utilities.showButton).not.toHaveBeenCalled();
+            expect(utilities.hideButton).toHaveBeenCalled();
+        });
+    });
+    
 });
