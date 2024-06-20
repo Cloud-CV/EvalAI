@@ -484,15 +484,17 @@ def stop_ec2_instance(challenge):
         dict: A dictionary containing the status and message of the stop operation.
     """
     from .utils import get_aws_credentials_for_challenge
-    
+
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
     challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
-    
+
     target_instance_id = challenge.ec2_instance_id
 
     ec2 = get_boto3_client("ec2", challenge_aws_keys)
-    status_response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
+    status_response = ec2.describe_instance_status(
+        InstanceIds=[target_instance_id]
+    )
 
     if status_response["InstanceStatuses"]:
         instance_status = status_response["InstanceStatuses"][0]
@@ -504,8 +506,12 @@ def stop_ec2_instance(challenge):
 
             if instance_state == "running":
                 try:
-                    response = ec2.stop_instances(InstanceIds=[target_instance_id])
-                    message = "Instance for challenge {} successfully stopped.".format(challenge.pk)
+                    response = ec2.stop_instances(
+                        InstanceIds=[target_instance_id]
+                    )
+                    message = "Instance for challenge {} successfully stopped.".format(
+                        challenge.pk
+                    )
                     return {
                         "response": response,
                         "message": message,
@@ -516,17 +522,23 @@ def stop_ec2_instance(challenge):
                         "error": e.response,
                     }
             else:
-                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(challenge.pk)
+                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(
+                    challenge.pk
+                )
                 return {
                     "error": message,
                 }
         else:
-            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(challenge.pk)
+            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(
+                challenge.pk
+            )
             return {
                 "error": message,
             }
     else:
-        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(challenge.pk)
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
+            challenge.pk
+        )
         return {
             "error": message,
         }
@@ -815,7 +827,7 @@ def start_ec2_workers_list(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
     """    
-    
+
     if settings.DEBUG:
         failures = []
         for challenge in queryset:

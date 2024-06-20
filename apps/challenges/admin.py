@@ -89,10 +89,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "restart_selected_workers",
         "delete_selected_workers",
         "start_selected_ec2_instance_workers",
-        "stop_selected_ec2_instance_workers"
+        "stop_selected_ec2_instance_workers",
     ]
     action_form = UpdateNumOfWorkersForm
-    
 
     def start_selected_ec2_instance_workers(self, request, queryset):
         response = start_ec2_workers_list(queryset)
@@ -117,7 +116,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "Start all selected ec2 instance challenge workers."
     )
 
-
     def stop_selected_ec2_instance_workers(self, request, queryset):
         response = stop_ec2_workers_list(queryset)
         count, failures = response["count"], response["failures"]
@@ -140,7 +138,6 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     stop_selected_ec2_instance_workers.short_description = (
         "Stop all selected ec2 instance challenge workers."
     )
-
 
     def start_selected_workers(self, request, queryset):
         response = start_workers(queryset)
