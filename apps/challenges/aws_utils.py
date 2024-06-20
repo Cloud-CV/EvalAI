@@ -826,7 +826,7 @@ def start_ec2_workers_list(queryset):
     Returns:
     dict: keys-> 'count': the number of workers successfully started.
                  'failures': a dict of all the failures with their error messages and the challenge pk
-    """    
+    """
 
     if settings.DEBUG:
         failures = []
@@ -846,7 +846,10 @@ def start_ec2_workers_list(queryset):
             response = setup_ec2(challenge)
             if "error" in response:
                 failures.append(
-                    {"message": response["error"], "challenge_pk": challenge.pk}
+                    {
+                        "message": response["error"],
+                        "challenge_pk": challenge.pk,
+                    }
                 )
             else:
                 count += 1
