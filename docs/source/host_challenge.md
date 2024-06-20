@@ -41,10 +41,6 @@ We categorize the challenges in two categories:
       - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained model in form of docker images and the environment is also saved in form of a docker image.
       - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
 
-   We support two types of code-upload based challenges -
-      - Code-Upload Based Challenge (without Static Dataset): These are usually reinforcement learning challenges which involve uploading a trained agent in form of docker images and the environment is also saved in form of a docker image.
-      - Static Code-Upload Based Challenge: These are challenges where the host might want the participants to upload models and they have static dataset on which they want to run the models and perform evaluations. This kind of challenge is especially useful in case of data privacy concerns.
-
    Some of the popular code-upload based challenges that we have hosted are shown below:
 
    <a href="https://eval.ai/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
