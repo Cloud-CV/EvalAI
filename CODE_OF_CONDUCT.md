@@ -5,7 +5,7 @@ and welcoming community, we pledge to respect all people who contribute through 
 issues, posting feature requests, updating documentation, submitting pull requests or
 patches, and other activities.
 
-We are committed to making participation in this project a harassment-free experience for
+We are committed to make participation in this project a harassment-free experience for
 everyone, regardless of level of experience, gender, gender identity and expression,
 sexual orientation, disability, personal appearance, body size, race, ethnicity, age,
 religion, or nationality.
@@ -35,7 +35,7 @@ individual is representing the project or its community.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by
 contacting a project maintainer at [admin@cloudcv.org](mailto:admin@cloudcv.org). All complaints will
-be reviewed and investigated and will result in a response that is deemed necessary and
+be reviewed and investigated, further resulting in a response that is deemed necessary and
 appropriate to the circumstances. Maintainers are obligated to maintain confidentiality
 with regard to the reporter of an incident.
 
