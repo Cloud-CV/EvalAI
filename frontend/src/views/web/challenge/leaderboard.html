@@ -25,21 +25,24 @@
                         class="fa fa-refresh text-highlight"></i></span>
             </div>
         </div>
+
         <div class="row">
             <div class="col xs12 s6">
                 <span>
                     <md-select ng-model="challenge.phaseName" placeholder="Select Phase" class="rm-margin">
-                        <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})"
-                            value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}">
-                            <span class="fs-16 w-300">Phase:
-                            </span>{{key.challenge_phase_name}}, <span class="fs-16 w-300">Split: </span>
-                            {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background"
-                                data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
+                        <md-optgroup ng-repeat="(phaseName, phaseGroup) in challenge.phaseSplits" label="{{ phaseName }}">
+                            <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:split.id})"
+                                ng-value="split.id" ng-show="split.visibility" ng-repeat="split in phaseGroup">
+                                <span class="fs-16 w-300"> {{ split.challenge_phase_name }}, {{ split.dataset_split_name }}</span>
+                                <span class="new badge orange-background" data-badge-caption="Private" ng-if="split.showPrivate"></span>
+                            </md-option>
+                        </md-optgroup>
                         <md-option value="leaderboard is private" ng-if="challenge.isChallengeLeaderboardPrivate">Leaderboard is private</md-option>
                     </md-select>
                 </span>
-            </div>
-        </div>
+            </div>            
+        </div>    
+            
         <div class="row" ng-if="challenge.isMultiMetricLeaderboardEnabled[challenge.phaseSplitId]">
             <div class="col xs12 s6">
                 <span>
