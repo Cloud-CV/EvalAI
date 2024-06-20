@@ -25,7 +25,7 @@ def download_file_and_publish_submission_message(
     Download submission file from url and send it for the evaluation
     """
     user = User.objects.get(pk=user_pk)
-    challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_id)
+    challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_id, is_disabled=False)
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         user, challenge_phase.challenge.pk
     )

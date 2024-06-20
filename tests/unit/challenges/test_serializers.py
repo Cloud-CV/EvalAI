@@ -226,6 +226,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
                     "disable_logs",
+                    "is_disabled",
                 ]
             ),
         )
@@ -311,6 +312,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
                     "disable_logs",
+                    "is_disabled",
                 ]
             ),
         )
@@ -392,6 +394,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
                     "disable_logs",
+                    "is_disabled",
                 ]
             ),
         )
