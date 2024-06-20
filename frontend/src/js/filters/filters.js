@@ -35,4 +35,49 @@
         };
     }
 
+    angular.module('evalai')
+    .filter('customTitleFilter', customTitleFilter);
+
+    function customTitleFilter() {
+        return function(challenges, searchText) {
+            if (searchText === undefined) {
+                return challenges;
+            }
+            searchText = searchText.toString().toLowerCase();
+            var searchWords = searchText.split(' ');
+            return challenges.filter(function(challenge) {
+                var title = challenge.title.toLowerCase();
+                var tags = challenge.list_tags.join(' ').toLowerCase();
+                var domain = challenge.domain ? challenge.domain.toLowerCase() : '';
+                var regex = new RegExp("^" + searchWords.join('|'));
+                return title.split(' ').some(item => regex.test(item)) || tags.split(' ').some(item => regex.test(item)) || domain.split(' ').some(item => regex.test(item));
+            });
+        };
+    }
+
+    angular.module('evalai')
+    .filter('customDomainFilter', customDomainFilter);
+
+    function customDomainFilter() {
+        return function(challenges, selecteddomain) {
+            selecteddomain = selecteddomain.toString().toLowerCase();
+            if (selecteddomain === "all") {
+                return challenges;
+            }
+            else if (selecteddomain === "none") {
+                return challenges.filter(function(challenge) {
+                    return challenge.domain_name === null;
+                });
+            }
+            return challenges.filter(function(challenge) {
+                if (selecteddomain === "") {
+                    return true;
+                }
+                if (challenge.domain_name !== null) {
+                    return challenge.domain_name.toLowerCase().indexOf(selecteddomain) !== -1;
+                }
+                });
+        };
+    }
+
 })();
