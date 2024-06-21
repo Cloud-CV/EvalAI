@@ -94,10 +94,186 @@ In code-upload challenges, the evaluation is tighly-coupled with the agent and e
 
 The starter templates for code-upload challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/tree/master/code_upload_challenge_evaluation).
 
-The steps to configure evaluation for code-upload challenges are:
+### Simple Evaluation Scripts
 
-1. **Create an environment**:
-    There are few steps involved in creating an environment:
+There are three files that you need to edit. The first one is `evaluation.proto`. To learn more about Python gRPC, please refer to the [gRPC Python Quickstart](https://grpc.io/docs/languages/python/quickstart/). Below is a sample proto file. To define the proto file, please refer to [What is gRPC?](https://grpc.io/docs/what-is-grpc/introduction/) and [gRPC Python Basics](https://grpc.io/docs/languages/python/basics/).
+
+1. **Create a proto file**:
+
+    For the example proto file, we focus on the `GetIdentity`. So the `GetIdentity` method in our proto to allow retrieval of a user's identity information based on a numerical ID. It uses the `GetIdentityRequest`, which accepts an integer ID, to return detailed identity data encapsulated in the `IdentityResponse`. This response includes an `Identity` object that holds a unique identifier and its corresponding name, ensuring the method can serve specific identity-related inquiries efficiently.
+
+    ```python
+
+    syntax = "proto3";
+    package user;
+
+    service UserService {
+    rpc GetUser(GetUserRequest) returns (UserResponse) {}
+    rpc GetIdentity(GetIdentityRequest) returns (IdentityResponse) {}
+    }
+
+    message GetUserRequest {
+    string id = 1;
+    }
+
+    message UserResponse {
+    User user = 1;
+    }
+
+    message User {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    }
+
+    message GetIdentityRequest {
+    int32 id = 1;  // Ensure this is an integer if you're passing integers
+    }
+
+    message IdentityResponse {
+    Identity identity = 1;
+    }
+
+    message Identity {
+    int32 number = 1;
+    string numberName = 2;
+    }
+
+    ```
+
+    To install the necessary packages, open your command prompt and navigate to your requirements folder using `cd ./requirements`. Then execute `pip install -r environments.txt` to install the packages from `environments.txt`, followed by `pip install -r agents.txt` for those in `agents.txt`. Ensure Python and pip are properly installed on your system before starting.
+
+    To compile the `user.proto` file, open your command prompt and navigate to the directory containing the file:
+    ```
+    cd path/to/user.proto
+    ```
+    Then, execute the following command to generate the necessary Python gRPC and Protocol Buffers code:
+    ```
+    python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. user.proto
+    ```
+
+    Make sure you have the `grpc_tools` package installed before running the command.
+
+    After naming your proto file `user.proto` and compiling it, you'll generate `user_pb2.py` and `user_pb2_grpc.py`. Copy these files into your client and server directories to ensure they have access to the necessary gRPC and Protocol Buffers code.
+
+2. **Create an environment**:
+
+    **A. Simple environment**:
+    For setting up a sample server using the provided `environment.py`, here's a brief overview:
+
+    1. The server will listen on port 50051 and handle two functions: `GetUser` and `GetIdentity`.
+    2. `GetUser` is designed to always return a fixed User object with the properties `id = 1`, `name = "John Doe"`, and `email = "john@gmail.com"`.
+    3. `GetIdentity` will accept an integer `id` as input and return a corresponding word. For example, if it receives the number `2`, it will return "two".
+
+    This setup requires the server to handle specific RPCs defined in your `.proto` files, ensuring that these operations conform to the expected inputs and outputs as described.
+
+    ```python
+    import grpc
+    import gym
+    import pickle
+    import sys
+    import os
+    import requests
+    import json
+
+    from concurrent import futures
+    import logging
+
+    import grp
+    import user_pb2
+    import user_pb2_grpc
+
+    import time
+
+    EVALUATION_COMPLETED = False
+
+
+    class UserService(user_pb2_grpc.UserServiceServicer):
+        def GetUser(self, request, context):
+            print("GetUser called")
+            return user_pb2.User(id="1", name="John Doe", email="john@gmail.com")
+        
+        # create a dictionary to store the number and its calls. For example: 1: One
+        number_to_calls = {
+            1: "One",
+            2: "Two",
+            3: "Three",
+            4: "Four",
+            5: "Five",
+            6: "Six",
+            7: "Seven",
+            8: "Eight",
+            9: "Nine",
+            10: "Ten"
+        }
+
+        def GetIdentity(self, request, context):
+            print("GetIdentity called")
+            print("Request ID: ", request.id)
+            return user_pb2.IdentityResponse(identity=user_pb2.Identity(number=request.id, numberName=self.number_to_calls[request.id]))
+            
+    def serve():
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+        user_pb2_grpc.add_UserServiceServicer_to_server(UserService(), server)
+        print("Starting server. Listening on port 50051")
+        server.add_insecure_port("[::]:50051")
+        server.start()
+        print("Server started")
+        try:
+            while not EVALUATION_COMPLETED:
+                time.sleep(4)
+            server.stop(0)
+        except KeyboardInterrupt:
+            server.stop(0)
+
+
+
+    if __name__ == '__main__':
+        logging.basicConfig()
+        serve()`
+
+    ```
+
+    In the setup described for `agent.py`, the script performs the following tasks:
+
+    1. Iterates through a list of numbers ranging from 1 to 10.
+    2. For each number in the list, it calls the `GetIdentity` function on a server.
+    3. `GetIdentity` is expected to return a corresponding word for each number, which the agent then receives.
+
+    This design implies that `agent.py` acts as a client, making RPC calls to the server which processes these requests by converting numbers to their word forms based on the implementation details provided in `GetIdentity`.
+
+    ```python
+    from __future__ import print_function
+
+    import logging
+
+    import grpc
+    import user_pb2 
+    import user_pb2_grpc
+
+    def run():
+
+        # a list of number from 1 to 10
+        numbers = range(1, 11)
+
+        with grpc.insecure_channel('localhost:50051') as channel:
+            stub = user_pb2_grpc.UserServiceStub(channel)
+
+            for number in numbers:
+                response = stub.GetIdentity(user_pb2.GetIdentityRequest(id=number))
+
+                print("User client received: " + str(response) )
+
+    run()
+    ```
+    
+    After setting up and running the server and agent as described, the expected result should display a sequence where the agent, for each number from 1 to 10, calls the GetIdentity function on the server and receives a corresponding word
+
+    <img src="_static/img/running_server.png"><br />
+
+    ### Advanced Evaluation Scripts
+
+    There are few steps involved in creating an advanced environment:
     1. *Edit the evaluator_environment*: This class defines the environment (a [gym environment](https://www.gymlibrary.dev/content/environment_creation/) or a [habitat environment](https://github.com/facebookresearch/habitat-lab/blob/b1f2d4791a0065d0791001b72a6c96748a5f9ae0/habitat-lab/habitat/core/env.py)) and other related attributes/methods. Modify the `evaluator_environment` containing a gym environment shown [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/8338085c6335487332f5b57cf7182201b8499aad/code_upload_challenge_evaluation/environment/environment.py#L21-L32):
 
         ```python

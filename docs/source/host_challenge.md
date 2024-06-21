@@ -59,23 +59,45 @@ We categorize the challenges in two categories:
 
 Use [EvalAI-Starters](https://github.com/Cloud-CV/EvalAI-Starters) template. See [this](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) on how to use a repository as template.
 
-   <img src="_static/img/github_based_setup/use_template_1.png"><br />
-   <img src="_static/img/github_based_setup/use_template_2.png"><br />
+On the GitHub repository, choose the **Use this template** option and then select **Create a new repository**.
+
+ <img src="_static/img/github_based_setup/github_create_template.png"><br />
+
+Choose a name for your repository and click **Create repository**.
+
+ <img src="_static/img/github_based_setup/github_name_repo.png"><br />
+
+After you have finished creating your repository, go to **GitHub Settings**, then choose **Developer Settings**. Next, choose **Personal Access Tokens**, select **Token (classic)** from the drop-down menu, and click **Create new token (classic)**.
+
+ <img src="_static/img/github_based_setup/github_create_classic_token.png"><br />
 
 ### Step 2: Generate github token
 
-Generate your [github personal acccess token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) and copy it in clipboard.
+After you have generated your token in the next step, copy it to the clipboard. Then, go to the repository you just forked, choose the **Settings** tab, navigate to **Secrets and variables**, and select **New repository secret**. Type in your secret as shown below, and name your secret `AUTH_TOKEN`.
 
-Add the github personal access token in the forked repository's [secrets](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) with the name `AUTH_TOKEN`.
+ <img src="_static/img/github_based_setup/eval_team_id.png"><br />
+
 
 ### Step 3: Setup host configuration
 
-Now, go to [EvalAI](https://eval.ai) to fetch the following details -
-   1. `evalai_user_auth_token` - Go to [profile page](https://eval.ai/web/profile) after logging in and click on `Get your Auth Token` to copy your auth token.
-   2. `host_team_pk` - Go to [host team page](https://eval.ai/web/challenge-host-teams) and copy the `ID` for the team you want to use for challenge creation.
-   3. `evalai_host_url` - Use `https://eval.ai` for production server and `https://staging.eval.ai` for staging server.
+Now, go to [EvalAI](https://eval.ai/) to fetch the following details:
 
-   <img src="_static/img/github_based_setup/evalai_profile.png"><br />
+1. **evalai_user_auth_token**
+
+   Go to your profile page by clicking on your name in the right corner, select the Auth Token tab, and click the copy symbol to copy your auth token.
+
+   <img src="_static/img/github_based_setup/evalai_user_auth_token.png"><br />
+
+2. **host_team_pk**
+
+   Go to **Participant Team** and copy the ID for the team you want to use for challenge creation.
+
+   <img src="_static/img/github_based_setup/eval_team_id.png"><br />
+
+3. **evalai_host_url**
+
+   Use [https://eval.ai](https://eval.ai) for the production server and [https://staging.eval.ai](https://staging.eval.ai) for the staging server (most likely you will use the production server, as the staging server is only for testing purposes).
+
 
 ### Step 4: Setup automated update push
 
