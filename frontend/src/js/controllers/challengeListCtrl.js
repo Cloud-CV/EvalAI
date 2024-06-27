@@ -27,14 +27,7 @@
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
-        vm.getAllResults = function(parameters, resultsArray, typ,status){
-            if (status === 'current') {
-                parameters.url = 'challenges/challenge/present/approved/public';
-            } else if (status === 'upcoming') {
-                parameters.url = 'challenges/challenge/future/approved/public';
-            } else if (status === 'past') {
-                parameters.url = 'challenges/challenge/past/approved/public';
-            }
+        vm.getAllResults = function(parameters, resultsArray, typ){
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
@@ -95,11 +88,16 @@
         }
 
         // calls for ongoing challenges
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge", 'current');
+        parameters.url = 'challenges/challenge/present/approved/public';
+        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
+
         // calls for upcoming challenges
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge", 'upcoming');
+        parameters.url = 'challenges/challenge/future/approved/public';
+        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
+
         // calls for past challenges
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge", 'past');
+        parameters.url = 'challenges/challenge/past/approved/public';
+        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
 
         vm.scrollUp = function() {
             angular.element($window).bind('scroll', function() {
