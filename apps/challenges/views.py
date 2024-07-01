@@ -4739,6 +4739,10 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 @csrf_exempt
 @api_view(["POST"])
 def slack_actions(request):
+    # print request.POST
+    print("This is a request from slack")
+    print(request.POST.get("payload", "{}"))
+
     # Slack sends data as form data
     payload = json.loads(request.POST.get("payload", "{}"))
     action = payload["actions"][0]

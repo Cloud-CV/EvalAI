@@ -244,6 +244,8 @@ def get_queue_name(param, challenge_pk):
 
 
 def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
+    webhook = "https://hooks.slack.com/services/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"
+    print("send_slack_notification to webhook: ", webhook, " with message: ", message)
     """
     Send slack notification to any workspace
     Keyword Arguments:
@@ -251,15 +253,9 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
     try:
-        data = {
-            "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
-            "icon_url": "https://eval.ai/dist/images/evalai-logo-single.png",
-            "text": message["text"],
-            "username": "EvalAI",
-        }
         return requests.post(
             webhook,
-            data=json.dumps(data),
+            data=json.dumps(message),
             headers={"Content-Type": "application/json"},
         )
     except Exception as e:
