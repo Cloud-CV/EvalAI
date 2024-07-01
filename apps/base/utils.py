@@ -244,7 +244,6 @@ def get_queue_name(param, challenge_pk):
 
 
 def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
-    webhook = "https://hooks.slack.com/services/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"
     print("send_slack_notification to webhook: ", webhook, " with message: ", message)
     """
     Send slack notification to any workspace
