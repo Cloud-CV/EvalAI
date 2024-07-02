@@ -4747,26 +4747,8 @@ def slack_actions(request):
     print("This is a request from slack")
     print(request.POST.get("payload", "{}"))
 
-    # Slack sends data as form data
-    payload = json.loads(request.POST.get("payload", "{}"))
-    action = payload["actions"][0]
-    action_value = action["value"]
-    challenge_pk = action_value.split("_")[1]
-
-    if "approve" in action_value:
-        # Logic to approve the challenge
-        return update_challenge_approval_internal(challenge_pk, True)
-    elif "disapprove" in action_value:
-        # Logic to disapprove the challenge (simply log or notify for now)
-        print(f"Challenge {challenge_pk} disapproved")
-        return Response(
-            {"message": "Challenge disapproved"}, status=status.HTTP_200_OK
-        )
-
-    return Response(
-        {"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST
-    )
-
+    # response success
+    return Response({"status": "success"})
 
 def update_challenge_approval_internal(challenge_pk, approved):
     try:
