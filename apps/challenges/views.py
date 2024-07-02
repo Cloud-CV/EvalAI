@@ -24,6 +24,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -36,6 +37,9 @@ from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
+
+from rest_framework.permissions import AllowAny
+
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_yasg import openapi
@@ -4691,6 +4695,30 @@ def request_challenge_approval_by_pk(request, challenge_pk):
                     "short": False,
                 },
             ],
+            "attachments": [
+                {
+                    "fallback": "You are unable to make a decision.",
+                    "callback_id": "challenge_approval",  # Callback ID used to identify this particular interaction
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "actions": [
+                        {
+                            "name": "approval",
+                            "text": "Yes",
+                            "type": "button",
+                            "value": f"approve_{challenge_pk}",
+                            "style": "primary",
+                        },
+                        {
+                            "name": "approval",
+                            "text": "No",
+                            "type": "button",
+                            "value": f"disapprove_{challenge_pk}",
+                            "style": "danger",
+                        },
+                    ],
+                }
+            ],
         }
 
         webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
@@ -4709,6 +4737,34 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     else:
         error_message = "Please approve the challenge using admin for local deployments."
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(['POST'])
+@authentication_classes([])  # Disables authentication
+@permission_classes([AllowAny])  # Allows any request
+def slack_actions(request):
+    # print request.POST
+    print("This is a request from slack")
+    print(request.POST.get("payload", "{}"))
+
+    # response success
+    return Response({"status": "success"})
+
+def update_challenge_approval_internal(challenge_pk, approved):
+    try:
+        challenge = get_challenge_model(challenge_pk)
+        challenge.approved_by_admin = approved
+        challenge.save()
+        return Response(
+            {"message": "Challenge updated successfully!"},
+            status=status.HTTP_200_OK,
+        )
+    except Challenge.DoesNotExist:
+        return Response(
+            {"error": "Challenge not found!"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])

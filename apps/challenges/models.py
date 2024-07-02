@@ -265,6 +265,54 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
+    from base.utils import (
+        send_slack_notification,
+    )
+
+    message = {
+        "text": "A *new challenge* has been uploaded to EvalAI.",
+        "attachments": [
+            {
+                "fallback": "You are unable to make a decision.",
+                "color": "#3AA3E3",
+                "pretext": "A new challenge has been uploaded to EvalAI.",
+                "fields": [
+                    {"title": "Title", "value": instance.title, "short": True},
+                    {
+                        "title": "Challenge ID",
+                        "value": str(instance.id),
+                        "short": True,
+                    },
+                    {
+                        "title": "Approved By Admin",
+                        "value": str(instance.approved_by_admin),
+                        "short": True,
+                    },
+                ],
+                "callback_id": "challenge_approval",
+                "attachment_type": "default",
+                "actions": [
+                    {
+                        "name": "approval",
+                        "text": "Yes",
+                        "type": "button",
+                        "value": f"approve_{instance.title}",
+                        "style": "primary",
+                    },
+                    {
+                        "name": "approval",
+                        "text": "No",
+                        "type": "button",
+                        "value": f"disapprove_{instance.title}",
+                        "style": "danger",
+                    },
+                ],
+            }
+        ],
+    }
+
+    send_slack_notification(message=message)
+
     if not created and is_model_field_changed(instance, field_name):
         if (
             instance.approved_by_admin is True

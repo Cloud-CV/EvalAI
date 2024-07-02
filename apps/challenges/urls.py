@@ -295,6 +295,11 @@ urlpatterns = [
         name="update_challenge_approval",
     ),
     url(
+        r"^challenge/slack_actions/$",
+        views.slack_actions,
+        name="challenge_slack_actions",
+    ),
+    url(
         r"^challenge/update_challenge_attributes/$",
         views.update_challenge_attributes,
         name="update_challenge_attributes",
@@ -313,7 +318,7 @@ urlpatterns = [
         r"^challenge/modify_leaderboard_data/$",
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
-    )
+    ),
 ]
 
 app_name = "challenges"
