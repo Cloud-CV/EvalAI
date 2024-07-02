@@ -24,7 +24,50 @@ from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
 
 from .throttles import ResendEmailThrottle
+from django.core.mail import EmailMessage
 
+from django.shortcuts import render
+from django.utils.encoding import force_bytes, force_text
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+
+@api_view(['GET'])
+def generate_activation_link(request, user_email):
+    try:
+        user = User.objects.get(email=user_email)
+    except User.DoesNotExist:
+        return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if user.is_active:
+        return Response({'message': 'Account is already active.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    activation_link = f"https://eval.ai/api/accounts/user/activate/{uid}/{token}"
+    mail_subject = 'Activate your account.'
+    message = f"Dear {user.email},\n\nPlease click on the following link to activate your account:\n{activation_link}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nCloud CV Team"
+
+    email = EmailMessage(mail_subject, message, to=[user.email])
+    email.send()
+    return Response({'message': 'Activation link has been sent to your email.'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def activate_user(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        if default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            # Render the account_activate_confirmed.html template
+            return render(request, 'account/account_activate_confirmed.html', {'error': None})
+        else:
+            return render(request, 'account/account_activate_confirmed.html', {'error': 'Invalid activation link. Please Check the link again.'})
+    except Exception as e:
+        return render(request, 'account/account_activate_confirmed.html', {'error': str(e)})
+    
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
