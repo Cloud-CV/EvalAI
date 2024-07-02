@@ -37,6 +37,9 @@ from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
+
+from rest_framework.permissions import AllowAny
+
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from drf_yasg import openapi
@@ -4736,8 +4739,9 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@csrf_exempt
-@api_view(["POST"])
+@api_view(['POST'])
+@authentication_classes([])  # Disables authentication
+@permission_classes([AllowAny])  # Allows any request
 def slack_actions(request):
     # print request.POST
     print("This is a request from slack")
