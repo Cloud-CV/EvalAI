@@ -38,7 +38,6 @@ def generate_activation_link(request, user_email):
         user = User.objects.get(email=user_email)
     except User.DoesNotExist:
         return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-    
     if user.is_active:
         return Response({'message': 'Account is already active.'}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -47,7 +46,6 @@ def generate_activation_link(request, user_email):
     activation_link = f"https://eval.ai/api/accounts/user/activate/{uid}/{token}"
     mail_subject = 'Activate your account.'
     message = f"Dear {user.email},\n\nPlease click on the following link to activate your account:\n{activation_link}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nCloud CV Team"
-
     email = EmailMessage(mail_subject, message, to=[user.email])
     email.send()
     return Response({'message': 'Activation link has been sent to your email.'}, status=status.HTTP_200_OK)
@@ -67,13 +65,11 @@ def activate_user(request, uidb64, token):
             return render(request, 'account/account_activate_confirmed.html', {'error': 'Invalid activation link. Please Check the link again.'})
     except Exception as e:
         return render(request, 'account/account_activate_confirmed.html', {'error': str(e)})
-    
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def disable_user(request):
-
     user = request.user
     user.is_active = False
     user.save()
