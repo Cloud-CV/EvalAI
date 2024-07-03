@@ -15,6 +15,7 @@ import zipfile
 from os.path import basename, isfile, join
 from datetime import datetime
 
+from base.utils import JSONResponse
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -4743,12 +4744,33 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 @authentication_classes([])  # Disables authentication
 @permission_classes([AllowAny])  # Allows any request
 def slack_actions(request):
-    # print request.POST
-    print("This is a request from slack")
-    print(request.POST.get("payload", "{}"))
+    challenge = Challenge.objects.get(id=challenge_id)
+    from . import models
 
-    # response success
-    return Response({"status": "success"})
+    payload = json.loads(request.POST.get("payload", "{}"))
+
+    print("This is a request from slack")
+    print(payload)
+
+    action = payload["actions"][0]
+    challenge_id, action_type = action['value'].split('_')
+
+    # print out the action
+    print(f"Challenge ID: {challenge_id}, Action: {action_type}")
+    
+    if action_type == 'approve':
+        challenge.approved_by_admin = True
+        
+        models.slack_challenge_approval_callback(challenge_id)
+
+    else:
+        challenge.approved_by_admin = False
+
+        models.slack_challenge_approval_callback(challenge_id)
+    challenge.save()
+
+    # response success with format: challenge_id has been approved/disapproved
+    return JsonResponse({"text": f"Challenge {challenge_id} has been {action_type}d"})
 
 def update_challenge_approval_internal(challenge_pk, approved):
     try:

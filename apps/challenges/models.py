@@ -258,6 +258,38 @@ class Challenge(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+    
+
+def slack_challenge_approval_callback(challenge_id):
+    from challenges.models import Challenge
+    import challenges.aws_utils as aws
+
+    instance = Challenge.objects.get(id=challenge_id)
+
+    field_name = "approved_by_admin"
+
+    if challenge_id:
+        challenge = Challenge.objects.filter(id=challenge_id).first()
+        if challenge:
+            created = False
+        else:
+            created = True
+
+    if not created and is_model_field_changed(instance, field_name):
+        if (
+            instance.approved_by_admin is True
+            and instance.is_docker_based is True
+            and instance.remote_evaluation is False
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_eks_cluster.delay(serialized_obj)
+        elif (
+            instance.approved_by_admin is True
+            and instance.uses_ec2_worker is True
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_ec2.delay(serialized_obj)
+    aws.challenge_approval_callback(instance= instance, field_name=field_name)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
@@ -284,7 +316,7 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
                         "short": True,
                     },
                     {
-                        "title": "Approved By Admin",
+                        "title": "Are Challenge Approved By Admin",
                         "value": str(instance.approved_by_admin),
                         "short": True,
                     },
@@ -296,14 +328,14 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
                         "name": "approval",
                         "text": "Yes",
                         "type": "button",
-                        "value": f"approve_{instance.title}",
+                        "value": f"approve_{instance.id}",
                         "style": "primary",
                     },
                     {
                         "name": "approval",
                         "text": "No",
                         "type": "button",
-                        "value": f"disapprove_{instance.title}",
+                        "value": f"disapprove_{instance.id}",
                         "style": "danger",
                     },
                 ],
