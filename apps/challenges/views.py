@@ -15,8 +15,7 @@ import zipfile
 from os.path import basename, isfile, join
 from datetime import datetime
 
-from base.utils import JSONResponse
-
+from django.http import JsonResponse
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
