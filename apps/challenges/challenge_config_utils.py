@@ -842,9 +842,9 @@ class ValidateChallengeConfigUtil:
                     "challenge_phase_id",
                 }
                 combination = (
-                data["leaderboard_id"],
-                data["challenge_phase_id"],
-                data["dataset_split_id"],
+                    data["leaderboard_id"],
+                    data["challenge_phase_id"],
+                    data["dataset_split_id"],
                 )
                 if expected_keys.issubset(data.keys()):
                     if current_phase_split_ids and (combination not in current_phase_split_ids):
