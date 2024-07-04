@@ -24,7 +24,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.permissions import AllowAny
 from rest_framework import permissions, status
