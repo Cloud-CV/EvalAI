@@ -131,6 +131,11 @@ urlpatterns = [
         name="get_or_update_challenge_phase_split",
     ),
     url(
+        r"^challenge/slack_actions/$",
+        views.slack_actions,
+        name="challenge_slack_actions",
+    ),
+    url(
         r"^(?P<challenge_pk>[0-9]+)/$",
         views.star_challenge,
         name="star_challenge",
