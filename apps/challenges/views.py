@@ -4654,6 +4654,13 @@ def slack_actions(request):
 
     challenge = get_challenge_model(challenge_id)
 
+    # Verify the token
+    slack_token = payload.get('token')
+    expected_token = os.getenv('SLACK_VERIFICATION_TOKEN')
+
+    if slack_token != expected_token:
+        return JsonResponse({"error": "Invalid token"}, status=403)
+
     if action_type == "approve":
         challenge.approved_by_admin = True
         challenge.save()
