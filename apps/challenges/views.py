@@ -4747,6 +4747,8 @@ def slack_actions(request):
     print("This is a request from slack")
     print(payload)
 
+    return JsonResponse({"text": "This is a response from the server"})
+
     # from . import models
 
     # payload = json.loads(request.POST.get("payload", "{}"))
