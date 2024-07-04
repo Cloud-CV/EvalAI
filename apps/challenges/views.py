@@ -4757,7 +4757,7 @@ def slack_actions(request):
     action = payload["actions"][0]
     action_type, challenge_id_str = action['value'].split('_')
 
-    challenge_id = int(challenge_id)
+    challenge_id = int(challenge_id_str)
 
     challenge = get_challenge_model(challenge_id)
 
