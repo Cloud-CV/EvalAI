@@ -4766,6 +4766,7 @@ def slack_actions(request):
     
     if action_type == 'approve':
         challenge.approved_by_admin = True
+        challenge.save()
         
         models.slack_challenge_approval_callback(challenge_id)
 
@@ -4773,6 +4774,7 @@ def slack_actions(request):
 
     else:
         challenge.approved_by_admin = False
+        challenge.save()
 
         models.slack_challenge_approval_callback(challenge_id)
 
