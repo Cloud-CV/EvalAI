@@ -4747,36 +4747,34 @@ def slack_actions(request):
     print("This is a request from slack")
     print(payload)
 
-    return JsonResponse({"text": "This is a response from the server"})
+    from . import models
 
-    # from . import models
+    payload = json.loads(request.POST.get("payload", "{}"))
 
-    # payload = json.loads(request.POST.get("payload", "{}"))
+    print("This is a request from slack")
+    print(payload)
 
-    # print("This is a request from slack")
-    # print(payload)
+    action = payload["actions"][0]
+    challenge_id, action_type = action['value'].split('_')
 
-    # action = payload["actions"][0]
-    # challenge_id, action_type = action['value'].split('_')
+    challenge = get_challenge_model(challenge_id)
 
-    # challenge = get_challenge_model(challenge_id)
-
-    # # print out the action
-    # print(f"Challenge ID: {challenge_id}, Action: {action_type}")
+    # print out the action
+    print(f"Challenge ID: {challenge_id}, Action: {action_type}")
     
-    # if action_type == 'approve':
-    #     challenge.approved_by_admin = True
+    if action_type == 'approve':
+        challenge.approved_by_admin = True
         
-    #     models.slack_challenge_approval_callback(challenge_id)
+        models.slack_challenge_approval_callback(challenge_id)
 
-    #     return JsonResponse({"text": f"Challenge {challenge_id} has been approved"})
+        return JsonResponse({"text": f"Challenge {challenge_id} has been approved"})
 
-    # else:
-    #     challenge.approved_by_admin = False
+    else:
+        challenge.approved_by_admin = False
 
-    #     models.slack_challenge_approval_callback(challenge_id)
+        models.slack_challenge_approval_callback(challenge_id)
 
-    #     return JsonResponse({"text": f"Challenge {challenge_id} has been disapproved"})
+        return JsonResponse({"text": f"Challenge {challenge_id} has been disapproved"})
 
 
 def update_challenge_approval_internal(challenge_pk, approved):
