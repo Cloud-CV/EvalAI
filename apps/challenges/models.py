@@ -289,7 +289,7 @@ def slack_challenge_approval_callback(challenge_id):
         ):
             serialized_obj = serializers.serialize("json", [instance])
             aws.setup_ec2.delay(serialized_obj)
-    aws.challenge_approval_callback(instance= instance, field_name=field_name)
+    aws.challenge_approval_callback(instance= instance, field_name=field_name, sender="challenges.Challenge")
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
