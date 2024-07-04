@@ -4743,34 +4743,38 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 @authentication_classes([])  # Disables authentication
 @permission_classes([AllowAny])  # Allows any request
 def slack_actions(request):
-    from . import models
-
     payload = json.loads(request.POST.get("payload", "{}"))
-
     print("This is a request from slack")
     print(payload)
 
-    action = payload["actions"][0]
-    challenge_id, action_type = action['value'].split('_')
+    # from . import models
 
-    challenge = get_challenge_model(challenge_id)
+    # payload = json.loads(request.POST.get("payload", "{}"))
 
-    # print out the action
-    print(f"Challenge ID: {challenge_id}, Action: {action_type}")
+    # print("This is a request from slack")
+    # print(payload)
+
+    # action = payload["actions"][0]
+    # challenge_id, action_type = action['value'].split('_')
+
+    # challenge = get_challenge_model(challenge_id)
+
+    # # print out the action
+    # print(f"Challenge ID: {challenge_id}, Action: {action_type}")
     
-    if action_type == 'approve':
-        challenge.approved_by_admin = True
+    # if action_type == 'approve':
+    #     challenge.approved_by_admin = True
         
-        models.slack_challenge_approval_callback(challenge_id)
+    #     models.slack_challenge_approval_callback(challenge_id)
 
-        return JsonResponse({"text": f"Challenge {challenge_id} has been approved"})
+    #     return JsonResponse({"text": f"Challenge {challenge_id} has been approved"})
 
-    else:
-        challenge.approved_by_admin = False
+    # else:
+    #     challenge.approved_by_admin = False
 
-        models.slack_challenge_approval_callback(challenge_id)
+    #     models.slack_challenge_approval_callback(challenge_id)
 
-        return JsonResponse({"text": f"Challenge {challenge_id} has been disapproved"})
+    #     return JsonResponse({"text": f"Challenge {challenge_id} has been disapproved"})
 
 
 def update_challenge_approval_internal(challenge_pk, approved):
