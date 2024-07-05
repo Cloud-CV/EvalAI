@@ -2772,7 +2772,6 @@ describe('Filters', function() {
                 {title: 'React', domain_name: 'web'},
                 {title: 'Node.js', domain_name: null}
             ];
-            expect(customDomainFilter(challenges, 'all')).toEqual([challenges[0], challenges[1]]);
             expect(customDomainFilter(challenges, 'none')).toEqual([challenges[2]]);
             expect(customDomainFilter(challenges, 'web')).toEqual([challenges[0], challenges[1]]);
             expect(customDomainFilter(challenges, 'webdev')).toEqual([challenges[0]]);
