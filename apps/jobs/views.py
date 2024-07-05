@@ -1119,9 +1119,9 @@ def update_submission(request, challenge_pk):
             "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
+
     challenge_phase_pk = request.data.get("challenge_phase")
-    
+
     try:
         challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk)
     except ChallengePhase.DoesNotExist:
