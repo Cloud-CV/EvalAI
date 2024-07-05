@@ -2810,13 +2810,14 @@
                         utilities.hideLoader();
                         $mdDialog.hide();
                         var error = response.data;
+                        var errorMessage;
                         if (error.test_annotation) {
-                            var errorMessage = error.test_annotation[0];
+                            errorMessage = error.test_annotation[0];
                             $rootScope.notify("error", errorMessage);
                         }
                         else if (error.description) {
-                            var errorMessage = error.description[0];
-                            $rootScope.notify("error",'Description: '+errorMessage);
+                            errorMessage = error.description[0];
+                            $rootScope.notify("error",'Description: ' + errorMessage);
                         }
                         // Default error handling
                         else {
