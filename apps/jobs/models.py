@@ -140,8 +140,8 @@ class Submission(TimeStampedModel):
     # Store the values of meta attributes for the submission here.
     submission_metadata = JSONField(blank=True, null=True)
     is_verified_by_host = models.BooleanField(default=False)
-    
-    #flag for submission type: UI(False) and CLI(True)
+
+    # flag for submission type: UI(False) and CLI(True)
     from_cli = models.BooleanField(default=False)
 
     def __str__(self):
