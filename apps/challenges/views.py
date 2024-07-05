@@ -752,6 +752,7 @@ def get_all_challenges_submission_metrics(request):
 
     return Response(submission_metrics, status=status.HTTP_200_OK)
 
+
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def get_challenge_submission_metrics_by_pk(request, pk):
@@ -774,6 +775,7 @@ def get_challenge_submission_metrics_by_pk(request, pk):
         submission_metrics[submission_status] = count
 
     return Response(submission_metrics, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])

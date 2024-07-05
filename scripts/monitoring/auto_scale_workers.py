@@ -86,6 +86,7 @@ def scale_up_or_down_workers(challenge, challenge_metrics):
     else:
         scale_up_workers(challenge, num_workers)
 
+
 def get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id):
     try:
         response = evalai_interface.make_request(
@@ -100,6 +101,7 @@ def get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id):
     except Exception as e:
         print("Error fetching submission metrics for challenge {}: {}".format(challenge_id, e))
         return None
+
 
 # TODO: Factor in limits for the APIs
 def scale_up_or_down_workers_for_challenges(response, evalai_interface):

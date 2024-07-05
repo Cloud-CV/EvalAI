@@ -204,6 +204,7 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
                 )
             )
 
+
 def get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id):
     try:
         response = evalai_interface.make_request(
@@ -219,12 +220,12 @@ def get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id):
         print("Error fetching submission metrics for challenge {}: {}".format(challenge_id, e))
         return None
 
+
 # Cron Job
 def start_job():
-
     # Get metrics
     evalai_interface = create_evalai_interface(AUTH_TOKEN)
-    
+
     response = evalai_interface.get_challenges()
     for challenge in response["results"]:
         try:

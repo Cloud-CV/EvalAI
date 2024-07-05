@@ -123,6 +123,7 @@ def get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id):
         print("Error fetching submission metrics for challenge {}: {}".format(challenge_id, e))
         return None
 
+
 # Cron Job
 def start_job():
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
@@ -133,7 +134,7 @@ def start_job():
             metrics = get_challenge_submission_metrics_by_pk(evalai_interface, challenge_id)
         except Exception as e:
             print("Error processing challenge {}: {}".format(challenge_id, e))
-            
+
     start_or_stop_workers_for_challenges(response, metrics, evalai_interface)
     next_page = response["next"]
     while next_page is not None:
