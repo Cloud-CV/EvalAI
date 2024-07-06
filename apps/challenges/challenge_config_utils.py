@@ -824,7 +824,6 @@ class ValidateChallengeConfigUtil:
                 ].format(combination[0], combination[1], combination[2])
                 self.error_messages.append(message)
 
-        challenge_phase_split_uuids = []
         if challenge_phase_splits:
             phase_split = 1
             exclude_fields = [
@@ -847,16 +846,8 @@ class ValidateChallengeConfigUtil:
                     data["dataset_split_id"],
                 )
                 if expected_keys.issubset(data.keys()):
-                    if current_phase_split_ids and (combination not in current_phase_split_ids):
-                        challenge_phase_split_uuids.append(combination)
-                    else:
-                        challenge_phase_split_uuids.append(
-                            (
-                                data["leaderboard_id"],
-                                data["challenge_phase_id"],
-                                data["dataset_split_id"],
-                            )
-                        )
+                    if combination in current_phase_split_ids:
+                        current_phase_split_ids.remove(combination)
                     (
                         is_mapping_valid,
                         messages,
