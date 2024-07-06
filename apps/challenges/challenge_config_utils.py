@@ -620,7 +620,6 @@ class ValidateChallengeConfigUtil:
             message = self.error_messages_dict.get("missing_leaderboard_key")
             self.error_messages.append(message)
 
-
     # Check for challenge phases
     def validate_challenge_phases(self, current_phase_config_ids):
         challenge_phases_data = self.yaml_file_data.get("challenge_phases")
@@ -913,7 +912,6 @@ class ValidateChallengeConfigUtil:
         else:
             message = self.error_messages_dict["missing_dataset_splits_key"]
             self.error_messages.append(message)
-
 
     # Check for Tags and Domain
     def check_tags(self):
