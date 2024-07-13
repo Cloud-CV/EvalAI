@@ -11,39 +11,72 @@ EVALAI_ENDPOINT = os.getenv("API_HOST_URL")
 AUTH_HEADER = {"Authorization": f"Bearer {AUTH_TOKEN}"}
 ENV = os.getenv("ENV", "dev")
 
+
 def fetch_metrics_in_chunks(endpoint, range_days=1, period_seconds=300):
     max_days_per_request = 1  # Max days per request
     metrics_data = []
-    start_date = datetime.datetime.now(pytz.UTC) - datetime.timedelta(days=range_days)
+    start_date = datetime.datetime.now(pytz.UTC) - datetime.timedelta(
+        days=range_days
+    )
     end_date = datetime.datetime.now(pytz.UTC)
 
     while start_date < end_date:
-        chunk_end_date = min(start_date + datetime.timedelta(days=max_days_per_request), end_date)
+        chunk_end_date = min(
+            start_date + datetime.timedelta(days=max_days_per_request),
+            end_date,
+        )
         chunk_range_days = (chunk_end_date - start_date).days
-        chunk_endpoint = f"{endpoint}&range={chunk_range_days}&period={period_seconds}"
+        chunk_endpoint = (
+            f"{endpoint}&range={chunk_range_days}&period={period_seconds}"
+        )
         response = requests.get(chunk_endpoint, headers=AUTH_HEADER)
 
         if response.status_code == 200:
             metrics_data.append(response.json())
         else:
-            print(f"Failed to fetch metrics for chunk: {start_date} to {chunk_end_date}")
+            print(
+                f"Failed to fetch metrics for chunk: {
+                    start_date} to {chunk_end_date}"
+            )
 
         start_date = chunk_end_date
     return metrics_data
 
-def get_metrics_for_challenge(challenge, metric_type, range_days=1, period_seconds=300):
-    endpoint = f"{EVALAI_ENDPOINT}/api/challenges/{challenge.id}/get_ecs_workers_metrics/{metric_type}/?period={period_seconds}"
-    metrics_data = fetch_metrics_in_chunks(endpoint, range_days, period_seconds)
-    print(f"{metric_type.capitalize()} Metrics for Challenge ID: {challenge.id}, Title: {challenge.title}")
+
+def get_metrics_for_challenge(
+    challenge, metric_type, range_days=1, period_seconds=300
+):
+    # Construct the API endpoint with the required query parameters
+    endpoint = f"{EVALAI_ENDPOINT}/api/challenges/{challenge.id}/get_ecs_workers_metrics/{
+        metric_type}/?range={range_days}&period={period_seconds}"
+
+    # Fetch metrics in chunks from the endpoint
+    metrics_data = fetch_metrics_in_chunks(
+        endpoint, range_days, period_seconds
+    )
+
+    # Log the fetched metrics
+    print(
+        f"{metric_type.capitalize()} Metrics for Challenge ID: {
+            challenge.id}, Title: {challenge.title}"
+    )
     print(metrics_data)
+
     return metrics_data
+
 
 def monitor_workers_for_challenge(response, evalai_interface):
     for challenge in response["results"]:
         try:
-            cpu_utilization_datapoints = get_metrics_for_challenge(challenge, 'cpu')
-            memory_utilization_datapoints = get_metrics_for_challenge(challenge, 'memory')
-            storage_utilization_datapoints = get_metrics_for_challenge(challenge, 'storage')
+            cpu_utilization_datapoints = get_metrics_for_challenge(
+                challenge, "cpu"
+            )
+            memory_utilization_datapoints = get_metrics_for_challenge(
+                challenge, "memory"
+            )
+            storage_utilization_datapoints = get_metrics_for_challenge(
+                challenge, "storage"
+            )
 
             # Log the metrics
             print(cpu_utilization_datapoints)
@@ -54,9 +87,11 @@ def monitor_workers_for_challenge(response, evalai_interface):
             print(f"Error while fetching metrics for challenge: {e}")
             continue
 
+
 def create_evalai_interface():
     evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_ENDPOINT)
     return evalai_interface
+
 
 def start_job():
     evalai_interface = create_evalai_interface()
@@ -67,6 +102,7 @@ def start_job():
         response = evalai_interface.make_request(next_page, "GET")
         monitor_workers_for_challenge(response, evalai_interface)
         next_page = response["next"]
+
 
 if __name__ == "__main__":
     print("Starting worker metric monitoring script")
