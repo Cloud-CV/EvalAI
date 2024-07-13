@@ -3294,6 +3294,60 @@ def get_worker_logs(request, challenge_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def get_ecs_workers_metrics(request, challenge_pk, metric):
+    if not request.user.is_staff:
+        if not is_user_a_host_of_challenge(request.user, challenge_pk):
+            response_data = {
+                "error": "Sorry, you are not authorized for access worker operations."
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate the metric
+    if metric not in ("cpu", "memory", "storage"):
+        response_data = {"error": f"The metric {metric} is invalid for worker"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Extract range and period from query parameters
+    range_days = request.GET.get("range", None)
+    period_seconds = request.GET.get("period", None)
+
+    # Validate the range and period parameters
+    if not range_days or not period_seconds:
+        return Response(
+            {"error": "Missing range or period parameter"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        range_days = int(range_days)
+        period_seconds = int(period_seconds)
+    except ValueError:
+        return Response(
+            {"error": "Range and period must be integers"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Fetch the metrics based on the metric type
+    if metric == "cpu":
+        response = get_cpu_utilization(
+            challenge_pk, range_days, period_seconds
+        )
+    elif metric == "memory":
+        response = get_memory_utilization(
+            challenge_pk, range_days, period_seconds
+        )
+    elif metric == "storage":
+        response = get_storage_utilization(
+            challenge_pk, range_days, period_seconds
+        )
+
+    return Response(response, status=status.HTTP_200_OK)
+
+
 @api_view(["PUT"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
