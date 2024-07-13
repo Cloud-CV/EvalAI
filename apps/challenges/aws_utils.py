@@ -1634,6 +1634,97 @@ def create_eks_cluster_subnets(challenge):
         return
 
 
+def get_cpu_utilization(challenge, range_days, period_seconds, cluster_name):
+    """
+    Get the CPU utilization of the worker in the challenge.
+    """
+    from datetime import datetime, timedelta
+
+    cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+
+    start_time = datetime.utcnow() - timedelta(days=range_days)
+    end_time = datetime.utcnow()
+    queue_name = challenge.queue
+    service_name = "{}_service".format(queue_name)
+
+    response = cloudwatch_client.get_metric_statistics(
+        Namespace="AWS/ECS",
+        MetricName="CPUUtilization",
+        Dimensions=[
+            {"Name": "ClusterName", "Value": cluster_name},
+            {"Name": "ServiceName", "Value": service_name},
+        ],
+        StartTime=start_time,
+        EndTime=end_time,
+        Period=period_seconds,
+        Statistics=["Average", "Maximum", "Minimum"],
+    )
+
+    return response["Datapoints"]
+
+
+def get_memory_utilization(
+    challenge, range_days, period_seconds, cluster_name
+):
+    """
+    Get the Memory utilization of the worker in the challenge.
+    """
+    from datetime import datetime, timedelta
+
+    cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+
+    start_time = datetime.utcnow() - timedelta(days=range_days)
+    end_time = datetime.utcnow()
+    queue_name = challenge.queue
+    service_name = "{}_service".format(queue_name)
+
+    response = cloudwatch_client.get_metric_statistics(
+        Namespace="AWS/ECS",
+        MetricName="MemoryUtilization",
+        Dimensions=[
+            {"Name": "ClusterName", "Value": cluster_name},
+            {"Name": "ServiceName", "Value": service_name},
+        ],
+        StartTime=start_time,
+        EndTime=end_time,
+        Period=period_seconds,
+        Statistics=["Average", "Maximum", "Minimum"],
+    )
+
+    return response["Datapoints"]
+
+
+def get_storage_utilization(
+    challenge, range_days, period_seconds, cluster_name
+):
+    """
+    Get the Storage utilization of the worker in the challenge.
+    """
+    from datetime import datetime, timedelta
+
+    cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
+
+    start_time = datetime.utcnow() - timedelta(days=range_days)
+    end_time = datetime.utcnow()
+    queue_name = challenge.queue
+    service_name = "{}_service".format(queue_name)
+
+    response = cloudwatch_client.get_metric_statistics(
+        Namespace="ECS/ContainerInsights",
+        MetricName="EphemeralStorageUtilized",
+        Dimensions=[
+            {"Name": "ClusterName", "Value": cluster_name},
+            {"Name": "ServiceName", "Value": service_name},
+        ],
+        StartTime=start_time,
+        EndTime=end_time,
+        Period=period_seconds,
+        Statistics=["Average"],
+    )
+
+    return response["Datapoints"]
+
+
 @app.task
 def create_eks_cluster(challenge):
     """

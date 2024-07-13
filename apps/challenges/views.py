@@ -151,6 +151,9 @@ from .aws_utils import (
     get_logs_from_cloudwatch,
     get_log_group_name,
     scale_resources,
+    get_cpu_utilization,
+    get_memory_utilization,
+    get_storage_utilization,
 )
 from .utils import (
     get_aws_credentials_for_submission,
