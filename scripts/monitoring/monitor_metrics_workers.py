@@ -1,7 +1,6 @@
 import os
 import pytz
 import requests
-from datetime import datetime
 from evalai_interface import EvalAI_Interface
 
 utc = pytz.UTC
@@ -74,6 +73,11 @@ def monitor_workers_for_challenge(response, evalai_interface):
                 challenge)
             storage_utilization_datapoints = get_storage_metrics_for_challenge(
                 challenge)
+
+            # log the metrics with print
+            print(cpu_utilization_datapoints)
+            print(memory_utilization_datapoints)
+            print(storage_utilization_datapoints)
 
         except Exception as e:
             print("Error while fetching metrics for challenge: {}".format(e))
