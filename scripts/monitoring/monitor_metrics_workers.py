@@ -35,11 +35,11 @@ def fetch_metrics_in_chunks(endpoint, range_days=1, period_seconds=300):
             metrics_data.append(response.json())
         else:
             print(
-                f"Failed to fetch metrics for chunk: {
-                    start_date} to {chunk_end_date}"
+                f"Failed to fetch metrics for chunk: {start_date} to {chunk_end_date}"
             )
 
         start_date = chunk_end_date
+
     return metrics_data
 
 
@@ -47,8 +47,7 @@ def get_metrics_for_challenge(
     challenge, metric_type, range_days=1, period_seconds=300
 ):
     # Construct the API endpoint with the required query parameters
-    endpoint = f"{EVALAI_ENDPOINT}/api/challenges/{challenge.id}/get_ecs_workers_metrics/{
-        metric_type}/?range={range_days}&period={period_seconds}"
+    endpoint = f"{EVALAI_ENDPOINT}/api/challenges/{challenge.id}/get_ecs_workers_metrics/{metric_type}/?range={range_days}&period={period_seconds}"
 
     # Fetch metrics in chunks from the endpoint
     metrics_data = fetch_metrics_in_chunks(
@@ -57,8 +56,7 @@ def get_metrics_for_challenge(
 
     # Log the fetched metrics
     print(
-        f"{metric_type.capitalize()} Metrics for Challenge ID: {
-            challenge.id}, Title: {challenge.title}"
+        f"{metric_type.capitalize()} Metrics for Challenge ID: {challenge.id}, Title: {challenge.title}"
     )
     print(metrics_data)
 
