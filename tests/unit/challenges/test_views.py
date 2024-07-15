@@ -4452,7 +4452,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "publication_url": submission.publication_url,
                     "project_url": submission.project_url,
                     "is_verified_by_host": False,
-                    "from_cli": False,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
