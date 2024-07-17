@@ -1,6 +1,5 @@
 import os
 import pytz
-import requests
 from evalai_interface import EvalAI_Interface
 from datetime import datetime, timedelta
 
