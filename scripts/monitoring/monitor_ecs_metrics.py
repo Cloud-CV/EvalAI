@@ -186,19 +186,22 @@ def monitor_workers_for_challenge(response, evalai_interface):
             cpu_utilization_datapoints = get_cpu_metrics_for_challenge(challenge)
             print("CPU Utilization Datapoints: ", cpu_utilization_datapoints)
         except Exception as e:
-            print("Error in getting worker metrics for challenge: ", challenge['title'])
+            print("Error in getting worker metrics for challenge: ", challenge['pk'])
+            print("Error: ", str(e))
 
         try:
             memory_utilization_datapoints = get_memory_metrics_for_challenge(challenge)
             print("Memory Utilization Datapoints: ", memory_utilization_datapoints)
         except Exception as e:
-            print("Error in getting worker metrics for challenge: ", challenge['title'])
+            print("Error in getting worker metrics for challenge: ", challenge['pk'])
+            print("Error: ", str(e))
 
         try:
             storage_utilization_datapoints = get_storage_metrics_for_challenge(challenge)
             print("Storage Utilization Datapoints: ", storage_utilization_datapoints)
         except Exception as e:
-            print("Error in getting worker metrics for challenge: ", challenge['title'])
+            print("Error in getting worker metrics for challenge: ", challenge['pk'])
+            print("Error: ", str(e))
 
 
 def create_evalai_interface(auth_token, evalai_endpoint):
