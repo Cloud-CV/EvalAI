@@ -4648,6 +4648,8 @@ def request_challenge_approval_by_pk(request, challenge_pk):
     and send approval request for the challenge
     """
     challenge = get_challenge_model(challenge_pk)
+    daily_approval_request_limit = challenge.daily_approval_request_limit
+    last_check_time = challenge.last_daily_approval_request
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
     unfinished_phases = []
 
@@ -4664,6 +4666,20 @@ def request_challenge_approval_by_pk(request, challenge_pk):
         error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
         return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    # check if the last time check is today, then check if the daily limit is reached
+    if last_check_time.date() == timezone.now().date():
+        if daily_approval_request_limit == 0:
+            error_message = "Sorry, the daily submission limit for approval requests has been reached."
+            return Response(
+                {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+        challenge.daily_approval_requests += 1
+
+    # if the last time check is not today, reset the daily approval requests
+    if last_check_time.date() != timezone.now().date():
+        challenge.daily_approval_requests = 0
+        challenge.last_daily_approval_request = timezone.now()
+        challenge.save()
     if not settings.DEBUG:
         try:
             evalai_api_server = settings.EVALAI_API_SERVER
