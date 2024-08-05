@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
-from accounts.serializers import CustomPasswordResetSerializer,ProfileSerializer
+from accounts.serializers import CustomPasswordResetSerializer, ProfileSerializer
 
 
 class TestCustomPasswordResetSerializer(TestCase):
