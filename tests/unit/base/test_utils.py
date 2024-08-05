@@ -18,20 +18,20 @@ from rest_framework.test import APITestCase, APIClient
 from base.utils import (
     RandomFileName,
     decode_data,
-    encode_data, 
-    send_slack_notification, 
-    is_user_a_staff, get_url_from_hostname, 
-    send_email, 
-    mock_if_non_prod_aws, 
+    encode_data,
+    send_slack_notification,
+    is_user_a_staff,
+    get_url_from_hostname,
+    send_email,
+    mock_if_non_prod_aws,
     get_or_create_sqs_queue,
-    get_boto3_client
-    )
+    get_boto3_client,
+)
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 from unittest.mock import MagicMock, patch
-from django.test import override_settings
 from scripts import seed
 from settings.common import SQS_RETENTION_PERIOD
 
@@ -213,9 +213,9 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
         mock_sqs = MagicMock()
         mock_boto3.return_value = mock_sqs
         queue_name = "test_queue"
-        
+
         get_or_create_sqs_queue(queue_name)
-        
+
         mock_boto3.assert_called_with(
             "sqs",
             endpoint_url="http://sqs:9324",
@@ -237,9 +237,9 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
         challenge.queue_aws_region = "us-west-2"
         challenge.aws_secret_access_key = "challenge_secret"
         challenge.aws_access_key_id = "challenge_key"
-        
+
         get_or_create_sqs_queue(queue_name, challenge)
-        
+
         mock_boto3.assert_called_with(
             "sqs",
             region_name="us-west-2",
@@ -255,14 +255,14 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
         mock_sqs = MagicMock()
         mock_boto3.return_value = mock_sqs
         queue_name = "test_queue"
-        
+
         with patch.dict('os.environ', {
             'AWS_DEFAULT_REGION': 'us-east-1',
             'AWS_SECRET_ACCESS_KEY': 'env_secret',
             'AWS_ACCESS_KEY_ID': 'env_key'
         }):
             get_or_create_sqs_queue(queue_name)
-        
+
         mock_boto3.assert_called_with(
             "sqs",
             region_name="us-east-1",
@@ -279,15 +279,15 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
         mock_settings.TEST = False
         mock_sqs = MagicMock()
         mock_boto3_resource.return_value = mock_sqs
-        
+
         error_response = {'Error': {'Code': 'SomeOtherError', 'Message': 'An error occurred'}}
         client_error = botocore.exceptions.ClientError(error_response, 'GetQueueUrl')
-        
+
         mock_sqs.get_queue_by_name.side_effect = client_error
-        
+
         queue_name = "test_queue"
         get_or_create_sqs_queue(queue_name)
-        
+
         mock_logger.exception.assert_called_once_with("Cannot get queue: {}".format(queue_name))
 
     @patch('base.utils.boto3.resource')
@@ -302,9 +302,9 @@ class TestGetOrCreateSqsQueue(BaseAPITestClass):
         mock_sqs.get_queue_by_name.side_effect = botocore.exceptions.ClientError(
             {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}}, "GetQueueUrl"
         )
-        
+
         get_or_create_sqs_queue(queue_name, challenge)
-        
+
         mock_sqs.create_queue.assert_called_with(
             QueueName=queue_name,
             Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD}
