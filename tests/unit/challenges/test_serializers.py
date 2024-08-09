@@ -445,7 +445,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
 
 
 class ChallengeLeaderboardSerializerTests(TestCase):
-    
     def setUp(self):
         self.obj = MagicMock()
         self.serializer = PWCChallengeLeaderboardSerializer()
@@ -482,7 +481,6 @@ class ChallengeLeaderboardSerializerTests(TestCase):
 
 @pytest.mark.django_db
 class UserInvitationSerializerTests(TestCase):
-    
     def setUp(self):
         # Set up any common objects you need
         self.user = User.objects.create(username="testuser")
@@ -514,10 +512,9 @@ class UserInvitationSerializerTests(TestCase):
 
 @pytest.mark.django_db
 class AddSponsorsToChallengeTests(TestCase):
-    
     def setUp(self):
-        self.User= User.objects.create(username="testuser")
-        self.challengeHostTeam=ChallengeHostTeam.objects.create(team_name="Test Team", created_by=self.User)
+        self.User = User.objects.create(username="testuser")
+        self.challengeHostTeam = ChallengeHostTeam.objects.create(team_name="Test Team", created_by=self.User)
         self.challenge = Challenge.objects.create(title="Test Challenge", creator=self.challengeHostTeam)
         self.yaml_file_data = {
             'sponsors': [

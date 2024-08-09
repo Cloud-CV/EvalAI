@@ -128,7 +128,6 @@ class TestChallengeStartNotifier(BaseTestClass):
         self.assertEqual(mock_send_email.call_args_list, calls)
 
 
-
 class TestUnittestChallengeNotification(BaseTestClass):
     @patch('challenges.challenge_notification_util.send_email')
     @patch('challenges.challenge_notification_util.settings')
@@ -143,9 +142,9 @@ class TestUnittestChallengeNotification(BaseTestClass):
 
         # Call the function
         mock_settings.configure_mock(
-        ADMIN_EMAIL='admin@cloudcv.org',
-        CLOUDCV_TEAM_EMAIL='team@cloudcv.org',
-        SENDGRID_SETTINGS={'TEMPLATES': {'CLUSTER_CREATION_TEMPLATE': 'template-id'}}
+            ADMIN_EMAIL='admin@cloudcv.org',
+            CLOUDCV_TEAM_EMAIL='team@cloudcv.org',
+            SENDGRID_SETTINGS={'TEMPLATES': {'CLUSTER_CREATION_TEMPLATE': 'template-id'}}
         )
         construct_and_send_eks_cluster_creation_mail(mock_challenge)
 
@@ -171,9 +170,9 @@ def test_construct_and_send_eks_cluster_creation_mail(mock_settings, mock_send_e
 
     # Call the function
     mock_settings.configure_mock(
-    ADMIN_EMAIL='admin@cloudcv.org',
-    CLOUDCV_TEAM_EMAIL='team@cloudcv.org',
-    SENDGRID_SETTINGS={'TEMPLATES': {'CLUSTER_CREATION_TEMPLATE': 'template-id'}}
+        ADMIN_EMAIL='admin@cloudcv.org',
+        CLOUDCV_TEAM_EMAIL='team@cloudcv.org',
+        SENDGRID_SETTINGS={'TEMPLATES': {'CLUSTER_CREATION_TEMPLATE': 'template-id'}}
     )
     construct_and_send_eks_cluster_creation_mail(mock_challenge)
 

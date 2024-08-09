@@ -3,7 +3,7 @@ from django.utils import timezone
 from challenges.models import Challenge
 from challenges.admin import ChallengeFilter
 from hosts.models import ChallengeHostTeam
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 
 
 class ChallengeFilterTest(TestCase):

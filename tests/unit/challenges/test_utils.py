@@ -3,7 +3,7 @@ import unittest
 import random
 import string
 from unittest.mock import MagicMock
-
+from django.contrib.auth.models import User
 from django.conf import settings
 from requests import patch
 import pytest
@@ -109,7 +109,7 @@ class TestGeneratePresignedUrl(unittest.TestCase):
         )
 
 class TestChallengeUtils(unittest.TestCase):
-    
+
     def test_parse_submission_meta_attributes(self):
         # Test with submission_metadata as None
         submission = {"submission_metadata": None}
@@ -163,8 +163,8 @@ class TestChallengeUtils(unittest.TestCase):
         self.assertIsNone(response)
         self.assertIsNone(challenge.domain)
 
+
 class TestAddSponsorsToChallenge(unittest.TestCase):
-    
     @patch('challenges.utils.ChallengeSponsor')
     @patch('challenges.utils.ChallengeSponsorSerializer')
     def test_add_sponsors_with_valid_data(self, MockChallengeSponsorSerializer, MockChallengeSponsor):
@@ -319,12 +319,12 @@ class SendEmailsTests(unittest.TestCase):
         emails = ["user1@example.com", "user2@example.com"]
         template_id = "template-id"
         template_data = {"key": "value"}
-        
+
         send_emails(emails, template_id, template_data)
-        
+
         # Check if send_email was called for each email
         self.assertEqual(mock_send_email.call_count, len(emails))
-        
+
         # Check that send_email was called with correct arguments for the first email
         mock_send_email.assert_any_call(
             sender="team@cloudcv.org",
@@ -332,7 +332,7 @@ class SendEmailsTests(unittest.TestCase):
             template_id=template_id,
             template_data=template_data,
         )
-        
+
         # Check that send_email was called with correct arguments for the second email
         mock_send_email.assert_any_call(
             sender="team@cloudcv.org",
