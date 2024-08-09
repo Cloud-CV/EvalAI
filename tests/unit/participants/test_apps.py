@@ -7,6 +7,3 @@ class TestParticipantsConfig(unittest.TestCase):
     def test_apps(self):
         self.assertEqual(ParticipantsConfig.name, "participants")
         self.assertEqual(apps.get_app_config("participants").name, "participants")
-
-if __name__ == '__main__':
-    unittest.main()
