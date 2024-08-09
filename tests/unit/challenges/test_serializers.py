@@ -1,5 +1,5 @@
 import os
-
+import pytest
 from datetime import timedelta
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch
@@ -11,7 +11,6 @@ from django.utils import timezone
 from allauth.account.models import EmailAddress
 from challenges.utils import add_sponsors_to_challenge
 from rest_framework.test import APITestCase, APIClient
-import pytest
 from challenges.models import Challenge, ChallengePhase
 from challenges.serializers import ChallengePhaseCreateSerializer, PWCChallengeLeaderboardSerializer, UserInvitationSerializer
 from participants.models import ParticipantTeam
