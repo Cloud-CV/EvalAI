@@ -2,7 +2,6 @@ import unittest
 from unittest import TestCase, mock
 from unittest.mock import Mock, patch, MagicMock
 from urllib.error import HTTPError
-from jobs.models import Submission
 from jobs.utils import get_leaderboard_data_model, is_url_valid, get_file_from_url, handle_submission_rerun, handle_submission_resume, calculate_distinct_sorted_leaderboard_data
 import os
 
@@ -240,6 +239,7 @@ class Submission:
     def __init__(self, status, submitted_at):
         self.status = status
         self.submitted_at = submitted_at
+
 
 def reorder_submissions_comparator(submission_1, submission_2):
     submissions_in_progress_status = [

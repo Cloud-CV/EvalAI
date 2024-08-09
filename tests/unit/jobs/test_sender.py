@@ -21,6 +21,7 @@ def message():
 @patch("jobs.sender.logger")
 def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_challenge_get, message):
     # Simulate Challenge.DoesNotExist exception
+
     mock_challenge_get.side_effect = Challenge.DoesNotExist
 
     response = publish_submission_message(message)
