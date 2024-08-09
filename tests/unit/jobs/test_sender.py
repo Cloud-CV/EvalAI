@@ -39,7 +39,7 @@ def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_c
 @patch("jobs.sender.get_submission_model")
 @patch("jobs.sender.send_slack_notification")
 @patch("jobs.sender.Challenge.objects.get")
-def test_publish_submission_message_success(mock_challenge_get,mock_send_slack_notification,mock_get_submission_model,mock_increment_statsd_counter,mock_get_or_create_sqs_queue,message):
+def test_publish_submission_message_success(mock_challenge_get, mock_send_slack_notification, mock_get_submission_model, mock_increment_statsd_counter, mock_get_or_create_sqs_queue, message):
     # Mock Challenge object
     mock_challenge = MagicMock()
     mock_challenge.queue = "test-queue"
