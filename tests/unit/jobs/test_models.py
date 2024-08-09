@@ -15,6 +15,7 @@ from participants.models import ParticipantTeam
 import pytest
 import rest_framework
 
+
 class BaseTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create(
@@ -87,9 +88,7 @@ class SubmissionTestCase(BaseTestCase):
 class TestSubmissionModel:
     def setup_method(self, method):
         self.user = User.objects.create_user(username='testuser', password='password')
-        self.challenge_host_team = ChallengeHostTeam.objects.create(
-            team_name="Test Challenge Host Team", created_by=self.user
-        )
+        self.challenge_host_team = ChallengeHostTeam.objects.create(team_name="Test Challenge Host Team", created_by=self.user)
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             description="Description for test challenge",
@@ -100,18 +99,15 @@ class TestSubmissionModel:
             end_date=timezone.now() + timedelta(days=1),
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False,   
-        )
+            anonymous_leaderboard=False)
         self.challenge_phase = ChallengePhase.objects.create(
             name='Test Phase',
             challenge=self.challenge,
             max_submissions=5,
             max_submissions_per_day=2,
-            max_submissions_per_month=10,
-        )
+            max_submissions_per_month=10)
         self.participant_team = ParticipantTeam.objects.create(
-            team_name="Test Participant Team", created_by=self.user
-        )
+            team_name="Test Participant Team", created_by=self.user)
 
     def test_max_submissions_per_day_reached(self):
         for _ in range(self.challenge_phase.max_submissions_per_day):

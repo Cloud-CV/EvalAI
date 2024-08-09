@@ -1,15 +1,13 @@
-import datetime
 import unittest
 from unittest import TestCase, mock
 from unittest.mock import Mock, patch, MagicMock
 from urllib.error import HTTPError
 from jobs.models import Submission
-from jobs.utils import get_leaderboard_data_model, get_remaining_submission_for_a_phase, is_url_valid, get_file_from_url, handle_submission_rerun, handle_submission_resume, calculate_distinct_sorted_leaderboard_data, reorder_submissions_comparator
+from jobs.utils import get_leaderboard_data_model, is_url_valid, get_file_from_url, handle_submission_rerun, handle_submission_resume, calculate_distinct_sorted_leaderboard_data
 import os
-from jobs.models import Submission
+
 
 class TestUtils(unittest.TestCase):
-
     @patch('urllib.request.urlopen')
     def test_is_url_valid(self, mock_urlopen):
         # Test with a valid URL
@@ -151,7 +149,6 @@ class TestHandleSubmissionResume(unittest.TestCase):
 
 
 class TestGetLeaderboardDataModel(TestCase):
-    
     @mock.patch('jobs.utils.LeaderboardData.objects.get')
     def test_get_leaderboard_data_model(self, mock_get):
         # Arrange

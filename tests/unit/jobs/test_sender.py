@@ -16,6 +16,7 @@ def message():
         "is_static_dataset_code_upload_submission": False,
     }
 
+
 @patch("jobs.sender.Challenge.objects.get")
 @patch("jobs.sender.logger")
 def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_challenge_get, message):
@@ -31,19 +32,13 @@ def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_c
     # Assert the function returns None
     assert response is None
 
+
 @patch("jobs.sender.get_or_create_sqs_queue")
 @patch("jobs.sender.increment_statsd_counter")
 @patch("jobs.sender.get_submission_model")
 @patch("jobs.sender.send_slack_notification")
 @patch("jobs.sender.Challenge.objects.get")
-def test_publish_submission_message_success(
-    mock_challenge_get, 
-    mock_send_slack_notification, 
-    mock_get_submission_model, 
-    mock_increment_statsd_counter, 
-    mock_get_or_create_sqs_queue, 
-    message
-):
+def test_publish_submission_message_success(mock_challenge_get,mock_send_slack_notification,mock_get_submission_model,mock_increment_statsd_counter,mock_get_or_create_sqs_queue,message):
     # Mock Challenge object
     mock_challenge = MagicMock()
     mock_challenge.queue = "test-queue"
@@ -129,6 +124,7 @@ def test_get_or_create_sqs_queue_default(mock_settings, mock_boto3_resource):
         aws_access_key_id="x",
     )
     assert queue == mock_sqs.get_queue_by_name.return_value
+
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
