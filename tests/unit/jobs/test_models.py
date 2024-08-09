@@ -12,7 +12,8 @@ from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam
-
+import pytest
+import rest_framework
 
 class BaseTestCase(TestCase):
     def setUp(self):
@@ -80,3 +81,56 @@ class SubmissionTestCase(BaseTestCase):
         self.assertEqual(
             "{}".format(self.submission.id), self.submission.__str__()
         )
+
+
+@pytest.mark.django_db
+class TestSubmissionModel:
+    def setup_method(self, method):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,   
+        )
+        self.challenge_phase = ChallengePhase.objects.create(
+            name='Test Phase',
+            challenge=self.challenge,
+            max_submissions=5,
+            max_submissions_per_day=2,
+            max_submissions_per_month=10,
+        )
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="Test Participant Team", created_by=self.user
+        )
+
+    def test_max_submissions_per_day_reached(self):
+        for _ in range(self.challenge_phase.max_submissions_per_day):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0),
+            )
+        with pytest.raises(rest_framework.exceptions.PermissionDenied, match=r"{'error': ErrorDetail\(string='The maximum number of submission for today has been reached', code='permission_denied'\)}"):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0),
+            )
