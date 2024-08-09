@@ -163,7 +163,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
             "start_date_greater_than_end_date": "Start date is greater than end date.",
             "challenge_metadata_schema_errors": "Schema errors: {}"
         }
-        
+
         self.util = ValidateChallengeConfigUtil(
             self.request, self.challenge_host_team, self.base_location,
             self.unique_folder_name, self.zip_ref, self.current_challenge
@@ -231,7 +231,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
     def test_validate_challenge_logo_no_image_key(self):
         self.util.yaml_file_data = {}
 
-        self.util.validate_challenge_logo() 
+        self.util.validate_challenge_logo()
 
         self.assertIsNone(self.util.challenge_image_file)
         self.assertIsNone(self.util.files["challenge_image_file"])
@@ -430,7 +430,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         }
         self.util.validate_dates()
         self.assertNotIn("Start date or end date is missing.", self.util.error_messages)
-        self.assertNotIn("Start date is greater than end date.", self.util.error_messages)       
+        self.assertNotIn("Start date is greater than end date.", self.util.error_messages)
 
     @patch('challenges.serializers.ZipChallengeSerializer.is_valid', return_value=False)
     @patch('challenges.serializers.ZipChallengeSerializer.errors', new_callable=Mock, return_value={"field": ["error"]})
@@ -568,14 +568,14 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
 
     def test_no_codename_for_challenge_phase(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"name": "Phase 1","id": 1}]
+            "challenge_phases": [{"name": "Phase 1", "id": 1}]
         }
         self.util.validate_challenge_phases([])
         self.assertEqual(self.util.error_messages[0], "Codename is missing for challenge phase.")
 
     def test_no_test_annotation_file_found(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "test_annotation_file": "non_existent_file","id": 1}]
+            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "test_annotation_file": "non_existent_file", "id": 1}]
         }
         self.util.validate_challenge_phases([])
         self.assertEqual(self.util.error_messages[0], "No test annotation file found for phase 'Phase 1'.")
@@ -625,7 +625,7 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
 
     def test_missing_option_in_submission_meta_attribute(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "id": 1, "description": "Description 1", "submission_meta_attributes": [{"name": "attr1", "type": "radio"}]}]       
+            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "id": 1, "description": "Description 1", "submission_meta_attributes": [{"name": "attr1", "type": "radio"}]}]
         }
         self.util.validate_challenge_phases([])
         self.assertEqual(self.util.error_messages[0], "Missing start or end date for phase '1'.")
@@ -772,7 +772,6 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.yaml_file_data = {"prizes": [{"rank": 1, "amount": "100"}]}
         self.util.check_prizes()
         self.assertEqual(self.util.error_messages[3], "Invalid prize amount: 100.")
-
 
         # Test case for missing rank
         self.util.yaml_file_data = {"prizes": [{"rank": 1, "amount": "100USD"}]}

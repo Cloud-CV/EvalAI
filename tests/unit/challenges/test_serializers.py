@@ -484,7 +484,7 @@ class UserInvitationSerializerTests(TestCase):
     def setUp(self):
         # Set up any common objects you need
         self.user = User.objects.create(username="testuser")
-        self.challengeHostTeam=ChallengeHostTeam.objects.create(team_name="Test Team", created_by=self.user)
+        self.challengeHostTeam = ChallengeHostTeam.objects.create(team_name="Test Team", created_by=self.user)
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             creator=self.challengeHostTeam,

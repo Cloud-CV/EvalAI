@@ -108,8 +108,8 @@ class TestGeneratePresignedUrl(unittest.TestCase):
             HttpMethod='PUT'
         )
 
-class TestChallengeUtils(unittest.TestCase):
 
+class TestChallengeUtils(unittest.TestCase):
     def test_parse_submission_meta_attributes(self):
         # Test with submission_metadata as None
         submission = {"submission_metadata": None}
