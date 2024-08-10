@@ -1,9 +1,8 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch as mockpatch
 import mock
 
 from datetime import timedelta
 
-from requests import patch
 from challenges.challenge_notification_util import construct_and_send_eks_cluster_creation_mail
 from moto import mock_ecs
 
@@ -129,9 +128,9 @@ class TestChallengeStartNotifier(BaseTestClass):
 
 
 class TestUnittestChallengeNotification(BaseTestClass):
-    @patch('challenges.challenge_notification_util.send_email')
-    @patch('challenges.challenge_notification_util.settings')
-    def test_construct_and_send_eks_cluster_creation_mail(mock_settings, mock_send_email):
+    @mockpatch('challenges.challenge_notification_util.send_email')
+    @mockpatch('challenges.challenge_notification_util.settings')
+    def test_construct_and_send_eks_cluster_creation_mail(self, mock_settings, mock_send_email):
         # Mock challenge object
         mock_challenge = MagicMock()
         mock_challenge.title = 'Test Challenge'
@@ -155,31 +154,3 @@ class TestUnittestChallengeNotification(BaseTestClass):
             template_id='template-id',
             template_data={"CHALLENGE_NAME": 'Test Challenge'}
         )
-
-
-@patch('challenges.challenge_notification_util.send_email')
-@patch('challenges.challenge_notification_util.settings')
-def test_construct_and_send_eks_cluster_creation_mail(mock_settings, mock_send_email):
-    # Mock challenge object
-    mock_challenge = MagicMock()
-    mock_challenge.title = 'Test Challenge'
-    mock_challenge.image = None
-
-    # Set settings.DEBUG to False
-    mock_settings.DEBUG = False
-
-    # Call the function
-    mock_settings.configure_mock(
-        ADMIN_EMAIL='admin@cloudcv.org',
-        CLOUDCV_TEAM_EMAIL='team@cloudcv.org',
-        SENDGRID_SETTINGS={'TEMPLATES': {'CLUSTER_CREATION_TEMPLATE': 'template-id'}}
-    )
-    construct_and_send_eks_cluster_creation_mail(mock_challenge)
-
-    # Assert send_email was called with correct arguments
-    mock_send_email.assert_called_once_with(
-        sender='team@cloudcv.org',
-        recipient='admin@cloudcv.org',
-        template_id='template-id',
-        template_data={"CHALLENGE_NAME": 'Test Challenge'}
-    )

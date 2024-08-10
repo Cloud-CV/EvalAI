@@ -1,11 +1,10 @@
 import unittest
 import zipfile
 import io
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, patch as mockpatch
 import yaml
 from django.contrib.auth.models import User
 from os.path import join
-import requests
 from challenges.challenge_config_utils import ValidateChallengeConfigUtil, download_and_write_file, get_yaml_files_from_challenge_config, get_yaml_read_error, is_challenge_config_yaml_html_field_valid, is_challenge_phase_split_mapping_valid, validate_challenge_config_util
 from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
 from hosts.models import ChallengeHostTeam
@@ -65,7 +64,7 @@ class TestIsChallengeConfigYamlHtmlFieldValid(unittest.TestCase):
     def setUp(self):
         self.base_location = "/path/to/extracted/config"
 
-    @patch('challenges.challenge_config_utils.isfile', return_value=False)
+    @mockpatch('challenges.challenge_config_utils.isfile', return_value=False)
     def test_file_not_found(self, mock_isfile):
         yaml_file_data = {'html_field': 'non_existent_file.html'}
         key = 'html_field'
@@ -75,7 +74,7 @@ class TestIsChallengeConfigYamlHtmlFieldValid(unittest.TestCase):
         self.assertFalse(is_valid)
         self.assertEqual(message, "File at path html_field not found. Please specify a valid file path")
 
-    @patch('challenges.challenge_config_utils.isfile', return_value=True)
+    @mockpatch('challenges.challenge_config_utils.isfile', return_value=True)
     def test_file_not_html(self, mock_isfile):
         yaml_file_data = {'html_field': 'file.txt'}
         key = 'html_field'
@@ -112,8 +111,8 @@ class TestDownloadAndWriteFile(unittest.TestCase):
         self.output_path = "/path/to/output/file.zip"
         self.mode = "wb"
 
-    @patch('challenges.challenge_config_utils.requests.get')
-    @patch('challenges.challenge_config_utils.write_file')
+    @mockpatch('challenges.challenge_config_utils.requests.get')
+    @mockpatch('challenges.challenge_config_utils.write_file')
     def test_io_error(self, mock_write_file, mock_requests_get):
         mock_requests_get.return_value = Mock(status_code=200, content=b'file content')
         mock_write_file.side_effect = IOError
@@ -123,7 +122,7 @@ class TestDownloadAndWriteFile(unittest.TestCase):
         self.assertFalse(is_success)
         self.assertEqual(message, "Unable to process the uploaded zip file. Please try again!")
 
-    @patch('challenges.challenge_config_utils.requests.get')
+    @mockpatch('challenges.challenge_config_utils.requests.get')
     def test_request_exception(self, mock_requests_get):
         mock_requests_get.side_effect = requests.exceptions.RequestException
 
@@ -193,7 +192,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertFalse(result)
         self.assertIn("Multiple YAML files found: 2.", self.util.error_messages)
 
-    @patch('challenges.challenge_config_utils.read_yaml_file')
+    @mockpatch('challenges.challenge_config_utils.read_yaml_file')
     def test_yaml_read_error(self, mock_read_yaml_file):
         self.util.yaml_file_count = 1
         self.util.yaml_file = "config.yaml"
@@ -204,8 +203,8 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertFalse(result)
         self.assertIn("YAML file read error: None at line None, column None.", self.util.error_messages)
 
-    @patch('challenges.challenge_config_utils.isfile')
-    @patch('challenges.challenge_config_utils.get_file_content')
+    @mockpatch('challenges.challenge_config_utils.isfile')
+    @mockpatch('challenges.challenge_config_utils.get_file_content')
     def test_validate_challenge_logo_valid_image(self, mock_get_file_content, mock_isfile):
         self.util.yaml_file_data = {"image": "logo.png"}
         mock_isfile.return_value = True
@@ -218,7 +217,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertIsNotNone(self.util.challenge_image_file)
         self.assertEqual(self.util.files["challenge_image_file"].name, "logo.png")
 
-    @patch('challenges.challenge_config_utils.isfile')
+    @mockpatch('challenges.challenge_config_utils.isfile')
     def test_validate_challenge_logo_invalid_image(self, mock_isfile):
         self.util.yaml_file_data = {"image": "logo.txt"}
         mock_isfile.return_value = False
@@ -237,7 +236,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertIsNone(self.util.files["challenge_image_file"])
 
     @pytest.mark.django_db
-    @patch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
+    @mockpatch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
     def test_validate_challenge_config_util_invalid_yaml(self, MockValidateChallengeConfigUtil):
         # Arrange
         mock_instance = MockValidateChallengeConfigUtil.return_value
@@ -271,7 +270,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         ))
 
     @pytest.mark.django_db
-    @patch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
+    @mockpatch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
     def test_validate_challenge_config_util_with_current_challenge(self, MockValidateChallengeConfigUtil):
         # Arrange
         mock_instance = MockValidateChallengeConfigUtil.return_value
@@ -335,7 +334,7 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertEqual(yaml_file_data, {"key": "value"})
         self.assertEqual(files, {"file_key": "file_value"})
 
-    @patch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
+    @mockpatch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
     def test_validate_challenge_config_util_without_current_challenge(self, MockValidateChallengeConfigUtil):
         # Arrange
         mock_instance = MockValidateChallengeConfigUtil.return_value
@@ -432,8 +431,8 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertNotIn("Start date or end date is missing.", self.util.error_messages)
         self.assertNotIn("Start date is greater than end date.", self.util.error_messages)
 
-    @patch('challenges.serializers.ZipChallengeSerializer.is_valid', return_value=False)
-    @patch('challenges.serializers.ZipChallengeSerializer.errors', new_callable=Mock, return_value={"field": ["error"]})
+    @mockpatch('challenges.serializers.ZipChallengeSerializer.is_valid', return_value=False)
+    @mockpatch('challenges.serializers.ZipChallengeSerializer.errors', new_callable=Mock, return_value={"field": ["error"]})
     def test_validate_serializer_invalid(self, mock_errors, mock_is_valid):
         self.util.validate_serializer()
         self.assertEqual(len(self.util.error_messages), 1)

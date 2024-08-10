@@ -2,7 +2,7 @@ import os
 import pytest
 from datetime import timedelta
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch as mockpatch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
@@ -522,7 +522,7 @@ class AddSponsorsToChallengeTests(TestCase):
             ]
         }
 
-    @patch('challenges.utils.ChallengeSponsorSerializer')  # Mock the serializer
+    @mockpatch('challenges.utils.ChallengeSponsorSerializer')  # Mock the serializer
     def test_serializer_valid(self, MockChallengeSponsorSerializer):
         # Mocking the serializer instance and its methods
         mock_serializer = MockChallengeSponsorSerializer.return_value
