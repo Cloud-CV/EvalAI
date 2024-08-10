@@ -17,6 +17,7 @@ def message():
         "is_static_dataset_code_upload_submission": False,
     }
 
+
 @patch("jobs.sender.Challenge.objects.get")
 @patch("jobs.sender.logger")
 def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_challenge_get, message):
@@ -32,17 +33,18 @@ def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_c
     # Assert the function returns None
     assert response is None
 
+
 @patch("jobs.sender.get_or_create_sqs_queue")
 @patch("jobs.sender.increment_statsd_counter")
 @patch("jobs.sender.get_submission_model")
 @patch("jobs.sender.send_slack_notification")
 @patch("jobs.sender.Challenge.objects.get")
 def test_publish_submission_message_success(
-    mock_challenge_get, 
-    mock_send_slack_notification, 
-    mock_get_submission_model, 
-    mock_increment_statsd_counter, 
-    mock_get_or_create_sqs_queue, 
+    mock_challenge_get,
+    mock_send_slack_notification,
+    mock_get_submission_model,
+    mock_increment_statsd_counter,
+    mock_get_or_create_sqs_queue,
     message
 ):
     # Mock Challenge object
@@ -80,6 +82,7 @@ def test_publish_submission_message_success(
     # Assert the function returns the SQS response
     assert response == {"MessageId": "12345"}
 
+
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
 def test_get_or_create_sqs_queue_use_host_sqs(mock_settings, mock_boto3_resource):
@@ -106,6 +109,7 @@ def test_get_or_create_sqs_queue_use_host_sqs(mock_settings, mock_boto3_resource
     )
     assert queue == mock_sqs.get_queue_by_name.return_value
 
+
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
 def test_get_or_create_sqs_queue_challenge_use_host_sqs(mock_settings, mock_boto3_resource):
@@ -131,6 +135,8 @@ def test_get_or_create_sqs_queue_challenge_use_host_sqs(mock_settings, mock_boto
         aws_access_key_id='foobar_key',
         aws_secret_access_key='foobar_secret',
     )
+    assert queue == mock_sqs.get_queue_by_name.return_value
+
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
@@ -151,6 +157,8 @@ def test_get_or_create_sqs_queue_no_challenge(mock_settings, mock_boto3_resource
         aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
     )
+    assert queue == mock_sqs.get_queue_by_name.return_value
+
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
@@ -177,6 +185,8 @@ def test_get_or_create_sqs_queue_non_existent_queue(mock_settings, mock_boto3_re
         QueueName=queue_name,
         Attributes={"MessageRetentionPeriod": mock_challenge.sqs_retention_period},
     )
+    assert queue == mock_sqs.get_queue_by_name.return_value
+
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
@@ -200,6 +210,7 @@ def test_get_or_create_sqs_queue_debug_or_test(mock_settings, mock_boto3_resourc
     )
     assert queue_name != "evalai_submission_queue"  # 'queue_name' is not modified in the test, so assert the original value was passed correctly
     assert queue  # Ensure queue was returned
+
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
