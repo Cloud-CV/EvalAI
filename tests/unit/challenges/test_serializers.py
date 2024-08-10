@@ -504,7 +504,7 @@ class UserInvitationSerializerTests(TestCase):
 
     def test_get_user_details(self):
         # Mock the serializer output
-        with patch('challenges.serializers.UserDetailsSerializer') as mock_serializer:
+        with mockpatch('challenges.serializers.UserDetailsSerializer') as mock_serializer:
             mock_serializer.return_value.data = {"username": "testuser"}
             result = self.serializer.get_user_details(self.obj)
             self.assertEqual(result, {"username": "testuser"})

@@ -2,7 +2,7 @@ import os
 import unittest
 import random
 import string
-from unittest.mock import MagicMock,  patch as mockpatch
+from unittest.mock import MagicMock, patch as mockpatch
 from django.contrib.auth.models import User
 from django.conf import settings
 import pytest

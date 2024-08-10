@@ -1,7 +1,8 @@
 import unittest
 import zipfile
 import io
-from unittest.mock import MagicMock, patch as mockpatch
+from unittest.mock import Mock, patch as mockpatch
+import requests
 import yaml
 from django.contrib.auth.models import User
 from os.path import join
@@ -307,16 +308,16 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         current_dataset_splits = [dataset_split1, dataset_split2]
 
         # Patch the model queries
-        with patch.object(ChallengePhase, 'objects') as mock_challenge_phase_objects:
+        with mockpatch.object(ChallengePhase, 'objects') as mock_challenge_phase_objects:
             mock_challenge_phase_objects.filter.return_value = current_challenge_phases
 
-        with patch.object(ChallengePhaseSplit, 'objects') as mock_challenge_phase_split_objects:
+        with mockpatch.object(ChallengePhaseSplit, 'objects') as mock_challenge_phase_split_objects:
             mock_challenge_phase_split_objects.filter.return_value = current_challenge_phase_splits
 
-        with patch.object(Leaderboard, 'objects') as mock_leaderboard_objects:
+        with mockpatch.object(Leaderboard, 'objects') as mock_leaderboard_objects:
             mock_leaderboard_objects.filter.return_value = current_leaderboards
 
-        with patch.object(DatasetSplit, 'objects') as mock_dataset_split_objects:
+        with mockpatch.object(DatasetSplit, 'objects') as mock_dataset_split_objects:
             mock_dataset_split_objects.filter.return_value = current_dataset_splits
 
         # Act
@@ -526,8 +527,8 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.util.yaml_file_data = {
             "leaderboard": [{"id": "test_id", "schema": {"labels": ["a", "b"], "default_order_by": "a"}}]
         }
-        with patch('challenges.serializers.LeaderboardSerializer.is_valid', return_value=False):
-            with patch('challenges.serializers.LeaderboardSerializer.errors', new_callable=Mock, return_value="some_error"):
+        with mockpatch('challenges.serializers.LeaderboardSerializer.is_valid', return_value=False):
+            with mockpatch('challenges.serializers.LeaderboardSerializer.errors', new_callable=Mock, return_value="some_error"):
                 self.util.validate_leaderboards([])
                 self.assertEqual(self.util.error_messages[0], self.util.error_messages_dict["leaderboard_schema_error"].format("test_id", "some_error"))
 
