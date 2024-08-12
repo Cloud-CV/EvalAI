@@ -309,6 +309,25 @@ def readjust_worker_limit(
     return response
 
 
+def update_service_to_latest_task_definition(
+    cluster_name, service_name, task_family
+):
+    ecs_client = get_boto3_client("ecs", aws_keys)
+
+    # Get the latest revision of the task definition
+    response = ecs_client.describe_task_definition(taskDefinition=task_family)
+    task_definition_arn = response["taskDefinition"]["taskDefinitionArn"]
+    print("Task Definition ARN:", task_definition_arn)
+    # Update the service to use the latest task definition revision
+    update_response = ecs_client.update_service(
+        cluster=cluster_name,
+        service=service_name,
+        taskDefinition=task_definition_arn,
+    )
+
+    return update_response
+
+
 def monitor_workers_for_challenge(response, evalai_interface):
     for challenge in response["results"]:
         try:
@@ -377,6 +396,22 @@ def monitor_workers_for_challenge(response, evalai_interface):
         except Exception as e:
             print(
                 f"Error in updating worker limits for challenge: {challenge['pk']}"
+            )
+            print(f"Error: {str(e)}")
+
+        # Update the worker to use the new task definition (latest revision)
+        try:
+            update_response = update_service_to_latest_task_definition(
+                cluster_name=COMMON_SETTINGS_DICT["CLUSTER"],
+                service_name=f"{challenge['queue']}_service",
+                task_family=challenge.queue,
+            )
+            print(
+                f"Updated service to use latest task definition: {update_response}"
+            )
+        except Exception as e:
+            print(
+                f"Error in updating service to use latest task definition for challenge: {challenge['pk']}"
             )
             print(f"Error: {str(e)}")
 
