@@ -15,7 +15,7 @@ Let's assume that we want to approve a challenge with name `Random Number Genera
 2. Click on the challenge that you want to approve and scroll to bottom to check the following two fields.
 
    - Approved By Admin
-   - Publically Available
+   - Publicly Available
 
    ![](https://i.imgur.com/l7fQrxX.png)
 
