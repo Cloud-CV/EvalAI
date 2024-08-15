@@ -2,8 +2,6 @@ import os
 import pytz
 from evalai_interface import EvalAI_Interface
 from datetime import datetime, timedelta
-from django.conf import settings
-import pandas as pd  # new import
 
 utc = pytz.UTC
 auth_token = os.environ.get(
