@@ -178,6 +178,9 @@ def test_get_or_create_sqs_queue_non_existent_queue(mock_settings, mock_boto3_re
         {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}}, "GetQueueUrl"
     )
 
+    mock_created_queue = MagicMock()
+    mock_sqs.create_queue.return_value = mock_created_queue
+
     queue_name = "test-queue"
     queue = get_or_create_sqs_queue(queue_name, mock_challenge)
 
@@ -185,7 +188,7 @@ def test_get_or_create_sqs_queue_non_existent_queue(mock_settings, mock_boto3_re
         QueueName=queue_name,
         Attributes={"MessageRetentionPeriod": mock_challenge.sqs_retention_period},
     )
-    assert queue == mock_sqs.get_queue_by_name.return_value
+    assert queue == mock_created_queue
 
 
 @patch("jobs.sender.boto3.resource")
