@@ -1,4 +1,3 @@
-import json
 from unittest import TestCase, mock
 import unittest
 from django.core import serializers
@@ -33,12 +32,9 @@ import pytest
 from unittest.mock import MagicMock, mock_open, patch
 from botocore.exceptions import ClientError
 from http import HTTPStatus
-from challenges.serializers import ChallengeEvaluationClusterSerializer
-from challenges.models import Challenge, ChallengeEvaluationCluster
-from challenges.utils import get_aws_credentials_for_challenge
 from hosts.models import ChallengeHostTeam
 from django.contrib.auth.models import User
-from django.conf import settings
+from challenges.models import Challenge
 
 
 class AWSUtilsTestCase(TestCase):
@@ -337,7 +333,7 @@ class TestServiceManager:
         response_metadata_ok = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
 
         # Mock client_token_generator and create_service_by_challenge_pk to return a mock response
-        with patch('challenges.aws_utils.client_token_generator', return_value='mock_client_token') as mock_token_gen:
+        with patch('challenges.aws_utils.client_token_generator', return_value='mock_client_token'):
             with patch('challenges.aws_utils.create_service_by_challenge_pk', return_value=response_metadata_ok) as mock_create:
                 # Call the function
                 response = service_manager(mock_client, mock_challenge)
@@ -406,7 +402,6 @@ class TestStopEc2Instance(unittest.TestCase):
         # Mocking the EC2 client
         mock_ec2 = MagicMock()
         mock_get_boto3_client.return_value = mock_ec2
-        
         # Mocking describe_instance_status response
         mock_ec2.describe_instance_status.return_value = {
             "InstanceStatuses": [{
@@ -582,7 +577,6 @@ class TestDescribeEC2Instance(unittest.TestCase):
         # Setup mock
         mock_ec2 = MagicMock()
         mock_get_boto3_client.return_value = mock_ec2
-        
         mock_response = {
             "Reservations": [
                 {
@@ -872,7 +866,7 @@ class TestCreateEC2Instance(unittest.TestCase):
         challenge.queue = 'some_queue'
 
         # Mock settings
-        with patch('challenges.aws_utils.settings', ENVIRONMENT='test') as mock_settings:
+        with patch('challenges.aws_utils.settings', ENVIRONMENT='test'):
             # Call the function
             result = create_ec2_instance(challenge)
 
@@ -1416,20 +1410,16 @@ class TestScaleResources(unittest.TestCase):
         # Mock client and response
         mock_client = MagicMock()
         mock_get_boto3_client.return_value = mock_client
-        mock_client.deregister_task_definition.return_value = {
-            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}
-        }
-
+        mock_client.deregister_task_definition.return_value = {"ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK}}
         # Mock challenge
         challenge = MagicMock()
         challenge.task_def_arn = "some_task_def_arn"
         challenge.worker_cpu_cores = 2
         challenge.worker_memory = 4096
-
         # Mock other dependencies
         with patch('challenges.utils.get_aws_credentials_for_challenge') as mock_get_aws_credentials_for_challenge, \
             patch('challenges.aws_utils.task_definition', new_callable=MagicMock) as mock_task_definition, \
-            patch('challenges.aws_utils.eval') as mock_eval:
+                patch('challenges.aws_utils.eval') as mock_eval:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
             mock_task_definition.return_value = {'some_key': 'some_value'}  # Use a dictionary here
@@ -1503,7 +1493,7 @@ class TestScaleResources(unittest.TestCase):
         # Mock other dependencies
         with patch('challenges.utils.get_aws_credentials_for_challenge') as mock_get_aws_credentials_for_challenge, \
             patch('challenges.aws_utils.task_definition', new_callable=MagicMock) as mock_task_definition, \
-            patch('challenges.aws_utils.eval') as mock_eval:
+                patch('challenges.aws_utils.eval') as mock_eval:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
             mock_task_definition.return_value = {'some_key': 'some_value'}  # Use a dictionary here
@@ -1551,7 +1541,7 @@ class TestScaleResources(unittest.TestCase):
         # Mock other dependencies
         with patch('challenges.utils.get_aws_credentials_for_challenge') as mock_get_aws_credentials_for_challenge, \
             patch('challenges.aws_utils.task_definition', new_callable=MagicMock) as mock_task_definition, \
-            patch('challenges.aws_utils.eval') as mock_eval:
+                patch('challenges.aws_utils.eval') as mock_eval:
 
             mock_get_aws_credentials_for_challenge.return_value = {}
             mock_task_definition.return_value = {'some_key': 'some_value'}  # Use a dictionary here
@@ -2270,7 +2260,7 @@ class TestSetupEC2(TestCase):
         )
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
-            ec2_instance_id=None,  
+            ec2_instance_id=None,
             creator=self.challenge_host_team,
         )
         self.serialized_challenge = serializers.serialize("json", [self.challenge])
