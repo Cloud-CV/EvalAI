@@ -1,12 +1,12 @@
 import argparse
-import json
 import os
+import pytz
+from evalai_interface import EvalAI_Interface
 from datetime import datetime, timedelta
+from auto_stop_workers import delete_worker
+import json
 
 import numpy as np
-import pytz
-from auto_stop_workers import delete_worker
-from evalai_interface import EvalAI_Interface
 
 utc = pytz.UTC
 
@@ -17,10 +17,8 @@ json_path = os.environ.get("JSON_PATH", "~/evalai_aws_keys.json")
 with open(json_path) as f:
     aws_keys = json.load(f)
 
-
 def get_boto3_client(resource, aws_keys):
     import boto3
-
     try:
         client = boto3.client(
             resource,
@@ -34,9 +32,7 @@ def get_boto3_client(resource, aws_keys):
         return None
 
 
-def get_aws_metrics_for_challenge(
-    challenge, args, aws_namespace, aws_metric_name
-):
+def get_aws_metrics_for_challenge(challenge, args, aws_namespace, aws_metric_name):
     cloudwatch_client = get_boto3_client("cloudwatch", aws_keys)
 
     start_time = datetime.utcnow() - timedelta(days=args.range_days)
@@ -59,8 +55,11 @@ def get_aws_metrics_for_challenge(
 
     return response["Datapoints"]
 
-
-def get_metrics_for_challenge(metric, challenge, args):
+def get_metrics_for_challenge(
+    metric, 
+    challenge,
+    args
+):
     if metric == "cpu":
         aws_namespace = "AWS/ECS"
         aws_metric_name = "CPUUtilization"
@@ -73,21 +72,12 @@ def get_metrics_for_challenge(metric, challenge, args):
     else:
         raise NotImplementedError(f"Metric {metric} not implemented")
 
-    return get_aws_metrics_for_challenge(
-        challenge, args, aws_namespace, aws_metric_name
-    )
-
+    return get_aws_metrics_for_challenge(challenge, args, aws_namespace, aws_metric_name)
 
 def get_new_resource_limit(
     metrics, metric_name, challenge, current_metric_limit
 ):
-    max_average_consumption = np.max(
-        list(
-            datapoint["Average"]
-            for datapoint in metrics
-            if "Average" in datapoint
-        )
-    )
+    max_average_consumption = np.max(list(datapoint["Average"] for datapoint in metrics if "Average" in datapoint))
 
     if metric_name == "memory":
         min_limit = 256
@@ -95,7 +85,7 @@ def get_new_resource_limit(
     elif metric_name == "cpu":
         min_limit = 128
         max_limit = 4096
-    else:  # storage
+    else: # storage
         min_limit = 21
         max_limit = 50
     if max_average_consumption <= 25:
@@ -106,14 +96,10 @@ def get_new_resource_limit(
         new_limit = current_metric_limit
     return new_limit
 
-
 def allocate_resources_for_challenge(challenge, evalai_interface, args):
     old_limits = {}
     new_limits = {}
-    for metric, attribute_name in [
-        ("cpu", "worker_cpu_cores"),
-        ("memory", "worker_memory"),
-    ]:
+    for metric, attribute_name in [("cpu", "worker_cpu_cores"), ("memory", "worker_memory")]:
         try:
             datapoints = get_metrics_for_challenge(metric, challenge, args)
             if datapoints == []:
@@ -140,10 +126,7 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
 
     # if new limit is not same as old limit for any metric: delete the worker, update backend
     # start stop is handled by the auto scale script
-    if (
-        old_limits["cpu"] != new_limits["cpu"]
-        or old_limits["memory"] != new_limits["memory"]
-    ):
+    if old_limits["cpu"] != new_limits["cpu"] or old_limits["memory"] != new_limits["memory"]:
         print("Old Limits: ", old_limits)
         print("New Limits: ", new_limits)
         delete_worker(challenge["id"])
@@ -165,15 +148,12 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
     else:
         print(f"No changes required for challenge: {challenge['id']}")
 
-
 def allocate_resources_for_challenges(response, evalai_interface, args):
     for challenge in response["results"]:
-        print(
-            "For challenge: ", challenge["id"], " queue: ", challenge["queue"]
-        )
-        allocate_resources_for_challenge(challenge, evalai_interface, args)
-        print("=" * 30)
-
+        if challenge["remote_evaluation"] is False and challenge["uses_ec2_worker"] is False:
+            print("For challenge: ", challenge["id"], " queue: ", challenge["queue"])
+            allocate_resources_for_challenge(challenge, evalai_interface, args)
+            print("=" * 30)
 
 def create_evalai_interface(auth_token, evalai_endpoint):
     evalai_interface = EvalAI_Interface(auth_token, evalai_endpoint)
@@ -187,7 +167,7 @@ def start_job():
         "--cluster-name",
         help="Name of the ECS cluster",
         type=str,
-        default="evalai-prod-cluster",
+        default="evalai-production-cluster",
     )
     parser.add_argument(
         "--range-days",
@@ -199,7 +179,7 @@ def start_job():
         "--period-seconds",
         help="Period in seconds for metrics",
         type=int,
-        default=3600,  # Default is 1 hour
+        default=3600, # Default is 1 hour
     )
     args = parser.parse_args()
 
