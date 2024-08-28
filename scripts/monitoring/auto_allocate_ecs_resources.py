@@ -145,6 +145,7 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
         try:
             datapoints = get_metrics_for_challenge(metric, challenge, args)
             if datapoints == []:
+                print("No data points found!")
                 # challenge hasn't been running in the last k days
                 service_status = get_aws_service_status_for_challenge(
                     challenge, args
@@ -158,7 +159,6 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
                         print(service_status)
                         print("Deleting worker as it is unnecessarily up")
                         delete_worker(challenge["id"])
-                print("No data points found!")
                 return
 
             current_limit = challenge[attribute_name]
