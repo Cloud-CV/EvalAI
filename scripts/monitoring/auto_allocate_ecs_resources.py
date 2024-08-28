@@ -139,7 +139,7 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
             return
 
     # if new limit is not same as old limit for any metric: delete the worker, update backend
-    # start stop is handled by the auto scale scriptt
+    # start stop is handled by the auto scale script
     if (
         old_limits["cpu"] != new_limits["cpu"]
         or old_limits["memory"] != new_limits["memory"]
