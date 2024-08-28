@@ -125,9 +125,10 @@ def get_new_resource_limit(
     else:  # storage
         min_limit = 21
         max_limit = 50
-    if max_average_consumption <= 25:
+
+    if max_average_consumption <= 50:
         new_limit = max(current_metric_limit // 2, min_limit)
-    elif max_average_consumption >= 75:
+    elif max_average_consumption >= 90:
         new_limit = min(int(current_metric_limit) * 2, max_limit)
     else:
         new_limit = current_metric_limit
