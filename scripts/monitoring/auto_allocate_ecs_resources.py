@@ -55,6 +55,33 @@ def get_aws_metrics_for_challenge(challenge, args, aws_namespace, aws_metric_nam
 
     return response["Datapoints"]
 
+def get_aws_service_status_for_challenge(challenge, args):
+    ecs_client = get_boto3_client("ecs", aws_keys)
+    queue_name = challenge["queue"]
+    service_name = "{}_service".format(queue_name)
+    try:
+        response = ecs_client.describe_services(
+            cluster=args.cluster_name,
+            services=[service_name]
+        )
+        if 'services' in response and len(response['services']) > 0:
+            service = response['services'][0]
+            status = service['status']
+            running_count = service['runningCount']
+            desired_count = service['desiredCount']
+            
+            return {
+                'status': status,
+                'runningCount': running_count,
+                'desiredCount': desired_count
+            }
+        else:
+            return None
+
+    except Exception as e:
+        print(f"Error getting ECS service status: {str(e)}")
+        return None
+
 def get_metrics_for_challenge(
     metric, 
     challenge,
@@ -78,12 +105,12 @@ def get_new_resource_limit(
     metrics, metric_name, challenge, current_metric_limit
 ):
     max_average_consumption = np.max(list(datapoint["Average"] for datapoint in metrics if "Average" in datapoint))
-
+    print(metric_name, max_average_consumption)
     if metric_name == "memory":
-        min_limit = 256
+        min_limit = 512
         max_limit = 16384
     elif metric_name == "cpu":
-        min_limit = 128
+        min_limit = 256
         max_limit = 4096
     else: # storage
         min_limit = 21
@@ -103,7 +130,14 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
         try:
             datapoints = get_metrics_for_challenge(metric, challenge, args)
             if datapoints == []:
-                # challenge hasn't been run
+                # challenge hasn't been running in the last k days
+                service_status = get_aws_service_status_for_challenge(challenge, args)
+                if service_status:
+                    if service_status['runningCount'] > 0 or service_status['pendingCount'] > 0:
+                        # this is an error!
+                        print(service_status)
+                        print("Deleting worker as it is unnecessarily up")
+                        delete_worker(challenge["id"])
                 print("No data points found!")
                 return
 
@@ -167,19 +201,19 @@ def start_job():
         "--cluster-name",
         help="Name of the ECS cluster",
         type=str,
-        default="evalai-production-cluster",
+        default="evalai-production-workers",
     )
     parser.add_argument(
         "--range-days",
         help="Number of days to consider for metrics",
         type=int,
-        default=5,
+        default=3,
     )
     parser.add_argument(
         "--period-seconds",
         help="Period in seconds for metrics",
         type=int,
-        default=3600, # Default is 1 hour
+        default=600, # Default is 10 mins
     )
     args = parser.parse_args()
 

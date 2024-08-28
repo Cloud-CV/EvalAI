@@ -3,9 +3,9 @@ path=$PWD
 auth_token=''
 api_host_url=''
 
-cluster_name='evalai-production-cluster'
-range_days=5
-period_seconds=3600
+cluster_name='evalai-production-workers'
+range_days=3
+period_seconds=600
 
 if [ ! -z "$1" ]; then
   path=$1
