@@ -151,7 +151,7 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
                 if service_status:
                     if (
                         service_status["runningCount"] > 0
-                        or service_status["pendingCount"] > 0
+                        or service_status["desiredCount"] > 0
                     ):
                         # this is an error!
                         print(service_status)
