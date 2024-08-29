@@ -325,7 +325,7 @@ def start_job():
         "--period-seconds",
         help="Period in seconds for metrics",
         type=int,
-        default=600,  # Default is 10 mins
+        default=300,  # Default is 5 mins
     )
     parser.add_argument(
         "--ensure-correct-metrics",

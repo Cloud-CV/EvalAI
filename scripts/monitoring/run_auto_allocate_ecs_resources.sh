@@ -5,7 +5,7 @@ api_host_url=''
 
 cluster_name='evalai-production-workers'
 range_days=3
-period_seconds=600
+period_seconds=300
 
 if [ ! -z "$1" ]; then
   path=$1
