@@ -16,9 +16,6 @@ json_path = os.environ.get("JSON_PATH", "~/evalai_aws_keys.json")
 
 # Reference: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html
 cpu_memory_combinations = (
-    (256, 512),
-    (256, 1024),
-    (256, 2048),
     (512, 1024),
     (512, 2048),
     (512, 3072),
@@ -155,13 +152,13 @@ def get_new_resource_limit(metrics, metric_name, current_metric_limit):
         )
     )
 
-    if max_average_consumption <= 50:
+    if max_average_consumption <= 75:
         # scale to approx max usage
         potential_metric_limit = current_metric_limit * (
             max_average_consumption / 100
         )
         new_limit = potential_metric_limit
-    elif max_average_consumption >= 90:
+    elif max_average_consumption >= 95:
         # increase the usage by 2x
         if metric_name == "cpu":
             max_limit = cpu_memory_combinations[-1][0]
@@ -318,14 +315,14 @@ def start_job():
     parser.add_argument(
         "--range-days",
         help="Number of days to consider for metrics",
-        type=int,
-        default=3,
+        type=float,
+        default=0.25,  # Default is 6 hours, should be same or less than cronjob frequency for accuracy
     )
     parser.add_argument(
         "--period-seconds",
         help="Period in seconds for metrics",
         type=int,
-        default=300,  # Default is 5 mins
+        default=60,  # Default is 1 mins
     )
     parser.add_argument(
         "--ensure-correct-metrics",
