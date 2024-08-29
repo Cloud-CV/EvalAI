@@ -161,7 +161,7 @@ def get_new_resource_limit(metrics, metric_name, current_metric_limit):
             max_average_consumption / 100
         )
         new_limit = potential_metric_limit
-    elif max_average_consumption >= 95:
+    elif max_average_consumption >= 85:
         # increase the usage by 2x
         if metric_name == "cpu":
             max_limit = cpu_memory_combinations[-1][0]
