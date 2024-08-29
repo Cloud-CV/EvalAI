@@ -173,7 +173,7 @@ def get_metrics_for_challenge(metric, challenge, args):
     return metrics
 
 
-def get_new_resource_limit(metrics, metric_name, current_metric_limit):
+def get_new_resource_limit(metrics, metric_name):
     utilizations = np.array(
         list(
             datapoint["Average"]
@@ -191,11 +191,14 @@ def get_new_resource_limit(metrics, metric_name, current_metric_limit):
 
     percentage_consumption = utilizations / reservations * 100
 
-    max_percentage_consumption = np.max(percentage_consumption)
+    # Get the index of the max percentage consumption
+    max_index = np.argmax(percentage_consumption)
+    max_percentage_consumption = percentage_consumption[max_index]
+    reservation_at_max = reservations[max_index]
 
     if max_percentage_consumption <= 75:
         # scale to approx max usage
-        potential_metric_limit = current_metric_limit * (
+        potential_metric_limit = reservation_at_max * (
             max_percentage_consumption / 100
         )
         new_limit = potential_metric_limit
@@ -205,9 +208,9 @@ def get_new_resource_limit(metrics, metric_name, current_metric_limit):
             max_limit = cpu_memory_combinations[-1][0]
         if metric_name == "memory":
             max_limit = cpu_memory_combinations[-1][1]
-        new_limit = min(current_metric_limit * 2, max_limit)
+        new_limit = min(reservation_at_max * 2, max_limit)
     else:
-        new_limit = current_metric_limit
+        new_limit = reservation_at_max
     return new_limit
 
 
@@ -262,7 +265,6 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
             new_limit = get_new_resource_limit(
                 datapoints,
                 metric,
-                current_limit,
             )
             new_limits[metric] = new_limit
         except Exception as e:
