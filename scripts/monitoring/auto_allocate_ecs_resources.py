@@ -180,13 +180,20 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
         ("cpu", "worker_cpu_cores"),
         ("memory", "worker_memory"),
     ]:
+        force_update = False
         try:
             current_limit = challenge[attribute_name]
             if current_limit is None:
                 print(
-                    f"Current limit for {metric} is None. This is not expected."
-                    "Please check backend and re-run this script. Using minimum values for now."
+                    f"Current limit for {metric} is None. This is not expected. "
+                    "Please check backend and re-run this script if needed. "
+                    "Using minimum values for now."
                 )
+                if args.ensure_correct_metrics:
+                    print(
+                        "Updating backend to ensure correct metrics for current."
+                    )
+                    force_update = True
                 old_limits[metric] = cpu_memory_combinations[0][
                     0 if metric == "cpu" else 1
                 ]
@@ -228,7 +235,7 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
         if args.ensure_correct_metrics:
             # ensure that the old limits are correct (in the combinations)
             combo = (old_limits["cpu"], old_limits["memory"])
-            if combo not in cpu_memory_combinations:
+            if combo not in cpu_memory_combinations or force_update:
                 # find the correct metric limit combination
                 for cpu, memory in cpu_memory_combinations:
                     if (
@@ -255,7 +262,7 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
     if (
         old_limits["cpu"] != new_limits["cpu"]
         or old_limits["memory"] != new_limits["memory"]
-    ):
+    ) or force_update:
         print("Old Limits: ", old_limits)
         print("New Limits: ", new_limits)
         delete_worker(challenge["id"])
