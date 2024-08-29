@@ -178,51 +178,60 @@ def get_metrics_for_challenge(metric, challenge, args):
 
 def get_new_resource_limit(metrics, metric_name, current_limit):
     utilizations = np.array(
-        list(
+        [
             datapoint["Average"]
             for datapoint in metrics["utilizations"]
             if "Average" in datapoint
-        )
+        ]
     )
     reservations = np.array(
-        list(
+        [
             datapoint["Average"]
             for datapoint in metrics["reservations"]
             if "Average" in datapoint
-        )
+        ]
     )
 
-    percentage_consumption = utilizations / reservations * 100
+    # Find unique reservations and their corresponding maximum utilizations
+    unique_reservations = np.unique(reservations)
+    new_limits = []
 
-    # Get the index of the max percentage consumption
-    max_index = np.argmax(percentage_consumption)
-    max_percentage_consumption = percentage_consumption[max_index]
-    reservation_at_max = reservations[max_index]
+    for reservation in unique_reservations:
+        max_utilization = np.max(utilizations[reservations == reservation])
+        percentage_consumption = (max_utilization / reservation) * 100
+
+        if percentage_consumption < 95:
+            # Scale to approx max usage
+            potential_metric_limit = reservation * (
+                percentage_consumption / 100
+            )
+            new_limit = potential_metric_limit
+        else:
+            # Increase the usage by 2x
+            if metric_name == "cpu":
+                max_limit = cpu_memory_combinations[-1][0]
+            elif metric_name == "memory":
+                max_limit = cpu_memory_combinations[-1][1]
+            new_limit = min(reservation * 2, max_limit)
+
+        new_limits.append(new_limit)
+        print(
+            "Metric Name: {}, Reservation: {}, Max Utilization: {}, Percentage Consumption: {}, Calculated New Limit: {}".format(
+                metric_name,
+                reservation,
+                max_utilization,
+                percentage_consumption,
+                new_limit,
+            )
+        )
+
+    # Take the maximum of the calculated limits as the final limit
+    final_new_limit = max(new_limits)
     print(
-        "Metric Name: {}, Max Percentage Consumption: {}, Reservation at Max: {}, Current Limit: {}".format(
-            metric_name,
-            max_percentage_consumption,
-            reservation_at_max,
-            current_limit, # Current limit is the limit set in the backend
-        )
+        f"Final New Limit for {metric_name}: {final_new_limit}, Current Limit: {current_limit}"
     )
 
-    if max_percentage_consumption <= 75:
-        # scale to approx max usage
-        potential_metric_limit = reservation_at_max * (
-            max_percentage_consumption / 100
-        )
-        new_limit = potential_metric_limit
-    elif max_percentage_consumption >= 95:
-        # increase the usage by 2x
-        if metric_name == "cpu":
-            max_limit = cpu_memory_combinations[-1][0]
-        if metric_name == "memory":
-            max_limit = cpu_memory_combinations[-1][1]
-        new_limit = min(reservation_at_max * 2, max_limit)
-    else:
-        new_limit = reservation_at_max
-    return new_limit
+    return final_new_limit
 
 
 def allocate_resources_for_challenge(challenge, evalai_interface, args):
