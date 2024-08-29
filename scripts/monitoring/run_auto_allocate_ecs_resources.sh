@@ -4,7 +4,7 @@ auth_token=''
 api_host_url=''
 
 cluster_name='evalai-production-workers'
-range_days=0.25
+range_days=0.21
 period_seconds=60
 
 if [ ! -z "$1" ]; then

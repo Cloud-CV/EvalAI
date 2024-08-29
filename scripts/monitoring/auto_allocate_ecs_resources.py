@@ -316,7 +316,7 @@ def start_job():
         "--range-days",
         help="Number of days to consider for metrics",
         type=float,
-        default=0.25,  # Default is 6 hours, should be same or less than cronjob frequency for accuracy
+        default=0.21,  # Default is ~5 hours, should be same or less than cronjob frequency for accuracy
     )
     parser.add_argument(
         "--period-seconds",
