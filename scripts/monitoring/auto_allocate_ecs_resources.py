@@ -16,6 +16,9 @@ json_path = os.environ.get("JSON_PATH", "~/evalai_aws_keys.json")
 
 # Reference: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html
 cpu_memory_combinations = (
+    (256, 512),
+    (256, 1024),
+    (256, 2048),
     (512, 1024),
     (512, 2048),
     (512, 3072),
