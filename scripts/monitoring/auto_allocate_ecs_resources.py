@@ -317,7 +317,6 @@ def start_job():
         action="store_true",
     )
     args = parser.parse_args()
-    print(args.ensure_correct_metrics)
 
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
     response = evalai_interface.get_challenges()
