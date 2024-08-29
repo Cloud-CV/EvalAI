@@ -182,7 +182,16 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
     ]:
         try:
             current_limit = challenge[attribute_name]
-            old_limits[metric] = current_limit
+            if current_limit is None:
+                print(
+                    f"Current limit for {metric} is None. This is not expected."
+                    "Please check backend and re-run this script. Using minimum values for now."
+                )
+                old_limits[metric] = cpu_memory_combinations[0][
+                    0 if metric == "cpu" else 1
+                ]
+            else:
+                old_limits[metric] = current_limit
 
             datapoints = get_metrics_for_challenge(metric, challenge, args)
             if datapoints == []:
