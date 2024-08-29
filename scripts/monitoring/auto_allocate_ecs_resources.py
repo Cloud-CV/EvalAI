@@ -126,39 +126,80 @@ def get_aws_service_status_for_challenge(challenge, args):
 
 
 def get_metrics_for_challenge(metric, challenge, args):
+    # Ref: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/available-metrics.html
+    # Ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-metrics-ECS.html
+    metrics = {
+        "reservations": None,
+        "utilizations": None,
+        "percentages": None,
+    }
     if metric == "cpu":
-        aws_namespace = "AWS/ECS"
-        aws_metric_name = "CPUUtilization"
+        metrics["percentages"] = get_aws_metrics_for_challenge(
+            challenge, args, "AWS/ECS", "CPUUtilization"
+        )
+        metrics["reservations"] = get_aws_metrics_for_challenge(
+            challenge, args, "ECS/ContainerInsights", "CpuReserved"
+        )
+        metrics["utilizations"] = get_aws_metrics_for_challenge(
+            challenge, args, "ECS/ContainerInsights", "CpuUtilized"
+        )
     elif metric == "memory":
-        aws_namespace = "AWS/ECS"
-        aws_metric_name = "MemoryUtilization"
+        metrics["percentages"] = get_aws_metrics_for_challenge(
+            challenge, args, "AWS/ECS", "MemoryUtilization"
+        )
+        metrics["reservations"] = get_aws_metrics_for_challenge(
+            challenge, args, "ECS/ContainerInsights", "MemoryReserved"
+        )
+        metrics["utilizations"] = get_aws_metrics_for_challenge(
+            challenge, args, "ECS/ContainerInsights", "MemoryUtilized"
+        )
     elif metric == "storage":
-        aws_namespace = "ECS/ContainerInsights"
-        aws_metric_name = "EphemeralStorageUtilized"
+        metrics["percentages"] = []
+        metrics["reservations"] = get_aws_metrics_for_challenge(
+            challenge,
+            args,
+            "ECS/ContainerInsights",
+            "EphemeralStorageReserved",
+        )
+        metrics["utilizations"] = get_aws_metrics_for_challenge(
+            challenge,
+            args,
+            "ECS/ContainerInsights",
+            "EphemeralStorageUtilized",
+        )
     else:
         raise NotImplementedError(f"Metric {metric} not implemented")
 
-    return get_aws_metrics_for_challenge(
-        challenge, args, aws_namespace, aws_metric_name
-    )
+    return metrics
 
 
 def get_new_resource_limit(metrics, metric_name, current_metric_limit):
-    max_average_consumption = np.max(
+    utilizations = np.array(
         list(
             datapoint["Average"]
-            for datapoint in metrics
+            for datapoint in metrics["utilizations"]
+            if "Average" in datapoint
+        )
+    )
+    reservations = np.array(
+        list(
+            datapoint["Average"]
+            for datapoint in metrics["reservations"]
             if "Average" in datapoint
         )
     )
 
-    if max_average_consumption <= 75:
+    percentage_consumption = utilizations / reservations * 100
+
+    max_percentage_consumption = np.max(percentage_consumption)
+
+    if max_percentage_consumption <= 75:
         # scale to approx max usage
         potential_metric_limit = current_metric_limit * (
-            max_average_consumption / 100
+            max_percentage_consumption / 100
         )
         new_limit = potential_metric_limit
-    elif max_average_consumption >= 95:
+    elif max_percentage_consumption >= 95:
         # increase the usage by 2x
         if metric_name == "cpu":
             max_limit = cpu_memory_combinations[-1][0]
@@ -198,7 +239,10 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
                 old_limits[metric] = current_limit
 
             datapoints = get_metrics_for_challenge(metric, challenge, args)
-            if datapoints == []:
+            if (
+                datapoints["reservations"] == []
+                or datapoints["utilizations"] == []
+            ):
                 print(f"No data points found for {metric}")
                 # challenge hasn't been running in the last k days
                 service_status = get_aws_service_status_for_challenge(
@@ -316,7 +360,7 @@ def start_job():
         "--range-days",
         help="Number of days to consider for metrics",
         type=float,
-        default=0.21,  # Default is ~5 hours, should be same or less than cronjob frequency for accuracy
+        default=1,  # Default is 1 days, should be same or less than cronjob frequency for accuracy
     )
     parser.add_argument(
         "--period-seconds",
