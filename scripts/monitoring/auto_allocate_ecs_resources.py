@@ -1,18 +1,59 @@
 import argparse
-import os
-import pytz
-from evalai_interface import EvalAI_Interface
-from datetime import datetime, timedelta
-from auto_stop_workers import delete_worker
 import json
+import os
+from datetime import datetime, timedelta
 
 import numpy as np
+import pytz
+from auto_stop_workers import delete_worker, stop_worker
+from evalai_interface import EvalAI_Interface
 
 utc = pytz.UTC
 
 evalai_endpoint = os.environ.get("API_HOST_URL")
 auth_token = os.environ.get("AUTH_TOKEN")
 json_path = os.environ.get("JSON_PATH", "~/evalai_aws_keys.json")
+
+# Reference: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html
+cpu_memory_combinations = (
+    (256, 512),
+    (256, 1024),
+    (256, 2048),
+    (512, 1024),
+    (512, 2048),
+    (512, 3072),
+    (512, 4096),
+    (1024, 2048),
+    (1024, 3072),
+    (1024, 4096),
+    (1024, 5120),
+    (1024, 6144),
+    (1024, 7168),
+    (1024, 8192),
+    (2048, 4096),
+    (2048, 5120),
+    (2048, 6144),
+    (2048, 7168),
+    (2048, 8192),
+    (2048, 9216),
+    (2048, 10240),
+    (2048, 11264),
+    (2048, 12288),
+    (2048, 13312),
+    (2048, 14336),
+    (2048, 15360),
+    (2048, 16384),
+    (4096, 8192),
+    (4096, 9216),
+    (4096, 10240),
+    (4096, 11264),
+    (4096, 12288),
+    (4096, 13312),
+    (4096, 14336),
+    (4096, 15360),
+    (4096, 16384),
+    (8192, 16384),
+)
 
 with open(json_path) as f:
     aws_keys = json.load(f)
@@ -105,9 +146,7 @@ def get_metrics_for_challenge(metric, challenge, args):
     )
 
 
-def get_new_resource_limit(
-    metrics, metric_name, challenge, current_metric_limit
-):
+def get_new_resource_limit(metrics, metric_name, current_metric_limit):
     max_average_consumption = np.max(
         list(
             datapoint["Average"]
@@ -115,21 +154,20 @@ def get_new_resource_limit(
             if "Average" in datapoint
         )
     )
-    print(metric_name, max_average_consumption)
-    if metric_name == "memory":
-        min_limit = 512
-        max_limit = 16384
-    elif metric_name == "cpu":
-        min_limit = 256
-        max_limit = 4096
-    else:  # storage
-        min_limit = 21
-        max_limit = 50
 
     if max_average_consumption <= 50:
-        new_limit = max(current_metric_limit // 2, min_limit)
-    elif max_average_consumption >= 90:
-        new_limit = min(int(current_metric_limit) * 2, max_limit)
+        # scale to approx max usage
+        potential_metric_limit = current_metric_limit * (
+            max_average_consumption / 100
+        )
+        new_limit = potential_metric_limit
+    elif max_average_consumption >= 95:
+        # increase the usage by 2x
+        if metric_name == "cpu":
+            max_limit = 4096
+        if metric_name == "memory":
+            max_limit = 16384
+        new_limit = min(current_metric_limit * 2, max_limit)
     else:
         new_limit = current_metric_limit
     return new_limit
@@ -143,9 +181,12 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
         ("memory", "worker_memory"),
     ]:
         try:
+            current_limit = challenge[attribute_name]
+            old_limits[metric] = current_limit
+
             datapoints = get_metrics_for_challenge(metric, challenge, args)
             if datapoints == []:
-                print("No data points found!")
+                print(f"No data points found for {metric}")
                 # challenge hasn't been running in the last k days
                 service_status = get_aws_service_status_for_challenge(
                     challenge, args
@@ -157,18 +198,15 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
                     ):
                         # this is an error!
                         print(service_status)
-                        print("Deleting worker as it is unnecessarily up")
-                        delete_worker(challenge["id"])
-                return
+                        print("Stopping worker as it is unnecessarily up")
+                        stop_worker(challenge["id"])
+                continue
 
-            current_limit = challenge[attribute_name]
             new_limit = get_new_resource_limit(
                 datapoints,
                 metric,
-                challenge,
                 current_limit,
             )
-            old_limits[metric] = current_limit
             new_limits[metric] = new_limit
         except Exception as e:
             print(
@@ -177,6 +215,31 @@ def allocate_resources_for_challenge(challenge, evalai_interface, args):
             )
             print("Error: ", str(e))
             return
+    if new_limits == {}:
+        if args.ensure_correct_metrics:
+            # ensure that the old limits are correct (in the combinations)
+            combo = (old_limits["cpu"], old_limits["memory"])
+            if combo not in cpu_memory_combinations:
+                # find the correct metric limit combination
+                for cpu, memory in cpu_memory_combinations:
+                    if (
+                        cpu >= old_limits["cpu"]
+                        and memory >= old_limits["memory"]
+                    ):
+                        new_limits["cpu"] = cpu
+                        new_limits["memory"] = memory
+                        break
+            else:
+                print("Old limit is in the combinations.")
+                return
+        else:
+            return
+    # find the correct metric limit combination
+    for cpu, memory in cpu_memory_combinations:
+        if cpu >= new_limits["cpu"] and memory >= new_limits["memory"]:
+            new_limits["cpu"] = cpu
+            new_limits["memory"] = memory
+            break
 
     # if new limit is not same as old limit for any metric: delete the worker, update backend
     # start stop is handled by the auto scale script
@@ -248,7 +311,13 @@ def start_job():
         type=int,
         default=600,  # Default is 10 mins
     )
+    parser.add_argument(
+        "--ensure-correct-metrics",
+        help="Ensure correct metrics are present",
+        action="store_true",
+    )
     args = parser.parse_args()
+    print(args.ensure_correct_metrics)
 
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
     response = evalai_interface.get_challenges()
