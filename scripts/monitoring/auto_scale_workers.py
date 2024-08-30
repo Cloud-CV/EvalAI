@@ -36,6 +36,9 @@ def empty_challenge_workers(challenge_id, evalai_interface):
 
 
 def scale_down_workers(challenge, num_workers, evalai_interface):
+    if challenge["remote_evaluation"] or challenge["uses_ec2_worker"]:
+        print("Challenge either is remote evaluation or uses EC2 instance. Scaling down worker if up, regardless of submissions.")
+
     if num_workers > 0:
         try:
             response = stop_worker(challenge["id"])
@@ -90,7 +93,7 @@ def scale_down_workers(challenge, num_workers, evalai_interface):
 
     else:
         print(
-            f"No workers and pending messages found for Challenge ID: {challenge['id']}, Title: {challenge['title']}. Skipping."
+            f"No workers found for Challenge ID: {challenge['id']}, Title: {challenge['title']}. Skipping."
         )
 
 
