@@ -193,40 +193,38 @@ def get_new_resource_limit(metrics, metric_name, current_limit):
     )
 
     # Find unique reservations and their corresponding maximum utilizations
-    unique_reservations = np.unique(reservations)
-    new_limits = []
+    # sort the reservations in ascending order
+    max_reservation = np.max(np.unique(reservations))
 
-    for reservation in unique_reservations:
-        max_utilization = np.max(utilizations[reservations == reservation])
-        percentage_consumption = (max_utilization / reservation) * 100
+    max_utilization = np.max(utilizations[reservations == max_reservation])
+    percentage_consumption = (max_utilization / max_reservation) * 100
 
-        if percentage_consumption < 95:
-            # Scale to approx max usage
-            potential_metric_limit = reservation * (
-                percentage_consumption / 100
-            )
-            new_limit = potential_metric_limit
-        else:
-            # Increase the usage by 2x
-            if metric_name == "cpu":
-                max_limit = cpu_memory_combinations[-1][0]
-            elif metric_name == "memory":
-                max_limit = cpu_memory_combinations[-1][1]
-            new_limit = min(reservation * 2, max_limit)
-
-        new_limits.append(new_limit)
-        print(
-            "Metric Name: {}, Reservation: {}, Max Utilization: {}, Percentage Consumption: {}, Calculated New Limit: {}".format(
-                metric_name,
-                reservation,
-                max_utilization,
-                percentage_consumption,
-                new_limit,
-            )
+    if percentage_consumption < 95:
+        # Scale to approx max usage
+        potential_metric_limit = max_reservation * (
+            percentage_consumption / 100
         )
+        new_limit = potential_metric_limit
+    else:
+        # Increase the usage by 2x
+        if metric_name == "cpu":
+            max_limit = cpu_memory_combinations[-1][0]
+        elif metric_name == "memory":
+            max_limit = cpu_memory_combinations[-1][1]
+        new_limit = min(max_reservation * 2, max_limit)
+
+    print(
+        "Metric Name: {}, Max Reservation: {}, Max Utilization: {}, Percentage Consumption: {}, Calculated New Limit: {}".format(
+            metric_name,
+            max_reservation,
+            max_utilization,
+            percentage_consumption,
+            new_limit,
+        )
+    )
 
     # Take the maximum of the calculated limits as the final limit
-    final_new_limit = max(new_limits)
+    final_new_limit = new_limit
     print(
         f"Final New Limit for {metric_name}: {final_new_limit}, Current Limit: {current_limit}"
     )
