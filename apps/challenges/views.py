@@ -4186,6 +4186,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "evaluation_script": files[
                             "challenge_evaluation_script_file"
                         ],
+                        "disable_private_submission": request.data.get('disable_private_submission')
                     },
                 )
                 if serializer.is_valid():
