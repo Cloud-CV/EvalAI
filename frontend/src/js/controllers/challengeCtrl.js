@@ -2877,8 +2877,6 @@
                         $rootScope.notify("error", error);
                     }
                 };
-        
-                console.log("Sending request with parameters:", parameters);
                 utilities.sendRequest(parameters);
             }, function() {
                 // Nope
