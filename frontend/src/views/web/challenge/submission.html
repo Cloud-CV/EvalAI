@@ -265,7 +265,7 @@
                             <div
                                 ng-show="challenge.isSubmissionUsingUrl || challenge.isSubmissionUsingFile">
                                 
-                                <div ng-show="challenge.currentPhaseLeaderboardPublic">
+                                <div ng-if="!challenge.disable_private_submission" ng-show="challenge.currentPhaseLeaderboardPublic">
                                     <p class="fs-14 w-400" ng>Select submission visibility:</p>
                                     <li>
                                         <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicSubmission"
