@@ -143,37 +143,39 @@
 									usually unable to change such settings once the challenge has started and
 									submissions
 									are in.</li>
-										<li><strong>I am hosting a docker-based (code-upload/static-code-upload) challenge. I want to see the logs on my pods
-												which stay running/submitted.</strong><br>
-											To view logs on your pods, follow these steps:
-										
-											<h6>1. Export required variables on your AWS CloudShell:</h6>
-											<pre><code>export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-										export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-										export CHALLENGE_PK=${CHALLENGE_PK}
-										export CLUSTER_NAME=${CLUSTER_NAME}
-										export ACCOUNT_ID=${ACCOUNT_ID}
+								<li><strong>I am hosting a docker-based (code-upload/static-code-upload) challenge. I
+										want to see the logs on my pods
+										which stay running/submitted.</strong><br>
+									To view logs on your pods, you may use the following commands. Please look into
+									kubectl/AWS EKS docs for further info:
+
+									<h6>1. Export required variables on your AWS CloudShell:</h6>
+									<pre><code>export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}<br>
+										export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}<br>
+										export CHALLENGE_PK=${CHALLENGE_PK}<br>
+										export CLUSTER_NAME=${CLUSTER_NAME}<br>
+										export ACCOUNT_ID=${ACCOUNT_ID}<br>
 										export AUTH_TOKEN=${AUTH_TOKEN}</code></pre>
-										
-											<h6>2. Set eks configuration on AWS:</h6>
-											<pre><code>aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
+
+									<h6>2. Set eks configuration on AWS:</h6>
+									<pre><code>aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
 										aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID</code></pre>
-										
-											<h6>3. Commands to get different entities on EKS:</h6>
-											<pre><code>kubectl get jobs
+
+									<h6>3. Commands to get different entities on EKS:</h6>
+									<pre><code>kubectl get jobs
 										kubectl get nodes
 										kubectl get pods
 										kubectl get cnp</code></pre>
-										
-											<h6>4. Commands to get logs for a specific pod:</h6>
-											<pre><code>kubectl logs submission-293486-8kfwt</code></pre>
-										
-											<h6>5. Commands to describe a particular pod:</h6>
-											<pre><code>kubectl describe pods submission-252973-4vx28</code></pre>
-										
-											<h6>6. Commands to delete a pod:</h6>
-											<pre><code>kubectl delete pods submission-295910-9lb69</code></pre>
-									</li>
+
+									<h6>4. Commands to get logs for a specific pod:</h6>
+									<pre><code>kubectl logs submission-293486-8kfwt</code></pre>
+
+									<h6>5. Commands to describe a particular pod:</h6>
+									<pre><code>kubectl describe pods submission-252973-4vx28</code></pre>
+
+									<h6>6. Commands to delete a pod:</h6>
+									<pre><code>kubectl delete pods submission-295910-9lb69</code></pre>
+								</li>
 							</ol>
 					</div>
 					<h4 class="text-dark-black align-center"><strong>Contact Us</strong></h4>
