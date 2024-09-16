@@ -884,6 +884,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "worker_image_url": self.challenge1.worker_image_url,
                         "worker_instance_type": self.challenge1.worker_instance_type,
                         "sqs_retention_period": self.challenge1.sqs_retention_period,
+                        "disable_private_submission": self.challenge1.disable_private_submission,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -978,6 +979,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "worker_image_url": self.challenge1.worker_image_url,
                 "worker_instance_type": self.challenge1.worker_instance_type,
                 "sqs_retention_period": self.challenge1.sqs_retention_period,
+                "disable_private_submission": self.challenge1.disable_private_submission,
             }
         ]
 

@@ -82,7 +82,7 @@
         vm.currentPhaseLeaderboardPublic = false;
         vm.eligible_to_submit = false;
         vm.evaluation_module_error = null;
-
+        vm.disable_private_submission = false;
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
         // show loader
@@ -396,6 +396,7 @@
                 vm.has_sponsors = details.has_sponsors;
                 vm.queueName = details.queue;
                 vm.evaluation_module_error = details.evaluation_module_error;
+                vm.disable_private_submission = details.disable_private_submission;
                 vm.getTeamName(vm.challengeId);
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -708,6 +709,9 @@
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
                     formData.append("submission_metadata", JSON.stringify(vm.metaAttributesforCurrentSubmission));
+                    if (vm.disable_private_submission) {
+                        vm.isPublicSubmission = true;
+                    }
                     if (vm.isPublicSubmission !== null) {
                         formData.append("is_public", vm.isPublicSubmission);
                     }
@@ -2836,7 +2840,48 @@
                 $mdDialog.hide();
             }
         };
-
+        vm.toggleDisablePrivateSubmission = function(ev) {
+            ev.stopPropagation();
+            vm.toggleSubmissionState = null;
+            vm.submissionDesc = null;
+            if (vm.disable_private_submission)
+                vm.toggleSubmissionState = "allowed";
+            else
+                vm.toggleSubmissionState = "disabled";
+        
+            var confirm = $mdDialog.confirm()
+                          .title('Make private submissions ' + vm.toggleSubmissionState + '?')
+                          .ariaLabel('')
+                          .targetEvent(ev)
+                          .ok('Yes')
+                          .cancel('No');
+        
+            $mdDialog.show(confirm).then(function() {
+                parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "disable_private_submission": !vm.disable_private_submission,
+                };
+                vm.disable_private_submission = !vm.disable_private_submission;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "Private submissions were successfully made " + vm.toggleSubmissionState);
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }, function() {
+                // Nope
+            });
+        };
         vm.publishChallenge = function(ev) {
             ev.stopPropagation();
             vm.toggleChallengeState = null;

@@ -195,6 +195,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
 
@@ -550,6 +551,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -652,6 +654,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -780,6 +783,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -857,6 +861,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "worker_image_url": self.challenge.worker_image_url,
             "worker_instance_type": self.challenge.worker_instance_type,
             "sqs_retention_period": self.challenge.sqs_retention_period,
+            "disable_private_submission": self.challenge.disable_private_submission,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1450,6 +1455,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1533,6 +1539,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1616,6 +1623,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge4.worker_image_url,
                 "worker_instance_type": self.challenge4.worker_instance_type,
                 "sqs_retention_period": self.challenge4.sqs_retention_period,
+                "disable_private_submission": self.challenge4.disable_private_submission,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1699,6 +1707,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             },
             {
                 "id": self.challenge3.pk,
@@ -1766,6 +1775,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             },
             {
                 "id": self.challenge2.pk,
@@ -1833,6 +1843,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "disable_private_submission": self.challenge2.disable_private_submission,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1971,6 +1982,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "worker_image_url": self.challenge3.worker_image_url,
                 "worker_instance_type": self.challenge3.worker_instance_type,
                 "sqs_retention_period": self.challenge3.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -2133,6 +2145,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge3.worker_image_url,
             "worker_instance_type": self.challenge3.worker_instance_type,
             "sqs_retention_period": self.challenge3.sqs_retention_period,
+            "disable_private_submission": self.challenge.disable_private_submission,
         }
 
         response = self.client.get(self.url, {})
@@ -2224,6 +2237,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "worker_image_url": self.challenge4.worker_image_url,
             "worker_instance_type": self.challenge4.worker_instance_type,
             "sqs_retention_period": self.challenge4.sqs_retention_period,
+            "disable_private_submission": self.challenge.disable_private_submission,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -2375,6 +2389,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
 
@@ -2454,6 +2469,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
 
@@ -2533,6 +2549,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             }
         ]
 
@@ -2610,6 +2627,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge.worker_image_url,
                 "worker_instance_type": self.challenge.worker_instance_type,
                 "sqs_retention_period": self.challenge.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             },
             {
                 "id": self.challenge2.pk,
@@ -2677,6 +2695,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "worker_image_url": self.challenge2.worker_image_url,
                 "worker_instance_type": self.challenge2.worker_instance_type,
                 "sqs_retention_period": self.challenge2.sqs_retention_period,
+                "disable_private_submission": self.challenge.disable_private_submission,
             },
         ]
 
