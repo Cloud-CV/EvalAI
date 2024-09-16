@@ -149,7 +149,7 @@ Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/m
 
 Please ensure the following fields are set to the following values for code-upload based challenges:
 
-- `remote_evaluation : True`
+- `remote_evaluation : False`
 - `is_docker_based : True`
 
 In order to perform evaluation, you might also need to create an EKS cluster on AWS. This is because we expect to use docker containers for both - the agent, and the environment. See [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/) to learn more about what EKS is and how it works.
