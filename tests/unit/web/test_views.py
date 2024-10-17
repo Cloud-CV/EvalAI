@@ -80,8 +80,8 @@ class CreateTeamMember(APITestCase):
         self.data = {
             "name": "Test User",
             "email": "test@user.com",
-            "github_url": "www.github.com/testuser",
-            "linkedin_url": "www.linkedin.com/testuser",
+            "github_url": "https://github.com/testuser",
+            "linkedin_url": "https://linkedin.com/testuser",
             "personal_website": "www.testuser.com",
         }
 
@@ -133,8 +133,8 @@ class GetTeamTest(APITestCase):
                 content=open("frontend/src/images/rocket.png", "rb").read(),
                 content_type="image/png",
             ),
-            github_url="www.github.com/testuser",
-            linkedin_url="www.linkedin.com/testuser",
+            github_url="https://github.com/testuser",
+            linkedin_url="https://linkedin.com/testuser",
             personal_website="www.testuser.com",
             background_image=SimpleUploadedFile(
                 name="test_background_image.jpg",
