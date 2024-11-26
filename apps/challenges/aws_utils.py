@@ -483,10 +483,18 @@ def stop_ec2_instance(challenge):
     Returns:
         dict: A dictionary containing the status and message of the stop operation.
     """
+    from .utils import get_aws_credentials_for_challenge
+
+    for obj in serializers.deserialize("json", challenge):
+        challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
+
     target_instance_id = challenge.ec2_instance_id
 
-    ec2 = get_boto3_client("ec2", aws_keys)
-    status_response = ec2.describe_instance_status(InstanceIds=[target_instance_id])
+    ec2 = get_boto3_client("ec2", challenge_aws_keys)
+    status_response = ec2.describe_instance_status(
+        InstanceIds=[target_instance_id]
+    )
 
     if status_response["InstanceStatuses"]:
         instance_status = status_response["InstanceStatuses"][0]
@@ -498,8 +506,12 @@ def stop_ec2_instance(challenge):
 
             if instance_state == "running":
                 try:
-                    response = ec2.stop_instances(InstanceIds=[target_instance_id])
-                    message = "Instance for challenge {} successfully stopped.".format(challenge.pk)
+                    response = ec2.stop_instances(
+                        InstanceIds=[target_instance_id]
+                    )
+                    message = "Instance for challenge {} successfully stopped.".format(
+                        challenge.pk
+                    )
                     return {
                         "response": response,
                         "message": message,
@@ -510,17 +522,23 @@ def stop_ec2_instance(challenge):
                         "error": e.response,
                     }
             else:
-                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(challenge.pk)
+                message = "Instance for challenge {} is not running. Please ensure the instance is running.".format(
+                    challenge.pk
+                )
                 return {
                     "error": message,
                 }
         else:
-            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(challenge.pk)
+            message = "Instance status checks are not ready for challenge {}. Please wait for the status checks to pass.".format(
+                challenge.pk
+            )
             return {
                 "error": message,
             }
     else:
-        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(challenge.pk)
+        message = "Instance for challenge {} not found. Please ensure the instance exists.".format(
+            challenge.pk
+        )
         return {
             "error": message,
         }
@@ -555,7 +573,7 @@ def describe_ec2_instance(challenge):
         }
 
 
-def start_ec2_instance(challenge):
+def start_ec2_instance(challenge, aws_keys):
     """
     Start the EC2 instance associated with a challenge.
 
@@ -675,7 +693,7 @@ def terminate_ec2_instance(challenge):
         }
 
 
-def create_ec2_instance(challenge, ec2_storage=None, worker_instance_type=None, worker_image_url=None):
+def create_ec2_instance(challenge, aws_keys, ec2_storage=None, worker_instance_type=None, worker_image_url=None):
     """
     Create the EC2 instance associated with a challenge.
 
@@ -799,6 +817,50 @@ def update_sqs_retention_period(challenge):
         }
 
 
+def start_ec2_workers_list(queryset):
+    """
+    The function called by the admin action method to start all the selected ec2 workers.
+    Calls the setup ec2 method. Before calling, checks if it uses ec2 worker.
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        if challenge.uses_ec2_worker:
+            response = setup_ec2(challenge)
+            if "error" in response:
+                failures.append(
+                    {
+                        "message": response["error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
+            else:
+                count += 1
+        else:
+            response = "Please select challenge with inactive workers only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+    return {"count": count, "failures": failures}
+
+
 def start_workers(queryset):
     """
     The function called by the admin action method to start all the selected workers.
@@ -840,6 +902,46 @@ def start_workers(queryset):
                 )
                 continue
             count += 1
+        else:
+            response = "Please select challenge with inactive workers only."
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
+    return {"count": count, "failures": failures}
+
+
+def stop_ec2_workers_list(queryset):
+    """
+    The function called by the admin action method to start all the selected ec2 workers.
+    Calls the stop ec2 instance method. Before calling, checks if it uses ec2 worker.
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'failures': a dict of all the failures with their error messages and the challenge pk
+    """
+    if settings.DEBUG:
+        failures = []
+        for challenge in queryset:
+            failures.append(
+                {
+                    "message": "Workers cannot be started on AWS in development environment",
+                    "challenge_pk": challenge.pk,
+                }
+            )
+        return {"count": 0, "failures": failures}
+
+    count = 0
+    failures = []
+    for challenge in queryset:
+        if challenge.uses_ec2_worker:
+            response = stop_ec2_instance(challenge)
+            if "error" in response:
+                failures.append(
+                    {"message": response["error"], "challenge_pk": challenge.pk}
+                )
+            else:
+                count += 1
         else:
             response = "Please select challenge with inactive workers only."
             failures.append(
@@ -1817,11 +1919,14 @@ def setup_ec2(challenge):
     Arguments:
         challenge {<class 'django.db.models.query.QuerySet'>} -- instance of the model calling the post hook
     """
+    from .utils import get_aws_credentials_for_challenge
+
     for obj in serializers.deserialize("json", challenge):
         challenge_obj = obj.object
+    challenge_aws_keys = get_aws_credentials_for_challenge(challenge_obj.pk)
     if challenge_obj.ec2_instance_id:
-        return start_ec2_instance(challenge_obj)
-    return create_ec2_instance(challenge_obj)
+        return start_ec2_instance(challenge_obj, challenge_aws_keys)
+    return create_ec2_instance(challenge_obj, challenge_aws_keys)
 
 
 @app.task
