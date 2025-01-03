@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# installing AWS CLI
+# Installing AWS CLI
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 ./aws/install
@@ -15,7 +15,7 @@ echo "### AWS CLI Configured"
 curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/aws-iam-authenticator
 chmod +x ./aws-iam-authenticator
 mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
-echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+echo 'export PATH=$PATH/$HOME/bin' >> ~/.bashrc
 echo "### iam-authenticator Installed"
 
 # Configure kubeconfig
@@ -38,6 +38,7 @@ kubectl create configmap fluent-bit-cluster-info \
 --from-literal=read.head='On' \
 --from-literal=read.tail='Off' \
 --from-literal=logs.region=$AWS_DEFAULT_REGION -n amazon-cloudwatch
+
 # Use FluentD compatible FluentBit insights
 kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/fluent-bit/fluent-bit-compatible.yaml
 echo "### Container Insights Installed"
@@ -49,19 +50,19 @@ cat /code/scripts/workers/code_upload_worker_utils/persistent_volume.yaml | sed 
 kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volume_claim.yaml
 kubectl apply -f /code/scripts/workers/code_upload_worker_utils/persistent_volume_storage_class.yaml
 
-# Install cilium
+# Install Cilium
 # Cilium is being used to provide networking and network policy
 kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9/install/kubernetes/quick-install.yaml
 echo "### Cilium Installed"
 
 sleep 120s;
 
-# Apply cilium network policy
-# echo "### Setting up Cilium Network Policy..."
-# cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
-# echo "### Cilium EvalAI Network Policy Installed"
+# Apply Cilium Network Policy
+echo "### Setting up Cilium Network Policy..."
+cat /code/scripts/workers/code_upload_worker_utils/network_policies.yaml | sed "s/{{EVALAI_DNS}}/$EVALAI_DNS/" | kubectl apply -f -
+echo "### Cilium EvalAI Network Policy Installed"
 
-# Set ssl-certificate
+# Set SSL certificate
 echo $CERTIFICATE | base64 --decode > scripts/workers/certificate.crt
 
 # Running Submission Worker
