@@ -4,6 +4,8 @@
 .phase-card {
   margin-bottom: 20px;
   padding-bottom: 1px;
+  overflow-y: auto;
+  max-height: 150px;
 }
 
 .phase-value {
