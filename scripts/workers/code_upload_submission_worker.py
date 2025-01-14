@@ -613,7 +613,7 @@ def update_failed_jobs_and_send_logs(
                         container_name,
                         container_state,
                     ) in container_state_map.items():
-                        if container_name in ["agent", "submission", "environment"]:
+                        if container_name in ["agent", "submission", "environment", "sidecar-container"]:
                             if container_state.terminated is not None:
                                 pod_name = pods_list.items[0].metadata.name
                                 try:
@@ -629,7 +629,7 @@ def update_failed_jobs_and_send_logs(
                                     )
                                     pod_log = pod_log[-10000:]
                                     clean_submission = True
-                                    if container_name == "environment":
+                                    if container_name == "environment" or container_name == "sidecar-container":
                                         code_upload_environment_error = pod_log
                                     else:
                                         submission_error = pod_log
