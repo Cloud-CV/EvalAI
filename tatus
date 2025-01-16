@@ -1,0 +1,258 @@
+[33mcommit 79b61e4bebdc87274a715615881a5b11854ddc1b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32missue-4266-clean[m[33m)[m
+Author: AMAN MOGAL <81488924+amanmogal@users.noreply.github.com>
+Date:   Tue Dec 31 00:48:58 2024 +0530
+
+    Updated Twitter (X) Logo to New one.issue  #4289
+
+[33mcommit 46bd2d5f3589514dacb82a1c34acf1594a1d07b5[m
+Author: AMAN MOGAL <81488924+amanmogal@users.noreply.github.com>
+Date:   Tue Dec 31 00:40:07 2024 +0530
+
+    Updated Twitter (X) Logo to New one.issue #4289
+
+[33mcommit ba33f6dcc1d3b5eacc9723bef8a5ddac559b0ea8[m
+Author: AMAN MOGAL <81488924+amanmogal@users.noreply.github.com>
+Date:   Mon Dec 30 23:50:57 2024 +0530
+
+    Fix: Remove Unnecessary Submission Type Marker on UYI (#4351)
+
+[33mcommit bd201d5575bbc9fd5050af77c710f3c5c7af0f6c[m[33m ([m[1;31morigin/aws-efs-integration[m[33m, [m[1;32maws-efs-integration[m[33m)[m
+Author: AMAN MOGAL <81488924+amanmogal@users.noreply.github.com>
+Date:   Sat Dec 28 00:58:00 2024 +0530
+
+    Title: Improve Documentation and Integration for AWS EFS in Code Upload Feature
+    
+    Description: This pull request addresses Issue #4219 by enhancing documentation and code comments for integrating AWS Elastic File System (EFS) into the static code upload feature. The changes include:
+
+[33mcommit 39e2f2e7d74f391f04bcde3f4089ac4a51929813[m[33m ([m[1;31mupstream/staging[m[33m, [m[1;31mupstream/production[m[33m, [m[1;31mupstream/master[m[33m, [m[1;31mupstream/HEAD[m[33m, [m[1;31morigin/staging[m[33m, [m[1;31morigin/production[m[33m)[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Tue Sep 10 10:01:33 2024 -0400
+
+    [Frontend] Add note on the contact us page (#4412)
+    
+    * Add note on the contact us page
+    
+    * [Frontend] Add FAQ on Contact Page
+    
+    * Update contact page
+    
+    * Update contact us page
+    
+    * Update contact us page
+    
+    * Update contact us page
+    
+    * Fix formatting
+    
+    * Add kubectl stuff
+    
+    * Update
+
+[33mcommit 11ea23e24696bf3f71e74d507141e2ab0a1062b9[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Thu Aug 29 16:18:35 2024 -0400
+
+    [Frontend] Update worker note regarding resources (#4418)
+
+[33mcommit 913dd9f502c71c02681b9c3af8722482709d39e9[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Wed Aug 28 18:57:58 2024 -0400
+
+    [BugFix] Remove manage worker option (#4416)
+    
+    * Remove scale worker option
+    
+    * Remove start/stop
+
+[33mcommit da7e0680c11a8e60c335c821902211a06ed581de[m
+Author: MinhThieu145 <88282475+MinhThieu145@users.noreply.github.com>
+Date:   Sun Jun 9 10:53:58 2024 -0400
+
+    [Backend] Update EKS cluster version to 1.29 (#4376)
+
+[33mcommit be3c597d2c77ec9e1c8ce930b0cd5051a68f5b73[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Fri Apr 26 01:52:40 2024 -0400
+
+    [Monitoring] Update auto scaling scripts to use metrics by PK API (#4355)
+
+[33mcommit 6535fe93da0111942eb44ac59f7d1e9f7e86a1fb[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Thu Apr 25 13:16:35 2024 -0400
+
+    [Backend] Add submissions metrics by PK (#4353)
+
+[33mcommit 68c1c3aace08e12c2e036a7e5e9033f0164040d6[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Sat Apr 20 02:45:09 2024 -0400
+
+    [Backend] Add gulp cli install to nodejs in production (#4346)
+
+[33mcommit 2de9aed5723bf3a0a59d3c395bb4f77db43bdb09[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Fri Apr 19 17:17:44 2024 -0400
+
+    [BugFix] Add success condition for result file update in worker (#4345)
+
+[33mcommit 231a87becf96f7a8097403257566b621dbac2881[m
+Author: Rishabh Jain <rishabhjain2018@gmail.com>
+Date:   Thu Apr 18 08:18:29 2024 -0700
+
+    Frontend: Update number of submissions stat on the landing page(#4344)
+
+[33mcommit d37e69e69a440e3c96dd76cc5a31a9d8733a456f[m
+Author: Rishabh Jain <rishabhjain2018@gmail.com>
+Date:   Mon Apr 15 15:53:28 2024 -0700
+
+    README: Removes the Requirements Status Badge (#4332)
+
+[33mcommit c243c3a5bdd1482ca8958b90752e8ce902fc3455[m
+Author: Rishabh Jain <rishabhjain2018@gmail.com>
+Date:   Mon Apr 15 10:59:31 2024 -0700
+
+    ReadME: Update the maintainers list (#4331)
+
+[33mcommit 797f70af914f631c471eac4e4191b9999942b26b[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Mon Apr 15 03:49:50 2024 -0400
+
+    [Deployment] Install gulp-cli in dev nodejs docker (#4339)
+
+[33mcommit f705b19df3cd6e7436b5431d060800471382eb48[m
+Author: Rishabh Jain <rishabhjain2018@gmail.com>
+Date:   Fri Mar 1 06:30:25 2024 +0530
+
+    [Frontend] Update stats on home page (#4272)
+
+[33mcommit bacbf89c5fa7e6155183525ddfef0f7a2e953af6[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Sun Feb 4 17:32:13 2024 -0500
+
+    Revert "[BugFix] Add try-except to AWS credentials API (#4261)" (#4262)
+    
+    This reverts commit 7b6bf3b96068bc66c13f16d8fbb2c3e63d74150c.
+
+[33mcommit 7b6bf3b96068bc66c13f16d8fbb2c3e63d74150c[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Mon Jan 29 14:45:03 2024 -0500
+
+    [BugFix] Add try-except to AWS credentials API (#4261)
+
+[33mcommit 0629ac94c9ece91b1c56f9db0ac9dc9540091a11[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Sun Dec 31 11:21:58 2023 +0530
+
+    [Backend] Change termination grace period to 600 seconds (#4251)
+
+[33mcommit 31e803f0dab3ac5fedd41e4280ee3049867b278c[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Fri Dec 29 04:59:29 2023 +0530
+
+    [BugFix] Add termination period for static code upload (#4250)
+
+[33mcommit dd9260baab1d9ea82f06d24fa21ba8c19446e8ca[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Wed Dec 20 20:42:46 2023 +0530
+
+    Revert "[BugFix] Turn off pip Progress bar (#4241)" (#4244)
+    
+    This reverts commit 9bb93896747def60bb4ea10fdbf82f75cf93a7e6.
+
+[33mcommit cd2b6752ff9b57d1656a5b733db50f872927a7d7[m
+Author: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+Date:   Wed Dec 20 20:42:18 2023 +0530
+
+    Revert "[Backend] Move to Python 3.8 (#4239)" (#4245)
+    
+    This reverts commit 25c783c6f9c05b60fbe74c82f2f6bc30e2957170.
+
+[33mcommit 9bb93896747def60bb4ea10fdbf82f75cf93a7e6[m
+Author: Suryansh Pathak <34577232+Suryansh5545@users.noreply.github.com>
+Date:   Wed Dec 20 16:16:07 2023 +0530
+
+    [BugFix] Turn off pip Progress bar (#4241)
+    
+    * [Frontend] Add cache busting to frontend (#4037)
+    
+    * Added Cache Busting
+    
+    * .
+    
+    * [Backend] Allow disabling leaderboard data (#4180)
+    
+    * Add is_active and endpoint to change it leaderboarddata
+    
+    * change is_active to is_disabled
+    
+    * fix comments
+    
+    * fix is_disabled
+    
+    * change is_disabled to false
+    
+    * fix test
+    
+    * fix migration and remove get_object
+    
+    * fix migration
+    
+    * Update views.py
+    
+    * Delete apps/challenges/migrations/0107_challenge_worker_image_url_alter.py
+    
+    * Add missing migration
+    
+    * Add new migration
+    
+    ---------
+    
+    Co-authored-by: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+    
+    * Revert "[Backend] Allow disabling leaderboard data (#4180)" (#4200)
+    
+    This reverts commit ae017b46fbb406dadfd2bb44da025336022d9e60.
+    
+    * [Backend] Allow disabling leaderboard data (#4203)
+    
+    * Add is_active and endpoint to change it leaderboarddata
+    
+    * change is_active to is_disabled
+    
+    * fix comments
+    
+    * fix is_disabled
+    
+    * change is_disabled to false
+    
+    * fix test
+    
+    * fix migration and remove get_object
+    
+    * fix migration
+    
+    * Update views.py
+    
+    * Delete apps/challenges/migrations/0107_challenge_worker_image_url_alter.py
+    
+    * Add missing migration
+    
+    * Add new migration
+    
+    * Fix bulk creation of leaderboard data
+    
+    * Add changes for seed
+    
+    ---------
+    
+    Co-authored-by: Suryansh5545 <Suryanshpathak5545@gmail.com>
+    Co-authored-by: Suryansh5545 <34577232+Suryansh5545@users.noreply.github.com>
+    
+    * [BugFix] Fix modify leaderboard data tests (#4204)
+    
+    * Turns off progress bar on push
+    
+    ---------
+    
+    Co-authored-by: Gunjan Chhablani <chhablani.gunjan@gmail.com>
+
+[33mco
