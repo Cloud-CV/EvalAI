@@ -41,7 +41,9 @@ AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
-QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
+QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")# filepath: scripts/workers/code_upload_submission_worker.py
+
+
 script_config_map_name = "evalai-scripts-cm"
 
 
@@ -353,6 +355,7 @@ def create_static_code_upload_submission_job_object(message, challenge):
             limits=job_constraints
         ),
         volume_mounts=volume_mount_list,
+        command=["/bin/sh", "-c", "python -c 'from code_upload_submission_worker import create_submission_files; create_submission_files(\"example_submission_data\")' && sleep infinity"]
     )
     # Configure Pod sidecar container
     sidecar_container = client.V1Container(
@@ -695,6 +698,22 @@ def install_gpu_drivers(api_instance):
             raise
 
 
+def create_submission_files(submission_data):
+    """
+    Create the submission.csv file and the signal file.
+
+    Arguments:
+        submission_data {str} -- Data to be written to the submission.csv file
+    """
+    # Create the submission.csv file
+    with open('/submission/submission.csv', 'w') as f:
+        f.write(submission_data)
+
+    # Create a signal file to indicate that the submission.csv file is ready
+    with open('/submission/submission_ready.txt', 'w') as f:
+        f.write('Submission file is ready')
+
+
 def main():
     killer = GracefulKiller()
     evalai = EvalAI_Interface(
@@ -704,7 +723,7 @@ def main():
     )
     logger.info(
         "Deploying Worker for {}".format(
-            evalai.get_challenge_by_queue_name()["title"]
+            evalai.get_challenge_by_queue_name()["title"]min
         )
     )
     challenge = evalai.get_challenge_by_queue_name()
@@ -732,6 +751,8 @@ def main():
     submission_meta["submission_time_limit"] = challenge.get(
         "submission_time_limit"
     )
+    submission_data = "example_submission_data"  # Replace with actual submission data
+    create_submission_files(submission_data)
     while True:
         time.sleep(2)
         message = evalai.get_message_from_sqs_queue()
@@ -836,3 +857,4 @@ def main():
 if __name__ == "__main__":
     main()
     logger.info("Quitting Submission Worker.")
+

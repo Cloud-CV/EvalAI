@@ -2,7 +2,7 @@ import docker
 import json
 import os
 import requests
-
+import time
 
 CHANNEL = "#evalai-deployment-notifications"
 EVALAI_CONTAINER_PREFIX = "evalai"
@@ -28,123 +28,61 @@ def get_environment():
 
 def is_container_running(container):
     """
-    Verify the status of a container by it's name
+    Verify the status of a container by its name
 
     Arguments:
         container {Object} -- Docker container
     Returns:
         is_running {boolean} -- True if container is running
     """
-    is_running = False
-    try:
-        container_state = container.attrs["State"]
-        is_running = container_state["Status"] == RUNNING
-    except Exception:
-        pass
-    return is_running
+    return container.status == RUNNING
 
-
-def get_container_status(docker_client):
+def wait_for_submission_file(signal_file_path, submission_file_path):
     """
-    Get running container status
+    Wait for the signal file to indicate that the submission.csv file is ready
 
     Arguments:
-        docker_client {Object} -- Docker client
-    Returns:
-        container_status_map {Dict} -- Dict of container status
+        signal_file_path {str} -- Path to the signal file
+        submission_file_path {str} -- Path to the submission.csv file
     """
-    container_status_map = {}
-    containers = docker_client.containers.list(all=True)
+    while not os.path.exists(signal_file_path):
+        print("kubectl logs <pod-name> -c submission-container
+Waiting for submission file...")
+        time.sleep(5)
+
+    # Process the submission.csv file
+    with open(submission_file_path, 'r') as f:
+        submission_data = f.read()
+        # Process the submission data
+        print("Processing submission data...")
+
+# Main function to monitor containers
+def main():
+    client = docker.from_env()
+    containers = client.containers.list(all=True)
     for container in containers:
-        if EVALAI_CONTAINER_PREFIX in container.name:
-            container_status_map[container.name] = is_container_running(
-                container
-            )
-    return container_status_map
+        if container.name.startswith(EVALAI_CONTAINER_PREFIX):
+            if not is_container_running(container):
+                message = f"Container {container.name} is not running in {get_environment()} environment."
+                print(message)
+                if SLACK_WEBHOOK:
+                    payload = {
+                        "channel": CHANNEL,
+                        "username": USERNAME,
+                        "text": message,
+                        "icon_emoji": ICON_EMOJI,
+                    }
+                    requests.post(SLACK_WEBHOOK, data=json.dumps(payload))
 
-
-def send_slack_notification(message):
-    """
-    Send slack notification
-
-    Arguments:
-        message {string} -- Slack notification message
-    Returns:
-        response {Response} -- Http response object
-    """
-    response = requests.post(
-        SLACK_WEBHOOK,
-        data=json.dumps(
-            {
-                "text": message,
-                "username": USERNAME,
-                "channel": CHANNEL,
-                "icon_emoji": ICON_EMOJI,
-            }
-        ),
-    )
-    return response
-
-
-def notify(container_names):
-    """
-    Send slack notification for workers which are failing
-
-    Arguments:
-        container_names {List} -- List of container names
-    """
-    environment = get_environment()
-    message = "{} environment:\n\n Following workers are down:\n\n {}".format(
-        environment, " \n ".join(container_names)
-    )
-    response = send_slack_notification(message)
-    return response
-
-
-def get_docker_client():
-    try:
-        client = docker.DockerClient(base_url="unix://var/run/docker.sock")
-        return client
-    except Exception:
-        return None
-
-
-def check_container_status():
-    """
-    Check container status and send slack notification
-    """
-    # Get docker client
-    docker_client = get_docker_client()
-    if not docker_client:
-        message = "{} environment:\n\n Docker daemon is down\n\n".format(
-            get_environment()
-        )
-        send_slack_notification(message)
-        return
-
-    try:
-        # Containers to check status for
-        container_status_map = get_container_status(docker_client)
-        if len(container_status_map.keys()) == 0:
-            message = "{} environment:\n\n No docker container is running\n\n".format(
-                get_environment()
-            )
-            send_slack_notification(message)
-            return
-
-        failed_containers = []
-        for container, is_running in container_status_map.items():
-            if not is_running:
-                failed_containers.append(container)
-
-        if len(failed_containers) > 0:
-            notify(failed_containers)
-    except Exception:
-        message = "{} environment:\n\n Docker client is down\n\n".format(
-            get_environment()
-        )
-        send_slack_notification(message)
-
+    # Wait for the submission file
+    wait_for_submission_file('submission_ready.txt', 'submission.csv')
 
 if __name__ == "__main__":
-    check_container_status()
+    # Example usage of find_file_path
+    signal_file_path = find_file_path('submission_ready.txt')
+    submission_file_path = find_file_path('submission.csv')
+    if signal_file_path and submission_file_path:
+        wait_for_submission_file(signal_file_path, submission_file_path)
+    else:
+        print("Required files not found.")
+    main()
