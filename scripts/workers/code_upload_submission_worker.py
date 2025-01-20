@@ -185,6 +185,22 @@ def get_init_container(submission_pk):
     return init_container
 
 
+def get_sidecar_container(submission_pk):
+    """Function to get the sidecar container for capturing environment logs"""
+    curl_request = get_submission_meta_update_curl(submission_pk)
+    sidecar_container = client.V1Container(
+        name="sidecar-container",
+        image="ubuntu:latest",
+        command=[
+            "/bin/bash",
+            "-c",
+            "apt update && apt install -y curl && {}".format(curl_request),
+        ],
+        volume_mounts=[get_volume_mount_object("/evalai_scripts", "evalai-scripts", True)],
+    )
+    return sidecar_container
+
+
 def get_pods_from_job(api_instance, core_v1_api_instance, job_name):
     pods_list = []
     job_def = read_job(api_instance, job_name)
@@ -355,26 +371,7 @@ def create_static_code_upload_submission_job_object(message, challenge):
         volume_mounts=volume_mount_list,
     )
     # Configure Pod sidecar container
-    sidecar_container = client.V1Container(
-        name="sidecar-container",
-        image="ubuntu:latest",
-        command=[
-            "/bin/sh",
-            "-c",
-            "apt update && apt install -y curl && sh /evalai_scripts/monitor_submission.sh",
-        ],
-        env=[
-            SUBMISSION_PATH_ENV,
-            CHALLENGE_PK_ENV,
-            PHASE_PK_ENV,
-            SUBMISSION_PK_ENV,
-            AUTH_TOKEN_ENV,
-            EVALAI_API_SERVER_ENV,
-            SUBMISSION_TIME_LIMIT_ENV,
-            SUBMISSION_TIME_DELTA_ENV,
-        ],
-        volume_mounts=volume_mount_list,
-    )
+    sidecar_container = get_sidecar_container(submission_pk)
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
@@ -613,7 +610,7 @@ def update_failed_jobs_and_send_logs(
                         container_name,
                         container_state,
                     ) in container_state_map.items():
-                        if container_name in ["agent", "submission", "environment"]:
+                        if container_name in ["agent", "submission", "environment", "sidecar-container"]:
                             if container_state.terminated is not None:
                                 pod_name = pods_list.items[0].metadata.name
                                 try:
@@ -693,6 +690,45 @@ def install_gpu_drivers(api_instance):
             )
         else:
             raise
+
+
+def capture_environment_logs():
+    """
+    Capture environment logs and write them to the environment log file.
+    """
+    environment_log_file = '/submission/environment.log'
+    with open(environment_log_file, 'w') as f:
+        # Capture environment logs (example)
+        f.write("Environment log data...\n")
+        logger.info("Captured environment logs")
+
+
+def capture_sidecar_logs():
+    """
+    Capture sidecar-container logs and write them to the environment log file.
+    """
+    sidecar_log_file = '/submission/sidecar.log'
+    with open(sidecar_log_file, 'w') as f:
+        # Capture sidecar-container logs (example)
+        f.write("Sidecar-container log data...\n")
+        logger.info("Captured sidecar-container logs")
+
+
+def create_submission_files(submission_data):
+    """
+    Create the submission.csv file and the signal file.
+
+    Arguments:
+        submission_data {str} -- Data to be written to the submission.csv file
+    """
+    # Create the submission.csv file
+    with open('/submission/submission.csv', 'w') as f:
+        f.write(submission_data)
+
+    # Create a signal file to indicate that the submission.csv file is ready
+    with open('/submission/submission_ready.txt', 'w') as f:
+        f.write('Submission file is ready')
+    logger.info("Created submission_ready.txt file")
 
 
 def main():

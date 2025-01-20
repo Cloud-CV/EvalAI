@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: submission-deployment
+  labels:
+    app: submission
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: submission
+  template:
+    metadata:
+      labels:
+        app: submission
+    spec:
+      initContainers:
+      - name: wait-for-submission
+        image: busybox
+        command: ['sh', '-c', 'until [ -f /submission/submission_ready.txt ]; do echo "Waiting for submission file..."; sleep 5; done;']
+        volumeMounts:
+        - name: submission-volume
+          mountPath: /submission
+      containers:
+      - name: submission-container
+        image: submission-image
+        command: ["python", "scripts/workers/code_upload_submission_worker.py"]
+        volumeMounts:
+        - name: submission-volume
+          mountPath: /submission
+      - name: sidecar-container
+        image: sidecar-image
+        command: ["sh", "-c", "tail -f /var/log/sidecar.log"]
+        volumeMounts:
+        - name: submission-volume
+          mountPath: /submission
+      volumes:
+      - name: submission-volume
+        emptyDir: {}
