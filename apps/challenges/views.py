@@ -25,6 +25,7 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
 
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -4900,3 +4901,33 @@ def modify_leaderboard_data(request):
             "message": "Leaderboard data updated successfully!"
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
+from rest_framework.throttling import UserRateThrottle
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_expiring_authtoken.authentication import ExpiringTokenAuthentication
+
+def validate_file_format(file):
+    accepted_formats = ['text/csv']
+    if file.content_type not in accepted_formats:
+        raise ValidationError('Invalid file format. Please upload a CSV file.')
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def submit_challenge(request, challenge_id):
+    if request.method == 'POST':
+        file = request.FILES['file']
+        try:
+            validate_file_format(file)
+            # Proceed with file processing
+            # ...
+            return JsonResponse({'message': 'File uploaded successfully'}, status=200)
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
