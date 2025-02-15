@@ -58,6 +58,8 @@ The steps are:
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`
 
+For Docker installation on M1 Mac, refer to the [Docker M1 Setup Guide](docker_m1_setup.md).
+
 If you are facing any issue during installation, please see our [common errors during installation](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation) page.
 
 ## Citing EvalAI
