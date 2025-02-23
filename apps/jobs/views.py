@@ -18,7 +18,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
 from django.db.models import Count
-from django.utils import dateparse, timezone
+from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
@@ -2004,8 +2004,6 @@ def get_submissions_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     submission_status = request.query_params.get("status", None)
-    submitted_after = request.query_params.get("submitted_after", None)
-    submitted_before = request.query_params.get("submitted_before", None)
 
     valid_submission_status = [
         Submission.SUBMITTED,
@@ -2017,40 +2015,16 @@ def get_submissions_for_challenge(request, challenge_pk):
         Submission.FINISHED,
         Submission.SUBMITTING,
     ]
-    if submission_status and submission_status not in valid_submission_status:
+
+    if submission_status not in valid_submission_status:
         response_data = {
             "error": "Invalid submission status {}".format(submission_status)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # expected format: YYYY-MM-DDTHH:MM:SSZ
-    if submitted_after:
-        submitted_after = dateparse.parse_datetime(submitted_after)
-        if not submitted_after:
-            response_data = {
-                "error": "Invalid datetime format for 'submitted_after'"
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    if submitted_before:
-        submitted_before = dateparse.parse_datetime(submitted_before)
-        if not submitted_before:
-            response_data = {
-                "error": "Invalid datetime format for 'submitted_before'"
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     submissions_done_in_challenge = Submission.objects.filter(
-        challenge_phase__challenge=challenge.id
+        challenge_phase__challenge=challenge.id, status=submission_status
     )
-
-    if submission_status:
-        submissions_done_in_challenge = submissions_done_in_challenge.filter(status=submission_status)
-
-    if submitted_after:
-        submissions_done_in_challenge = submissions_done_in_challenge.filter(submitted_at__gt=submitted_after)
-
-    if submitted_before:
-        submissions_done_in_challenge = submissions_done_in_challenge.filter(submitted_at__lt=submitted_before)
 
     serializer = SubmissionSerializer(
         submissions_done_in_challenge, many=True, context={"request": request}
