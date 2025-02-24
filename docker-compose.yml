@@ -37,6 +37,7 @@ services:
       - django
     volumes:
       - .:/code
+ 
 
   worker_py3_8:
     env_file:
@@ -48,6 +49,7 @@ services:
       - django
     volumes:
       - .:/code
+  
 
   nodejs:
     hostname: nodejs
@@ -63,6 +65,7 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+   
 
   statsd-exporter:
     hostname: statsd
