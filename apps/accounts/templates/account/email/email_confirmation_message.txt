@@ -3,6 +3,8 @@
 You're receiving this e-mail because user "{{ user_display }}" was registered at {{ site_domain }} under this e-mail address.
 
 To verify your registration, please go to {{ activate_url }}
+
+Please note: Sometimes, due to old browser cache, the verification might not work as expected. If you encounter any issues, please try using an incognito window or clearing your browser cache.
 {% endblocktrans %}{% endautoescape %}
 {% blocktrans with site_name=current_site.name site_domain=current_site.domain %}Thank you from {{ site_name }}!
 {{ site_domain }}{% endblocktrans %}
