@@ -68,26 +68,31 @@ p.no-top-para {
 
 /*scrollbar customization*/
 
+/* Scrollbar customization */
 ::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 10px;
-    height: 5px;
-}
-
-::-webkit-scrollbar-track-piece {
-    background-color: $dark-gray;
+    width: 12px !important;  /* ✅ Increased width */
+    height: 10px; /* ✅ Increases horizontal scrollbar size */
     border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:horizontal {
+/* Track (background of the scrollbar) */
+::-webkit-scrollbar-track {
+    background-color: $dark-gray; 
+    border-radius: 10px;
+}
+
+/* Scrollbar Handle */
+::-webkit-scrollbar-thumb {
     background-color: $light-gray;
     border-radius: 10px;
+    border: 3px solid $dark-gray; /* ✅ Adds padding inside scrollbar */
 }
 
-::-webkit-scrollbar-thumb:vertical {
-    background-color: $light-gray;
-    border-radius: 10px;
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+    background-color: darken($light-gray, 10%);
 }
+
 .fs-10 {
     font-size: 12px;
 }
@@ -1042,4 +1047,3 @@ h4.challenge-step-title {
         position: relative;
     }
 }
-
