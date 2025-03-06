@@ -1,83 +1,97 @@
 <section class="ev-sm-container ev-view challenge-container">
-
-    <!-- 🔍 Search Bar for Challenges -->
-    <div class="search-container">
-        <input type="text" ng-model="vm.searchQuery"
-               placeholder="Search Challenges"
-               ng-change="vm.searchChallenges()"
-               class="form-control">
-    </div>
-
-    <!-- Ongoing Challenges -->
-    <div class="challenge-page-title" id="ongoing-challenges">
-        <strong class="text-med-black fs-18">Ongoing Challenges</strong>
-    </div>
+    <!-- ongoing challenges -->
+    <div class="challenge-page-title" id = "ongoing-challenges"><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
     <div ng-if="challengeList.noneCurrentChallenge">None</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList | filter:vm.searchQuery">
-            <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.image}}">
-                        <span class="ev-card-title fs-14">{{challenge.title}}</span>
+                        <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>Organized by:</strong> {{challenge.creator.team_name}}</p>
-                        <p><strong>Starts on:</strong> {{challenge.start_date | date:'medium'}}</p>
-                        <p><strong>Ends on:</strong> {{challenge.end_date | date:'medium'}}</p>
+                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
+                        <p><strong class="text-light-black fs-12">Organized by</strong>
+                            <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
                     </div>
-                    <div class="btn-card-detail"><strong>View Details</strong></div>
+                    <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
             </a>
         </div>
     </div>
 
-    <!-- Upcoming Challenges -->
-    <div class="challenge-page-title">
-        <strong class="text-med-black fs-18">Upcoming Challenges</strong>
+    <!-- scroll up button -->
+    <div id = "scroll-up" ng-class="challengeList.scrollUp()" >
+    <a class="ev-btn-scroll" scroll-to= "ongoing-challenges" offset= "800"><strong><i class="align-right fa fa-chevron-up"></i></strong></a>
     </div>
+
+    <!-- simple loader -->
+    <div class="loader-container" id="sim-loader">
+        <div class="text-white center w-300 loader-title">Loading</div>
+        <div class="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
+    <!-- upcoming challenges -->
+    <div class="challenge-page-title"><strong class="text-med-black fs-18">Upcoming Challenges</strong></div>
     <div ng-if="challengeList.noneUpcomingChallenge">None</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList | filter:vm.searchQuery">
-            <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.image}}">
-                        <span class="ev-card-title fs-14">{{challenge.title}}</span>
+                        <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>Organized by:</strong> {{challenge.creator.team_name}}</p>
-                        <p><strong>Starts on:</strong> {{challenge.start_date | date:'medium'}}</p>
-                        <p><strong>Ends on:</strong> {{challenge.end_date | date:'medium'}}</p>
+                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
+                        <p><strong class="text-light-black fs-12">Organized by</strong>
+                            <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
                     </div>
-                    <div class="btn-card-detail"><strong>View Details</strong></div>
+                    <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
             </a>
         </div>
     </div>
-
-    <!-- Past Challenges -->
-    <div class="challenge-page-title">
-        <strong class="text-med-black fs-18">Past Challenges</strong>
-    </div>
+    <!-- past challenges -->
+    <div class="challenge-page-title"><strong class="text-med-black fs-18">Past Challenges</strong></div>
     <div ng-if="challengeList.nonePastChallenge">None</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList | filter:vm.searchQuery">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList">
             <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.image}}">
-                        <span class="ev-card-title fs-14">{{challenge.title}}</span>
+                        <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>Organized by:</strong> {{challenge.creator.team_name}}</p>
-                        <p><strong>Starts on:</strong> {{challenge.start_date | date:'medium'}}</p>
-                        <p><strong>Ends on:</strong> {{challenge.end_date | date:'medium'}}</p>
+                        <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                        <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
+                        <p><strong class="text-light-black fs-12">Organized by</strong>
+                            <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
+                            <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
+                            <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
                     </div>
-                    <div class="btn-card-detail"><strong>View Details</strong></div>
+                    <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
             </a>
         </div>
     </div>
-
 </section>
+<!-- <ui-view></ui-view> -->
