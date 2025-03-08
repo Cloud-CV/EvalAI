@@ -51,6 +51,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
     
     3. `metadata`: This field defines additional information about the metrics that are used to evaluate the challenge submissions.
 
+- **disable_private_submission**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either disable or enable private submissions. Default is `False`)
+
   The leaderboard schema for the [sample challenge configuration](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) looks like this:
 
   ```yaml
