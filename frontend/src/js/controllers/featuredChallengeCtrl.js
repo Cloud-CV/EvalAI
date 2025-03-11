@@ -48,10 +48,11 @@
                 vm.page = details;
                 vm.isActive = details.is_active;
 
+                // Log challenge data to console to check what information is available
+                console.log("Challenge Data:", vm.page);
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
-
                 }
             },
             onError: function(response) {
@@ -73,8 +74,6 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
-                // navigate to challenge page
-                // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -111,15 +110,12 @@
         vm.getLeaderboard = function(phaseSplitId) {
             vm.isResult = true;
             vm.phaseSplitId = phaseSplitId;
-            // loader for existing teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
 
-
             vm.startLoader("Loading Leaderboard Items");
 
-            // Show leaderboard
             vm.leaderboard = {};
             var parameters = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
@@ -136,56 +132,32 @@
                         if (duration._data.years != 0) {
                             var years = duration.asYears();
                             vm.leaderboard[i].submission__submitted_at = years;
-                            if (years.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'year';
-                            } else {
-                                vm.leaderboard[i].timeSpan= 'years';
-                            }
+                            vm.leaderboard[i].timeSpan = (years.toFixed(0) == 1) ? 'year' : 'years';
                         }
                         else if (duration._data.months !=0) {
                             var months = duration.months();
                             vm.leaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'month';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'months';
-                            }
+                            vm.leaderboard[i].timeSpan = (months.toFixed(0) == 1) ? 'month' : 'months';
                         }
                         else if (duration._data.days !=0) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'day';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'days';
-                            }
+                            vm.leaderboard[i].timeSpan = (days.toFixed(0) == 1) ? 'day' : 'days';
                         }
                         else if (duration._data.hours !=0) {
                             var hours = duration.asHours();
                             vm.leaderboard[i].submission__submitted_at = hours;
-                            if (hours.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'hour';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'hours';
-                            }                        
+                            vm.leaderboard[i].timeSpan = (hours.toFixed(0) == 1) ? 'hour' : 'hours';
                         } 
                         else if (duration._data.minutes !=0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
-                            if (minutes.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'minute';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'minutes';
-                            }
+                            vm.leaderboard[i].timeSpan = (minutes.toFixed(0) == 1) ? 'minute' : 'minutes';
                         }
                         else if (duration._data.seconds != 0) {
                             var second = duration.asSeconds();
                             vm.leaderboard[i].submission__submitted_at = second;
-                            if (second.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'second';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'seconds';
-                            }
+                            vm.leaderboard[i].timeSpan = (second.toFixed(0) == 1) ? 'second' : 'seconds';
                         }
                     }
                     vm.phase_name = vm.phaseSplitId;
