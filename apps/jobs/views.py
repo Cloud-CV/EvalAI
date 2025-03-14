@@ -3032,5 +3032,5 @@ def update_submission_meta(request, challenge_pk, submission_pk):
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            )       
         
