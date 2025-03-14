@@ -35,6 +35,25 @@
                 $rootScope.notify('error', vm.data.error);
             }
         };
+
+        // Function to validate file format
+        function validateFileFormat(file) {
+            const acceptedFormats = ['text/csv'];
+            if (!acceptedFormats.includes(file.type)) {
+                $rootScope.notify('error', 'Invalid file format. Please upload a CSV file.');
+                return false;
+            }
+            return true;
+        }
+
+        // Add event listener to file input
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!validateFileFormat(file)) {
+                event.target.value = ''; // Clear the file input
+            }
+        });
+
         utilities.sendRequest(parameters);
     }
 })();
