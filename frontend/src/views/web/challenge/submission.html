@@ -191,8 +191,7 @@
                         <p class="fs-18 w-400">Select phase:</p>
                         <ul>
                             <li ng-repeat="item in challenge.phases.results">
-                                <input
-                                    ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date"
+                                <input ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date"
                                     type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}"
                                     value="{{item.id}}" ng-model="challenge.phaseId"
                                     ng-click="challenge.showRemainingSubmissions(item.id); challenge.loadPhaseAttributes(item.id); challenge.clearMetaAttributeValues();">
@@ -224,15 +223,14 @@
                             <p class="fs-18 w-400">Select submission type:</p>
                             <li>
                                 <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="cliSubmission"
-                                    value="cliSubmission" ng-click="challenge.isSubmissionUsingCli = true; challenge.isSubmissionUsingFile = false; challenge.isSubmissionUsingUrl = false">
+                                    value="cliSubmission" ng-model="challenge.submissionType" ng-click="challenge.isSubmissionUsingCli = true; challenge.isSubmissionUsingFile = false; challenge.isSubmissionUsingUrl = false">
                                 <label for="cliSubmission"></label>
                                 <div class="show-member-title pointer">
                                     <strong class="fs-16 w-300">Use CLI (for file size > 400MB)
                                     </strong>
                                 </div>
-                                <input type="radio" name="submissionOptions" class="with-gap selectPhase"
-                                    id="fileUpload" value="challenge.showFileUploadOption"
-                                    ng-click="challenge.isSubmissionUsingFile = true; challenge.isSubmissionUsingUrl = false; challenge.isSubmissionUsingCli = false;">
+                                <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUpload" value="challenge.showFileUploadOption"
+                                    ng-model="challenge.submissionType" ng-click="challenge.isSubmissionUsingFile = true; challenge.isSubmissionUsingUrl = false; challenge.isSubmissionUsingCli = false;">
                                 <label for="fileUpload"></label>
                                 <div class="show-member-title pointer">
                                     <strong class="fs-16 w-300">Upload file </strong>
@@ -269,7 +267,7 @@
                                     <p class="fs-14 w-400" ng>Select submission visibility:</p>
                                     <li>
                                         <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPublicSubmission"
-                                            value="isPublicSubmission" ng-click="challenge.isPublicSubmission = true">
+                                            value="isPublicSubmission" ng-model="challenge.submissionVisibility" ng-click="challenge.isPublicSubmission = true">
                                         <label for="isPublicSubmission"></label>
                                         <div class="show-member-title pointer">
                                             <strong class="fs-16 w-300">Public
@@ -277,9 +275,8 @@
                                         </div>
                                         <div class="clearfix"></div>
 
-                                        <input type="radio" name="submissionVisibility" class="with-gap selectPhase"
-                                            id="isPrivateSubmission" value="isPrivateSubmission"
-                                            ng-click="challenge.isPublicSubmission = false">
+                                        <input type="radio" name="submissionVisibility" class="with-gap selectPhase" id="isPrivateSubmission" 
+                                            value="isPrivateSubmission" ng-model="challenge.submissionVisibility" ng-click="challenge.isPublicSubmission = false">
                                         <label for="isPrivateSubmission"></label>
                                         <div class="show-member-title pointer">
                                             <strong class="fs-16 w-300">Private </strong>
@@ -289,39 +286,35 @@
                                 </div>
                                 <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] == true">
                                     <div class="input-field align-left col s10">
-                                        <input type="text" id="methodName" name="methodName"
-                                            ng-model="challenge.methodName">
+                                        <input type="text" id="methodName" name="methodName" ng-model="challenge.methodName">
                                         <span class="form-icon"><i class="fa fa-text"></i></span>
                                         <label for="methodName">Method name (Optional)</label>
                                     </div>
                                 </div>
                                 <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] == true">
                                     <div class="input-field align-left col s10">
-                                        <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
-                                            ng-model="challenge.methodDesc"></textarea>
+                                        <textarea id="methodDesc" class="materialize-textarea" name="methodDesc" ng-model="challenge.methodDesc"></textarea>
                                         <span class="form-icon"><i class="fa fa-text"></i></span>
                                         <label for="methodDesc">Method description (Optional)</label>
                                     </div>
                                 </div>
                                 <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] == true">
                                     <div class="input-field align-left col s10">
-                                        <input type="text" id="projectUrl" name="projectUrl"
-                                            ng-model="challenge.projectUrl">
+                                        <input type="text" id="projectUrl" name="projectUrl" ng-model="challenge.projectUrl">
                                         <span class="form-icon"><i class="fa fa-text"></i></span>
                                         <label for="projectUrl">Project URL (Optional)</label>
                                     </div>
                                 </div>
                                 <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] == true">
                                     <div class="input-field align-left col s10">
-                                        <input type="text" id="publicationUrl" name="publicationUrl"
-                                            ng-model="challenge.publicationUrl">
+                                        <input type="text" id="publicationUrl" name="publicationUrl" ng-model="challenge.publicationUrl">
                                         <span class="form-icon"><i class="fa fa-text"></i></span>
                                         <label for="publicationUrl">Publication URL (Optional)</label>
                                     </div>
                                 </div>
                                 <div class="dynamicform">
                                     <div ng-if="challenge.metaAttributesforCurrentSubmission != null" ng-repeat="attribute in challenge.metaAttributesforCurrentSubmission">
-                                           <div ng-if="attribute.type == 'text'">
+                                            <div ng-if="attribute.type == 'text'">
                                                 <div class="row">
                                                     <div class="input-field align-left col s10">
                                                         <input type="text" ng-model="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
