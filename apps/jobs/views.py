@@ -243,7 +243,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         # check if manual approval is enabled and team is approved
-        if challenge.manual_participant_approval and not challenge.approved_participant_teams.filter(pk=participant_team_id).exists():
+        if (
+         challenge.manual_participant_approval
+         and not challenge.approved_participant_teams.filter(pk=participant_team_id).exists()
+         ):
+
             response_data = {
                 "error": "Your team is not approved by challenge host"
             }
@@ -603,7 +607,8 @@ def leaderboard(request, challenge_phase_split_id):
         only_public_entries=True,
         order_by=order_by,
     )
-    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
+    # The response 400 will be returned if the leaderboard isn't public
+    # or if the `default_order_by` key is missing in the leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
 
@@ -816,7 +821,9 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         only_public_entries=False,
         order_by=order_by,
     )
-    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
+# The response 400 will be returned if the leaderboard isn't public
+# or if the `default_order_by` key is missing in the leaderboard.
+
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
 
@@ -1087,7 +1094,9 @@ def update_submission(request, challenge_pk):
      - ``submission``: submission id, e.g. 123 (**required**)
      - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
-     - ``environment_log``: Environment error after evaluation, e.g. "Failed due to attempted action being invalid" (**code upload challenge only**)
+     - ``environment_log``: Environment error after evaluation,
+        e.g., "Failed due to attempted action being invalid"
+        (**code upload challenge only**)
      - ``submission_status``: Status of submission after evaluation
         (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
@@ -1971,7 +1980,11 @@ def resume_submission(request, submission_pk):
 
     if not challenge.remote_evaluation:
         response_data = {
-            "error": "Challenge {} is not remote. Resuming is only supported for remote challenges.".format(challenge.title)
+          "error": (
+               "Challenge {} is not remote. Resuming is only supported for remote challenges."
+           ).format(challenge.title)
+
+
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2560,7 +2573,9 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
     Returns:
-         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+        Response Object -- An object containing the presigned URL and submission ID,
+        or an error message if some failure occurs.
+
     """
     if settings.DEBUG:
         response_data = {
@@ -2733,7 +2748,9 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         challenge_phase_pk {int} -- Challenge phase primary key
         submission_pk {int} -- Submission primary key
     Returns:
-         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+       # Response Object -- An object containing the presigned URL and submission ID,
+# or an error message if some failure occurs.
+
     """
     if settings.DEBUG:
         response_data = {
