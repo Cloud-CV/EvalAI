@@ -391,6 +391,11 @@
                             </div>
                         </ul>
                     </form>
+                    <form id="uploadForm" method="post" enctype="multipart/form-data">
+                        <label for="fileInput">Upload File</label>
+                        <input type="file" id="fileInput" name="file" accept=".csv">
+                        <button type="submit">Submit</button>
+                    </form>
                 </div>
             </div>
             <div ng-if="challenge.maxExceeded" class="col s12 m5">
