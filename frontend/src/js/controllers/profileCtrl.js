@@ -183,7 +183,6 @@
             var urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/;
             return url.length <= 200 && urlPattern.test(url);
         };
-        
         vm.editprofileDialog = function(ev) {
             switch (ev.currentTarget.id) {
                 case "first_name":
