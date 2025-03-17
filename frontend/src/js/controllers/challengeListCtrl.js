@@ -35,8 +35,15 @@
         };
         
         vm.itemsPerPage = 12; 
+        vm.challengeCreator = {};
 
         vm.getAllResults = function(parameters, challengeList, noneFlag, paginationType) {
+            if (!paginationType || !vm.pagination[paginationType]) {
+                console.error("Invalid pagination type:", paginationType);
+                utilities.hideLoader();
+                return;
+            }
+            
             vm.pagination[paginationType].loading = true;
             
             var requestParams = angular.copy(parameters);
@@ -71,7 +78,7 @@
                             if (result.start_date) {
                                 var offset = new Date(result.start_date).getTimezoneOffset();
                                 result.time_zone = moment.tz.zone(timezone).abbr(offset);
-                                result.gmt_zone = gmtZone;  // Using gmtZone here
+                                result.gmt_zone = gmtZone;
                             }
                             
                             if (result.id && result.creator && result.creator.id) {
@@ -94,7 +101,7 @@
                         vm[noneFlag] = true;
                     }
                     vm.pagination[paginationType].loading = false;
-                    utilities.hideLoader();
+                    utilities.hideLoader(); // Ensure hideLoader is called on error
                 }
             };
         
@@ -175,34 +182,32 @@
             });
         };
         
-        vm.challengeCreator = {};
+        // Initialize API calls
         var parameters = {};
         if (userKey) {
             parameters.token = userKey;
         } else {
             parameters.token = null;
         }
-
-        parameters.url = 'challenges/challenge/present/approved/public';
         parameters.method = 'GET';
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge", "current");
+
+        // Load current challenges
+        var currentParams = angular.copy(parameters);
+        currentParams.url = 'challenges/challenge/present/approved/public';
+        vm.getAllResults(currentParams, vm.currentList, "noneCurrentChallenge", "current");
         
-        parameters.url = 'challenges/challenge/future/approved/public';
-        parameters.method = 'GET';
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge", "upcoming");
+        // Load upcoming challenges
+        var upcomingParams = angular.copy(parameters);
+        upcomingParams.url = 'challenges/challenge/future/approved/public';
+        vm.getAllResults(upcomingParams, vm.upcomingList, "noneUpcomingChallenge", "upcoming");
 
-        parameters.url = 'challenges/challenge/past/approved/public';
-        parameters.method = 'GET';
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge", "past");
+        // Load past challenges
+        var pastParams = angular.copy(parameters);
+        pastParams.url = 'challenges/challenge/past/approved/public';
+        vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge", "past");
 
         vm.scrollUp = function() {
-            angular.element($window).bind('scroll', function() {
-                if (this.pageYOffset >= 100) {
-                    utilities.showButton();
-                } else {
-                    utilities.hideButton();
-                }
-            });
+            $window.scrollTo(0, 0);
         };
         
         angular.element(document).ready(function() {
