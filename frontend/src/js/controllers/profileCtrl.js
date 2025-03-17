@@ -183,6 +183,7 @@
             var urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/;
             return url.length <= 200 && urlPattern.test(url);
         };
+
         vm.editprofileDialog = function(ev) {
             switch (ev.currentTarget.id) {
                 case "first_name":
@@ -231,7 +232,7 @@
                     vm.isFormError = true;
                     $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
                     return;
-                }                
+                }
 
                 var parameters = {};
                 parameters.url = 'auth/user/';
