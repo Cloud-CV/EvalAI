@@ -230,9 +230,9 @@
 
                 if (!vm.isURLValid(vm.user[editid])) {
                     vm.isFormError = true;
-                    $rootScope.notify("error", "Please provide a valid URL ");
+                    $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
                     return;
-                }                   
+                }                
 
                 var parameters = {};
                 parameters.url = 'auth/user/';
