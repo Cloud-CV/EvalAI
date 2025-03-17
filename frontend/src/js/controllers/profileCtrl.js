@@ -180,7 +180,7 @@
             if (!url) {
                 return true; // Allow empty URLs
             }
-            var urlPattern = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+            var urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/;
             return url.length <= 200 && urlPattern.test(url);
         };
         
