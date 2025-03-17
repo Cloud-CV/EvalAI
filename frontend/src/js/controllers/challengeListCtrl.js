@@ -101,7 +101,7 @@
                         vm[noneFlag] = true;
                     }
                     vm.pagination[paginationType].loading = false;
-                    utilities.hideLoader(); // Ensure hideLoader is called on error
+                    utilities.hideLoader(); 
                 }
             };
         
@@ -213,5 +213,6 @@
         angular.element(document).ready(function() {
             vm.initScrollListener();
         });
+        
     }
 })();
