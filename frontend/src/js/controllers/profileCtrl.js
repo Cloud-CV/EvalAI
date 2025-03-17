@@ -177,12 +177,13 @@
         };
 
         vm.isURLValid = function(url) {
-            if (url === undefined || url === null) {
-                return true;
+            if (!url) {
+                return true; // Allow empty URLs
             }
-            return (url.length <= 200);
+            var urlPattern = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+            return url.length <= 200 && urlPattern.test(url);
         };
-
+        
         vm.editprofileDialog = function(ev) {
             switch (ev.currentTarget.id) {
                 case "first_name":
@@ -229,9 +230,9 @@
 
                 if (!vm.isURLValid(vm.user[editid])) {
                     vm.isFormError = true;
-                    $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
+                    $rootScope.notify("error", "Please provide a valid URL ");
                     return;
-                }
+                }                   
 
                 var parameters = {};
                 parameters.url = 'auth/user/';
