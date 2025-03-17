@@ -12,7 +12,7 @@
                         <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
-                    <div class="card-content" style="height: 200px; overflow-y: auto;">
+                    <div class="card-content" style="overflow-y: auto;">
                         <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
                         <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
