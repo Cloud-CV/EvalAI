@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$scope'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$scope', '$timeout'];
 
-    function ChallengeListCtrl(utilities, $window, moment, $scope) {
+    function ChallengeListCtrl(utilities, $window, moment, $scope, $timeout) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
@@ -29,18 +29,31 @@
         vm.nonePastChallenge = false;
         
         vm.pagination = {
-            current: { page: 1, hasMore: false, loading: false },
-            upcoming: { page: 1, hasMore: false, loading: false },
-            past: { page: 1, hasMore: false, loading: false }
+            current: { page: 1, hasMore: false, loading: false, initialized: false },
+            upcoming: { page: 1, hasMore: false, loading: false, initialized: false },
+            past: { page: 1, hasMore: false, loading: false, initialized: false }
         };
         
         vm.itemsPerPage = 12; 
         vm.challengeCreator = {};
+        vm.activeTab = 'current'; // Track which tab is currently active
 
         vm.getAllResults = function(parameters, challengeList, noneFlag, paginationType) {
-            if (!paginationType || !vm.pagination[paginationType]) {
+            // Default to page 1 if paginationType is undefined
+            if (!paginationType) {
+                paginationType = parameters.url.includes('present') ? 'current' :
+                                parameters.url.includes('future') ? 'upcoming' :
+                                parameters.url.includes('past') ? 'past' : 'current';
+            }
+            
+            if (!vm.pagination[paginationType]) {
                 console.error("Invalid pagination type:", paginationType);
                 utilities.hideLoader();
+                return;
+            }
+            
+            // If already loading, don't make another request
+            if (vm.pagination[paginationType].loading) {
                 return;
             }
             
@@ -88,12 +101,20 @@
                             }
                         }
                         
-                        challengeList.push.apply(challengeList, data.results);
+                        Array.prototype.push.apply(challengeList, data.results);
                         vm.pagination[paginationType].hasMore = data.next !== null;
                     }
                     
                     vm.pagination[paginationType].loading = false;
-                    utilities.hideLoader();
+                    vm.pagination[paginationType].initialized = true;
+                    
+                    if (paginationType === 'current') {
+                        utilities.hideLoader();
+                    }
+
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
                 },
                 onError: function(error) {
                     console.error("API request failed:", error);
@@ -101,7 +122,15 @@
                         vm[noneFlag] = true;
                     }
                     vm.pagination[paginationType].loading = false;
-                    utilities.hideLoader(); 
+                    vm.pagination[paginationType].initialized = true;
+                    
+                    if (paginationType === 'current') {
+                        utilities.hideLoader();
+                    }
+
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
                 }
             };
         
@@ -140,6 +169,42 @@
             event.target.classList.add('loaded');
         };
         
+        // Function to initialize a specific tab's content
+        vm.initializeTab = function(type) {
+            if (vm.pagination[type].initialized) {
+                return; // Already loaded
+            }
+            
+            var parameters = {};
+            if (userKey) {
+                parameters.token = userKey;
+            } else {
+                parameters.token = null;
+            }
+            parameters.method = 'GET';
+            
+            switch(type) {
+                case 'current':
+                    parameters.url = 'challenges/challenge/present/approved/public';
+                    vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge", "current");
+                    break;
+                case 'upcoming':
+                    parameters.url = 'challenges/challenge/future/approved/public';
+                    vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge", "upcoming");
+                    break;
+                case 'past':
+                    parameters.url = 'challenges/challenge/past/approved/public';
+                    vm.getAllResults(parameters, vm.pastList, "nonePastChallenge", "past");
+                    break;
+            }
+        };
+        
+        // Set active tab
+        vm.setActiveTab = function(type) {
+            vm.activeTab = type;
+            vm.initializeTab(type);
+        };
+        
         vm.initScrollListener = function() {
             angular.element($window).bind('scroll', function() {
                 // Show/hide scroll up button
@@ -165,46 +230,61 @@
                         }
                     }
                     
-                    if (currentSection.indexOf('ongoing') !== -1 && vm.pagination.current.hasMore) {
-                        $scope.$apply(function() {
-                            vm.loadMore('current');
-                        });
-                    } else if (currentSection.indexOf('upcoming') !== -1 && vm.pagination.upcoming.hasMore) {
-                        $scope.$apply(function() {
-                            vm.loadMore('upcoming');
-                        });
-                    } else if (currentSection.indexOf('past') !== -1 && vm.pagination.past.hasMore) {
-                        $scope.$apply(function() {
-                            vm.loadMore('past');
-                        });
+                    if (currentSection.indexOf('ongoing') !== -1) {
+                        vm.initializeTab('current');
+                        if (vm.pagination.current.hasMore) {
+                            $scope.$apply(function() {
+                                vm.loadMore('current');
+                            });
+                        }
+                    } else if (currentSection.indexOf('upcoming') !== -1) {
+                        vm.initializeTab('upcoming');
+                        if (vm.pagination.upcoming.hasMore) {
+                            $scope.$apply(function() {
+                                vm.loadMore('upcoming');
+                            });
+                        }
+                    } else if (currentSection.indexOf('past') !== -1) {
+                        vm.initializeTab('past');
+                        if (vm.pagination.past.hasMore) {
+                            $scope.$apply(function() {
+                                vm.loadMore('past');
+                            });
+                        }
                     }
                 }
             });
         };
         
-        // Initialize API calls
-        var parameters = {};
+        // Initialize only current challenges on page load
+        var currentParams = {};
         if (userKey) {
-            parameters.token = userKey;
+            currentParams.token = userKey;
         } else {
-            parameters.token = null;
+            currentParams.token = null;
         }
-        parameters.method = 'GET';
-
-        // Load current challenges
-        var currentParams = angular.copy(parameters);
+        currentParams.method = 'GET';
         currentParams.url = 'challenges/challenge/present/approved/public';
         vm.getAllResults(currentParams, vm.currentList, "noneCurrentChallenge", "current");
         
-        // Load upcoming challenges
-        var upcomingParams = angular.copy(parameters);
-        upcomingParams.url = 'challenges/challenge/future/approved/public';
-        vm.getAllResults(upcomingParams, vm.upcomingList, "noneUpcomingChallenge", "upcoming");
-
-        // Load past challenges
-        var pastParams = angular.copy(parameters);
-        pastParams.url = 'challenges/challenge/past/approved/public';
-        vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge", "past");
+        // Add a method to detect when tabs are visible
+        vm.checkVisibility = function() {
+            var sections = document.querySelectorAll('.challenge-page-title');
+            for (var i = 0; i < sections.length; i++) {
+                var rect = sections[i].getBoundingClientRect();
+                if (rect.top > -100 && rect.top < window.innerHeight) {
+                    var sectionText = sections[i].textContent.trim().toLowerCase();
+                    if (sectionText.indexOf('upcoming') !== -1) {
+                        vm.initializeTab('upcoming');
+                    } else if (sectionText.indexOf('past') !== -1) {
+                        vm.initializeTab('past');
+                    }
+                }
+            }
+            
+            // Check again after a delay
+            $timeout(vm.checkVisibility, 1000);
+        };
 
         vm.scrollUp = function() {
             $window.scrollTo(0, 0);
@@ -212,7 +292,14 @@
         
         angular.element(document).ready(function() {
             vm.initScrollListener();
+            
+            // Start checking visibility of sections
+            $timeout(vm.checkVisibility, 500);
+            
+            // Explicitly initialize past challenges after a short delay to ensure they load
+            $timeout(function() {
+                vm.initializeTab('past');
+            }, 2000);
         });
-        
     }
 })();
