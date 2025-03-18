@@ -1,6 +1,6 @@
 <div class="card ev-challenge-card hoverable z-depth-2 margin-bottom-cancel">
   <div class="card-image ev-card-image">
-    <img class="bg-img" [src]="challenge['image']" appLazyLoadImage/>
+    <img class="bg-img" [src]="challenge['image'] || 'assets/default-challenge.png'" appLazyLoadImage/>
   </div>
   <div class="card-content">
     <p class="fs-20 fw-regular truncate">{{ challenge['title'] }}</p>
@@ -16,6 +16,23 @@
       <strong class="text-light-black fs-12">Ends on</strong> <br />
       <span class="fw-light fs-16">{{ challenge['end_date'] | date: 'medium' }} {{ challenge['end_zone'] }}</span>
     </p>
+
+    <!-- ✅ Added Missing Details -->
+    <p *ngIf="challenge['participant_count']">
+      <strong class="text-light-black fs-12">Participants</strong> <br />
+      <span class="fw-light fs-16">{{ challenge['participant_count'] }}</span>
+    </p>
+
+    <p *ngIf="challenge['total_submissions']">
+      <strong class="text-light-black fs-12">Total Submissions</strong> <br />
+      <span class="fw-light fs-16">{{ challenge['total_submissions'] }}</span>
+    </p>
+
+    <p *ngIf="challenge['is_active']">
+      <strong class="text-light-black fs-12">Status</strong> <br />
+      <span class="fw-light fs-16">{{ challenge['is_active'] ? 'Active' : 'Inactive' }}</span>
+    </p>
+
     <div class="margin-top-btm" *ngIf="this.routerPublic.url === myChallengesRoute">
       <span *ngIf="challenge['approved_by_admin']">
         <div class="chip green white-text">Approved</div>
@@ -30,5 +47,7 @@
         <div class="chip red white-text">Not Published</div>
       </span>
     </div>
+
+    <button class="btn btn-primary">View Challenge</button>
   </div>
 </div>
