@@ -25,7 +25,7 @@ SCALE_UP_DESIRED_SIZE = 1
 
 # Env Variables
 ENV = os.environ.get("ENV", "production")
-AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
+STAFF_AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 EVALAI_ENDPOINT = os.environ.get("API_HOST_URL", "https://eval.ai")
 
 json_path = os.environ.get("JSON_PATH", "~/prod_eks_auth_tokens.json")
@@ -107,8 +107,7 @@ def stop_eks_worker(challenge, evalai_interface, aws_keys):
     return response
 
 
-def get_pending_submission_count_by_pk(metrics, challenge_pk):
-    challenge_metrics = metrics[str(challenge_pk)]
+def get_pending_submission_count(challenge_metrics):
     pending_submissions = 0
     for status in ["running", "submitted", "queued", "resuming"]:
         pending_submissions += challenge_metrics.get(status, 0)
@@ -151,15 +150,17 @@ def scale_up_workers(challenge, original_desired_size, pending_submissions, eval
         )
 
 
-def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size):
+def scale_up_or_down_workers(challenge, evalai_interface, staff_evalai_interface, aws_keys, scale_up_desired_size):
     try:
-        pending_submissions = get_pending_submission_count_by_pk(metrics, challenge["id"])
-    except Exception:  # noqa: F841
+        challenge_metrics = staff_evalai_interface.get_challenge_submission_metrics_by_pk(challenge["id"])
+        pending_submissions = get_pending_submission_count(challenge_metrics)
+    except Exception as e:  # noqa: F841
         print(
             "Unable to get the pending submissions for challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
+        print(e)
         return
 
     eks_client, cluster_name, nodegroup_name = get_eks_meta(
@@ -209,8 +210,7 @@ def scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, sca
 def start_job():
 
     # Get metrics
-    evalai_interface = create_evalai_interface(AUTH_TOKEN)
-    metrics = evalai_interface.get_challenges_submission_metrics()
+    staff_evalai_interface = create_evalai_interface(STAFF_AUTH_TOKEN)
 
     for challenge_id, details in INCLUDED_CHALLENGE_PKS.items():
         # Auth Token
@@ -237,7 +237,7 @@ def start_job():
             ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
-            scale_up_or_down_workers(challenge, metrics, evalai_interface, aws_keys, scale_up_desired_size)
+            scale_up_or_down_workers(challenge, evalai_interface, staff_evalai_interface, aws_keys, scale_up_desired_size)
             time.sleep(1)
         except Exception as e:
             print(e)
