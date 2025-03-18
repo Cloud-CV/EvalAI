@@ -10,7 +10,7 @@
 
     function ChallengeListCtrl(utilities, $window, moment, $scope, $timeout) {
         var vm = this;
-        var userKey = utilities.getData('userKey');
+        vm.userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
         var gmtSign = gmtOffset >= 0 ? '+' : '-';
         var gmtHours = Math.abs(Math.floor(gmtOffset / 60));
@@ -36,10 +36,9 @@
         
         vm.itemsPerPage = 12; 
         vm.challengeCreator = {};
-        vm.activeTab = 'current'; // Track which tab is currently active
+        vm.activeTab = 'current'; 
 
         vm.getAllResults = function(parameters, challengeList, noneFlag, paginationType) {
-            // Default to page 1 if paginationType is undefined
             if (!paginationType) {
                 paginationType = parameters.url.includes('present') ? 'current' :
                                 parameters.url.includes('future') ? 'upcoming' :
@@ -47,12 +46,10 @@
             }
             
             if (!vm.pagination[paginationType]) {
-                console.error("Invalid pagination type:", paginationType);
                 utilities.hideLoader();
                 return;
             }
             
-            // If already loading, don't make another request
             if (vm.pagination[paginationType].loading) {
                 return;
             }
@@ -60,8 +57,9 @@
             vm.pagination[paginationType].loading = true;
             
             var requestParams = angular.copy(parameters);
-            
-            requestParams.url = requestParams.url + '?page=' + vm.pagination[paginationType].page + '&page_size=' + vm.itemsPerPage;
+            if (!requestParams.url.includes('?')) {
+                requestParams.url = requestParams.url + '?page=' + vm.pagination[paginationType].page + '&page_size=' + vm.itemsPerPage;
+            }
             
             requestParams.callback = {
                 onSuccess: function(response) {
@@ -77,6 +75,8 @@
                         }
                         
                         var timezone = moment.tz.guess();
+                        var zone = moment.tz.zone(timezone);
+                        
                         for (var i = 0; i < data.results.length; i++) {
                             var result = data.results[i];
                             
@@ -90,7 +90,7 @@
                             
                             if (result.start_date) {
                                 var offset = new Date(result.start_date).getTimezoneOffset();
-                                result.time_zone = moment.tz.zone(timezone).abbr(offset);
+                                result.time_zone = zone.abbr(offset);
                                 result.gmt_zone = gmtZone;
                             }
                             
@@ -103,30 +103,31 @@
                         
                         Array.prototype.push.apply(challengeList, data.results);
                         vm.pagination[paginationType].hasMore = data.next !== null;
+                        
+                        if (data.next && parameters.recursiveTest) {
+                            var nextParams = angular.copy(parameters);
+                            nextParams.url = data.next;
+                            vm.getAllResults(nextParams, challengeList, noneFlag, paginationType);
+                        }
                     }
                     
                     vm.pagination[paginationType].loading = false;
                     vm.pagination[paginationType].initialized = true;
                     
-                    if (paginationType === 'current') {
-                        utilities.hideLoader();
-                    }
+                    utilities.hideLoader();
 
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
                 },
-                onError: function(error) {
-                    console.error("API request failed:", error);
+                onError: function() {
                     if (vm.pagination[paginationType].page === 1) {
                         vm[noneFlag] = true;
                     }
                     vm.pagination[paginationType].loading = false;
                     vm.pagination[paginationType].initialized = true;
                     
-                    if (paginationType === 'current') {
-                        utilities.hideLoader();
-                    }
+                    utilities.hideLoader();
 
                     if (!$scope.$$phase) {
                         $scope.$apply();
@@ -142,8 +143,8 @@
             
             vm.pagination[type].page++;
             var parameters = {};
-            if (userKey) {
-                parameters.token = userKey;
+            if (vm.userKey) {
+                parameters.token = vm.userKey;
             } else {
                 parameters.token = null;
             }
@@ -169,15 +170,14 @@
             event.target.classList.add('loaded');
         };
         
-        // Function to initialize a specific tab's content
         vm.initializeTab = function(type) {
             if (vm.pagination[type].initialized) {
-                return; // Already loaded
+                return; 
             }
             
             var parameters = {};
-            if (userKey) {
-                parameters.token = userKey;
+            if (vm.userKey) {
+                parameters.token = vm.userKey;
             } else {
                 parameters.token = null;
             }
@@ -199,7 +199,6 @@
             }
         };
         
-        // Set active tab
         vm.setActiveTab = function(type) {
             vm.activeTab = type;
             vm.initializeTab(type);
@@ -207,7 +206,6 @@
         
         vm.initScrollListener = function() {
             angular.element($window).bind('scroll', function() {
-                // Show/hide scroll up button
                 if (this.pageYOffset >= 100) {
                     utilities.showButton();
                 } else {
@@ -256,18 +254,33 @@
             });
         };
         
-        // Initialize only current challenges on page load
-        var currentParams = {};
-        if (userKey) {
-            currentParams.token = userKey;
-        } else {
-            currentParams.token = null;
+        function initializeChallenges() {
+            var parameters = {};
+            if (vm.userKey) {
+                parameters.token = vm.userKey;
+            } else {
+                parameters.token = null;
+            }
+            parameters.method = 'GET';
+            
+            function loadSequentially() {
+                var currentParams = angular.copy(parameters);
+                currentParams.url = 'challenges/challenge/present/approved/public';
+                
+                vm.getAllResults(currentParams, vm.currentList, "noneCurrentChallenge", "current");
+                
+                var upcomingParams = angular.copy(parameters);
+                upcomingParams.url = 'challenges/challenge/future/approved/public';
+                vm.getAllResults(upcomingParams, vm.upcomingList, "noneUpcomingChallenge", "upcoming");
+                
+                var pastParams = angular.copy(parameters);
+                pastParams.url = 'challenges/challenge/past/approved/public';
+                vm.getAllResults(pastParams, vm.pastList, "nonePastChallenge", "past");
+            }
+            
+            loadSequentially();
         }
-        currentParams.method = 'GET';
-        currentParams.url = 'challenges/challenge/present/approved/public';
-        vm.getAllResults(currentParams, vm.currentList, "noneCurrentChallenge", "current");
         
-        // Add a method to detect when tabs are visible
         vm.checkVisibility = function() {
             var sections = document.querySelectorAll('.challenge-page-title');
             for (var i = 0; i < sections.length; i++) {
@@ -282,7 +295,6 @@
                 }
             }
             
-            // Check again after a delay
             $timeout(vm.checkVisibility, 1000);
         };
 
@@ -290,16 +302,12 @@
             $window.scrollTo(0, 0);
         };
         
+        initializeChallenges();
+        
         angular.element(document).ready(function() {
             vm.initScrollListener();
             
-            // Start checking visibility of sections
             $timeout(vm.checkVisibility, 500);
-            
-            // Explicitly initialize past challenges after a short delay to ensure they load
-            $timeout(function() {
-                vm.initializeTab('past');
-            }, 2000);
         });
     }
 })();

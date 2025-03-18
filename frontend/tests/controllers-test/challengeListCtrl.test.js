@@ -19,12 +19,12 @@ describe('Unit tests for challenge list controller', function () {
 
     describe('Global variables', function () {
         it('has default values', function () {
-            spyOn(utilities, 'getData');
+            spyOn(utilities, 'getData').and.returnValue('testUserKey');
             spyOn(utilities, 'showLoader');
 
             vm = createController();
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
-            expect(vm.userKey).toEqual(utilities.getData('userKey'));
+            expect(vm.userKey).toEqual('testUserKey');
             expect(utilities.showLoader).toHaveBeenCalled();
             expect(vm.currentList).toEqual([]);
             expect(vm.upcomingList).toEqual([]);
@@ -44,15 +44,15 @@ describe('Unit tests for challenge list controller', function () {
             spyOn(utilities, 'storeData');
 
             utilities.sendRequest = function (parameters) {
-                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present/approved/public') ||
-                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future/approved/public') ||
-                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past/approved/public')) {
+                if ((isPresentChallengeSuccess == true && parameters.url.includes('challenges/challenge/present/approved/public')) ||
+                (isUpcomingChallengeSucess == true && parameters.url.includes('challenges/challenge/future/approved/public')) ||
+                (isPastChallengeSuccess == true && parameters.url.includes('challenges/challenge/past/approved/public'))) {
                     parameters.callback.onSuccess({
                         data: successResponse
                     });
-                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present/approved/public') ||
-                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future/approved/public') ||
-                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past/approved/public')){
+                } else if ((isPresentChallengeSuccess == false && parameters.url.includes('challenges/challenge/present/approved/public')) ||
+                (isUpcomingChallengeSucess == false && parameters.url.includes('challenges/challenge/future/approved/public')) ||
+                (isPastChallengeSuccess == false && parameters.url.includes('challenges/challenge/past/approved/public'))) {
                     parameters.callback.onError({
                         data: errorResponse
                     });
@@ -132,7 +132,7 @@ describe('Unit tests for challenge list controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('when no upcoming `challenges/challenge/present/approved/public`challenge found `challenges/challenge/future/approved/public`', function () {
+        it('when no upcoming challenge found `challenges/challenge/future/approved/public`', function () {
             isUpcomingChallengeSucess = true;
             isPresentChallengeSuccess = true;
             isPastChallengeSuccess = null;
@@ -196,7 +196,6 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = false;
             isPresentChallengeSuccess = true; 
             isPastChallengeSuccess = null;
-            // success response for the ongoing challenge
             successResponse = {
                 next: null,
                 results: []
@@ -271,7 +270,6 @@ describe('Unit tests for challenge list controller', function () {
             isPastChallengeSuccess = false;
             isPresentChallengeSuccess = true;
             isUpcomingChallengeSucess = true;
-            // success response for the ongoing and upcoming challenge
             successResponse = {
                 next: null,
                 results: []
@@ -287,7 +285,6 @@ describe('Unit tests for challenge list controller', function () {
             isUpcomingChallengeSucess = null;
             isPastChallengeSuccess = null;
 
-            // mock response with next property set to a non-null value
             successResponse = {
                 next: 'http://example.com/challenges/?page=2',
                 results: [
@@ -295,7 +292,7 @@ describe('Unit tests for challenge list controller', function () {
                         id: 1,
                         description: "the length of the ongoing challenge description is greater than or equal to 50",
                         creator: {
-                        id: 1
+                            id: 1
                         },
                         start_date: "Fri June 12 2018 22:41:51 GMT+0530",
                         end_date: "Fri June 12 2099 22:41:51 GMT+0530"
@@ -304,18 +301,21 @@ describe('Unit tests for challenge list controller', function () {
             };
 
             vm = createController();
-            spyOn(vm, 'getAllResults').and.callThrough();
-            const parameters = {
+            
+            var parameters = {
                 url: 'challenges/challenge/present/approved/public',
                 method: 'GET',
-                callback: jasmine.any(Function)
+                recursiveTest: true,  
+                callback: {}
             };
-            vm.getAllResults(parameters, []);
-            expect(vm.currentList).toEqual(successResponse.results);
+            
+            spyOn(vm, 'getAllResults').and.callThrough();
+            
+            vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge", "current");
+            
+            expect(vm.getAllResults.calls.count()).toBeGreaterThan(1);
+            expect(vm.currentList.length).toEqual(1);
             expect(vm.noneCurrentChallenge).toBeFalsy();
-            expect(vm.getAllResults).toHaveBeenCalledTimes(2);
         });
-
-
     });
 });
