@@ -4,26 +4,26 @@ eslint config file.
 
 {
 	"env": {
-		"es6": 1,
-		"browser": 1
+	  "es6": true,
+	  "browser": true
 	},
-
 	"globals": {
-		"angular":1,
-		"jquery": 1,
-		"$": 1,
-		"_": 1,
-		"moment": true
+	  "angular": "readonly",
+	  "jquery": "readonly",
+	  "$": "readonly",
+	  "_": "readonly",
+	  "moment": "readonly"
 	},
-
 	"extends": "eslint:recommended",
-
-	"rules": {
-		"no-console": "warn",
-		"semi": ["error", 
-			"always", { 
-				"omitLastInOneLineBlock": true 
-			}
-		],
+	"parserOptions": {
+	  "ecmaVersion": 2015,
+	  "sourceType": "module"
 	},
-}
+	"rules": {
+	  "no-console": "warn",
+	  "semi": ["error", "always", { "omitLastInOneLineBlock": true }],
+	  "indent": ["error", 2],
+	  "linebreak-style": ["error", "unix"],
+	  "quotes": ["error", "single"]
+	}
+  }

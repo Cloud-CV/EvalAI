@@ -1,0 +1,8 @@
+/* Import core styles */
+@import './core/grad-base.scss'; /* Adjust the path and filename as necessary */
+
+/* Import module styles */
+@import './modules/challenge-create.scss'; /* Adjust the path and filename as necessary */
+
+/* Import other module styles as needed */
+/* @import './modules/another-module.scss'; */

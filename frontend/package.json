@@ -4,11 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "karma start karma.conf.js"
+    "test": "karma start karma.conf.js",
+    "start": "react-scripts start"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "autoprefixer": "^8.2.0",
     "connect-modrewrite": "^0.10.2",
     "del": "^3.0.0",
@@ -27,13 +30,14 @@
     "gulp-postcss": "^7.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^1.0.0",
-    "gulp-sass": "^4.0.1",
+    "gulp-sass": "^5.0.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
     "gulp-cache-bust": "^1.4.1",
     "lodash": "^4.16.6",
     "merge-stream": "^1.0.0",
-    "node-sass": "^4.9.0"
+    "sass": "^1.32.0",
+    "react-scripts": "^5.0.0"
   },
   "repository": {
     "type": "git",
@@ -51,5 +55,17 @@
     "karma-coveralls": "^2.1.0",
     "karma-jasmine": "^2.0.1",
     "puppeteer": "^1.16.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

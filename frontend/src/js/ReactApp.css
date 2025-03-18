@@ -1,0 +1,111 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  padding: 16px;
+  margin: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to bottom, #f9f9f9, #fff);
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.card-logo-small {
+  width: 30px;
+  height: 30px;
+  margin-right: 8px;
+}
+
+.card-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.title-highlight {
+  color: #0056b3; /* eBay blue */
+}
+
+.card-main {
+  margin: 16px 0;
+}
+
+.logo-box {
+  width: 120px;
+  height: 120px;
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2); /* Increased shadow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.card-logo-large {
+  width: 100px;
+  height: 100px;
+}
+
+.card-tags {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #f0a500;
+  color: #fff;
+  padding: 8px 12px;
+  margin: 4px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.tag:hover {
+  transform: scale(1.05);
+  background-color: #e69500;
+}
+
+.card-details {
+  margin: 16px 0;
+}
+
+.card-organizer {
+  font-weight: bold;
+  color: #666;
+}
+
+.card-date {
+  color: #999;
+}
+
+.card-button {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background-color: #ff0000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-button:hover {
+  background-color: #cc0000;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}

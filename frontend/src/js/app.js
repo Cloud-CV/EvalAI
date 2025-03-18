@@ -1,3 +1,8 @@
+// filepath: /Users/shrishtishukla/test/EvalAI/frontend/src/js/app.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactApp from './ReactApp';
+
 // declare app and related dependencies here
 angular
 	.module('evalai', [
@@ -36,4 +41,12 @@ angular
 	}])
 	.config(['$compileProvider', function($compileProvider) {
 		$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
-	}]);
+	}])
+	.directive('reactApp', function() {
+		return {
+		  restrict: 'E',
+		  link: function(scope, element) {
+			ReactDOM.render(<ReactApp />, element[0]);
+		  }
+		};
+	  });
