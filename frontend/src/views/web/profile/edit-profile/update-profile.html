@@ -1,0 +1,96 @@
+<section class="ev-md-container-ui">
+    <div class="row">
+        <div class="ev-md-container ev-card-panel ev-z-depth-5
+            challenge-title-container">
+            <div class="col s12 m3 l3 center">
+                <img src="dist/images/pro-pic.png" class="profile-pic">
+                <div>{{profile.userdetails.username}}
+                </div>
+                <div class="text-light-black w-300">{{profile.userdetails.email}}
+                </div>
+                <br><br>
+                <div class="text-highlight"><span class="fs-12">
+                    Profile Completed</span>
+                    <br>
+                    <span class="text-dark-black">{{profile.user.complete}}%</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m4 l4 center user-info">
+                    <ul>
+                        <li>
+                            <span class="text-light-black fs-12">First Name<br></span>
+                            <span>{{profile.userdetails.first_name || "-"}}
+                            </span>
+                            <span>
+                                <a id="first_name" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                          </li>
+                          <li>
+                            <span class="text-light-black fs-12">Last Name<br></span>
+                            <span>{{profile.userdetails.last_name || "-"}}</span>
+                            <span>
+                                <a id="last_name" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                          </li>
+                        <li>
+                            <span class="text-light-black fs-12">Affiliated
+                                To<br></span>
+                                {{profile.userdetails.affiliation || "-"}}
+                            <span>
+                                <a id="affiliation" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col s12 m5 l5 user-urls center">
+                    <ul>
+                        <li>
+                            <span class="text-light-black fs-12">GitHub Url<br>
+                            </span>
+                            <a href="{{profile.userdetails.github_url}}"
+                                target="_blank"
+                                class="text-highlight">{{profile.userdetails.github_url || '-'}}</a>
+                                <span>
+                                    <a id="github_url" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                                    </a>
+                                </span>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">
+                                Google Scholar Url<br></span>
+                            <a href="{{profile.userdetails.google_scholar_url}}"
+                                target="_blank" class="text-highlight">
+                                {{profile.userdetails.google_scholar_url || '-'}}
+                            </a>
+                            <span>
+                                <a id="google_scholar_url" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">Linkedin Url<br></span>
+                            <a href="{{profile.userdetails.linkedin_url}}"
+                                target="_blank"
+                                class="text-highlight">{{profile.userdetails.linkedin_url || '-'}}
+                            </a>
+                            <span>
+                                <a id="linkedin_url" class="pointer" ng-click="profile.editprofileDialog($event)">
+                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

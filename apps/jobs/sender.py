@@ -39,7 +39,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
         if challenge and challenge.use_host_sqs:
             sqs = boto3.resource(
                 "sqs",
-                region_name=challenge.aws_region,
+                region_name=challenge.queue_aws_region,
                 aws_secret_access_key=challenge.aws_secret_access_key,
                 aws_access_key_id=challenge.aws_access_key_id,
             )
@@ -62,9 +62,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             ex.response["Error"]["Code"]
             == "AWS.SimpleQueueService.NonExistentQueue"
         ):
+            sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
             queue = sqs.create_queue(
                 QueueName=queue_name,
-                Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+                Attributes={"MessageRetentionPeriod": sqs_retention_period},
             )
         else:
             logger.exception("Cannot get or create Queue")

@@ -181,7 +181,7 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
         if challenge and challenge.use_host_sqs:
             sqs = boto3.resource(
                 "sqs",
-                region_name=challenge.aws_region,
+                region_name=challenge.queue_aws_region,
                 aws_secret_access_key=challenge.aws_secret_access_key,
                 aws_access_key_id=challenge.aws_access_key_id,
             )
@@ -201,9 +201,10 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
+        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
         queue = sqs.create_queue(
             QueueName=queue_name,
-            Attributes={"MessageRetentionPeriod": SQS_RETENTION_PERIOD},
+            Attributes={"MessageRetentionPeriod": sqs_retention_period},
         )
     return queue
 
@@ -316,3 +317,16 @@ def is_model_field_changed(model_obj, field_name):
     if prev != curr:
         return True
     return False
+
+
+def is_user_a_staff(user):
+    """
+    Function to check if a user is staff or not
+
+    Args:
+        user ([User Class Object]): User model class object
+
+    Return:
+        {bool} : True/False if the user is staff or not
+    """
+    return user.is_staff

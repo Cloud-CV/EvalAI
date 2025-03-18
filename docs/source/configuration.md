@@ -20,15 +20,15 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **remote_evaluation**: True/False (specify whether evaluation will happen on a remote machine or not. Default is `False`)
 
-- **is_docker_based**: True/False (specify whether the challenge is docker based or not. Default is `False`)
-
-- **is_static_dataset_code_upload**: True/False (specify whether the challenge is static dataset code upload or not. Default is `False`)
-
 - **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
 - **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
 - **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
+
+- **tags**: A list of tags to display the relevant areas of challenge. 
+
+- **domain**: Please choose the relevant domain for your challenge: (CV, NLP, RL, MM, AL, TAB).
 
 - **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
 

@@ -261,17 +261,17 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": ["console"], "propagate": False},
         "django.request": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "console"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.security": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "console"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "console"],
             "level": "ERROR",
             "propagate": False,
         },
@@ -406,4 +406,4 @@ EKS_CLUSTER_TRUST_RELATION = {
 }
 
 # SQS Queue Message Retention Period
-SQS_RETENTION_PERIOD = "1209600"
+SQS_RETENTION_PERIOD = "345600"
