@@ -1,15 +1,44 @@
 version: "3"
 services:
+
+  fluentd:
+    image: fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc 
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
   db:
     image: postgres:10.4
     ports:
       - "5432:5432"
+    depends_on:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.db"
 
   sqs:
     image: softwaremill/elasticmq
     hostname: sqs
     ports:
       - 9324:9324
+    depends_on:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.sqs"
 
   django:
     hostname: django
@@ -24,8 +53,18 @@ services:
       - db
       - sqs
       - statsd-exporter
+      - fluentd
     volumes:
       - .:/code
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.django"
+
 
   worker:
     env_file:
@@ -35,8 +74,19 @@ services:
       dockerfile: docker/dev/worker/Dockerfile
     depends_on:
       - django
+      - fluentd
     volumes:
       - .:/code
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.worker"
+
+
 
   worker_py3_8:
     env_file:
@@ -46,8 +96,18 @@ services:
       dockerfile: docker/dev/worker_py3.8/Dockerfile
     depends_on:
       - django
+      - fluentd
     volumes:
       - .:/code
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.worker_py3_8"
+
 
   nodejs:
     hostname: nodejs
@@ -63,6 +123,17 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.nodejs"
+    depends_on:
+      - fluentd
+
 
   statsd-exporter:
     hostname: statsd
@@ -73,3 +144,17 @@ services:
     ports:
       - '9125:9125'
       - '9102:9102'
+    depends_on:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        fluentd-async-connect: "true"
+        fluentd-retry-wait: 1s
+        fluentd-max-retries: 30
+        tag: "docker.statsd-exporter"
+
+
+
+
