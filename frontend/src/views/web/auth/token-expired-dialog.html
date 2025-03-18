@@ -1,13 +1,16 @@
-<md-dialog>
-    <md-dialog-content>
-        <p>Your authentication token has expired. Would you like to refresh it?</p>
+<md-dialog class="ev-md-container ev-card-body update-profile-card">
+    <md-dialog-content class="ev-card-body">
+        <h4 class="pass-title">Session Expired</h4>
+        <p class="text-light-black">
+            Your authentication token has expired. Please refresh it to continue.
+        </p>
     </md-dialog-content>
-    <md-dialog-actions>
-        <md-button ng-click="dismiss()" class="md-secondary">
-            Dismiss
+    <md-dialog-actions class="align-left reg-control">
+        <md-button class="dark-link pointer" ng-click="dismiss()">
+            Cancel
         </md-button>
-        <md-button ng-click="refreshToken()" class="md-primary">
-            Refresh Token
+        <md-button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="refreshToken()">
+            Submit
         </md-button>
     </md-dialog-actions>
 </md-dialog>
