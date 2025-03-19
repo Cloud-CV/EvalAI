@@ -65,30 +65,23 @@ p.no-top-para {
     margin-top: 2px;
 }
 
-
-/*scrollbar customization*/
-
-/* Scrollbar customization */
 ::-webkit-scrollbar {
-    width: 12px !important;  /* ✅ Increased width */
-    height: 10px; /* ✅ Increases horizontal scrollbar size */
+    width: 12px !important; 
+    height: 10px; 
     border-radius: 10px;
 }
 
-/* Track (background of the scrollbar) */
 ::-webkit-scrollbar-track {
     background-color: $dark-gray; 
     border-radius: 10px;
 }
 
-/* Scrollbar Handle */
 ::-webkit-scrollbar-thumb {
     background-color: $light-gray;
     border-radius: 10px;
-    border: 3px solid $dark-gray; /* ✅ Adds padding inside scrollbar */
+    border: 3px solid $dark-gray; 
 }
 
-/* Hover effect */
 ::-webkit-scrollbar-thumb:hover {
     background-color: darken($light-gray, 10%);
 }
