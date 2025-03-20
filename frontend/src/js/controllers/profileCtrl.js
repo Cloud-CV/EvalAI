@@ -190,7 +190,6 @@
         };
         
         vm.showTokenExpiredDialog = function() {
-            console.log("Token Expired Dialog Triggered!"); 
             $mdDialog.show({
                 templateUrl: 'dist/views/web/auth/token-expired-dialog.html', 
                 controller: ['$scope', '$mdDialog', function($scope, $mdDialog) {
