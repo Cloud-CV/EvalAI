@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   db:
     image: postgres:10.4
@@ -30,24 +30,32 @@ services:
   worker:
     env_file:
       - docker/dev/docker.env
+    image: my_custom_worker_image  # Default image used if not built
     build:
       context: ./
       dockerfile: docker/dev/worker/Dockerfile
+      x-enabled: ${BUILD_WORKER:-false}  # Only build if BUILD_WORKER=true
     depends_on:
       - django
     volumes:
       - .:/code
+    profiles:
+      - worker  # Only built when this profile is specified
 
   worker_py3_8:
     env_file:
       - docker/dev/docker.env
+    image: my_custom_worker_py3_8_image  # Default image used if not built
     build:
       context: ./
       dockerfile: docker/dev/worker_py3.8/Dockerfile
+      x-enabled: ${BUILD_WORKER:-false}
     depends_on:
       - django
     volumes:
       - .:/code
+    profiles:
+      - worker
 
   nodejs:
     hostname: nodejs
@@ -67,6 +75,10 @@ services:
   statsd-exporter:
     hostname: statsd
     image: prom/statsd-exporter:latest
+    build:
+      context: ./
+      dockerfile: docker/dev/statsd-exporter/Dockerfile
+      x-enabled: ${BUILD_STATSD:-false}  # Only build if BUILD_STATSD=true
     command:
       - '--log.level=info'
       - '--web.telemetry-path=/statsd/metrics'
