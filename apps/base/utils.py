@@ -251,12 +251,19 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
     try:
-        data = {
-            "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
-            "icon_url": "https://eval.ai/dist/images/evalai-logo-single.png",
-            "text": message["text"],
-            "username": "EvalAI",
-        }
+        # check if the message is a string or a dictionary
+        if isinstance(message, str):
+            data = {
+                "attachments": [
+                    {"color": "ffaf4b", "fields": message["fields"]}
+                ],
+                "icon_url": "https://eval.ai/dist/images/evalai-logo-single.png",
+                "text": message["text"],
+                "username": "EvalAI",
+            }
+        else:
+            data = message
+
         return requests.post(
             webhook,
             data=json.dumps(data),
