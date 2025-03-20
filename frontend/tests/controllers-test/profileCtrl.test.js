@@ -162,21 +162,24 @@ describe('Unit tests for profile controller', function () {
             expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
+
     describe('Unit tests for Token Expired Dialog', function () {
         var $mdDialog, vm, $rootScope, $scope, createController;
     
-        beforeEach(angular.mock.module('evalai'));
+        beforeEach(function () {
+            angular.mock.module('evalai'); 
     
-        beforeEach(inject(function (_$controller_, _$rootScope_, _$mdDialog_) {
-            $mdDialog = _$mdDialog_;
-            $rootScope = _$rootScope_;
-            $scope = $rootScope.$new();
+            inject(function (_$controller_, _$rootScope_, _$mdDialog_) {
+                $mdDialog = _$mdDialog_;
+                $rootScope = _$rootScope_;
+                $scope = $rootScope.$new();
     
-            createController = function () {
-                return _$controller_('profileCtrl', { $scope: $scope });
-            };
-            vm = createController();
-        }));
+                createController = function () {
+                    return _$controller_('profileCtrl', { $scope: $scope });
+                };
+                vm = createController();
+            });
+        });
     
         it('should open the token expired dialog', function () {
             spyOn(console, 'log');
