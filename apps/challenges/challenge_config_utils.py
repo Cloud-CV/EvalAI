@@ -289,7 +289,7 @@ error_message_dict = {
     "prize_rank_wrong": "ERROR: Invalid rank value {}. Rank should be an integer.",
     "challenge_metadata_schema_errors": "ERROR: Unable to serialize the challenge because of the following errors: {}.",
     "evaluation_script_not_zip": "ERROR: Please pass in a zip file as evaluation script. If using the `evaluation_script` directory (recommended), it should be `evaluation_script.zip`.",
-    "docker_based_challenge": "ERROR: Docker based challenges are not supported anymore.",
+    "docker_based_challenge": "ERROR: New Docker based challenges are not supported starting March 15, 2025.",
 }
 
 
