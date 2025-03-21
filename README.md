@@ -54,6 +54,25 @@ The steps are:
     docker-compose up --build
     ```
 
+    By default, this starts only the required services (`db`, `sqs`, and `django`).  
+    If you need **worker** services, start them using:
+
+    ```
+    docker-compose --profile worker up --build
+    ```
+
+    If you need **statsd-exporter**, start it using:
+
+    ```
+    docker-compose --profile statsd up --build
+    ```
+
+    To start **both optional services**, use:
+
+    ```
+    docker-compose --profile worker --profile statsd up --build
+    ```
+
 4. That's it. Open web browser and hit the URL [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
 
     **SUPERUSER-** username: `admin` password: `password`  
