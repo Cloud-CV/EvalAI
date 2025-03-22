@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+from unittest.mock import Mock
 import zipfile
 from datetime import timedelta
 from io import BytesIO
@@ -19,7 +20,14 @@ from jobs.models import Submission
 from moto import mock_sqs
 from participants.models import ParticipantTeam
 from rest_framework.test import APITestCase
-
+import signal
+from scripts.workers.submission_worker import (
+    ExecutionTimeLimitExceeded,
+    GracefulKiller,
+    MultiOut,
+    alarm_handler,
+    delete_old_temp_directories,
+)
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
@@ -301,9 +309,9 @@ class BaseAPITestClass(APITestCase):
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_host_queue(self):
         get_or_create_sqs_queue("test_host_queue_2", self.challenge2)
-        queue_url = self.sqs_client.get_queue_url(QueueName="test_host_queue_2")[
-            "QueueUrl"
-        ]
+        queue_url = self.sqs_client.get_queue_url(
+            QueueName="test_host_queue_2"
+        )["QueueUrl"]
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
 
@@ -447,3 +455,57 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
 
         delete_zip_file(self.download_location)
         mock_logger.assert_called_with(error_message)
+
+    def test_sigint_signal(self):
+        killer = GracefulKiller()
+        os.kill(os.getpid(), signal.SIGINT)
+        self.assertTrue(killer.kill_now)
+
+    def test_sigterm_signal(self):
+        killer = GracefulKiller()
+        os.kill(os.getpid(), signal.SIGTERM)
+        self.assertTrue(killer.kill_now)
+
+    def test_write(self):
+        mock_handle1 = Mock()
+        mock_handle2 = Mock()
+        multi_out = MultiOut(mock_handle1, mock_handle2)
+        multi_out.write("test string")
+        mock_handle1.write.assert_called_with("test string")
+        mock_handle2.write.assert_called_with("test string")
+
+    def test_flush(self):
+        mock_handle1 = Mock()
+        mock_handle2 = Mock()
+
+        multi_out = MultiOut(mock_handle1, mock_handle2)
+        multi_out.flush()
+        mock_handle1.flush.assert_called_once()
+        mock_handle2.flush.assert_called_once()
+
+    def test_alarm_handler(self):
+        with self.assertRaises(ExecutionTimeLimitExceeded):
+            alarm_handler(signal.SIGALRM, None)
+
+    @mock.patch("scripts.workers.submission_worker.os.path.getctime")
+    @mock.patch("scripts.workers.submission_worker.shutil.rmtree")
+    def test_delete_old_temp_directories(self, mock_rmtree, mock_getctime):
+        # Create temporary directories
+        temp_dir = tempfile.gettempdir()
+        old_dir = tempfile.mkdtemp(prefix="tmp", dir=temp_dir)
+        new_dir = tempfile.mkdtemp(prefix="tmp", dir=temp_dir)
+
+        # Mock creation times
+        mock_getctime.side_effect = lambda path: {old_dir: 100, new_dir: 200}[
+            path
+        ]
+
+        # Call the function
+        delete_old_temp_directories(prefix="tmp")
+
+        # Verify that the old directory is deleted and the new one is not
+        mock_rmtree.assert_called_once_with(old_dir)
+        self.assertNotIn(mock.call(new_dir), mock_rmtree.mock_calls)
+
+        # Clean up
+        shutil.rmtree(new_dir)
