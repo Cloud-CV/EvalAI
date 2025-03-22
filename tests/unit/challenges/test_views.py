@@ -4503,6 +4503,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "job_name": self.submission1.job_name,
                 "submission_metadata": None,
                 "is_verified_by_host": False,
+                "from_cli": False,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
