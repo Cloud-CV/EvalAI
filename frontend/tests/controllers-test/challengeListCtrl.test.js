@@ -3,6 +3,15 @@
 describe('Unit tests for challenge list controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
+    // Mock the template requests to prevent unexpected requests
+    beforeEach(module(function($provide) {
+        $provide.value('$templateCache', {
+            get: function() {
+                return '';
+            }
+        });
+    }));
+
     var $controller, createController, $rootScope, $scope, utilities, vm, $httpBackend;
 
     beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$httpBackend_) {
@@ -10,6 +19,8 @@ describe('Unit tests for challenge list controller', function () {
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $httpBackend = _$httpBackend_;
+
+        $httpBackend.whenGET(/.*\.html/).respond(200, '');
 
         $httpBackend.whenGET(/\/api\/challenges\/challenge\/present\/approved\/public\?page=\d+&page_size=\d+/).respond({
             next: null,
