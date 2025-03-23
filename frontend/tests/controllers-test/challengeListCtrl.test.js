@@ -8,7 +8,11 @@ describe('Unit tests for challenge list controller', function () {
         $provide.value('$templateCache', {
             get: function() {
                 return '';
+            },
+            put: function(key, value) {
+                return;
             }
+    
         });
     }));
 
