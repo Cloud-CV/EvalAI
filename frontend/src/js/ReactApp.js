@@ -12,7 +12,7 @@ function ReactApp() {
       <div className="card-header">
         <img src={ebayLogo} alt="eBay Logo" className="card-logo-small" />
         <h2 className="card-title">
-          <span className="title-highlight">eBay</span> 2025 University Machine Learning Competition
+          <span className="title-highlight">eBay</span> <span className="title-text">2025 University Machine Learning Competition</span>
         </h2>
       </div>
       <div className="card-main">
