@@ -2715,3 +2715,67 @@ describe('Unit tests for challenge controller', function () {
         });
     });
 });
+
+describe('Filters', function() {
+    beforeEach(angular.mock.module('evalai'));
+
+    var ceilFilter, formatExecutionTimeFilter, customTitleFilter, customDomainFilter;
+
+    beforeEach(inject(function ($injector) {
+        ceilFilter = $injector.get('$filter')('ceil');
+        formatExecutionTimeFilter = $injector.get('$filter')('format_execution_time');
+        customTitleFilter = $injector.get('$filter')('customTitleFilter');
+        customDomainFilter = $injector.get('$filter')('customDomainFilter');
+    }));
+
+    describe('ceil filter', function() {
+        it('should round up input numbers', function() {
+            expect(ceilFilter(1.23)).toEqual(2);
+            expect(ceilFilter(-1.23)).toEqual(-1);
+            expect(ceilFilter(0)).toEqual(0);
+        });
+    });
+
+    describe('format_execution_time filter', function() {
+        it('should format execution times correctly', function() {
+            expect(formatExecutionTimeFilter(0)).toEqual('00 sec');
+            expect(formatExecutionTimeFilter(60)).toEqual('01 min ');
+            expect(formatExecutionTimeFilter(3661)).toEqual('01 hr 01 min 01 sec');
+            expect(formatExecutionTimeFilter(86461)).toEqual('01 day 01 min 01 sec');
+        });
+
+    });
+
+    describe('customTitleFilter', function() {
+        it('should filter challenges based on title search text', function() {
+            var challenges = [
+                {title: 'AngularJS', domain_name: 'web', list_tags: ['js', 'tag2']},
+                {title: 'React', domain_name: 'web', list_tags: ['tag3', 'tag4']},
+                {title: 'Nodejs', domain_name: 'server', list_tags: ['js', 'tag6']},
+                {title: 'ebay facebook', domain_name: 'web', list_tags: ['tag7', 'tag8']},
+
+            ];
+            expect(customTitleFilter(challenges, 'A')).toEqual([challenges[0]]);
+            expect(customTitleFilter(challenges, 'e f')).toEqual([challenges[3]]);
+            expect(customTitleFilter(challenges, 'ebay face')).toEqual([challenges[3]]);
+            expect(customTitleFilter(challenges, 'React')).toEqual([challenges[1]]);
+            expect(customTitleFilter(challenges, 'Ang rea')).toEqual([challenges[0],challenges[1]]);
+            expect(customTitleFilter(challenges, 'js')).toEqual([challenges[0],challenges[2]]);
+
+        });
+    });
+
+    describe('customDomainFilter', function() {
+        it('should filter challenges based on domain', function() {
+            var challenges = [
+                {title: 'AngularJS', domain_name: 'webdev'},
+                {title: 'React', domain_name: 'web'},
+                {title: 'Node.js', domain_name: null}
+            ];
+            expect(customDomainFilter(challenges, 'none')).toEqual([challenges[2]]);
+            expect(customDomainFilter(challenges, 'web')).toEqual([challenges[0], challenges[1]]);
+            expect(customDomainFilter(challenges, 'webdev')).toEqual([challenges[0]]);
+            expect(customDomainFilter(challenges, '')).toEqual([challenges[0], challenges[1], challenges[2]]);
+        });
+    });
+});
