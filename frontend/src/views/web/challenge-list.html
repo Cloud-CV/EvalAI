@@ -5,33 +5,58 @@
             <strong class="text-med-black fs-18">Search</strong>
             <input type="text" ng-model="challengeList.searchTitle" placeholder="Search challenges by title, tag or domain" style="font-weight: bold;">
         </div>
-        <div class="col s12 m6 offset-s6 right-align">
-            <div layout="column" layout-align="end end" class="filter-wrapper">
-                <div layout="row" layout-wrap layout-align="end center" style="gap: 10px; flex-wrap: wrap;">
-                    <md-button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challengeList.resetFilter()">Reset Filter</md-button>
+     
+<div class="col s12">
+  
+    <div>
+        <strong class="text-med-black fs-16">Filter by Date</strong>
+        <div layout="row" layout-align="start center" style="gap: 20px; margin-top: 10px;">
+           
+            <div layout="column">
+                <label class="text-light-black fs-14" style="margin-bottom: 4px;">Start Date</label>
+                <input type="date" ng-model="challengeList.filterStartDate" placeholder="Start Date" class="browser-default">
+            </div>
 
-                    <md-select placeholder="Domain Filter" ng-model="challengeList.selecteddomain">
-                        <md-option ng-repeat="option in challengeList.domain_choices" value="{{ option[1] }}">{{ option[1] }}</md-option>
-                    </md-select>
-
-                    <md-select placeholder="Filter by Host Team" ng-model="challengeList.selectedHostTeam">
-                        <md-option value="">All Teams</md-option>
-                        <md-option ng-repeat="team in challengeList.host_team_choices" value="{{ team }}">{{ team }}</md-option>
-                    </md-select>
-
-                    
-                    <input type="date" ng-model="challengeList.filterStartDate" placeholder="Start Date" class="browser-default">
-                    <input type="date" ng-model="challengeList.filterEndDate" placeholder="End Date" class="browser-default">
-
-                    <md-select ng-if="!challengeList.selectedHostTeam" placeholder="Sort by" ng-model="challengeList.sortByTeam">
-                        <md-option value="">Default</md-option>
-                        <md-option value="asc">Organized by (A → Z)</md-option>
-                        <md-option value="desc">Organized by (Z → A)</md-option>
-                    </md-select>
-                </div>
+           
+            <div layout="column">
+                <label class="text-light-black fs-14" style="margin-bottom: 4px;">End Date</label>
+                <input type="date" ng-model="challengeList.filterEndDate" placeholder="End Date" class="browser-default">
             </div>
         </div>
     </div>
+
+    
+    <div style="margin-top: 20px;">
+        <strong class="text-med-black fs-16">Other Filters</strong>
+        <div layout="row" layout-align="space-between center" layout-wrap style="gap: 10px; margin-top: 5px;">
+            <md-select placeholder="Domain Filter" ng-model="challengeList.selecteddomain">
+                <md-option ng-repeat="option in challengeList.domain_choices" value="{{ option[1] }}">
+                    {{ option[1] }}
+                </md-option>
+            </md-select>
+
+            <md-select placeholder="Filter by Host Team" ng-model="challengeList.selectedHostTeam">
+                <md-option value="">All Teams</md-option>
+                <md-option ng-repeat="team in challengeList.host_team_choices" value="{{ team }}">
+                    {{ team }}
+                </md-option>
+            </md-select>
+
+            <md-select ng-if="challengeList.selectedHostTeam === ''" placeholder="Sort by" ng-model="challengeList.sortByTeam">
+                <md-option value="">Default</md-option>
+                <md-option value="asc">Organized by (A → Z)</md-option>
+                <md-option value="desc">Organized by (Z → A)</md-option>
+            </md-select>
+        
+            <span flex></span>
+            <md-button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"
+                       ng-click="challengeList.resetFilter()">
+                Reset Filter
+            </md-button>
+        </div>
+    </div>
+</div>
+</div>
 
     <!-- ongoing challenges -->
     <div class="challenge-page-title" id = "ongoing-challenges"><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
