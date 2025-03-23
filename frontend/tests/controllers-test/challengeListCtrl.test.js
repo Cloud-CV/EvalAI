@@ -383,6 +383,43 @@ describe('Unit tests for challenge list controller', function () {
             vm = createController();
             
             spyOn(vm, 'getAllResults').and.callThrough();
+            spyOn(utilities, 'sendRequest').and.callFake(function(params) {
+                if (params.url.includes('http://127.0.0.1:8888/api/')) {
+                    params.url = params.url.replace('http://127.0.0.1:8888/api/', '');
+                }
+                
+                if (params.url.includes('page=2')) {
+                    params.callback.onSuccess({
+                        data: {
+                            next: null,
+                            results: [
+                                {
+                                    id: 2,
+                                    description: "second page",
+                                    creator: { id: 1 },
+                                    start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                                    end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                                }
+                            ]
+                        }
+                    });
+                } else {
+                    params.callback.onSuccess({
+                        data: {
+                            next: 'http://127.0.0.1:8888/api/challenges/challenge/present/approved/public?page=2&page_size=12',
+                            results: [
+                                {
+                                    id: 1,
+                                    description: "the length of the ongoing challenge description is greater than or equal to 50",
+                                    creator: { id: 1 },
+                                    start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                                    end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                                }
+                            ]
+                        }
+                    });
+                }
+            });
             
             var parameters = {
                 url: 'challenges/challenge/present/approved/public',
@@ -390,38 +427,10 @@ describe('Unit tests for challenge list controller', function () {
                 recursiveTest: true
             };
             
-            $httpBackend.expectGET(/\/api\/challenges\/challenge\/present\/approved\/public\?page=\d+&page_size=\d+/).respond({
-                next: 'http://127.0.0.1:8888/api/challenges/challenge/present/approved/public?page=2&page_size=12',
-                results: [
-                    {
-                        id: 1,
-                        description: "the length of the ongoing challenge description is greater than or equal to 50",
-                        creator: { id: 1 },
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    }
-                ]
-            });
-            
-            $httpBackend.expectGET('http://127.0.0.1:8888/api/challenges/challenge/present/approved/public?page=2&page_size=12').respond({
-                next: null,
-                results: [
-                    {
-                        id: 2,
-                        description: "second page",
-                        creator: { id: 1 },
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    }
-                ]
-            });
-            
-            vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge", "current");
-            $httpBackend.flush();
-            
+            vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge", "current");            
             expect(vm.getAllResults.calls.count()).toBeGreaterThan(1);
             expect(vm.currentList.length).toEqual(2);
             expect(vm.noneCurrentChallenge).toBeFalsy();
-        });
+        });        
     });
 });
