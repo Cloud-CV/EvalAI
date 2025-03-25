@@ -1,5 +1,9 @@
 language: python
 sudo: required
+dist: focal 
+os: linux
+arch: amd64  
+virt: lxd
 services:
   - docker
   - xvfb
@@ -13,6 +17,8 @@ before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - pip install --upgrade pip
+  - ulimit -u 16384  # Increase process/thread limit
+  - ulimit -n 4096   # Increase open file limit
 install:
   - pip install awscli==1.18.66 flake8==3.8.2 coveralls
 script:
