@@ -13,7 +13,7 @@ before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2 coveralls==4.0.1
+  - pip install awscli==1.18.66 flake8==3.8.2 coveralls
 script:
   - flake8 ./ || travis_terminate 1;
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi'
