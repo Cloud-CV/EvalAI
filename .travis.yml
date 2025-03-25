@@ -12,7 +12,6 @@ before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
-  - ulimit -u 4096
   - pip install --upgrade pip
 install:
   - pip install awscli==1.18.66 flake8==3.8.2 coveralls
