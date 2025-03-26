@@ -53,7 +53,6 @@ jobs:
     
     - stage: deploy
       name: "Deployment"
-      if: branch = master AND type != pull_request
       script:
         - eval "$(ssh-agent -s)"
         - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
