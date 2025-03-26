@@ -24,13 +24,6 @@ services:
       - sqs
     volumes:
       - .:/code
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
-      nproc:
-        soft: 16384
-        hard: 16384
 
   worker:
     env_file:
