@@ -24,17 +24,6 @@ services:
       - sqs
     volumes:
       - .:/code
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 1G
-        reservations:
-          cpus: "0.5"
-          memory: 512M
-    ulimits:
-      nproc: 32768
-      nofile: 4096
 
   worker:
     env_file:
