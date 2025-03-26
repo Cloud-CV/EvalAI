@@ -1,14 +1,13 @@
-// Invoking IIFE for challenge page
-(function() {
-
+(function () {
     'use strict';
+
     angular
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$scope'];
 
-    function ChallengeListCtrl(utilities, $window, moment) {
+    function ChallengeListCtrl(utilities, $window, moment, $scope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
@@ -20,56 +19,46 @@
         utilities.showLoader();
         utilities.hideButton();
 
+        // Initialize lists
         vm.currentList = [];
         vm.upcomingList = [];
         vm.pastList = [];
 
+        // Flags for "None" cases
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
-        vm.getAllResults = function(parameters, resultsArray, typ){
+
+        // Function to fetch challenge results
+        vm.getAllResults = function (parameters, resultsArray, flagType) {
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function (response) {
                     var data = response.data;
                     var results = data.results;
-                    
                     var timezone = moment.tz.guess();
-                    for (var i in results) {
 
-                        var descLength = results[i].description.length;
-                        if (descLength >= 50) {
-                            results[i].isLarge = "...";
-                        } else {
-                            results[i].isLarge = "";
-                        }
+                    results.forEach(function (challenge) {
+                        challenge.isLarge = challenge.description.length >= 50 ? "..." : "";
 
-                        var offset = new Date(results[i].start_date).getTimezoneOffset();
-                        results[i].time_zone = moment.tz.zone(timezone).abbr(offset);
-                        results[i].gmt_zone = gmtZone;
+                        var offset = new Date(challenge.start_date).getTimezoneOffset();
+                        challenge.time_zone = moment.tz.zone(timezone).abbr(offset);
+                        challenge.gmt_zone = gmtZone;
 
-                        var id = results[i].id;
-                        vm.challengeCreator[id] = results[i].creator.id;
+                        vm.challengeCreator[challenge.id] = challenge.creator.id;
                         utilities.storeData("challengeCreator", vm.challengeCreator);
 
-                        resultsArray.push(results[i]);
-                    }
+                        resultsArray.push(challenge);
+                    });
 
-                    // check for the next page
                     if (data.next !== null) {
-                        var url = data.next;
-                        var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
-                        parameters.url = slicedUrl;
-                        vm.getAllResults(parameters, resultsArray);
+                        parameters.url = data.next.substring(data.next.indexOf('challenges/challenge'));
+                        vm.getAllResults(parameters, resultsArray, flagType);
                     } else {
                         utilities.hideLoader();
-                        if (resultsArray.length === 0) {
-                            vm[typ] = true;
-                        } else {
-                            vm[typ] = false;
-                        }
+                        vm[flagType] = resultsArray.length === 0;
                     }
                 },
-                onError: function() {
+                onError: function () {
                     utilities.hideLoader();
                 }
             };
@@ -77,41 +66,53 @@
             utilities.sendRequest(parameters);
         };
 
-        
         vm.challengeCreator = {};
-        var parameters = {};
-        if (userKey) {
-            parameters.token = userKey;
-        } else {
-            parameters.token = null;
-        }
+        var parameters = userKey ? { token: userKey } : { token: null };
 
-        // calls for ongoing challenges
-        parameters.url = 'challenges/challenge/present/approved/public';
-        parameters.method = 'GET';
-        
-        vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
-        // calls for upcoming challenges
-        parameters.url = 'challenges/challenge/future/approved/public';
-        parameters.method = 'GET';
-
-        vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
-
-        // calls for past challenges
-        parameters.url = 'challenges/challenge/past/approved/public';
-        parameters.method = 'GET';
-
-        vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
-
-        vm.scrollUp = function() {
-            angular.element($window).bind('scroll', function() {
-                if (this.pageYOffset >= 100) {
-                    utilities.showButton();
-                } else {
-                    utilities.hideButton();
-                }
+        // Scroll button functionality
+        vm.scrollUp = function () {
+            angular.element($window).bind('scroll', function () {
+                this.pageYOffset >= 100 ? utilities.showButton() : utilities.hideButton();
             });
         };
-    }
 
+        vm.switchTab = function (tab) {
+
+            // Remove active classes from all buttons and content
+
+            angular.element('.tab-content').removeClass('active');
+            angular.element('.tab-button').removeClass('active');
+        
+            // Add active class to the selected tab content
+            angular.element('#' + tab).addClass('active');
+        
+            // Find the clicked button using button text
+            angular.element('.tab-button').each(function () {
+                if (angular.element(this).text().trim() === tab.charAt(0).toUpperCase() + tab.slice(1) + ' Challenges') {
+                    angular.element(this).addClass('active');
+                }
+            });
+        
+            // Force UI update in case AngularJS misses it
+            if (!$scope.$$phase) {
+                $scope.$apply();
+            }
+        
+            // Fetch data if not already loaded
+            if (tab === 'ongoing' && vm.currentList.length === 0) {
+                vm.getAllResults({ url: 'challenges/challenge/present/approved/public', method: 'GET' }, vm.currentList, "noneCurrentChallenge");
+            } else if (tab === 'upcoming' && vm.upcomingList.length === 0) {
+                vm.getAllResults({ url: 'challenges/challenge/future/approved/public', method: 'GET' }, vm.upcomingList, "noneUpcomingChallenge");
+            } else if (tab === 'past' && vm.pastList.length === 0) {
+                vm.getAllResults({ url: 'challenges/challenge/past/approved/public', method: 'GET' }, vm.pastList, "nonePastChallenge");
+            }
+        };
+        
+
+        // Initialize with the default tab
+        $scope.$evalAsync(function () {
+            vm.switchTab('ongoing');
+        });
+        
+    }
 })();

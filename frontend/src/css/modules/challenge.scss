@@ -371,3 +371,44 @@ md-select .md-select-value span:first-child:after {
 .filter-icon {
     padding: 10px;
 }
+
+/* Styling for Tab Buttons */
+.tab-buttons {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    gap: 10px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #007bff;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    outline: none; 
+}
+
+
+.tab-button:focus {
+    outline: none !important;
+    background-color: white !important;
+
+}
+
+.tab-button.active {
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #007bff;
+}
+
+
+.tab-content {
+    display: none;
+    padding: 15px;
+}
+
+.tab-content.active {
+    display: block;
+}
