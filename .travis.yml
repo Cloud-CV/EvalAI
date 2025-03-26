@@ -44,7 +44,9 @@ jobs:
       script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
     - stage: test
       name: "Backend Tests"
-      script: docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+      script: 
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
