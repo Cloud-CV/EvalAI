@@ -7,7 +7,6 @@ WORKDIR /code
 
 ADD requirements/* /code/
 RUN pip install --no-cache-dir --progress-bar off -r dev.txt --no-compile \
-    --no-parallel \
     --no-build-isolation
 
 CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]
