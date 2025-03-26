@@ -1,5 +1,8 @@
 language: python
 sudo: required
+os: linux
+dist: focal
+virt: lxd
 services:
   - docker
   - xvfb
@@ -14,6 +17,11 @@ before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - pip install --upgrade pip
+  - mkdir -p $HOME/.config/pip
+  - echo "[build_ext]" > $HOME/.config/pip/pip.conf
+  - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
+  - pip install --only-binary=:all: Pillow
+  - pip install --only-binary=:all: uWSGI || apt-get update && apt-get install -y uwsgi-plugin-python3
   - ulimit -u 16384  # Increase process/thread limit
   - ulimit -n 4096   # Increase open file limit
 
@@ -31,7 +39,8 @@ jobs:
       name: "Docker Build"
       script:
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi'
-        - docker-compose build || travis_terminate 1
+        - docker-compose build --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" || travis_terminate 1
+
     - stage: test
       name: "Frontend Tests"
       script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
