@@ -20,8 +20,6 @@ before_install:
   - mkdir -p $HOME/.config/pip
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
-  - pip install --only-binary=:all: Pillow
-  - pip install --only-binary=:all: uWSGI || apt-get update && apt-get install -y uwsgi-plugin-python3
   - ulimit -u 16384  # Increase process/thread limit
   - ulimit -n 4096   # Increase open file limit
 
