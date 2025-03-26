@@ -6,8 +6,6 @@ RUN mkdir /code
 WORKDIR /code
 
 ADD requirements/* /code/
-RUN ulimit -n 65535 && ulimit -u 16384
-RUN pip install --no-cache-dir --progress-bar off -r dev.txt --no-compile \
-    --no-build-isolation
+RUN pip install --no-cache-dir --progress-bar off -r dev.txt --no-compile
 
 CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]

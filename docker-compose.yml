@@ -25,10 +25,12 @@ services:
     volumes:
       - .:/code
     ulimits:
-      nproc: 16384
       nofile:
         soft: 65535
         hard: 65535
+      nproc:
+        soft: 16384
+        hard: 16384
 
   worker:
     env_file:
