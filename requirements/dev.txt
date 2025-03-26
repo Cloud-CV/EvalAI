@@ -1,7 +1,7 @@
 -r common.txt
 
 autopep8==1.5.4
-black==22.1.0
+black==25.1.0
 coverage==5.3
 coveralls==2.2.0
 django-autofixture==0.12.1
@@ -18,8 +18,6 @@ pytest-cov==2.10.1
 pytest-django==3.9.0
 recommonmark==0.6.0
 responses==0.13.4
-setuptools==68.2.2
-wheel==0.41.3
 sphinx==3.3.1
 sphinx-autobuild==2020.9.1
 sphinx-markdown-tables==0.0.15
