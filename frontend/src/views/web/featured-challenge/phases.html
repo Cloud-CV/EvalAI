@@ -9,7 +9,7 @@
                     <br> <strong>{{item.start_date | date:'medium'}}</strong></p>
                 <p><strong class="text-light-black fs-12">Ends on</strong>
                     <br> <strong>{{item.end_date | date:'medium'}}</strong></p>
-                <div ng-bind-html="item.description"></div>
+                <div mathjax-bind="item.description"></div>
                 <p><strong class="text-light-black fs-12">Max number of submissions/day</strong>
                     <br> <strong>{{item.max_submissions_per_day}}</strong></p>
                 <p><strong class="text-light-black fs-12">Max total submissions</strong>
