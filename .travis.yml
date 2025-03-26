@@ -20,7 +20,7 @@ install:
 script:
   - flake8 ./ || travis_terminate 1;
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi'
-  - docker-compose build --memory=4g --cpus=2 || travis_terminate 1;
+  - docker-compose build || travis_terminate 1;
   - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
   - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
 before_cache:
