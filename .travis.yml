@@ -1,8 +1,5 @@
 language: python
 sudo: required
-os: linux
-dist: focal
-virt: vm
 services:
   - docker
   - xvfb
