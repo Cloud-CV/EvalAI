@@ -26,10 +26,9 @@ jobs:
         - docker-compose build || travis_terminate 1;
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi'
     - stage: test_frontend
-      script: docker-compose run --ulimit nproc=32768:32768 nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
+      script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
     - stage: test_backend
-      script: docker-compose run --ulimit nproc=32768:32768 -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
-
+      script: docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
 after_success:
