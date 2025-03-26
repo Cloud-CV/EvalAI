@@ -17,22 +17,32 @@ before_install:
   - ulimit -n 4096   # Increase open file limit
 install:
   - pip install awscli==1.18.66 flake8==3.8.2 coveralls
-script:
-  - flake8 ./ || travis_terminate 1;
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi'
-  - docker-compose build || travis_terminate 1;
-  - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
-  - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-  - coveralls --rcfile=.coveragerc
-  - eval "$(ssh-agent -s)"
-  - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
-
-  - ./scripts/deployment/push.sh || travis_terminate 1;
-  - ./scripts/deployment/deploy.sh auto_deploy || travis_terminate 1;
+jobs:
+  include:
+    - name: Lint
+      script:
+        - flake8 ./ || travis_terminate 1
+    - name: NodeJS
+      script:
+        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1
+    - name: Django build
+      script:
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1
+      before_cache:
+        - rm -f $HOME/.cache/pip/log/debug.log
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
+        - coveralls --rcfile=.coveragerc
+    - name: Deploy
+      if: branch = main AND type != pull_request
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1
+        - docker-compose build || travis_terminate 1
+      before_cache:
+        - rm -f $HOME/.cache/pip/log/debug.log
+      after_success:
+        - ./scripts/deployment/push.sh || travis_terminate 1
+        - ./scripts/deployment/deploy.sh auto_deploy || travis_terminate 1
 
 notifications:
   email:
