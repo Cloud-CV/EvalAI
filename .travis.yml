@@ -2,7 +2,7 @@ language: python
 sudo: required
 os: linux
 dist: focal
-virt: lxd
+virt: vm
 services:
   - docker
   - xvfb
