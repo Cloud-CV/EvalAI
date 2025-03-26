@@ -62,6 +62,17 @@
         <div class="align-left reg-control">
             <button class="waves-effect waves-dark btn ev-btn-dark grad-btn grad-btn-dark w-300" type="submit" value="Submit">Sign Up</button>
         </div>
+        <div class="col s12 center-align justify-center">
+            <p class="text-light-gray center-align justify-center"> Continue with</p>
+        </div>
+        <div class="col s12 center-align social-login-buttons">
+            <button class="waves-effect waves-light btn social-btn google-btn" ng-click="auth.googleLogin()">
+                <i class="fa fa-google c"></i> Google
+            </button>
+            <button class="waves-effect waves-light btn social-btn github-btn" ng-click="auth.githubLogin()">
+                <i class="fa fa-github "></i> GitHub
+            </button>
+        </div>
         <div ng-if="auth.isFormError" class="text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">

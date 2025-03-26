@@ -228,3 +228,38 @@ img.auth-logo {
         background-color: rgba(255,255,255,0.9);
     }
 }
+
+
+.social-login-buttons {
+    margin-top: 20px;
+}
+
+.social-btn {
+    margin: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    justify-content: center;
+    text-align: center;
+}
+
+.google-btn {
+    background-color: #db4437;
+    color: white;
+}
+
+.google-btn .fa-google {
+    margin-right: 8px;
+}
+
+.github-btn {
+    background-color: #333;
+    color: white;
+}
+
+.github-btn .fa-github {
+    margin-right: 8px;
+}
+
+.social-btn:hover {
+    opacity: 0.9;
+}

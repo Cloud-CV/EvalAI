@@ -67,7 +67,9 @@
         };
 
         vm.challengeCreator = {};
+        /* eslint-disable no-unused-vars */
         var parameters = userKey ? { token: userKey } : { token: null };
+        /* eslint-enable no-unused-vars */
 
         // Scroll button functionality
         vm.scrollUp = function () {

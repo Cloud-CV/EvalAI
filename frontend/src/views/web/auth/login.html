@@ -32,10 +32,6 @@
             </div>
         </div>
         <div class="row">
-            <!--    <div class="col s6 align-left rm-gut">
-            <input type="checkbox" class="filled-in" ng-model="auth.isRem" id="remeb">
-            <label for="remeb">Remember Me</label>
-        </div> -->
             <br>
             <div class="col s6 align-left rm-gut">
                 <button class="waves-effect waves-dark btn ev-btn-dark grad-btn grad-btn-dark w-300" type="submit">Log In</button>
@@ -43,10 +39,21 @@
             <div class="col s6 align-right right rm-gut">
                 <a ui-sref="auth.reset-password" class="light-link fg-pass">Forgot Password or Username?</a>
             </div>
-        </div>
+            <div class="col s12 center-align justify-center">
+                <p class="text-light-gray center-align justify-center"> Continue with</p>
+            </div>
+            <div class="col s12 center-align social-login-buttons">
+                <button class="waves-effect waves-light btn social-btn google-btn" ng-click="auth.googleLogin()">
+                    <i class="fa fa-google c"></i> Google
+                </button>
+                <button class="waves-effect waves-light btn social-btn github-btn" ng-click="auth.githubLogin()">
+                    <i class="fa fa-github "></i> GitHub
+                </button>
+            </div>
+
         <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left"> {{auth.FormError}}</div>
         <div>
-            <p class="text-light-gray">
+            <p class="text-light-gray mt-8">
                 <span class="text-med-black">Start with a new account </span><a class="highlight-link" ui-sref="auth.signup" ng-click="auth.resetForm()"> Sign Up</a>
             </p>
         </div>
