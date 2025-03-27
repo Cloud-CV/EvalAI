@@ -23,10 +23,13 @@ import requests
 import yaml
 from django.core.files.base import ContentFile
 from django.utils import timezone
+
+from settings.common import SQS_RETENTION_PERIOD
+
 from .statsd_utils import increment_and_push_metrics_to_statsd
 
 # all challenge and submission will be stored in temp directory
-BASE_TEMP_DIR = tempfile.mkdtemp()
+BASE_TEMP_DIR = tempfile.mkdtemp(prefix='tmp')
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 formatter = logging.Formatter(
@@ -198,6 +201,33 @@ def delete_submission_data_directory(location):
         )
 
 
+def delete_old_temp_directories(prefix='tmp'):
+    temp_dir = tempfile.gettempdir()
+
+    dir_creation_times = {}
+
+    for root, dirs, files in os.walk(temp_dir):
+        for directory in dirs:
+            if directory.startswith(prefix):
+                dir_path = os.path.join(root, directory)
+
+                try:
+                    creation_time = os.path.getctime(dir_path)
+                    dir_creation_times[dir_path] = creation_time
+                except Exception as e:
+                    logger.info(f"Error getting creation time for directory {dir_path}: {e}")
+
+    latest_dir = max(dir_creation_times, key=dir_creation_times.get, default=None)
+
+    for dir_path in dir_creation_times:
+        if dir_path != latest_dir:
+            try:
+                shutil.rmtree(dir_path)
+                logger.info(f"Deleted directory: {dir_path}")
+            except Exception as e:
+                logger.info(f"Error deleting directory {dir_path}: {e}")
+
+
 def download_and_extract_zip_file(url, download_location, extract_location):
     """
     * Function to extract download a zip file, extract it and then removes the zip file.
@@ -326,7 +356,14 @@ def extract_challenge_data(challenge, phases):
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id)
         )
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
+        challenge.evaluation_module_error = None
+        challenge.save()
     except Exception:
+        # Catch the exception and save the traceback in the Challenge object's errors attribute
+        traceback_msg = traceback.format_exc()
+        challenge.evaluation_module_error = traceback_msg
+        challenge.save()
+
         logger.exception(
             "{} Exception raised while creating Python module for challenge_id: {}".format(
                 WORKER_LOGS_PREFIX, challenge.id
@@ -462,7 +499,7 @@ def run_submission(
                     challenge_phase.codename,
                     submission_metadata=submission_serializer.data,
                 )
-                return
+            return
         except Exception:
             stderr.write(traceback.format_exc())
             stderr.close()
@@ -470,16 +507,17 @@ def run_submission(
             submission.status = Submission.FAILED
             submission.completed_at = timezone.now()
             submission.save()
-            with open(stdout_file, "r") as stdout:
-                stdout_content = stdout.read()
-                submission.stdout_file.save(
-                    "stdout.txt", ContentFile(stdout_content)
-                )
-            with open(stderr_file, "r") as stderr:
-                stderr_content = stderr.read()
-                submission.stderr_file.save(
-                    "stderr.txt", ContentFile(stderr_content)
-                )
+            if not challenge_phase.disable_logs:
+                with open(stdout_file, "r") as stdout:
+                    stdout_content = stdout.read()
+                    submission.stdout_file.save(
+                        "stdout.txt", ContentFile(stdout_content)
+                    )
+                with open(stderr_file, "r") as stderr:
+                    stderr_content = stderr.read()
+                    submission.stderr_file.save(
+                        "stderr.txt", ContentFile(stderr_content)
+                    )
 
             # delete the complete temp run directory
             shutil.rmtree(temp_run_dir)
@@ -576,6 +614,7 @@ def run_submission(
                 leaderboard_data.result = split_result.get(
                     dataset_split.codename
                 )
+                leaderboard_data.is_disabled = False
 
                 if "error" in submission_output:
                     leaderboard_data.error = error_bars_dict.get(
@@ -608,7 +647,7 @@ def run_submission(
     submission.save()
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
-    if submission_output:
+    if submission_output and successful_submission_flag:
         output = {}
         output["result"] = submission_output.get("result", "")
         submission.output = output
@@ -633,15 +672,16 @@ def run_submission(
     stdout_content = open(stdout_file, "r").read()
 
     # TODO :: see if two updates can be combine into a single update.
-    with open(stdout_file, "r") as stdout:
-        stdout_content = stdout.read()
-        submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
-    if submission_status is Submission.FAILED:
-        with open(stderr_file, "r") as stderr:
-            stderr_content = stderr.read().encode("utf-8")
-            submission.stderr_file.save(
-                "stderr.txt", ContentFile(stderr_content)
-            )
+    if not challenge_phase.disable_logs:
+        with open(stdout_file, "r") as stdout:
+            stdout_content = stdout.read()
+            submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
+        if submission_status is Submission.FAILED:
+            with open(stderr_file, "r") as stderr:
+                stderr_content = stderr.read().encode("utf-8")
+                submission.stderr_file.save(
+                    "stderr.txt", ContentFile(stderr_content)
+                )
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
@@ -727,7 +767,7 @@ def process_submission_callback(body):
         )
 
 
-def get_or_create_sqs_queue(queue_name):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     """
     Returns:
         Returns the SQS Queue object
@@ -741,12 +781,20 @@ def get_or_create_sqs_queue(queue_name):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
     else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+        if challenge and challenge.use_host_sqs:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=challenge.queue_aws_region,
+                aws_secret_access_key=challenge.aws_secret_access_key,
+                aws_access_key_id=challenge.aws_access_key_id,
+            )
+        else:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            )
     if queue_name == "":
         queue_name = "evalai_submission_queue"
     # Check if the queue exists. If no, then create one
@@ -758,7 +806,11 @@ def get_or_create_sqs_queue(queue_name):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        queue = sqs.create_queue(QueueName=queue_name)
+        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
+        queue = sqs.create_queue(
+            QueueName=queue_name,
+            Attributes={"MessageRetentionPeriod": sqs_retention_period},
+        )
     return queue
 
 
@@ -786,6 +838,7 @@ def main():
             WORKER_LOGS_PREFIX, BASE_TEMP_DIR
         )
     )
+    delete_old_temp_directories()
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
@@ -822,7 +875,7 @@ def main():
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
-    queue = get_or_create_sqs_queue(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     is_remote = int(challenge.remote_evaluation)
     while True:
         for message in queue.receive_messages():

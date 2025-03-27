@@ -320,9 +320,9 @@
                         vm.getUser.email = '';
                         vm.stopLoader();
                     },
-                    onError: function() {
+                    onError: function(response) {
                         vm.isFormError = true;
-                        vm.FormError = "Something went wrong. Please try again";
+                        vm.FormError = (response.status == 400) ? response.data.details : "Something went wrong. Please try again";
                         vm.stopLoader();
                     }
                 };

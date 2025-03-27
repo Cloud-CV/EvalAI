@@ -185,6 +185,21 @@ def get_init_container(submission_pk):
     return init_container
 
 
+def get_pods_from_job(api_instance, core_v1_api_instance, job_name):
+    pods_list = []
+    job_def = read_job(api_instance, job_name)
+    if job_def:
+        controller_uid = job_def.metadata.labels["controller-uid"]
+        pod_label_selector = "controller-uid=" + controller_uid
+        pods_list = core_v1_api_instance.list_namespaced_pod(
+            namespace="default",
+            label_selector=pod_label_selector,
+            timeout_seconds=10,
+        )
+
+    return pods_list
+
+
 def get_job_constraints(challenge):
     constraints = {}
     if not challenge.get("cpu_only_jobs"):
@@ -260,11 +275,12 @@ def create_job_object(message, environment_image, challenge):
     return job
 
 
-def create_static_code_upload_submission_job_object(message):
+def create_static_code_upload_submission_job_object(message, challenge):
     """Function to create the static code upload pod AWS EKS Job object
 
     Arguments:
         message {[dict]} -- Submission message from AWS SQS queue
+        challenge {challenges.Challenge} - Challenge model for the related challenge
 
     Returns:
         [AWS EKS Job class object] -- AWS EKS Job class object
@@ -296,6 +312,7 @@ def create_static_code_upload_submission_job_object(message):
         name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
     )
     image = message["submitted_image_uri"]
+    job_constraints = get_job_constraints(challenge)
     # Get init container
     init_container = get_init_container(submission_pk)
     # Get dataset volume and volume mounts
@@ -333,7 +350,7 @@ def create_static_code_upload_submission_job_object(message):
             PHASE_PK_ENV,
         ],
         resources=client.V1ResourceRequirements(
-            limits={"nvidia.com/gpu": "1"}
+            limits=job_constraints
         ),
         volume_mounts=volume_mount_list,
     )
@@ -365,6 +382,7 @@ def create_static_code_upload_submission_job_object(message):
             init_containers=[init_container],
             containers=[sidecar_container, submission_container],
             restart_policy="Never",
+            termination_grace_period_seconds=600,
             volumes=volume_list,
         ),
     )
@@ -420,13 +438,13 @@ def process_submission_callback(api_instance, body, challenge_phase, challenge, 
     try:
         logger.info("[x] Received submission message %s" % body)
         if body.get("is_static_dataset_code_upload_submission"):
-            job = create_static_code_upload_submission_job_object(body)
+            job = create_static_code_upload_submission_job_object(body, challenge)
         else:
             environment_image = challenge_phase.get("environment_image")
             job = create_job_object(body, environment_image, challenge)
         response = create_job(api_instance, job)
         submission_data = {
-            "submission_status": "running",
+            "submission_status": "queued",
             "submission": body["submission_pk"],
             "job_name": response.metadata.name,
         }
@@ -516,6 +534,7 @@ def cleanup_submission(
     challenge_pk,
     phase_pk,
     stderr,
+    environment_log,
     message,
     queue_name,
     is_remote,
@@ -529,6 +548,7 @@ def cleanup_submission(
         challenge_pk {[int]} -- Challenge id
         phase_pk {[int]} -- Challenge Phase id
         stderr {[string]} -- Reason of failure for submission/job
+        environment_log {[string]} -- Reason of failure for submission/job from environment (code upload challenges only)
         message {[dict]} -- Submission message from AWS SQS queue
         queue_name {[string]} -- Submission SQS queue name
         is_remote {[int]} -- Whether the challenge is remote evaluation
@@ -539,6 +559,7 @@ def cleanup_submission(
             "submission": submission_pk,
             "stdout": "",
             "stderr": stderr,
+            "environment_log": environment_log,
             "submission_status": "FAILED",
             "result": "[]",
             "metadata": "",
@@ -571,30 +592,29 @@ def update_failed_jobs_and_send_logs(
     message,
     queue_name,
     is_remote,
+    disable_logs
 ):
     clean_submission = False
+    code_upload_environment_error = "Submission Job Failed."
+    submission_error = "Submission Job Failed."
     try:
-        job_def = read_job(api_instance, job_name)
-        if job_def:
-            controller_uid = job_def.metadata.labels["controller-uid"]
-            pod_label_selector = "controller-uid=" + controller_uid
-            pods_list = core_v1_api_instance.list_namespaced_pod(
-                namespace="default",
-                label_selector=pod_label_selector,
-                timeout_seconds=10,
-            )
-            # Prevents monitoring when Job created with pending pods state (not assigned to node)
-            if pods_list.items[0].status.container_statuses:
-                container_state_map = {}
-                for container in pods_list.items[0].status.container_statuses:
-                    container_state_map[container.name] = container.state
-                for (
-                    container_name,
-                    container_state,
-                ) in container_state_map.items():
-                    if container_name in ["agent", "submission"]:
-                        if container_state.terminated is not None:
-                            if container_state.terminated.reason == "Error":
+        pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
+        if pods_list:
+            if disable_logs:
+                code_upload_environment_error = None
+                submission_error = None
+            else:
+                # Prevents monitoring when Job created with pending pods state (not assigned to node)
+                if pods_list.items[0].status.container_statuses:
+                    container_state_map = {}
+                    for container in pods_list.items[0].status.container_statuses:
+                        container_state_map[container.name] = container.state
+                    for (
+                        container_name,
+                        container_state,
+                    ) in container_state_map.items():
+                        if container_name in ["agent", "submission", "environment"]:
+                            if container_state.terminated is not None:
                                 pod_name = pods_list.items[0].metadata.name
                                 try:
                                     pod_log_response = core_v1_api_instance.read_namespaced_pod_log(
@@ -607,21 +627,24 @@ def update_failed_jobs_and_send_logs(
                                     pod_log = pod_log_response.data.decode(
                                         "utf-8"
                                     )
-                                    pod_log = pod_log[-1000:]
+                                    pod_log = pod_log[-10000:]
                                     clean_submission = True
-                                    submission_error = pod_log
+                                    if container_name == "environment":
+                                        code_upload_environment_error = pod_log
+                                    else:
+                                        submission_error = pod_log
                                 except client.rest.ApiException as e:
                                     logger.exception(
                                         "Exception while reading Job logs {}".format(
                                             e
                                         )
                                     )
-            else:
-                logger.info(
-                    "Job pods in pending state, waiting for node assignment for submission {}".format(
-                        submission_pk
+                else:
+                    logger.info(
+                        "Job pods in pending state, waiting for node assignment for submission {}".format(
+                            submission_pk
+                        )
                     )
-                )
         else:
             logger.exception(
                 "Exception while reading Job {}, does not exist.".format(
@@ -629,11 +652,9 @@ def update_failed_jobs_and_send_logs(
                 )
             )
             clean_submission = True
-            submission_error = "Submission Job Failed."
     except Exception as e:
         logger.exception("Exception while reading Job {}".format(e))
         clean_submission = True
-        submission_error = "Submission Job Failed."
     if clean_submission:
         cleanup_submission(
             api_instance,
@@ -643,6 +664,7 @@ def update_failed_jobs_and_send_logs(
             challenge_pk,
             phase_pk,
             submission_error,
+            code_upload_environment_error,
             message,
             queue_name,
             is_remote,
@@ -732,6 +754,8 @@ def main():
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
+            challenge_phase = evalai.get_challenge_phase_by_pk(challenge_pk, phase_pk)
+            disable_logs = challenge_phase.get("disable_logs")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
                 if (
@@ -741,9 +765,16 @@ def main():
                 ):
                     try:
                         # Fetch the last job name from the list as it is the latest running job
-                        job_name = submission.get("job_name")[-1]
-                        delete_job(api_instance, job_name)
+                        job_name = submission.get("job_name")
                         message_receipt_handle = message.get("receipt_handle")
+                        if job_name:
+                            latest_job_name = job_name[-1]
+                            delete_job(api_instance, latest_job_name)
+                        else:
+                            logger.info(
+                                "No job name found corresponding to submission: {} with status: {}."
+                                "Deleting it from queue.".format(submission_pk, submission.get("status"))
+                            )
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )
@@ -761,6 +792,17 @@ def main():
                         increment_and_push_metrics_to_statsd(
                             QUEUE_NAME, is_remote
                         )
+                elif submission.get("status") == "queued":
+                    job_name = submission.get("job_name")[-1]
+                    pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
+                    if pods_list and pods_list.items[0].status.container_statuses:
+                        # Update submission to running
+                        submission_data = {
+                            "submission_status": "running",
+                            "submission": submission_pk,
+                            "job_name": job_name,
+                        }
+                        evalai.update_submission_status(submission_data, challenge_pk)
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(
@@ -774,6 +816,7 @@ def main():
                         message,
                         QUEUE_NAME,
                         is_remote,
+                        disable_logs,
                     )
                 else:
                     logger.info(

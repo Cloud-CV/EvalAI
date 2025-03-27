@@ -1,47 +1,231 @@
 <div class="white-bg view-container flex-body">
 	<main-header></main-header>
-    <div class="content">
+	<div class="content">
 		<div class="grad-container grad-vh">
 			<div class="row">
 				<div class="col s12 m8 ev-mt-50">
+					<div class="faq-section">
+						<h4 class="text-dark-black align-center"><strong>Frequently Asked Questions (FAQ)</strong></h5>
+							Here is an always-in-WIP list of popular questions and answers that may help you resolve
+							your
+							issue without having to contact us. Please go through the list below before reaching out to
+							us.
+							<h5>For all users:</h5>
+							<ol class="faq-list">
+								<li><strong>What information should I include in my message?</strong><br>
+									For a prompt resolution of your issue, please include the following details:
+									<ol>
+										<li>Challenge URL</li>
+										<li>Challenge title</li>
+										<li>Participant team name</li>
+										<li>Submission PK if relevant; Submission file URL also works.</li>
+										<li>Any other relevant information that will help us understand the issue</li>
+									</ol>
+								</li>
+								<li><strong>What happens if I do not provide enough detail?</strong><br>
+									<b>Messages lacking sufficient detail may not be addressed</b>, as we receive
+									numerous
+									messages each day.
+								</li>
+							</ol>
+							<h5>For participants:</h5>
+							<ol class="faq-list">
+								<li><strong>I am having trouble with accessing the data for a challenge.</strong><br>
+									If you are having issues with getting data for a particular challenge, please reach
+									out
+									to the hosts directly.</li>
+								<li><strong> I am unable to submit because the challenge has a `.edu`
+										requirement.</strong>
+									<br>
+									Please reach out to the hosts directly for assistance.
+								</li>
+								<li><strong>I see a "Verify your email to continue" message despite having
+										verified.</strong><br>
+									If you encounter this message, please try using incognito mode or clear your browser
+									cache.</li>
+								<li><strong>Submission is stuck at submitted or running.</strong><br>
+									Please provide the challenge URL and submission PK in the contact message below.
+								</li>
+								<li><strong>My team for the CARLA Autonomous Driving Challenge 2.0 (or a similar
+										challenge)
+										has not been accepted yet.
+										What should I do?</strong><br>
+									Please reach out to the hosts. This approval is managed at the host end.</li>
+								<li><strong>I need to make changes (add/remove) to my participant team.</strong><br>
+									This is not possible at the moment. We are looking into implementing a feature where
+									you
+									can unparticipate in a
+									challenge if there are no submissions made for a challenge. At the moment, this is
+									not supported, however.</li>
+							</ol>
+							<h5>For challenge hosts:</h5>
+							<ol class="faq-list">
+								<li><strong>I need my challenge approved by the admin.</strong><br>
+									Please create the challenge and make successful submissions for each phase. Then
+									click
+									on "Request for Approval" button on the challenge page. Any <b>request sent through
+										contact form will not be entertained</b>. <br> Also, please do not spam us by
+									repeatedly submitting the request using the button. We have added that feature for
+									your
+									convenience, please use it wisely. </li>
+								<li><strong>I am unable to send approval request for my challenge. I get an error with
+										"Following challenge phases have missing submissions".</strong><br>
+									This is expected. If you are facing this error, you need to make a successful
+									submission (which reaches 'Finished' status) for each challenge phase.
+									This is to prevent our resources from being wasted with incorrect evaluation
+									scripts, and to ensure smoothness for participants as well.</li>
+								<li><strong>I am having trouble with downloading submissions from the "All Submissions"
+										page. What should I do?</strong><br>
+									This happens when there are too many submissions for the backend to compile. Please
+									reach out to us with you challenge PK and we can download multiple submission files
+									and
+									share. However, please refrain from re-using the same challenge every year as that
+									will
+									keep worsening the issue.</li>
+								<li><strong>I accidentally deleted my account. How can I restore it?</strong><br>
+									Please make sure to be careful when dealing with these things. Send us a contact
+									message
+									with your user asking us to reactivate your account.</li>
+								<li><strong>I found inconsistency with the documentation. What should I do?</strong><br>
+									We appreciate any reports with issues in our documentation, please reach out to us
+									and
+									explain the problem clearly. We highly appreciate open-source contributions, please open a PR if you can.</li>
+								<li><strong>Is it possible to access the participants list for my
+										challenge?</strong><br>
+									Yes, please use the <a href="https://eval.ai/web/dashboard"
+										style="color: blue;">Analytics Dashboard</a> to
+									download the participant team details.</li>
+								<li><strong>I am a new challenge host wanting to create a challenge. I would like to
+										meet
+										with the team to discuss my requirements.</strong><br>
+									Thanks for using EvalAI. We have a detailed documentation on how to host challenges
+									here: <a href="https://evalai.readthedocs.io/en/latest/host_challenge.html"
+										style="color: blue;">Host a
+										challenge</a>.
+									We also have a starter template here: <a
+										href="https://github.com/Cloud-CV/EvalAI-Starters" style="color: blue;">EvalAI
+										Starters
+										Template</a>.
+									<br>
+									Our recommendation is to go through the documentation and try to host a challenge
+									and
+									reach out to us with specific issues or questions. <br>
+									Despite that, if you still feel the need, please reach out to us with your
+									requirements
+									and we will schedule a meeting
+									with you.
+									A few things to note:
+									<ol>
+										<li>We are non-profit, i.e. we do not charge the hosts for hosting challenges,
+											although that may change in the future.</li>
+										<li>We have a privacy policy, please read it here: <a
+												href="https://eval.ai/privacy-policy/" style="color: blue;">Privacy
+												Policy</a>.</li>
+										<li>We are a small team, and while we do consider new features which may be
+											general
+											enough, we may not be able to accommodate all requests.</li>
+										<li>If you are trying to host a docker-based challenge, then we request you to
+											please arrange your own AWS account.</li>
+										<li>We request you to please use remote evaluation servers (your own) if
+											possible as
+											that helps us save costs and sustain.</li>
+									</ol>
+								</li>
+								<li><strong>I am trying to create a challenge with remote evaluation. I need challenge
+										primary key and queue details.</strong><br>
+									Please enable `remote_evaluation: true` in your challenge configuration. Then, go to
+									Manage Tab of your challenge to access the details. </li>
+								<li><strong>I need to make all submissions for my challenge public.</strong><br>
+									Unfortunately, we do not have support for this as of now. We are working on it and
+									will
+									update here once it is available.
+									Also, please note to ask such questions <b>before</b> starting the challenge. We are
+									usually unable to change such settings once the challenge has started and
+									submissions
+									are in.</li>
+								<li><strong>I am hosting a docker-based (code-upload/static-code-upload) challenge. I
+										want to see the logs on my pods
+										which stay running/submitted.</strong><br>
+									To view logs on your pods, you may use the following commands. Please look into
+									kubectl/AWS EKS docs for further info:
+
+									<h6>1. Export required variables on your AWS CloudShell:</h6>
+									<pre><code>export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}<br>
+										export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}<br>
+										export CHALLENGE_PK=${CHALLENGE_PK}<br>
+										export CLUSTER_NAME=${CLUSTER_NAME}<br>
+										export ACCOUNT_ID=${ACCOUNT_ID}<br>
+										export AUTH_TOKEN=${AUTH_TOKEN}</code></pre>
+
+									<h6>2. Set eks configuration on AWS:</h6>
+									<pre><code>aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
+										aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID</code></pre>
+
+									<h6>3. Commands to get different entities on EKS:</h6>
+									<pre><code>kubectl get jobs
+										kubectl get nodes
+										kubectl get pods
+										kubectl get cnp</code></pre>
+
+									<h6>4. Commands to get logs for a specific pod:</h6>
+									<pre><code>kubectl logs submission-293486-8kfwt</code></pre>
+
+									<h6>5. Commands to describe a particular pod:</h6>
+									<pre><code>kubectl describe pods submission-252973-4vx28</code></pre>
+
+									<h6>6. Commands to delete a pod:</h6>
+									<pre><code>kubectl delete pods submission-295910-9lb69</code></pre>
+								</li>
+							</ol>
+					</div>
 					<h4 class="text-dark-black align-center"><strong>Contact Us</strong></h4>
-					<form name="contactusForm" ng-submit="contactUs.contactUs(contactusForm.$valid)" id="contact-us" novalidate>
+					If after reviewing the FAQ, you still feel the need, please fill out the form below.
+					<form name="contactusForm" ng-submit="contactUs.contactUs(contactusForm.$valid)" id="contact-us"
+						novalidate>
 						<!-- Name -->
 						<div class="input-field align-left">
-							<input type="text" id="name" name="name" ng-minlength="3" ng-model="contactUs.user.name"  ng-disabled="contactUs.isDisabled"  required focus-if="contactUs.user.name">
+							<input type="text" id="name" name="name" ng-minlength="3" ng-model="contactUs.user.name"
+								ng-disabled="contactUs.isDisabled" required focus-if="contactUs.user.name">
 							<span class="form-icon"><i class="fa fa-user"></i></span>
 							<label ng-class="{'active': contactUs.user.name.length > 0}" for="name">Name *</label>
-							<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error" ng-if="contactusForm.name.$touched || contactusForm.$submitted">
+							<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error"
+								ng-if="contactusForm.name.$touched || contactusForm.$submitted">
 								<p ng-message="minlength">name is too short.</p>
 								<p ng-message="required">name is required.</p>
 							</div>
 						</div>
 						<!-- Email -->
 						<div class="input-field align-left">
-							<input type="email" id="email" name="email" ng-model="contactUs.user.email" ng-disabled="contactUs.isDisabled" required focus-if="contactUs.user.email" >
+							<input type="email" id="email" name="email" ng-model="contactUs.user.email"
+								ng-disabled="contactUs.isDisabled" required focus-if="contactUs.user.email">
 							<span class="form-icon"><i class="fa fa-envelope"></i></span>
 							<label ng-class="{'active': contactUs.user.email.length > 0}" for="email">Email *</label>
-							<div class="wrn-msg text-highlight" ng-messages="contactusForm.email.$error" ng-if="contactusForm.email.$touched || contactusForm.$submitted">
+							<div class="wrn-msg text-highlight" ng-messages="contactusForm.email.$error"
+								ng-if="contactusForm.email.$touched || contactusForm.$submitted">
 								<p ng-message="email">Please enter valid email address.</p>
 								<p ng-message="required">Email is required.</p>
 							</div>
 						</div>
 						<!-- Message -->
 						<div class="input-field align-left">
-							<textarea class="materialize-textarea" id="message" name="message" ng-model="contactUs.user.message" required></textarea>
+							<textarea class="materialize-textarea" id="message" name="message"
+								ng-model="contactUs.user.message" required></textarea>
 							<span class="form-icon"><i class="fa fa-comment"></i></span>
 							<label for="message">Message *</label>
-							<div class="wrn-msg text-highlight" ng-messages="contactusForm.message.$error" ng-if="contactusForm.message.$touched || contactusForm.$submitted">
+							<div class="wrn-msg text-highlight" ng-messages="contactusForm.message.$error"
+								ng-if="contactusForm.message.$touched || contactusForm.$submitted">
 								<p ng-message="required">Message is required.</p>
-							</div>							
-						</div>	
+							</div>
+						</div>
 						<div class="row">
 							<br>
 							<div class="col s6 align-left rm-gut">
-								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">Send</button>
+								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit"
+									value="Submit">Send</button>
 							</div>
-							<div ng-if="contactUs.isFormError" class="wrn-msg text-highlight align-right"> {{contactUs.FormError}}
-                        </div>
+							<div ng-if="contactUs.isFormError" class="wrn-msg text-highlight align-right">
+								{{contactUs.FormError}}
+							</div>
 						</div>
 					</form>
 				</div>

@@ -1,0 +1,25 @@
+<section class="ev-md-container-ui">
+    <div class="ev-md-container ev-card-panel">
+    <div class="row ht-wt-100p">
+        <div class="col s12 m12">
+            <div class="ev-card-body">
+                <form name="deactivateAccountForm" ng-submit="profile.confirmDeactivateAccount(deactivateAccountForm.$valid)">
+                    <div class="pass-title">Deactivate Account</div>
+                    <div class="input-field align-left">
+                        <input placeholder="Please type in the username to confirm" type="text" ng-model="nameInput">
+                    </div>
+                    <ul class="inline-list hide-on-med-and-down">
+                        <li>
+                            <a ng-click="profile.confirmDeactivateAccount(false)" class="dark-link pointer"><strong>Cancel</strong></a>
+                        </li>
+                        <li>
+                            <button class="btn red waves-effect waves-dark grad-btn darken-2 fs-14" ng-disabled="!(nameInput==profile.user.username)" type="submit" value="submit">I understand the consequences of this action. Deactivate this account.</button>
+                            <li>{{profile.userKey}}</li>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
