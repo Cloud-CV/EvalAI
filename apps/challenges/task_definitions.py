@@ -140,6 +140,9 @@ task_definition = """
     ],
     "cpu": "{CPU}",
     "memory": "{MEMORY}",
+    "ephemeralStorage": {{
+        "sizeInGiB" : {ephemeral_storage}
+    }},
 }}
 """
 
@@ -204,6 +207,14 @@ task_definition_code_upload_worker = """
                 {{
                     "name": "EFS_ID",
                     "value": "{EFS_ID}"
+                }},
+                {{
+                    "name": "STATSD_ENDPOINT",
+                    "value": "{STATSD_ENDPOINT}"
+                }},
+                {{
+                    "name": "STATSD_PORT",
+                    "value": "{STATSD_PORT}"
                 }}
 
             ],
@@ -225,6 +236,9 @@ task_definition_code_upload_worker = """
     ],
     "cpu": "{CPU}",
     "memory": "{MEMORY}",
+    "ephemeralStorage": {{
+        "sizeInGiB" : {ephemeral_storage}
+    }},
 }}
 """
 
@@ -242,6 +256,9 @@ task_definition_static_code_upload_worker = """
     ],
     "cpu": "{CPU}",
     "memory": "{MEMORY}",
+    "ephemeralStorage": {{
+        "sizeInGiB" : {ephemeral_storage}
+    }},
 }}
 """
 

@@ -248,6 +248,8 @@ def create_challenge(
         approved_by_admin=True,
         leaderboard_description=fake.paragraph(),
         creator=host_team,
+        domain="CV",
+        list_tags=["Paper", "Dataset"],
         published=True,
         enable_forum=True,
         anonymous_leaderboard=anon_leaderboard,
@@ -336,6 +338,7 @@ def create_leaderboard_data(challenge_phase_split, submission):
         leaderboard=challenge_phase_split.leaderboard,
         result=result,
         error=None,
+        is_disabled=False,
     )
     return leaderboard_data
 
@@ -437,6 +440,7 @@ def create_submission(
         publication_url=fake.uri(),
         stdout_file=None,
         stderr_file=None,
+        environment_log_file=None,
         submission_result_file=ContentFile(submission_result),
         submission_metadata_file=None,
         is_baseline=True,

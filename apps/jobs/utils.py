@@ -14,7 +14,7 @@ from participants.models import ParticipantTeam
 
 from base.utils import get_model_object, suppress_autotime
 from challenges.utils import get_challenge_model, get_challenge_phase_model
-from hosts.utils import is_user_a_host_of_challenge
+from hosts.utils import is_user_a_staff_or_host
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
 
 from .constants import submission_status_to_exclude
@@ -201,11 +201,56 @@ def handle_submission_rerun(submission, updated_status):
     submission.pk = None
     submission.stdout_file = None
     submission.stderr_file = None
+    submission.submission_input_file = None
+    submission.environment_log_file = None
     submission.submission_result_file = None
     submission.submission_metadata_file = None
     with suppress_autotime(submission, ["submitted_at"]):
         submission.submitted_at = submission.submitted_at
+        submission.rerun_resumed_at = timezone.now()
         submission.save()
+
+    message = {
+        "challenge_pk": submission.challenge_phase.challenge.pk,
+        "phase_pk": submission.challenge_phase.pk,
+        "submission_pk": submission.pk,
+        "is_static_dataset_code_upload_submission": False,
+    }
+
+    if submission.challenge_phase.challenge.is_docker_based:
+        try:
+            response = requests.get(submission.input_file.url)
+        except Exception:
+            logger.exception("Failed to get input_file")
+            return
+
+        if response and response.status_code == 200:
+            message["submitted_image_uri"] = response.json()[
+                "submitted_image_uri"
+            ]
+            if (
+                submission.challenge_phase.challenge.is_static_dataset_code_upload
+            ):
+                message["is_static_dataset_code_upload_submission"] = True
+
+    return message
+
+
+def handle_submission_resume(submission, updated_status):
+    """
+    Function to handle the submission resuming. It is handled in the following way -
+    1. Change the submissions status to resumed
+
+    Arguments:
+        submission {Submission Model class object} -- submission object
+        updated_status {str} -- Updated status for current submission
+    """
+
+    data = {"status": updated_status}
+    serializer = SubmissionSerializer(submission, data=data, partial=True)
+    if serializer.is_valid():
+        submission.rerun_resumed_at = timezone.now()
+        serializer.save()
 
     message = {
         "challenge_pk": submission.challenge_phase.challenge.pk,
@@ -298,14 +343,14 @@ def calculate_distinct_sorted_leaderboard_data(
         [] if not is_challenge_phase_public else challenge_hosts_emails
     )
 
-    challenge_host_user = is_user_a_host_of_challenge(user, challenge_obj.pk)
+    challenge_host_or_staff = is_user_a_staff_or_host(user, challenge_obj.pk)
 
     all_banned_email_ids = challenge_obj.banned_email_ids
 
     # Check if challenge phase leaderboard is public for participant user or not
     if (
         challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC
-        and not challenge_host_user
+        and not challenge_host_or_staff
     ):
         response_data = {"error": "Sorry, the leaderboard is not public!"}
         return response_data, status.HTTP_400_BAD_REQUEST
@@ -313,7 +358,7 @@ def calculate_distinct_sorted_leaderboard_data(
     leaderboard_data = LeaderboardData.objects.exclude(
         Q(submission__created_by__email__in=challenge_hosts_emails)
         & Q(submission__is_baseline=False)
-    )
+    ).filter(is_disabled=False)
 
     # Get all the successful submissions related to the challenge phase split
     all_valid_submission_status = [Submission.FINISHED]
@@ -475,6 +520,7 @@ def get_leaderboard_data_model(submission_pk, challenge_phase_split_pk):
     leaderboard_data = LeaderboardData.objects.get(
         submission=submission_pk,
         challenge_phase_split__pk=challenge_phase_split_pk,
+        is_disabled=False,
     )
     return leaderboard_data
 
@@ -493,6 +539,8 @@ def reorder_submissions_comparator(submission_1, submission_2):
     submissions_in_progress_status = [
         Submission.SUBMITTED,
         Submission.SUBMITTING,
+        Submission.RESUMING,
+        Submission.QUEUED,
         Submission.RUNNING,
     ]
     if (

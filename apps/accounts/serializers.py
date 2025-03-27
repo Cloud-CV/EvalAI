@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-
+from rest_auth.serializers import PasswordResetSerializer
+from rest_framework.exceptions import ValidationError
 from .models import JwtToken, Profile
 from rest_framework import serializers
 
@@ -27,7 +28,7 @@ class ProfileSerializer(UserDetailsSerializer):
     Serializer to update the user profile.
     """
 
-    affiliation = serializers.CharField(source="profile.affiliation")
+    affiliation = serializers.CharField(source="profile.affiliation", allow_blank=True)
     github_url = serializers.URLField(
         source="profile.github_url", allow_blank=True
     )
@@ -63,7 +64,7 @@ class ProfileSerializer(UserDetailsSerializer):
         )
 
         profile = instance.profile
-        if profile_data and affiliation:
+        if profile_data:
             profile.affiliation = affiliation
             profile.github_url = github_url
             profile.google_scholar_url = google_scholar_url
@@ -99,3 +100,18 @@ class JwtTokenSerializer(serializers.ModelSerializer):
             "refresh_token",
             "access_token",
         )
+
+
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    """
+    Serializer to check Account Active Status.
+    """
+    def get_email_options(self):
+        try:
+            user = get_user_model().objects.get(email=self.data['email'])
+            if not user.is_active:
+                raise ValidationError({'details': "Account is not active. Please contact the administrator."})
+            else:
+                return super().get_email_options()
+        except get_user_model().DoesNotExist:
+            raise ValidationError({'details': "User with the given email does not exist."})
