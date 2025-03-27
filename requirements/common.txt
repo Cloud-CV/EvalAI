@@ -1,10 +1,12 @@
 asgi-redis==1.4.3
-boto3==1.17.101
-botocore==1.20.101
+boto3==1.28.78
+botocore==1.31.78
 vine==1.3.0
 celery[sqs]==4.3.0
 commonmark==0.9.1
+cfn-lint==0.48.3
 django==2.2.20
+networkx==2.4
 django-allauth==0.43.0
 django-filter==2.4.0
 django-import-export==2.4.0
@@ -22,7 +24,7 @@ kubernetes==12.0.1
 moto==1.3.14
 pika==1.1.0
 pickleshare==0.7.5
-Pillow==7.1.0
+Pillow==10.3.0
 psycopg2==2.8.4
 pycurl==7.43.0.6
 PyJWT==2.4.0
