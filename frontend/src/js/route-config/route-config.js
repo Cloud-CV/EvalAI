@@ -239,7 +239,28 @@
             url: "/submission",
             templateUrl: baseUrl + "/web/challenge/submission.html",
             title: 'Submit',
-            authenticate: true
+            authenticate: true,
+            resolve: {
+                challenge: function(utilities, $state, $stateParams) {
+                  return new Promise(function(resolve) {
+                    var parameters = {};
+                    parameters.token = utilities.getData('userKey');
+                    parameters.url = 'challenges/' + $stateParams.challengeId + '/participant_team/team_detail';
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            resolve(details);
+                        },
+                      onError: function() {
+                        $state.go('error-404');
+                      }
+                    };
+                    utilities.sendRequest(parameters);
+                  });
+                }
+              },
         };
 
         var my_submission = {
@@ -257,7 +278,43 @@
             url: "/my-challenge-all-submission",
             templateUrl: baseUrl + "/web/challenge/my-challenge-all-submission.html",
             title: 'My Challenge All Submissions',
-            authenticate: true
+            authenticate: true,
+            resolve: {
+              challenge: function(utilities, $state, $stateParams) {
+                return new Promise(function(resolve, reject) {
+                  var parameters = {};
+                  parameters.token = utilities.getData('userKey');
+                  parameters.url = 'participants/participant_teams/challenges/' + $stateParams.challengeId + '/user';
+                  parameters.method = 'GET';
+                  parameters.data = {};
+                  parameters.callback = {
+                    onSuccess: function(response) {
+                      var details = response.data;
+                      if (details.is_challenge_host) {
+                        resolve(details);
+                      } else {
+                        $state.go('error-404');
+                        reject();
+                      }
+                    },
+                    onError: function() {
+                      reject();
+                    }
+                  };
+                  utilities.sendRequest(parameters);
+                });
+              }
+            },
+        }; 
+
+        var approval_team = {
+            name: "web.challenge-main.challenge-page.approval_team",
+            parent: "web.challenge-main.challenge-page",
+            url: "/approval_team",
+            templateUrl: baseUrl + "/web/challenge/approval-team.html",
+            title: 'My Challenge Approved Teams',
+            authenticate: true,
+            
         };
 
         var leaderboard = {
@@ -268,6 +325,22 @@
             title: 'Leaderboard',
         };
 
+        var prizes = {
+            name: "web.challenge-main.challenge-page.prizes",
+            parent: "web.challenge-main.challenge-page",
+            url: "/prizes",
+            templateUrl: baseUrl + "/web/challenge/prizes.html",
+            title: 'Prizes',
+        };
+
+        var sponsors = {
+            name: "web.challenge-main.challenge-page.sponsors",
+            parent: "web.challenge-main.challenge-page",
+            url: "/sponsors",
+            templateUrl: baseUrl + "/web/challenge/sponsors.html",
+            title: 'Sponsors',
+        };
+
         var manage = {
             name: "web.challenge-main.challenge-page.manage",
             parent: "web.challenge-main.challenge-page",
@@ -275,7 +348,34 @@
             templateUrl: baseUrl + "/web/challenge/manage.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
-        };
+            authenticate: true,
+            resolve: {
+              challenge: function(utilities, $state, $stateParams) {
+                return new Promise(function(resolve, reject) {
+                  var parameters = {};
+                  parameters.token = utilities.getData('userKey');
+                  parameters.url = 'participants/participant_teams/challenges/' + $stateParams.challengeId + '/user';
+                  parameters.method = 'GET';
+                  parameters.data = {};
+                  parameters.callback = {
+                    onSuccess: function(response) {
+                      var details = response.data;
+                      if (details.is_challenge_host) {
+                        resolve(details);
+                      } else {
+                        $state.go('error-404');
+                        reject();
+                      }
+                    },
+                    onError: function() {
+                      reject();
+                    }
+                  };
+                  utilities.sendRequest(parameters);
+                });
+              }
+            },
+        }; 
 
         var challenge_phase_leaderboard = {
             name: "web.challenge-main.challenge-page.phase-leaderboard",
@@ -299,10 +399,47 @@
             name: "web.profile",
             parent: "web",
             url: "/profile",
-            templateUrl: baseUrl + "/web/profile.html",
+            templateUrl: baseUrl + "/web/profile/profile.html",
             title: "Profile",
             controller: 'profileCtrl',
             controllerAs: 'profile',
+            redirectTo: "web.profile.Updateprofile",
+            authenticate: true
+        };
+
+        var auth_token = {
+            name: "web.profile.AuthToken",
+            parent: "web.profile",
+            url: "/auth-token",
+            templateUrl: baseUrl + "/web/auth/get-token.html",
+            title: 'Auth Token',
+            authenticate: true
+        };
+
+        var update_profile = {
+            name: "web.profile.Updateprofile",
+            parent: "web.profile",
+            url: "/update-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/update-profile.html",
+            title: 'Update profile',
+            authenticate: true
+        };
+
+        var edit_profile = {
+            name: "web.profile.Editprofile",
+            parent: "web.profile",
+            url: "/edit-profile",
+            templateUrl: baseUrl + "/web/profile/edit-profile/edit-profile.html",
+            title: 'Edit profile',
+            authenticate: true
+        };
+
+        var deactivate_account = {
+            name: "web.profile.deactivate-account",
+            parent: "web.profile",
+            url: "/deactivate-account",
+            templateUrl: baseUrl + "/web/profile/edit-profile/deactivate-account.html",
+            title: 'Deactivate Account',
             authenticate: true
         };
 
@@ -329,8 +466,8 @@
         };
 
         var change_password = {
-            name: "web.change-password",
-            parent: "web",
+            name: "web.profile.change-password",
+            parent: "web.profile",
             url: "/change-password",
             templateUrl: baseUrl + "/web/change-password.html",
             title: "Change Password",
@@ -379,17 +516,6 @@
             url: "/get-involved",
             templateUrl: baseUrl + "/web/get-involved.html",
             title: "Get Involved"
-        };
-
-        var update_profile = {
-            name: "web.update-profile",
-            parent: "web",
-            url: "/update-profile",
-            templateUrl: baseUrl + "/web/update-profile.html",
-            title: "Update Profile",
-            controller: 'updateProfileCtrl',
-            controllerAs: 'updateProfile',
-            authenticate: true
         };
 
         var contact_us = {
@@ -510,7 +636,10 @@
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
         $stateProvider.state(my_challenge_all_submission);
+        $stateProvider.state(approval_team);
         $stateProvider.state(leaderboard);
+        $stateProvider.state(prizes);
+        $stateProvider.state(sponsors);
         $stateProvider.state(challenge_phase_leaderboard);
         $stateProvider.state(challenge_phase_metric_leaderboard);
 
@@ -526,6 +655,8 @@
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
+        $stateProvider.state(auth_token);
+        $stateProvider.state(update_profile);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
@@ -533,7 +664,8 @@
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
         $stateProvider.state(get_involved);
-        $stateProvider.state(update_profile);
+        $stateProvider.state(edit_profile);
+        $stateProvider.state(deactivate_account);
         $stateProvider.state(contact_us);
         $stateProvider.state(challengeInvitation);
         $stateProvider.state(get_submission_related_files);

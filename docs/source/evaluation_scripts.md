@@ -1,6 +1,6 @@
 ## Writing Evaluation Script
 
-### Writing an evaluation script
+### Writing an Evaluation Script
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts are fixed due to architectural reasons.
 
@@ -8,7 +8,7 @@ Evaluation scripts are required to have an `evaluate()` function. This is the ma
 
 The syntax of evaluate function is:
 
-```
+```python
 def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
     pass
 ```
@@ -25,7 +25,7 @@ After reading the files, some custom actions can be performed. This varies per c
 
 The `evaluate()` method also accepts keyword arguments. By default, we provide you metadata of each submission to your challenge which you can use to send notifications to your slack channel or to some other webhook service. Following is an example code showing how to get the submission metadata in your evaluation script and send a slack notification if the accuracy is more than some value `X` (X being 90 in the example given below).
 
-```
+```python
 def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
 
     submission_metadata = kwargs.get("submission_metadata")
@@ -52,7 +52,7 @@ The above example can be modified and used to find if some participant team is c
 
 After all the processing is done, this `evaluate()` should return an output, which is used to populate the leaderboard. The output should be in the following format:
 
-```
+```python
 output = {}
 output['result'] = [
             {
@@ -83,7 +83,7 @@ Let's break down what is happening in the above code snippet.
 2. Each entry in the list should be a dict that has a key with the corresponding dataset split codename (`train_split` and `test_split` for this example).
 3. Each of these dataset split dict contains various keys (`Metric1`, `Metric2`, `Metric3`, `Total` in this example), which are then displayed as columns in the leaderboard.
 
-### Writing Remote Evaluation script
+### Writing Remote Evaluation Script
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts is fixed due to architectural reasons.
 

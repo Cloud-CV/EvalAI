@@ -1,23 +1,22 @@
 import base64
-import boto3
-import botocore
 import json
 import logging
 import os
 import re
-import requests
-import sendgrid
 import uuid
-
 from contextlib import contextmanager
 
+import boto3
+import botocore
+import requests
+import sendgrid
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
-
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
-
 from sendgrid.helpers.mail import Email, Mail, Personalization
+
+from settings.common import SQS_RETENTION_PERIOD
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +167,7 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_or_create_sqs_queue_object(queue_name):
+def get_or_create_sqs_queue(queue_name, challenge=None):
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"
         sqs = boto3.resource(
@@ -179,12 +178,20 @@ def get_or_create_sqs_queue_object(queue_name):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
         )
     else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
+        if challenge and challenge.use_host_sqs:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=challenge.queue_aws_region,
+                aws_secret_access_key=challenge.aws_secret_access_key,
+                aws_access_key_id=challenge.aws_access_key_id,
+            )
+        else:
+            sqs = boto3.resource(
+                "sqs",
+                region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            )
     # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
@@ -194,7 +201,11 @@ def get_or_create_sqs_queue_object(queue_name):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        queue = sqs.create_queue(QueueName=queue_name)
+        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
+        queue = sqs.create_queue(
+            QueueName=queue_name,
+            Attributes={"MessageRetentionPeriod": sqs_retention_period},
+        )
     return queue
 
 
@@ -306,3 +317,16 @@ def is_model_field_changed(model_obj, field_name):
     if prev != curr:
         return True
     return False
+
+
+def is_user_a_staff(user):
+    """
+    Function to check if a user is staff or not
+
+    Args:
+        user ([User Class Object]): User model class object
+
+    Return:
+        {bool} : True/False if the user is staff or not
+    """
+    return user.is_staff
