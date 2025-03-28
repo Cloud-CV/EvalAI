@@ -11,6 +11,7 @@ import {
   MatRadioModule,
   MatDialogModule,
   MatSliderModule,
+  MatTabsModule,
 } from '@angular/material';
 
 // import components
@@ -66,6 +67,7 @@ import { ChallengeanalyticsComponent } from './challengeanalytics/challengeanaly
     MatRadioModule,
     MatDialogModule,
     MatSliderModule,
+    MatTabsModule,
   ],
   exports: [
     ChallengeComponent,

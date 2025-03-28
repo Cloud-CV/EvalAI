@@ -346,6 +346,7 @@ mat-chip {
 
 .update-page {
   display: block;
+  z-index: 1;  
   background: $dark-gray;
   overflow: auto;
   padding: 10px;
@@ -536,7 +537,6 @@ li:last-child {
     }
   }
   .input-group .file-field .btn {
-    border-radius: 2px !important;
     background: $dark-gray !important;
     color: #fff !important;
     box-shadow: 0px 4px 8px #9d9d9d !important;
@@ -2159,7 +2159,20 @@ tr {
     zoom: 1 !important;
   }
 
+  .page-wrap-challenge {
+    max-width: 1440px !important;
+    overflow: hidden;
+    margin: auto !important;
+    position: relative !important;
+    background: white;
+    zoom: 1 !important;
+  }
+
   .web-container {
+    width: unset;
+  }
+
+  .dash-container {
     width: unset;
   }
 
@@ -2202,4 +2215,8 @@ tr {
 
 strong {
   font-weight: 400;
+}
+
+.color-orange {
+	color: #ffaf4b;
 }

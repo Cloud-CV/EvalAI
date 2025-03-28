@@ -30,7 +30,7 @@
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="{{canShowPassword ? 'text' : 'password'}}" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" ng-change="auth.checkStrength(auth.regUser.password)" required>
+            <input type="{{canShowPassword ? 'text' : 'password'}}" id="password" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" ng-change="auth.checkStrength(auth.regUser.password)" required>
             <span class="form-icon form-icon-dark" ng-click="auth.togglePasswordVisibility()">
                 <i ng-if="!canShowPassword" class="fa fa-eye pointer"></i>
                 <i ng-if="canShowPassword" class="fa fa-eye-slash pointer"></i>
@@ -46,7 +46,7 @@
         </div>
         <!-- confirm password -->
         <div class="input-field align-left">
-            <input type="{{canShowConfirmPassword ? 'text' : 'password'}}" id="confirm_password" onpaste="return false;" class="dark-autofill" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
+            <input type="{{canShowConfirmPassword ? 'text' : 'password'}}" id="confirm_password" class="dark-autofill" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
             <span class="form-icon form-icon-dark" ng-click="auth.toggleConfirmPasswordVisibility()">
                 <i ng-if="!canShowConfirmPassword" class="fa fa-eye pointer"></i>
                 <i ng-if="canShowConfirmPassword" class="fa fa-eye-slash pointer"></i>

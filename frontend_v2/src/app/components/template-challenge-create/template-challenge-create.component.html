@@ -5,9 +5,7 @@
   <div class="challenge-create-flex">
     <div class="challenge-create-content">
       <section class="ev-md-container text-center">
-      	<span class="fs-24 fw-light">
-          Create Challenge
-        </span>
+      	<h4 class="fw-light">Create Challenge</h4>
         <br />
         <div class="form">
         	<div class="row row-lr-margin">
@@ -43,9 +41,9 @@
             </div>
           </div>
           <div class="row row-lr-margin">
-            <span class="fs-18 fw-light">Challenge Phases</span>
+            <span class="fs-20 text-med-black">Challenge Phases</span>
           	<div class="row row-lr-margin" *ngFor="let phase of challenge_phases">
-              <div class="align-left col-sm-10 col-lr-pad">
+              <div class="align-left col-sm-10 col-lr-pad challenge-phase">
                 <span class="text-med-black fw-regular fs-16">Name for Phase {{phase['id']}}</span>
                 <input
                       type="text"
@@ -67,6 +65,7 @@
         </div>
       </section>
     </div>
+    <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
   </div>
 </div>
 <app-footer *ngIf="!authService.isAuth"></app-footer>

@@ -36,6 +36,7 @@
       border-right: 1px solid transparent;
       &:hover {
         color: $highlight;
+        border-right: 1px solid $highlight;
       }
       &.side-active-link {
         color: $med-black;

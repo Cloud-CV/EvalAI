@@ -232,16 +232,16 @@ export class EndpointsService {
    * Challenge Leaderboard fetch
    * @param phaseSplitId  phase split id
    */
-  challengeLeaderboardURL(phaseSplitId) {
-    return `${this.jobs}challenge_phase_split/${phaseSplitId}/leaderboard/?page_size=1000`;
+  challengeLeaderboardURL(phaseSplitId, orderByMetric) {
+    return `${this.jobs}challenge_phase_split/${phaseSplitId}/leaderboard/?page_size=1000&order_by=${orderByMetric}`;
   }
 
   /**
    * Challenge Complete Leaderboard fetch for challenge host
    * @param phaseSplitId  phase split id
    */
-  challengeCompleteLeaderboardURL(phaseSplitId) {
-    return `${this.jobs}phase_split/${phaseSplitId}/public_leaderboard_all_entries/?page_size=1000`;
+  challengeCompleteLeaderboardURL(phaseSplitId, orderByMetric) {
+    return `${this.jobs}phase_split/${phaseSplitId}/public_leaderboard_all_entries/?page_size=1000&order_by=${orderByMetric}`;
   }
 
   /**
@@ -309,7 +309,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   }
 
   /**
-   * Challenge Submission Counts
+   * Challenge Submission Counts of the participant Team 
    * @param challenge  challenge id
    * @param phase  phase id
    */
@@ -352,6 +352,10 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
     return `${this.challenges}challenge_host_team/${hostTeam}/${this.challenge}${challenge}`;
   }
 
+  getOrUpdateLeaderboardSchemaURL(leaderboard) {
+    return `${this.challenges}${this.challenge}create/leaderboard/${leaderboard}/`;
+  }
+
   /**
    * Delete challenge
    * @param challenge challenge id
@@ -365,7 +369,7 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    * @param submission submission id
    */
   reRunSubmissionURL(submission) {
-    return `${this.jobs}submissions/${submission}/re-run-by-host/`;
+    return `${this.jobs}submissions/${submission}/re-run/`;
   }
 
   /**
@@ -432,5 +436,14 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
    */
   getAuthTokenURL() {
     return `accounts/user/get_auth_token`;
+  }
+
+  /**
+   * Cancel submission
+   * @param challengeId challenge id
+   * @param submissionId submission id
+   */
+   updateSubmissionMetaURL(challengeId, submissionId) {
+    return `${this.jobs}challenges/${challengeId}/submissions/${submissionId}/update_submission_meta/`;
   }
 }

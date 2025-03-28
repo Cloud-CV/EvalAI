@@ -39,19 +39,29 @@ export class ChallengesubmitComponent implements OnInit {
   isSubmissionUsingCli: any;
 
   /**
+   * If phase has been selected
+   */
+  isPhaseSelected = false;
+
+  /**
    * Is user logged in
    */
   isLoggedIn = false;
 
   /**
-   * Is submittion submitted
+   * Is submission submitted
    */
   isSubmitted = false;
 
   /**
-   * Is submittion submitted
+   * Is submission submitted
    */
-  isPublicSubmission:boolean = true;
+  isPublicSubmission = true;
+
+  /**
+   * Is submission allowed by host
+   */
+  isLeaderboardPublic = false;
 
   /**
    * Challenge object
@@ -98,6 +108,15 @@ export class ChallengesubmitComponent implements OnInit {
    */
   metaAttributesforCurrentSubmission = null;
 
+  /**
+   * Stores the default meta attributes for all the phases of a challenge.
+   */
+   defaultMetaAttributes = [];
+
+  /**
+   * Stores the default meta attributes for a selected phase.
+   */
+  defaultMetaAttributesforCurrentPhase = null;
   /**
    * Form fields name
    */
@@ -164,7 +183,7 @@ export class ChallengesubmitComponent implements OnInit {
   /**
    * Phase remaining submissions for docker based challenge
    */
-  phaseRemainingSubmissions: any;
+  phaseRemainingSubmissions: any = {};
 
   /**
    * Flog for phase if submissions max exceeded, details, clock
@@ -208,12 +227,13 @@ export class ChallengesubmitComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  ApiService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  Router Injection.
+   * @param endpointsService  EndpointsService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -254,6 +274,8 @@ export class ChallengesubmitComponent implements OnInit {
       for (let j = 0; j < this.phases.length; j++) {
         if (phases[j].is_public === false) {
           this.phases[j].showPrivate = true;
+        } else {
+          this.phases[j].showPrivate = false;
         }
       }
     });
@@ -374,6 +396,9 @@ export class ChallengesubmitComponent implements OnInit {
             break;
           }
         }
+        if (phaseDetails == undefined) {
+          return;
+        }
         if (phaseDetails.submission_limit_exceeded) {
           this.selectedPhaseSubmissions.maxExceeded = true;
           this.selectedPhaseSubmissions.maxExceededMessage = phaseDetails.message;
@@ -412,11 +437,23 @@ export class ChallengesubmitComponent implements OnInit {
             attribute['value'] = null;
           }
         });
-        data = { phaseId: data.results[i].id, attributes: attributes };
-        this.submissionMetaAttributes.push(data);
+        const detail = { phaseId: data.results[i].id, attributes: attributes };
+        this.submissionMetaAttributes.push(detail);
       } else {
         const detail = { phaseId: data.results[i].id, attributes: null };
         this.submissionMetaAttributes.push(detail);
+      }
+      if (data.results[i].default_submission_meta_attributes) {
+        const attributes = data.results[i].default_submission_meta_attributes;
+        var attributeDict = {};
+        attributes.forEach(function (attribute) {
+          attributeDict[attribute["name"]] = attribute;
+        });
+        const detail = { phaseId: data.results[i].id, attributes: attributeDict };
+        this.defaultMetaAttributes.push(detail);
+      } else {
+        const detail = { phaseId: data.results[i].id, attributes: {} };
+        this.defaultMetaAttributes.push(detail);
       }
     }
   }
@@ -436,7 +473,9 @@ export class ChallengesubmitComponent implements OnInit {
         this.metaAttributesforCurrentSubmission = this.submissionMetaAttributes.find(function (element) {
           return element['phaseId'] === phaseId;
         }).attributes;
-        this.metaAttributesforCurrentSubmission = [];
+        this.defaultMetaAttributesforCurrentPhase = this.defaultMetaAttributes.find(function (element) {
+          return element['phaseId'] === phaseId;
+        }).attributes;
       },
       (err) => {
         SELF.globalService.handleApiError(err);
@@ -444,6 +483,20 @@ export class ChallengesubmitComponent implements OnInit {
       () => {}
     );
   }
+
+  /**
+   * Get current phase default meta attributes dict
+   */
+  isAttributeVisible(attributeName) {
+    if (this.defaultMetaAttributesforCurrentPhase != null && this.defaultMetaAttributes != undefined) {
+      if (this.defaultMetaAttributesforCurrentPhase[attributeName] != null && this.defaultMetaAttributesforCurrentPhase[attributeName] != undefined) {
+        return this.defaultMetaAttributesforCurrentPhase[attributeName]['is_visible'];
+      }
+    }
+    // All attributes are visible by default
+    return true;
+  }
+
 
   /**
    * Clear the data of metaAttributesforCurrentSubmission
@@ -467,15 +520,19 @@ export class ChallengesubmitComponent implements OnInit {
     const SELF = this;
     return (phase) => {
       SELF.selectedPhase = phase;
+      SELF.isPhaseSelected = true;
+      SELF.isLeaderboardPublic = phase['leaderboard_public'];
       if (SELF.challenge['id'] && phase['id']) {
         SELF.getMetaDataDetails(SELF.challenge['id'], phase['id']);
         SELF.fetchRemainingSubmissions(SELF.challenge['id'], phase['id']);
         SELF.clearMetaAttributeValues();
         SELF.submissionError = '';
-        SELF.components['_results'].forEach((element) => {
-          element.value = '';
-          element.message = '';
-        });
+        if (SELF.components) {
+          SELF.components['_results'].forEach((element) => {
+            element.value = '';
+            element.message = '';
+          });
+        }
       }
     };
   }
@@ -524,17 +581,24 @@ export class ChallengesubmitComponent implements OnInit {
     }
     if (self.metaAttributesforCurrentSubmission != null) {
       self.metaAttributesforCurrentSubmission.forEach((attribute) => {
-        if (attribute.required == true) {
-          if (attribute.type == "checkbox") {
-              if (attribute.values.length === 0) {
-                metaValue = false;
-              }
+        if (attribute.required === true) {
+          if (attribute.type === 'checkbox') {
+            if (attribute.values.length === 0) {
+              metaValue = false;
+            }
+          } else if (attribute.type == 'text') {
+            // Fetch value of text attributes manually as we are using modular components
+            let value = self.globalService.formValueForLabel(self.components, attribute.name);
+            if (value === null || value === undefined || value.length === 0) {
+              metaValue = false;
+            }
+            attribute.value = value;
           } else {
-              if (attribute.value === null || attribute.value === undefined) {
-                metaValue = false;
-              }
+            if (attribute.value === null || attribute.value === undefined) {
+              metaValue = false;
+            }
           }
-      }
+        }
       });
     }
     if (metaValue !== true) {
@@ -614,6 +678,55 @@ export class ChallengesubmitComponent implements OnInit {
       editorContent: this.challenge.submission_guidelines,
       confirm: 'Submit',
       deny: 'Cancel',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Edit challenge overview with file function
+   */
+   editSubmissionGuidelineUpload() {
+    const SELF = this;
+    SELF.apiCall = (params) => {
+      const FORM_DATA: FormData = new FormData();
+      FORM_DATA.append('submission_guidelines_file', params['submission_guidelines_file']);
+      SELF.apiService
+        .patchFileUrl(
+          SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
+          FORM_DATA
+        )
+        .subscribe(
+          (data) => {
+            SELF.challenge.submission_guidelines = data.submission_guidelines;   
+            SELF.globalService.showToast('success', 'The submission guidelines are successfully updated!', 5);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+            SELF.globalService.showToast('error', err);
+          },
+          () => this.logger.info('EDIT-CHALLENGE-DESCRIPTION-FINISHED')
+        );
+    };
+
+    /**
+     * Parameters of the modal
+     */
+    const PARAMS = {
+      title: 'Edit Submission Guidelines',
+      content: '',
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [
+        {
+          name: 'Submission Guidelines',
+          isRequired: true,
+          label: 'submission_guidelines_file',
+          placeholder: '',
+          type: 'file',
+          value: '',
+        },
+      ],
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);

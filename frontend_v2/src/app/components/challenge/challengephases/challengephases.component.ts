@@ -1,5 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { ChallengeService } from '../../../services/challenge.service';
 
 /**
@@ -23,14 +22,9 @@ export class ChallengephasesComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
-   * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
    * @param challengeService  ChallengeService Injection.
    */
-  constructor(private challengeService: ChallengeService, @Inject(DOCUMENT) private document: Document) {}
+  constructor(private challengeService: ChallengeService) {}
 
   /**
    * Component on intialized
