@@ -46,6 +46,8 @@ class Submission(TimeStampedModel):
     RUNNING = "running"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    RESUMING = "resuming"
+    QUEUED = "queued"
     FINISHED = "finished"
     SUBMITTING = "submitting"
     ARCHIVED = "archived"
@@ -56,6 +58,8 @@ class Submission(TimeStampedModel):
         (RUNNING, RUNNING),
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
+        (RESUMING, RESUMING),
+        (QUEUED, QUEUED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
@@ -72,12 +76,13 @@ class Submission(TimeStampedModel):
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
-    is_public = models.BooleanField(default=True)
-    is_flagged = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True, db_index=True)
+    is_flagged = models.BooleanField(default=False, db_index=True)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    rerun_resumed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
@@ -102,6 +107,11 @@ class Submission(TimeStampedModel):
         null=True,
         blank=True,
     )
+    environment_log_file = models.FileField(
+        upload_to=RandomFileName("submission_files/environment_log_file_{id}"),
+        null=True,
+        blank=True,
+    )
     submission_result_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
         null=True,
@@ -119,7 +129,7 @@ class Submission(TimeStampedModel):
     method_description = models.TextField(blank=True, default="")
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
-    is_baseline = models.BooleanField(default=False)
+    is_baseline = models.BooleanField(default=False, db_index=True)
     job_name = ArrayField(
         models.TextField(null=True, blank=True),
         default=list,

@@ -1,13 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
-import { InputComponent } from '../../../components/utility/input/input.component';
-import { WindowService } from '../../../services/window.service';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { GlobalService } from '../../../services/global.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 /**
  * Component Class
@@ -17,9 +13,9 @@ import { Router, ActivatedRoute } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit, AfterViewInit {
-  isnameFocused = false;
-  ispasswordFocused = false;
+export class LoginComponent implements OnInit {
+  isNameFocused = false;
+  isPasswordFocused = false;
 
   /**
    * Route path for challenge list
@@ -48,22 +44,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   /**
    * Constructor.
-   * @param document  window document injection
-   * @param windowService
+   * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection
    * @param authService  AuthService Injection
    * @param router  Router Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param globalService  GlobalService Injection.
-   * @param endpointsService
+   * @param endpointsService EndPointsService Injection.
    */
   constructor(
-    @Inject(DOCUMENT) private document: Document,
-    private windowService: WindowService,
     private globalService: GlobalService,
     private apiService: ApiService,
     public authService: AuthService,
-    private route: ActivatedRoute,
     private router: Router,
     private endpointsService: EndpointsService
   ) {}
@@ -77,11 +67,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
     this.authService.resetForm();
   }
-
-  /**
-   * After view is initialized.
-   */
-  ngAfterViewInit() {}
 
   /**
    * Constructor.

@@ -133,8 +133,7 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   /**
    *Check whether team name is filtered
    */
-  isTeamFiltered: boolean = true;
-
+  isTeamFiltered = true;
 
   /**
    * @param showPagination Is pagination
@@ -156,22 +155,31 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     'created_by',
     'status',
     'execution_time',
-    'submitted_file',
+    'input_file',
     'submission_result_file',
   ];
-  columnsHeadings = ['S.No.', 'Team Name', 'Created By', 'Status', 'Execution Time(sec)', 'Submitted File', 'Result File'];
+  columnsHeadings = [
+    'S.No.',
+    'Team Name',
+    'Created By',
+    'Status',
+    'Execution Time(sec)',
+    'Submitted File',
+    'Result File',
+  ];
 
   expandedElement: null;
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
+   * @param challengeService  ChallengeService Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  Router Injection.
+   * @param windowService  WindowService Injection.
    * @param endpointsService  EndpointsService Injection.
-   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -223,6 +231,8 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       for (let i = 0; i < this.phases.length; i++) {
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
+        } else {
+          this.phases[i].showPrivate = false;
         }
       }
       this.filteredPhases = this.phases;
@@ -244,7 +254,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.submissionCount = 0;
       if (SELF.challenge['id'] && phase['id']) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
-        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -269,10 +278,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       this.isTeamFiltered = true;
     }
 
-    let name = SELF.filterSubmissionsQuery;
+    const name = SELF.filterSubmissionsQuery;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
-        if(name == SELF.filterSubmissionsQuery) {
+        if (name === SELF.filterSubmissionsQuery) {
+          SELF.submissionCount = data['count'];
           SELF.submissions = data['results'];
           let index = 0;
           SELF.submissions.forEach((submission) => {
@@ -287,13 +297,12 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.submissions[i].submissionVisibilityText = SELF.submissions[i].is_public ? 'Public' : 'Private';
             // Update view for flag submission setting
             SELF.submissions[i].submissionFlagIcon = SELF.submissions[i].is_flagged ? 'flag' : 'outlined_flag';
-            SELF.submissions[i].submissionFlagText = SELF.submissions[i].is_flagged ? 'Flagged' : 'UnFlagged';
           }
-  
+
           SELF.paginationDetails.next = data.next;
           SELF.paginationDetails.previous = data.previous;
           SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
-  
+
           if (data.count === 0) {
             SELF.paginationDetails.showPagination = false;
             SELF.paginationDetails.paginationMessage = 'No results found';
@@ -307,12 +316,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = 1;
           } else {
             SELF.paginationDetails.isNext = '';
-              if(this.isTeamFiltered) {
-                SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
-              }
-              else {
-                SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
-              }
+            if (this.isTeamFiltered) {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
+            } else {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
+            }
           }
           if (data.previous === null) {
             SELF.paginationDetails.isPrev = 'disabled';
@@ -391,15 +399,14 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
             SELF.paginationDetails.currentPage = Math.ceil(data.count / 100);
           } else {
             SELF.paginationDetails.isNext = '';
-            if(this.isTeamFiltered) {
-              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] -1);
-            }
-            else {
+            if (this.isTeamFiltered) {
+              SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=').join('&').split('&')[1] - 1);
+            } else {
               SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
             }
           }
 
-          let index =  (SELF.paginationDetails.currentPage-1)*10;
+          let index = (SELF.paginationDetails.currentPage - 1) * 100;
           SELF.submissions.forEach((submission) => {
             submission['s_no'] = index + 1;
             index += 1;
@@ -497,7 +504,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
         () => {
           submission.submissionFlagIcon = is_flagged ? 'flag' : 'outlined_flag';
-          submission.submissionFlagText = is_flagged ? 'Flagged' : 'Unflagged';
           const toastMessage = is_flagged ? 'Submission flagged successfully!' : 'Submission unflagged successfully!';
           SELF.globalService.showToast('success', toastMessage);
         },
@@ -529,29 +535,6 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showConfirm(PARAMS);
-  }
-
-  /**
-   * Fetch number of submissions for a challenge phase.
-   * @param challenge  challenge id
-   * @param phase  phase id
-   */
-  fetchSubmissionCounts(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        if (data['participant_team_submission_count']) {
-          SELF.submissionCount = data['participant_team_submission_count'];
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {
-        this.logger.info('Fetched submission counts', challenge, phase);
-      }
-    );
   }
 
   /**
@@ -628,6 +611,52 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       isButtonDisabled: true,
       confirm: 'Yes',
       deny: 'No',
+      confirmCallback: SELF.apiCall,
+    };
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Display Cancel Submission Modal.
+   * @param submission  Submission being cancelled
+   */
+  cancelSubmission(submission) {
+    const SELF = this;
+    if (submission.status != "submitted") {
+      SELF.globalService.showToast('error', 'Only unproccessed submissions can be cancelled', 5);
+      return;
+    }
+    SELF.apiCall = () => {
+      const BODY = JSON.stringify({
+        "status": "cancelled"
+      });
+      SELF.apiService
+        .patchUrl(
+          SELF.endpointsService.updateSubmissionMetaURL(
+            SELF.challenge.id,
+            submission.id
+          ),
+          BODY
+        )
+        .subscribe(
+          () => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'Submission status updated successfully', 5);
+            SELF.fetchSubmissions(SELF.challenge.id, SELF.selectedPhase.id);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+          },
+          () => this.logger.info('SUBMISSION-CANCELLED')
+        );
+    };
+    const PARAMS = {
+      title: 'Are you sure you want to cancel submission?',
+      content: '',
+      isButtonDisabled: true,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [],
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);

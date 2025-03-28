@@ -26,8 +26,10 @@ JUMPBOX=${JUMPBOX_INSTANCE}
 
 if [[ ${env} == "production" ]]; then
     INSTANCE=${PRODUCTION_INSTANCE}
+    MONITORING_INSTANCE=${PRODUCTION_MONITORING_INSTANCE}
 elif [[ ${env} == "staging" ]]; then
     INSTANCE=${STAGING_INSTANCE}
+    MONITORING_INSTANCE=${STAGING_MONITORING_INSTANCE}
 else
     echo "Skipping deployment since commit not on staging or production branch."
     exit 0
@@ -43,11 +45,31 @@ case $opt in
 					cd ~/Projects/EvalAI
 					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 					export COMMIT_ID=${COMMIT_ID}
+					export AWS_DEFAULT_REGION=us-east-1
 					eval $(aws ecr get-login --no-include-email)
 					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
 					docker-compose -f docker-compose-${env}.yml rm -s -v -f
-					docker-compose -f docker-compose-${env}.yml pull
-					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans statsd-exporter django nodejs nodejs_v2 celery
+					docker-compose -f docker-compose-${env}.yml pull django nodejs celery node_exporter memcached
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans django nodejs celery node_exporter memcached
+				ENDSSH2
+			ENDSSH
+            ;;
+        deploy-monitoring)
+            chmod 400 scripts/deployment/evalai.pem
+            ssh-add scripts/deployment/evalai.pem
+			ssh -A ubuntu@${JUMPBOX} -o StrictHostKeyChecking=no MONITORING_INSTANCE=${MONITORING_INSTANCE} AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH'
+				ssh ubuntu@${MONITORING_INSTANCE} -o StrictHostKeyChecking=no AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} COMMIT_ID=${COMMIT_ID} env=${env} 'bash -s' <<-'ENDSSH2'
+					source venv/bin/activate
+                    			cd ~/Projects/EvalAI
+					export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+					export COMMIT_ID=${COMMIT_ID}
+					export AWS_DEFAULT_REGION=us-east-1
+					eval $(aws ecr get-login --no-include-email)
+					aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+					aws s3 cp s3://cloudcv-secrets/evalai/${env}/alert_manager.yml ./monitoring/prometheus/alert_manager.yml
+					docker-compose -f docker-compose-${env}.yml rm -s -v -f
+					docker-compose -f docker-compose-${env}.yml pull nginx-ingress prometheus grafana statsd-exporter alert-manager
+					docker-compose -f docker-compose-${env}.yml up -d --force-recreate --remove-orphans nginx-ingress prometheus grafana statsd-exporter alert-manager
 				ENDSSH2
 			ENDSSH
             ;;
@@ -101,6 +123,27 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
             echo "Deployed worker docker container for queue: " $queue
             ;;
+        deploy-worker-py3-8)
+            token=${3}
+            challenge=${4}
+            if [ -z "$4" ]; then
+               echo "Please input Challenge ID"
+               exit 0
+            fi
+            echo "Pulling queue name for $env server challenge..."
+            if [ ${env} == "staging" ]; then
+                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging.eval.ai/api/challenges/get_broker_url/$challenge/)
+            elif [ ${env} == "production" ]; then
+                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://eval.ai/api/challenges/get_broker_url/$challenge/)
+            fi
+            echo "Completed pulling Queue name"
+            # preprocess the python list to bash array
+            queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
+            queue=$(echo $queue_name | tr -d '"')
+            echo "Deploying worker_py3.8 for queue: " $queue
+            docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker_py3.8
+            echo "Deployed worker_py3.8 docker container for queue: " $queue
+            ;;
         deploy-remote-worker)
             token=${3}
             broker_url=${4}
@@ -150,6 +193,16 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d statsd-exporter
             echo "Completed deploy operation."
             ;;
+        deploy-node-exporter)
+            echo "Deploying node_exporter docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d node_exporter
+            echo "Completed deploy operation."
+            ;;
+        deploy-alert-manager)
+            echo "Deploying alertmanager docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d alert-manager
+            echo "Completed deploy operation."
+            ;;
         scale)
             service=${3}
             instances=${4}
@@ -171,6 +224,8 @@ case $opt in
         echo
         echo "    auto_deploy : Deploy staging or production branch to staging or production server respectively."
         echo "        Eg. ./scripts/deployment/deploy.sh auto_deploy"
+        echo "    deploy-monitoring : Deploy monitoring containers of staging or production branch to staging or production monitoring server respectively."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-monitoring"
         echo "    pull : Pull docker images from ECR."
         echo "        Eg. ./scripts/deployment/deploy.sh pull production"
         echo "    deploy-django : Deploy django containers in the respective environment."
@@ -183,6 +238,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-celery production"
         echo "    deploy-worker : Deploy worker container for a challenge using challenge pk."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-worker production <superuser_auth_token> <challenge_pk>"
+        echo "    deploy-worker-py3-8 : Deploy python 3.8 worker container for a challenge using challenge pk."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-worker-py3-8 production <superuser_auth_token> <challenge_pk>"
         echo "    deploy-remote-worker : Deploy remote worker container for a challenge using host auth token and challenge queue name."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-remote-worker production <auth_token> <queue_name>"   
         echo "    deploy-workers : Deploy worker containers in the respective environment."
@@ -193,6 +250,10 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-grafana production"
         echo "    deploy-statsd : Deploy statsd container in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-statsd production"
+        echo "    deploy-node-exporter : Deploy node_exporter container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-node-exporter production"
+        echo "    deploy-alert-manager : Deploy alertmanager container in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-alert-manager production"
         echo "    scale  : Scale particular docker service in an environment."
         echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
         echo "    clean  : Remove all docker containers and images."

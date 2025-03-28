@@ -2,7 +2,7 @@
 @import './mixins.scss';
 
 .ev-md-container {
-  padding: 0px 30px 30px 30px;
+  padding-bottom: 0px;
 
   .phase-title {
     margin-bottom: 20px;
@@ -88,6 +88,7 @@ tr.detail-row {
 .cell-outside {
   padding: 8px;
   color:rgba(0, 0, 0, 0.87);
+  text-align: center;
 }
 
 tr.element-row:not(.expanded-row):hover {
@@ -115,33 +116,38 @@ tr.element-row:not(.expanded-row):active {
   flex-direction: row;
 }
 
-.elements-detail {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  border-right-style: solid;
-  border-right-width: 1px;
-  border-right-color: lightgrey;
-
-  padding-right: 80px;
+.elements-margin {
+  margin-left: 20px;
 }
 
-.elements-status {
+.elements-detail {
+  width: 38%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   border-right-style: solid;
   border-right-width: 1px;
   border-right-color: lightgrey;
-  padding: 0 20px;
+  margin-left: 30px;
 }
 
 .elements-action {
+  width: 30%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-left: 40px;
+  margin-left: 30px;
+}
+
+.elements-status {
+  width: 30%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  margin-left: 30px;
 }
 
 .element {

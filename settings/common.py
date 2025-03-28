@@ -161,7 +161,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": (
         "rest_framework.pagination.LimitOffsetPagination"
     ),
-    "PAGE_SIZE": 100,
+    "PAGE_SIZE": 150,
     "TEAM_PAGE_SIZE": 10,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
@@ -177,7 +177,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/minute",
-        "user": "100/minute",
+        "user": "60/minute",
         "resend_email": "3/hour",
     },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
@@ -261,17 +261,17 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": ["console"], "propagate": False},
         "django.request": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "console"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.security": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "console"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "console"],
             "level": "ERROR",
             "propagate": False,
         },
@@ -291,7 +291,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
-    "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer"
+    "USER_DETAILS_SERIALIZER": "accounts.serializers.ProfileSerializer",
+    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer"
 }
 
 # For inviting users to participant and host teams.
@@ -304,6 +305,11 @@ PRESIGNED_URL_EXPIRY_TIME = 3600
 # Slack web hook url
 SLACK_WEB_HOOK_URL = os.environ.get(
     "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"
+)
+
+# Approval web hook url
+APPROVAL_WEBHOOK_URL = os.environ.get(
+    "APPROVAL_WEBHOOK_URL", "http://testslackwebhook.com/webhook"
 )
 
 SWAGGER_SETTINGS = {
@@ -398,3 +404,6 @@ EKS_CLUSTER_TRUST_RELATION = {
         }
     ],
 }
+
+# SQS Queue Message Retention Period
+SQS_RETENTION_PERIOD = "345600"

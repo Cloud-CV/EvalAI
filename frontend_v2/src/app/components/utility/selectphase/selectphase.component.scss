@@ -28,6 +28,17 @@
   padding-right: 0px;
 }
 
+@media (max-width: 400px)  {
+  .mat-form-field {
+    margin-right: 40px;
+    display: block;
+  }
+  .col-xs-12 {
+    padding-bottom: 5px;
+    width: 80%;
+  }
+}
+
 ::ng-deep .mat-select-placeholder {
   padding-bottom: 10px;
 }

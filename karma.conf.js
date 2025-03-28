@@ -49,13 +49,14 @@ module.exports = function(config) {
         'karma-jasmine',
         'karma-chrome-launcher',
         'karma-coverage',
-        'karma-coveralls'
+        'karma-coveralls',
+        'karma-brief-reporter',
     ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'coverage'],
+    reporters: ['coverage', 'brief'],
 
 
     // web server port

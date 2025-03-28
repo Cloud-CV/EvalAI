@@ -67,7 +67,7 @@ def challenge_host_team_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
+@api_view(["GET", "PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
@@ -106,10 +106,6 @@ def challenge_host_team_detail(request, pk):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-
-    elif request.method == "DELETE":
-        challenge_host_team.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["GET", "POST"])

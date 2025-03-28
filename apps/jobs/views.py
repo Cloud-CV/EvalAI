@@ -18,7 +18,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction, IntegrityError
 from django.db.models import Count
-from django.utils import timezone
+from django.utils import dateparse, timezone
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
@@ -33,8 +33,9 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     StandardResultSetPagination,
     get_boto3_client,
-    get_or_create_sqs_queue_object,
+    get_or_create_sqs_queue,
     paginated_queryset,
+    is_user_a_staff,
 )
 from challenges.models import (
     ChallengePhase,
@@ -50,9 +51,10 @@ from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
     get_challenge_phase_split_model,
+    get_participant_model,
 )
 from hosts.models import ChallengeHost
-from hosts.utils import is_user_a_host_of_challenge
+from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_model,
@@ -77,6 +79,7 @@ from .utils import (
     get_remaining_submission_for_a_phase,
     get_submission_model,
     handle_submission_rerun,
+    handle_submission_resume,
     is_url_valid,
     reorder_submissions_comparator,
     reorder_submissions_comparator_to_key,
@@ -239,6 +242,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+        # check if manual approval is enabled and team is approved
+        if challenge.manual_participant_approval and not challenge.approved_participant_teams.filter(pk=participant_team_id).exists():
+            response_data = {
+                "error": "Your team is not approved by challenge host"
+            }
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         all_participants_email = participant_team.get_all_participants_email()
         for participant_email in all_participants_email:
             if participant_email in challenge.banned_email_ids:
@@ -255,6 +265,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         submissions_in_progress_status = [
             Submission.SUBMITTED,
             Submission.SUBMITTING,
+            Submission.RESUMING,
+            Submission.QUEUED,
             Submission.RUNNING,
         ]
         submissions_in_progress = Submission.objects.filter(
@@ -563,7 +575,7 @@ def change_submission_data_and_visibility(
     },
 )
 @api_view(["GET"])
-@throttle_classes([AnonRateThrottle])
+@throttle_classes([AnonRateThrottle, UserRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """
     Returns leaderboard for a corresponding Challenge Phase Split
@@ -580,6 +592,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split_id
     )
     challenge_obj = challenge_phase_split.challenge_phase.challenge
+    order_by = request.GET.get("order_by")
     (
         response_data,
         http_status_code,
@@ -588,6 +601,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_obj,
         challenge_phase_split,
         only_public_entries=True,
+        order_by=order_by,
     )
     # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
@@ -786,12 +800,12 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     challenge_obj = challenge_phase_split.challenge_phase.challenge
 
     # Allow access only to challenge host
-    if not is_user_a_host_of_challenge(request.user, challenge_obj.pk):
+    if not is_user_a_staff_or_host(request.user, challenge_obj.pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+    order_by = request.GET.get("order_by")
     (
         response_data,
         http_status_code,
@@ -800,6 +814,7 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         challenge_obj,
         challenge_phase_split,
         only_public_entries=False,
+        order_by=order_by,
     )
     # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
@@ -1072,6 +1087,7 @@ def update_submission(request, challenge_pk):
      - ``submission``: submission id, e.g. 123 (**required**)
      - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``environment_log``: Environment error after evaluation, e.g. "Failed due to attempted action being invalid" (**code upload challenge only**)
      - ``submission_status``: Status of submission after evaluation
         (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
@@ -1098,7 +1114,7 @@ def update_submission(request, challenge_pk):
                 "foo": "bar"
             }
     """
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
@@ -1108,8 +1124,9 @@ def update_submission(request, challenge_pk):
         challenge_phase_pk = request.data.get("challenge_phase")
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
-        stdout_content = request.data.get("stdout", "")
-        stderr_content = request.data.get("stderr", "")
+        stdout_content = request.data.get("stdout", "").encode("utf-8")
+        stderr_content = request.data.get("stderr", "").encode("utf-8")
+        environment_log_content = request.data.get("environment_log", "").encode("utf-8")
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
@@ -1191,15 +1208,34 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                try:
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
+                except LeaderboardData.DoesNotExist:
+                    leaderboard_data = None
+
                 data = {"result": accuracies}
-                serializer = CreateLeaderboardDataSerializer(
-                    data=data,
-                    context={
-                        "challenge_phase_split": challenge_phase_split,
-                        "submission": submission,
-                        "request": request,
-                    },
-                )
+                if leaderboard_data is not None:
+                    serializer = CreateLeaderboardDataSerializer(
+                        leaderboard_data,
+                        data=data,
+                        partial=True,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
+                else:
+                    serializer = CreateLeaderboardDataSerializer(
+                        data=data,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -1234,6 +1270,7 @@ def update_submission(request, challenge_pk):
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
         submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+        submission.environment_log_file.save("environment_log.txt", ContentFile(environment_log_content))
         submission.submission_result_file.save(
             "submission_result.json", ContentFile(str(public_results))
         )
@@ -1283,7 +1320,7 @@ def update_submission(request, challenge_pk):
         jobs = submission.job_name
         if job_name:
             jobs.append(job_name)
-        if submission_status not in [Submission.RUNNING]:
+        if submission_status not in [Submission.QUEUED, Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1567,15 +1604,34 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
+                try:
+                    leaderboard_data = get_leaderboard_data_model(
+                        submission_pk, challenge_phase_split.pk
+                    )
+                except LeaderboardData.DoesNotExist:
+                    leaderboard_data = None
+
                 data = {"result": accuracies}
-                serializer = CreateLeaderboardDataSerializer(
-                    data=data,
-                    context={
-                        "challenge_phase_split": challenge_phase_split,
-                        "submission": submission,
-                        "request": request,
-                    },
-                )
+                if leaderboard_data is not None:
+                    serializer = CreateLeaderboardDataSerializer(
+                        leaderboard_data,
+                        data=data,
+                        partial=True,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
+                else:
+                    serializer = CreateLeaderboardDataSerializer(
+                        data=data,
+                        context={
+                            "challenge_phase_split": challenge_phase_split,
+                            "submission": submission,
+                            "request": request,
+                        },
+                    )
                 if serializer.is_valid():
                     leaderboard_data_list.append(serializer)
                 else:
@@ -1818,10 +1874,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def re_run_submission_by_host(request, submission_pk):
+def re_run_submission(request, submission_pk):
     """
     API endpoint to re-run a submission.
-    Only challenge host has access to this endpoint.
+    Only challenge host has access to this endpoint by default.
+    Participants can submit if the challenge allows.
     """
     try:
         submission = Submission.objects.get(pk=submission_pk)
@@ -1831,13 +1888,19 @@ def re_run_submission_by_host(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
+    if submission.ignore_submission:
+        response_data = {
+            "error": "Deleted submissions can't be re-run"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     # get the challenge and challenge phase object
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if not challenge.allow_participants_resubmissions and not is_user_a_staff_or_host(request.user, challenge.pk):
         response_data = {
-            "error": "Only challenge hosts are allowed to re-run a submission"
+            "error": "Only challenge hosts or admins are allowed to re-run a submission"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -1855,6 +1918,77 @@ def re_run_submission_by_host(request, submission_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
+def resume_submission(request, submission_pk):
+    """
+    API endpoint to resume a submission from failed or partially evaluated state.
+    Only challenge host has access to this endpoint.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {
+            "error": "Submission {} does not exist".format(submission_pk)
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    if submission.ignore_submission:
+        response_data = {
+            "error": "Deleted submissions can't be resumed"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if submission.status != Submission.FAILED:
+        response_data = {
+            "error": "Only failed submissions can be resumed"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if submission.status == Submission.RESUMING:
+        response_data = {
+            "error": "Submission is already resumed"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # get the challenge and challenge phase object
+    challenge_phase = submission.challenge_phase
+    challenge = challenge_phase.challenge
+
+    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Only challenge hosts are allowed to resume a submission"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if not challenge.is_active:
+        response_data = {
+            "error": "Challenge {} is not active".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge.remote_evaluation:
+        response_data = {
+            "error": "Challenge {} is not remote. Resuming is only supported for remote challenges.".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not challenge.allow_resuming_submissions:
+        response_data = {
+            "error": "Challenge {} does not allow resuming submissions.".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    message = handle_submission_resume(submission, Submission.RESUMING)
+    publish_submission_message(message)
+    response_data = {
+        "success": "Submission is successfully resumed"
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -1863,32 +1997,60 @@ def get_submissions_for_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.id):
+    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     submission_status = request.query_params.get("status", None)
+    submitted_after = request.query_params.get("submitted_after", None)
+    submitted_before = request.query_params.get("submitted_before", None)
 
     valid_submission_status = [
         Submission.SUBMITTED,
         Submission.RUNNING,
+        Submission.QUEUED,
+        Submission.RESUMING,
         Submission.FAILED,
         Submission.CANCELLED,
         Submission.FINISHED,
         Submission.SUBMITTING,
     ]
-
-    if submission_status not in valid_submission_status:
+    if submission_status and submission_status not in valid_submission_status:
         response_data = {
             "error": "Invalid submission status {}".format(submission_status)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # expected format: YYYY-MM-DDTHH:MM:SSZ
+    if submitted_after:
+        submitted_after = dateparse.parse_datetime(submitted_after)
+        if not submitted_after:
+            response_data = {
+                "error": "Invalid datetime format for 'submitted_after'"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if submitted_before:
+        submitted_before = dateparse.parse_datetime(submitted_before)
+        if not submitted_before:
+            response_data = {
+                "error": "Invalid datetime format for 'submitted_before'"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     submissions_done_in_challenge = Submission.objects.filter(
-        challenge_phase__challenge=challenge.id, status=submission_status
+        challenge_phase__challenge=challenge.id
     )
+
+    if submission_status:
+        submissions_done_in_challenge = submissions_done_in_challenge.filter(status=submission_status)
+
+    if submitted_after:
+        submissions_done_in_challenge = submissions_done_in_challenge.filter(submitted_at__gt=submitted_after)
+
+    if submitted_before:
+        submissions_done_in_challenge = submissions_done_in_challenge.filter(submitted_at__lt=submitted_before)
 
     serializer = SubmissionSerializer(
         submissions_done_in_challenge, many=True, context={"request": request}
@@ -1980,7 +2142,7 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_or_create_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     try:
         messages = queue.receive_messages()
         if len(messages):
@@ -2075,7 +2237,7 @@ def delete_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_or_create_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue(queue_name, challenge)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
@@ -2167,7 +2329,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
     """
 
     try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk, is_disabled=False)
     except LeaderboardData.DoesNotExist:
         response_data = {"error": "Leaderboard data does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -2332,6 +2494,7 @@ def get_github_badge_data(
         challenge_obj,
         challenge_phase_split,
         only_public_entries=True,
+        order_by=None,
     )
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
@@ -2475,6 +2638,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     submissions_in_progress_status = [
         Submission.SUBMITTED,
         Submission.SUBMITTING,
+        Submission.RESUMING,
+        Submission.QUEUED,
         Submission.RUNNING,
     ]
     submissions_in_progress = Submission.objects.filter(
@@ -2501,6 +2666,18 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         content_type="text/plain",
     )
     submission_data = request.data.copy()
+
+    if submission_data.get("is_public") is None:
+        submission_data["is_public"] = (
+            True if challenge_phase.is_submission_public else False
+        )
+    else:
+        submission_data["is_public"] = json.loads(request.data["is_public"])
+
+    # Override submission visibility if leaderboard_public = False for a challenge phase
+    if not challenge_phase.leaderboard_public:
+        submission_data["is_public"] = challenge_phase.is_submission_public
+
     submission_data["input_file"] = input_file
     serializer = SubmissionSerializer(
         data=submission_data,
@@ -2824,7 +3001,35 @@ def update_submission_meta(request, challenge_pk, submission_pk):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
     else:
-        response_data = {
-            "error": "Sorry, you are not authorized to make this request"
-        }
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+        )
+
+        participant_team = get_participant_model(participant_team_pk)
+
+        try:
+            submission = Submission.objects.get(
+                id=submission_pk,
+                participant_team=participant_team,
+            )
+        except Submission.DoesNotExist:
+            response_data = {
+                "error": "Submission {} does not exist".format(submission_pk)
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SubmissionSerializer(
+            submission,
+            data=request.data,
+            context={"request": request},
+            partial=True,
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )

@@ -1,4 +1,4 @@
-import { Injectable, Component, OnInit, Input, Inject } from '@angular/core';
+import { Component, OnInit, Input, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { GlobalService } from '../../../services/global.service';
 
@@ -64,7 +64,12 @@ export class InputComponent implements OnInit {
   /**
    * Value of input field
    */
-  @Input() value: string;
+  @Input() value: any;
+
+  /**
+   * Value of checkbox input field
+   */
+   @Input() values: any = [];
 
   /**
    * Is field read-only
@@ -85,6 +90,33 @@ export class InputComponent implements OnInit {
    * Is editing phase details
    */
   @Input() editPhaseDetails: boolean;
+
+  /**
+   * Attribute name for placeholder
+   */
+  @Input() attributeName: string;
+
+
+  /**
+   * Attribute description for placeholder
+   */
+  @Input() attributeDescription: string;
+
+
+  /**
+   * Attribute required for placeholder
+   */
+  @Input() attributeRequired: boolean;
+
+  /**
+   * Attribute ngmodel variable
+   */
+  @Input() attributeModel: string;
+
+  /**
+   * Attribute options variable
+   */
+  @Input() attributeOptions: string[];
 
   /**
    * Is email flag
@@ -205,7 +237,7 @@ export class InputComponent implements OnInit {
     } else if (this.isEmail) {
       this.isValid = this.globalService.validateEmail(e);
       this.isValid ? (this.message = '') : (this.message = 'Enter a valid email');
-    } else if (this.type === 'text' || this.type === 'textarea') {
+    } else if (this.type === 'text' || this.type === 'textarea' || this.type === 'textattribute') {
       this.isValid = this.globalService.validateText(e);
       this.isValid ? (this.message = '') : (this.message = 'Enter a valid text');
     } else if (this.type === 'number') {
@@ -249,5 +281,26 @@ export class InputComponent implements OnInit {
 
   toggleErrorMessage() {
     return !((this.showErrorCondition() || this.message !== '') && this.isDirty);
+  }
+
+  // unchecking checked options
+  toggleSelection(value) {
+    if (!Array.isArray(this.value)) {
+      this.value = [];
+    }
+    const idx = this.value.indexOf(value);
+    if (idx > -1) {
+      this.value.splice(idx, 1);
+    } else {
+      this.value.push(value);
+    }
+  }
+
+  isChecked(value) {
+    if (!Array.isArray(this.value)) {
+      this.value = [];
+    }
+    const idx = this.value.indexOf(value);
+    return idx != -1;
   }
 }

@@ -4,6 +4,7 @@
     <h4 class="fw-light">All challenges</h4>
     <mat-tab-group>
       <mat-tab label="Ongoing ({{ ongoingChallenges.length }})" id="ongoing-challenges">
+        <ng-template matTabContent>
         <div *ngIf="ongoingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
           <div class="col s12 m4 l3" *ngFor="let challenge of ongoingChallenges">
@@ -12,9 +13,11 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
 
       <mat-tab class="fs-16" label="Upcoming ({{ upcomingChallenges.length }})">
+        <ng-template matTabContent>
         <!-- upcoming challenges -->
         <div *ngIf="upcomingChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
@@ -24,9 +27,11 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
 
       <mat-tab label="Past ({{ pastChallenges.length }})">
+        <ng-template matTabContent>
         <!-- past challenges -->
         <div *ngIf="pastChallenges.length === 0" class="none fw-light fs-16">No challenges found.</div>
         <div class="row pd-lr-20">
@@ -36,6 +41,7 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
     </mat-tab-group>
   </div>
@@ -44,6 +50,7 @@
     <h4 class="fw-light">Hosted challenges</h4>
     <mat-tab-group>
       <mat-tab label="Ongoing ({{ filteredOngoingChallenges.length }})">
+        <ng-template matTabContent>
         <div *ngIf="!filteredOngoingChallenges.length">
           <p class="fw-light fs-16">
             You haven't hosted any challenge. Please
@@ -57,8 +64,10 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
       <mat-tab label="Upcoming ({{ filteredUpcomingChallenges.length }})">
+        <ng-template matTabContent>
         <div *ngIf="!filteredUpcomingChallenges.length">
           <p class="fw-light fs-16">
             No upcoming hosted challenges found. Please
@@ -72,8 +81,10 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
       <mat-tab label="Past ({{ filteredPastChallenges.length }})">
+        <ng-template matTabContent>
         <div *ngIf="!filteredPastChallenges.length">
           <p class="fw-light fs-16">No past hosted challenges found.</p>
         </div>
@@ -84,9 +95,11 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
       <!-- Unapproved challenges -->
       <mat-tab class="unapproved" label="Unapproved ({{ unapprovedChallengeList.length }})">
+        <ng-template matTabContent>
         <div *ngIf="!unapprovedChallengeList.length">
           <p class="fw-light fs-16">No unapproved challenges found.</p>
         </div>
@@ -97,6 +110,7 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
     </mat-tab-group>
   </div>
@@ -105,6 +119,7 @@
     <h4 class="fw-light">Participated challenges</h4>
     <mat-tab-group>
       <mat-tab label="Ongoing ({{ filteredOngoingChallenges.length }})">
+        <ng-template matTabContent>
         <div *ngIf="!filteredOngoingChallenges.length">
           <p class="fw-light fs-16">
             You haven't participated in any challenge. Please
@@ -118,8 +133,10 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
       <mat-tab label="Past ({{ filteredPastChallenges.length }})">
+        <ng-template matTabContent>
         <div *ngIf="!filteredPastChallenges.length">
           <p class="fw-light fs-16">You haven't participated in any of the past challenges.</p>
         </div>
@@ -130,6 +147,7 @@
             </a>
           </div>
         </div>
+        </ng-template>
       </mat-tab>
     </mat-tab-group>
   </div>

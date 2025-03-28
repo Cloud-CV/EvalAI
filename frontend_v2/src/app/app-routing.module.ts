@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 // import component
 import { NotFoundComponent } from './components/not-found/not-found.component';
@@ -66,7 +66,8 @@ const routes: Routes = [
   },
   {
     path: 'template-challenge-create/:id/:phases',
-    loadChildren: './components/template-challenge-create/template-challenge-create.module#TemplateChallengeCreateModule',
+    loadChildren:
+      './components/template-challenge-create/template-challenge-create.module#TemplateChallengeCreateModule',
   },
   {
     path: '404',

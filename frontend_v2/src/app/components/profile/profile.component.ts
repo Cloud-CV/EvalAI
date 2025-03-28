@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ViewChildren, QueryList } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 
 // import service
@@ -76,7 +76,6 @@ export class ProfileComponent implements OnInit {
     private authService: AuthService,
     private globalService: GlobalService,
     private router: Router,
-    private route: ActivatedRoute,
     private endpointsService: EndpointsService,
     private windowService: WindowService,
     private logger: NGXLogger
@@ -255,11 +254,9 @@ export class ProfileComponent implements OnInit {
    */
   downloadToken() {
     this.isTokenModalVisible = false;
-    this.windowService.downloadFile(
-      { body: JSON.stringify({ token: this.token }) },
-      'token.json',
-      { type: 'text/json' }
-    );
+    this.windowService.downloadFile({ body: JSON.stringify({ token: this.token }) }, 'token.json', {
+      type: 'text/json',
+    });
   }
 
   /**

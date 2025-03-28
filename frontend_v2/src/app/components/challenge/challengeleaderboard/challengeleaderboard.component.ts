@@ -1,8 +1,6 @@
 import { Component, OnInit, QueryList, ViewChildren, AfterViewInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatSliderChange } from '@angular/material';
-import { NGXLogger } from 'ngx-logger';
 
 // import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
@@ -146,6 +144,11 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   getAllEntries = false;
 
   /**
+   * Number of entries on complete leaderboard
+   */
+  numberOfAllEntries = 0;
+
+  /**
    * Current state of whether private leaderboard
    */
   showLeaderboardToggle = true;
@@ -186,19 +189,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   entryHighlighted: any = null;
 
   /**
-   * An interval for fetching the leaderboard data in every 5 seconds
+   * An interval for fetching the leaderboard data in every 1 minute
    */
   pollingInterval: any;
-
-  /**
-   * If leaderboard precision value is equal to 0
-   */
-  minusDisabled = false;
-
-  /**
-   * If leaderboard precision value is equal to 5
-   */
-  plusDisabled = false;
 
   /**
    * Challenge phase visibility
@@ -210,13 +203,24 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
   };
 
   /**
+   *  Highlighted row in leaderboard
+   */
+  highlightedEntry = null;
+
+  /**
+   * Selected order by metric name
+   */
+  selectedMetric: any = '';
+
+  /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  Router Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   * @param endpointsService  EndPointsService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -226,8 +230,7 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     private globalService: GlobalService,
     private apiService: ApiService,
     private endpointsService: EndpointsService,
-    public dialog: MatDialog,
-    private logger: NGXLogger
+    public dialog: MatDialog
   ) {}
 
   /**
@@ -270,6 +273,8 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         if (this.phaseSplits[i].visibility !== this.challengePhaseVisibility.public) {
           this.phaseSplits[i].showPrivate = true;
           this.showPrivateIds.push(this.phaseSplits[i].id);
+        } else {
+          this.phaseSplits[i].showPrivate = false;
         }
       }
       this.filteredPhaseSplits = this.phaseSplits;
@@ -286,6 +291,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     this.route.params.subscribe((params) => {
       if (params['split']) {
         this.selectedPhaseSplitId = params['split'];
+        if (params.hasOwnProperty("metricName")) {
+          this.selectedMetric = decodeURIComponent(params["metricName"]);
+        }
         this.selectPhaseSplitId(this.selectedPhaseSplitId, this);
       }
     });
@@ -301,12 +309,15 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     for (i = 0; i < self.filteredPhaseSplits.length; i++) {
       if (parseInt(id, 10) === self.filteredPhaseSplits[i]['id']) {
         self.selectedPhaseSplit = self.filteredPhaseSplits[i];
+        if (self.selectedMetric === '') {
+          self.selectedMetric = self.selectedPhaseSplit.leaderboard_schema.default_order_by;
+        }
         const checkViewInit = () => {
           if (self.viewInit) {
             self.components.map((item) => {
-              item.selectPhaseSplit(self.selectedPhaseSplit, 'selectBox', 'phaseSplit');
-            })
-            this.phaseSplitSelected(self.selectedPhaseSplit)
+              item.selectPhaseSplitNoURLChange(self.selectedPhaseSplit, 'selectBox', 'phaseSplit');
+            });
+            this.phaseSplitSelected(self.selectedPhaseSplit);
           } else {
             setTimeout(() => {
               checkViewInit();
@@ -326,33 +337,67 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * This is called when a phase split is selected (from child components)
    * Updates the router URL with phase-split-id
    */
-   selectedPhaseSplitUrlChange = (phaseSplit) => {
+  selectedPhaseSplitUrlChange = (phaseSplit) => {
     const SELF = this;
-      if (SELF.router.url.endsWith('leaderboard')) {
-        SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
-      } else if (SELF.router.url.split('/').length === 5) {
-        SELF.router.navigate(['../' + phaseSplit['id']], { relativeTo: this.route });
-      } else if (SELF.router.url.split('/').length === 6) {
-        SELF.router.navigate(['../../' + phaseSplit['id']], { relativeTo: this.route });
-      }
+    if (SELF.router.url.endsWith('leaderboard')) {
+      SELF.router.navigate([phaseSplit['id']], { relativeTo: this.route });
+    } else if (SELF.router.url.split('/').length === 5) {
+      SELF.router.navigate(['../' + phaseSplit['id']], { relativeTo: this.route });
+    } else if (SELF.router.url.split('/').length === 6) {
+      SELF.router.navigate(['../../' + phaseSplit['id']], { relativeTo: this.route });
     }
+  };
+
+  /**
+   * This is called when a metric is selected (from child components)
+   * Updates the router URL with phase-split-id and  metric name
+   */
+   selectedMetricUrlChange = (phaseSplit, metricName) => {
+    const SELF = this;
+    this.selectedMetric = metricName;
+    if (SELF.router.url.endsWith('leaderboard')) {
+      SELF.router.navigate([phaseSplit['id'] + '/' + SELF.encodeMetricURI(metricName)], { relativeTo: this.route });
+    } else if (SELF.router.url.split('/').length === 5) {
+      SELF.router.navigate(['../' + phaseSplit['id'] + '/' + SELF.encodeMetricURI(metricName)], { relativeTo: this.route });
+    } else if (SELF.router.url.split('/').length === 6) {
+      SELF.router.navigate(['../../' + phaseSplit['id'] + '/' + SELF.encodeMetricURI(metricName)], { relativeTo: this.route });
+    }
+  };
 
   /**
    * This is called when a phase split is selected
    */
-    phaseSplitSelected(phaseSplit) {
-      const SELF = this;
-      SELF.selectedPhaseSplit = phaseSplit;
-      if (SELF.selectedPhaseSplit && SELF.router.url.endsWith('leaderboard/' + phaseSplit['id'])) {
-        SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id']);
-        SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
-        SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
-        let selectedPhase = SELF.phases.find((phase) => {
-          return phase.id === SELF.selectedPhaseSplit.challenge_phase
-        })
-        SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public
+  phaseSplitSelected(phaseSplit) {
+    const SELF = this;
+    SELF.selectedPhaseSplit = phaseSplit;
+    SELF.highlightedEntry = null;
+
+    const API_PATH = SELF.endpointsService.particularChallengePhaseSplitUrl(SELF.selectedPhaseSplit['id']);
+    SELF.apiService.getUrl(API_PATH).subscribe(
+      (data) => {
+        SELF.leaderboardPrecisionValue = data.leaderboard_decimal_precision;
+        SELF.setLeaderboardPrecisionValue = `1.${SELF.leaderboardPrecisionValue}-${SELF.leaderboardPrecisionValue}`;
+      },
+      (err) => {
+        SELF.globalService.handleApiError(err);
+      },
+      () => {}
+    );
+
+    if (SELF.selectedPhaseSplit && SELF.router.url.includes('leaderboard/' + phaseSplit['id'])) {
+      if (SELF.getAllEntriesTextOption === 'Exclude private submissions') {
+        SELF.fetchAllEnteriesOnPublicLeaderboard(SELF.selectedPhaseSplit['id'], SELF.selectedMetric);
+      } else {
+        SELF.fetchLeaderboard(SELF.selectedPhaseSplit['id'], SELF.selectedMetric);
       }
-    };
+      SELF.showLeaderboardByLatest = SELF.selectedPhaseSplit.show_leaderboard_by_latest_submission;
+      SELF.sortLeaderboardTextOption = SELF.showLeaderboardByLatest ? 'Sort by best' : 'Sort by latest';
+      const selectedPhase = SELF.phases.find((phase) => {
+        return phase.id === SELF.selectedPhaseSplit.challenge_phase;
+      });
+      SELF.isSelectedPhaseLeaderboardPublic = selectedPhase.leaderboard_public;
+    }
+  }
 
   /**
    * This updates the leaderboard results after fetching them from API
@@ -456,8 +501,8 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * Fetch leaderboard for a phase split
    * @param phaseSplitId id of the phase split
    */
-  fetchLeaderboard(phaseSplitId) {
-    const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
+  fetchLeaderboard(phaseSplitId, metricName) {
+    const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId, metricName);
     const SELF = this;
     SELF.showPrivateIds.forEach((id) => {
       id === phaseSplitId ? (SELF.showLeaderboardToggle = false) : (SELF.showLeaderboardToggle = true);
@@ -467,8 +512,9 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        SELF.numberOfAllEntries = data['count'];
         SELF.updateLeaderboardResults(data['results'], SELF);
-        SELF.startLeaderboard(phaseSplitId);
+        SELF.startLeaderboard(phaseSplitId, metricName);
       },
       (err) => {
         SELF.globalService.handleApiError(err);
@@ -481,18 +527,19 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * Fetch complete leaderboard for a phase split public/private
    * @param phaseSplitId id of the phase split
    */
-  fetchAllEnteriesOnPublicLeaderboard(phaseSplitId) {
-    const API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId);
+  fetchAllEnteriesOnPublicLeaderboard(phaseSplitId, metricName) {
+    const API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId, metricName);
     const SELF = this;
     clearInterval(SELF.pollingInterval);
     SELF.leaderboard = [];
     SELF.showLeaderboardUpdate = false;
     this.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        SELF.numberOfAllEntries = data['count'];
         this.challengePhaseSplitId = data.results[0].challenge_phase_split;
         SELF.updateLeaderboardResults(data['results'], SELF);
         SELF.updateLeaderboardResults(data['results'], SELF);
-        SELF.startLeaderboard(phaseSplitId);
+        SELF.startLeaderboard(phaseSplitId, metricName);
       },
       (err) => {
         SELF.globalService.handleApiError(err);
@@ -508,10 +555,10 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     this.getAllEntries = getAllEntries;
     if (getAllEntries) {
       this.getAllEntriesTextOption = 'Exclude private submissions';
-      this.fetchAllEnteriesOnPublicLeaderboard(this.selectedPhaseSplitId);
+      this.fetchAllEnteriesOnPublicLeaderboard(this.selectedPhaseSplitId, this.selectedMetric);
     } else {
       this.getAllEntriesTextOption = 'Include private submissions';
-      this.fetchLeaderboard(this.selectedPhaseSplitId);
+      this.fetchLeaderboard(this.selectedPhaseSplitId, this.selectedMetric);
     }
   }
 
@@ -519,8 +566,13 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
    * Call leaderboard API in the interval of 5 seconds
    * @param phaseSplitId id of the phase split
    */
-  startLeaderboard(phaseSplitId) {
-    const API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId);
+  startLeaderboard(phaseSplitId, metricName) {
+    let API_PATH;
+    if (this.getAllEntriesTextOption === 'Exclude private submissions') {
+      API_PATH = this.endpointsService.challengeCompleteLeaderboardURL(phaseSplitId, metricName);
+    } else {
+      API_PATH = this.endpointsService.challengeLeaderboardURL(phaseSplitId, metricName);
+    }
     const SELF = this;
     clearInterval(SELF.pollingInterval);
     SELF.pollingInterval = setInterval(function () {
@@ -535,21 +587,21 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
         },
         () => {}
       );
-    }, 5000);
+    }, 60000);
   }
 
   /**
    * Refresh leaderboard if there is any update in data
    */
   refreshLeaderboard() {
-    const API_PATH = this.endpointsService.challengeLeaderboardURL(this.selectedPhaseSplit['id']);
+    const API_PATH = this.endpointsService.challengeLeaderboardURL(this.selectedPhaseSplit['id'], this.selectedMetric);
     const SELF = this;
     SELF.leaderboard = [];
     SELF.showLeaderboardUpdate = false;
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
         SELF.updateLeaderboardResults(data['results'], SELF);
-        SELF.startLeaderboard(SELF.selectedPhaseSplit['id']);
+        SELF.startLeaderboard(SELF.selectedPhaseSplit['id'], SELF.selectedMetric);
       },
       (err) => {
         SELF.globalService.handleApiError(err);
@@ -605,29 +657,54 @@ export class ChallengeleaderboardComponent implements OnInit, AfterViewInit, OnD
     SELF.openDialog(SELF.metaAttributesData);
   }
 
+  encodeMetricURI(metric) {
+    return encodeURIComponent(metric);
+  };
+
   /**
-   * Update leaderboard decimal precision value
-   * @param updatedLeaderboardPrecisionValue new leaderboard precision value
+   * Update highlighted entry
    */
-  updateLeaderboardDecimalPrecision(updatedLeaderboardPrecisionValue) {
-    const API_PATH = this.endpointsService.particularChallengePhaseSplitUrl(this.selectedPhaseSplit['id']);
+  updateHighlightedEntry(entryId) {
     const SELF = this;
-    SELF.leaderboardPrecisionValue = updatedLeaderboardPrecisionValue;
-    SELF.setLeaderboardPrecisionValue = '1.' + SELF.leaderboardPrecisionValue + '-' + SELF.leaderboardPrecisionValue;
-    const BODY = JSON.stringify({
-      leaderboard_decimal_precision: SELF.leaderboardPrecisionValue,
-    });
-    SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
-      (data) => {
-        this.minusDisabled = SELF.leaderboardPrecisionValue === 0 ? true : false;
-        this.plusDisabled = SELF.leaderboardPrecisionValue === 5 ? true : false;
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err, true);
-      },
-      () => this.logger.info('EDIT-LEADERBOARD-PRECISION-VALUE-FINISHED')
-    );
+    if (entryId !== null) {
+      SELF.highlightedEntry = entryId;
+    }
   }
+
+  /**
+   *  Fetch leaderboard metric order by flag
+   */
+  isMetricOrderedAscending(metric) {
+    const SELF = this;
+    let schema = SELF.leaderboard[0].leaderboard__schema;
+    let metadata = schema.metadata;
+    if (metadata != null && metadata != undefined) {
+        // By default all metrics are considered higher is better
+        if (metadata[metric] == undefined) {
+            return true;
+        }
+        return metadata[metric].sort_ascending;
+    }
+    // By default all metrics are considered higher is better
+    return true;
+  };
+
+  /**
+   *  Fetch leaderboard metric description for tooltip
+   */
+  getLabelDescription(metric) {
+      const SELF = this;
+      let schema = SELF.leaderboard[0].leaderboard__schema;
+      let metadata = schema.metadata;
+      if (metadata != null && metadata != undefined) {
+          // By default all metrics are considered higher is better
+          if (metadata[metric] == undefined || metadata[metric].description == undefined) {
+              return "";
+          }
+          return metadata[metric].description;
+      }
+      return "";
+  };
 
   /**
    *  Clear the polling interval

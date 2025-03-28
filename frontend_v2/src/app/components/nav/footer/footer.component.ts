@@ -2,7 +2,7 @@ import { Component, OnInit, Inject, Input } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { DOCUMENT } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 /**
  * Component Class
@@ -34,18 +34,16 @@ export class FooterComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param document  Window document Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
+   * @param document  Window document Injection.
+   * @param globalService  GlobalService Injection.
+   * @param router  Router Injection.
    */
   constructor(
     private apiService: ApiService,
     @Inject(DOCUMENT) private document: Document,
     private globalService: GlobalService,
-    private router: Router,
-    private route: ActivatedRoute
+    private router: Router
   ) {}
 
   /**

@@ -1,5 +1,5 @@
 <div class="input-group">
-  <div *ngIf="type != 'file' && type != 'textarea' && type != 'datetime'">
+  <div *ngIf="type != 'file' && type != 'textarea' && type != 'datetime' && type != 'textattribute'">
     <input
       class="input-field"
       (input)="validateInput($event.target.value)"
@@ -52,6 +52,39 @@
     <div class="input-message" #textValue [class.hidden]="toggleErrorMessage()">{{ message }}</div>
   </div>
 
+  <div *ngIf="type == 'textattribute'">
+    <input
+      class="input-field"
+      name="{{ name }}"
+      type="{{ type }}"
+      [(ngModel)]="value"
+      [value]="value"
+      [readonly]="isReadonly"
+    />
+    <span class="input-bar"></span>
+    <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme == 'dark'">{{ attributeName }} - ({{ attributeDescription }}) <span *ngIf="attributeRequired === true" class="color-orange">*</span></label>
+    <i class="input-icon {{ icon }}" *ngIf="isIconPresent"></i>
+    <div class="input-message" #textValue [class.hidden]="toggleErrorMessage()">{{ message }}</div>
+  </div>
+
+  <div *ngIf="type == 'checkbox'">
+      <label for="{{name}}" class="mat-label-radio" for="{{name}}">{{name}} </label>
+      <br>
+      <br>
+      <div *ngFor="let option of attributeOptions">
+        <mat-checkbox
+          (change)="toggleSelection(option)"
+          id="{{ option }}"
+          [value]="option"
+          [checked]="isChecked(option)"
+        >
+          <label class="fs-16" for="{{ option }}" class="zero-padding">{{ option }}</label>
+        </mat-checkbox>
+        <br/>
+      </div>
+      <br/>
+  </div>
+
   <div class="file-field file-upload" *ngIf="type == 'file'">
     <div class="btn btn-waves-effect ev-file-btn-dark waves-dark grad-btn grad-btn-transparent fs-14">
       <span> Upload File </span>
@@ -62,8 +95,8 @@
         accept="{{ accept }}"
         (change)="handleFileInput($event.target.files)"
         type="file"
-        class="text-dark-black"
         [readonly]="isReadonly"
+        class="btn btn-waves-effect ev-file-btn-dark waves-dark grad-btn grad-btn-transparent fs-14"
       />
     </div>
     <div class="file-path-wrapper">

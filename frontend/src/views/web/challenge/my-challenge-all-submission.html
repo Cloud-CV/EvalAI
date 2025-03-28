@@ -88,15 +88,21 @@
                         <th class="fs-18 w-300" data-field="file">Submitted file</th>
                         <th class="fs-18 w-300" data-field="file">Stdout file</th>
                         <th class="fs-18 w-300" data-field="file">Stderr file</th>
+                        <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
+                                !challenge.isStaticCodeUploadChallenge" data-field="file">Environment Logs</th>
                         <th class="fs-18 w-300" data-field="file">Result file</th>
                         <th class="fs-18 w-300" data-field="file">Metadata file</th>
                         <!-- <th ng-if="challenge.currentPhaseLeaderboardPublic" class="fs-18 w-300" data-field="button">Show on Leaderboard</th> -->
                         <th class="fs-18 w-300" data-field="button">Rerun submission</th>
+                        <th class="fs-18 w-300" ng-if="challenge.isChallengeHost &&
+                                challenge.allowResumingSubmissions" data-field="button">Resume submission</th>
+                        <th class="fs-18 w-300" ng-if="challenge.isChallengeHost && 
+                                challenge.allowHostCancelSubmissions">Cancel submission</th>
                         <th class="fs-18 w-300" data-field="button">Verify submission</th>
                     </thead>
                     <tbody>
                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
-                            <td>{{$index + 1 + (challenge.currentRefPage - 1) * 100}}</td>
+                            <td>{{$index + 1 + (challenge.currentRefPage - 1) * 150}}</td>
                             <td>{{key.participant_team}}</td>
 
                             <td>{{key.created_by}}</td>
@@ -121,6 +127,13 @@
                                     class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                             <td ng-if="!key.stderr_file">None</td>
 
+                            <td ng-if="key.environment_log_file && challenge.isChallengeHost &&
+                                    !challenge.isStaticCodeUploadChallenge">
+                                <a href="{{key.environment_log_file}}" target="_blank"
+                                    class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                            <td ng-if="!key.environment_log_file && challenge.isChallengeHost &&
+                                    !challenge.isStaticCodeUploadChallenge">None</td>
+
                             <td ng-if="key.submission_result_file"><a href="{{key.submission_result_file}}"
                                     target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a>
                             </td>
@@ -131,17 +144,26 @@
                             </td>
                             <td ng-if="!key.submission_metadata_file">None</td>
 
-                            <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                            <!-- <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
                                 <input ng-checked="key.is_public" ng-if="key.status == 'finished'"
                                     ng-model="challenge.submissionVisibility[key.id]" type="checkbox"
                                     id="isPublic{{ key.id }}"
                                     ng-change="challenge.changeSubmissionVisibility(key.id)" />
                                 <label for="isPublic{{ key.id }}"></label>
                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
-                            </td>
+                            </td> -->
                             <td>
                                 <center><a ng-class="key.classList" class="fa fa-refresh pointer"
                                         ng-click="challenge.reRunSubmission(key)"></a></center>
+                            </td>
+                            <td ng-if="challenge.isChallengeHost && challenge.allowResumingSubmissions">
+                                <center><a ng-class="key.classList2" class="fa fa-play pointer" ng-click="challenge.resumeSubmission(key)"></a>
+                                </center>
+                            </td>
+                            <td ng-if="challenge.isChallengeHost && challenge.allowHostCancelSubmissions">
+                                <center><a class="times" ng-click="challenge.showCancelSubmissionDialog(key.id, key.status)">
+                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                </a></center>
                             </td>
                             <td>
                                 <center><input ng-checked="key.is_verified_by_host"

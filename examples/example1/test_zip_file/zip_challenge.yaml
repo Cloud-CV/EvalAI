@@ -25,7 +25,7 @@ challenge_phases:
     codename: Challenge phase codename
     max_submissions_per_day: 100
     max_submissions: 1000
-    max_submissions_per_month: 345
+    max_submissions_per_month: 1000
 
 dataset_splits:
   - id: 1
@@ -37,3 +37,5 @@ challenge_phase_splits:
     leaderboard_id: 1
     dataset_split_id: 1
     visibility: 3
+    leaderboard_decimal_precision: 2
+    is_leaderboard_order_descending: True
