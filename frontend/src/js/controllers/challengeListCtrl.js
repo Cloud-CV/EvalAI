@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment', '$rootScope'];
 
-    function ChallengeListCtrl(utilities, $window, moment) {
+    function ChallengeListCtrl(utilities, $window, moment, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var gmtOffset = moment().utcOffset();
@@ -23,16 +23,24 @@
         vm.currentList = [];
         vm.upcomingList = [];
         vm.pastList = [];
-
+        vm.searchTitle = [];
+        vm.selecteddomain = [];
+        vm.selectedHostTeam = '';
+        vm.sortByTeam = '';
+        vm.host_team_choices = [];
+        vm.filterStartDate = null;
+        vm.filterEndDate = null;
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
+       
+
         vm.getAllResults = function(parameters, resultsArray, typ){
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
                     var results = data.results;
-                    
+
                     var timezone = moment.tz.guess();
                     for (var i in results) {
 
@@ -77,7 +85,7 @@
             utilities.sendRequest(parameters);
         };
 
-        
+
         vm.challengeCreator = {};
         var parameters = {};
         if (userKey) {
@@ -89,7 +97,7 @@
         // calls for ongoing challenges
         parameters.url = 'challenges/challenge/present/approved/public';
         parameters.method = 'GET';
-        
+
         vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
         // calls for upcoming challenges
         parameters.url = 'challenges/challenge/future/approved/public';
@@ -111,6 +119,57 @@
                     utilities.hideButton();
                 }
             });
+        };
+
+        function extractUniqueHostTeams() {
+            const allChallenges = [].concat(
+                vm.currentList || [],
+                vm.upcomingList || [],
+                vm.pastList || []
+            );
+
+            const hostTeamsSet = new Set();
+
+            allChallenges.forEach(function(challenge) {
+                if (challenge.creator && challenge.creator.team_name) {
+                    hostTeamsSet.add(challenge.creator.team_name);
+                }
+            });
+
+            vm.host_team_choices = Array.from(hostTeamsSet).sort();
+        }
+
+        // Delay extraction slightly to ensure data is populated
+        setTimeout(function () {
+            extractUniqueHostTeams();
+        }, 1000);
+
+        parameters.url = "challenges/challenge/get_domain_choices/";
+        parameters.method = 'GET';
+        parameters.data = {};
+        vm.domain_choices = [];
+        parameters.callback = {
+            onSuccess: function(response) {
+                vm.domain_choices.push(["All", "All"]);
+                for(var i=0; i<response.data.length; i++) {
+                    vm.domain_choices.push([response.data[i][0], response.data[i][1]]);
+                }
+                vm.domain_choices.push(["None", "None"]);
+            },
+            onError: function(response) {
+                var error = response.data;
+                $rootScope.notify("error", error);
+            }
+        };
+        utilities.sendRequest(parameters);
+
+        vm.resetFilter = function() {
+            vm.selecteddomain = [];
+            vm.searchTitle = [];
+            vm.selectedHostTeam = '';
+            vm.sortByTeam = '';
+            vm.filterStartDate = null;  
+            vm.filterEndDate = null;    
         };
     }
 
