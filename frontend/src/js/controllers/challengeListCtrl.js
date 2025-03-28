@@ -60,7 +60,7 @@
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         parameters.url = slicedUrl;
-                        vm.getAllResults(parameters, resultsArray);
+                        vm.getAllResults(parameters, resultsArray, typ);
                     } else {
                         utilities.hideLoader();
                         if (resultsArray.length === 0) {

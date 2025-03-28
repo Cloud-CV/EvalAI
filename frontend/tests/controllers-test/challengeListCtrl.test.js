@@ -316,6 +316,27 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.getAllResults).toHaveBeenCalledTimes(2);
         });
 
-
+        it('ensures method is set to GET inside getAllResults function', function() {
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+            successResponse = {
+                next: null,
+                results: []
+            };
+            
+            vm = createController();
+            spyOn(utilities, 'sendRequest').and.callThrough();
+            
+            const parameters = {
+                url: 'challenges/challenge/present/approved/public'
+            };
+            
+            vm.getAllResults(parameters, [], 'noneCurrentChallenge');
+            
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect(utilities.sendRequest.calls.argsFor(0)[0].method).toEqual('GET');
+        });
     });
 });
+
