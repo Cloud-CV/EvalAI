@@ -339,5 +339,3 @@ describe('Unit tests for challenge list controller', function () {
         });
     });
 });
-
-
