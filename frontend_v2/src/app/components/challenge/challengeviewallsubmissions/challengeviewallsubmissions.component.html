@@ -1,11 +1,24 @@
 <div class="challenge-card">
-  <div class="ev-card-panel card-bt-margin">
+
+  <!-- Card for submissions greater than 5000 -->
+  <div class="ev-md-container ev-card-panel card-bt-margin" *ngIf="submissionCount > 5000">
+    <div class="row">
+        <div class="col s12 m12 l12">
+          <p class="fs-16">
+            <strong> Note: </strong> Results are greater than 5k, please use the 
+            <a href="https://eval.ai/api/docs/#operation/get_all_submissions_for_a_challenge"><strong class="blue-text"> get_all_submissions </strong></a> API to download results.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="ev-card-panel card-bt-margin">
     <div class="ev-md-container bottom-hr-line">
       <div class="row row-lr-margin phase-title">
         <div class="col-sm-12">
           <h5 class="fw-light">All Submissions</h5>
         </div>
-      </div>
+      </div>      
       <div class="row row-lr-margin">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
           <app-selectphase
@@ -28,7 +41,10 @@
             </mat-form-field>
           </div>
           <div class="col-md-2 col-sm-2 col-xs-6 col-lg-6 col-lr-pad download-submissions">
-            <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-16" (click)="downloadSubmission()">Download </a>
+            <button 
+            class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14" 
+            (click)="downloadSubmission()" 
+            [disabled]="submissionCount>5000">Download </button>
           </div>
         </div>
       </div>
@@ -36,7 +52,7 @@
         <div *ngIf="selectedPhase">
           <div class="row">
             <div class="col-sm-12 col-xs-12">
-              <strong class="fw-semibold content fs-16">Filter Submissions by Team name</strong>
+              <strong class="fw-light content fs-16">Filter Submissions by Team name</strong>
             </div>
           </div>
           <div class="row">
@@ -61,7 +77,7 @@
     >
       <div class="row row-lr-margin">
         <div class="col-md-12 col-lr-pad">
-          <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
+          <div *ngIf="!isPhaseSelected" class="result-wrn fw-light">No phase selected.</div>
           <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected" class="result-wrn">
             No results found.
           </div>
@@ -78,8 +94,8 @@
         class="mat-elevation-z0"
       >
         <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay; let i = index">
-          <th class="cell-outside table-header fs-16" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
-          <td class="cell-outside fw-regular align-center" mat-cell *matCellDef="let element; let j = index">
+          <th class="cell-outside table-header fs-16 fw-regular" mat-header-cell *matHeaderCellDef>{{ columnsHeadings[i] }}</th>
+          <td class="cell-outside fw-light align-center" mat-cell *matCellDef="let element; let j = index">
             <span *ngIf="column === 'status' && element[column] !== null" class="{{ element[column] }} fs-12">
               {{ element[column] | uppercase }}</span
             >
@@ -88,7 +104,7 @@
               *ngIf="
                 column !== 'status' &&
                 element[column] !== null &&
-                column !== 'submitted_file' &&
+                column !== 'input_file' &&
                 column !== 'submission_result_file' &&
                 column !== 's_no'
               "
@@ -99,7 +115,7 @@
               target="_blank"
               class="blue-text"
               [href]="element[column]"
-              *ngIf="element[column] !== null && (column === 'submitted_file' || column === 'submission_result_file')"
+              *ngIf="element[column] !== null && (column === 'input_file' || column === 'submission_result_file')"
             >
               <i class="fa fa-external-link"></i>
               Link
@@ -112,149 +128,89 @@
         <ng-container matColumnDef="expandedDetail">
           <td mat-cell class="collapsed-td" *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
             <div
-              class="elements"
+              class="elements elements-margin"
               [class.detail-row]="element != expandedElement"
               [class.expanded-row]="element == expandedElement"
               [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
             >
               <div class="elements-detail">
                 <div class="element">
-                  <p>
-                    <strong class="text-light-black fw-regular fs-12">Team Members</strong>&nbsp;
-                    <strong
-                      *ngFor="let team of element.participant_team_members; let i = index"
-                      class="fw-semibold fs-14"
-                    >
-                      <span *ngIf="element.participant_team_members.length !== i + 1"> {{ team.username + ' ,' }}</span>
-                      <span *ngIf="element.participant_team_members.length === i + 1"> {{ team.username }}</span>
+                    <strong class="element-description-attribution">Submission id :</strong> &nbsp;
+                    <strong class="fw-light fs-14">
+                      {{ element.id }}
                     </strong>
-                  </p>
-                  <span class=""></span>
                 </div>
                 <div class="element">
-                  <p>
-                    <strong class="text-light-black fw-semibold fs-12">Team Members Email Id</strong>&nbsp;
-                    <strong
-                      *ngFor="let team of element.participant_team_members; let i = index"
-                      class="fw-semibold fs-14"
-                    >
-                      <span *ngIf="element.participant_team_members.length !== i + 1"> {{ team.email + ' ,' }}</span>
-                      <span *ngIf="element.participant_team_members.length === i + 1"> {{ team.email }}</span>
+                    <strong class="element-description-attribution">Submitted at :</strong> &nbsp;
+                    <strong class="fw-light fs-14">
+                      {{ element.submitted_at | date: 'medium' }}
                     </strong>
-                  </p>
                 </div>
-                <div class="row rm-margin">
-                  <div class="col-sm-4 col-md-4 col-lg-4 no-pad-lr element">
-                    <p>
-                      <strong class="text-light-black fw-semibold fs-12"
-                        >Stdout file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
-                      >&nbsp;
+              </div>
+              <div class="elements-status">
+                  <div class="element">
+                      <strong class="element-description-attribution"
+                        >Stdout file :&nbsp;</strong>&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.stdout_file"
                         *ngIf="element.stdout_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stdout_file" class="fw-semibold fs-12">
+                      <strong *ngIf="!element.stdout_file" class="fw-light fs-14">
                         None
                       </strong>
-                    </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p>
-                      <strong class="text-light-black fw-semibold fs-12"
-                        >Stderr file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
-                      >&nbsp;
+                  <div class="element">
+                      <strong class="element-description-attribution"
+                        >Stderr file :&nbsp;</strong>&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.stderr_file"
                         *ngIf="element.stderr_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.stderr_file" class="fw-semibold fs-12">
+                      <strong *ngIf="!element.stderr_file" class="fw-light fs-14">
                         None
                       </strong>
-                    </p>
                   </div>
-                  <div class="col-sm-4 col-md-4 col-lg-4">
-                    <p>
-                      <strong class="text-light-black fw-semibold fs-12"
-                        >Metadata file&nbsp;<i class="fa fa-file fs-12" aria-hidden="true"></i></strong
-                      >&nbsp;
+                  <div class="element">
+                      <strong class="element-description-attribution"
+                        >Metadata file :&nbsp;</strong>&nbsp;
                       <a
                         target="_blank"
-                        class="blue-text fs-12"
+                        class="blue-text fs-14"
                         [href]="element.submission_metadata_file"
                         *ngIf="element.submission_metadata_file"
                       >
                         <i class="fa fa-external-link"></i> Link
                       </a>
-                      <strong *ngIf="!element.submission_metadata_file" class="fw-semibold fs-12">
+                      <strong *ngIf="!element.submission_metadata_file" class="fw-light fs-14">
                         None
                       </strong>
-                    </p>
                   </div>
-                </div>
               </div>
-
               <div class="elements-action">
-                <div class="row rm-margin">
-                  <div class="col-sm-6 sol-md-6 col-lg-4 no-pad-lr">
-                    <p>
-                      <strong class="text-light-black fw-semibold fs-12">Status</strong> &nbsp;
-                      <strong class="fw-semibold fs-14" [ngClass]="element.status" class="fs-12">
-                        {{ element.status | uppercase }}
-                      </strong>
-                    </p>
-                  </div>
-                  <div class="col-sm-6 sol-md-6 col-lg-8 no-pad-lr">
-                    <p>
-                      <strong class="text-light-black fw-semibold fs-12">Submission Number</strong> &nbsp;
-                      <strong class="fw-semibold fs-14">
-                        {{ element.submission_number }}
-                      </strong>
-                    </p>
-                  </div>
+                <div class="element element-description-attribution">
+                  <a (click)="reRunSubmission(element.id)">
+                    <strong class="fa fa-refresh pointer "> &nbsp;</strong>
+                    <strong>Re-run submission</strong>
+                  </a>
                 </div>
-                <div class="element">
-                  <p>
-                    <strong class="text-light-black fw-semibold fs-12">Submitted At</strong> &nbsp;
-                    <strong class="fw-semibold fs-14">
-                      {{ element.created_at | date: 'medium' }}
-                    </strong>
-                  </p>
+                <div class="element element-description-attribution" *ngIf="isChallengeHost">
+                  <a class="pointer" (click)="cancelSubmission(element)">
+                    <i class="fa fa-times" aria-hidden="true"> &nbsp;</i>
+                    <strong>Cancel Submission</strong>
+                  </a>
                 </div>
-                <div class="element">
-                  <p>
-                    <mat-checkbox
-                      class="element-icon fw-semibold"
-                      [checked]="element.is_public"
-                      [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']"
-                      (change)="confirmSubmissionVisibility(element, element.is_public)"
-                    >
-                      Show On Leaderboard
-                    </mat-checkbox>
-                  </p>
-                </div>
-                <div class="element">
-                  <p>
-                    <mat-checkbox
-                      class="element-icon fw-semibold"
-                      [checked]="element.is_flagged"
-                      (change)="confirmSubmissionFlagChange(element, element.is_flagged)"
-                    >
-                      {{ element.submissionFlagText }}
-                    </mat-checkbox>
-                    <a class="fa fa-refresh pointer" (click)="reRunSubmission(element.id)"> Re-run submission </a>
-                  </p>
-                </div>
-                <div class="element" *ngIf="isChallengeHost">
-                  <a class="pointer" (click)="deleteChallengeSubmission(element)">
-                    <i class="fa fa-trash red-text fs-14" aria-hidden="true">&nbsp;Delete Submission</i>
+                <div class="element element-description-attribution" *ngIf="isChallengeHost">
+                  <a class="pointer delete-submission-label" (click)="deleteChallengeSubmission(element)">
+                    <i class="fa fa-trash" aria-hidden="true"> &nbsp;</i>
+                    <strong>Delete Submission</strong>
                   </a>
                 </div>
               </div>

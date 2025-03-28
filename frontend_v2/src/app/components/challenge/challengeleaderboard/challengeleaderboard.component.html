@@ -1,6 +1,6 @@
 <div class="challenge-card">
   <div class="ev-card-panel card-bt-margin">
-    <div class="ev-md-container ev-panel-title" *ngIf="challenge.leaderboard_description">
+    <div class="ev-md-container ev-panel-title">
       <div class="row row-lr-margin">
         <div class="col-sm-12 col-xs-12 col-lr-pad">
           <h5 class="fw-light">Leaderboard</h5>
@@ -8,6 +8,7 @@
         <div
           class="col-sm-12 md-body-1 col-lr-pad fs-16 fw-light"
           [innerHTML]="challenge.leaderboard_description"
+          *ngIf="challenge.leaderboard_description"
         ></div>
       </div>
     </div>
@@ -20,41 +21,34 @@
       <div class="row">
         <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box col-lr-margin">
           <app-selectphase
-            [phases]="filteredPhaseSplits"
+            [phaseSplits]="filteredPhaseSplits"
             [phaseSelectionType]="phaseSelectionType"
             [phaseSelectionListType]="phaseSelectionListType"
-            [phaseSplitSelected]="phaseSplitSelected()"
+            [selectedPhaseSplitUrlChange]="selectedPhaseSplitUrlChange"
             #phasesplitselect
           >
           </app-selectphase>
         </div>
-        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box">
-          <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
-            <div class="col-sm-12 col-xs-12 col-lr-pad" class="leaderboard-precison">
-              <span class="fw-semibold"> Leaderboard precision value:</span><br />
-              <span class="fw-light"
-                >Changing the precision value will show the results with that precision value to the participants.
-              </span>
-            </div>
-            <div class="rangeslider fa-stack fa-2x">
-              <button
-                [disabled]="minusDisabled"
-                class="btn-floating btn-pagination waves-effect waves-light"
-                (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue - 1)"
-              >
-                <i class="fa fa-minus"></i>
-              </button>
-              &nbsp;<mat-chip class="btn">{{ leaderboardPrecisionValue }}</mat-chip
-              >&nbsp;
-              <button
-                [disabled]="plusDisabled"
-                class="btn-floating btn-pagination waves-effect waves-light"
-                (click)="updateLeaderboardDecimalPrecision(leaderboardPrecisionValue + 1)"
-              >
-                <i class="fa fa-plus"></i>
-              </button>
-            </div>
-          </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 col-xs-12 col-lg-6 col-lr-pad phase-select-box col-lr-margin">
+          <ng-container *ngIf="leaderboard.length > 0 && selectedPhaseSplit != null">
+            <mat-form-field class="select_phase_form">
+              <mat-label class="fs-16 phase-placeholder" [ngClass]="{ 'hide-label': selectedMetric !== '' }">Metric as</mat-label>
+              <mat-select class="rm-margin" [(ngModel)]="selectedMetric">
+                <mat-select-trigger>
+                  <span class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+                    <span class="fw-light">Metric:</span> {{ selectedMetric }} &nbsp;
+                  </span>
+                </mat-select-trigger>
+                <mat-option (click)="selectedMetricUrlChange(selectedPhaseSplit, key)" [value]="key" *ngFor="let key of selectedPhaseSplit.leaderboard_schema.labels">
+                  <span class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+                    <span class="fw-light">Metric:</span> {{ key }} &nbsp;
+                  </span>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -62,14 +56,17 @@
       <div class="row row-lr-margin">
         <div class="horizontal-scroll">
           <div class="col-sm-12 col-lr-pad">
-            <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit == null" class="fw-regular result-wrn">
+            <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit == null" class="fw-light result-wrn">
               No phase selected.
             </div>
-            <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="result-wrn content">
-              <mat-chip-list> <mat-chip>B</mat-chip> - Baseline submission </mat-chip-list>
-              <mat-chip-list class="leaderboard-description-span private">
-                <mat-chip>P</mat-chip> - Private submission
-              </mat-chip-list>
+            <div *ngIf="selectedPhaseSplit" class="result-wrn content fw-light">
+              <div *ngIf="leaderboard.length > 0">
+                <mat-chip-list> 
+                  <mat-chip>B</mat-chip> - Baseline submission 
+                </mat-chip-list>
+                <mat-chip-list class="leaderboard-description-span private">
+                  <mat-chip>P</mat-chip> - Private submission
+                </mat-chip-list>
               <!-- <mat-chip-list class="pull-right" *ngIf="isChallengeHost">
                 <div
                   (click)="showLeaderboardByLatestOrBest()"
@@ -87,52 +84,53 @@
                 </div>
                 <span class="w-400"> {{ sortLeaderboardTextOption }}</span>
               </mat-chip-list> -->
-              <mat-checkbox
-                class="pull-right complete-leaderboard"
-                *ngIf="isChallengeHost && showLeaderboardToggle"
-                (change)="toggleLeaderboard(getAllEntries)"
-                [(ngModel)]="getAllEntries"
-              >
-                <label class="w-400 complete-leaderboard-text"> {{ getAllEntriesTextOption }}</label>
-              </mat-checkbox>
+              </div>
+                <mat-checkbox
+                  class="pull-right complete-leaderboard"
+                  *ngIf="isChallengeHost && showLeaderboardToggle && numberOfAllEntries > 0"
+                  (change)="toggleLeaderboard(getAllEntries)"
+                  [(ngModel)]="getAllEntries"
+                >
+                  <label class="fw-light complete-leaderboard-text"> {{ getAllEntriesTextOption }}</label>
+                </mat-checkbox>
             </div>
 
-            <table *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="centered highlight">
+            <table *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="centered highlight fw-light">
               <thead>
                 <tr class="content">
                   <td data-field="rank" class="align-center">
                     <a (click)="sortNonMetricsColumn('rank')">
-                      <span class="fw-regular fs-18">Rank </span>
+                      <span class="fw-light fs-18">Rank </span>
                       <span class="fa-stack fa-1x">
                         <i
                           class="fa fa-sort-asc fa-stack-1x"
                           [ngClass]="
-                            reverseSort && sortColumn == 'rank' ? 'text-med-black' : 'text-light-black fw-semibold'
+                            reverseSort && sortColumn == 'rank' ? 'text-med-black' : 'text-light-black w-300'
                           "
                         ></i>
                         <i
                           class="fa fa-sort-desc fa-stack-1x"
                           [ngClass]="
-                            !reverseSort && sortColumn == 'rank' ? 'text-med-black' : 'text-light-black fw-semibold'
+                            !reverseSort && sortColumn == 'rank' ? 'text-med-black' : 'text-light-black w-300'
                           "
                         ></i>
                       </span>
                     </a>
                   </td>
-                  <td data-field="team" class="align-center">
+                  <td data-field="team" class="align-center fw-light">
                     <a (click)="sortNonMetricsColumn('string')">
-                      <span class="fw-regular fs-18">Participant Team</span>
+                      <span class="fw-light fs-18">Participant Team</span>
                       <span class="fa-stack fa-1x">
                         <i
                           class="fa fa-sort-asc fa-stack-1x"
                           [ngClass]="
-                            reverseSort && sortColumn == 'string' ? 'text-med-black' : 'text-light-black fw-semibold'
+                            reverseSort && sortColumn == 'string' ? 'text-med-black' : 'text-light-black fw-light'
                           "
                         ></i>
                         <i
                           class="fa fa-sort-desc fa-stack-1x"
                           [ngClass]="
-                            reverseSort && sortColumn == 'string' ? 'text-med-black' : 'text-light-black fw-semibold'
+                            reverseSort && sortColumn == 'string' ? 'text-med-black' : 'text-light-black fw-light'
                           "
                         ></i>
                       </span>
@@ -141,55 +139,59 @@
                   <td
                     *ngFor="let key of leaderboard[0].leaderboard__schema.labels; index as i"
                     [attr.data-index]="i"
-                    class="align-center"
+                    class="align-center fw-light"
                   >
                     <a (click)="sortMetricsColumn(i)">
-                      <span class="fw-regular fs-18">{{ key }}</span>
+                      <span class="fw-light fs-18 leaderboard-label" *ngIf="isMetricOrderedAscending(key)">{{ key }} (&#x2191;)  <span class="description" *ngIf="getLabelDescription(key).length != 0">{{getLabelDescription(key)}}</span> </span>
+                      <span class="fw-light fs-18 leaderboard-label" *ngIf="!isMetricOrderedAscending(key)">{{ key }} (&#x2193;) <span class="description" *ngIf="getLabelDescription(key).length != 0">{{getLabelDescription(key)}}</span> </span>
                       <span class="fa-stack fa-1x">
                         <i
                           class="fa fa-sort-asc fa-stack-1x"
                           [ngClass]="
-                            reverseSort && sortColumn == 'number' ? 'text-med-black' : 'text-light-black fw-semibold'
+                            reverseSort && sortColumn == 'number' ? 'text-med-black' : 'text-light-black fw-light'
                           "
                         ></i>
                         <i
                           class="fa fa-sort-desc fa-stack-1x"
                           [ngClass]="
-                            !reverseSort && sortColumn == 'number' ? 'text-med-black' : 'text-light-black fw-semibold'
+                            !reverseSort && sortColumn == 'number' ? 'text-med-black' : 'text-light-black fw-light'
                           "
                         ></i>
                       </span>
                     </a>
                   </td>
-                  <td data-field="submission_time" class="align-center">
+                  <td data-field="submission_time" class="align-center fw-light">
                     <a (click)="sortNonMetricsColumn('date')">
-                      <span class="fs-18 fw-regular">Submitted at</span>
+                      <span class="fs-18 fw-light">Submitted at</span>
                       <span class="fa-stack fa-1x">
                         <i
                           class="fa fa-sort-asc fa-stack-1x"
-                          [ngClass]="reverseSort && sortColumn == 'date' ? 'text-med-black' : 'text-light-black w-500'"
+                          [ngClass]="reverseSort && sortColumn == 'date' ? 'text-med-black' : 'text-light-black fw-light'"
                         ></i>
                         <i
                           class="fa fa-sort-desc fa-stack-1x"
-                          [ngClass]="!reverseSort && sortColumn == 'date' ? 'text-med-black' : 'text-light-black w-500'"
+                          [ngClass]="!reverseSort && sortColumn == 'date' ? 'text-med-black' : 'text-light-black fw-light'"
                         ></i>
                       </span>
                     </a>
                   </td>
                   <td data-field="" *ngIf="showSubmissionMetaAttributesOnLeaderboard">
-                    <span class="fs-18 fw-regular">Meta Attributes</span>
+                    <span class="fs-18 fw-light">Meta Attributes</span>
                   </td>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let key of leaderboard" class="content">
+                <tr *ngFor="let key of leaderboard"
+                    (click)="updateHighlightedEntry(initial_ranking[key.id])" class="content"
+                    [ngClass]="highlightedEntry == initial_ranking[key.id] ? 'content highlight-leaderboard' : 'content'">
                   <td>{{ initial_ranking[key.id] }}</td>
-                  <td class="fw-regular">
+                  <td class="fw-light">
                     {{ key.submission__participant_team__team_name }}
+                    <span *ngIf="key.submission__method_name">({{key.submission__method_name | slice:0:30}})</span>
                     <span *ngIf="key.submission__is_public === false && isSelectedPhaseLeaderboardPublic" class="private">
                       <mat-chip-list>
                         <mat-chip>P</mat-chip>
-                      </mat-chip-list>
+                      </mat-chip-list>&nbsp;
                     </span>
                     <span *ngIf="key.submission__is_baseline">
                       <mat-chip-list>
@@ -197,7 +199,14 @@
                       </mat-chip-list>
                     </span>
                   </td>
-                  <td *ngFor="let score of key.result">{{ score | number: setLeaderboardPrecisionValue }}</td>
+                  <td *ngFor="let score of key.result">
+                    <span class="fa-stack fa-1x partial-evaluation" *ngIf="score == '#'">
+                      <mat-chip-list>
+                        <mat-chip>E</mat-chip>
+                      </mat-chip-list>
+                    </span>
+                    <span *ngIf="score !== '#'">{{ score | number: setLeaderboardPrecisionValue }}</span>
+                  </td>
                   <td>
                     <div>{{ key.submission__submitted_at_formatted }}</div>
                   </td>
@@ -218,7 +227,7 @@
               </tbody>
             </table>
             <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit">
-              <p>No results to show!</p>
+              <p class="fw-light">No results to show!</p>
             </div>
           </div>
         </div>

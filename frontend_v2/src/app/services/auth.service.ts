@@ -1,4 +1,4 @@
-import { Injectable, Output, EventEmitter, ElementRef } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { GlobalService } from './global.service';
 import { EndpointsService } from './endpoints.service';
 import { ApiService } from './api.service';
@@ -197,7 +197,7 @@ export class AuthService {
         return false;
       },
       () => {}
-    )
+    );
   }
 
   // toggle password visibility

@@ -21,9 +21,14 @@ urlpatterns = [
         name="get_remaining_submissions",
     ),
     url(
-        r"^submissions/(?P<submission_pk>[0-9]+)/re-run-by-host/$",
-        views.re_run_submission_by_host,
-        name="re_run_submission_by_host",
+        r"^submissions/(?P<submission_pk>[0-9]+)/re-run/$",
+        views.re_run_submission,
+        name="re_run_submission",
+    ),
+    url(
+        r"^submissions/(?P<submission_pk>[0-9]+)/resume/$",
+        views.resume_submission,
+        name="resume_submission",
     ),
     url(
         r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
@@ -51,7 +56,7 @@ urlpatterns = [
         name="update_partially_evaluated_submission",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/",
+        r"^challenge/(?P<challenge_pk>[0-9]+)/submission/$",
         views.get_submissions_for_challenge,
         name="get_submissions_for_challenge",
     ),
@@ -104,6 +109,17 @@ urlpatterns = [
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/finish_submission_file_upload/(?P<submission_pk>[0-9]+)/$",
         views.finish_submission_file_upload,
         name="finish_submission_file_upload",
+    ),
+    url(
+        r"^submission/(?P<submission_pk>[0-9]+)/update_started_at/$",
+        views.update_submission_started_at,
+        name="update_submission_started_at",
+    ),
+    url(
+        r"^challenges/(?P<challenge_pk>[0-9]+)/"
+        r"submissions/(?P<submission_pk>[0-9]+)/update_submission_meta/$",
+        views.update_submission_meta,
+        name="update_submission_meta",
     ),
 ]
 

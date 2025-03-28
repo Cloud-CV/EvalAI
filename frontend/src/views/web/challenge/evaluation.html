@@ -1,3 +1,15 @@
+<section class="ev-sm-container  ev-view challenge-container"
+         ng-if="challenge.isChallengeHost && !challenge.approved_by_admin">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-banner">
+        <div class="row margin-bottom-cancel">
+            <div class="col s12 m12 l12">To access evaluation logs and manage the evalaution worker please go to the <b>Manage</b> tab.
+                To update the evaluation script use the <b>Upload</b> option on Evalaution tab.
+                If you have any questions, please feel free to reach out to us at 
+                <a href="mailto:team@cloudcv.org" class="blue-text">team@cloudcv.org</a>
+            </div>
+        </div>
+    </div>
+</section>
 <section class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row margin-bottom-cancel">
@@ -17,7 +29,7 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div ng-bind-html="challenge.page.evaluation_details" class="fs-16 w-300 evaluation-details trix-container"></div>
+                <div mathjax-bind="challenge.page.evaluation_details" class="fs-16 w-300 evaluation-details trix-container"></div>
             </div>
         </div>
     </div>
@@ -34,7 +46,7 @@
         </div>
         <div class="row">
             <div class="col s12 m11 l11">
-                <div ng-bind-html="challenge.page.terms_and_conditions" class="fs-16 w-300 terms-and-conditions trix-container"></div>
+                <div mathjax-bind="challenge.page.terms_and_conditions" class="fs-16 w-300 terms-and-conditions trix-container"></div>
             </div>
         </div>
     </div>

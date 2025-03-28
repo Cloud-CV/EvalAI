@@ -1,7 +1,4 @@
 import { Component, OnInit, OnChanges, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
-import { GlobalService } from '../../../../services/global.service';
-import { ApiService } from '../../../../services/api.service';
-import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 
 /**
@@ -100,17 +97,10 @@ export class TeamcardComponent implements OnInit, OnChanges {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
-   * @param apiService  ApiService Injection.
+   * @param authService AuthService Injection.
    */
   constructor(
-    private globalService: GlobalService,
-    private apiService: ApiService,
-    public authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
+    public authService: AuthService
   ) {}
 
   /**
@@ -135,7 +125,6 @@ export class TeamcardComponent implements OnInit, OnChanges {
    * Select a team content toggle.
    */
   selectTeamContentToggle() {
-    console.log("HERE");
     this.isSelected = !this.isSelected;
     this.team['isSelected'] = this.isSelected;
     this.deselectTeamCard.emit(this.team);
@@ -197,6 +186,7 @@ export class TeamcardComponent implements OnInit, OnChanges {
     this.teamView['team_name'] = this.team['team_name'];
     this.teamView['created_by'] = this.team['created_by'];
     this.teamView['team_url'] = this.team['team_url'];
+    this.teamView['id'] = this.team['id'];
     if (this.team['isHost']) {
       this.isHost = true;
     }

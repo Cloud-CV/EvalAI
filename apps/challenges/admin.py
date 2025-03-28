@@ -28,6 +28,8 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengeSponsor,
+    ChallengePrize,
 )
 
 
@@ -52,7 +54,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "featured",
         "created_at",
         "is_docker_based",
+        "is_static_dataset_code_upload",
         "slug",
+        "submission_time_limit",
         "banned_email_ids",
         "workers",
         "task_def_arn",
@@ -267,6 +271,7 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
     list_filter = ("visibility",)
     search_fields = (
         "id",
+        "challenge_phase__challenge__title",
         "challenge_phase__name",
         "dataset_split__name",
         "leaderboard__id",
@@ -324,6 +329,7 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
         "challenge_phase_split",
         "submission",
         "leaderboard",
+        "is_disabled",
         "result",
     )
     list_filter = ("challenge_phase_split", "created_at", "modified_at")
@@ -429,3 +435,17 @@ class PWCChallengeLeaderboardAdmin(ImportExportTimeStampedAdmin):
 
     get_challenge_name_and_id.short_description = "Challenge Name - ID"
     get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"
+
+
+@admin.register(ChallengeSponsor)
+class ChallengeSponsorAdmin(ImportExportTimeStampedAdmin):
+    list_display = ("id", "name", "website")
+    list_filter = ("name",)
+    search_fields = ("id", "name")
+
+
+@admin.register(ChallengePrize)
+class ChallengePrizeAdmin(ImportExportTimeStampedAdmin):
+    list_display = ("id", "amount", "rank")
+    list_filter = ("rank",)
+    search_fields = ("id", "rank")

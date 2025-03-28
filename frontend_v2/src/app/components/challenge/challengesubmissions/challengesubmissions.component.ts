@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, ViewChild, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, Input, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 
@@ -13,6 +13,7 @@ import { EndpointsService } from '../../../services/endpoints.service';
 // import component
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { InputComponent } from '../../utility/input/input.component';
+import { environment } from '../../../../environments/environment';
 
 import { animate, state, style, transition, trigger } from '@angular/animations';
 /**
@@ -151,16 +152,18 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   apiCall: any;
 
-  columnsToDisplay = ['s_no', 'status', 'submission_result_file', 'stdout_file', 'stderr_file'];
-  columnsHeadings = ['S.No.', 'Status', 'Result File', 'Stdout File', 'Stderr File', ];
-
+  columnsToDisplay = [
+    's_no',
+    'status',
+    'execution_time',
+    'input_file',
+    'submission_result_file',
+    'stdout_file',
+    'stderr_file',
+  ];
+  columnsHeadings = ['S.No.', 'Status', 'Execution Time', 'Submission File', 'Result File', 'Stdout File', 'Stderr File'];
 
   expandedElement: null;
-
-  /**
-   * Filter query as participant team name
-   */
-  filterSubmissionsQuery = '';
 
   /**
    * Modal form items
@@ -170,13 +173,14 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  GlobalService Injection.
    * @param authService  AuthService Injection.
+   * @param router  Router Injection.
+   * @param route  ActivatedRoute Injection.
+   * @param challengeService  ChallengeService Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  Router Injection.
+   * @param windowService  WindowService Injection.
    * @param endpointsService  EndpointsService Injection.
-   * @param challengeService  ChallengeService Injection.
    */
   constructor(
     private authService: AuthService,
@@ -229,6 +233,8 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       for (let i = 0; i < this.phases.length; i++) {
         if (this.phases[i].is_public === false) {
           this.phases[i].showPrivate = true;
+        } else {
+          this.phases[i].showPrivate = false;
         }
       }
       this.filteredPhases = this.phases;
@@ -248,9 +254,17 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
       SELF.selectedPhase = phase;
       SELF.isPhaseSelected = true;
       SELF.submissionCount = 0;
-      if (SELF.challenge['id'] && phase['id']) {
+
+      // Handle incorrect state change. In some cases phase selected here is not correct one
+      let isValidPhase = false;
+      for (let phaseIdx in this.phases) {
+        if (this.phases[phaseIdx]['id'] == phase['id']) {
+          isValidPhase = true;
+          break;
+        }
+      }
+      if (SELF.challenge['id'] && phase['id'] && isValidPhase) {
         SELF.fetchSubmissions(SELF.challenge['id'], phase['id']);
-        SELF.fetchSubmissionCounts(this.challenge['id'], phase['id']);
       }
     };
   }
@@ -263,17 +277,10 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   fetchSubmissions(challenge, phase) {
     const SELF = this;
     let API_PATH;
-    if (SELF.filterSubmissionsQuery === '') {
-      API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
-    } else {
-      API_PATH = SELF.endpointsService.challengeSubmissionWithFilterQueryURL(
-        challenge,
-        phase,
-        SELF.filterSubmissionsQuery
-      );
-    }
+    API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
     SELF.apiService.getUrl(API_PATH).subscribe(
       (data) => {
+        SELF.submissionCount = data['count'];
         SELF.submissions = data['results'];
         let index = 0;
         SELF.submissions.forEach((submission) => {
@@ -316,16 +323,6 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Filter submissions by participant team name
-   * @param participantTeamName Participant team name
-   */
-  filterSubmissions(participantTeamName) {
-    const SELF = this;
-    SELF.filterSubmissionsQuery = participantTeamName;
-    SELF.fetchSubmissions(SELF.challenge['id'], SELF.selectedPhase['id']);
-  }
-
-  /**
    * Download Submission csv.
    */
   downloadSubmission() {
@@ -362,8 +359,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   loadPaginationData = function (url) {
     if (url !== null) {
       const SELF = this;
-      const API_PATH = url.split('localhost:8000/api/')[1];
-
+      const API_PATH = url.split(environment.api_endpoint)[1];
       SELF.apiService.getUrl(API_PATH, true).subscribe(
         (data) => {
           SELF.submissions = data['results'];
@@ -378,6 +374,12 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
             SELF.paginationDetails.isNext = '';
             SELF.paginationDetails.currentPage = Math.ceil(data.next.split('page=')[1] - 1);
           }
+
+          let index = (SELF.paginationDetails.currentPage - 1) * 100;
+          SELF.submissions.forEach((submission) => {
+            submission['s_no'] = index + 1;
+            index += 1;
+          });
 
           if (data.previous === null) {
             SELF.paginationDetails.isPrev = 'disabled';
@@ -417,46 +419,23 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
     is_public = !is_public;
     if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
       const SELF = this;
-      SELF.apiCall = (params) => {
-        const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(
-          this.challenge['id'],
-          this.selectedPhase['id'],
-          id
-        );
-        const BODY = JSON.stringify({ is_public: is_public });
-        this.apiService.patchUrl(API_PATH, BODY).subscribe(
-          () => {
-            this.updateSubmissionVisibility(id);
-          },
-          (err) => {
-            SELF.globalService.handleApiError(err);
-          },
-          () => {
-            this.logger.info('Updated submission visibility', id);
-          }
-        );
-      };
-      const PARAMS = {
-        title: 'Update Submission Visibility',
-        content: 'Challenge host can still see your submission. Do u still want to continue?',
-        isButtonDisabled: true,
-        confirm: 'Yes',
-        deny: 'No',
-        confirmCallback: SELF.apiCall,
-      };
-      const HOST_PARAMS = {
-        title: 'Update Submission Visibility',
-        content: 'Are you sure to change the submission visibility?',
-        isButtonDisabled: true,
-        confirm: 'Yes',
-        deny: 'No',
-        confirmCallback: SELF.apiCall,
-      };
-      if (SELF.isChallengeHost || is_public) {
-        SELF.globalService.showModal(HOST_PARAMS);
-      } else {
-        SELF.globalService.showModal(PARAMS);
-      }
+      const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(
+        this.challenge['id'],
+        this.selectedPhase['id'],
+        id
+      );
+      const BODY = JSON.stringify({ is_public: is_public });
+      this.apiService.patchUrl(API_PATH, BODY).subscribe(
+        () => {
+          this.updateSubmissionVisibility(id);
+        },
+        (err) => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {
+          this.logger.info('Updated submission visibility', id);
+        }
+      );
     }
   }
 
@@ -504,36 +483,21 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Fetch number of submissions for a challenge phase.
-   * @param challenge  challenge id
-   * @param phase  phase id
-   */
-  fetchSubmissionCounts(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionCountURL(challenge, phase);
-    const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
-      (data) => {
-        if (data['participant_team_submission_count']) {
-          SELF.submissionCount = data['participant_team_submission_count'];
-        }
-      },
-      (err) => {
-        SELF.globalService.handleApiError(err);
-      },
-      () => {
-        this.logger.info('Fetched submission counts', challenge, phase);
-      }
-    );
-  }
-
-  /**
    * Display Edit Submission Modal.
    * @param submission  Submission being edited
    */
   editSubmission(submission) {
     const SELF = this;
     SELF.apiCall = (params) => {
-      const BODY = JSON.stringify(params);
+      let BODY = JSON.parse(JSON.stringify(params));
+      if (this.selectedPhase.submission_meta_attributes !== null && this.selectedPhase.submission_meta_attributes !== undefined) {
+        BODY["submission_metadata"] = [] 
+        for (let idx=0; idx < this.selectedPhase.submission_meta_attributes.length; idx++) {
+          let metaAttribute = this.selectedPhase.submission_meta_attributes[idx];
+          metaAttribute["value"] = BODY[metaAttribute["name"].toLowerCase()];
+          BODY["submission_metadata"].push(metaAttribute);
+        }
+      }
       SELF.apiService
         .patchUrl(
           SELF.endpointsService.challengeSubmissionUpdateURL(
@@ -582,7 +546,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           isRequired: false,
           label: 'project_url',
           placeholder: 'Project Url',
-          type: 'text',
+          type: 'url',
           value: submission['project_url'],
           icon: 'fa fa-pencil',
         },
@@ -590,11 +554,84 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           isRequired: false,
           label: 'publication_url',
           placeholder: 'Publication Url',
-          type: 'text',
+          type: 'url',
           value: submission['publication_url'],
           icon: 'fa fa-pencil',
         },
       ],
+      confirmCallback: SELF.apiCall,
+    };
+    if (this.selectedPhase.submission_meta_attributes !== null && this.selectedPhase.submission_meta_attributes !== undefined) {
+      let attributeDict = {};
+      for (let i=0; i < this.selectedPhase.submission_meta_attributes.length; i++) {
+        let metaAttribute = this.selectedPhase.submission_meta_attributes[i];
+        attributeDict[metaAttribute["name"]] = metaAttribute;
+      }
+      if (submission.submission_metadata !== undefined && submission.submission_metadata !== null) {
+        for (let idx=0; idx < submission.submission_metadata.length; idx++) {
+          let metaAttribute = submission.submission_metadata[idx];
+          let data = {
+            isRequired: metaAttribute["required"] == true,
+            label: metaAttribute["name"],
+            placeholder: metaAttribute["description"],
+            type: metaAttribute["type"],
+            value: metaAttribute["value"],
+            icon: 'fa fa-pencil',
+          }
+          if (metaAttribute["type"] !== "text") {
+            data["attributeOptions"] = attributeDict[metaAttribute["name"]]["options"];
+          }
+          //TODO: add support for radio button fields
+          if (metaAttribute["type"] !== "radio" && metaAttribute["type"] !== "boolean") {
+            PARAMS["form"].push(data);
+          }
+        }
+      }
+    }
+    SELF.globalService.showModal(PARAMS);
+  }
+
+  /**
+   * Display Cancel Submission Modal.
+   * @param submission  Submission being cancelled
+   */
+   cancelSubmission(submission) {
+    const SELF = this;
+    if (submission.status != "submitted") {
+      SELF.globalService.showToast('error', 'Only unproccessed submissions can be cancelled', 5);
+      return;
+    }
+    SELF.apiCall = () => {
+      const BODY = JSON.stringify({
+        "status": "cancelled"
+      });
+      SELF.apiService
+        .patchUrl(
+          SELF.endpointsService.updateSubmissionMetaURL(
+            SELF.challenge.id,
+            submission.id
+          ),
+          BODY
+        )
+        .subscribe(
+          () => {
+            // Success Message in data.message
+            SELF.globalService.showToast('success', 'Submission status updated successfully', 5);
+            SELF.fetchSubmissions(SELF.challenge.id, SELF.selectedPhase.id);
+          },
+          (err) => {
+            SELF.globalService.handleApiError(err, true);
+          },
+          () => this.logger.info('SUBMISSION-CANCELLED')
+        );
+    };
+    const PARAMS = {
+      title: 'Are you sure you want to cancel submission?',
+      content: '',
+      isButtonDisabled: true,
+      confirm: 'Submit',
+      deny: 'Cancel',
+      form: [],
       confirmCallback: SELF.apiCall,
     };
     SELF.globalService.showModal(PARAMS);
@@ -606,7 +643,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   fetchParticipated_team(challengeId) {
     const SELF = this;
-    if(challengeId != undefined){
+    if (challengeId !== undefined) {
       const API_PATH = SELF.endpointsService.getParticipatedTeamNameURL(challengeId);
       this.apiService.getUrl(API_PATH, true, false).subscribe(
         (data) => {
@@ -618,5 +655,5 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         () => {}
       );
     }
-  }    
+  }
 }

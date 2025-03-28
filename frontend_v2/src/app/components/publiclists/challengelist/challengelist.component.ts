@@ -3,7 +3,7 @@ import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { EndpointsService } from '../../../services/endpoints.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 
 /**
@@ -38,7 +38,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * Ongoing challenges list
    */
-  ongoingChallenges: any;
+  ongoingChallenges = [];
 
   /**
    * Past challeges list
@@ -90,7 +90,7 @@ export class ChallengelistComponent implements OnInit {
   /**
    * List of filtered ongoing challenges
    */
-  filteredOngoingChallenges: any;
+  filteredOngoingChallenges = [];
 
   /**
    * List of filtered upcoming challenges
@@ -179,12 +179,11 @@ export class ChallengelistComponent implements OnInit {
 
   /**
    * Constructor.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
-   * @param globalService  GlobalService Injection.
-   * @param authService  AuthService Injection.
    * @param apiService  ApiService Injection.
+   * @param authService  AuthService Injection.
+   * @param globalService  GlobalService Injection.
    * @param endpointsService  EndpointsService Injection.
+   * @param router  Router Injection.
    * @param document
    */
   constructor(
@@ -193,8 +192,7 @@ export class ChallengelistComponent implements OnInit {
     private globalService: GlobalService,
     private endpointsService: EndpointsService,
     private router: Router,
-    @Inject(DOCUMENT) private document,
-    private route: ActivatedRoute
+    @Inject(DOCUMENT) private document
   ) {}
 
   /**
@@ -231,8 +229,10 @@ export class ChallengelistComponent implements OnInit {
    */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
-    this.isScrollbtnVisible = RECT.top < 0;
+    if (this.document.getElementById('ongoing-challenges')) {
+      const RECT = this.document.getElementById('ongoing-challenges').getBoundingClientRect();
+      this.isScrollbtnVisible = RECT.top < 0;
+    }
   }
 
   /**
@@ -338,7 +338,7 @@ export class ChallengelistComponent implements OnInit {
           SELF.allTeams.forEach((team) => {
             SELF.fetchUnapprovedChallengesFromApi(team);
           });
-          SELF.fetchChallenges();
+          SELF.fetchChallenges(null, null, "approved", "all");
         }
       },
       (err) => {
@@ -352,21 +352,32 @@ export class ChallengelistComponent implements OnInit {
   }
 
   /**
+   * Append visibility to challenge API
+   * @param approved_status 
+   * @param visibility 
+   */
+  getFetchChallengeApiPathWithVisibility(path, approved_status = "approved", visibility = "public") {
+    return path + "/" + approved_status + "/" + visibility;
+  }
+
+  /**
    * Fetch Challenges function.
    * @param filter  selected filter
    * @param callback  callback function
    */
-  fetchChallenges(filter = null, callback = null) {
+  fetchChallenges(filter = null, callback = null, approved_status = "approved", visibility = "public") {
     if (!filter) {
       const ALL_PATHS = Object.values(this.apiPathMapping);
       const ALL_KEYS = Object.keys(this.apiPathMapping);
       for (let i = 0; i < ALL_PATHS.length; i++) {
         if (this[ALL_KEYS[i]]) {
-          this.fetchChallengesFromApi(ALL_PATHS[i], callback);
+          let apiPath = this.getFetchChallengeApiPathWithVisibility(ALL_PATHS[i], approved_status, visibility);
+          this.fetchChallengesFromApi(apiPath, callback);
         }
       }
     } else {
-      this.fetchChallengesFromApi(this.apiPathMapping[filter], callback);
+      let apiPath = this.getFetchChallengeApiPathWithVisibility(this.apiPathMapping[filter], approved_status, visibility);
+      this.fetchChallengesFromApi(apiPath, callback);
     }
   }
 
@@ -379,11 +390,11 @@ export class ChallengelistComponent implements OnInit {
     const SELF = this;
     SELF.apiService.getUrl(path, true, false).subscribe(
       (data) => {
-        if (path.endsWith('future')) {
+        if (path.includes('future')) {
           SELF.upcomingChallenges = data['results'];
-        } else if (path.endsWith('present')) {
+        } else if (path.includes('present')) {
           SELF.ongoingChallenges = data['results'];
-        } else if (path.endsWith('past')) {
+        } else if (path.includes('past')) {
           SELF.pastChallenges = data['results'];
         }
         SELF.filteredChallenges = SELF.upcomingChallenges.concat(SELF.ongoingChallenges, SELF.pastChallenges);
@@ -418,7 +429,9 @@ export class ChallengelistComponent implements OnInit {
         SELF.filteredPastChallenges = SELF.pastChallenges;
       },
       (err) => {
-        SELF.globalService.handleApiError(err);
+        if (err.status === 403) {
+          this.router.navigate(['permission-denied']);
+        }
       },
       () => {}
     );

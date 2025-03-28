@@ -40,9 +40,19 @@ urlpatterns = [
     ),
     # `A-Za-z` because it accepts either of `all, future, past or present` in either case
     url(
-        r"^challenge/(?P<challenge_time>[A-Za-z]+)$",
+        r"^challenge/(?P<challenge_time>[A-Za-z]+)/(?P<challenge_approved>[A-Za-z]+)/(?P<challenge_published>[A-Za-z]+)$",
         views.get_all_challenges,
         name="get_all_challenges",
+    ),
+    url(
+        r"^challenge/get_submission_metrics$",
+        views.get_all_challenges_submission_metrics,
+        name="get_all_challenges_submission_metrics",
+    ),
+    url(
+        r"^challenge/get_submission_metrics_by_pk/(?P<pk>[0-9]+)/$",
+        views.get_challenge_submission_metrics_by_pk,
+        name="get_challenge_submission_metrics_by_pk",
     ),
     url(
         r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
@@ -63,6 +73,11 @@ urlpatterns = [
         r"^challenge$",
         views.get_challenges_based_on_teams,
         name="get_challenges_based_on_teams",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/request_approval",
+        views.request_challenge_approval_by_pk,
+        name="request_challenge_approval_by_pk",
     ),
     url(
         r"^(?P<challenge_pk>[0-9]+)/challenge_phase_split$",
@@ -187,6 +202,26 @@ urlpatterns = [
         name="manage_worker",
     ),
     url(
+        r"^(?P<challenge_pk>[0-9]+)/manage_ec2_instance/(?P<action>[\w-]+)/$",
+        views.manage_ec2_instance,
+        name="manage_ec2_instance",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/get_ec2_instance_details/$",
+        views.get_ec2_instance_details,
+        name="get_ec2_instance_details",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/create_ec2_instance/$",
+        views.create_ec2_instance_by_challenge_pk,
+        name="create_ec2_instance_by_challenge_pk",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/delete_ec2_instance/$",
+        views.delete_ec2_instance_by_challenge_pk,
+        name="delete_ec2_instance_by_challenge_pk",
+    ),
+    url(
         r"^phases/(?P<challenge_phase_pk>[0-9]+)/get_annotation_file_presigned_url/$",
         views.get_annotation_file_presigned_url,
         name="get_annotation_file_presigned_url",
@@ -214,6 +249,71 @@ urlpatterns = [
         views.update_allowed_email_ids,
         name="get_or_update_allowed_email_ids",
     ),
+    url(
+        r"(?P<challenge_pk>[0-9]+)/scale_resources/$",
+        views.scale_resources_by_challenge_pk,
+        name="scale_resources_by_challenge_pk",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/get_participant_teams/$",
+        views.get_participant_teams_for_challenge,
+        name="get_participant_teams_for_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/approve_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        views.add_participant_team_to_approved_list,
+        name="add_participant_team_to_approved_list",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/disapprove_participant_team/(?P<participant_team_pk>[0-9]+)$",
+        views.remove_participant_team_from_approved_list,
+        name="remove_participant_team_from_approved_list",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/deregister/$",
+        views.deregister_participant_team_from_challenge,
+        name="deregister_participant_team_from_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/update_challenge_tags_and_domain/$",
+        views.update_challenge_tags_and_domain,
+        name="update_challenge_tags_and_domain",
+    ),
+    url(
+        r"^challenge/get_domain_choices/$",
+        views.get_domain_choices,
+        name="get_domain_choices",
+    ),
+    url(
+        r"^challenge/(?P<challenge_phase_split_pk>[0-9]+)/get_leaderboard_data/$",
+        views.get_leaderboard_data,
+        name="get_leaderboard_data",
+    ),
+    url(
+        r"^challenge/update_challenge_approval/$",
+        views.update_challenge_approval,
+        name="update_challenge_approval",
+    ),
+    url(
+        r"^challenge/update_challenge_attributes/$",
+        views.update_challenge_attributes,
+        name="update_challenge_attributes",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/prizes/$",
+        views.get_prizes_by_challenge,
+        name="get_prizes_by_challenge",
+    ),
+    url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/sponsors/$",
+        views.get_sponsors_by_challenge,
+        name="get_sponsors_by_challenge",
+    ),
+    url(
+        r"^challenge/modify_leaderboard_data/$",
+        views.modify_leaderboard_data,
+        name="modify_leaderboard_data",
+    )
 ]
 
 app_name = "challenges"

@@ -214,6 +214,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "codename",
                     "test_annotation",
                     "is_submission_public",
+                    "annotations_uploaded_using_cli",
                     "slug",
                     "max_concurrent_submissions_allowed",
                     "environment_image",
@@ -224,6 +225,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
+                    "disable_logs",
                 ]
             ),
         )
@@ -297,6 +299,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "codename",
                     "test_annotation",
                     "is_submission_public",
+                    "annotations_uploaded_using_cli",
                     "slug",
                     "max_concurrent_submissions_allowed",
                     "environment_image",
@@ -307,6 +310,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
+                    "disable_logs",
                 ]
             ),
         )
@@ -376,6 +380,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "codename",
                     "test_annotation",
                     "is_submission_public",
+                    "annotations_uploaded_using_cli",
                     "slug",
                     "max_concurrent_submissions_allowed",
                     "environment_image",
@@ -386,6 +391,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "allowed_submission_file_types",
                     "default_submission_meta_attributes",
                     "allowed_email_ids",
+                    "disable_logs",
                 ]
             ),
         )

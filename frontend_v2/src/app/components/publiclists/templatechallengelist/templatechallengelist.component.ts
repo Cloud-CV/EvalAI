@@ -1,10 +1,7 @@
-import { Component, HostListener, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
-
 
 /**
  * Component Class
@@ -15,7 +12,6 @@ import { DOCUMENT } from '@angular/common';
   styleUrls: ['./templatechallengelist.component.scss'],
 })
 export class TemplateChallengeListComponent implements OnInit {
-
   /**
    * Is the user logged in?
    */
@@ -34,17 +30,15 @@ export class TemplateChallengeListComponent implements OnInit {
   /**
    * Path to fetch all challenge templates
    */
-  templateChallengesFetchPath = 'challenges/get_all_challenge_templates/'
+  templateChallengesFetchPath = 'challenges/get_all_challenge_templates/';
 
-
-  constructor(
-    public authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-    @Inject(DOCUMENT) private document,
-    private globalService: GlobalService,
-    private apiService: ApiService
-  ) {}
+  /**
+   * Constructor.
+   * @param authService  AuthService Injection.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   */
+  constructor(public authService: AuthService, private globalService: GlobalService, private apiService: ApiService) {}
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
@@ -66,15 +60,17 @@ export class TemplateChallengeListComponent implements OnInit {
      }
   */
   fetchChallengeTemplates(callback = null) {
-
     this.apiService.getUrl(this.templateChallengesFetchPath, true, false).subscribe(
       (data) => {
-        for(var i = 0; i<data.length; i++){
+        for (let i = 0; i < data.length; i++) {
           this.challengeTemplates.push(data[i]);
         }
       },
-      (err)=> {
-        this.globalService.showToast('error', 'Sorry, something went wrong when fetching the templates. Please try again later.');
+      (err) => {
+        this.globalService.showToast(
+          'error',
+          'Sorry, something went wrong when fetching the templates. Please try again later.'
+        );
       },
       () => {}
     );

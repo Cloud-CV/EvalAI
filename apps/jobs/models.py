@@ -46,6 +46,8 @@ class Submission(TimeStampedModel):
     RUNNING = "running"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    RESUMING = "resuming"
+    QUEUED = "queued"
     FINISHED = "finished"
     SUBMITTING = "submitting"
     ARCHIVED = "archived"
@@ -56,6 +58,8 @@ class Submission(TimeStampedModel):
         (RUNNING, RUNNING),
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
+        (RESUMING, RESUMING),
+        (QUEUED, QUEUED),
         (FINISHED, FINISHED),
         (SUBMITTING, SUBMITTING),
         (ARCHIVED, ARCHIVED),
@@ -72,18 +76,24 @@ class Submission(TimeStampedModel):
     status = models.CharField(
         max_length=30, choices=STATUS_OPTIONS, db_index=True
     )
-    is_public = models.BooleanField(default=True)
-    is_flagged = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True, db_index=True)
+    is_flagged = models.BooleanField(default=False, db_index=True)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    rerun_resumed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
     # Model to store submitted submission files by the user
     input_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}")
+    )
+    submission_input_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"),
+        null=True,
+        blank=True,
     )
     # Model to store large submission file (> 400 MB's) URLs submitted by the user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)
@@ -94,6 +104,11 @@ class Submission(TimeStampedModel):
     )
     stderr_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
+        null=True,
+        blank=True,
+    )
+    environment_log_file = models.FileField(
+        upload_to=RandomFileName("submission_files/environment_log_file_{id}"),
         null=True,
         blank=True,
     )
@@ -114,7 +129,7 @@ class Submission(TimeStampedModel):
     method_description = models.TextField(blank=True, default="")
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
-    is_baseline = models.BooleanField(default=False)
+    is_baseline = models.BooleanField(default=False, db_index=True)
     job_name = ArrayField(
         models.TextField(null=True, blank=True),
         default=list,
@@ -124,6 +139,7 @@ class Submission(TimeStampedModel):
     ignore_submission = models.BooleanField(default=False)
     # Store the values of meta attributes for the submission here.
     submission_metadata = JSONField(blank=True, null=True)
+    is_verified_by_host = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}".format(self.id)

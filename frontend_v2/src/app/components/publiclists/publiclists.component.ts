@@ -1,7 +1,4 @@
-import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
-import { GlobalService } from '../../services/global.service';
+import { Component, OnInit, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -12,20 +9,32 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './publiclists.component.html',
   styleUrls: ['./publiclists.component.scss'],
 })
-export class PubliclistsComponent {
+export class PubliclistsComponent implements OnInit, AfterViewChecked {
+  isAuth = false;
+
   /**
    * Constructor.
-   * @param document  Window document Injection.
-   * @param route  ActivatedRoute Injection.
-   * @param router  Router Injection.
    * @param authService
-   * @param globalService  GlobalService Injection.
+   * @param changeDetector
    */
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    @Inject(DOCUMENT) private document: Document,
-    public authService: AuthService,
-    private globalService: GlobalService
-  ) {}
+  constructor(public authService: AuthService, private cdRef: ChangeDetectorRef) {}
+
+  /**
+   * Component on Initialization.
+   */
+  ngOnInit() {
+    this.isAuth = this.authService.isAuth;
+  }
+
+  /**
+   * DEV MODE:
+   * For resolving change in expression value after it is checked
+   */
+  ngAfterViewChecked() {
+    const isAuth = this.authService.isAuth;
+    if (isAuth !== this.isAuth) {
+      this.isAuth = isAuth;
+      this.cdRef.detectChanges();
+    }
+  }
 }

@@ -3,25 +3,29 @@
     <div class="links-section">
       <ul>
         <li>
-          <a class="text-light-black" routerLink="/challenges/participated" routerLinkActive="side-active-link">
+          <a class="text-light-black" routerLink="/challenges/participated" routerLinkActive="side-active-link" 
+          [class.side-active-link]="tabHighlight == 'participatedChallenges' && !isChallengeComponent == true">
             <i class="fa fa fa-id-card-o side-link-icon"></i>
             <div class="sidebar-title">Participated challenges</div>
           </a>
         </li>
         <li>
-          <a class="text-light-black" routerLink="/challenges/me" routerLinkActive="side-active-link">
+          <a class="text-light-black" routerLink="/challenges/me" routerLinkActive="side-active-link"
+          [ngClass] = "{'side-active-link': tabHighlight == 'hostedChallenges' && !isChallengeComponent == true}">
             <i class="fa fa fa-folder-open side-link-icon"></i>
             <div class="sidebar-title">Hosted challenges</div>
           </a>
         </li>
         <li>
-          <a class="text-light-black" routerLink="/teams/hosts" routerLinkActive="side-active-link">
+          <a class="text-light-black" routerLink="/teams/hosts" routerLinkActive="side-active-link"
+          [ngClass] = "{'side-active-link': tabHighlight == 'createChallenge'}">
             <i class="fa fa-paper-plane side-link-icon"></i>
             <div class="sidebar-title">Create challenge</div>
           </a>
         </li>
         <li>
-          <a class="text-light-black" routerLink="/teams/participants" routerLinkActive="side-active-link">
+          <a class="text-light-black" routerLink="/teams/participants" routerLinkActive="side-active-link"
+          [ngClass] = "{'side-active-link': tabHighlight == 'myParticipantTeams'}">
             <i class="fa fa-users side-link-icon"></i>
             <div class="sidebar-title">My participant teams</div>
           </a>

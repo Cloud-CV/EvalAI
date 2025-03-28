@@ -53,21 +53,29 @@
 
   .table-header {
     color: rgba(0, 0, 0, 0.87) !important;
-    font-weight: bold;
     text-align: center !important;
   }
 }
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-  td {
-    font-weight: $fw-semibold;
-  }
-  background: $grad-light-black;
+  background: $super-light-shadow;
 }
 
 tr.element-row.expanded-row {
   cursor: pointer;
+}
+  
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
 }
 
 .cell-outside {
@@ -92,47 +100,82 @@ tr.element-row.expanded-row {
   overflow: hidden;
   display: flex;
   flex-direction: row;
-}
+} 
 
 .elements-detail {
-  width: 55%;
+  width: 40%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   border-right-style: solid;
   border-right-width: 1px;
   border-right-color: lightgrey;
+  margin-left: 50px;
 }
 
 .elements-action {
-  width: 40%;
+  width: 30%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-left: 40px;
+  margin-left: 30px;
+}
+
+.elements-status {
+  width: 30%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  margin-left: 30px;
 }
 
 .element-icon {
   margin-right: 10px;
 }
 
+.element {
+  margin-bottom: 10px;
+}
+
+.element-description-attribution {
+  opacity: 0.5;
+}
+
+.delete-submission-label {
+  color: red;
+}
+
 @include screen-small {
   .elements {
     flex-direction: column;
   }
+
   .elements-action {
     margin-left: 0;
     margin-top: 20px;
   }
-  .elements-detail {
-    border-right-style: none;
-    padding-right: 0;
 
+  .elements-status {
+    border-right-style: none;
+    margin-left: 0;
     border-bottom-style: solid;
     border-bottom-color: lightgrey;
     border-bottom-width: 1px;
     padding-bottom: 20px;
   }
+
+  .elements-detail {
+    border-right-style: none;
+    padding-right: 0;
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+  }
+
   .element {
     display: flex;
     flex-direction: column;

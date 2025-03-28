@@ -41,7 +41,6 @@
 
 .marker {
   margin-right: 10px;
-  font-size: 20px;
 }
 
 .pad-top {
@@ -66,7 +65,7 @@
 }
 
 .collapsible-table {
-  overflow: auto;
+  overflow: auto;  
 }
 
 tr.detail-row {
@@ -74,17 +73,26 @@ tr.detail-row {
   overflow: hidden;
 }
 
+.mat-table{
+  border-collapse: separate;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-row td {
+  border-bottom-width: 1px;
+}
+
 .cell-outside {
   padding: 8px;
+  color:rgba(0, 0, 0, 0.87);
+  text-align: center;
 }
 
 tr.element-row:not(.expanded-row):hover {
   cursor: pointer;
-
-  td {
-    font-weight: $fw-semibold;
-  }
-
   background: $grad-light-black;
 }
 
@@ -94,6 +102,7 @@ tr.element-row.expanded-row {
 
 tr.element-row:not(.expanded-row):active {
   background: #efefef;
+  border-bottom-width: 0;
 }
 
 .expanded-row {
@@ -107,33 +116,38 @@ tr.element-row:not(.expanded-row):active {
   flex-direction: row;
 }
 
-.elements-detail {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  border-right-style: solid;
-  border-right-width: 1px;
-  border-right-color: lightgrey;
-
-  padding-right: 80px;
+.elements-margin {
+  margin-left: 20px;
 }
 
-.elements-status {
+.elements-detail {
+  width: 38%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   border-right-style: solid;
   border-right-width: 1px;
   border-right-color: lightgrey;
-  padding: 0 20px;
+  margin-left: 30px;
 }
 
 .elements-action {
+  width: 30%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-left: 40px;
+  margin-left: 30px;
+}
+
+.elements-status {
+  width: 30%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+  margin-left: 30px;
 }
 
 .element {

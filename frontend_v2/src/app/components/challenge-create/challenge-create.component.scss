@@ -12,7 +12,7 @@
 }
 
 .web-container {
-  width: calc(100vw - 223px);
+  width: calc(100% - 223px);
   float: right;
   padding-top: 70px;
   overflow-x: hidden;
@@ -71,6 +71,10 @@
     color: #818078;
     background-color: #fcfcfa;
   }
+}
+
+.create-card {
+	padding-bottom: 20px;
 }
 
 /*media queries*/

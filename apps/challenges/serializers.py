@@ -12,15 +12,22 @@ from .models import (
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
+    LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
+    ChallengePrize,
+    ChallengeSponsor,
 )
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
+    domain_name = serializers.SerializerMethodField()
+
+    def get_domain_name(self, obj):
+        return obj.get_domain_display()
 
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
@@ -45,10 +52,17 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "creator",
+            "domain",
+            "domain_name",
+            "list_tags",
+            "has_prize",
+            "has_sponsors",
             "published",
+            "submission_time_limit",
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
+            "manual_participant_approval",
             "is_active",
             "leaderboard_description",
             "allowed_email_domains",
@@ -57,10 +71,30 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "approved_by_admin",
             "forum_url",
             "is_docker_based",
+            "is_static_dataset_code_upload",
             "slug",
             "max_docker_image_size",
             "cli_version",
             "remote_evaluation",
+            "allow_resuming_submissions",
+            "allow_host_cancel_submissions",
+            "allow_cancel_running_submissions",
+            "allow_participants_resubmissions",
+            "workers",
+            "created_at",
+            "queue",
+            "worker_cpu_cores",
+            "worker_memory",
+            "cpu_only_jobs",
+            "job_cpu_cores",
+            "job_memory",
+            "uses_ec2_worker",
+            "ec2_storage",
+            "ephemeral_storage",
+            "evaluation_module_error",
+            "worker_image_url",
+            "worker_instance_type",
+            "sqs_retention_period"
         )
 
 
@@ -100,6 +134,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "is_submission_public",
+            "disable_logs",
         )
 
 
@@ -139,6 +175,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     dataset_split_name = serializers.SerializerMethodField()
     challenge_phase_name = serializers.SerializerMethodField()
+    leaderboard_schema = serializers.SerializerMethodField()
 
     class Meta:
         model = ChallengePhaseSplit
@@ -151,7 +188,12 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "show_leaderboard_by_latest_submission",
             "show_execution_time",
+            "leaderboard_schema",
+            "is_multi_metric_leaderboard",
         )
+
+    def get_leaderboard_schema(self, obj):
+        return obj.leaderboard.schema
 
     def get_dataset_split_name(self, obj):
         return obj.dataset_split.name
@@ -229,6 +271,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "submission_time_limit",
             "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
@@ -241,7 +284,12 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "banned_email_ids",
             "forum_url",
             "remote_evaluation",
+            "allow_resuming_submissions",
+            "allow_host_cancel_submissions",
+            "allow_cancel_running_submissions",
+            "allow_participants_resubmissions",
             "is_docker_based",
+            "is_static_dataset_code_upload",
             "slug",
             "max_docker_image_size",
             "cli_version",
@@ -255,6 +303,15 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "max_worker_instance",
             "min_worker_instance",
             "desired_worker_instance",
+            "cpu_only_jobs",
+            "job_cpu_cores",
+            "job_memory",
+            "uses_ec2_worker",
+            "ec2_storage",
+            "ephemeral_storage",
+            "evaluation_module_error",
+            "worker_image_url",
+            "sqs_retention_period"
         )
 
 
@@ -332,6 +389,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "is_submission_public",
+            "annotations_uploaded_using_cli",
             "codename",
             "test_annotation",
             "slug",
@@ -344,6 +402,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "allowed_submission_file_types",
             "default_submission_meta_attributes",
             "allowed_email_ids",
+            "disable_logs",
         )
 
 
@@ -485,3 +544,76 @@ class PWCChallengeLeaderboardSerializer(serializers.ModelSerializer):
         # PWC requires the default sorted by metric at the index "0" of the array
         labels.insert(0, labels.pop(default_order_by_index))
         return labels
+
+
+class LeaderboardDataSerializer(serializers.ModelSerializer):
+    """
+    Serializer to store the leaderboard data
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(LeaderboardDataSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            challenge_phase_split = context.get("challenge_phase_split")
+            if challenge_phase_split:
+                kwargs["data"]["challenge_phase_split"] = challenge_phase_split.pk
+            submission = context.get("submission")
+            if submission:
+                kwargs["data"]["submission"] = submission.pk
+
+    class Meta:
+        model = LeaderboardData
+        fields = (
+            "id",
+            "challenge_phase_split",
+            "submission",
+            "leaderboard",
+            "result",
+            "error",
+        )
+
+
+class ChallengePrizeSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengePrize Model.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengePrizeSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            challenge = context.get("challenge")
+            if challenge:
+                kwargs["data"]["challenge"] = challenge.pk
+
+    class Meta:
+        model = ChallengePrize
+        fields = (
+            "challenge",
+            "amount",
+            "rank",
+            "description"
+        )
+
+
+class ChallengeSponsorSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengeSponsor Model.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengeSponsorSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get("context")
+        if context:
+            challenge = context.get("challenge")
+            if challenge:
+                kwargs["data"]["challenge"] = challenge.pk
+
+    class Meta:
+        model = ChallengeSponsor
+        fields = (
+            "challenge",
+            "name",
+            "website"
+        )

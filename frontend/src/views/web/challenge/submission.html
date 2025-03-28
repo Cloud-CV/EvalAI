@@ -22,12 +22,20 @@
                 </strong>
             </div>
             <div class="col s12">
-                <div ng-bind-html="challenge.page.submission_guidelines" class="fs-16 w-300 submission-guidelines trix-container"></div>
+                <div mathjax-bind="challenge.page.submission_guidelines" class="fs-16 w-300 submission-guidelines trix-container"></div>
             </div>
         </div>
     </div>
 </section>
+<section ng-if="!challenge.isChallengeHost" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5">
+        Click here to deregister from this challenge:
+        <button class="btn btn-custom ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16" ng-click="challenge.deregisterdialog($event)">Deregister</button>
+    </div>
+</section>
 
+<!-- To Check if Manual Approval is done or off-->
+<div ng-if="challenge.eligible_to_submit">
 <!-- If challenge is docker based -->
 <section class="ev-sm-container ev-view challenge-container phase-container" ng-if="challenge.page.is_docker_based">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view margin-btm-0">
@@ -222,15 +230,6 @@
                                     <strong class="fs-16 w-300">Use CLI (for file size > 400MB)
                                     </strong>
                                 </div>
-                                <input type="radio" name="submissionOptions" class="with-gap selectPhase" id="fileUrl"
-                                    value="fileUrl" ng-click="challenge.isSubmissionUsingUrl = true; challenge.isSubmissionUsingCli = false; challenge.isSubmissionUsingFile = false;">
-                                <label for="fileUrl"></label>
-                                <div class="show-member-title pointer">
-                                    <strong class="fs-16 w-300">File URL (for file size > 400MB)
-                                    </strong>
-                                </div>
-                                <div class="clearfix"></div>
-
                                 <input type="radio" name="submissionOptions" class="with-gap selectPhase"
                                     id="fileUpload" value="challenge.showFileUploadOption"
                                     ng-click="challenge.isSubmissionUsingFile = true; challenge.isSubmissionUsingUrl = false; challenge.isSubmissionUsingCli = false;">
@@ -288,8 +287,7 @@
                                         <div class="clearfix"></div>
                                     </li>
                                 </div>
-
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_name'] == true">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="methodName" name="methodName"
                                             ng-model="challenge.methodName">
@@ -297,7 +295,7 @@
                                         <label for="methodName">Method name (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['method_description'] == true">
                                     <div class="input-field align-left col s10">
                                         <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
                                             ng-model="challenge.methodDesc"></textarea>
@@ -305,7 +303,7 @@
                                         <label for="methodDesc">Method description (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['project_url'] == true">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="projectUrl" name="projectUrl"
                                             ng-model="challenge.projectUrl">
@@ -313,7 +311,7 @@
                                         <label for="projectUrl">Project URL (Optional)</label>
                                     </div>
                                 </div>
-                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] != false">
+                                <div class="row" ng-if="challenge.currentPhaseMetaAttributesVisibility['publication_url'] == true">
                                     <div class="input-field align-left col s10">
                                         <input type="text" id="publicationUrl" name="publicationUrl"
                                             ng-model="challenge.publicationUrl">
@@ -328,16 +326,16 @@
                                                     <div class="input-field align-left col s10">
                                                         <input type="text" ng-model="attribute.value" name="{{attribute.name}}" id="{{attribute.name}}" ng-required="attribute.required === true">
                                                         <span class="form-icon"><i class="fa fa-text"></i></span>
-                                                        <label for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></label>
+                                                        <label for="{{attribute.name}}" class mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div ng-if="attribute.type == 'radio'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span>></label>
+                                                        <label for="{{attribute.name}}" class="label-radio" mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
-                                                            <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
+                                                            <md-radio-group ng-model="attribute.value" id="{{$parent.$index}}_{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-repeat="option in attribute.options" ng-value="option" ng-model="attribute.value">
                                                                     <span class="fs-16">{{option}}</span>
                                                                 </md-radio-button>
@@ -349,11 +347,11 @@
                                             <div ng-if="attribute.type == 'checkbox'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label class="label-checkbox" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></label>
+                                                        <label for="{{attribute.name}}" class="label-checkbox" mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
                                                             <div class="submission-options" ng-repeat="option in attribute.options" id="{{attribute.name}}" name="{{attribute.name}}">
-                                                                <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{option}}" ng-value="option">
-                                                                <label for="{{option}}"></label>
+                                                                <input type="checkbox" ng-click="challenge.toggleSelection(attribute, option);" id="{{$parent.$index}}_{{option}}" ng-value="option">
+                                                                <label for="{{$parent.$index}}_{{option}}"></label>
                                                                 <span  class="fs-16 w-300">{{option}}</span>
                                                             </div>
                                                         </div>
@@ -363,7 +361,7 @@
                                             <div ng-if="attribute.type == 'boolean'">
                                                 <div class="row">
                                                     <div class="align-left col s10">
-                                                        <label class="label-radio" for="{{attribute.name}}">{{attribute.name}} ({{attribute.description}}) <span ng-if="attribute.required === true" class="color-orange">*</span></label>
+                                                        <label for="{{attribute.name}}" class="label-radio" mathjax-bind="attribute.name + ' (' + attribute.description + ')'" for="{{attribute.name}}"></label><span ng-if="attribute.required === true" class="color-orange">*</span>
                                                         <div class="input-field">
                                                             <md-radio-group ng-model="attribute.value" id="{{attribute.name}}" name="{{attribute.name}}">
                                                                 <md-radio-button ng-value="'True'">True</md-radio-button>
@@ -482,7 +480,7 @@
                         </li>
                         <li>
                             Make submission<br>
-                            <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file &lt;submission_file_path&gt; --large</code>
+                            <code>$ evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file /path/to/local/submission_file --large</code>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
                                 ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
                                 data-clipboard-text="evalai challenge {{challenge.challengeId}} phase {{challenge.phaseId}} submit --file &lt;submission_file_path&gt; --large">
@@ -490,7 +488,9 @@
                             </button>
                         </li>
                         <li>
-                            Use <code>--private</code> or <code>--public</code> flag in the submission command to make the submission private or public respectively.<br>
+                            <div class="center-content">Use &nbsp;<code> --private </code> &nbsp;or&nbsp; <code> --public </code>&nbsp; flag in the submission
+                                command to make the submission private or public respectively.<br />
+                            </div>
                         </li>
                         <li>
                             For more commands, please refer to <a class="highlight-link"
@@ -501,6 +501,14 @@
                 </div>
             </div>
         </div>
+    </div>
+</section>
+</div>
+
+<!-- Show error when the maunal approval is not done -->
+<section ng-if="!challenge.eligible_to_submit" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <p class="fs-16 w-300">Sorry, the participant team is not approved by host yet.</p>
     </div>
 </section>
 

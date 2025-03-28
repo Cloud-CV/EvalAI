@@ -67,8 +67,10 @@ export class ChallengeanalyticsComponent implements OnInit {
     this.challengeService.currentChallenge.subscribe((challenge) => {
       this.challenge = challenge;
       this.challengeId = this.challenge['id'];
+      if (this.challengeId !== undefined && this.challengeId !== null) {
+        this.showChallengeAnalysis();
+      }
     });
-    this.showChallengeAnalysis();
   }
 
   errCallBack(err) {

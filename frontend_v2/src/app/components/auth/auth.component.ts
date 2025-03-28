@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { GlobalService } from '../../services/global.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -22,13 +22,11 @@ export class AuthComponent implements OnInit {
   /**
    * Constructor.
    * @param router  Router Injection.
-   * @param route  ActivatedRoute Injection.
    * @param globalService  GlobalService Injection.
    * @param authService  AuthServiceInjection
    */
   constructor(
     private router: Router,
-    private route: ActivatedRoute,
     private globalService: GlobalService,
     public authService: AuthService
   ) {}

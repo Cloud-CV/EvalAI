@@ -1,10 +1,22 @@
+<div class="page-wrap-challenge">
 <app-side-bar *ngIf="authService.isAuth"></app-side-bar>
 <app-header-static></app-header-static>
-<div class="web-container">
+<div class="dash-container">
   <div class="challenge-flex" [class.center]="!authService.isAuth">
     <div class="challenge-content">
       <div class="mid-container">
         <div class="challenge-container">
+          <section class="ev-sm-container  ev-view" *ngIf="isChallengeHost && !isApprovedByAdmin">
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-banner">
+                <div class="row margin-bottom-cancel">
+                    <div class="col s12 m12 l12">Thank you for successfully creating a challenge on EvalAI.
+                        The challenge is ready to accept submissions from host the team. Please note that the submissions from the host team won't be visible on leaderboard until you mark them as baseline submission.
+                        In order for the challenge to accept submissions from the public, it requires approval from the EvalAI Team. Please reach out to us at 
+                        <a href="mailto:team@cloudcv.org" class="blue-text">team@cloudcv.org</a> for challenge approval.
+                    </div>
+                </div>
+            </div>
+          </section>
           <div class="challenge-card">
             <div class="top-card-container ev-card-panel">
               <div class="row card-img-row">
@@ -45,7 +57,7 @@
                 </div>
                 <div class="col-lg-3 col-md-3">
                   <button
-                    class="stars btn-waves-effect grad-rec-btn grad-btn-dark ev-btn-dark fw-light fs-14"
+                    class="stars btn-waves-effect grad-btn grad-btn-dark ev-btn-dark fw-light fs-14"
                     type="submit"
                     [class.is-clickable]="isLoggedIn"
                     (click)="starToggle(challenge['id'])"
@@ -85,7 +97,7 @@
                         <i class="fa fa-level-up"></i> Phases</a
                       >
                     </li>
-                    <li *ngIf="!isParticipated">
+                    <li *ngIf="!isParticipated && !isPast">
                       <a
                         [class.selected]="localRouter.url.endsWith('participate')"
                         [routerLink]="['./participate']"
@@ -95,7 +107,7 @@
                         Participate</a
                       >
                     </li>
-                    <li *ngIf="isParticipated">
+                    <li *ngIf="isParticipated && phases.length > 0">
                       <a
                         [class.selected]="localRouter.url.endsWith('submit')"
                         [routerLink]="['./submit']"
@@ -104,7 +116,7 @@
                         <i class="fa fa-upload"></i> Submit</a
                       >
                     </li>
-                    <li *ngIf="isParticipated">
+                    <li *ngIf="isParticipated && phases.length > 0">
                       <a
                         [class.selected]="localRouter.url.endsWith('my-submissions')"
                         [routerLink]="['./my-submissions']"
@@ -122,9 +134,9 @@
                         <i class="fa fa-list"></i> All Submissions</a
                       >
                     </li>
-                    <li>
+                    <li *ngIf="phases.length > 0">
                       <a
-                        [class.selected]="localRouter.url.endsWith('leaderboard')"
+                        [class.selected]="localRouter.url.includes('leaderboard')"
                         [routerLink]="['./leaderboard']"
                         class="text-light-black fw-light fs-15"
                       >
@@ -169,5 +181,6 @@
     </div>
     <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
   </div>
+</div>
 </div>
 <app-footer *ngIf="!authService.isAuth"></app-footer>

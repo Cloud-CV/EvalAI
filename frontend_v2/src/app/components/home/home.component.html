@@ -43,7 +43,7 @@
             <div class="row">
               <div class="col s12 m12 l12">
                 <div class="center fs-20 w-500">
-                  <h3><strong>90+</strong></h3>
+                  <h3><strong>400+</strong></h3>
                 </div>
               </div>
               <div class="row">
@@ -59,7 +59,7 @@
             <div class="row">
               <div class="col s12 m12 l12">
                 <div class="center fs-20 w-500">
-                  <h3><strong>9,500+</strong></h3>
+                  <h3><strong>40,000+</strong></h3>
                 </div>
               </div>
               <div class="row">
@@ -75,7 +75,7 @@
             <div class="row">
               <div class="col s12 m12 l12">
                 <div class="center fs-20 w-500">
-                  <h3><strong>100,000+</strong></h3>
+                  <h3><strong>430,000+</strong></h3>
                 </div>
               </div>
               <div class="row">
@@ -91,7 +91,7 @@
             <div class="row">
               <div class="col s12 m12 l12">
                 <div class="center fs-20 w-500">
-                  <h3><strong>25+</strong></h3>
+                  <h3><strong>40+</strong></h3>
                 </div>
               </div>
               <div class="row">
@@ -380,13 +380,53 @@
                   <img src="../../../assets/images/partners/vt.png" id="vt-logo" />
                 </div>
               </div>
+
+              <div class="col s12 l2">
+                <div class="org-logo">
+                  <img src="../../../assets/images/partners/Ego4D.png" id="Ego4D-logo" />
+                </div>
+              </div>
+
+              <div class="col s12 l2">
+                <div class="org-logo">
+                  <img src="../../../assets/images/partners/SoccerNet.png" id="SoccerNet-logo" />
+                </div>
+              </div>
+
+              <div class="col s12 l2">
+                <div class="org-logo">
+                  <img src="../../../assets/images/partners/vt.png" id="vt-logo" />
+                </div>
+              </div>
+
+              <div class="col s12 l2">
+                <div class="org-logo">
+                  <img src="../../../assets/images/partners/CV.png" id="CV-logo" />
+                </div>
+              </div>
+
+
             </div>
           </div>
         </div>
       </div>
     </section>
-    <!-- Arxiv Entry -->
+
+    <!-- Twitter Feed Container -->
     <section class="ev-container ev-reverse-details text-med-black ev-super-light-bg">
+      <div class="grad-container text-med-black">
+        <div class="row">
+          <h3 class="fw-light center">Twitter Feed</h3>
+        </div>
+        <div class="twitter-container">
+        <a class="twitter-timeline" data-height="400" data-width="700" data-chrome="nofooter noheader transparent" 
+        data-theme="light" href="https://twitter.com/eval_ai?ref_src=twsrc%5Etfw" data-aria-polite="assertive">Tweets by eval_ai</a>
+          </div>
+    </div>
+    </section>
+
+    <!-- Arxiv Entry -->
+    <section class="ev-container ev-reverse-details text-med-black">
       <div class="grad-container text-med-black">
         <div class="row">
           <h3 class="fw-light center">Cite our work</h3>
@@ -410,7 +450,7 @@
       </div>
     </section>
     <!-- Sponsors -->
-    <section class="ev-container ev-reverse-details text-med-black" id="ev-scroll-down">
+    <section class="ev-container ev-reverse-details text-med-black ev-super-light-bg " id="ev-scroll-down">
       <div class="grad-container text-med-black">
         <div class="row">
           <h3 class="fw-light center">Sponsors</h3>
@@ -429,6 +469,39 @@
         </div>
       </div>
     </section>
+
+    <!-- Testimonials Section --> 
+    <section class="ev-container testimonial-wrapper text-med-black">
+      <div class="grad-container text-med-black">
+        <div class="row">
+          <h3 class="fw-light center">Testimonials</h3>
+        </div>
+        <div class="testimonial-container">
+        <div class="card ev-card-panel ev-challenge-card z-depth-2 hoverable margin-bottom-cancel">
+          <div class="row">
+            <div class="testimonial-author col s12 m3 l3 center fs-20">
+              <img src="{{ testimonialAuthorImage }}" class="logo" width="100px" height="100px"/>
+              <div class="  testimonial-details">
+                <h5 class="name fs-20">{{ testimonialAuthor}}</h5>
+                <span class="orgname fs-18">{{ testimonialOrg }}</span>
+              </div>
+            </div>
+            <div class="col s12 m6 l9 testimonial-body">
+              <span class="fs-24">{{ testimonialBody }}</span>
+            </div>
+          </div>
+            <img src="assets/images/testimonials/arrow.png" (click)="testimonialNavigate()" class="testimonial-arrow-left" />
+            <img
+              src="assets/images/testimonials/arrow.png"
+              (click)="testimonialNavigate('right')"
+              class="testimonial-arrow-right"
+            />
+            <img src="assets/images/testimonials/quotes.png" class="testimonial-quotes" />
+        </div>
+        </div>
+      </div>
+    </section>
+    
     <!-- Subscribe to newsletter -->
     <section class="ev-container text-med-black ev-super-light-bg">
       <div class="grad-container text-med-black">

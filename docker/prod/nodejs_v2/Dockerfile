@@ -5,10 +5,11 @@ RUN npm install -g @angular/cli@7.3.9
 
 WORKDIR /code
 COPY frontend_v2/package.json frontend_v2/yarn.lock /code/
+RUN npm update
 RUN yarn install
 ENV PATH="/code/node_modules/.bin:$PATH" 
 COPY frontend_v2/ /code
-RUN ng build --prod
+RUN ng build --prod --configuration=${NODE_ENV}
 
 FROM nginx:1.13.12-alpine
 ARG NODE_ENV
