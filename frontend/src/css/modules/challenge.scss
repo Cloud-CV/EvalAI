@@ -371,3 +371,41 @@ md-select .md-select-value span:first-child:after {
 .filter-icon {
     padding: 10px;
 }
+.no-margin {
+    margin: 0px;
+}
+.nav-underline {
+    display: flex;
+    justify-content: space-around;
+    border-bottom: 1px solid #e0e0e0;
+    li {
+        margin-bottom: -0.5%;
+    }
+    
+    .nav-item {
+        flex: 1;
+        text-align: center;
+        color: #9e9e9e;
+
+        .nav-link {
+            display: block;
+            padding: 10px 0;
+            color: #9e9e9e;
+            text-decoration: none;
+            border: none;
+            background-color: transparent;
+            font-weight: bold;
+            transition: border-bottom 0.3s ease, color 0.3s ease;
+
+            &.active {
+                border-bottom: 2px solid #000;
+                color: #000;
+            }
+
+            &:hover {
+                color: #000;
+            }
+        }
+    }
+}
+
