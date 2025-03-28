@@ -10,6 +10,7 @@ spec:
   - toFQDNs:
     - matchPattern: {{EVALAI_DNS}}
     - matchPattern: "*.ubuntu.com"
+    - matchPattern: "*.example.com" # Add any other necessary domains here
   - toEndpoints:
     - matchLabels:
         "k8s:io.kubernetes.pod.namespace": kube-system
@@ -21,3 +22,9 @@ spec:
       rules:
         dns:
         - matchPattern: "*"
+  - toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+      - port: "80"
+        protocol: TCP
