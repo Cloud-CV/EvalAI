@@ -90,7 +90,6 @@
         // calls for ongoing challenges
         parameters.url = 'challenges/challenge/present/approved/public';
         vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
-
         // calls for upcoming challenges
         parameters.url = 'challenges/challenge/future/approved/public';
         vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
