@@ -32,7 +32,7 @@ before_install:
   - ulimit -n 4096   # Increase open file limit
 
 install:
-  - pip install --no-cache-dir awscli==1.18.66 flake8==3.8.2 coveralls pytest-xdist
+  - pip install --no-cache-dir awscli==1.18.66 flake8==3.8.2 coveralls
 
 jobs:
   fast_finish: true
@@ -55,7 +55,7 @@ jobs:
       name: "Backend Tests"
       script:
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest -n auto --cov . --cov-config .coveragerc
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
