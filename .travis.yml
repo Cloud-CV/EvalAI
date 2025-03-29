@@ -6,24 +6,33 @@ virt: vm
 services:
   - docker
   - xvfb
+
 python:
   - '3.9.21'
+
 cache:
+  pip: true
   directories:
     - '$HOME/.cache/pip'
+    - '$HOME/.docker'
+
+env:
+  global:
+    - DOCKER_BUILDKIT=1
+    - COMPOSE_DOCKER_CLI_BUILD=1
+
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
-  - pip install --upgrade pip
+  - pip install --upgrade --quiet pip
   - mkdir -p $HOME/.config/pip
-  - echo "[build_ext]" > $HOME/.config/pip/pip.conf
-  - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
+  - echo -e "[global]\nno-cache-dir = true\n" > $HOME/.config/pip/pip.conf
   - ulimit -u 16384  # Increase process/thread limit
   - ulimit -n 4096   # Increase open file limit
 
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2 coveralls
+  - pip install --no-cache-dir awscli==1.18.66 flake8==3.8.2 coveralls
 
 jobs:
   fast_finish: true
@@ -31,7 +40,7 @@ jobs:
     - stage: lint
       name: "Code Linting"
       script: flake8 ./
-    
+
     - stage: build
       name: "Docker Build"
       script:
@@ -40,26 +49,23 @@ jobs:
 
     - stage: test
       name: "Frontend Tests"
-      script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+      script: xvfb-run --auto-servernum docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+
     - stage: test
       name: "Backend Tests"
-      script: 
+      script:
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest -n auto --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
-    
-    - stage: deploy
-      name: "Deployment"
-      script:
         - eval "$(ssh-agent -s)"
         - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
         - ./scripts/deployment/push.sh || travis_terminate 1
         - ./scripts/deployment/deploy.sh auto_deploy || travis_terminate 1
 
 before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
+  - rm -rf $HOME/.cache/pip/log
 
 notifications:
   email:
