@@ -1,27 +1,29 @@
 const puppeteer = require('puppeteer');
-process.env.CHROME_BIN = puppeteer.executablePath();
-
-// Karma configuration
-// Generated on Thu Apr 18 2019 11:48:30 GMT+0530 (India Standard Time)
+// Set CHROME_BIN based on availability
+process.env.CHROME_BIN = process.env.CHROME_BIN || puppeteer.executablePath() || '/usr/bin/chromium';
 
 module.exports = function(config) {
-  var configuration = {
-
-    // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
-
-
-    // frameworks to use
-    // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine'],
+    var configuration = {
+  
+      // base path that will be used to resolve all patterns (eg. files, exclude)
+      basePath: '',
+  
+      // frameworks to use
+      // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
+      frameworks: ['jasmine'],
 
     customLaunchers: {
-        ChromeWithNoSandbox: {
-            base: 'ChromeHeadless',
-            flags: ['--no-sandbox'],
+        ChromiumHeadlessNoSandbox: {
+          base: 'ChromiumHeadless',
+          flags: [
+            '--no-sandbox', 
+            '--disable-gpu', 
+            '--disable-dev-shm-usage'
+          ]
         },
-    },
-    browsers: ['ChromeWithNoSandbox'],
+      },
+  
+      browsers: ['ChromiumHeadlessNoSandbox'],  // Use the new ChromiumHeadlessNoSandbox launcher
 
     // list of files / patterns to load in the browser
     files: [
