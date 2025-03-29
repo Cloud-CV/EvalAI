@@ -16,12 +16,12 @@ module.exports = function(config) {
     frameworks: ['jasmine'],
 
     customLaunchers: {
-        ChromeWithNoSandbox: {
-            base: 'ChromeHeadless',
-            flags: ['--no-sandbox'],
+        ChromiumHeadlessNoSandbox: {
+          base: 'ChromiumHeadless',
+          flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
         },
     },
-    browsers: ['ChromeWithNoSandbox'],
+    browsers: ['ChromiumHeadlessNoSandbox'],
 
     // list of files / patterns to load in the browser
     files: [
