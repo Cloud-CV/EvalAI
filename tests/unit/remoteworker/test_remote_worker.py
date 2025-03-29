@@ -13,6 +13,7 @@ from scripts.workers.remote_submission_worker import (
     make_request,
     get_message_from_sqs_queue,
     delete_message_from_sqs_queue,
+    get_message_count_from_queue,
     download_and_extract_file,
     get_submission_by_pk,
     get_challenge_phases_by_challenge_pk,
@@ -42,6 +43,9 @@ class BaseTestClass(TestCase):
 
     def delete_message_from_sqs_queue_url(self, queue_name):
         return "/api/jobs/queues/{}/".format(queue_name)
+
+    def get_message_count_from_sqs_queue_url(self, queue_name):
+        return "/api/messages/{}/count".format(queue_name)
 
     def get_submission_by_pk_url(self, submission_pk):
         return "/api/jobs/submission/{}".format(submission_pk)
@@ -123,6 +127,13 @@ class APICallsTestClass(BaseTestClass):
             "receipt_handle": "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
         }
         mock_make_request.assert_called_with(url, "POST", data=expected_data)
+
+    def test_get_message_count_from_sqs_queue(self, mock_make_request, mock_url):
+        url = self.get_message_count_from_sqs_queue_url("evalai_submission_queue")
+        get_message_count_from_queue()
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_get_challenge_by_queue_name(self, mock_make_request, mock_url):
         url = self.get_challenge_by_queue_name_url("evalai_submission_queue")
