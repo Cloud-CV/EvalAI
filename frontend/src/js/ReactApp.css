@@ -1,0 +1,133 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  padding: 0; /* Remove padding to align header and gray background */
+  margin: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #fff; /* White background for the rest of the card */
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative; /* Ensure the card has a relative position */
+  min-height: 450px; /* Maintain the height of the card */
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align content to the left */
+  background-color: #444; /* Light black background */
+  padding: 10px 16px; /* Add padding for better appearance */
+  color: #fff; /* White text color */
+  border-radius: 15px 15px 0 0; /* Rounded corners for the top */
+}
+
+.card-logo-small {
+  width: 30px;
+  height: 30px;
+  margin-right: 8px;
+}
+
+.card-title {
+  font-size: 1.2em; /* Adjust font size */
+  font-weight: bold;
+  margin: 0;
+  color: #fff; /* White text color */
+}
+
+.title-highlight {
+  color: #0056b3; /* eBay blue */
+}
+
+.card-main {
+  margin: 0; /* Remove margin to align with the gray background */
+}
+
+.logo-box {
+  width: 100%; /* Full width */
+  height: 250px; /* Adjust height to match the design */
+  background-color: #d3d3d3; /* Light gray background */
+  display: flex;
+  flex-direction: column; /* Stack header and logo */
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px 15px 0 0; /* Rounded corners for the top */
+}
+
+.card-logo-large {
+  max-width: 80%; /* Ensure the logo fits within the box */
+  height: auto; /* Maintain aspect ratio */
+  margin-top: 16px; /* Add spacing below the header */
+}
+
+.card-tags {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px; /* Ensure consistent spacing between tags */
+  margin: 16px 0;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #ff8c00; /* Orange color for tags */
+  color: #fff;
+  padding: 8px 12px; /* Adjust padding */
+  margin: 4px;
+  border-radius: 20px;
+  font-size: 0.9em; /* Adjust font size */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.tag:hover {
+  transform: scale(1.05);
+  background-color: #e67e00; /* Darker orange on hover */
+}
+
+.show-more-button {
+  background-color: #0064D2; /* eBay Blue */
+  color: #fff;
+  border: none;
+  padding: 10px 20px; /* Adjust padding */
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.show-more-button:hover {
+  background-color: #0056b3;
+}
+
+.card-details {
+  margin: 16px 0;
+}
+
+.card-organizer {
+  font-weight: bold;
+  color: #666;
+}
+
+.card-date {
+  color: #999;
+}
+
+.card-button {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background-color: #ff8c00; /* Orange button */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-button:hover {
+  background-color: #e67e00; /* Darker orange on hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
