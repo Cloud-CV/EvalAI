@@ -32,7 +32,7 @@ before_install:
   - ulimit -n 4096   # Increase open file limit
 
 install:
-  - pip install --no-cache-dir awscli==1.18.66 flake8==3.8.2 coveralls
+  - pip install --no-cache-dir awscli==1.18.66 flake8==3.8.2 coveralls pytest-xdist
 
 jobs:
   fast_finish: true
