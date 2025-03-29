@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 // Set CHROME_BIN based on availability
-process.env.CHROME_BIN = process.env.CHROME_BIN || puppeteer.executablePath() || '/usr/bin/chromium';
-
+const isArm = require('os').arch().includes('arm');
+process.env.CHROME_BIN = process.env.CHROME_BIN || puppeteer.executablePath() || (isArm ? '/usr/bin/chromium' : '/usr/bin/google-chrome');
 module.exports = function(config) {
     var configuration = {
   
@@ -21,10 +21,13 @@ module.exports = function(config) {
             '--disable-dev-shm-usage'
           ]
         },
+        ChromeWithNoSandbox: {
+          base: 'ChromeHeadless',
+          flags: ['--no-sandbox'],
+        },
       },
   
-      browsers: ['ChromiumHeadlessNoSandbox'],  // Use the new ChromiumHeadlessNoSandbox launcher
-
+      browsers: [isArm ? 'ChromiumHeadlessNoSandbox' : 'ChromeWithNoSandbox'],  
     // list of files / patterns to load in the browser
     files: [
         'frontend/dist/vendors/*.js',
