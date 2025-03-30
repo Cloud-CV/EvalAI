@@ -1,8 +1,6 @@
 import base64
-import mock
+from unittest import mock
 import re
-import unittest
-
 from django.test import TestCase
 from challenges.models import Challenge
 
