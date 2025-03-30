@@ -87,7 +87,7 @@ Let's break down what is happening in the above code snippet.
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard. The logic for evaluating and judging a submission is customizable and varies from challenge to challenge, but the overall structure of evaluation scripts is fixed due to architectural reasons.
 
-The starter template for remote challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/remote_challenge_evaluation/evaluation_script_starter.py).
+The starter template for remote challenge evaluation can be found [here](https://github.com/Cloud-CV/EvalAI-Starters/tree/master/remote_challenge_evaluation).
 
 Here are the steps to configure remote evaluation:
 
