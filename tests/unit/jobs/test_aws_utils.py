@@ -32,7 +32,6 @@ class GenerateAwsEksBearerTokenTest(TestCase):
         mock_client = mock.MagicMock()
         mock_session_instance.client.return_value = mock_client
         
-        mock_service_model = mock.MagicMock()
         mock_client.meta.service_model.service_id = "sts"
         
         mock_signer = mock.MagicMock()
@@ -71,4 +70,3 @@ class GenerateAwsEksBearerTokenTest(TestCase):
             expected_token = "k8s-aws-v1." + re.sub(r"=*", "", expected_base64)
             
             self.assertEqual(result, expected_token)
-    
