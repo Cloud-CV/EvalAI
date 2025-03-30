@@ -11,7 +11,7 @@ class GenerateAwsEksBearerTokenTest(TestCase):
     def setUp(self):
         self.challenge = mock.MagicMock(spec=Challenge)
         self.challenge.id = 1
-        self.cluster_name = "test-cluster" 
+        self.cluster_name = "test-cluster"
 
         self.aws_credentials = {
             "AWS_ACCESS_KEY_ID": "test_access_key",
@@ -38,9 +38,7 @@ class GenerateAwsEksBearerTokenTest(TestCase):
 
         with mock.patch('jobs.aws_utils.RequestSigner', return_value=mock_signer):
             result = generate_aws_eks_bearer_token(self.cluster_name, self.challenge)
-
             mock_get_credentials.assert_called_once_with(self.challenge.id)
-
             mock_session.assert_called_once_with(
                 aws_access_key_id=self.aws_credentials["AWS_ACCESS_KEY_ID"],
                 aws_secret_access_key=self.aws_credentials["AWS_SECRET_ACCESS_KEY"]
