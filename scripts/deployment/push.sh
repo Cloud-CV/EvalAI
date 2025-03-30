@@ -2,11 +2,14 @@
 set -e
 
 export COMMIT_ID=$(git rev-parse HEAD)
+export TRAVIS_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 build_and_push() {
         aws configure set default.region us-east-1
         eval $(aws ecr get-login --no-include-email)
         echo "Pulling ssl certificates and nginx configuration..."
+        # Pull ssl files related to eval.ai
         aws s3 cp s3://cloudcv-secrets/eval.ai/ssl/ ./ssl/ --recursive
         # Need ssl files related to *.cloudcv.org since we want to provide backward compatibility
         aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/ssl/ ./ssl/ --recursive
