@@ -49,7 +49,7 @@ def delete_worker(challenge_id):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/unapproved/all".format(
+    all_challenge_endpoint = "{}/api/challenges/challenge/all/all/all".format(
         evalai_endpoint
     )
     response = requests.get(
@@ -90,6 +90,7 @@ def stop_workers_for_challenges(response):
                 workers, approved_by_admin, created_at
             ):
                 response = delete_worker(challenge_id)
+                print("Stopping worker: {}".format(challenge_id))
                 if not response.ok:
                     print(
                         "ERROR: Delete worker failed for challenge id {}!".format(
