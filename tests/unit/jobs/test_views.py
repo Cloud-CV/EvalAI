@@ -558,7 +558,8 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.data, expected)
         # Response code changed from 400 bad request to 422
-        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
