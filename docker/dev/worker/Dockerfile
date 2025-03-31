@@ -12,8 +12,8 @@ WORKDIR /code
 ADD requirements/* /code/
 
 RUN pip install -U cffi service_identity cython==0.29 setuptools==57.5.0 && \
-  pip install -r dev.txt && \
-  pip install -r worker.txt
+    pip install -r dev.txt && \
+    pip install -r worker.txt
 
 ADD . /code
 
