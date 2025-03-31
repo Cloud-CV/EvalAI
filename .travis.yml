@@ -11,6 +11,7 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
+    - $HOME/docker #To store previous builds as cache.
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
@@ -19,6 +20,7 @@ before_install:
   - mkdir -p $HOME/.config/pip
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
+  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} docker load -i {file}; fi #If cache directory exists, load archived files.
   - ulimit -u 16384 # Increase process/thread limit
   - ulimit -n 4096 # Increase open file limit
 
@@ -60,6 +62,8 @@ jobs:
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
+  - mkdir -p $HOME/docker
+  - docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}}' | xargs -I % sh -c 'docker save % | gzip > $HOME/docker/%.tar.gz' #saves images for next build
 
 notifications:
   email:
