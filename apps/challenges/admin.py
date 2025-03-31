@@ -41,6 +41,7 @@ class UpdateNumOfWorkersForm(ActionForm):
 @admin.register(Challenge)
 class ChallengeAdmin(ImportExportTimeStampedAdmin):
     readonly_fields = ("created_at",)
+    ordering = ["-id"]
     list_display = (
         "id",
         "title",
