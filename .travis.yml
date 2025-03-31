@@ -37,7 +37,7 @@ jobs:
       name: Build Docker Images
       script:
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
-        - docker-compose --profile worker --profile statsd build --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" || travis_terminate 1;
+        - docker-compose --profile worker --profile statsd build --parallel --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" --build-arg BUILDKIT_INLINE_CACHE=1|| travis_terminate 1;
 
     - stage: Test & Validate
       name: Frontend Tests
