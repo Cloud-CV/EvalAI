@@ -20,7 +20,6 @@ before_install:
   - mkdir -p $HOME/.config/pip
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
-  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} docker load -i {file}; fi #If cache directory exists, load archived files.
   - ulimit -u 16384 # Increase process/thread limit
   - ulimit -n 4096 # Increase open file limit
 
@@ -43,11 +42,18 @@ jobs:
     - stage: Test & Validate
       name: Frontend Tests
       script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+
     - stage: Test & Validate
-      name: Backend Tests
+      name: Backend Unit Tests
       script:
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest tests/unit --cov . --cov-config .coveragerc
+
+    - stage: Test & Validate
+      name: Backend Integration Tests
+      script:
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest tests/integration --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
@@ -62,9 +68,6 @@ jobs:
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
-  - mkdir -p $HOME/docker
-  - docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}}' | xargs -I % sh -c 'docker save % | gzip > $HOME/docker/%.tar.gz' #saves images for next build
-
 notifications:
   email:
     on_success: change
