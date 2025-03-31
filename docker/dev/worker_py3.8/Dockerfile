@@ -14,7 +14,8 @@ RUN apt-get update && \
     libgmp-dev libcgal-qt5-dev swig && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install -U cffi service_identity cython==0.29 
+
+RUN pip install -U cffi service_identity cython==0.29 setuptools==57.5.0
 RUN pip install -r worker.txt
 
 ADD . /code
