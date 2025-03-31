@@ -222,7 +222,8 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # http response code change from 400 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_challenge_is_not_active(self):
         self.url = reverse_lazy(
@@ -265,7 +266,8 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # http response code change from 400 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
         self.url = reverse_lazy(
@@ -426,7 +428,8 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 403 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self,
@@ -448,7 +451,8 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 403 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_status_is_not_correct(self):
         self.url = reverse_lazy(
@@ -553,7 +557,8 @@ class BaseAPITestClass(APITestCase):
             self.url, {"status": "submitting"}, format="multipart"
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Response code changed from 400 bad request to 422
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
@@ -596,7 +601,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # http response code change from 400 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy(
@@ -613,7 +619,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # http response code change from 400 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy(
@@ -630,7 +637,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 403 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self,
@@ -648,7 +656,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 400 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_submissions(self):
         self.url = reverse_lazy(
@@ -777,7 +786,8 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 403 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_remaining_submission_when_submission_made_three_days_back(
         self,
@@ -1337,7 +1347,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 403 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_change_submission_data_and_visibility_when_participant_team_hasnt_participated_in_challenge(
         self,
@@ -1357,7 +1368,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # http response code change from 403 to 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_change_submission_data_and_visibility_when_submission_exist(self):
         self.url = reverse_lazy(
