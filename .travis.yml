@@ -29,13 +29,10 @@ install:
 jobs:
   fast_finish: true
   include:
-    - stage: Code Quality Check
-      name: Lint Code With Flake8
-      script: flake8 ./
-
-    - stage: Build & Package
-      name: Build Docker Images
-      script:
+    - stage: Code Quality Check and Building + Packages
+      name: Lint Code With Flake8 and Build images
+      script: 
+        - flake8 ./
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
         - docker-compose --profile worker --profile statsd build --parallel --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" --build-arg BUILDKIT_INLINE_CACHE=1|| travis_terminate 1;
 
@@ -44,15 +41,10 @@ jobs:
       script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
 
     - stage: Test & Validate
-      name: Backend Unit Tests
+      name: Backend Tests
       script:
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest tests/unit --cov . --cov-config .coveragerc
-
-    - stage: Test & Validate
-      name: Backend Integration Tests
-      script:
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest tests/integration --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
