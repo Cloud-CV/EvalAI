@@ -1,5 +1,5 @@
 # Base stage with common dependencies
-FROM node:14.20.0 AS base
+FROM node:14.20.0-slim AS base
 WORKDIR /code
 
 # Add dependencies
@@ -10,11 +10,13 @@ ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
 # Install Prerequisites
-RUN npm ci --quiet && \
-    npm install -g bower gulp-cli karma-cli qs && \
-    npm link gulp && \
-    bower install --allow-root --silent
-
+RUN npm install -g bower gulp gulp-cli
+RUN npm link gulp
+RUN npm cache clean -f
+RUN npm install
+RUN npm install -g karma-cli
+RUN npm install -g qs
+RUN bower install --allow-root
 
 # AMD64-specific stage
 FROM base AS amd64
