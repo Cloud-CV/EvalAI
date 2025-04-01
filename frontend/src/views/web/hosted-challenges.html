@@ -1,316 +1,173 @@
 <section class="ev-sm-container ev-view challenge-container">
-  <!-- my challenges -->
-  <div class="challenge-page-title" id="ongoing-challenges">
-    <strong class="text-med-black fs-18">My Hosted Challenges</strong>
-  </div>
-  <div ng-if="!hostedChallenges.challengeList.length">
-    You haven't hosted any challenge. Please
-    <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a>
-    to host one!
-  </div>
-  <div ng-if="hostedChallenges.challengeList.length">
-    <!-- Tab navigation - updated to match horizontal style -->
-    <ul class="nav-underline">
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          ng-class="{'active': hostedChallenges.currentTab === 'ongoing'}"
-          ng-click="hostedChallenges.setCurrentTab('ongoing')"
-        >
-          Ongoing ({{hostedChallenges.ongoingChallenges.length}})
-        </a>
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          ng-class="{'active': hostedChallenges.currentTab === 'upcoming'}"
-          ng-click="hostedChallenges.setCurrentTab('upcoming')"
-        >
-          Upcoming ({{hostedChallenges.upcomingChallenges.length}})
-        </a>
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          ng-class="{'active': hostedChallenges.currentTab === 'past'}"
-          ng-click="hostedChallenges.setCurrentTab('past')"
-        >
-          Past ({{hostedChallenges.pastChallenges.length}})
-        </a>
-      </li>
-    </ul>
 
-    <!-- Ongoing challenges tab content -->
-    <div
-      class="challenges-container"
-      ng-if="hostedChallenges.currentTab === 'ongoing'"
-    >
-      <div
-        ng-if="!hostedChallenges.ongoingChallenges.length"
-        class="card-content"
-      >
-        <p>
-          You haven't hosted any ongoing challenge. Please
-          <a ui-sref="web.challenge-host-teams" class="highlight-link"
-            >click here</a
-          >
-          to host one!
-        </p>
-      </div>
-      <div class="row" ng-if="hostedChallenges.ongoingChallenges.length">
-        <div
-          class="col s12 m3"
-          ng-repeat="challenge in hostedChallenges.ongoingChallenges"
-        >
-          <a
-            class="ev-card-hover"
-            ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})"
-          >
-            <div class="card ev-card-panel ev-challenge-card ev-card-hover">
-              <div class="card-image ev-card-image">
-                <img class="bg-img" ng-src="{{challenge.image}}" />
-                <span class="ev-card-title fs-14"
-                  ><span><img ng-src="{{challenge.image}}" /></span
-                  >{{challenge.title}}</span
-                >
-              </div>
-              <div class="card-content">
-                <li
-                  ng-repeat="tags in challenge.list_tags"
-                  class="list-inline-item chip orange white-text tag-size"
-                >
-                  {{tags}}
-                </li>
-                <li
-                  ng-if="challenge.domain"
-                  class="list-inline-item chip light-blue white-text"
-                >
-                  {{challenge.domain}}
-                </li>
-                <p>
-                  <strong class="text-light-black fs-12">Organized by</strong>
-                  <strong>{{challenge.creator.team_name}}</strong>
-                </p>
-                <p>
-                  <strong class="text-light-black fs-12">Starts on</strong>
-                  <br />
-                  <strong
-                    >{{challenge.start_date | date:'medium'}}
-                    {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong
-                  >
-                </p>
-                <p>
-                  <strong class="text-light-black fs-12">Ends on</strong> <br />
-                  <strong
-                    >{{challenge.end_date | date:'medium'}}
-                    {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong
-                  >
-                </p>
-                <div class="margin-top-btm">
-                  <span ng-if="challenge.approved_by_admin">
-                    <div class="chip green white-text">Approved</div>
-                  </span>
-                  <span ng-if="!challenge.approved_by_admin">
-                    <div class="chip red white-text">Not Approved</div>
-                  </span>
-                  <span ng-if="challenge.published">
-                    <div class="chip green white-text">Published</div>
-                  </span>
-                  <span ng-if="!challenge.published">
-                    <div class="chip red white-text">Not Published</div>
-                  </span>
-                </div>
-              </div>
-              <div class="btn-card-detail waves-effect waves-dark w-300 fs-14">
-                <strong>View Details </strong> &nbsp;
-              </div>
+   <!-- my challenges -->
+    <div class="challenge-page-title" id="ongoing-challenges"><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
+    <div ng-if="!hostedChallenges.challengeList.length">
+        You haven't hosted any challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!
+    </div>
+    <div ng-if="hostedChallenges.challengeList.length">
+        <!-- Tab navigation - updated to match horizontal style -->
+        <ul class="nav-underline">
+            <li class="nav-item">
+                <a class="nav-link" ng-class="{'active': hostedChallenges.currentTab === 'ongoing'}" ng-click="hostedChallenges.setCurrentTab('ongoing')">
+                    Ongoing ({{hostedChallenges.ongoingChallenges.length}})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" ng-class="{'active': hostedChallenges.currentTab === 'upcoming'}" ng-click="hostedChallenges.setCurrentTab('upcoming')">
+                    Upcoming ({{hostedChallenges.upcomingChallenges.length}})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" ng-class="{'active': hostedChallenges.currentTab === 'past'}" ng-click="hostedChallenges.setCurrentTab('past')">
+                    Past ({{hostedChallenges.pastChallenges.length}})
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Ongoing challenges tab content -->
+        <div class="challenges-container" ng-if="hostedChallenges.currentTab === 'ongoing'">
+            <div ng-if="!hostedChallenges.ongoingChallenges.length" class="card-content">
+                <p>You haven't hosted any ongoing challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!</p>
             </div>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Upcoming challenges tab content -->
-    <div
-      class="challenges-container"
-      ng-if="hostedChallenges.currentTab === 'upcoming'"
-    >
-      <div
-        ng-if="!hostedChallenges.upcomingChallenges.length"
-        class="card-content"
-      >
-        <p>
-          You haven't hosted any upcoming challenge. Please
-          <a ui-sref="web.challenge-host-teams" class="highlight-link"
-            >click here</a
-          >
-          to host one!
-        </p>
-      </div>
-      <div class="row" ng-if="hostedChallenges.upcomingChallenges.length">
-        <div
-          class="col s12 m3"
-          ng-repeat="challenge in hostedChallenges.upcomingChallenges"
-        >
-          <a
-            class="ev-card-hover"
-            ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})"
-          >
-            <div class="card ev-card-panel ev-challenge-card ev-card-hover">
-              <div class="card-image ev-card-image">
-                <img class="bg-img" ng-src="{{challenge.image}}" />
-                <span class="ev-card-title fs-14"
-                  ><span><img ng-src="{{challenge.image}}" /></span
-                  >{{challenge.title}}</span
-                >
-              </div>
-              <div class="card-content">
-                <li
-                  ng-repeat="tags in challenge.list_tags"
-                  class="list-inline-item chip orange white-text tag-size"
-                >
-                  {{tags}}
-                </li>
-                <li
-                  ng-if="challenge.domain"
-                  class="list-inline-item chip light-blue white-text"
-                >
-                  {{challenge.domain}}
-                </li>
-                <p>
-                  <strong class="text-light-black fs-12">Organized by</strong>
-                  <strong>{{challenge.creator.team_name}}</strong>
-                </p>
-                <p>
-                  <strong class="text-light-black fs-12">Starts on</strong>
-                  <br />
-                  <strong
-                    >{{challenge.start_date | date:'medium'}}
-                    {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong
-                  >
-                </p>
-                <p>
-                  <strong class="text-light-black fs-12">Ends on</strong> <br />
-                  <strong
-                    >{{challenge.end_date | date:'medium'}}
-                    {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong
-                  >
-                </p>
-                <div class="margin-top-btm">
-                  <span ng-if="challenge.approved_by_admin">
-                    <div class="chip green white-text">Approved</div>
-                  </span>
-                  <span ng-if="!challenge.approved_by_admin">
-                    <div class="chip red white-text">Not Approved</div>
-                  </span>
-                  <span ng-if="challenge.published">
-                    <div class="chip green white-text">Published</div>
-                  </span>
-                  <span ng-if="!challenge.published">
-                    <div class="chip red white-text">Not Published</div>
-                  </span>
+            <div class="row" ng-if="hostedChallenges.ongoingChallenges.length">
+                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.ongoingChallenges">
+                    <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                        <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                            <div class="card-image ev-card-image">
+                                <img class="bg-img" ng-src="{{challenge.image}}">
+                                <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                            </div>
+                            <div class="card-content">
+                                <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                                <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
+                                <p><strong class="text-light-black fs-12">Organized by</strong>
+                                    <strong>{{challenge.creator.team_name}}</strong></p>
+                                <p><strong class="text-light-black fs-12">Starts on</strong>
+                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                <p><strong class="text-light-black fs-12">Ends on</strong>
+                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                <div class="margin-top-btm">
+                                    <span ng-if="challenge.approved_by_admin">
+                                        <div class="chip green white-text">Approved</div>
+                                    </span>
+                                    <span ng-if="!challenge.approved_by_admin">
+                                        <div class="chip red white-text">Not Approved</div>
+                                    </span>
+                                    <span ng-if="challenge.published">
+                                        <div class="chip green white-text">Published</div>
+                                    </span>
+                                    <span ng-if="!challenge.published">
+                                        <div class="chip red white-text">Not Published</div>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                        </div>
+                    </a>
                 </div>
-              </div>
-              <div class="btn-card-detail waves-effect waves-dark w-300 fs-14">
-                <strong>View Details </strong> &nbsp;
-              </div>
             </div>
-          </a>
         </div>
-      </div>
-    </div>
-
-    <!-- Past challenges tab content -->
-    <div
-      class="challenges-container"
-      ng-if="hostedChallenges.currentTab === 'past'"
-    >
-      <div ng-if="!hostedChallenges.pastChallenges.length" class="card-content">
-        <p>You haven't hosted any past challenge.</p>
-      </div>
-      <div class="row" ng-if="hostedChallenges.pastChallenges.length">
-        <div
-          class="col s12 m3"
-          ng-repeat="challenge in hostedChallenges.pastChallenges"
-        >
-          <a
-            class="ev-card-hover"
-            ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})"
-          >
-            <div class="card ev-card-panel ev-challenge-card ev-card-hover">
-              <div class="card-image ev-card-image">
-                <img class="bg-img" ng-src="{{challenge.image}}" />
-                <span class="ev-card-title fs-14"
-                  ><span><img ng-src="{{challenge.image}}" /></span
-                  >{{challenge.title}}</span
-                >
-              </div>
-              <div class="card-content">
-                <li
-                  ng-repeat="tags in challenge.list_tags"
-                  class="list-inline-item chip orange white-text tag-size"
-                >
-                  {{tags}}
-                </li>
-                <li
-                  ng-if="challenge.domain"
-                  class="list-inline-item chip light-blue white-text"
-                >
-                  {{challenge.domain}}
-                </li>
-                <p>
-                  <strong class="text-light-black fs-12">Organized by</strong>
-                  <strong>{{challenge.creator.team_name}}</strong>
-                </p>
-                <p>
-                  <strong class="text-light-black fs-12">Starts on</strong>
-                  <br />
-                  <strong
-                    >{{challenge.start_date | date:'medium'}}
-                    {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong
-                  >
-                </p>
-                <p>
-                  <strong class="text-light-black fs-12">Ends on</strong> <br />
-                  <strong
-                    >{{challenge.end_date | date:'medium'}}
-                    {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong
-                  >
-                </p>
-                <div class="margin-top-btm">
-                  <span ng-if="challenge.approved_by_admin">
-                    <div class="chip green white-text">Approved</div>
-                  </span>
-                  <span ng-if="!challenge.approved_by_admin">
-                    <div class="chip red white-text">Not Approved</div>
-                  </span>
-                  <span ng-if="challenge.published">
-                    <div class="chip green white-text">Published</div>
-                  </span>
-                  <span ng-if="!challenge.published">
-                    <div class="chip red white-text">Not Published</div>
-                  </span>
+        
+        <!-- Upcoming challenges tab content -->
+        <div class="challenges-container" ng-if="hostedChallenges.currentTab === 'upcoming'">
+            <div ng-if="!hostedChallenges.upcomingChallenges.length" class="card-content">
+                <p>You haven't hosted any upcoming challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!</p>
+            </div>
+            <div class="row" ng-if="hostedChallenges.upcomingChallenges.length">
+                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.upcomingChallenges">
+                    <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                        <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                            <div class="card-image ev-card-image">
+                                <img class="bg-img" ng-src="{{challenge.image}}">
+                                <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                            </div>
+                            <div class="card-content">
+                                <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                                <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
+                                <p><strong class="text-light-black fs-12">Organized by</strong>
+                                    <strong>{{challenge.creator.team_name}}</strong></p>
+                                <p><strong class="text-light-black fs-12">Starts on</strong>
+                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                <p><strong class="text-light-black fs-12">Ends on</strong>
+                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                <div class="margin-top-btm">
+                                    <span ng-if="challenge.approved_by_admin">
+                                        <div class="chip green white-text">Approved</div>
+                                    </span>
+                                    <span ng-if="!challenge.approved_by_admin">
+                                        <div class="chip red white-text">Not Approved</div>
+                                    </span>
+                                    <span ng-if="challenge.published">
+                                        <div class="chip green white-text">Published</div>
+                                    </span>
+                                    <span ng-if="!challenge.published">
+                                        <div class="chip red white-text">Not Published</div>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                        </div>
+                    </a>
                 </div>
-              </div>
-              <div class="btn-card-detail waves-effect waves-dark w-300 fs-14">
-                <strong>View Details </strong> &nbsp;
-              </div>
             </div>
-          </a>
         </div>
-      </div>
+        
+        <!-- Past challenges tab content -->
+        <div class="challenges-container" ng-if="hostedChallenges.currentTab === 'past'">
+            <div ng-if="!hostedChallenges.pastChallenges.length" class="card-content">
+                <p>You haven't hosted any past challenge.</p>
+            </div>
+            <div class="row" ng-if="hostedChallenges.pastChallenges.length">
+                <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.pastChallenges">
+                    <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                        <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                            <div class="card-image ev-card-image">
+                                <img class="bg-img" ng-src="{{challenge.image}}">
+                                <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                            </div>
+                            <div class="card-content">
+                                <li ng-repeat="tags in challenge.list_tags" class="list-inline-item chip orange white-text tag-size">{{tags}}</li>
+                                <li ng-if="challenge.domain" class="list-inline-item chip light-blue white-text">{{challenge.domain}}</li>
+                                <p><strong class="text-light-black fs-12">Organized by</strong>
+                                    <strong>{{challenge.creator.team_name}}</strong></p>
+                                <p><strong class="text-light-black fs-12">Starts on</strong>
+                                    <br> <strong>{{challenge.start_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                <p><strong class="text-light-black fs-12">Ends on</strong>
+                                    <br> <strong>{{challenge.end_date | date:'medium'}} {{challenge.time_zone}} ({{challenge.gmt_zone}})</strong></p>
+                                <div class="margin-top-btm">
+                                    <span ng-if="challenge.approved_by_admin">
+                                        <div class="chip green white-text">Approved</div>
+                                    </span>
+                                    <span ng-if="!challenge.approved_by_admin">
+                                        <div class="chip red white-text">Not Approved</div>
+                                    </span>
+                                    <span ng-if="challenge.published">
+                                        <div class="chip green white-text">Published</div>
+                                    </span>
+                                    <span ng-if="!challenge.published">
+                                        <div class="chip red white-text">Not Published</div>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- simple loader -->
-  <div class="loader-container" id="sim-loader">
-    <div class="text-white center w-300 loader-title">Loading</div>
-    <div class="loader">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
+    <!-- simple loader -->
+    <div class="loader-container" id="sim-loader">
+        <div class="text-white center w-300 loader-title">Loading</div>
+        <div class="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
-  </div>
+    
 </section>

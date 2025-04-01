@@ -14,7 +14,7 @@
 .terms-and-conditions a,
 .phase-description a,
 .submission-guidelines a {
-  color: #2196f3;
+  color: #2196F3;
   cursor: pointer;
 }
 
@@ -122,11 +122,11 @@ a.active-challenge {
 }
 
 .chip-green {
-  background-color: #9ccc65;
+  background-color: #9CCC65;
 }
 
 .chip-red {
-  background-color: #ef5350;
+  background-color: #EF5350;
 }
 
 .result-wrn {
@@ -204,7 +204,7 @@ md-select .md-select-value span:first-child:after {
 }
 
 .green-background {
-  background-color: #28c146 !important;
+  background-color: #28C146 !important;
 }
 
 #option-text-color {
@@ -264,6 +264,7 @@ md-select .md-select-value span:first-child:after {
 .btn-switch--on {
   background-color: #ffaf4b;
   border: 2px solid #ffaf4b;
+  ;
   .btn-switch-circle--on {
     left: auto;
     right: 0;
@@ -285,9 +286,7 @@ md-select .md-select-value span:first-child:after {
 }
 
 .watermarked {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
-    url(../images/evalai-logo-centered.png);
+  background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),url(../images/evalai-logo-centered.png);
   background-blend-mode: lighten;
   background-size: 50%;
   background-position: top;
@@ -318,8 +317,7 @@ md-select .md-select-value span:first-child:after {
   position: relative;
 }
 
-.multiple-columns,
-.dropdown-menu {
+.multiple-columns, .dropdown-menu {
   display: flex;
   margin: 0 auto;
 }
@@ -351,15 +349,15 @@ md-select .md-select-value span:first-child:after {
 }
 
 .trophy-gold {
-  color: #ffd700;
+  color: #FFD700;
 }
 
 .trophy-silver {
-  color: #c0c0c0;
+  color: #C0C0C0;
 }
 
 .trophy-bronze {
-  color: #cd7f32;
+  color: #CD7F32;
 }
 
 .trophy-blacks {
@@ -383,7 +381,7 @@ md-select .md-select-value span:first-child:after {
   li {
     margin-bottom: -0.5%;
   }
-
+  
   .nav-item {
     flex: 1;
     text-align: center;
@@ -428,9 +426,10 @@ md-select .md-select-value span:first-child:after {
 .challenges-container {
   margin-top: 20px;
   min-height: 200px;
-
+  
   .card-content {
     padding: 20px;
     text-align: center;
   }
 }
+
