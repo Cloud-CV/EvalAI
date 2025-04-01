@@ -18,6 +18,8 @@ before_install:
   - export DISPLAY=:99.0
   - pip install --upgrade pip
   - mkdir -p $HOME/.config/pip
+  - export DOCKER_BUILDKIT=1 #Enable docker buildkit 
+  - export COMPOSE_DOCKER_CLI_BUILD=1 #Tell docker-compose to incorporate BuildKit
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
   - ulimit -u 16384 # Increase process/thread limit
