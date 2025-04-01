@@ -16,8 +16,6 @@
 .submission-guidelines a {
     color: #2196F3;
     cursor: pointer;
-    color: #2196F3;
-    cursor: pointer;
 }
 
 a.active-challenge {
@@ -26,17 +24,9 @@ a.active-challenge {
     height: 40px;
     box-sizing: border-box;
     border-bottom: 2px solid $highlight;
-    color: $dark-black;
-    display: block;
-    height: 40px;
-    box-sizing: border-box;
-    border-bottom: 2px solid $highlight;
 }
 
 .ev-challenge-view {
-    margin-top: 0px;
-    padding-top: 30px;
-    margin-bottom: 20px;
     margin-top: 0px;
     padding-top: 30px;
     margin-bottom: 20px;
@@ -51,43 +41,33 @@ a.active-challenge {
 
 .challenge-container {
     margin: 0px 10px -30px 10px;
-    margin: 0px 10px -30px 10px;
 }
 
 .eval-card {
-    min-height: 160px;
     min-height: 160px;
 }
 
 .phase-card {
     padding-bottom: 1px;
-    padding-bottom: 1px;
 }
 
 .ev-dark-card {
-    background-color: $light-gray;
     background-color: $light-gray;
 }
 
 .challenge-page-title {
     padding-bottom: 10px;
-    padding-bottom: 10px;
 }
 
 .ev-challenge-card {
-    height: 425px;
     height: 425px;
 }
 
 .ev-dashboard-card {
     min-height: 190px;
-    min-height: 190px;
 }
 
 .bg-img {
-    position: absolute;
-    object-fit: cover;
-    height: 100%;
     position: absolute;
     object-fit: cover;
     height: 100%;
@@ -98,25 +78,17 @@ a.active-challenge {
     padding: 10px 20px !important;
     color: #fff;
     border-radius: 4px;
-    background: $med-gray;
-    padding: 10px 20px !important;
-    color: #fff;
-    border-radius: 4px;
 }
 
 .phases-cont {
-    padding: 10px 0px;
     padding: 10px 0px;
 }
 
 .rm-margin {
     margin: 0px;
-    margin: 0px;
 }
 
 .result-tag {
-    margin-top: 20px;
-    margin-bottom: 10px;
     margin-top: 20px;
     margin-bottom: 10px;
 }
@@ -124,55 +96,44 @@ a.active-challenge {
 .result-val {
     margin-bottom: 20px;
     border-bottom: 1px solid #e3e3e3;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e3e3e3;
 }
 
 .val-style {
-    margin-bottom: 10px;
     margin-bottom: 10px;
 }
 
 .submitted,
 .finished {
     color: green;
-    color: green;
 }
 
 .running,
 .submitting {
     color: orange;
-    color: orange;
 }
 
 .partially_evaluated {
-    color: royalblue;
     color: royalblue;
 }
 
 .failed,
 .cancelled {
     color: red;
-    color: red;
 }
 
 .chip-green {
-    background-color: #9CCC65;
     background-color: #9CCC65;
 }
 
 .chip-red {
     background-color: #EF5350;
-    background-color: #EF5350;
 }
 
 .result-wrn {
     margin-top: 15px;
-    margin-top: 15px;
 }
 
 .capitalize {
-    text-transform: capitalize;
     text-transform: capitalize;
 }
 
@@ -195,34 +156,13 @@ a.active-challenge {
     &:hover {
         box-shadow: -1px 0px 9px #bbbbbb;
     }
-    display: block;
-    background: $dark-gray;
-    width: 100%;
-    overflow: auto;
-    padding: 10px;
-    text-align: center;
-    color: #fff;
-    position: absolute;
-    width: auto;
-    right: 0;
-    padding: 10px 30px;
-    box-shadow: 2px 2px 9px #6d6d6d;
-    border-radius: 3px 0px 0px 3px;
-    font-weight: 300;
-    transition: all 0.2s ease-in-out;
-    &:hover {
-        box-shadow: -1px 0px 9px #bbbbbb;
-    }
 }
 
 i.star {
     font-size: 1rem;
-    font-size: 1rem;
 }
 
 .margin-top-btm {
-    margin-top: 10px;
-    margin-bottom: 25px;
     margin-top: 10px;
     margin-bottom: 25px;
 }
@@ -230,66 +170,48 @@ i.star {
 .margin-tb-4 {
     margin-top: 4px;
     margin-bottom: 4px;
-    margin-top: 4px;
-    margin-bottom: 4px;
 }
 
 .margin-tb-10 {
-    margin-top: 10px;
-    margin-bottom: 10px;
     margin-top: 10px;
     margin-bottom: 10px;
 }
 
 .width-auto {
     width: auto !important;
-    width: auto !important;
 }
 
 .f-16 {
     font-size: 16px !important;
-    font-size: 16px !important;
 }
 
 .text-med-red {
-    color: red;
     color: red;
 }
 
 md-select.md-default-theme .md-select-value span:first-child:after,
 md-select .md-select-value span:first-child:after {
     color: white;
-    color: white;
 }
 
 .md-checkbox-enabled.md-default-theme[selected] .md-icon,
 .md-checkbox-enabled[selected] .md-icon {
     background-color: #ffaf4b;
-    background-color: #ffaf4b;
 }
 
 .orange-background {
-    background-color: #ffaf4b !important;
     background-color: #ffaf4b !important;
 }
 
 .green-background {
     background-color: #28C146 !important;
-    background-color: #28C146 !important;
 }
 
 #option-text-color {
     color: #252833;
-    color: #252833;
 }
 
 @-webkit-keyframes spin {
-    from {
-        -webkit-transform: rotate(0deg);
-    }
-    to {
-        -webkit-transform: rotate(360deg);
-    }
     from {
         -webkit-transform: rotate(0deg);
     }
@@ -305,12 +227,6 @@ md-select .md-select-value span:first-child:after {
     to {
         transform: rotate(360deg);
     }
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 .spin {
@@ -318,14 +234,9 @@ md-select .md-select-value span:first-child:after {
     animation: spin 1s linear infinite;
     -webkit-animation-fill-mode: both;
     animation-fill-mode: both;
-    -webkit-animation: spin 1s linear infinite;
-    animation: spin 1s linear infinite;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
 }
 
 .progress-indicator {
-    width: 14px;
     width: 14px;
 }
 
@@ -363,28 +274,18 @@ md-select .md-select-value span:first-child:after {
 .toggle-participation-text {
     display: inline-block;
     padding-left: 10px;
-    display: inline-block;
-    padding-left: 10px;
 }
 
 .ev-challenge-banner {
-    text-align: justify;
-    padding: 20px 20px 20px 20px;
     text-align: justify;
     padding: 20px 20px 20px 20px;
 }
 
 .margin-bottom-cancel {
     margin-bottom: 0px;
-    margin-bottom: 0px;
 }
 
 .watermarked {
-    background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),url(../images/evalai-logo-centered.png);
-    background-blend-mode: lighten;
-    background-size: 50%;
-    background-position: top;
-    background-repeat: no-repeat;
     background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),url(../images/evalai-logo-centered.png);
     background-blend-mode: lighten;
     background-size: 50%;
@@ -395,31 +296,22 @@ md-select .md-select-value span:first-child:after {
 .scale-worker-column {
     flex: 1 0 auto;
     padding-right: 10px;
-    flex: 1 0 auto;
-    padding-right: 10px;
 }
 
 .text-entry-wrapper {
-    display: flex;
-    width: 50%;
     display: flex;
     width: 50%;
 }
 
 .text-entry-content {
     width: 100%;
-    width: 100%;
 }
 
 .text-entry-columns {
     display: inline-block;
-    display: inline-block;
 }
 
 .submit-column {
-    flex: 0 1 auto;
-    float: right;
-    position: relative;
     flex: 0 1 auto;
     float: right;
     position: relative;
@@ -428,12 +320,9 @@ md-select .md-select-value span:first-child:after {
 .multiple-columns, .dropdown-menu {
     display: flex;
     margin: 0 auto;
-    display: flex;
-    margin: 0 auto;
 }
 
 .scale-worker-button {
-    flex: 1 0 auto;
     flex: 1 0 auto;
 }
 
@@ -443,21 +332,13 @@ md-select .md-select-value span:first-child:after {
     transform: translateY(-50%);
     width: max-content;
     display: inline-flex;
-    top: 50%;
-    position: absolute;
-    transform: translateY(-50%);
-    width: max-content;
-    display: inline-flex;
 }
 
 .worker-actions-row {
     margin-bottom: 10px;
-    margin-bottom: 10px;
 }
 
 .ev-card-prize {
-    height: 50px;
-    overflow: hidden;
     height: 50px;
     overflow: hidden;
 }
@@ -465,41 +346,32 @@ md-select .md-select-value span:first-child:after {
 .trophy-icon {
     padding: 10px;
     float: right !important;
-    padding: 10px;
-    float: right !important;
 }
 
 .trophy-gold {
-    color: #FFD700;
     color: #FFD700;
 }
 
 .trophy-silver {
     color: #C0C0C0;
-    color: #C0C0C0;
 }
 
 .trophy-bronze {
-    color: #CD7F32;
     color: #CD7F32;
 }
 
 .trophy-blacks {
     color: #000000;
-    color: #000000;
 }
 
 .domain-filter {
-    margin-top: 45px;
     margin-top: 45px;
 }
 
 .filter-icon {
     padding: 10px;
-    padding: 10px;
 }
 .no-margin {
-    margin: 0px;
     margin: 0px;
 }
 .nav-underline {
@@ -548,22 +420,9 @@ md-select .md-select-value span:first-child:after {
         }
       }
     }
-    .tab {
-      a {
-        color: #4d4d4d;
-        font-weight: 400;
-  
-        &.active {
-          color: #3f51b5;
-          font-weight: 600;
-        }
-      }
-    }
 }
 
 .challenges-container {
-    margin-top: 20px;
-    min-height: 200px;
     margin-top: 20px;
     min-height: 200px;
   
