@@ -10,13 +10,11 @@ ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
 # Install Prerequisites
-RUN npm install -g bower gulp gulp-cli && \
+RUN npm ci --quiet && \
+    npm install -g bower gulp-cli karma-cli qs && \
     npm link gulp && \
-    npm cache clean -f && \
-    npm install && \
-    npm install -g karma-cli && \
-    npm install -g qs && \
-    bower install --allow-root
+    bower install --allow-root --silent
+
 
 # AMD64-specific stage
 FROM base AS amd64
