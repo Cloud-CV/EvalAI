@@ -29,7 +29,6 @@
     vm.ongoingChallenges = [];
     vm.upcomingChallenges = [];
     vm.pastChallenges = [];
-    vm.unapprovedChallenges = [];
     vm.challengeCreator = {};
 
     // Set default tab to 'ongoing'
