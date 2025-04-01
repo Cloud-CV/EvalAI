@@ -1,5 +1,5 @@
 # Base stage with common dependencies
-FROM node:14.20.0-slim AS base
+FROM node:14.20.0 AS base
 WORKDIR /code
 
 # Add dependencies
