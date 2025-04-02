@@ -72,10 +72,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        challenge_host_team = ChallengePhase.objects.get(pk=ret["challenge_phase"]).challenge.creator
-        challenge_hosts_pk = ChallengeHost.objects.filter(team_name=challenge_host_team).values_list(
-            "user__pk", flat=True
-        )
+        challenge_host_team = ChallengePhase.objects.get(
+            pk=ret["challenge_phase"]
+        ).challenge.creator
+        challenge_hosts_pk = ChallengeHost.objects.filter(
+            team_name=challenge_host_team
+        ).values_list("user__pk", flat=True)
         if self.created_by and self.created_by.pk not in challenge_hosts_pk:
             ret.pop("environment_log_file", None)
         return ret

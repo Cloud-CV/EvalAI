@@ -7,7 +7,13 @@ from django.core.files.base import ContentFile
 
 import re
 from os.path import basename, isfile, join
-from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, Challenge
+from challenges.models import (
+    ChallengePhase,
+    ChallengePhaseSplit,
+    DatasetSplit,
+    Leaderboard,
+    Challenge,
+)
 from rest_framework import status
 
 from yaml.scanner import ScannerError
@@ -55,9 +61,8 @@ def get_yaml_files_from_challenge_config(zip_ref):
     extracted_folder_name = None
     for name in zip_ref.namelist():
         if (
-            (name == "challenge_config.yaml" or name == "challenge_config.yml")
-            and not name.startswith("__MACOSX")
-        ):
+            name == "challenge_config.yaml" or name == "challenge_config.yml"
+        ) and not name.startswith("__MACOSX"):
             yaml_file_name = name
             extracted_folder_name = yaml_file_name.split(
                 basename(yaml_file_name)
@@ -117,11 +122,13 @@ def is_challenge_config_yaml_html_field_valid(
     is_valid = False
     if value:
         if not isfile(value):
-            message = "File at path {} not found. Please specify a valid file path".format(key)
-        elif not value.endswith(
-            ".html"
-        ):
-            message = "File {} is not a HTML file. Please specify a valid HTML file".format(key)
+            message = "File at path {} not found. Please specify a valid file path".format(
+                key
+            )
+        elif not value.endswith(".html"):
+            message = "File {} is not a HTML file. Please specify a valid HTML file".format(
+                key
+            )
         else:
             is_valid = True
     else:
@@ -185,7 +192,11 @@ def download_and_write_file(url, stream, output_path, mode):
 
 
 def is_challenge_phase_split_mapping_valid(
-    phase_ids, leaderboard_ids, dataset_split_ids, phase_split, challenge_phase_split_index
+    phase_ids,
+    leaderboard_ids,
+    dataset_split_ids,
+    phase_split,
+    challenge_phase_split_index,
 ):
     """
     Arguments:
@@ -202,11 +213,23 @@ def is_challenge_phase_split_mapping_valid(
     error_messages = []
 
     if leaderboard_id not in leaderboard_ids:
-        error_messages.append("ERROR: Invalid leaderboard id {} found in challenge phase split {}.".format(leaderboard_id, challenge_phase_split_index))
+        error_messages.append(
+            "ERROR: Invalid leaderboard id {} found in challenge phase split {}.".format(
+                leaderboard_id, challenge_phase_split_index
+            )
+        )
     if phase_id not in phase_ids:
-        error_messages.append("ERROR: Invalid phased id {} found in challenge phase split {}.".format(phase_id, challenge_phase_split_index))
+        error_messages.append(
+            "ERROR: Invalid phased id {} found in challenge phase split {}.".format(
+                phase_id, challenge_phase_split_index
+            )
+        )
     if dataset_split_id not in dataset_split_ids:
-        error_messages.append("ERROR: Invalid dataset split id {} found in challenge phase split {}.".format(dataset_split_id, challenge_phase_split_index))
+        error_messages.append(
+            "ERROR: Invalid dataset split id {} found in challenge phase split {}.".format(
+                dataset_split_id, challenge_phase_split_index
+            )
+        )
 
     if error_messages:
         return False, error_messages
@@ -443,12 +466,12 @@ class ValidateChallengeConfigUtil:
             if not is_valid:
                 self.error_messages.append(message)
             else:
-                self.yaml_file_data[
-                    "evaluation_details"
-                ] = get_value_from_field(
-                    self.yaml_file_data,
-                    self.challenge_config_location,
-                    "evaluation_details",
+                self.yaml_file_data["evaluation_details"] = (
+                    get_value_from_field(
+                        self.yaml_file_data,
+                        self.challenge_config_location,
+                        "evaluation_details",
+                    )
                 )
 
     # Validate terms and conditions file
@@ -468,12 +491,12 @@ class ValidateChallengeConfigUtil:
             if not is_valid:
                 self.error_messages.append(message)
             else:
-                self.yaml_file_data[
-                    "terms_and_conditions"
-                ] = get_value_from_field(
-                    self.yaml_file_data,
-                    self.challenge_config_location,
-                    "terms_and_conditions",
+                self.yaml_file_data["terms_and_conditions"] = (
+                    get_value_from_field(
+                        self.yaml_file_data,
+                        self.challenge_config_location,
+                        "terms_and_conditions",
+                    )
                 )
 
     # Validate  ubmission guidelines file
@@ -495,18 +518,18 @@ class ValidateChallengeConfigUtil:
             if not is_valid:
                 self.error_messages.append(message)
             else:
-                self.yaml_file_data[
-                    "submission_guidelines"
-                ] = get_value_from_field(
-                    self.yaml_file_data,
-                    self.challenge_config_location,
-                    "submission_guidelines",
+                self.yaml_file_data["submission_guidelines"] = (
+                    get_value_from_field(
+                        self.yaml_file_data,
+                        self.challenge_config_location,
+                        "submission_guidelines",
+                    )
                 )
 
     def validate_evaluation_script_file(self):
         evaluation_script = self.yaml_file_data.get("evaluation_script")
         if evaluation_script:
-            if not evaluation_script.endswith('.zip'):
+            if not evaluation_script.endswith(".zip"):
                 message = self.error_messages_dict.get(
                     "evaluation_script_not_zip"
                 )
@@ -519,12 +542,14 @@ class ValidateChallengeConfigUtil:
                 if isfile(evaluation_script_path):
                     self.challenge_evaluation_script_file = (
                         read_file_data_as_content_file(
-                            evaluation_script_path, "rb", evaluation_script_path
+                            evaluation_script_path,
+                            "rb",
+                            evaluation_script_path,
                         )
                     )
-                    self.files[
-                        "challenge_evaluation_script_file"
-                    ] = self.challenge_evaluation_script_file
+                    self.files["challenge_evaluation_script_file"] = (
+                        self.challenge_evaluation_script_file
+                    )
                 else:
                     message = self.error_messages_dict.get(
                         "missing_evaluation_script"
@@ -1010,7 +1035,7 @@ class ValidateChallengeConfigUtil:
         # Verify Sponsor is correct
         if "sponsors" in self.yaml_file_data:
             for sponsor in self.yaml_file_data["sponsors"]:
-                if 'name' not in sponsor or 'website' not in sponsor:
+                if "name" not in sponsor or "website" not in sponsor:
                     message = self.error_messages_dict["sponsor_not_found"]
                     self.error_messages.append(message)
 
@@ -1019,20 +1044,26 @@ class ValidateChallengeConfigUtil:
         if "prizes" in self.yaml_file_data:
             rank_set = set()
             for prize in self.yaml_file_data["prizes"]:
-                if 'rank' not in prize or 'amount' not in prize:
+                if "rank" not in prize or "amount" not in prize:
                     message = self.error_messages_dict["prize_not_found"]
                     self.error_messages.append(message)
                 # Check for duplicate rank.
-                rank = prize['rank']
+                rank = prize["rank"]
                 if rank in rank_set:
-                    message = self.error_messages_dict["duplicate_rank"].format(rank)
+                    message = self.error_messages_dict[
+                        "duplicate_rank"
+                    ].format(rank)
                     self.error_messages.append(message)
                 rank_set.add(rank)
                 if not isinstance(rank, int) or rank < 1:
-                    message = self.error_messages_dict["prize_rank_wrong"].format(rank)
+                    message = self.error_messages_dict[
+                        "prize_rank_wrong"
+                    ].format(rank)
                     self.error_messages.append(message)
-                if not re.match(r'^\d+(\.\d{1,2})?[A-Z]{3}$', prize["amount"]):
-                    message = self.error_messages_dict["prize_amount_wrong"].format(prize["amount"])
+                if not re.match(r"^\d+(\.\d{1,2})?[A-Z]{3}$", prize["amount"]):
+                    message = self.error_messages_dict[
+                        "prize_amount_wrong"
+                    ].format(prize["amount"])
                     self.error_messages.append(message)
 
     def check_docker_based_challenge(self):
