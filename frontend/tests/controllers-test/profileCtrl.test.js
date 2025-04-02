@@ -338,6 +338,7 @@ describe('Unit tests for showTokenExpiredDialog function', function () {
         vm.showTokenExpiredDialog();
 
         expect($mdDialog.show).toHaveBeenCalled();
+
         var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
         expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
 
@@ -345,112 +346,7 @@ describe('Unit tests for showTokenExpiredDialog function', function () {
         var testScope = $rootScope.$new();
         dialogArgs.controller(testScope, $mdDialog);
         testScope.refreshToken();
-        expect(vm.refreshToken).toHaveBeenCalled();
-    });
-});
 
-describe('Unit tests for showTokenExpiredDialog function', function () {
-    beforeEach(function () {
-        spyOn($mdDialog, 'show').and.callFake(function (options) {
-            var fakeScope = $rootScope.$new();
-            options.controller(fakeScope, $mdDialog);
-
-            expect(typeof fakeScope.refreshToken).toBe('function');
-            expect(typeof fakeScope.dismiss).toBe('function');
-
-            return {
-                then: function (confirmCallback, cancelCallback) {
-                    if (confirmCallback) confirmCallback();
-                }
-            };
-        });
-
-        spyOn(vm, 'refreshToken'); // Spy on refreshToken to ensure it gets called
-    });
-
-    it('should open token expired dialog with correct config and call refreshToken', function () {
-        vm.showTokenExpiredDialog();
-
-        expect($mdDialog.show).toHaveBeenCalled();
-        var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
-        expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
-
-        // Simulate user clicking 'refreshToken'
-        var testScope = $rootScope.$new();
-        dialogArgs.controller(testScope, $mdDialog);
-        testScope.refreshToken();
-        expect(vm.refreshToken).toHaveBeenCalled();
-    });
-});
-
-describe('Unit tests for showTokenExpiredDialog function', function () {
-    beforeEach(function () {
-        spyOn($mdDialog, 'show').and.callFake(function (options) {
-            var fakeScope = $rootScope.$new();
-            options.controller(fakeScope, $mdDialog);
-
-            expect(typeof fakeScope.refreshToken).toBe('function');
-            expect(typeof fakeScope.dismiss).toBe('function');
-
-            return {
-                then: function (confirmCallback, cancelCallback) {
-                    if (confirmCallback) confirmCallback();
-                }
-            };
-        });
-
-        spyOn(vm, 'refreshToken'); // Spy on refreshToken to ensure it gets called
-    });
-
-    it('should open token expired dialog with correct config and call refreshToken', function () {
-        vm.showTokenExpiredDialog();
-
-        expect($mdDialog.show).toHaveBeenCalled();
-        var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
-        expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
-
-        // Simulate user clicking 'refreshToken'
-        var testScope = $rootScope.$new();
-        dialogArgs.controller(testScope, $mdDialog);
-        testScope.refreshToken();
-        expect(vm.refreshToken).toHaveBeenCalled();
-    });
-});
-
-describe('Unit tests for showTokenExpiredDialog function', function () {
-    beforeEach(function () {
-        // Mocking $mdDialog.show
-        spyOn($mdDialog, 'show').and.callFake(function (options) {
-            // Create a new scope to test the dialog controller
-            var fakeScope = $rootScope.$new();
-            options.controller(fakeScope, $mdDialog);
-
-            // Verify the functions inside the controller
-            expect(typeof fakeScope.refreshToken).toBe('function');
-            expect(typeof fakeScope.dismiss).toBe('function');
-
-            return {
-                then: function (confirmCallback, cancelCallback) {
-                    // Simulate success (dialog closed)
-                    confirmCallback && confirmCallback();
-                }
-            };
-        });
-
-        spyOn(vm, 'refreshToken'); // Track if refreshToken gets called
-    });
-
-    it('should open token expired dialog with correct config and call refreshToken', function () {
-        vm.showTokenExpiredDialog();
-
-        expect($mdDialog.show).toHaveBeenCalled();
-        var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
-        expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
-
-        // Simulate user clicking 'refreshToken'
-        var testScope = $rootScope.$new();
-        dialogArgs.controller(testScope, $mdDialog);
-        testScope.refreshToken();
         expect(vm.refreshToken).toHaveBeenCalled();
     });
 });
