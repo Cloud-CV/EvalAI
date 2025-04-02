@@ -1,4 +1,4 @@
-(function() {
+(function () {
 
     'use strict';
 
@@ -20,33 +20,63 @@
         var gmtZone = 'GMT ' + gmtSign + ' ' + gmtHours + ':' + (gmtMinutes < 10 ? '0' : '') + gmtMinutes;
 
         vm.challengeList = [];
+        vm.ongoingChallenges = [];
+        vm.upcomingChallenges = [];
+        vm.pastChallenges = [];
         vm.challengeCreator = {};
+
+        vm.currentTab = 'ongoing';
+
+        vm.setCurrentTab = function (tabName) {
+            vm.currentTab = tabName;
+        };
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
         parameters.method = 'GET';
         parameters.token = userKey;
         parameters.callback = {
-            onSuccess: function(response) {
+            onSuccess: function (response) {
                 var host_teams = response["data"]["results"];
                 parameters.method = 'GET';
                 var timezone = moment.tz.guess();
-                for (var i=0; i<host_teams.length; i++) {
+                for (var i = 0; i < host_teams.length; i++) {
                     parameters.url = "challenges/challenge_host_team/" + host_teams[i]["id"] + "/challenge";
                     parameters.callback = {
-                        onSuccess: function(response) {
+                        onSuccess: function (response) {
                             var data = response.data;
-                            for (var j=0; j<data.results.length; j++){
-                                vm.challengeList.push(data.results[j]);
-                                var id = data.results[j].id;
-                                vm.challengeCreator[id] = data.results[j].creator.id;
+                            for (var j = 0; j < data.results.length; j++) {
+                                var challenge = data.results[j];
+                                vm.challengeList.push(challenge);
+                                var id = challenge.id;
+                                vm.challengeCreator[id] = challenge.creator.id;
                                 utilities.storeData("challengeCreator", vm.challengeCreator);
-                                var offset = new Date(data.results[j].start_date).getTimezoneOffset();
-                                vm.challengeList[j].time_zone = moment.tz.zone(timezone).abbr(offset);
-                                vm.challengeList[j].gmt_zone = gmtZone;
+                                var offset = new Date(challenge.start_date).getTimezoneOffset();
+                                challenge.time_zone = moment.tz.zone(timezone).abbr(offset);
+                                challenge.gmt_zone = gmtZone;
+
+                                var current = new Date();
+                                var startDate = new Date(challenge.start_date);
+                                var endDate = new Date(challenge.end_date);
+
+                                if (startDate > current) {
+                                    if (!vm.upcomingChallenges.some(c => c.id === challenge.id)) {
+                                        vm.upcomingChallenges.push(challenge);
+                                    }
+                                }
+                                else if (current >= startDate && current <= endDate) {
+                                    if (!vm.ongoingChallenges.some(c => c.id === challenge.id)) {
+                                        vm.ongoingChallenges.push(challenge);
+                                    }
+                                }
+                                else if (current > endDate) {
+                                    if (!vm.pastChallenges.some(c => c.id === challenge.id)) {
+                                        vm.pastChallenges.push(challenge);
+                                    }
+                                }
                             }
                         },
-                        onError: function() {
+                        onError: function () {
                             utilities.hideLoader();
                         }
                     };
@@ -54,7 +84,7 @@
                 }
                 utilities.hideLoader();
             },
-            onError: function() {
+            onError: function () {
                 utilities.hideLoader();
             }
         };
