@@ -8,7 +8,6 @@ RUN apt-get update && \
   libgmp-dev libcgal-qt5-dev swig && \
   rm -rf /var/lib/apt/lists/*
 
-
 RUN mkdir /code
 WORKDIR /code
 ADD requirements/* /code/
