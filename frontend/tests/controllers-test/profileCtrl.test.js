@@ -319,7 +319,6 @@ describe('Unit tests for profile controller', function () {
             spyOn($mdDialog, 'show').and.callFake(function (options) {
                 var fakeScope = $rootScope.$new();
     
-                // ✅ Get the actual controller function from the inline array
                 var controllerFn = Array.isArray(options.controller)
                     ? options.controller[options.controller.length - 1]
                     : options.controller;
