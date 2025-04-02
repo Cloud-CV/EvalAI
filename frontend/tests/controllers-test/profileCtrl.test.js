@@ -318,7 +318,13 @@ describe('Unit tests for profile controller', function () {
         beforeEach(function () {
             spyOn($mdDialog, 'show').and.callFake(function (options) {
                 var fakeScope = $rootScope.$new();
-                options.controller(fakeScope, $mdDialog);
+    
+                // ✅ Get the actual controller function from the inline array
+                var controllerFn = Array.isArray(options.controller)
+                    ? options.controller[options.controller.length - 1]
+                    : options.controller;
+    
+                controllerFn(fakeScope, $mdDialog);
     
                 expect(typeof fakeScope.refreshToken).toBe('function');
                 expect(typeof fakeScope.dismiss).toBe('function');
@@ -341,14 +347,18 @@ describe('Unit tests for profile controller', function () {
             var dialogArgs = $mdDialog.show.calls.mostRecent().args[0];
             expect(dialogArgs.templateUrl).toBe('dist/views/web/auth/token-expired-dialog.html');
     
-            // Simulate user clicking 'refreshToken'
             var testScope = $rootScope.$new();
-            dialogArgs.controller(testScope, $mdDialog);
+            var controllerFn = Array.isArray(dialogArgs.controller)
+                ? dialogArgs.controller[dialogArgs.controller.length - 1]
+                : dialogArgs.controller;
+    
+            controllerFn(testScope, $mdDialog);
             testScope.refreshToken();
     
             expect(vm.refreshToken).toHaveBeenCalled();
         });
     });
+    
     
 });
 
