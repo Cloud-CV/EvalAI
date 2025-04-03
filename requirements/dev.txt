@@ -1,7 +1,7 @@
 -r common.txt
 
 autopep8==1.5.4
-black==22.3.0
+black==24.8.0
 coverage==5.3
 coveralls==2.2.0
 django-autofixture==0.12.1
@@ -13,6 +13,7 @@ flake8==3.8.4
 Faker==4.18.0
 mock==4.0.2
 pre-commit==2.9.2
+pylint==3.3.6
 pytest==5.4.2
 pytest-cov==2.10.1
 pytest-django==3.9.0

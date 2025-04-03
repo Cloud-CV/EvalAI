@@ -23,7 +23,7 @@ before_install:
   - ulimit -n 4096 # Increase open file limit
 
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2 black==22.3.0 pylint==3.3.6
+  - pip install awscli==1.18.66 flake8==3.8.2 black==24.8.0 pylint==3.3.6
 
 jobs:
   fast_finish: true
