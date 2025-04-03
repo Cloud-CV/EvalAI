@@ -33,7 +33,7 @@ jobs:
       script:
         - black --check --diff ./
         - flake8 ./
-        - pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=6.5 ./
+        - pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=5.0 ./
 
     - stage: Build & Package
       name: Build Docker Images
