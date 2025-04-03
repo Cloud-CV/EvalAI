@@ -115,7 +115,10 @@ class TestUserisStafforHost(BaseTestClass):
         )
 
         EmailAddress.objects.create(
-            user=self.user2, email="user2@test.com", primary=True, verified=True
+            user=self.user2,
+            email="user2@test.com",
+            primary=True,
+            verified=True,
         )
 
         self.challenge_host_team = ChallengeHostTeam.objects.create(
@@ -146,7 +149,9 @@ class TestUserisStafforHost(BaseTestClass):
         self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge.pk))
 
     def test_if_user_is_not_staff(self):
-        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge.pk))
+        self.assertFalse(
+            is_user_a_staff_or_host(self.user2, self.challenge.pk)
+        )
 
     def test_if_user_is_host(self):
         self.user.is_staff = False
@@ -154,7 +159,11 @@ class TestUserisStafforHost(BaseTestClass):
         self.assertTrue(is_user_a_staff_or_host(self.user, self.challenge.pk))
 
     def test_if_user_is_not_host(self):
-        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge.pk))
+        self.assertFalse(
+            is_user_a_staff_or_host(self.user2, self.challenge.pk)
+        )
 
     def test_if_user_is_not_host_or_staff(self):
-        self.assertFalse(is_user_a_staff_or_host(self.user2, self.challenge.pk))
+        self.assertFalse(
+            is_user_a_staff_or_host(self.user2, self.challenge.pk)
+        )

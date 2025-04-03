@@ -388,9 +388,9 @@ class RunSubmissionTestClass(BaseTestClass):
         )
 
         mock_map[challenge_pk] = mock.Mock()
-        mock_map.get(
-            challenge_pk
-        ).get.return_value = "test_annotation_file.txt"
+        mock_map.get(challenge_pk).get.return_value = (
+            "test_annotation_file.txt"
+        )
         mock_script_dict[challenge_pk] = mock.Mock()
         mock_script_dict[challenge_pk].evaluate.return_value = {
             "split1": {"metric1": self.metric}
@@ -457,9 +457,9 @@ class RunSubmissionTestClass(BaseTestClass):
         )
 
         mock_map[challenge_pk] = mock.Mock()
-        mock_map.get(
-            challenge_pk
-        ).get.return_value = "test_annotation_file.txt"
+        mock_map.get(challenge_pk).get.return_value = (
+            "test_annotation_file.txt"
+        )
         mock_script_dict[challenge_pk] = mock.Mock()
         mock_script_dict[challenge_pk].evaluate.return_value = {
             "result": [{"split2": {"metric1": self.metric}}]

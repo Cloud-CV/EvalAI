@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0101_challenge_ec2_instance_id'),
+        ("challenges", "0101_challenge_ec2_instance_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='ec2_storage',
-            field=models.PositiveIntegerField(default=8, verbose_name='EC2 storage (GB)'),
+            model_name="challenge",
+            name="ec2_storage",
+            field=models.PositiveIntegerField(
+                default=8, verbose_name="EC2 storage (GB)"
+            ),
         ),
     ]

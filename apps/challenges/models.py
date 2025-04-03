@@ -28,7 +28,6 @@ def get_default_eval_metric():
 
 
 class Challenge(TimeStampedModel):
-
     """Model representing a hosted Challenge"""
 
     def __init__(self, *args, **kwargs):
@@ -68,8 +67,12 @@ class Challenge(TimeStampedModel):
         ("AUD", "Audio"),
         ("TAB", "Tabular"),
     )
-    domain = models.CharField(max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True)
-    list_tags = ArrayField(models.TextField(null=True, blank=True), default=list, blank=True)
+    domain = models.CharField(
+        max_length=50, choices=DOMAIN_OPTIONS, null=True, blank=True
+    )
+    list_tags = ArrayField(
+        models.TextField(null=True, blank=True), default=list, blank=True
+    )
     has_prize = models.BooleanField(default=False)
     has_sponsors = models.BooleanField(default=False)
     published = models.BooleanField(
@@ -83,7 +86,11 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     manual_participant_approval = models.BooleanField(default=False)
-    approved_participant_teams = models.ManyToManyField(ParticipantTeam, blank=True, related_name="approved_challenge_participant_teams")
+    approved_participant_teams = models.ManyToManyField(
+        ParticipantTeam,
+        blank=True,
+        related_name="approved_challenge_participant_teams",
+    )
     is_disabled = models.BooleanField(default=False, db_index=True)
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts")
@@ -128,8 +135,7 @@ class Challenge(TimeStampedModel):
         db_index=True,
     )
     sqs_retention_period = models.PositiveIntegerField(
-        default=345600,
-        verbose_name="SQS Retention Period"
+        default=345600, verbose_name="SQS Retention Period"
     )
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
@@ -220,7 +226,9 @@ class Challenge(TimeStampedModel):
     job_memory = models.CharField(
         max_length=256, null=True, blank=True, default="8Gi"
     )
-    worker_image_url = models.CharField(max_length=200, blank=True, null=True, default="")
+    worker_image_url = models.CharField(
+        max_length=200, blank=True, null=True, default=""
+    )
     evaluation_module_error = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -261,7 +269,9 @@ class Challenge(TimeStampedModel):
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs):
+def create_eks_cluster_or_ec2_for_challenge(
+    sender, instance, created, **kwargs
+):
     field_name = "approved_by_admin"
     import challenges.aws_utils as aws
 
@@ -283,7 +293,9 @@ def create_eks_cluster_or_ec2_for_challenge(sender, instance, created, **kwargs)
 
 
 @receiver(signals.post_save, sender="challenges.Challenge")
-def update_sqs_retention_period_for_challenge(sender, instance, created, **kwargs):
+def update_sqs_retention_period_for_challenge(
+    sender, instance, created, **kwargs
+):
     field_name = "sqs_retention_period"
     import challenges.aws_utils as aws
 
@@ -312,7 +324,6 @@ class DatasetSplit(TimeStampedModel):
 
 
 class ChallengePhase(TimeStampedModel):
-
     """Model representing a Challenge Phase"""
 
     def __init__(self, *args, **kwargs):

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0091_challenge_allow_host_cancel_submissions'),
+        ("challenges", "0091_challenge_allow_host_cancel_submissions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='allow_cancel_running_submissions',
+            model_name="challenge",
+            name="allow_cancel_running_submissions",
             field=models.BooleanField(default=False),
         ),
     ]
