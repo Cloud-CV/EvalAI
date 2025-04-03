@@ -23,14 +23,17 @@ before_install:
   - ulimit -n 4096 # Increase open file limit
 
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2 coveralls
+  - pip install awscli==1.18.66 flake8==3.8.2 black==25.1.0 pylint==3.3.6
 
 jobs:
   fast_finish: true
   include:
-    - stage: Code Quality Check
-      name: Lint Code With Flake8
-      script: flake8 ./
+    - stage: Code Quality
+      name: Check Code Quality
+      script:
+        - black --check --diff ./
+        - flake8 ./
+        - pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=6.5 ./
 
     - stage: Build & Package
       name: Build Docker Images
