@@ -229,7 +229,7 @@
 
                 if (!vm.isURLValid(vm.user[editid])) {
                     vm.isFormError = true;
-                    $rootScope.notify("error", "URL length should not be greater than 200 or is in invalid format!");
+                    $rootScope.notify("error", "Please provide a valid URL for your profile link.");
                     return;
                 }
 
@@ -254,32 +254,41 @@
                             $state.reload();
                         }
                     },
+                    
                     onError: function(response) {
                         if (response.status == 400) {
                             vm.errorResponse = response;
-
                             vm.isFormError = true;
                             var isFirstname_valid, isLastname_valid, isAffiliation_valid;
+                            var isGithubUrl_valid, isGoogleScholarUrl_valid, isLinkedinUrl_valid;
+                            
                             try {
-                                isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
-                                isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
-                                isAffiliation_valid = typeof(response.data.affiliation) !== 'undefined' ? true : false;
+                                isFirstname_valid = typeof(response.data.first_name) !== 'undefined';
+                                isLastname_valid = typeof(response.data.last_name) !== 'undefined';
+                                isAffiliation_valid = typeof(response.data.affiliation) !== 'undefined';
+                                isGithubUrl_valid = typeof(response.data.github_url) !== 'undefined';
+                                isGoogleScholarUrl_valid = typeof(response.data.google_scholar_url) !== 'undefined';
+                                isLinkedinUrl_valid = typeof(response.data.linkedin_url) !== 'undefined';
+                                
                                 if (isFirstname_valid) {
                                     vm.FormError = response.data.first_name[0];
                                 } else if (isLastname_valid) {
                                     vm.FormError = response.data.last_name[0];
                                 } else if (isAffiliation_valid) {
                                     vm.FormError = response.data.affiliation[0]; 
+                                } else if (isGithubUrl_valid || isGoogleScholarUrl_valid || isLinkedinUrl_valid) {
+                                    // Improved the user-friendly message for URL errors.
+                                    vm.FormError = "Please provide valid URLs for your profile links.";
                                 } else {
-                                    $rootScope.notify("error", "Some error have occured . Please try again !");
+                                    $rootScope.notify("error", "Some error occurred. Please try again!");
                                 }
                                 $rootScope.notify("error", vm.FormError);
-
                             } catch (error) {
                                 $rootScope.notify("error", error);
                             }
                         }
-
+                    }
+                    
                     }
                 };
 
