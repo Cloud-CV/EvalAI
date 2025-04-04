@@ -81,6 +81,18 @@
             angular.element(".dropdown-button").dropdown();
         };
 
+        vm.confirmLogout = function (logOutForm) {
+            if (logOutForm) {
+                utilities.resetStorage();
+                $rootScope.isLoader = false;
+                $rootScope.isAuth = false;
+                $rootScope.notify("success", "You have been successfully logged out.");
+                $state.go("home");
+            }
+            else {
+                $state.go("home");
+            }
+        };
 
         vm.init();
         vm.getChallenge();
