@@ -22,7 +22,7 @@ class ChallengeHostTeam(TimeStampedModel):
     team_url = models.CharField(max_length=1000, default="", blank=True)
 
     def __str__(self):
-        return "{0}: {1}".format(self.team_name, self.created_by)
+        return f"{self.team_name}: {self.created_by}"
 
     def get_all_challenge_host_email(self):
         email_ids = ChallengeHost.objects.filter(team_name=self).values_list(
@@ -36,6 +36,9 @@ class ChallengeHostTeam(TimeStampedModel):
 
 
 class ChallengeHost(TimeStampedModel):
+    """
+    Model representing an individual Challenge Host in a Host Team
+    """
 
     # permission options
     ADMIN = "Admin"
@@ -66,16 +69,12 @@ class ChallengeHost(TimeStampedModel):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    team_name = models.ForeignKey(
-        "ChallengeHostTeam", on_delete=models.CASCADE
-    )
+    team_name = models.ForeignKey("ChallengeHostTeam", on_delete=models.CASCADE)
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     permissions = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
 
     def __str__(self):
-        return "{0}:{1}:{2}".format(
-            self.team_name, self.user, self.permissions
-        )
+        return f"{self.team_name}:{self.user}:{self.permissions}"
 
     class Meta:
         app_label = "hosts"
