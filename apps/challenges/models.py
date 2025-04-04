@@ -8,10 +8,8 @@ from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
-
 from base.models import TimeStampedModel, model_field_name
 from base.utils import RandomFileName, get_slug, is_model_field_changed
-
 
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
@@ -430,20 +428,14 @@ class ChallengePhase(TimeStampedModel):
         return challenge_phase_instance
 
 
-def post_save_connect(field_name, sender):
-    import challenges.aws_utils as aws
-
+def post_save_connect(field_name, sender, callback):
     signals.post_save.connect(
         model_field_name(field_name=field_name)(
-            aws.restart_workers_signal_callback
+            callback
         ),
         sender=sender,
         weak=False,
     )
-
-
-post_save_connect("evaluation_script", Challenge)
-post_save_connect("test_annotation", ChallengePhase)
 
 
 class Leaderboard(TimeStampedModel):
