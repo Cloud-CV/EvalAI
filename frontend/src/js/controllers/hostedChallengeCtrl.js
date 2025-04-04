@@ -45,6 +45,7 @@
                     parameters.callback = {
                         onSuccess: function (response) {
                             var data = response.data;
+                            var current = new Date();
                             for (var j = 0; j < data.results.length; j++) {
                                 var challenge = data.results[j];
                                 vm.challengeList.push(challenge);
@@ -55,7 +56,6 @@
                                 challenge.time_zone = moment.tz.zone(timezone).abbr(offset);
                                 challenge.gmt_zone = gmtZone;
 
-                                var current = new Date();
                                 var startDate = new Date(challenge.start_date);
                                 var endDate = new Date(challenge.end_date);
 
