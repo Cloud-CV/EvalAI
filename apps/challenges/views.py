@@ -15,7 +15,7 @@ import zipfile
 from os.path import basename, isfile, join
 from datetime import datetime
 
-
+from django.http import JsonResponse
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
@@ -25,6 +25,7 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
 
+from rest_framework.permissions import AllowAny
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -4838,6 +4839,49 @@ def update_allowed_email_ids(request, challenge_pk, phase_pk):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def slack_actions(request):
+    from . import models
+
+    payload = json.loads(request.POST.get("payload", "{}"))
+
+    action = payload["actions"][0]
+    action_type, challenge_id_str = action["value"].split("_")
+
+    challenge_id = int(challenge_id_str)
+
+    challenge = get_challenge_model(challenge_id)
+
+    # Verify the token
+    slack_token = payload.get('token')
+    expected_token = os.getenv('SLACK_VERIFICATION_TOKEN')
+
+    if slack_token != expected_token:
+        return JsonResponse({"error": "Invalid token"}, status=403)
+
+    if action_type == "approve":
+        challenge.approved_by_admin = True
+        challenge.save()
+
+        models.slack_challenge_approval_callback(challenge_id)
+
+        return JsonResponse(
+            {"text": f"Challenge {challenge_id} has been approved"}
+        )
+
+    else:
+        challenge.approved_by_admin = False
+        challenge.save()
+
+        models.slack_challenge_approval_callback(challenge_id)
+
+        return JsonResponse(
+            {"text": f"Challenge {challenge_id} has been disapproved"}
+        )
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -4886,17 +4930,41 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 
         message = {
             "text": f"Challenge {challenge_pk} has finished submissions and has requested for approval!",
-            "fields": [
+            "attachments": [
                 {
-                    "title": "Admin URL",
-                    "value": f"{evalai_api_server}/api/admin/challenges/challenge/{challenge_pk}",
-                    "short": False,
-                },
-                {
-                    "title": "Challenge title",
-                    "value": challenge.title,
-                    "short": False,
-                },
+                    "fallback": "You are unable to make a decision.",
+                    "callback_id": "challenge_approval",  # Callback ID used to identify this particular interaction
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "fields": [
+                        {
+                            "title": "Admin URL",
+                            "value": f"{evalai_api_server}/api/admin/challenges/challenge/{challenge_pk}",
+                            "short": False,
+                        },
+                        {
+                            "title": "Challenge title",
+                            "value": challenge.title,
+                            "short": False,
+                        },
+                    ],
+                    "actions": [
+                        {
+                            "name": "approval",
+                            "text": "Yes",
+                            "type": "button",
+                            "value": f"approve_{challenge_pk}",
+                            "style": "primary",
+                        },
+                        {
+                            "name": "approval",
+                            "text": "No",
+                            "type": "button",
+                            "value": f"disapprove_{challenge_pk}",
+                            "style": "danger",
+                        },
+                    ],
+                }
             ],
         }
 

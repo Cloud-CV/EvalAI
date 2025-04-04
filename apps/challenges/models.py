@@ -268,6 +268,39 @@ class Challenge(TimeStampedModel):
         return False
 
 
+def slack_challenge_approval_callback(challenge_id):
+    field_name = "approved_by_admin"
+    from challenges.models import Challenge
+    import challenges.aws_utils as aws
+
+    instance = Challenge.objects.get(id=challenge_id)
+
+    if challenge_id:
+        challenge = Challenge.objects.filter(id=challenge_id).first()
+        if challenge:
+            created = False
+        else:
+            created = True
+
+    if not created and is_model_field_changed(instance, field_name):
+        if (
+            instance.approved_by_admin is True
+            and instance.is_docker_based is True
+            and instance.remote_evaluation is False
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_eks_cluster.delay(serialized_obj)
+        elif (
+            instance.approved_by_admin is True
+            and instance.uses_ec2_worker is True
+        ):
+            serialized_obj = serializers.serialize("json", [instance])
+            aws.setup_ec2.delay(serialized_obj)
+    aws.challenge_approval_callback(
+        instance=instance, field_name=field_name, sender="challenges.Challenge"
+    )
+
+
 @receiver(signals.post_save, sender="challenges.Challenge")
 def create_eks_cluster_or_ec2_for_challenge(
     sender, instance, created, **kwargs
