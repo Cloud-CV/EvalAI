@@ -12,7 +12,7 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ChallengeHostTeamSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             request = context.get("request")
@@ -34,7 +34,7 @@ class ChallengeHostSerializer(serializers.ModelSerializer):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ChallengeHostSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             challenge_host_team = context.get("challenge_host_team")
@@ -52,7 +52,7 @@ class InviteHostToTeamSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
-        super(InviteHostToTeamSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             self.challenge_host_team = context.get("challenge_host_team")
@@ -63,11 +63,11 @@ class InviteHostToTeamSerializer(serializers.Serializer):
             raise serializers.ValidationError("A host cannot invite himself")
         try:
             User.objects.get(email=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User does not exist")
+        except User.DoesNotExist as exc:
+            raise serializers.ValidationError("User does not exist") from exc
         return value
 
-    def save(self):
+    def save(self, **kwargs):
         email = self.validated_data.get("email")
         return ChallengeHost.objects.get_or_create(
             user=User.objects.get(email=email),
