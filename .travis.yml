@@ -39,6 +39,9 @@ jobs:
       script:
         - echo "Running pre-commit checks inside Django container..."
         - docker-compose run -e VERBOSE=1 django bash -c "
+          echo 'Installing git ..' &&
+          apt-get update && apt-get install -y git &&
+          echo 'Installing pre-commit...' &&
           pip install pre-commit==3.5.0 &&
           pre-commit install-hooks &&
           echo 'Running black...' &&
