@@ -4012,6 +4012,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
             error_messages = None
             try:
                 with transaction.atomic():
+                    worker_image_url = request.data.get("worker_image_url", None)
                     serializer = ZipChallengeSerializer(
                         data=yaml_file_data,
                         context={
@@ -4024,6 +4025,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "github_repository": request.data[
                                 "GITHUB_REPOSITORY"
                             ],
+                            "worker_image_url": worker_image_url,
                         },
                     )
                     if serializer.is_valid():
@@ -4314,6 +4316,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     serializer.save()
 
                 # Updating Challenge object
+                worker_image_url = request.data.get("worker_image_url", None)
                 serializer = ZipChallengeSerializer(
                     challenge,
                     data=yaml_file_data,
@@ -4324,6 +4327,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "evaluation_script": files[
                             "challenge_evaluation_script_file"
                         ],
+                        "worker_image_url": worker_image_url,
                     },
                 )
                 if serializer.is_valid():
