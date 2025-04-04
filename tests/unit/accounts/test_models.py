@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from accounts.models import Profile, UserStatus
+from accounts.models import Profile, UserStatus, JwtToken
 
 
 class BaseTestCase(TestCase):
@@ -30,4 +30,15 @@ class ProfileTestCase(BaseTestCase):
     def test__str__(self):
         self.assertEqual(
             "{}".format(self.profile.user), self.profile.__str__()
+        )
+
+
+class JwtTokenTestCase(BaseTestCase):
+    def setUp(self):
+        super(JwtTokenTestCase, self).setUp()
+        self.jwt_token = JwtToken.objects.create(user=self.user)
+
+    def test__str__(self):
+        self.assertEqual(
+            "{}".format(self.jwt_token.user), self.jwt_token.__str__()
         )
