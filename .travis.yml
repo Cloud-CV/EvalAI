@@ -11,6 +11,12 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
+
+env:
+  global:
+    - COMPOSE_BAKE=true
+    - COMPOSE_BAKE_ARGS="--build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="
+
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
@@ -23,7 +29,7 @@ before_install:
   - ulimit -n 4096 # Increase open file limit
 
 install:
-  - pip install awscli==1.18.66 flake8==3.8.2 black==24.8.0 pylint==3.2.7
+  - pip install awscli==1.18.66
 
 jobs:
   fast_finish: true
@@ -31,9 +37,18 @@ jobs:
     - stage: Code Quality
       name: Check Code Quality
       script:
-        - black --check --diff ./
-        - flake8 ./
-        - pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=5.0 ./
+        - echo "Running pre-commit checks inside Django container..."
+        - docker-compose run -e VERBOSE=1 django bash -c "
+          pip install pre-commit==3.5.0 &&
+          pre-commit install-hooks &&
+          echo 'Running black...' &&
+          SKIP=flake8,pylint pre-commit run black --all-files --verbose || { echo 'Black check failed!'; exit 1; } &&
+          echo 'Running flake8...' &&
+          SKIP=black,pylint pre-commit run flake8 --all-files --verbose || { echo 'Flake8 check failed!'; exit 1; } &&
+          echo 'Running pylint...' &&
+          SKIP=black,flake8 pre-commit run pylint --all-files --verbose || { echo 'Pylint check failed!'; exit 1; } &&
+          echo 'All code quality checks passed!'
+          "
 
     - stage: Build & Package
       name: Build Docker Images
