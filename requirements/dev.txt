@@ -1,5 +1,5 @@
 -r common.txt
-
+pip==24.0
 autopep8==1.5.4
 black==22.1.0
 coverage==5.3
