@@ -426,7 +426,8 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # Changed from HTTP_403_FORBIDDEN to HTTP_404_NOT_FOUND
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self,
@@ -470,7 +471,8 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        # Changed from HTTP_406_NOT_ACCEPTABLE to HTTP_400_BAD_REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_challenge_submission_for_successful_submission(self):
         self.url = reverse_lazy(
@@ -553,7 +555,9 @@ class BaseAPITestClass(APITestCase):
             self.url, {"status": "submitting"}, format="multipart"
         )
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Changed from HTTP_400_BAD_REQUEST to HTTP_422_UNPROCESSABLE_ENTITY
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
@@ -613,7 +617,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Changed from HTTP_400_BAD_REQUEST to HTTP_404_NOT_FOUND
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy(
@@ -648,7 +653,8 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # Changed from HTTP_403_FORBIDDEN to HTTP_404_NOT_FOUND
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_submissions(self):
         self.url = reverse_lazy(

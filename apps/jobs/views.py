@@ -140,7 +140,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         challenge = Challenge.objects.get(pk=challenge_id)
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        # http response code change from 400 to 404
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # check if the challenge phase exists or not
     try:
@@ -149,7 +150,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
     except ChallengePhase.DoesNotExist:
         response_data = {"error": "Challenge Phase does not exist"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        # http response code change from 400 to 404
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
         # getting participant team object for the user for a particular challenge.
@@ -164,7 +166,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = {
                 "error": "You haven't participated in the challenge"
             }
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            # http response code change from 400 to 404
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         submission = Submission.objects.filter(
             participant_team=participant_team_id,
@@ -240,7 +243,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = {
                 "error": "You haven't participated in the challenge"
             }
-            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+            # http response code change from 403 to 404
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         # check if manual approval is enabled and team is approved
         if (
@@ -295,12 +299,14 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             if request.data.get("file_url") is None:
                 response_data = {"error": "The file URL is missing!"}
                 return Response(
-                    response_data, status=status.HTTP_400_BAD_REQUEST
+                    # Response code changed from 400 bad request to 422
+                    response_data, status=status.HTTP_422_UNPROCESSABLE_ENTITY
                 )
             if not is_url_valid(request.data["file_url"]):
                 response_data = {"error": "The file URL does not exists!"}
                 return Response(
-                    response_data, status=status.HTTP_400_BAD_REQUEST
+                    # Response code changed from 400 bad request to 422
+                    response_data, status=status.HTTP_422_UNPROCESSABLE_ENTITY
                 )
             download_file_and_publish_submission_message.delay(
                 request.data,
@@ -397,7 +403,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             publish_submission_message(message)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
-            serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+            # http response code change from 406 to 400
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
 
 
