@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0096_challenge_meta_order_by_title'),
+        ("challenges", "0096_challenge_meta_order_by_title"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='disable_logs',
+            model_name="challengephase",
+            name="disable_logs",
             field=models.BooleanField(default=False),
         ),
     ]
