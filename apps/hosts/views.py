@@ -111,17 +111,16 @@ def challenge_host_list(request, challenge_host_team_pk):
 
     if request.method == "GET":
         challenge_host_status = request.query_params.get("status", None)
-        filter_condition = {
-            "team_name": challenge_host_team,
-            "user": request.user,
-        }
         if challenge_host_status:
             challenge_host_status = challenge_host_status.split(",")
-            filter_condition.update({"status__in": challenge_host_status})
-
-        challenge_host = ChallengeHost.objects.filter(
-            **filter_condition
-        ).order_by("-id")
+            challenge_host = ChallengeHost.objects.filter(
+                team_name=challenge_host_team,
+                status__in=challenge_host_status
+            ).order_by("-id")
+        else:
+            challenge_host = ChallengeHost.objects.filter(
+                team_name=challenge_host_team
+            ).order_by("-id")
         paginator, result_page = team_paginated_queryset(
             challenge_host, request
         )
