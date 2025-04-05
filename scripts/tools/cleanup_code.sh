@@ -20,4 +20,8 @@ find . -type f -name "*.py" \
     --aggressive --aggressive \
     --max-line-length=79 {} +
 
+# Run Black for consistency
+echo "Running Black for consistency..."
+black . --line-length 79
+
 echo "Code cleanup complete. Review changes before committing."
