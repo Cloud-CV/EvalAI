@@ -10,6 +10,4 @@ WORKDIR /code
 ADD requirements/* /code/ 
 RUN pip install --no-cache-dir --no-compile --progress-bar off -r dev.txt
 
-ADD . /code
-
 CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]

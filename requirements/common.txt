@@ -7,7 +7,7 @@ commonmark==0.9.1
 cfn-lint==0.48.3
 django==2.2.20
 networkx==2.4
-django-allauth==0.54.0
+django-allauth==0.43.0
 django-filter==2.4.0
 django-import-export==2.4.0
 djangorestframework==3.10.3
