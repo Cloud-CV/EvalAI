@@ -9,7 +9,6 @@ django-silk==4.1.0
 django-spaghetti-and-meatballs==0.3.1
 Faker==4.18.0
 mock==4.0.2
-pre-commit==3.5.0
 pytest==5.4.2
 pytest-cov==2.10.1
 pytest-django==3.9.0
