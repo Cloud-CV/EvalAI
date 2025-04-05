@@ -480,7 +480,7 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
         ),
         status.HTTP_401_UNAUTHORIZED: openapi.Response(
             "{'error': 'Sorry, you do not have permissions to remove this participant team'}"
-        )
+        ),
     },
 )
 @api_view(["POST"])

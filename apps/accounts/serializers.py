@@ -28,7 +28,9 @@ class ProfileSerializer(UserDetailsSerializer):
     Serializer to update the user profile.
     """
 
-    affiliation = serializers.CharField(source="profile.affiliation", allow_blank=True)
+    affiliation = serializers.CharField(
+        source="profile.affiliation", allow_blank=True
+    )
     github_url = serializers.URLField(
         source="profile.github_url", allow_blank=True
     )
@@ -106,12 +108,19 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
     Serializer to check Account Active Status.
     """
+
     def get_email_options(self):
         try:
-            user = get_user_model().objects.get(email=self.data['email'])
+            user = get_user_model().objects.get(email=self.data["email"])
             if not user.is_active:
-                raise ValidationError({'details': "Account is not active. Please contact the administrator."})
+                raise ValidationError(
+                    {
+                        "details": "Account is not active. Please contact the administrator."
+                    }
+                )
             else:
                 return super().get_email_options()
         except get_user_model().DoesNotExist:
-            raise ValidationError({'details': "User with the given email does not exist."})
+            raise ValidationError(
+                {"details": "User with the given email does not exist."}
+            )
