@@ -6,8 +6,10 @@ find . -type f -name "*.py" \
   -not -path "./env/*" \
   -not -path "./docs/*" \
   -exec autoflake --in-place \
-    --remove-all-unused-imports \
-    --remove-unused-variables {} +
+    --remove-duplicate-keys \
+    --remove-unused-variables \
+    --expand-star-imports \
+    --remove-all-unused-imports {} +
 
 # Fix long lines (C0301): max 79 characters
 echo "Fixing formatting and line lengths with autopep8..."
