@@ -80,7 +80,8 @@ if __name__ == "__main__":
         challenges.extend(response["results"])
         next_page = response["next"]
 
-    # Loop through all challenges and run the auto-cancel script for each challenge
+    # Loop through all challenges and run the auto-cancel script for each
+    # challenge
     for challenge in challenges:
         challenge_pk = challenge["id"]
         print(f"Running auto-cancel script for challenge {challenge_pk}")

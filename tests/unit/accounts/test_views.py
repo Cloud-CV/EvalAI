@@ -96,9 +96,9 @@ class ResendEmailVerificationTestClass(APITestCase):
         self.url = reverse_lazy("accounts:resend_email_confirmation")
 
     def test_resend_throttles(self):
-        for _ in range(
-            3
-        ):  # Running 3 iterations because the throttle rate is 3/hour. The very next request will be throttled.
+        # Running 3 iterations because the throttle rate is 3/hour. The very
+        # next request will be throttled.
+        for _ in range(3):
             response = self.client.post(self.url, {})
             self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(self.url, {})

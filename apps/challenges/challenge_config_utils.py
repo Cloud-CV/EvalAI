@@ -95,7 +95,8 @@ def get_yaml_read_error(exc):
     # To get the problem description
     if hasattr(exc, "problem"):
         error_description = exc.problem
-        # To capitalize the first alphabet of the problem description as default is in lowercase
+        # To capitalize the first alphabet of the problem description as
+        # default is in lowercase
         error_description = error_description[0:].capitalize()
     # To get the error line and column number
     if hasattr(exc, "problem_mark"):
