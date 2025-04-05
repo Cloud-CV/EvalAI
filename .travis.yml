@@ -10,7 +10,7 @@ python:
   - '3.9.21'
 cache:
   directories:
-    - '$HOME/.cache/pip'
+    - $HOME/.cache/pip
 before_install:
   - sudo rm -f /etc/boto.cfg
   - export CHROME_BIN=chromium-browser
@@ -19,8 +19,8 @@ before_install:
   - mkdir -p $HOME/.config/pip
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
-  - ulimit -u 16384  # Increase process/thread limit
-  - ulimit -n 4096   # Increase open file limit
+  - ulimit -u 16384 # Increase process/thread limit
+  - ulimit -n 4096 # Increase open file limit
 
 install:
   - pip install awscli==1.18.66 flake8==3.8.2 coveralls
@@ -28,35 +28,35 @@ install:
 jobs:
   fast_finish: true
   include:
-    - stage: lint
-      name: "Code Linting"
+    - stage: Code Quality Check
+      name: Lint Code With Flake8
       script: flake8 ./
-    
-    - stage: build
-      name: "Docker Build"
-      script:
-        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi'
-        - docker-compose build --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" || travis_terminate 1
 
-    - stage: test
-      name: "Frontend Tests"
+    - stage: Build & Package
+      name: Build Docker Images
+      script:
+        - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
+        - docker-compose --profile worker --profile statsd build --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" || travis_terminate 1;
+
+    - stage: Test & Validate
+      name: Frontend Tests
       script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
-    - stage: test
-      name: "Backend Tests"
-      script: 
+    - stage: Test & Validate
+      name: Backend Tests
+      script:
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
-    
-    - stage: deploy
-      name: "Deployment"
+
+    - stage: Deployment
+      name: Push & Deploy Services
       script:
         - eval "$(ssh-agent -s)"
         - openssl aes-256-cbc -K $encrypted_77d2d82026f6_key -iv $encrypted_77d2d82026f6_iv -in scripts/deployment/evalai.pem.enc -out scripts/deployment/evalai.pem -d || true
-        - ./scripts/deployment/push.sh || travis_terminate 1
-        - ./scripts/deployment/deploy.sh auto_deploy || travis_terminate 1
+        - ./scripts/deployment/push.sh || travis_terminate 1;
+        - ./scripts/deployment/deploy.sh auto_deploy || travis_terminate 1;
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log

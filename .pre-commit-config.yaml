@@ -1,10 +1,21 @@
 repos:
 -   repo: https://github.com/ambv/black
-    rev: stable
+    rev: 25.1.0
     hooks:
     - id: black
-      language_version: python3.7
+      language_version: python3.9
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v1.2.3
     hooks:
     - id: flake8
+      args: ['--config=.flake8']
+-   repo: https://github.com/pycqa/pylint
+    rev: v2.17.4
+    hooks:
+    - id: pylint
+      args: [
+        "--rcfile=.pylintrc",  # Points to your pylint config file
+        "--output-format=colorized", 
+        "--score=y"  # This will show the pylint score in the output
+      ]
+      language_version: python3.9
