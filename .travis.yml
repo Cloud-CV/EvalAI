@@ -54,6 +54,8 @@ jobs:
           pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 &&
           echo 'Running black check...' &&
           black --check --diff ./ || { echo 'Black check failed!'; travis_terminate 1; } &&
+          echo 'Running isort check...' &&
+          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; travis_terminate 1; } &&
           echo 'Running flake8 check...' &&
           flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; travis_terminate 1; } &&
           echo 'Running pylint check...' &&
