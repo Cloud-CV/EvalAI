@@ -23,3 +23,8 @@ ignore=migrations
 # pylint.extensions.docparams: Docstring parameter checker
 # pylint.extensions.no_self_use: Check for self usage in methods
 load-plugins=pylint.extensions.no_self_use,pylint.extensions.docparams
+init-hook='import sys, os; \
+    sys.path.append(os.path.join(os.getcwd(), "apps")); \
+    sys.path.append(os.path.join(os.getcwd(), "scripts", "monitoring")); \
+    sys.path.append(os.path.join(os.getcwd(), "scripts", "workers")); \
+    print("Added apps, monitoring and workers directory to pylint path");'

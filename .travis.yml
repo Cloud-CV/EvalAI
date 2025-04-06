@@ -29,31 +29,37 @@ before_install:
   - ulimit -n 4096 # Increase open file limit
 
 install:
-  - pip install awscli==1.18.66 black==24.8.0 flake8==3.8.2 pylint==3.3.6
+  - pip install awscli==1.18.66
 
 jobs:
   fast_finish: true
   include:
-    - stage: Code Quality
-      name: Check Code Quality
-      script:
-        - black --check --diff --verbose ./
-        - flake8 --config=.flake8 --verbose ./
-        - pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=5.0 --verbose ./
-
-    - stage: Build, Test & Validate
-      name: Build Docker Images
+    - stage: Build, Test & Check Code Quality
+      name: Build, Test & Check Code Quality
       script:
         # Build steps
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
         - docker-compose --profile worker --profile statsd build || travis_terminate 1;
-        
+
+        # Check Code Quality
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing black, flake8, and pylint...' &&
+          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 &&
+          echo 'Running black check...' &&
+          black --check --diff --verbose ./ || { echo 'Black check failed!'; exit 1; } &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 --verbose ./ || { echo 'Flake8 check failed!'; exit 1; } &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=5.0 --verbose ./ || { echo 'Pylint check failed!'; exit 1; } &&
+          echo 'All code quality checks passed!'"
+
         # Frontend Tests
         - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
-        
+
         # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
