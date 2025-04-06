@@ -606,7 +606,7 @@ def run_submission(
                 split_code_name = list(split_result.keys())[0]
 
                 # Check if the challenge_phase_split exists for the
-                # challenge_phaseand dataset_split
+                # challenge_phase and dataset_split
                 try:
                     challenge_phase_split = ChallengePhaseSplit.objects.get(
                         challenge_phase=challenge_phase,
