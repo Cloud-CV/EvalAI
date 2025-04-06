@@ -53,11 +53,11 @@ jobs:
           echo 'Installing black, flake8, and pylint...' &&
           pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 &&
           echo 'Running black check...' &&
-          black --check --diff --verbose ./ || { echo 'Black check failed!'; exit 1; } &&
+          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
           echo 'Running flake8 check...' &&
-          flake8 --config=.flake8 --verbose ./ || { echo 'Flake8 check failed!'; exit 1; } &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
           echo 'Running pylint check...' &&
-          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=5.0 --verbose ./ || { echo 'Pylint check failed!'; exit 1; } &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
           echo 'All code quality checks passed!'"
 
       after_success:

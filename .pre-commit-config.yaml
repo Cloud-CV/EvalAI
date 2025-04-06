@@ -23,7 +23,7 @@ repos:
             '--rcfile=.pylintrc',
             '--output-format=colorized',
             '--score=y',
-            '--fail-under=5.0',
+            '--fail-under=7.5',
             '--verbose'
           ]
         language_version: python3.9
