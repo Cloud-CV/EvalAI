@@ -32,25 +32,22 @@ jobs:
       name: Lint Code With Flake8
       script: flake8 ./
 
-    - stage: Build & Package
+    - stage: Build, Test & Validate
       name: Build Docker Images
       script:
+        # Build steps
         - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || travis_terminate 1; fi
         - docker-compose --profile worker --profile statsd build --build-arg PIP_NO_CACHE_DIR=1 --build-arg PIP_NO_BINARY="" || travis_terminate 1;
-
-    - stage: Test & Validate
-      name: Frontend Tests
-      script: docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
-    - stage: Test & Validate
-      name: Backend Tests
-      script:
+        # Frontend Tests
+        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+        # Backend Tests
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
       after_success:
         - bash <(curl -s https://codecov.io/bash)
         - coveralls --rcfile=.coveragerc
 
-    - stage: Deployment
+    - stage: Package & Deployment
       name: Push & Deploy Services
       script:
         - eval "$(ssh-agent -s)"
