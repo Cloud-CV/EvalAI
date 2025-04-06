@@ -169,7 +169,15 @@ describe('Unit tests for hosted challenge controller', function () {
     
     describe('Challenge categorization with duplicate handling', function () {
         beforeEach(function () {
+            jasmine.clock().install();
+            const now = new Date();
+            jasmine.clock().mockDate(now);
+
             vm = createController();
+        });
+
+        afterEach(function () {
+            jasmine.clock().uninstall();
         });
         
         it('should handle duplicate challenges in upcoming category', function () {
