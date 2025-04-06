@@ -917,7 +917,7 @@ class ValidateChallengeConfigUtil:
                         )
 
                     (
-                        is_mapping_valid,
+                        _is_mapping_valid,
                         messages,
                     ) = is_challenge_phase_split_mapping_valid(
                         self.phase_ids,

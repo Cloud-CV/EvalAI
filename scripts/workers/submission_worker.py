@@ -214,7 +214,7 @@ def delete_old_temp_directories(prefix="tmp"):
 
     dir_creation_times = {}
 
-    for root, dirs, files in os.walk(temp_dir):
+    for root, dirs, _files in os.walk(temp_dir):
         for directory in dirs:
             if directory.startswith(prefix):
                 dir_path = os.path.join(root, directory)
@@ -281,7 +281,7 @@ def create_dir_as_python_package(directory):
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
+    with open(init_file_path, "w") as _init_file:  # noqa
         # to create empty file
         pass
 
@@ -516,9 +516,9 @@ def run_submission(
             )
             with stdout_redirect(
                 MultiOut(stdout, sys.__stdout__)
-            ) as new_stdout, stderr_redirect(  # noqa
+            ) as _new_stdout, stderr_redirect(  # noqa
                 MultiOut(stderr, sys.__stderr__)
-            ) as new_stderr:  # noqa
+            ) as _new_stderr:  # noqa
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                     annotation_file_path,
                     user_annotation_file_path,
@@ -555,9 +555,9 @@ def run_submission(
         successful_submission_flag = True
         with stdout_redirect(
             MultiOut(stdout, sys.__stdout__)
-        ) as new_stdout, stderr_redirect(  # noqa
+        ) as _new_stdout, stderr_redirect(  # noqa
             MultiOut(stderr, sys.__stderr__)
-        ) as new_stderr:  # noqa
+        ) as _new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,

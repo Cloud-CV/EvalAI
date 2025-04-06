@@ -3340,7 +3340,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    error_messages, yaml_file_data, files = validate_challenge_config_util(
+    error_messages, _yaml_file_data, _files = validate_challenge_config_util(
         request,
         challenge_host_team,
         BASE_LOCATION,

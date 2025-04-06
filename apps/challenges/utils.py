@@ -376,7 +376,7 @@ def get_aws_credentials_for_submission(challenge, participant_team):
     ecr_repository_name = convert_to_aws_ecr_compatible_format(
         ecr_repository_name
     )
-    repository, created = get_or_create_ecr_repository(
+    repository, _created = get_or_create_ecr_repository(
         ecr_repository_name, aws_keys
     )
     name = str(uuid.uuid4())[:32]
