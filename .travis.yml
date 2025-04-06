@@ -42,23 +42,23 @@ jobs:
         - docker-compose --profile worker --profile statsd build || travis_terminate 1;
 
         # Frontend Tests
-        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging"
+        - docker-compose run nodejs bash -c "gulp dev && karma start --single-run && gulp staging" || travis_terminate 1;
 
         # Backend Tests
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput
-        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django python manage.py flush --noinput || travis_terminate 1;
+        - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.test django pytest --cov . --cov-config .coveragerc || travis_terminate 1;
 
         # Check Code Quality
         - docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
           echo 'Installing black, flake8, and pylint...' &&
           pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 &&
           echo 'Running black check...' &&
-          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
+          black --check --diff ./ || { echo 'Black check failed!'; travis_terminate 1; } &&
           echo 'Running flake8 check...' &&
-          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; travis_terminate 1; } &&
           echo 'Running pylint check...' &&
-          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
-          echo 'All code quality checks passed!'"
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; travis_terminate 1; } &&
+          echo 'All code quality checks passed!'" || travis_terminate 1;
 
       after_success:
         - bash <(curl -s https://codecov.io/bash)
