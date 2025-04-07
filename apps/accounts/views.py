@@ -1,9 +1,12 @@
+"""
+Views for user account and authentication-related operations.
+"""
+
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
 from allauth.account.utils import send_email_confirmation
 
-from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -11,7 +14,9 @@ from rest_framework.decorators import (
     permission_classes,
     throttle_classes,
 )
+from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
+
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
@@ -19,10 +24,10 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
-
 from .throttles import ResendEmailThrottle
 
 
@@ -30,7 +35,9 @@ from .throttles import ResendEmailThrottle
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def disable_user(request):
-
+    """
+    Deactivate the user account and log them out.
+    """
     user = request.user
     user.is_active = False
     user.save()
@@ -43,11 +50,16 @@ def disable_user(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_auth_token(request):
+    """
+    Retrieve JWT token for the authenticated user.
+    """
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
-        response_data = {"error": "This User account doesn't exist."}
-        Response(response_data, status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "This User account doesn't exist."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     try:
         token = JwtToken.objects.get(user=user)
@@ -66,11 +78,12 @@ def get_auth_token(request):
             token_serializer.save()
         token = token_serializer.instance
 
-    outstanding_token = OutstandingToken.objects.filter(user=user).order_by(
-        "-created_at"
-    )[0]
+    outstanding_token = OutstandingToken.objects.filter(
+        user=user
+    ).order_by("-created_at")[0]
+
     response_data = {
-        "token": "{}".format(token.refresh_token),
+        "token": f"{token.refresh_token}",
         "expires_at": outstanding_token.expires_at,
     }
     return Response(response_data, status=status.HTTP_200_OK)
@@ -82,10 +95,10 @@ def get_auth_token(request):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def resend_email_confirmation(request):
     """
-    Resends the confirmation email on user request.
+    Resend the email confirmation to the authenticated user.
     """
     user = request.user
-    send_email_confirmation(request._request, user)
+    send_email_confirmation(request, user)
     return Response(status=status.HTTP_200_OK)
 
 
@@ -94,13 +107,17 @@ def resend_email_confirmation(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def refresh_auth_token(request):
+    """
+    Refresh the JWT token and blacklist the old one if applicable.
+    """
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
-        response_data = {"error": "This User account doesn't exist."}
-        Response(response_data, status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "This User account doesn't exist."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
-    token = None
     try:
         token = JwtToken.objects.get(user=user)
         try:
@@ -108,7 +125,7 @@ def refresh_auth_token(request):
             existing_token.blacklist()
             token.delete()
         except TokenError:
-            # No need to blacklist when token is expired
+            # Token already expired, skip blacklisting
             pass
     except JwtToken.DoesNotExist:
         token = JwtToken(user=user)
@@ -126,7 +143,11 @@ def refresh_auth_token(request):
     if token_serializer.is_valid():
         token_serializer.save()
         token = token_serializer.instance
-        response_data = {"token": "{}".format(token.refresh_token)}
+        response_data = {"token": f"{token.refresh_token}"}
         return Response(response_data, status=status.HTTP_200_OK)
 
-    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {"error": "Token refresh failed."},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
+    

@@ -1,13 +1,18 @@
+"""
+Serializers for user account and profile handling.
+"""
+
 from django.contrib.auth import get_user_model
-from rest_auth.serializers import PasswordResetSerializer
-from rest_framework.exceptions import ValidationError
-from .models import JwtToken, Profile
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_auth.serializers import PasswordResetSerializer
+
+from .models import JwtToken, Profile
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     """
-    Make username as a read_only field.
+    Serializer for user details with username as a read-only field.
     """
 
     class Meta:
@@ -56,22 +61,17 @@ class ProfileSerializer(UserDetailsSerializer):
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
-        affiliation = profile_data.get("affiliation")
-        github_url = profile_data.get("github_url")
-        google_scholar_url = profile_data.get("google_scholar_url")
-        linkedin_url = profile_data.get("linkedin_url")
-
-        instance = super(ProfileSerializer, self).update(
-            instance, validated_data
-        )
-
         profile = instance.profile
+
+        instance = super().update(instance, validated_data)
+
         if profile_data:
-            profile.affiliation = affiliation
-            profile.github_url = github_url
-            profile.google_scholar_url = google_scholar_url
-            profile.linkedin_url = linkedin_url
+            profile.affiliation = profile_data.get("affiliation")
+            profile.github_url = profile_data.get("github_url")
+            profile.google_scholar_url = profile_data.get("google_scholar_url")
+            profile.linkedin_url = profile_data.get("linkedin_url")
             profile.save()
+
         return instance
 
 
@@ -106,21 +106,22 @@ class JwtTokenSerializer(serializers.ModelSerializer):
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     """
-    Serializer to check Account Active Status.
+    Serializer to check account active status before password reset.
     """
 
     def get_email_options(self):
         try:
             user = get_user_model().objects.get(email=self.data["email"])
             if not user.is_active:
-                raise ValidationError(
-                    {
-                        "details": "Account is not active. Please contact the administrator."
-                    }
-                )
-            else:
-                return super().get_email_options()
-        except get_user_model().DoesNotExist:
-            raise ValidationError(
-                {"details": "User with the given email does not exist."}
-            )
+                raise ValidationError({
+                    "details": (
+                        "Account is not active. "
+                        "Please contact the administrator."
+                    )
+                })
+            return super().get_email_options()
+        except get_user_model().DoesNotExist as exc:
+            raise ValidationError({
+                "details": "User with the given email does not exist."
+            }) from exc
+            
