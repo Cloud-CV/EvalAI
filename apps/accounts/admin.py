@@ -1,19 +1,25 @@
-from base.admin import ImportExportTimeStampedAdmin
+"""Admin configuration for user-related models."""
+
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User
+
 from allauth.account.models import EmailAddress
-from allauth.account.admin import EmailAddressAdmin
+from allauth.account.admin import EmailAddressAdmin as AllauthEmailAddressAdmin
 
 from import_export import resources
 from import_export.admin import ExportMixin
-from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.admin import TokenAdmin as DRFTokenAdmin
+
+from base.admin import ImportExportTimeStampedAdmin
 from .models import Profile, JwtToken
 
 
 @admin.register(Profile)
 class ProfileAdmin(ImportExportTimeStampedAdmin):
+    """Admin view for the Profile model."""
+
     list_display = (
         "id",
         "user",
@@ -40,6 +46,8 @@ class ProfileAdmin(ImportExportTimeStampedAdmin):
 
 
 class UserResource(resources.ModelResource):
+    """Resource class for exporting User model data."""
+
     class Meta:
         model = User
         fields = (
@@ -49,36 +57,44 @@ class UserResource(resources.ModelResource):
             "first_name",
             "last_login",
             "last_name",
-            "staff_status",
+            "is_staff",
             "username",
         )
 
 
-class UserAdmin(ExportMixin, UserAdmin):
+class CustomUserAdmin(ExportMixin, DjangoUserAdmin):
+    """Customized User admin with export functionality."""
+
     resource_class = UserResource
 
 
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustomUserAdmin)
 
 
 class TokenResource(resources.ModelResource):
+    """Resource class for exporting DRF Token model data."""
+
     class Meta:
         model = Token
 
 
-class TokenAdmin(TokenAdmin):
+class CustomTokenAdmin(DRFTokenAdmin):
+    """Customized Token admin with export and filtering."""
+
     resource_class = TokenResource
     list_filter = ("created",)
     search_fields = ("user__username",)
 
 
 admin.site.unregister(Token)
-admin.site.register(Token, TokenAdmin)
+admin.site.register(Token, CustomTokenAdmin)
 
 
 @admin.register(JwtToken)
 class JwtTokenAdmin(ImportExportTimeStampedAdmin):
+    """Admin view for JwtToken model."""
+
     list_display = (
         "user",
         "access_token",
@@ -87,18 +103,18 @@ class JwtTokenAdmin(ImportExportTimeStampedAdmin):
     search_fields = ("user__username",)
 
 
-admin.site.unregister(JwtToken)
-admin.site.register(JwtToken, JwtTokenAdmin)
-
-
 class EmailAddressResource(resources.ModelResource):
+    """Resource class for exporting EmailAddress model data."""
+
     class Meta:
         model = EmailAddress
 
 
-class EmailAddressAdmin(ExportMixin, EmailAddressAdmin):
+class CustomEmailAddressAdmin(ExportMixin, AllauthEmailAddressAdmin):
+    """Customized EmailAddress admin with export functionality."""
+
     resource_class = EmailAddressResource
 
 
 admin.site.unregister(EmailAddress)
-admin.site.register(EmailAddress, EmailAddressAdmin)
+admin.site.register(EmailAddress, CustomEmailAddressAdmin)
