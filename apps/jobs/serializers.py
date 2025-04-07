@@ -1,10 +1,8 @@
-from django.contrib.auth.models import User
-
-from rest_framework import serializers
-
 from challenges.models import ChallengePhase, LeaderboardData
+from django.contrib.auth.models import User
 from hosts.models import ChallengeHost
 from participants.models import Participant, ParticipantTeam
+from rest_framework import serializers
 
 from .models import Submission
 

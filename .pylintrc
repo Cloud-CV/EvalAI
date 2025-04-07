@@ -27,4 +27,9 @@ init-hook='import sys, os; \
     sys.path.append(os.path.join(os.getcwd(), "apps")); \
     sys.path.append(os.path.join(os.getcwd(), "scripts", "monitoring")); \
     sys.path.append(os.path.join(os.getcwd(), "scripts", "workers")); \
-    print("Added apps, monitoring and workers directory to pylint path");'
+    # Get the current Conda environment path \
+    conda_env_path = os.environ.get("CONDA_PREFIX", ""); \
+    # Get Python version dynamically from sys.version_info \
+    python_version = sys.version_info; \
+    sys.path.append(os.path.join(conda_env_path, "lib", f"python{python_version.major}.{python_version.minor}", "site-packages")); \
+    print(f"Added apps, monitoring, workers and conda environment (Python {python_version.major}.{python_version.minor}) to pylint path");'
