@@ -1,8 +1,9 @@
 import os
-import pytz
 import warnings
-import boto3
 from datetime import datetime
+
+import boto3
+import pytz
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 

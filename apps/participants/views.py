@@ -1,21 +1,3 @@
-from django.contrib.auth.models import User
-
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework.throttling import UserRateThrottle
-from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from accounts.permissions import HasVerifiedEmail
 from base.utils import team_paginated_queryset
 from challenges.models import Challenge, ChallengePhase
@@ -26,25 +8,42 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
 )
-from jobs.models import Submission
+from django.contrib.auth.models import User
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from hosts.utils import is_user_a_host_of_challenge
+from jobs.models import Submission
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from .filters import ParticipantTeamsFilter
 from .models import Participant, ParticipantTeam
 from .serializers import (
-    InviteParticipantToTeamSerializer,
-    ParticipantTeamSerializer,
     ChallengeParticipantTeam,
     ChallengeParticipantTeamList,
     ChallengeParticipantTeamListSerializer,
+    InviteParticipantToTeamSerializer,
     ParticipantTeamDetailSerializer,
+    ParticipantTeamSerializer,
 )
 from .utils import (
     get_list_of_challenges_for_participant_team,
     get_list_of_challenges_participated_by_a_user,
     get_participant_team_of_user_for_a_challenge,
     has_user_participated_in_challenge,
-    is_user_part_of_participant_team,
     is_user_creator_of_participant_team,
+    is_user_part_of_participant_team,
 )
 
 

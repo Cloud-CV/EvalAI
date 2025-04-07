@@ -1,9 +1,6 @@
+from allauth.account.utils import send_email_confirmation
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
-
-from allauth.account.utils import send_email_confirmation
-
-from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -11,18 +8,19 @@ from rest_framework.decorators import (
     permission_classes,
     throttle_classes,
 )
+from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .models import JwtToken
 from .permissions import HasVerifiedEmail
 from .serializers import JwtTokenSerializer
-
 from .throttles import ResendEmailThrottle
 
 

@@ -1,10 +1,10 @@
 import os
-import pytz
 import warnings
-
 from datetime import datetime
-from dateutil.parser import parse
+
+import pytz
 from auto_stop_workers import start_worker, stop_worker
+from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 
 warnings.filterwarnings("ignore")
