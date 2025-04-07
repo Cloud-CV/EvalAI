@@ -1,33 +1,31 @@
-import os
 import json
 import logging
+import os
 import random
 import string
 import uuid
 
+from base.utils import (
+    get_boto3_client,
+    get_model_object,
+    mock_if_non_prod_aws,
+    send_email,
+)
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.base import ContentFile
 from moto import mock_ecr, mock_sts
 
-from base.utils import (
-    get_model_object,
-    get_boto3_client,
-    mock_if_non_prod_aws,
-    send_email,
-)
-
 from .models import (
     Challenge,
     ChallengePhase,
-    Leaderboard,
-    DatasetSplit,
     ChallengePhaseSplit,
-    ParticipantTeam,
     ChallengePrize,
     ChallengeSponsor,
+    DatasetSplit,
+    Leaderboard,
+    ParticipantTeam,
 )
-
 from .serializers import ChallengePrizeSerializer, ChallengeSponsorSerializer
 
 logger = logging.getLogger(__name__)

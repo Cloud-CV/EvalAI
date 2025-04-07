@@ -2,21 +2,19 @@ from __future__ import unicode_literals
 
 import logging
 
+from base.models import TimeStampedModel
+from base.utils import RandomFileName
+from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Max
-from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-
-
-from base.models import TimeStampedModel
-from base.utils import RandomFileName
-from challenges.models import ChallengePhase
 from jobs.constants import submission_status_to_exclude
 from participants.models import ParticipantTeam
+from rest_framework.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
 

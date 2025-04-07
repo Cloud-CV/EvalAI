@@ -25,23 +25,19 @@ import botocore
 import django
 import requests
 import yaml
+from challenges.models import ChallengePhase  # noqa:E402
+from challenges.models import Challenge, ChallengePhaseSplit, LeaderboardData
+
+# Load django app settings
+from django.conf import settings  # noqa
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from jobs.models import Submission  # noqa:E402
+from jobs.serializers import SubmissionSerializer  # noqa:E402
 
 from settings.common import SQS_RETENTION_PERIOD
 
 from .statsd_utils import increment_and_push_metrics_to_statsd
-from challenges.models import (
-    Challenge,
-    ChallengePhase,  # noqa:E402
-    ChallengePhaseSplit,
-    LeaderboardData,
-)
-
-# Load django app settings
-from django.conf import settings  # noqa
-from jobs.models import Submission  # noqa:E402
-from jobs.serializers import SubmissionSerializer  # noqa:E402
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp(prefix="tmp")

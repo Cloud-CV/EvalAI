@@ -1,19 +1,17 @@
 from datetime import timedelta
 
+from accounts.models import Profile
+from allauth.account.models import EmailAddress
+from challenges.models import Challenge, ChallengePhase
+from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse_lazy
-from django.contrib.auth.models import User
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from accounts.models import Profile
-from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import ParticipantTeam, Participant
+from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):

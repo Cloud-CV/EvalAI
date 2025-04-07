@@ -1,27 +1,11 @@
 import csv
-
 from datetime import timedelta
-
-from django.http import HttpResponse
-from django.utils import timezone
-
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework.throttling import UserRateThrottle
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from accounts.permissions import HasVerifiedEmail
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
+from django.http import HttpResponse
+from django.utils import timezone
 from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
 from jobs.serializers import (
@@ -31,14 +15,28 @@ from jobs.serializers import (
     SubmissionCountSerializer,
 )
 from participants.models import Participant
-from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from participants.serializers import (
+    ChallengeParticipantSerializer,
     ParticipantCount,
     ParticipantCountSerializer,
     ParticipantTeamCount,
     ParticipantTeamCountSerializer,
-    ChallengeParticipantSerializer,
 )
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from .serializers import (
     ChallengePhaseSubmissionAnalytics,
     ChallengePhaseSubmissionAnalyticsSerializer,

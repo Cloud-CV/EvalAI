@@ -1,21 +1,19 @@
 import logging
-import requests
-import zipfile
-import yaml
-
-from django.core.files.base import ContentFile
-
 import re
+import zipfile
 from os.path import basename, isfile, join
+
+import requests
+import yaml
 from challenges.models import (
+    Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
     DatasetSplit,
     Leaderboard,
-    Challenge,
 )
+from django.core.files.base import ContentFile
 from rest_framework import status
-
 from yaml.scanner import ScannerError
 
 from .serializers import (

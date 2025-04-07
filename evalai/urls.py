@@ -14,18 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from django.conf.urls import url, include
+from allauth.account.views import ConfirmEmailView
+from django.conf import settings
+from django.conf.urls import include, url
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.views.generic.base import TemplateView
-from django.conf import settings
-from django.conf.urls.static import static
-
-from allauth.account.views import ConfirmEmailView
-from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from web import views
 
 handler404 = "web.views.page_not_found"

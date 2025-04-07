@@ -7,6 +7,13 @@ repos:
         args: ['--check', '--diff', '--verbose']
         verbose: true
 
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ['--profile=black', '--verbose']
+        verbose: true
+
   - repo: https://github.com/pycqa/flake8
     rev: 3.8.2
     hooks:

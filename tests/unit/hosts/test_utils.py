@@ -1,15 +1,13 @@
 from datetime import timedelta
 
+from allauth.account.models import EmailAddress
+from challenges.models import Challenge
 from django.contrib.auth.models import AnonymousUser, User
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework.test import APITestCase
-
-from challenges.models import Challenge
-from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
+from participants.models import ParticipantTeam
+from rest_framework.test import APITestCase
 
 
 class BaseTestClass(APITestCase):

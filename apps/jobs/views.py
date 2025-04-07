@@ -1,46 +1,22 @@
-import botocore
 import datetime
 import json
 import logging
 import os
 import uuid
 
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import transaction, IntegrityError
-from django.db.models import Count
-from django.utils import dateparse, timezone
-
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
+import botocore
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     StandardResultSetPagination,
     get_boto3_client,
     get_or_create_sqs_queue,
-    paginated_queryset,
     is_user_a_staff,
+    paginated_queryset,
 )
 from challenges.models import (
-    ChallengePhase,
     Challenge,
     ChallengeEvaluationCluster,
+    ChallengePhase,
     ChallengePhaseSplit,
     LeaderboardData,
 )
@@ -53,15 +29,37 @@ from challenges.utils import (
     get_challenge_phase_split_model,
     get_participant_model,
 )
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError, transaction
+from django.db.models import Count
+from django.utils import dateparse, timezone
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
-    get_participant_team_model,
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_model,
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
 from .models import Submission

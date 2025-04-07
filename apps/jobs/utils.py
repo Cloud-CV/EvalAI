@@ -1,21 +1,20 @@
 import datetime
 import logging
 import os
-import requests
 import tempfile
 import urllib.request
-from django.db.models import FloatField, Q, F, fields, ExpressionWrapper
+
+import requests
+from base.utils import get_model_object, suppress_autotime
+from challenges.models import ChallengePhaseSplit, LeaderboardData
+from challenges.utils import get_challenge_model, get_challenge_phase_model
+from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
-from rest_framework import status
-
-from challenges.models import ChallengePhaseSplit, LeaderboardData
-from participants.models import ParticipantTeam
-
-from base.utils import get_model_object, suppress_autotime
-from challenges.utils import get_challenge_model, get_challenge_phase_model
 from hosts.utils import is_user_a_staff_or_host
+from participants.models import ParticipantTeam
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
+from rest_framework import status
 
 from .constants import submission_status_to_exclude
 from .models import Submission

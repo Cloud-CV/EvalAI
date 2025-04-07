@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_auth.serializers import PasswordResetSerializer
-from rest_framework.exceptions import ValidationError
-from .models import JwtToken, Profile
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
+from .models import JwtToken, Profile
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):

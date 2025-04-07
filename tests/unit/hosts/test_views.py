@@ -1,11 +1,9 @@
-from django.urls import reverse_lazy
-from django.contrib.auth.models import User
-
 from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
+from django.contrib.auth.models import User
+from django.urls import reverse_lazy
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):

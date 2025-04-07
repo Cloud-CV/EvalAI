@@ -1,18 +1,15 @@
 import os
-
 from datetime import timedelta
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import User
-from django.utils import timezone
-
 from allauth.account.models import EmailAddress
-from rest_framework.test import APITestCase, APIClient
-
 from challenges.models import Challenge, ChallengePhase
 from challenges.serializers import ChallengePhaseCreateSerializer
-from participants.models import ParticipantTeam
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from participants.models import ParticipantTeam
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseTestCase(APITestCase):

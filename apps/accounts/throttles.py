@@ -1,8 +1,6 @@
-from rest_framework.throttling import SimpleRateThrottle
-
-from django.core.cache import caches
-
 from django.conf import settings
+from django.core.cache import caches
+from rest_framework.throttling import SimpleRateThrottle
 
 
 class ResendEmailThrottle(SimpleRateThrottle):

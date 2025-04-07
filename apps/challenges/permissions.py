@@ -1,8 +1,7 @@
+from hosts.utils import is_user_a_host_of_challenge
 from rest_framework import permissions
 
 from .models import Challenge
-
-from hosts.utils import is_user_a_host_of_challenge
 
 
 class IsChallengeCreator(permissions.BasePermission):

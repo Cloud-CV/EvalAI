@@ -2,60 +2,40 @@ import csv
 import json
 import logging
 import os
-import pytz
 import random
-import requests
 import shutil
 import tempfile
 import time
 import uuid
-import yaml
 import zipfile
-
-from os.path import basename, isfile, join
 from datetime import datetime
+from os.path import basename, isfile, join
 
-
-from django.conf import settings
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import transaction
-from django.http import HttpResponse
-from django.utils import timezone
-
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
-from yaml.scanner import ScannerError
-
-from allauth.account.models import EmailAddress
+import pytz
+import requests
+import yaml
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
+from allauth.account.models import EmailAddress
 from base.utils import (
     get_queue_name,
     get_slug,
     get_url_from_hostname,
+    is_user_a_staff,
     paginated_queryset,
     send_email,
     send_slack_notification,
-    is_user_a_staff,
+)
+from challenges.challenge_config_utils import (
+    download_and_write_file,
+    extract_zip_file,
+    validate_challenge_config_util,
 )
 from challenges.utils import (
+    add_domain_to_challenge,
+    add_prizes_to_challenge,
+    add_sponsors_to_challenge,
+    add_tags_to_challenge,
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
     get_challenge_model,
@@ -68,99 +48,112 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
-    add_domain_to_challenge,
-    add_tags_to_challenge,
-    add_prizes_to_challenge,
-    add_sponsors_to_challenge,
 )
-from challenges.challenge_config_utils import (
-    download_and_write_file,
-    extract_zip_file,
-    validate_challenge_config_util,
-)
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import transaction
+from django.http import HttpResponse
+from django.utils import timezone
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
+    get_challenge_host_team_model,
     get_challenge_host_teams_for_user,
     is_user_a_host_of_challenge,
     is_user_a_staff_or_host,
-    get_challenge_host_team_model,
 )
 from jobs.filters import SubmissionFilter
 from jobs.models import Submission
 from jobs.serializers import (
-    SubmissionSerializer,
     ChallengeSubmissionManagementSerializer,
+    SubmissionSerializer,
 )
+from jobs.utils import get_submission_model
 from participants.models import Participant, ParticipantTeam
 from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
-    get_participant_teams_for_user,
-    has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
-    is_user_part_of_participant_team,
+    get_participant_teams_for_user,
+    has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
+    is_user_part_of_participant_team,
 )
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from yaml.scanner import ScannerError
 
+from .aws_utils import (
+    create_ec2_instance,
+    delete_workers,
+    describe_ec2_instance,
+    get_log_group_name,
+    get_logs_from_cloudwatch,
+    restart_ec2_instance,
+    restart_workers,
+    scale_resources,
+    start_ec2_instance,
+    start_workers,
+    stop_ec2_instance,
+    stop_workers,
+    terminate_ec2_instance,
+)
 from .models import (
     Challenge,
+    ChallengeConfiguration,
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
-    ChallengeConfiguration,
     LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
-    ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
+    ChallengePhaseSerializer,
     ChallengePhaseSplitSerializer,
-    ChallengeTemplateSerializer,
+    ChallengePrizeSerializer,
     ChallengeSerializer,
+    ChallengeSponsorSerializer,
+    ChallengeTemplateSerializer,
     DatasetSplitSerializer,
+    LeaderboardDataSerializer,
     LeaderboardSerializer,
     PWCChallengeLeaderboardSerializer,
     StarChallengeSerializer,
     UserInvitationSerializer,
-    ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
-    LeaderboardDataSerializer,
-    ChallengePrizeSerializer,
-    ChallengeSponsorSerializer,
-)
-
-from .aws_utils import (
-    delete_workers,
-    start_workers,
-    stop_workers,
-    restart_workers,
-    start_ec2_instance,
-    stop_ec2_instance,
-    restart_ec2_instance,
-    describe_ec2_instance,
-    create_ec2_instance,
-    terminate_ec2_instance,
-    get_logs_from_cloudwatch,
-    get_log_group_name,
-    scale_resources,
+    ZipChallengeSerializer,
 )
 from .utils import (
     get_aws_credentials_for_submission,
+    get_challenge_template_data,
     get_file_content,
     get_missing_keys_from_dict,
-    get_challenge_template_data,
     send_emails,
 )
-
-from jobs.utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
