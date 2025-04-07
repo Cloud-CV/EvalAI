@@ -1,22 +1,11 @@
 import json
-import mock
 import os
 import shutil
 import time
-
-from allauth.account.models import EmailAddress
-
 from datetime import timedelta
 
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse_lazy
-from django.contrib.auth.models import User
-from django.utils import timezone
-
-from rest_framework.test import APITestCase, APIClient
-
+import mock
+from allauth.account.models import EmailAddress
 from challenges.models import (
     Challenge,
     ChallengePhase,
@@ -25,9 +14,16 @@ from challenges.models import (
     Leaderboard,
     LeaderboardData,
 )
-from participants.models import Participant, ParticipantTeam
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse_lazy
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from participants.models import Participant, ParticipantTeam
+from rest_framework.test import APIClient, APITestCase
 
 import scripts.workers.submission_worker as submission_worker
 
