@@ -1,19 +1,17 @@
 from datetime import timedelta
 
+from accounts.models import Profile
+from allauth.account.models import EmailAddress
+from challenges.models import Challenge, ChallengePhase
+from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse_lazy
-from django.contrib.auth.models import User
 from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
-from accounts.models import Profile
-from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import ParticipantTeam, Participant
+from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):
@@ -840,7 +838,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "team_url": self.challenge_host_team.team_url,
                         },
                         "domain": self.challenge1.domain,
-                        "domain_name": 'Computer Vision',
+                        "domain_name": "Computer Vision",
                         "list_tags": self.challenge1.list_tags,
                         "has_prize": self.challenge1.has_prize,
                         "has_sponsors": self.challenge1.has_sponsors,
@@ -934,7 +932,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "team_url": self.challenge_host_team.team_url,
                 },
                 "domain": self.challenge1.domain,
-                "domain_name": 'Computer Vision',
+                "domain_name": "Computer Vision",
                 "list_tags": self.challenge1.list_tags,
                 "has_prize": self.challenge1.has_prize,
                 "has_sponsors": self.challenge1.has_sponsors,

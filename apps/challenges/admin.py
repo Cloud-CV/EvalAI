@@ -1,10 +1,9 @@
+from base.admin import ImportExportTimeStampedAdmin
 from django import forms
 from django.contrib import admin, messages
-
 from django.contrib.admin.helpers import ActionForm
 
-from base.admin import ImportExportTimeStampedAdmin
-
+from .admin_filters import ChallengeFilter
 from .aws_utils import (
     delete_workers,
     restart_workers,
@@ -12,15 +11,14 @@ from .aws_utils import (
     start_workers,
     stop_workers,
 )
-
-from .admin_filters import ChallengeFilter
-
 from .models import (
     Challenge,
     ChallengeConfiguration,
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
@@ -28,8 +26,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengeSponsor,
-    ChallengePrize,
 )
 
 
