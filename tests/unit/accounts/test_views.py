@@ -1,16 +1,14 @@
 import os
 
 from accounts.models import JwtToken
-
-from django.urls import reverse_lazy
-from django.contrib.auth.models import User
-
 from allauth.account.models import EmailAddress
+from django.contrib.auth.models import User
+from django.urls import reverse_lazy
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class BaseAPITestClass(APITestCase):

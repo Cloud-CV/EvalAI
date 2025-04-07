@@ -1,7 +1,8 @@
-from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
-
 import os
+
 import raven
+
+from .common import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
 DEBUG = False
 

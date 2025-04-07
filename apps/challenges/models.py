@@ -1,20 +1,17 @@
 from __future__ import unicode_literals
 
+from base.models import TimeStampedModel, model_field_name
+from base.utils import RandomFileName, get_slug, is_model_field_changed
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
+from django.db import models
+from django.db.models import signals
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.db import models
-from django.db.models import signals
-
-from base.models import TimeStampedModel, model_field_name
-from base.utils import RandomFileName, get_slug, is_model_field_changed
-
-
-from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
+from participants.models import ParticipantTeam
 
 
 @receiver(pre_save, sender="challenges.Challenge")

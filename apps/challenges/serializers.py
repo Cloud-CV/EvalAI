@@ -1,7 +1,6 @@
-from rest_framework import serializers
-
 from accounts.serializers import UserDetailsSerializer
 from hosts.serializers import ChallengeHostTeamSerializer
+from rest_framework import serializers
 
 from .models import (
     Challenge,
@@ -9,6 +8,8 @@ from .models import (
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
     DatasetSplit,
     Leaderboard,
@@ -16,8 +17,6 @@ from .models import (
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 
 
