@@ -35,5 +35,5 @@ init-hook='import sys, os; \
                                 "lib",
                                 f"python{python_version.major}.{python_version.minor}",
                                 "site-packages")); \
-    print(f"Added apps, monitoring, workers and conda environment
+    print(f"Added apps, monitoring, workers and conda environment \
         (Python {python_version.major}.{python_version.minor}) to pylint path");'
