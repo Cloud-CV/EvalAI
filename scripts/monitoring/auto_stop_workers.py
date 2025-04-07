@@ -1,9 +1,9 @@
 import os
+import time
+from datetime import datetime
+
 import pytz
 import requests
-import time
-
-from datetime import datetime
 from dateutil import parser
 
 utc = pytz.UTC

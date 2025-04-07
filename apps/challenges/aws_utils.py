@@ -4,32 +4,32 @@ import os
 import random
 import string
 import uuid
-import yaml
+from http import HTTPStatus
 
+import yaml
+from accounts.models import JwtToken
+from base.utils import get_boto3_client, send_email
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
-from http import HTTPStatus
+
+from evalai.celery import app
 
 from .challenge_notification_util import (
-    construct_and_send_worker_start_mail,
     construct_and_send_eks_cluster_creation_mail,
+    construct_and_send_worker_start_mail,
 )
 from .task_definitions import (
     container_definition_code_upload_worker,
     container_definition_submission_worker,
     delete_service_args,
+    service_definition,
     task_definition,
     task_definition_code_upload_worker,
     task_definition_static_code_upload_worker,
-    service_definition,
     update_service_args,
 )
-
-from base.utils import get_boto3_client, send_email
-from evalai.celery import app
-from accounts.models import JwtToken
 
 logger = logging.getLogger(__name__)
 
