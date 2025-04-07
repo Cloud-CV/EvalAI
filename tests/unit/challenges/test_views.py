@@ -16,12 +16,12 @@ from challenges.models import (
     ChallengeConfiguration,
     ChallengePhase,
     ChallengePhaseSplit,
-    DatasetSplit,
-    Leaderboard,
-    StarChallenge,
-    LeaderboardData,
     ChallengePrize,
     ChallengeSponsor,
+    DatasetSplit,
+    Leaderboard,
+    LeaderboardData,
+    StarChallenge,
 )
 from django.conf import settings
 from django.contrib.auth.models import User

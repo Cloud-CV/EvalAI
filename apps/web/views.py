@@ -1,15 +1,12 @@
 import logging
 import traceback
+from smtplib import SMTPException
+
 from base.utils import send_slack_notification
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.shortcuts import render
-
-from smtplib import SMTPException
-from .models import Subscribers, Team
-from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -18,6 +15,9 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
+
+from .models import Subscribers, Team
+from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
 
 logger = logging.getLogger(__name__)
 
