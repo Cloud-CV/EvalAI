@@ -4,19 +4,17 @@ from rest_framework import permissions
 
 class HasVerifiedEmail(permissions.BasePermission):
     """
-    Permission class for if the user has verified the email or not
+    Permission class to check if the user's email is verified.
     """
 
     message = "Please verify your email!"
 
     def has_permission(self, request, view):
-
         if request.user.is_anonymous:
             return True
-        else:
-            if EmailAddress.objects.filter(
-                user=request.user, verified=True
-            ).exists():
-                return True
-            else:
-                return False
+
+        return EmailAddress.objects.filter(
+            user=request.user,
+            verified=True
+        ).exists()
+        
