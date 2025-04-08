@@ -180,6 +180,8 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, max_length=2048, default=""
     )
     slack_webhook_url = models.URLField(max_length=200, blank=True, null=True)
+    daily_approval_request_limit = models.IntegerField(null=True, blank=True, default=5)
+    last_daily_approval_request = models.DateTimeField(null=True, blank=True)
     # Identifier for the github repository of a challenge in format: account_name/repository_name
     github_repository = models.CharField(
         max_length=1000, null=True, blank=True, default=""
