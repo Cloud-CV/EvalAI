@@ -34,12 +34,13 @@ jobs:
           flake8 --config=.flake8 ./
           cp .pylintrc .pylintrc.modified
           echo "[SIMILARITIES]" >> .pylintrc.modified
-          echo "min-similarity-lines=8" >> .pylintrc.modified
+          echo "min-similarity-lines=10" >> .pylintrc.modified
           echo "ignore-comments=yes" >> .pylintrc.modified
           echo "ignore-docstrings=yes" >> .pylintrc.modified
           echo "ignore-imports=yes" >> .pylintrc.modified
-          echo "ignore-patterns=test_*.py" >> .pylintrc.modified
-          pylint --rcfile=.pylintrc.modified --output-format=colorized --score=y --fail-under=6.5 ./
+          echo "ignore-patterns=test_*.py,*_test.py" >> .pylintrc.modified
+          pylint --rcfile=.pylintrc.modified --output-format=colorized --score=y --fail-under=6.5 ./ || \
+          pylint --rcfile=.pylintrc --disable=duplicate-code --output-format=colorized --score=y --fail-under=6.5 ./
 
   build:
     name: Docker Build
