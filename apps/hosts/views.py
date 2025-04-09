@@ -1,6 +1,7 @@
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -55,15 +56,14 @@ def challenge_host_team_list(request):
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
-    elif request.method == "POST":
-        serializer = ChallengeHostTeamSerializer(
-            data=request.data, context={"request": request}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ChallengeHostTeamSerializer(
+        data=request.data, context={"request": request}
+    )
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "PUT", "PATCH"])
@@ -82,29 +82,17 @@ def challenge_host_team_detail(request, pk):
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
-    elif request.method in ["PUT", "PATCH"]:
-
-        if request.method == "PATCH":
-            serializer = ChallengeHostTeamSerializer(
-                challenge_host_team,
-                data=request.data,
-                context={"request": request},
-                partial=True,
-            )
-        else:
-            serializer = ChallengeHostTeamSerializer(
-                challenge_host_team,
-                data=request.data,
-                context={"request": request},
-            )
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+    serializer = ChallengeHostTeamSerializer(
+        challenge_host_team,
+        data=request.data,
+        context={"request": request},
+        partial=(request.method == "PATCH")
+    )
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "POST"])
@@ -112,7 +100,6 @@ def challenge_host_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def challenge_host_list(request, challenge_host_team_pk):
-
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
             pk=challenge_host_team_pk
@@ -141,19 +128,18 @@ def challenge_host_list(request, challenge_host_team_pk):
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
-    elif request.method == "POST":
-        serializer = ChallengeHostSerializer(
-            data=request.data,
-            context={
-                "challenge_host_team": challenge_host_team,
-                "request": request,
-            },
-        )
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ChallengeHostSerializer(
+        data=request.data,
+        context={
+            "challenge_host_team": challenge_host_team,
+            "request": request,
+        },
+    )
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
@@ -176,38 +162,24 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
-    elif request.method in ["PUT", "PATCH"]:
-        if request.method == "PATCH":
-            serializer = ChallengeHostSerializer(
-                challenge_host,
-                data=request.data,
-                context={
-                    "challenge_host_team": challenge_host_team,
-                    "request": request,
-                },
-                partial=True,
-            )
-        else:
-            serializer = ChallengeHostSerializer(
-                challenge_host,
-                data=request.data,
-                context={
-                    "challenge_host_team": challenge_host_team,
-                    "request": request,
-                },
-            )
+    if request.method in ["PUT", "PATCH"]:
+        serializer = ChallengeHostSerializer(
+            challenge_host,
+            data=request.data,
+            context={
+                "challenge_host_team": challenge_host_team,
+                "request": request,
+            },
+            partial=(request.method == "PATCH")
+        )
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == "DELETE":
-        challenge_host.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    challenge_host.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
@@ -215,7 +187,6 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def create_challenge_host_team(request):
-
     serializer = ChallengeHostTeamSerializer(
         data=request.data, context={"request": request}
     )
@@ -253,7 +224,7 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
         )
         challenge_host.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    except:  # noqa E722
+    except ObjectDoesNotExist:
         response_data = {"error": "Sorry, you do not belong to this team."}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -263,7 +234,6 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def invite_host_to_team(request, pk):
-
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -279,7 +249,6 @@ def invite_host_to_team(request, pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # Check if the user requesting this API is part of host team
     if not is_user_part_of_host_team(request.user, challenge_host_team):
         response_data = {"error": "You are not a member of this team!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

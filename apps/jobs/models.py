@@ -18,11 +18,6 @@ from rest_framework.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
 
-# submission.pk is not available when saving input_file
-# OutCome: `input_file` was saved for submission in folder named `submission_None`
-# why is the hack not done for `stdout_file` and `stderr_file`
-# Because they will be saved only after a submission instance is saved(pk will be available)
-
 
 @receiver(pre_save, sender="jobs.Submission")
 def skip_saving_file(sender, instance, **kwargs):
@@ -86,39 +81,51 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
-    # Model to store submitted submission files by the user
     input_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}")
+        upload_to=RandomFileName(
+            "submission_files/submission_{id}"
+        )
     )
     submission_input_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=RandomFileName(
+            "submission_files/submission_{id}"
+        ),
         null=True,
         blank=True,
     )
-    # Model to store large submission file (> 400 MB's) URLs submitted by the user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)
     stdout_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=RandomFileName(
+            "submission_files/submission_{id}"
+        ),
         null=True,
         blank=True,
     )
     stderr_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=RandomFileName(
+            "submission_files/submission_{id}"
+        ),
         null=True,
         blank=True,
     )
     environment_log_file = models.FileField(
-        upload_to=RandomFileName("submission_files/environment_log_file_{id}"),
+        upload_to=RandomFileName(
+            "submission_files/environment_log_file_{id}"
+        ),
         null=True,
         blank=True,
     )
     submission_result_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=RandomFileName(
+            "submission_files/submission_{id}"
+        ),
         null=True,
         blank=True,
     )
     submission_metadata_file = models.FileField(
-        upload_to=RandomFileName("submission_files/submission_{id}"),
+        upload_to=RandomFileName(
+            "submission_files/submission_{id}"
+        ),
         null=True,
         blank=True,
     )
@@ -137,12 +144,11 @@ class Submission(TimeStampedModel):
         null=True,
     )
     ignore_submission = models.BooleanField(default=False)
-    # Store the values of meta attributes for the submission here.
     submission_metadata = JSONField(blank=True, null=True)
     is_verified_by_host = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{}".format(self.id)
+        return f"{self.id}"
 
     class Meta:
         app_label = "jobs"
@@ -150,22 +156,19 @@ class Submission(TimeStampedModel):
 
     @property
     def execution_time(self):
-        """Returns the execution time of a submission"""
-        # if self.self.completed_at and self.started_at:
         try:
             return (self.completed_at - self.started_at).total_seconds()
-        except:  # noqa: E722
+        except (TypeError, AttributeError):  # noqa: E722
             return "None"
-        # else:
-        #     return None
 
     def save(self, *args, **kwargs):
-
         if not self.pk:
             sub_num = Submission.objects.filter(
                 challenge_phase=self.challenge_phase,
                 participant_team=self.participant_team,
-            ).aggregate(Max("submission_number"))["submission_number__max"]
+            ).aggregate(Max("submission_number"))[
+                "submission_number__max"
+            ]
             if sub_num:
                 self.submission_number = sub_num + 1
             else:
@@ -186,30 +189,27 @@ class Submission(TimeStampedModel):
 
             if successful_count > self.challenge_phase.max_submissions:
                 logger.info(
-                    "Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
-                        successful_count, self.challenge_phase.max_submissions
-                    )
+                    "Checking if successful_count %s > allowed max %s",
+                    successful_count,
+                    self.challenge_phase.max_submissions,
                 )
-
                 logger.info(
-                    "The submission request is submitted by user {0} from participant_team {1} ".format(
-                        self.created_by.pk, self.participant_team.pk
-                    )
+                    "Submission denied: user %s, team %s",
+                    self.created_by.pk,
+                    self.participant_team.pk,
                 )
+                raise PermissionDenied({
+                    "error": (
+                        "The maximum number of submissions has been reached"
+                    )
+                })
 
-                raise PermissionDenied(
-                    {
-                        "error": "The maximum number of submissions has been reached"
-                    }
-                )
-            else:
-                logger.info(
-                    "Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
-                        self.created_by.pk,
-                        self.participant_team.pk,
-                        self.challenge_phase.pk,
-                    )
-                )
+            logger.info(
+                "Submission below limit by user %s from team %s for phase %s",
+                self.created_by.pk,
+                self.participant_team.pk,
+                self.challenge_phase.pk,
+            )
 
             total_submissions_done = Submission.objects.filter(
                 challenge_phase__challenge=self.challenge_phase.challenge,
@@ -243,27 +243,35 @@ class Submission(TimeStampedModel):
                 == 0
             ):
                 logger.info(
-                    "Permission Denied: The maximum number of submission for this month has been reached"
+                    "Submission is below for user %s form participant_team %s"
+                    "for challenge_phase %s",
+                    self.created_by.pk,
+                    self.participant_team.pk,
+                    self.challenge_phase.pk
                 )
-                raise PermissionDenied(
-                    {
-                        "error": "The maximum number of submission for this month has been reached"
-                    }
-                )
+
+                raise PermissionDenied({
+                    "error": (
+                        "The maximum number of submission for this month"
+                        "has been reached"
+                    )
+                })
+
             if (
                 self.challenge_phase.max_submissions_per_day
                 - submissions_done_today_count
                 == 0
             ):
                 logger.info(
-                    "Permission Denied: The maximum number of submission for today has been reached"
+                    "Permission Denied: Max daily submission reached"
                 )
-                raise PermissionDenied(
-                    {
-                        "error": "The maximum number of submission for today has been reached"
-                    }
-                )
+                raise PermissionDenied({
+                    "error": (
+                        "The maximum number of submission for today"
+                        "has been reached"
+                    )
+                })
+
             self.status = Submission.SUBMITTED
 
-        submission_instance = super(Submission, self).save(*args, **kwargs)
-        return submission_instance
+        return super().save(*args, **kwargs)

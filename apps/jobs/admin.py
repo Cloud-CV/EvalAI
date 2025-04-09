@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 @admin.register(Submission)
 class SubmissionAdmin(ImportExportTimeStampedAdmin):
+    """
+    Admin interface for managing Submission objects.
+    """
     actions = [
         "submit_job_to_worker",
         "make_submission_public",
@@ -52,40 +55,53 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "status",
     )
 
-    def get_challenge_name_and_id(self, obj):
+    @staticmethod
+    def get_challenge_name_and_id(obj):
         """Return challenge name corresponding to phase"""
-        return "%s - %s" % (
-            obj.challenge_phase.challenge.title,
-            obj.challenge_phase.challenge.id,
+        return (
+            f"{obj.challenge_phase.challenge.title} - "
+            f"{obj.challenge_phase.challenge.id}"
         )
 
     get_challenge_name_and_id.short_description = "Challenge"
     get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"
 
-    def submit_job_to_worker(self, request, queryset):
+    @staticmethod
+    def submit_job_to_worker(request, queryset):
+        """Submit selected jobs to worker"""
         for submission in queryset:
             message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
 
-    submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
+    submit_job_to_worker.short_description = (
+        "Re-run submissions (sets existing to canceled)"
+    )
 
-    def make_submission_public(self, request, queryset):
+    @staticmethod
+    def make_submission_public(request, queryset):
+        """Make submissions public"""
         for submission in queryset:
             submission.is_public = True
             submission.save()
 
-    make_submission_public.short_description = "Make submission public"
+    make_submission_public.short_description = "Make public"
 
-    def make_submission_private(self, request, queryset):
+    @staticmethod
+    def make_submission_private(request, queryset):
+        """Make submissions private"""
         for submission in queryset:
             submission.is_public = False
             submission.save()
 
-    make_submission_private.short_description = "Make submission private"
+    make_submission_private.short_description = "Make private"
 
-    def change_submission_status_to_cancel(self, request, queryset):
+    @staticmethod
+    def change_submission_status_to_cancel(request, queryset):
+        """Set selected submissions to canceled status"""
         for submission in queryset:
             submission.status = Submission.CANCELLED
             submission.save()
 
-    change_submission_status_to_cancel.short_description = "Cancel selected submissions (will set the status to canceled for the submissions) "
+    change_submission_status_to_cancel.short_description = (
+        "Cancel submissions (sets status to canceled)"
+    )
