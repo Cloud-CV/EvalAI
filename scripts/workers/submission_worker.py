@@ -218,7 +218,7 @@ def delete_old_temp_directories(prefix="tmp"):
 
     dir_creation_times = {}
 
-    for root, dirs, files in os.walk(temp_dir):
+    for root, dirs, _files in os.walk(temp_dir):
         for directory in dirs:
             if directory.startswith(prefix):
                 dir_path = os.path.join(root, directory)
@@ -285,7 +285,7 @@ def create_dir_as_python_package(directory):
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
+    with open(init_file_path, "w") as _init_file:  # noqa
         # to create empty file
         pass
 
@@ -388,7 +388,8 @@ def extract_challenge_data(challenge, phases):
         challenge.evaluation_module_error = None
         challenge.save()
     except Exception:
-        # Catch the exception and save the traceback in the Challenge object's errors attribute
+        # Catch the exception and save the traceback in the Challenge object's
+        # errors attribute
         traceback_msg = traceback.format_exc()
         challenge.evaluation_module_error = traceback_msg
         challenge.save()
@@ -519,9 +520,9 @@ def run_submission(
             )
             with stdout_redirect(
                 MultiOut(stdout, sys.__stdout__)
-            ) as new_stdout, stderr_redirect(  # noqa
+            ) as _new_stdout, stderr_redirect(  # noqa
                 MultiOut(stderr, sys.__stderr__)
-            ) as new_stderr:  # noqa
+            ) as _new_stderr:  # noqa
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                     annotation_file_path,
                     user_annotation_file_path,
@@ -552,14 +553,15 @@ def run_submission(
             shutil.rmtree(temp_run_dir)
             return
 
-    # call `main` from globals and set `status` to running and hence `started_at`
+    # call `main` from globals and set `status` to running and hence
+    # `started_at`
     try:
         successful_submission_flag = True
         with stdout_redirect(
             MultiOut(stdout, sys.__stdout__)
-        ) as new_stdout, stderr_redirect(  # noqa
+        ) as _new_stdout, stderr_redirect(  # noqa
             MultiOut(stderr, sys.__stderr__)
-        ) as new_stderr:  # noqa
+        ) as _new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,
@@ -607,7 +609,8 @@ def run_submission(
                 # get split_code_name that is the key of the result
                 split_code_name = list(split_result.keys())[0]
 
-                # Check if the challenge_phase_split exists for the challenge_phaseand dataset_split
+                # Check if the challenge_phase_split exists for the
+                # challenge_phase and dataset_split
                 try:
                     challenge_phase_split = ChallengePhaseSplit.objects.get(
                         challenge_phase=challenge_phase,
@@ -622,7 +625,8 @@ def run_submission(
                     successful_submission_flag = False
                     break
 
-                # Check if the dataset_split exists for the codename in the result
+                # Check if the dataset_split exists for the codename in the
+                # result
                 try:
                     dataset_split = challenge_phase_split.dataset_split
                 except Exception:
@@ -655,7 +659,8 @@ def run_submission(
             if successful_submission_flag:
                 LeaderboardData.objects.bulk_create(leaderboard_data_list)
 
-        # Once the submission_output is processed, then save the submission object with appropriate status
+        # Once the submission_output is processed, then save the submission
+        # object with appropriate status
         else:
             successful_submission_flag = False
 
@@ -663,7 +668,8 @@ def run_submission(
         stderr.write(traceback.format_exc())
         successful_submission_flag = False
         # Set submission_output to None to handle case when evaluation script throws exception
-        # In case of exception from evaluation script submission_output is assigned exception object
+        # In case of exception from evaluation script submission_output is
+        # assigned exception object
         submission_output = None
 
     submission_status = (
@@ -675,7 +681,8 @@ def run_submission(
     submission.completed_at = timezone.now()
     submission.save()
 
-    # after the execution is finished, set `status` to finished and hence `completed_at`
+    # after the execution is finished, set `status` to finished and hence
+    # `completed_at`
     if submission_output and successful_submission_flag:
         output = {}
         output["result"] = submission_output.get("result", "")
