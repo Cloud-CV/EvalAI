@@ -296,11 +296,9 @@ def download_all_participants(request, challenge_pk):
             participant_teams, many=True, context={"request": request}
         )
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            "attachment; filename=participant_teams_{0}.csv".format(
-                challenge_pk
-            )
-        )
+        response[
+            "Content-Disposition"
+        ] = f"attachment; filename=participant_teams_{challenge_pk}.csv"
         writer = csv.writer(response)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
         for team in teams.data:
