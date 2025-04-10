@@ -1,6 +1,5 @@
+from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
-
-from apps.base.admin import ImportExportTimeStampedAdmin
 
 from .models import ChallengeHost, ChallengeHostTeam
 

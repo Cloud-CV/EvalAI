@@ -12,10 +12,10 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
+
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from apps.accounts.permissions import HasVerifiedEmail
-from apps.base.utils import get_model_object, team_paginated_queryset
+
 from .filters import HostTeamsFilter
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
