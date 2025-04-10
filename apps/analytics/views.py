@@ -171,11 +171,16 @@ def get_last_submission_time(
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     if submission_by == "user":
-        last_submitted_at = Submission.objects.filter(
-            created_by=request.user.pk,
-            challenge_phase=challenge_phase,
-            challenge_phase__challenge=challenge,
-        ).order_by("-submitted_at")[0].created_at
+        last_submitted_at = (
+    Submission.objects.filter(
+        created_by=request.user.pk,
+        challenge_phase=challenge_phase,
+        challenge_phase__challenge=challenge,
+    )
+    .order_by("-submitted_at")[0]
+    .created_at
+)
+
         last_submitted_at = LastSubmissionDateTime(last_submitted_at)
         serializer = LastSubmissionDateTimeSerializer(last_submitted_at)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -296,10 +301,9 @@ def download_all_participants(request, challenge_pk):
         )
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = (
-            "attachment; filename=participant_teams_{0}.csv".format(
-                challenge_pk
-            )
+            f"attachment; filename=participant_teams_{challenge_pk}.csv"
         )
+
         writer = csv.writer(response)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
         for team in teams.data:
