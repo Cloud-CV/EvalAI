@@ -1,7 +1,8 @@
-from .common import *  # noqa: ignore=F405
-
 import os
+
 import raven
+
+from .common import *  # noqa: ignore=F405
 
 DEBUG = False
 

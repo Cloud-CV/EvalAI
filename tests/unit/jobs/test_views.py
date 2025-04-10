@@ -1,23 +1,13 @@
-import boto3
 import collections
 import json
-import mock
 import os
-import requests
 import shutil
-
 from datetime import timedelta
-from moto import mock_s3
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import User
-from django.utils import timezone
-from django.urls import reverse_lazy
-
+import boto3
+import mock
+import requests
 from allauth.account.models import EmailAddress
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
 from challenges.models import (
     Challenge,
     ChallengePhase,
@@ -26,9 +16,16 @@ from challenges.models import (
     Leaderboard,
     LeaderboardData,
 )
-from hosts.models import ChallengeHostTeam, ChallengeHost
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse_lazy
+from django.utils import timezone
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import ParticipantTeam, Participant
+from moto import mock_s3
+from participants.models import Participant, ParticipantTeam
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):

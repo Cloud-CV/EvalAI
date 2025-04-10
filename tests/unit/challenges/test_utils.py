@@ -1,12 +1,11 @@
 import os
-import unittest
 import random
 import string
+import unittest
 
-from django.conf import settings
-
-from challenges.utils import get_file_content
 from base.utils import get_queue_name
+from challenges.utils import get_file_content
+from django.conf import settings
 
 
 class BaseTestCase(unittest.TestCase):

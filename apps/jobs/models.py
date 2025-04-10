@@ -2,21 +2,19 @@ from __future__ import unicode_literals
 
 import logging
 
+from base.models import TimeStampedModel
+from base.utils import RandomFileName
+from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Max
-from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-
-
-from base.models import TimeStampedModel
-from base.utils import RandomFileName
-from challenges.models import ChallengePhase
 from jobs.constants import submission_status_to_exclude
 from participants.models import ParticipantTeam
+from rest_framework.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +80,9 @@ class Submission(TimeStampedModel):
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    rerun_resumed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    rerun_resumed_at = models.DateTimeField(
+        null=True, blank=True, db_index=True
+    )
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)

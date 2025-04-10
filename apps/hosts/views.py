@@ -1,5 +1,6 @@
+from accounts.permissions import HasVerifiedEmail
+from base.utils import get_model_object, team_paginated_queryset
 from django.contrib.auth.models import User
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -20,8 +21,8 @@ from .serializers import (
 
     ChallengeHostSerializer,
     ChallengeHostTeamSerializer,
-    InviteHostToTeamSerializer,
     HostTeamDetailSerializer,
+    InviteHostToTeamSerializer,
 )
 from .utils import is_user_part_of_host_team
 
