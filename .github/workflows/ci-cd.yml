@@ -17,30 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9.21
-
-      - name: Install dependencies
+      - name: Install Docker Compose
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8==3.8.2 black==24.8.0 pylint==3.3.6 isort==5.12.0
-          
-      - name: Lint with flake8, black, isort, and pylint
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      
+      - name: Run code quality checks in Docker
         run: |
-          black --check --diff ./
-          isort --check-only --diff --profile=black ./
-          flake8 --config=.flake8 ./
-          cp .pylintrc .pylintrc.modified
-          echo "[SIMILARITIES]" >> .pylintrc.modified
-          echo "min-similarity-lines=10" >> .pylintrc.modified
-          echo "ignore-comments=yes" >> .pylintrc.modified
-          echo "ignore-docstrings=yes" >> .pylintrc.modified
-          echo "ignore-imports=yes" >> .pylintrc.modified
-          echo "ignore-patterns=test_*.py,*_test.py" >> .pylintrc.modified
-          pylint --rcfile=.pylintrc.modified --output-format=colorized --score=y --fail-under=6.5 ./ || \
-          pylint --rcfile=.pylintrc --disable=duplicate-code --output-format=colorized --score=y --fail-under=6.5 ./
+          docker-compose run -e DJANGO_SETTINGS_MODULE=settings.dev -e VERBOSE=1 django bash -c "
+          echo 'Installing black, flake8, pylint and isort...' &&
+          pip install black==24.8.0 flake8==3.8.2 pylint==3.3.6 isort==5.12.0 &&
+          echo 'Running black check...' &&
+          black --check --diff ./ || { echo 'Black check failed!'; exit 1; } &&
+          echo 'Running isort check...' &&
+          isort --check-only --diff --profile=black ./ || { echo 'isort check failed!'; exit 1; } &&
+          echo 'Running flake8 check...' &&
+          flake8 --config=.flake8 ./ || { echo 'Flake8 check failed!'; exit 1; } &&
+          echo 'Running pylint check...' &&
+          pylint --rcfile=.pylintrc --output-format=colorized --score=y --fail-under=7.5 ./ || { echo 'Pylint check failed!'; exit 1; } &&
+          echo 'All code quality checks passed!'"
 
   build:
     name: Docker Build
@@ -48,7 +44,7 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: System configuration
         run: |
           sudo rm -f /etc/boto.cfg
@@ -136,7 +132,7 @@ jobs:
         run: |
           echo "Attempting to submit coverage to Coveralls..."
           coveralls --rcfile=.coveragerc || echo "Coveralls submission failed, but continuing workflow"
-
+                   
   deploy:
     name: Package & Deploy
     runs-on: ubuntu-latest
