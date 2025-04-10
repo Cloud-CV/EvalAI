@@ -1,19 +1,14 @@
 import responses
-
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
-
+from django.test import Client, TestCase
+from django.urls import reverse_lazy
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-
+from rest_framework.test import APIClient, APITestCase
 from web.models import Contact, Team
+from web.views import internal_server_error, page_not_found
 
-from django.test import Client
-from django.test import TestCase
-
-from web.views import page_not_found, internal_server_error
 from evalai.urls import handler404, handler500
 
 

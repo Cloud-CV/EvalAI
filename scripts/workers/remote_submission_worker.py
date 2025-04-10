@@ -1,23 +1,25 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import contextlib
 import importlib
 import json
 import logging
 import os
-import requests
-import signal
 import shutil
+import signal
 import sys
 import tempfile
 import time
 import traceback
 import zipfile
-
 from os.path import join
+
+import requests
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()

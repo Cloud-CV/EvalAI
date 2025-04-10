@@ -1,9 +1,9 @@
 import os
+import time
+from datetime import datetime
+
 import pytz
 import requests
-import time
-
-from datetime import datetime
 from dateutil import parser
 
 utc = pytz.UTC
@@ -49,8 +49,10 @@ def delete_worker(challenge_id):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/unapproved/all".format(
-        evalai_endpoint
+    all_challenge_endpoint = (
+        "{}/api/challenges/challenge/all/unapproved/all".format(
+            evalai_endpoint
+        )
     )
     response = requests.get(
         all_challenge_endpoint, headers=authorization_header

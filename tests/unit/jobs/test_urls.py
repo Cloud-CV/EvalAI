@@ -1,27 +1,24 @@
-import os
 import json
+import os
 import shutil
-
 from datetime import timedelta
 
-from django.urls import reverse_lazy, resolve
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import User
-from django.utils import timezone
-
 from allauth.account.models import EmailAddress
-from rest_framework.test import APITestCase, APIClient
-
 from challenges.models import (
     Challenge,
     ChallengePhase,
-    Leaderboard,
-    DatasetSplit,
     ChallengePhaseSplit,
+    DatasetSplit,
+    Leaderboard,
 )
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import resolve, reverse_lazy
+from django.utils import timezone
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import ParticipantTeam, Participant
+from participants.models import Participant, ParticipantTeam
+from rest_framework.test import APIClient, APITestCase
 
 
 class BaseAPITestClass(APITestCase):

@@ -1,46 +1,22 @@
-import botocore
 import datetime
 import json
 import logging
 import os
 import uuid
 
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import transaction, IntegrityError
-from django.db.models import Count
-from django.utils import dateparse, timezone
-
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
+import botocore
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     StandardResultSetPagination,
     get_boto3_client,
     get_or_create_sqs_queue,
-    paginated_queryset,
     is_user_a_staff,
+    paginated_queryset,
 )
 from challenges.models import (
-    ChallengePhase,
     Challenge,
     ChallengeEvaluationCluster,
+    ChallengePhase,
     ChallengePhaseSplit,
     LeaderboardData,
 )
@@ -53,15 +29,37 @@ from challenges.utils import (
     get_challenge_phase_split_model,
     get_participant_model,
 )
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError, transaction
+from django.db.models import Count
+from django.utils import dateparse, timezone
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
 from participants.utils import (
-    get_participant_team_model,
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_model,
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from .aws_utils import generate_aws_eks_bearer_token
 from .filters import SubmissionFilter
 from .models import Submission
@@ -243,7 +241,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         # check if manual approval is enabled and team is approved
-        if challenge.manual_participant_approval and not challenge.approved_participant_teams.filter(pk=participant_team_id).exists():
+        if (
+            challenge.manual_participant_approval
+            and not challenge.approved_participant_teams.filter(
+                pk=participant_team_id
+            ).exists()
+        ):
             response_data = {
                 "error": "Your team is not approved by challenge host"
             }
@@ -312,9 +315,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             submission_meta_attributes = json.load(
                 request.data.get("submission_meta_attributes")
             )
-            request.data[
-                "submission_meta_attributes"
-            ] = submission_meta_attributes
+            request.data["submission_meta_attributes"] = (
+                submission_meta_attributes
+            )
 
         if request.data.get("is_public") is None:
             request.data["is_public"] = (
@@ -1114,7 +1117,9 @@ def update_submission(request, challenge_pk):
                 "foo": "bar"
             }
     """
-    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(request.user, challenge_pk):
+    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(
+        request.user, challenge_pk
+    ):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
@@ -1126,7 +1131,9 @@ def update_submission(request, challenge_pk):
         submission_status = request.data.get("submission_status", "").lower()
         stdout_content = request.data.get("stdout", "").encode("utf-8")
         stderr_content = request.data.get("stderr", "").encode("utf-8")
-        environment_log_content = request.data.get("environment_log", "").encode("utf-8")
+        environment_log_content = request.data.get(
+            "environment_log", ""
+        ).encode("utf-8")
         submission_result = request.data.get("result", "")
         metadata = request.data.get("metadata", "")
         submission = get_submission_model(submission_pk)
@@ -1270,7 +1277,9 @@ def update_submission(request, challenge_pk):
         submission.completed_at = timezone.now()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
         submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
-        submission.environment_log_file.save("environment_log.txt", ContentFile(environment_log_content))
+        submission.environment_log_file.save(
+            "environment_log.txt", ContentFile(environment_log_content)
+        )
         submission.submission_result_file.save(
             "submission_result.json", ContentFile(str(public_results))
         )
@@ -1889,16 +1898,17 @@ def re_run_submission(request, submission_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if submission.ignore_submission:
-        response_data = {
-            "error": "Deleted submissions can't be re-run"
-        }
+        response_data = {"error": "Deleted submissions can't be re-run"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # get the challenge and challenge phase object
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not challenge.allow_participants_resubmissions and not is_user_a_staff_or_host(request.user, challenge.pk):
+    if (
+        not challenge.allow_participants_resubmissions
+        and not is_user_a_staff_or_host(request.user, challenge.pk)
+    ):
         response_data = {
             "error": "Only challenge hosts or admins are allowed to re-run a submission"
         }
@@ -1936,28 +1946,25 @@ def resume_submission(request, submission_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if submission.ignore_submission:
-        response_data = {
-            "error": "Deleted submissions can't be resumed"
-        }
+        response_data = {"error": "Deleted submissions can't be resumed"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if submission.status != Submission.FAILED:
-        response_data = {
-            "error": "Only failed submissions can be resumed"
-        }
+        response_data = {"error": "Only failed submissions can be resumed"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if submission.status == Submission.RESUMING:
-        response_data = {
-            "error": "Submission is already resumed"
-        }
+        response_data = {"error": "Submission is already resumed"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # get the challenge and challenge phase object
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not challenge.allow_participants_resubmissions and not is_user_a_host_of_challenge(request.user, challenge.pk):
+    if (
+        not challenge.allow_participants_resubmissions
+        and not is_user_a_host_of_challenge(request.user, challenge.pk)
+    ):
         response_data = {
             "error": "Only challenge hosts are allowed to resume a submission"
         }
@@ -1971,21 +1978,23 @@ def resume_submission(request, submission_pk):
 
     if not challenge.remote_evaluation:
         response_data = {
-            "error": "Challenge {} is not remote. Resuming is only supported for remote challenges.".format(challenge.title)
+            "error": "Challenge {} is not remote. Resuming is only supported for remote challenges.".format(
+                challenge.title
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if not challenge.allow_resuming_submissions:
         response_data = {
-            "error": "Challenge {} does not allow resuming submissions.".format(challenge.title)
+            "error": "Challenge {} does not allow resuming submissions.".format(
+                challenge.title
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     message = handle_submission_resume(submission, Submission.RESUMING)
     publish_submission_message(message)
-    response_data = {
-        "success": "Submission is successfully resumed"
-    }
+    response_data = {"success": "Submission is successfully resumed"}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -1997,7 +2006,9 @@ def get_submissions_for_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(request.user, challenge.id):
+    if not is_user_a_staff(request.user) and not is_user_a_host_of_challenge(
+        request.user, challenge.id
+    ):
         response_data = {
             "error": "Sorry, you are not authorized to make this request!"
         }
@@ -2044,13 +2055,19 @@ def get_submissions_for_challenge(request, challenge_pk):
     )
 
     if submission_status:
-        submissions_done_in_challenge = submissions_done_in_challenge.filter(status=submission_status)
+        submissions_done_in_challenge = submissions_done_in_challenge.filter(
+            status=submission_status
+        )
 
     if submitted_after:
-        submissions_done_in_challenge = submissions_done_in_challenge.filter(submitted_at__gt=submitted_after)
+        submissions_done_in_challenge = submissions_done_in_challenge.filter(
+            submitted_at__gt=submitted_after
+        )
 
     if submitted_before:
-        submissions_done_in_challenge = submissions_done_in_challenge.filter(submitted_at__lt=submitted_before)
+        submissions_done_in_challenge = submissions_done_in_challenge.filter(
+            submitted_at__lt=submitted_before
+        )
 
     serializer = SubmissionSerializer(
         submissions_done_in_challenge, many=True, context={"request": request}
@@ -2329,7 +2346,9 @@ def update_leaderboard_data(request, leaderboard_data_pk):
     """
 
     try:
-        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk, is_disabled=False)
+        leaderboard_data = LeaderboardData.objects.get(
+            pk=leaderboard_data_pk, is_disabled=False
+        )
     except LeaderboardData.DoesNotExist:
         response_data = {"error": "Leaderboard data does not exist"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)

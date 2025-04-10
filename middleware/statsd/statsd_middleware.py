@@ -1,7 +1,12 @@
 import time
 
 from django.utils.deprecation import MiddlewareMixin
-from monitoring.statsd.metrics import statsd, REQUEST_COUNT_METRIC_NAME, REQUEST_LATENCY_METRIC_NAME
+
+from monitoring.statsd.metrics import (
+    REQUEST_COUNT_METRIC_NAME,
+    REQUEST_LATENCY_METRIC_NAME,
+    statsd,
+)
 
 
 class StatsdMetricsMiddleware(MiddlewareMixin):

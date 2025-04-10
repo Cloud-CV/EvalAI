@@ -1,10 +1,37 @@
 repos:
--   repo: https://github.com/ambv/black
-    rev: stable
+  - repo: https://github.com/ambv/black
+    rev: 24.8.0
     hooks:
-    - id: black
-      language_version: python3.7
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
+      - id: black
+        language_version: python3.9
+        args: ['--check', '--diff', '--verbose']
+        verbose: true
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
     hooks:
-    - id: flake8
+      - id: isort
+        args: ['--profile=black', '--verbose']
+        verbose: true
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 3.8.2
+    hooks:
+      - id: flake8
+        args: ['--config=.flake8', '--verbose']
+        verbose: true
+
+  - repo: https://github.com/pycqa/pylint
+    rev: v3.3.6
+    hooks:
+      - id: pylint
+        args:
+          [
+            '--rcfile=.pylintrc',
+            '--output-format=colorized',
+            '--score=y',
+            '--fail-under=7.5',
+            '--verbose'
+          ]
+        language_version: python3.9
+        verbose: true
