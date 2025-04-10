@@ -20,6 +20,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from accounts.permissions import HasVerifiedEmail
 from challenges.permissions import IsChallengeCreator
+
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
@@ -297,9 +298,11 @@ def download_all_participants(request, challenge_pk):
         )
         response = HttpResponse(content_type="text/csv")
         response = HttpResponse(content_type="text/csv")
-        response[
-            "Content-Disposition"
-        ] = f'attachment; filename=participant_teams_{challenge_pk}.csv'
+        response["Content-Disposition"] = (
+            "attachment; filename=participant_teams_{0}.csv".format(
+                challenge_pk
+            )
+        )
         writer = csv.writer(response)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
         for team in teams.data:
