@@ -1,9 +1,28 @@
 import csv
 from datetime import timedelta
 
+from accounts.permissions import HasVerifiedEmail
+from challenges.permissions import IsChallengeCreator
+from challenges.utils import get_challenge_model, get_challenge_phase_model
 from django.http import HttpResponse
 from django.utils import timezone
-
+from hosts.utils import is_user_a_host_of_challenge
+from jobs.models import Submission
+from jobs.serializers import (
+    LastSubmissionDateTime,
+    LastSubmissionDateTimeSerializer,
+    SubmissionCount,
+    SubmissionCountSerializer,
+)
+from participants.models import Participant
+from participants.serializers import (
+    ChallengeParticipantSerializer,
+    ParticipantCount,
+    ParticipantCountSerializer,
+    ParticipantTeamCount,
+    ParticipantTeamCountSerializer,
+)
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -18,27 +37,6 @@ from rest_framework_expiring_authtoken.authentication import (
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from accounts.permissions import HasVerifiedEmail
-from challenges.permissions import IsChallengeCreator
-
-from challenges.utils import get_challenge_model, get_challenge_phase_model
-from hosts.utils import is_user_a_host_of_challenge
-from jobs.models import Submission
-from jobs.serializers import (
-    LastSubmissionDateTime,
-    LastSubmissionDateTimeSerializer,
-    SubmissionCount,
-    SubmissionCountSerializer,
-)
-from participants.models import Participant
-from participants.utils import get_participant_team_id_of_user_for_a_challenge
-from participants.serializers import (
-    ParticipantCount,
-    ParticipantCountSerializer,
-    ParticipantTeamCount,
-    ParticipantTeamCountSerializer,
-    ChallengeParticipantSerializer,
-)
 from .serializers import (
     ChallengePhaseSubmissionAnalytics,
     ChallengePhaseSubmissionAnalyticsSerializer,
