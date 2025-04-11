@@ -1,43 +1,41 @@
-from django.conf.urls import url
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    url(
-        r"^challenge_host_team/$",
-        views.challenge_host_team_list,
-        name="get_challenge_host_team_list",
+    path(
+        "challenge_host_team",
+        views.get_all_challenge_host_teams,
+        name="get_all_challenge_host_teams",
     ),
-    url(
-        r"^challenge_host_team/(?P<pk>[0-9]+)$",
-        views.challenge_host_team_detail,
-        name="get_challenge_host_team_details",
+    path(
+        "challenge_host_team/<int:pk>",
+        views.get_challenge_host_team,
+        name="get_challenge_host_team",
     ),
-    url(
-        r"^create_challenge_host_team$",
-        views.create_challenge_host_team,
-        name="create_challenge_host_team",
+    path(
+        "challenge_host_team/<int:pk>/disable",
+        views.disable_challenge_host_team,
+        name="disable_challenge_host_team",
     ),
-    url(
-        r"^challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge_host$",
-        views.challenge_host_list,
-        name="get_challenge_host_list",
+    path(
+        "challenge_host_team/<int:pk>/delete",
+        views.delete_challenge_host_team,
+        name="delete_challenge_host_team",
     ),
-    url(
-        r"^challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge_host/(?P<pk>[0-9]+)$",
-        views.challenge_host_detail,
-        name="get_challenge_host_details",
+    path(
+        "challenge_host_team/<int:pk>/edit",
+        views.edit_challenge_host_team,
+        name="edit_challenge_host_team",
     ),
-    url(
-        r"^remove_self_from_challenge_host/(?P<challenge_host_team_pk>[0-9]+)$",
-        views.remove_self_from_challenge_host_team,
-        name="remove_self_from_challenge_host_team",
+    path(
+        "challenge_host_team/<int:pk>/accept_invite/<int:user_pk>",
+        views.accept_invite,
+        name="accept_invite",
     ),
-    url(
-        r"^challenge_host_teams/(?P<pk>[0-9]+)/invite$",
+    path(
+        "challenge_host_teams/<int:pk>/invite",
         views.invite_host_to_team,
         name="invite_host_to_team",
     ),
 ]
-
-app_name = "hosts"

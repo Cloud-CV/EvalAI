@@ -5,17 +5,19 @@ from .models import ChallengeHost, ChallengeHostTeam
 
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
-
     created_by = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()
     )
 
     def __init__(self, *args, **kwargs):
-        super(ChallengeHostTeamSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             request = context.get("request")
-            kwargs["data"]["created_by"] = request.user.username
+            if kwargs.get("data"):
+                kwargs["data"][
+                    "created_by"
+                ] = request.user.username
 
     class Meta:
         model = ChallengeHostTeam
@@ -23,7 +25,6 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 
 
 class ChallengeHostSerializer(serializers.ModelSerializer):
-
     status = serializers.ChoiceField(choices=ChallengeHost.STATUS_OPTIONS)
     permissions = serializers.ChoiceField(
         choices=ChallengeHost.PERMISSION_OPTIONS
@@ -33,13 +34,18 @@ class ChallengeHostSerializer(serializers.ModelSerializer):
     )
 
     def __init__(self, *args, **kwargs):
-        super(ChallengeHostSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             challenge_host_team = context.get("challenge_host_team")
             request = context.get("request")
-            kwargs["data"]["team_name"] = challenge_host_team.pk
-            kwargs["data"]["user"] = request.user.username
+            if kwargs.get("data"):
+                kwargs["data"][
+                    "team_name"
+                ] = challenge_host_team.pk
+                kwargs["data"][
+                    "user"
+                ] = request.user.username
 
     class Meta:
         model = ChallengeHost
@@ -47,11 +53,10 @@ class ChallengeHostSerializer(serializers.ModelSerializer):
 
 
 class InviteHostToTeamSerializer(serializers.Serializer):
-
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
-        super(InviteHostToTeamSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         context = kwargs.get("context")
         if context:
             self.challenge_host_team = context.get("challenge_host_team")
@@ -62,11 +67,13 @@ class InviteHostToTeamSerializer(serializers.Serializer):
             raise serializers.ValidationError("A host cannot invite himself")
         try:
             User.objects.get(email=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User does not exist")
+        except User.DoesNotExist as exc:
+            raise serializers.ValidationError(
+                "User does not exist"
+            ) from exc
         return value
 
-    def save(self):
+    def save(self, **kwargs):
         email = self.validated_data.get("email")
         return ChallengeHost.objects.get_or_create(
             user=User.objects.get(email=email),
@@ -77,7 +84,6 @@ class InviteHostToTeamSerializer(serializers.Serializer):
 
 
 class HostTeamDetailSerializer(serializers.ModelSerializer):
-
     members = serializers.SerializerMethodField()
     created_by = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()
@@ -87,7 +93,8 @@ class HostTeamDetailSerializer(serializers.ModelSerializer):
         model = ChallengeHostTeam
         fields = ("id", "team_name", "created_by", "members", "team_url")
 
-    def get_members(self, obj):
+    @staticmethod
+    def get_members(obj):
         hosts = ChallengeHost.objects.filter(team_name_id=obj.id)
         serializer = ChallengeHostSerializer(hosts, many=True)
         return serializer.data
