@@ -5395,6 +5395,10 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
             },
         ]
         response = self.client.get(self.url, {})
+        print("\n\nACTUAL RESPONSE:")
+        print(response.data)
+        print("\n\nEXPECTED:")
+        print(expected)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
