@@ -1,8 +1,10 @@
 services:
   db:
-    image: postgres:10.4
+    image: postgres:16.8
     ports:
       - "5432:5432"
+    env_file:
+      - docker/dev/docker.env
 
   sqs:
     image: softwaremill/elasticmq
