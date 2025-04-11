@@ -5397,11 +5397,6 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         response = self.client.get(self.url, {})
         actual_sorted = sorted(response.data, key=lambda x: x["id"])
         expected_sorted = sorted(expected, key=lambda x: x["id"])
-
-        print("\n\nACTUAL RESPONSE (sorted):")
-        print(actual_sorted)
-        print("\n\nEXPECTED (sorted):")
-        print(expected_sorted)
         self.assertEqual(actual_sorted, expected_sorted)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
