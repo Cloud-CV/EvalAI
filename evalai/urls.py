@@ -36,13 +36,6 @@ from web import views
 handler404 = "web.views.page_not_found"
 handler500 = "web.views.internal_server_error"
 
-# swagger_api_info = OpenApiInfo(
-#     title="EvalAI API",
-#     default_version="v1",
-#     description="EvalAI Documentation",
-#     contact={"email": "team@cloudcv.org"},
-#     license={"name": "BSD License"},
-# )
 
 schema_view = SpectacularAPIView.as_view()
 swagger_view = SpectacularSwaggerView.as_view(url_name='schema')
@@ -87,28 +80,8 @@ urlpatterns = [
     ),
     url(r"^api/web/", include("web.urls", namespace="web")),
     url(r"^email_reporting/", include("django_ses.urls")),
-    # url(
-    #     r"^api/docs/docs(?P<format>\.json|\.yaml)$",
-    #     schema_view.without_ui(cache_timeout=0),
-    #     name="schema-yaml",
-    # ),
-    # url(
-    #     r"^api/docs/$",
-    #     schema_view.with_ui("redoc", cache_timeout=0),
-    #     name="schema-redoc",
-    # ),
-    # url(
-    #     r"^api/docs/docs(?P<format>\.json|\.yaml)$",
-    #     SpectacularAPIView.as_view(),
-    #     name="schema-json-yaml",
-    # ),
-    # url(
-    #     r"^api/docs/$",
-    #     SpectacularSwaggerView.as_view(url_name="schema-json-yaml"),
-    #     name="swagger-ui",
-    # ),
     url(r'^api/schema/', schema_view, name='schema'),
-    # url(r'^api/docs/', swagger_view, name='swagger-ui'),
+    url(r'^api/swagger/', swagger_view, name='swagger-ui'),
     url(r'^api/docs/', redoc_view, name='redoc'),
 ]
 
