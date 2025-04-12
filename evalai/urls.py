@@ -22,24 +22,31 @@ from django.contrib import admin
 from django.views.generic.base import TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+# from drf_spectacular.openapi import OpenApiInfo
 from rest_framework import permissions
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from web import views
 
+
 handler404 = "web.views.page_not_found"
 handler500 = "web.views.internal_server_error"
 
-swagger_api_info = openapi.Info(
-    title="EvalAI API",
-    default_version="v1",
-    description="EvalAI Documentation",
-    contact=openapi.Contact(email="team@cloudcv.org"),
-    license=openapi.License(name="BSD License"),
-)
+# swagger_api_info = OpenApiInfo(
+#     title="EvalAI API",
+#     default_version="v1",
+#     description="EvalAI Documentation",
+#     contact={"email": "team@cloudcv.org"},
+#     license={"name": "BSD License"},
+# )
 
-schema_view = get_schema_view(
-    public=True, permission_classes=(permissions.AllowAny,)
-)
+schema_view = SpectacularAPIView.as_view()
+swagger_view = SpectacularSwaggerView.as_view(url_name='schema')
+redoc_view = SpectacularRedocView.as_view(url_name='schema')
 
 urlpatterns = [
     url(r"^$", views.home, name="home"),
@@ -80,16 +87,29 @@ urlpatterns = [
     ),
     url(r"^api/web/", include("web.urls", namespace="web")),
     url(r"^email_reporting/", include("django_ses.urls")),
-    url(
-        r"^api/docs/docs(?P<format>\.json|\.yaml)$",
-        schema_view.without_ui(cache_timeout=0),
-        name="schema-yaml",
-    ),
-    url(
-        r"^api/docs/$",
-        schema_view.with_ui("redoc", cache_timeout=0),
-        name="schema-redoc",
-    ),
+    # url(
+    #     r"^api/docs/docs(?P<format>\.json|\.yaml)$",
+    #     schema_view.without_ui(cache_timeout=0),
+    #     name="schema-yaml",
+    # ),
+    # url(
+    #     r"^api/docs/$",
+    #     schema_view.with_ui("redoc", cache_timeout=0),
+    #     name="schema-redoc",
+    # ),
+    # url(
+    #     r"^api/docs/docs(?P<format>\.json|\.yaml)$",
+    #     SpectacularAPIView.as_view(),
+    #     name="schema-json-yaml",
+    # ),
+    # url(
+    #     r"^api/docs/$",
+    #     SpectacularSwaggerView.as_view(url_name="schema-json-yaml"),
+    #     name="swagger-ui",
+    # ),
+    url(r'^api/schema/', schema_view, name='schema'),
+    # url(r'^api/docs/', swagger_view, name='swagger-ui'),
+    url(r'^api/docs/', redoc_view, name='redoc'),
 ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.

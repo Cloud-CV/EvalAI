@@ -11,6 +11,7 @@ from challenges.utils import (
 from django.contrib.auth.models import User
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
 from rest_framework import permissions, status
@@ -453,32 +454,32 @@ def get_participant_team_details_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
-@swagger_auto_schema(
-    methods=["post"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["POST"],
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="participant_team_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Participant team pk",
             required=True,
         ),
     ],
     operation_id="remove_participant_team_from_challenge",
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Team has not participated in the challenge'}"
+        status.HTTP_200_OK: OpenApiResponse(description=""),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="{'error': 'Team has not participated in the challenge'}"
         ),
-        status.HTTP_401_UNAUTHORIZED: openapi.Response(
-            "{'error': 'Sorry, you do not have permissions to remove this participant team'}"
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            description="{'error': 'Sorry, you do not have permissions to remove this participant team'}"
         ),
     },
 )
