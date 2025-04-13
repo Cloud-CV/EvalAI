@@ -181,7 +181,7 @@ REST_FRAMEWORK = {
         "resend_email": "3/hour",
     },
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # ALLAUTH SETTINGS
@@ -325,11 +325,11 @@ SWAGGER_SETTINGS = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'EvalAI API',
-    'DESCRIPTION': 'EvalAI Documentation',
-    'VERSION': 'v1',
-    'CONTACT': {'email': 'team@cloudcv.org'},
-    'LICENSE': {'name': 'BSD License'},
+    "TITLE": "EvalAI API",
+    "DESCRIPTION": "EvalAI Documentation",
+    "VERSION": "v1",
+    "CONTACT": {"email": "team@cloudcv.org"},
+    "LICENSE": {"name": "BSD License"},
 }
 
 REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}

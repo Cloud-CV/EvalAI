@@ -57,10 +57,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
-from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiResponse,
+)
 
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -452,7 +453,7 @@ def participant_team_detail_for_challenge(request, challenge_pk):
                 "properties": {
                     "error": {
                         "type": "string",
-                        "description": "You are not authorized to make this request"
+                        "description": "You are not authorized to make this request",
                     },
                 },
             },
@@ -4610,7 +4611,7 @@ def pwc_task_dataset(request):
             required=True,
         ),
     ],
-    responses = {
+    responses={
         status.HTTP_200_OK: OpenApiResponse(
             description="List of allowed email IDs for the challenge phase",
             response={
@@ -4619,12 +4620,12 @@ def pwc_task_dataset(request):
                     "allowed_email_ids": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "List of allowed email IDs"
+                        "description": "List of allowed email IDs",
                     }
-                }
-            }
+                },
+            },
         ),
-    }
+    },
 )
 @extend_schema(
     methods=["DELETE", "PATCH"],

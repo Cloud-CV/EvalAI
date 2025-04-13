@@ -32,6 +32,5 @@ PyJWT==2.1.0
 PyYaml==5.1
 proc==1.0
 rstr==2.2.6
-ruamel.yaml<0.18
 sendgrid==6.4.8
 datadog==0.39.0

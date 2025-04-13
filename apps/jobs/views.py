@@ -35,9 +35,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.utils import dateparse, timezone
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiResponse,
+)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
@@ -529,9 +531,18 @@ def change_submission_data_and_visibility(
             response={
                 "type": "object",
                 "properties": {
-                    "count": {"type": "string", "description": "Count of values on the leaderboard"},
-                    "next": {"type": "string", "description": "URL of next page of results"},
-                    "previous": {"type": "string", "description": "URL of previous page of results"},
+                    "count": {
+                        "type": "string",
+                        "description": "Count of values on the leaderboard",
+                    },
+                    "next": {
+                        "type": "string",
+                        "description": "URL of next page of results",
+                    },
+                    "previous": {
+                        "type": "string",
+                        "description": "URL of previous page of results",
+                    },
                     "results": {
                         "type": "array",
                         "description": "Array of results object",
@@ -629,38 +640,61 @@ def leaderboard(request, challenge_phase_split_id):
             response={
                 "type": "object",
                 "properties": {
-                    "count": {"type": "string", "description": "Count of values on the leaderboard"},
-                    "next": {"type": "string", "description": "URL of next page of results"},
-                    "previous": {"type": "string", "description": "URL of previous page of results"},
+                    "count": {
+                        "type": "string",
+                        "description": "Count of values on the leaderboard",
+                    },
+                    "next": {
+                        "type": "string",
+                        "description": "URL of next page of results",
+                    },
+                    "previous": {
+                        "type": "string",
+                        "description": "URL of previous page of results",
+                    },
                     "results": {
                         "type": "array",
                         "description": "Array of results object",
                         "items": {
                             "type": "object",
                             "properties": {
-                                "id": {"type": "string", "description": "Result ID"},
-                                "submission__participant_team": {"type": "string", "description": "Participant Team ID"},
+                                "id": {
+                                    "type": "string",
+                                    "description": "Result ID",
+                                },
+                                "submission__participant_team": {
+                                    "type": "string",
+                                    "description": "Participant Team ID",
+                                },
                                 "submission__participant_team__team_name": {
-                                    "type": "string", "description": "Participant Team Name"
+                                    "type": "string",
+                                    "description": "Participant Team Name",
                                 },
                                 "submission__participant_team__team_url": {
-                                    "type": "string", "description": "Participant Team URL"
+                                    "type": "string",
+                                    "description": "Participant Team URL",
                                 },
                                 "submission__is_baseline": {
-                                    "type": "boolean", "description": "Boolean to decide if submission is baseline"
+                                    "type": "boolean",
+                                    "description": "Boolean to decide if submission is baseline",
                                 },
                                 "submission__is_public": {
-                                    "type": "boolean", "description": "Boolean to decide if submission is public"
+                                    "type": "boolean",
+                                    "description": "Boolean to decide if submission is public",
                                 },
                                 "challenge_phase_split": {
-                                    "type": "string", "description": "Challenge Phase Split ID"
+                                    "type": "string",
+                                    "description": "Challenge Phase Split ID",
                                 },
                                 "result": {
                                     "type": "array",
                                     "description": "Leaderboard Metrics values according to leaderboard schema",
                                     "items": {"type": "string"},
                                 },
-                                "error": {"type": "string", "description": "Error returned for the result"},
+                                "error": {
+                                    "type": "string",
+                                    "description": "Error returned for the result",
+                                },
                                 "leaderboard__schema": {
                                     "type": "object",
                                     "description": "Leaderboard Schema of the corresponding challenge",
@@ -677,18 +711,28 @@ def leaderboard(request, challenge_phase_split_id):
                                     },
                                 },
                                 "submission__submitted_at": {
-                                    "type": "string", "description": "Time stamp when submission was submitted at"
+                                    "type": "string",
+                                    "description": "Time stamp when submission was submitted at",
                                 },
-                                "submission__method_name": {"type": "string", "description": "Method of submission"},
-                                "submission__id": {"type": "string", "description": "ID of submission"},
+                                "submission__method_name": {
+                                    "type": "string",
+                                    "description": "Method of submission",
+                                },
+                                "submission__id": {
+                                    "type": "string",
+                                    "description": "ID of submission",
+                                },
                                 "submission__submission_metadata": {
-                                    "type": "string", "description": "Metadata and other info about submission"
+                                    "type": "string",
+                                    "description": "Metadata and other info about submission",
                                 },
                                 "filtering_score": {
-                                    "type": "string", "description": "Default filtering score for results"
+                                    "type": "string",
+                                    "description": "Default filtering score for results",
                                 },
                                 "filtering_error": {
-                                    "type": "string", "description": "Default filtering error for results"
+                                    "type": "string",
+                                    "description": "Default filtering error for results",
                                 },
                             },
                         },
@@ -925,24 +969,28 @@ def get_submission_by_pk(request, submission_id):
         ),
     ],
     request={
-        "application/json":{
+        "application/json": {
             "type": "object",
             "properties": {
                 "challenge_phase": {
-                    "type": "string", "description": "Challenge Phase ID"
+                    "type": "string",
+                    "description": "Challenge Phase ID",
                 },
                 "submission": {
-                    "type": "string", "description": "Submission ID"
+                    "type": "string",
+                    "description": "Submission ID",
                 },
                 "stdout": {
-                    "type": "string", "description": "Submission output file content"
+                    "type": "string",
+                    "description": "Submission output file content",
                 },
                 "stderr": {
-                    "type": "string", "description": "Submission error file content"
+                    "type": "string",
+                    "description": "Submission error file content",
                 },
                 "submission_status": {
-                    "type": "string", 
-                    "description": "Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED"
+                    "type": "string",
+                    "description": "Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
                 },
                 "result": {
                     "type": "array",
@@ -951,24 +999,24 @@ def get_submission_by_pk(request, submission_id):
                         "type": "object",
                         "properties": {
                             "split1": {
-                                "type": "string", 
-                                "description": "dataset split 1 codename"
+                                "type": "string",
+                                "description": "dataset split 1 codename",
                             },
                             "show_to_participant": {
-                                "type": "boolean", 
-                                "description": "Boolean to decide if the results are shown to participant or not"
+                                "type": "boolean",
+                                "description": "Boolean to decide if the results are shown to participant or not",
                             },
                             "accuracies": {
                                 "type": "object",
                                 "description": "Accuracies on different metrics",
                                 "properties": {
                                     "metric1": {
-                                        "type": "number", 
-                                        "description": "Numeric accuracy on metric 1"
+                                        "type": "number",
+                                        "description": "Numeric accuracy on metric 1",
                                     },
                                     "metric2": {
-                                        "type": "number", 
-                                        "description": "Numeric accuracy on metric 2"
+                                        "type": "number",
+                                        "description": "Numeric accuracy on metric 2",
                                     },
                                 },
                             },
@@ -980,8 +1028,8 @@ def get_submission_by_pk(request, submission_id):
                     "description": "It contains the metadata related to submission (only visible to challenge hosts)",
                     "properties": {
                         "foo": {
-                            "type": "string", 
-                            "description": "Some data relevant to key"
+                            "type": "string",
+                            "description": "Some data relevant to key",
                         }
                     },
                 },
@@ -994,7 +1042,10 @@ def get_submission_by_pk(request, submission_id):
             response={
                 "type": "object",
                 "properties": {
-                    "success": {"type": "string", "description": "Submission result has been successfully updated"}
+                    "success": {
+                        "type": "string",
+                        "description": "Submission result has been successfully updated",
+                    }
                 },
             },
         ),
@@ -1022,20 +1073,20 @@ def get_submission_by_pk(request, submission_id):
         ),
     ],
     request={
-        "application/json":{
+        "application/json": {
             "type": "object",
             "properties": {
                 "submission": {
-                    "type": "string", 
-                    "description": "Submission ID"
+                    "type": "string",
+                    "description": "Submission ID",
                 },
                 "job_name": {
-                    "type": "string", 
-                    "description": "Job name for the running submission"
+                    "type": "string",
+                    "description": "Job name for the running submission",
                 },
                 "submission_status": {
-                    "type": "string", 
-                    "description": "Updated status of submission from submitted i.e. RUNNING"
+                    "type": "string",
+                    "description": "Updated status of submission from submitted i.e. RUNNING",
                 },
             },
         },
@@ -1048,7 +1099,7 @@ def get_submission_by_pk(request, submission_id):
                 "properties": {
                     "updated_submission_data": {
                         "type": "object",
-                        "description": "The updated submission data after the patch request"
+                        "description": "The updated submission data after the patch request",
                     },
                 },
             },
@@ -1348,28 +1399,28 @@ def update_submission(request, challenge_pk):
         ),
     ],
     request={
-        "application/json":{
+        "application/json": {
             "type": "object",
             "properties": {
                 "challenge_phase": {
                     "type": "string",
-                    "description": "Challenge Phase ID"
+                    "description": "Challenge Phase ID",
                 },
                 "submission": {
                     "type": "string",
-                    "description": "Submission ID"
+                    "description": "Submission ID",
                 },
                 "stdout": {
                     "type": "string",
-                    "description": "Submission output file content"
+                    "description": "Submission output file content",
                 },
                 "stderr": {
                     "type": "string",
-                    "description": "Submission error file content"
+                    "description": "Submission error file content",
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Final status of submission (can be: CANCELLED/FAILED/FINISHED)"
+                    "description": "Final status of submission (can be: CANCELLED/FAILED/FINISHED)",
                 },
                 "result": {
                     "type": "array",
@@ -1379,11 +1430,11 @@ def update_submission(request, challenge_pk):
                         "properties": {
                             "split1": {
                                 "type": "string",
-                                "description": "Dataset split 1 codename"
+                                "description": "Dataset split 1 codename",
                             },
                             "show_to_participant": {
                                 "type": "boolean",
-                                "description": "Flag to decide if the results are shown to participants"
+                                "description": "Flag to decide if the results are shown to participants",
                             },
                             "accuracies": {
                                 "type": "object",
@@ -1391,11 +1442,11 @@ def update_submission(request, challenge_pk):
                                 "properties": {
                                     "metric1": {
                                         "type": "number",
-                                        "description": "Numeric accuracy on metric 1"
+                                        "description": "Numeric accuracy on metric 1",
                                     },
                                     "metric2": {
                                         "type": "number",
-                                        "description": "Numeric accuracy on metric 2"
+                                        "description": "Numeric accuracy on metric 2",
                                     },
                                 },
                             },
@@ -1408,7 +1459,7 @@ def update_submission(request, challenge_pk):
                     "properties": {
                         "foo": {
                             "type": "string",
-                            "description": "Some data relevant to the key"
+                            "description": "Some data relevant to the key",
                         }
                     },
                 },
@@ -1423,7 +1474,7 @@ def update_submission(request, challenge_pk):
                 "properties": {
                     "success": {
                         "type": "string",
-                        "description": "Confirmation of successful submission update"
+                        "description": "Confirmation of successful submission update",
                     },
                 },
             },
@@ -1433,16 +1484,12 @@ def update_submission(request, challenge_pk):
             response={
                 "type": "object",
                 "properties": {
-                    "error": {
-                        "type": "string",
-                        "description": "Error message"
-                    }
+                    "error": {"type": "string", "description": "Error message"}
                 },
             },
         ),
     },
 )
-
 @extend_schema(
     methods=["PATCH"],
     operation_id="update_submission",
@@ -1456,20 +1503,20 @@ def update_submission(request, challenge_pk):
         ),
     ],
     request={
-        "application/json":{
+        "application/json": {
             "type": "object",
             "properties": {
                 "submission": {
                     "type": "string",
-                    "description": "Submission ID"
+                    "description": "Submission ID",
                 },
                 "job_name": {
                     "type": "string",
-                    "description": "Job name for the running submission"
+                    "description": "Job name for the running submission",
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Updated status of submission from submitted (e.g., RUNNING)"
+                    "description": "Updated status of submission from submitted (e.g., RUNNING)",
                 },
             },
         }
@@ -1482,15 +1529,15 @@ def update_submission(request, challenge_pk):
                 "properties": {
                     "submission": {
                         "type": "string",
-                        "description": "Updated submission ID"
+                        "description": "Updated submission ID",
                     },
                     "job_name": {
                         "type": "string",
-                        "description": "Job name associated with the running submission"
+                        "description": "Job name associated with the running submission",
                     },
                     "submission_status": {
                         "type": "string",
-                        "description": "Status of the submission after update"
+                        "description": "Status of the submission after update",
                     },
                 },
             },
@@ -1500,16 +1547,12 @@ def update_submission(request, challenge_pk):
             response={
                 "type": "object",
                 "properties": {
-                    "error": {
-                        "type": "string",
-                        "description": "Error message"
-                    }
+                    "error": {"type": "string", "description": "Error message"}
                 },
             },
         ),
     },
 )
-
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -2170,10 +2213,7 @@ def get_submissions_for_challenge(request, challenge_pk):
             response={
                 "type": "object",
                 "properties": {
-                    "error": {
-                        "type": "string",
-                        "description": "Error message"
-                    }
+                    "error": {"type": "string", "description": "Error message"}
                 },
             },
         ),
@@ -2250,12 +2290,12 @@ def get_submission_message_from_queue(request, queue_name):
         ),
     ],
     request={
-        "application/json":{
+        "application/json": {
             "type": "object",
             "properties": {
                 "receipt_handle": {
                     "type": "string",
-                    "description": "Receipt handle for the message to be deleted"
+                    "description": "Receipt handle for the message to be deleted",
                 },
             },
         }
@@ -2268,7 +2308,7 @@ def get_submission_message_from_queue(request, queue_name):
                 "properties": {
                     "success": {
                         "type": "string",
-                        "description": "Message deletion confirmation"
+                        "description": "Message deletion confirmation",
                     }
                 },
             },
