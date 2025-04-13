@@ -1334,6 +1334,7 @@ def delete_log_group(log_group_name):
         except Exception as e:
             logger.exception(e)
 
+
 def calculate_retention_days(challenge_end_date):
     if not challenge_end_date:
         return 90
@@ -1345,52 +1346,89 @@ def calculate_retention_days(challenge_end_date):
         retention_delta = challenge_end_date - now
         retention_days = retention_delta.days + 30
     # Map to nearest allowed value (rounding up)
-    allowed_values = [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+    allowed_values = [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        365,
+        400,
+        545,
+        731,
+        1827,
+        3653,
+    ]
     for value in allowed_values:
         if value >= retention_days:
             return value
     return 3653
 
+
 def set_log_retention_for_challenge(challenge):
     from .utils import get_aws_credentials_for_challenge
+
     log_group_name = get_log_group_name(challenge.pk)
     retention_days = calculate_retention_days(challenge.end_date)
     if settings.DEBUG:
-        logger.info(f"[DEBUG MODE] Would set retention policy of {retention_days} days for log group {log_group_name}")
-        return {"message": f"DEBUG MODE: Would set retention policy of {retention_days} days"} 
+        logger.info(
+            f"[DEBUG MODE] Would set retention policy of {retention_days} days for log group {log_group_name}"
+        )
+        return {
+            "message": f"DEBUG MODE: Would set retention policy of {retention_days} days"
+        }
     try:
         challenge_aws_keys = get_aws_credentials_for_challenge(challenge.pk)
         logs_client = get_boto3_client("logs", challenge_aws_keys)
-        log_groups = logs_client.describe_log_groups(logGroupNamePrefix=log_group_name)
-        if not log_groups.get('logGroups'):
-            logger.info(f"Log group {log_group_name} does not exist, skipping retention setting")
+        log_groups = logs_client.describe_log_groups(
+            logGroupNamePrefix=log_group_name
+        )
+        if not log_groups.get("logGroups"):
+            logger.info(
+                f"Log group {log_group_name} does not exist, skipping retention setting"
+            )
             return {"message": f"Log group {log_group_name} does not exist"}
         response = logs_client.put_retention_policy(
-            logGroupName=log_group_name,
-            retentionInDays=retention_days
+            logGroupName=log_group_name, retentionInDays=retention_days
         )
-        
-        logger.info(f"Set retention policy of {retention_days} days for log group {log_group_name}")
+
+        logger.info(
+            f"Set retention policy of {retention_days} days for log group {log_group_name}"
+        )
         return {
             "response": response,
-            "message": f"Set retention policy of {retention_days} days for log group {log_group_name}"
+            "message": f"Set retention policy of {retention_days} days for log group {log_group_name}",
         }
-    
+
     except Exception as e:
-        error_code = getattr(e, 'response', {}).get('Error', {}).get('Code', None)
+        error_code = (
+            getattr(e, "response", {}).get("Error", {}).get("Code", None)
+        )
         if error_code == "ResourceNotFoundException":
-            logger.info(f"Log group {log_group_name} does not exist, skipping retention setting")
+            logger.info(
+                f"Log group {log_group_name} does not exist, skipping retention setting"
+            )
             return {"message": f"Log group {log_group_name} does not exist"}
-        
-        logger.exception(f"Error setting retention policy for log group {log_group_name}: {e}")
+
+        logger.exception(
+            f"Error setting retention policy for log group {log_group_name}: {e}"
+        )
         return {
             "error": str(e),
-            "message": f"Error setting retention policy for log group {log_group_name}"
+            "message": f"Error setting retention policy for log group {log_group_name}",
         }
+
 
 def update_log_retention_for_all_challenges():
     from .models import Challenge
-    challenges = Challenge.objects.filter(is_disabled=False)  
+
+    challenges = Challenge.objects.filter(is_disabled=False)
     success_count = 0
     failure_count = 0
     skipped_count = 0
@@ -1402,17 +1440,16 @@ def update_log_retention_for_all_challenges():
         response = set_log_retention_for_challenge(challenge)
         if "error" in response:
             failure_count += 1
-            failures.append({
-                "challenge_pk": challenge.pk,
-                "message": response["message"]
-            })
+            failures.append(
+                {"challenge_pk": challenge.pk, "message": response["message"]}
+            )
         else:
             success_count += 1
     return {
         "success_count": success_count,
         "failure_count": failure_count,
         "skipped_count": skipped_count,
-        "failures": failures
+        "failures": failures,
     }
 
 
