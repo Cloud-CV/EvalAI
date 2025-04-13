@@ -1,7 +1,7 @@
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
 
-from .models import ChallengeHost, ChallengeHostTeam
+from .models import ChallengeHost, ChallengeHostTeam, ChallengeHostTeamInvitation
 
 
 @admin.register(ChallengeHostTeam)
@@ -17,3 +17,10 @@ class ChallengeHostAdmin(ImportExportTimeStampedAdmin):
     list_display = ("id", "user", "team_name", "status", "permissions")
     list_filter = ("status", "permissions")
     search_fields = ("id", "user__username", "team_name__team_name")
+
+@admin.register(ChallengeHostTeamInvitation)
+class ChallengeHostTeamInvitationAdmin(admin.ModelAdmin):
+    list_display = ('email', 'team', 'invited_by', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('email', 'team__team_name', 'invited_by__username')
+    readonly_fields = ('invitation_key',)

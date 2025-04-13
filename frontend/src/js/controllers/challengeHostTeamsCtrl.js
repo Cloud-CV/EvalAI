@@ -409,6 +409,77 @@
             $state.go('web.challenge-create');
         };
 
+        vm.openInvitationDialog = function(ev, hostTeamId) {
+            console.log("Dialog Controller Instantiated");
+            ev.stopPropagation();
+            alert("Button clicked! Team ID: " + hostTeamId)
+            $mdDialog.show({
+                templateUrl: 'dist/views/web/host-team-invite.html', // Updated relative path
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose: true,
+                controller: function DialogController($scope, $mdDialog, $timeout) {
+                    $scope.inviteEmail = '';
+                    $scope.errorMsg = '';
+                    $scope.successMsg = '';
+                    $scope.inviteInProgress = false;
+                    
+                    $scope.closeDialog = function() {
+                        $mdDialog.hide();
+                    };
+                    
+                    $scope.generateInvite = function() {
+                        if (!$scope.inviteEmail) {
+                            $scope.errorMsg = 'Please enter an email address';
+                            return;
+                        }
+                        
+                        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test($scope.inviteEmail)) {
+                            $scope.errorMsg = 'Please enter a valid email address';
+                            return;
+                        }
+                        
+                        $scope.errorMsg = '';
+                        $scope.successMsg = '';
+                        $scope.inviteInProgress = true;
+                        
+                        var parameters = {};
+                        parameters.url = 'hosts/team/invite/';
+                        parameters.method = 'POST';
+                        parameters.data = {
+                            "email": $scope.inviteEmail,
+                            "team_id": hostTeamId
+                        };
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function() {
+                                $scope.inviteInProgress = false;
+                                $scope.successMsg = 'Invitation sent successfully!';
+                                $scope.$apply();
+                                
+                                $timeout(function() {
+                                    $mdDialog.hide();
+                                    $rootScope.notify("success", "Invitation sent to " + $scope.inviteEmail);
+                                }, 2000);
+                            },
+                            onError: function(response) {
+                                $scope.inviteInProgress = false;
+                                var errorMessage = 'An error occurred while sending the invitation';
+                                if (response.data && response.data.error) {
+                                    errorMessage = response.data.error;
+                                }
+                                $scope.errorMsg = errorMessage;
+                                $scope.$apply();
+                            }
+                        };
+                        
+                        utilities.sendRequest(parameters);
+                    };
+                }
+            });
+        };
+
     }
 
 })();
