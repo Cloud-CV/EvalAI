@@ -324,7 +324,7 @@ SWAGGER_SETTINGS = {
     },
 }
 
-SPECTACULAR_SETTINGS = {
+DRF_SPECTACULAR_SETTINGS = {
     "TITLE": "EvalAI API",
     "DESCRIPTION": "EvalAI Documentation",
     "VERSION": "v1",
