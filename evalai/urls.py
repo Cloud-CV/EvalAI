@@ -27,10 +27,8 @@ from drf_spectacular.views import (
 )
 
 # from drf_spectacular.openapi import OpenApiInfo
-from rest_framework import permissions
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from web import views
-
 
 handler404 = "web.views.page_not_found"
 handler500 = "web.views.internal_server_error"

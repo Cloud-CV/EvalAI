@@ -58,11 +58,10 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiParameter,
     OpenApiResponse,
+    extend_schema,
 )
-
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_team_model,

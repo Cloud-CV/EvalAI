@@ -10,9 +10,9 @@ from challenges.utils import (
 )
 from django.contrib.auth.models import User
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiParameter,
     OpenApiResponse,
+    extend_schema,
 )
 from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission

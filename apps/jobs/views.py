@@ -36,9 +36,9 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.utils import dateparse, timezone
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiParameter,
     OpenApiResponse,
+    extend_schema,
 )
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
