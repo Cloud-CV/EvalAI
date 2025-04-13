@@ -1424,6 +1424,7 @@ def set_log_retention_for_challenge(challenge):
             "message": f"Error setting retention policy for log group {log_group_name}",
         }
 
+
 @app.task
 def create_eks_nodegroup(challenge, cluster_name):
     """
