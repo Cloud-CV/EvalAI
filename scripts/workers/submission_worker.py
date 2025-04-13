@@ -31,7 +31,11 @@ django.setup()  # isort:skip noqa:E402
 # fmt: on
 
 from challenges.models import ChallengePhase  # noqa:E402; noqa:E402
-from challenges.models import Challenge, ChallengePhaseSplit, LeaderboardData
+from challenges.models import (  # noqa:E402
+    Challenge,
+    ChallengePhaseSplit,
+    LeaderboardData,
+)
 
 # Load django app settings
 from django.conf import settings  # noqa:E402
