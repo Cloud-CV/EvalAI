@@ -410,76 +410,43 @@
         };
 
         vm.openInvitationDialog = function(ev, hostTeamId) {
-            console.log("Dialog Controller Instantiated");
             ev.stopPropagation();
-            alert("Button clicked! Team ID: " + hostTeamId)
-            $mdDialog.show({
-                templateUrl: 'dist/views/web/host-team-invite.html', // Updated relative path
-                parent: angular.element(document.body),
-                targetEvent: ev,
-                clickOutsideToClose: true,
-                controller: function DialogController($scope, $mdDialog, $timeout) {
-                    $scope.inviteEmail = '';
-                    $scope.errorMsg = '';
-                    $scope.successMsg = '';
-                    $scope.inviteInProgress = false;
-                    
-                    $scope.closeDialog = function() {
-                        $mdDialog.hide();
-                    };
-                    
-                    $scope.generateInvite = function() {
-                        if (!$scope.inviteEmail) {
-                            $scope.errorMsg = 'Please enter an email address';
-                            return;
-                        }
-                        
-                        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (!emailRegex.test($scope.inviteEmail)) {
-                            $scope.errorMsg = 'Please enter a valid email address';
-                            return;
-                        }
-                        
-                        $scope.errorMsg = '';
-                        $scope.successMsg = '';
-                        $scope.inviteInProgress = true;
-                        
-                        var parameters = {};
-                        parameters.url = 'hosts/team/invite/';
-                        parameters.method = 'POST';
-                        parameters.data = {
-                            "email": $scope.inviteEmail,
-                            "team_id": hostTeamId
-                        };
-                        parameters.token = userKey;
-                        parameters.callback = {
-                            onSuccess: function() {
-                                $scope.inviteInProgress = false;
-                                $scope.successMsg = 'Invitation sent successfully!';
-                                $scope.$apply();
-                                
-                                $timeout(function() {
-                                    $mdDialog.hide();
-                                    $rootScope.notify("success", "Invitation sent to " + $scope.inviteEmail);
-                                }, 2000);
-                            },
-                            onError: function(response) {
-                                $scope.inviteInProgress = false;
-                                var errorMessage = 'An error occurred while sending the invitation';
-                                if (response.data && response.data.error) {
-                                    errorMessage = response.data.error;
-                                }
-                                $scope.errorMsg = errorMessage;
-                                $scope.$apply();
-                            }
-                        };
-                        
-                        utilities.sendRequest(parameters);
-                    };
-                }
+            
+            // Create a prompt dialog similar to inviteOthers
+            var prompt = $mdDialog.prompt()
+                .title('Generate Invitation Link')
+                .textContent('Enter the email address to generate an invite URL')
+                .placeholder('Email address')
+                .ariaLabel('Invite Email')
+                .targetEvent(ev)
+                .ok('Generate')
+                .cancel('Cancel');
+        
+            $mdDialog.show(prompt).then(function(result) {
+                // result now holds the email entered by the user.
+                var parameters = {};
+                parameters.url = 'hosts/team/invite/'; // Adjust URL if needed
+                parameters.method = 'POST';
+                parameters.data = {
+                    "email": result,
+                    "team_id": hostTeamId
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function() {
+                        $rootScope.notify("success", "Invitation link sent to " + result);
+                    },
+                    onError: function(response) {
+                        var error = response.data.error;
+                        $rootScope.notify("error", error);
+                    }
+                };
+        
+                // Send the request to generate the invite.
+                utilities.sendRequest(parameters);
             });
         };
-
+        
     }
 
 })();
