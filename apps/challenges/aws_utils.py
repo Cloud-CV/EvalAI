@@ -15,7 +15,7 @@ from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from django.utils import timezone
 from evalai.celery import app
-
+from .utils import get_aws_credentials_for_challenge
 from .challenge_notification_util import (
     construct_and_send_eks_cluster_creation_mail,
     construct_and_send_worker_start_mail,
@@ -1370,9 +1370,7 @@ def calculate_retention_days(challenge_end_date):
             return value
     return 3653
 
-
 def set_log_retention_for_challenge(challenge):
-    from .utils import get_aws_credentials_for_challenge
 
     log_group_name = get_log_group_name(challenge.pk)
     retention_days = calculate_retention_days(challenge.end_date)
