@@ -25,7 +25,6 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from web import views
 
