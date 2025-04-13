@@ -1424,35 +1424,6 @@ def set_log_retention_for_challenge(challenge):
             "message": f"Error setting retention policy for log group {log_group_name}",
         }
 
-
-def update_log_retention_for_all_challenges():
-    from .models import Challenge
-
-    challenges = Challenge.objects.filter(is_disabled=False)
-    success_count = 0
-    failure_count = 0
-    skipped_count = 0
-    failures = []
-    for challenge in challenges:
-        if challenge.workers is None and not challenge.remote_evaluation:
-            skipped_count += 1
-            continue
-        response = set_log_retention_for_challenge(challenge)
-        if "error" in response:
-            failure_count += 1
-            failures.append(
-                {"challenge_pk": challenge.pk, "message": response["message"]}
-            )
-        else:
-            success_count += 1
-    return {
-        "success_count": success_count,
-        "failure_count": failure_count,
-        "skipped_count": skipped_count,
-        "failures": failures,
-    }
-
-
 @app.task
 def create_eks_nodegroup(challenge, cluster_name):
     """
