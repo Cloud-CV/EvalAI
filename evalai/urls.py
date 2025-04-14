@@ -47,15 +47,14 @@ urlpatterns = [
     ),
     url(r"^api/auth/", include("rest_auth.urls")),
     url(
-        r"^api/auth/registration/account-confirm-email/"
-        r"(?P<key>[-:\w]+)/$",  
+        r"^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$",
         ConfirmEmailView.as_view(),
         name="account_confirm_email",
     ),
     url(r"^api/auth/registration/", include("rest_auth.registration.urls")),
     url(
         r"^auth/api/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/"
-        r"(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})$",  
+        r"(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})$",
         TemplateView.as_view(template_name="password_reset_confirm.html"),
         name="password_reset_confirm",
     ),
