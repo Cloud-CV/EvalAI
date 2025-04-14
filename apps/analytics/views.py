@@ -180,8 +180,9 @@ def get_last_submission_time(
         serializer = LastSubmissionDateTimeSerializer(last_submitted_at)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    return Response({"error": "Page not found!"}, status=status.HTTP_404_NOT_FOUND)
-
+    else:
+        response_data = {"error": "Page not found!"}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
@@ -311,8 +312,8 @@ def download_all_participants(request, challenge_pk):
                 ]
             )
         return response
-
-    return Response(
+    else:
+        return Response(
         {"error": "Sorry, you are not authorized to make this request"},
         status=status.HTTP_400_BAD_REQUEST,
     )
