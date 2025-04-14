@@ -25,23 +25,28 @@ import botocore
 import django
 import requests
 import yaml
-from django.core.files.base import ContentFile
-from django.utils import timezone
 
-from settings.common import SQS_RETENTION_PERIOD
+# fmt: off
+django.setup()  # isort:skip noqa:E402
+# fmt: on
 
-from .statsd_utils import increment_and_push_metrics_to_statsd
-from challenges.models import (
+from challenges.models import ChallengePhase  # noqa:E402
+from challenges.models import (  # noqa:E402
     Challenge,
-    ChallengePhase,  # noqa:E402
     ChallengePhaseSplit,
     LeaderboardData,
 )
 
 # Load django app settings
-from django.conf import settings  # noqa
+from django.conf import settings  # noqa:E402
+from django.core.files.base import ContentFile  # noqa:E402
+from django.utils import timezone  # noqa:E402
 from jobs.models import Submission  # noqa:E402
 from jobs.serializers import SubmissionSerializer  # noqa:E402
+
+from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
+
+from .statsd_utils import increment_and_push_metrics_to_statsd  # noqa:E402
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp(prefix="tmp")
@@ -58,7 +63,6 @@ logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-django.setup()
 
 LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
     "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"

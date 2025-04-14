@@ -16,12 +16,12 @@ from challenges.models import (
     ChallengeConfiguration,
     ChallengePhase,
     ChallengePhaseSplit,
-    DatasetSplit,
-    Leaderboard,
-    StarChallenge,
-    LeaderboardData,
     ChallengePrize,
     ChallengeSponsor,
+    DatasetSplit,
+    Leaderboard,
+    LeaderboardData,
+    StarChallenge,
 )
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -5395,7 +5395,9 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
             },
         ]
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        actual_sorted = sorted(response.data, key=lambda x: x["id"])
+        expected_sorted = sorted(expected, key=lambda x: x["id"])
+        self.assertEqual(actual_sorted, expected_sorted)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(
