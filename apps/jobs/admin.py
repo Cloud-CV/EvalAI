@@ -1,17 +1,17 @@
 import logging
 
-from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
+from apps.base.admin import ImportExportTimeStampedAdmin
 
-from .models import Submission
-from .sender import publish_submission_message
-from .utils import handle_submission_rerun
+from apps.jobs.models import Submission
+from apps.jobs.sender import publish_submission_message
+from apps.jobs.utils import handle_submission_rerun
 
 logger = logging.getLogger(__name__)
 
 
 @admin.register(Submission)
-class SubmissionAdmin(ImportExportTimeStampedAdmin):
+class SubmissionAdmin(ImportExportTimeStampedAdmin): # pylint: disable=too-many-ancestors
     actions = [
         "submit_job_to_worker",
         "make_submission_public",
@@ -52,40 +52,42 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "status",
     )
 
-    def get_challenge_name_and_id(self, obj):
+    def get_challenge_name_and_id(self, obj):  # pylint: disable=no-self-use
         """Return challenge name corresponding to phase"""
-        return "%s - %s" % (
-            obj.challenge_phase.challenge.title,
-            obj.challenge_phase.challenge.id,
-        )
+        title = obj.challenge_phase.challenge.title
+        cid = obj.challenge_phase.challenge.id
+        return f"{title} - {cid}"
 
     get_challenge_name_and_id.short_description = "Challenge"
     get_challenge_name_and_id.admin_order_field = "challenge_phase__challenge"
 
-    def submit_job_to_worker(self, request, queryset):
+    def submit_job_to_worker(self, request, queryset): # pylint: disable=no-self-use
         for submission in queryset:
             message = handle_submission_rerun(submission, Submission.CANCELLED)
             publish_submission_message(message)
 
-    submit_job_to_worker.short_description = "Re-run selected submissions (will set the status to canceled for existing submissions)"
-
-    def make_submission_public(self, request, queryset):
+    submit_job_to_worker.short_description = (
+        "Re-run selected submissions"
+        " (will set the status to canceled for existing submissions)" )  
+    def make_submission_public(self, request, queryset): # pylint: disable=no-self-use
         for submission in queryset:
             submission.is_public = True
             submission.save()
 
     make_submission_public.short_description = "Make submission public"
 
-    def make_submission_private(self, request, queryset):
+    def make_submission_private(self, request, queryset): # pylint: disable=no-self-use
         for submission in queryset:
             submission.is_public = False
             submission.save()
 
     make_submission_private.short_description = "Make submission private"
 
-    def change_submission_status_to_cancel(self, request, queryset):
+    def change_submission_status_to_cancel(self, request, queryset): # pylint: disable=no-self-use
         for submission in queryset:
             submission.status = Submission.CANCELLED
             submission.save()
 
-    change_submission_status_to_cancel.short_description = "Cancel selected submissions (will set the status to canceled for the submissions) "
+    change_submission_status_to_cancel.short_description = (
+        "Cancel selected submissions "
+        "(will set the status to canceled for the submissions) ")
