@@ -19,9 +19,11 @@ from rest_framework.exceptions import PermissionDenied
 logger = logging.getLogger(__name__)
 
 # submission.pk is not available when saving input_file
-# OutCome: `input_file` was saved for submission in folder named `submission_None`
+# OutCome: `input_file` was saved for submission
+# in folder named `submission_None`
 # why is the hack not done for `stdout_file` and `stderr_file`
-# Because they will be saved only after a submission instance is saved(pk will be available)
+# Because they will be saved only after a submission instance is saved
+# (pk will be available)
 
 
 @receiver(pre_save, sender="jobs.Submission")
@@ -95,7 +97,8 @@ class Submission(TimeStampedModel):
         null=True,
         blank=True,
     )
-    # Model to store large submission file (> 400 MB's) URLs submitted by the user
+    # Model to store large submission file (> 400 MB's)
+    # URLs submitted by the user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)
     stdout_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
@@ -142,7 +145,7 @@ class Submission(TimeStampedModel):
     is_verified_by_host = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{}".format(self.id)
+        return f"{self.id}"
 
     class Meta:
         app_label = "jobs"
@@ -186,29 +189,29 @@ class Submission(TimeStampedModel):
 
             if successful_count > self.challenge_phase.max_submissions:
                 logger.info(
-                    "Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
-                        successful_count, self.challenge_phase.max_submissions
-                    )
-                )
+                    "Checking to see if the successful_count {0} is greater " 
+                    "than maximum allowed {1}"
+                     ).format(
+                        successful_count, self.challenge_phase.max_submissions)
 
                 logger.info(
-                    "The submission request is submitted by user {0} from participant_team {1} ".format(
+                    "The submission request is submitted by user %s " 
+                    "from participant_team %s ",
                         self.created_by.pk, self.participant_team.pk
                     )
-                )
 
                 raise PermissionDenied(
                     {
-                        "error": "The maximum number of submissions has been reached"
+                        "error": "The maximum number of "
+                        "submissions has been reached"
                     }
                 )
-            else:
-                logger.info(
-                    "Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
-                        self.created_by.pk,
-                        self.participant_team.pk,
-                        self.challenge_phase.pk,
-                    )
+            logger.info(
+                "Submission is below for user %s "
+                 "form participant_team %s for challenge_phase %s",
+                    self.created_by.pk,
+                    self.participant_team.pk,
+                    self.challenge_phase.pk,
                 )
 
             total_submissions_done = Submission.objects.filter(
@@ -243,11 +246,13 @@ class Submission(TimeStampedModel):
                 == 0
             ):
                 logger.info(
-                    "Permission Denied: The maximum number of submission for this month has been reached"
+                    "Permission Denied: The maximum number of submission"
+                    " for this month has been reached"
                 )
                 raise PermissionDenied(
                     {
-                        "error": "The maximum number of submission for this month has been reached"
+                        "error": "The maximum number of submission "
+                        "for this month has been reached"
                     }
                 )
             if (
@@ -256,14 +261,16 @@ class Submission(TimeStampedModel):
                 == 0
             ):
                 logger.info(
-                    "Permission Denied: The maximum number of submission for today has been reached"
+                    "Permission Denied: The maximum number of" 
+                    " submission for today has been reached"
                 )
                 raise PermissionDenied(
                     {
-                        "error": "The maximum number of submission for today has been reached"
+                        "error": "The maximum number of submission"
+                        " for today has been reached"
                     }
                 )
             self.status = Submission.SUBMITTED
 
-        submission_instance = super(Submission, self).save(*args, **kwargs)
-        return submission_instance
+        super().save(*args, **kwargs)
+        return self
