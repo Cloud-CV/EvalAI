@@ -2,60 +2,40 @@ import csv
 import json
 import logging
 import os
-import pytz
 import random
-import requests
 import shutil
 import tempfile
 import time
 import uuid
-import yaml
 import zipfile
-
-from os.path import basename, isfile, join
 from datetime import datetime
+from os.path import basename, isfile, join
 
-
-from django.conf import settings
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import transaction
-from django.http import HttpResponse
-from django.utils import timezone
-
-from rest_framework import permissions, status
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-    throttle_classes,
-)
-from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (
-    ExpiringTokenAuthentication,
-)
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
-from yaml.scanner import ScannerError
-
-from allauth.account.models import EmailAddress
+import pytz
+import requests
+import yaml
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
+from allauth.account.models import EmailAddress
 from base.utils import (
     get_queue_name,
     get_slug,
     get_url_from_hostname,
+    is_user_a_staff,
     paginated_queryset,
     send_email,
     send_slack_notification,
-    is_user_a_staff,
+)
+from challenges.challenge_config_utils import (
+    download_and_write_file,
+    extract_zip_file,
+    validate_challenge_config_util,
 )
 from challenges.utils import (
+    add_domain_to_challenge,
+    add_prizes_to_challenge,
+    add_sponsors_to_challenge,
+    add_tags_to_challenge,
     complete_s3_multipart_file_upload,
     generate_presigned_url_for_multipart_upload,
     get_challenge_model,
@@ -68,99 +48,115 @@ from challenges.utils import (
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains,
     parse_submission_meta_attributes,
-    add_domain_to_challenge,
-    add_tags_to_challenge,
-    add_prizes_to_challenge,
-    add_sponsors_to_challenge,
 )
-from challenges.challenge_config_utils import (
-    download_and_write_file,
-    extract_zip_file,
-    validate_challenge_config_util,
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import transaction
+from django.http import HttpResponse
+from django.utils import timezone
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
+    get_challenge_host_team_model,
     get_challenge_host_teams_for_user,
     is_user_a_host_of_challenge,
     is_user_a_staff_or_host,
-    get_challenge_host_team_model,
 )
 from jobs.filters import SubmissionFilter
 from jobs.models import Submission
 from jobs.serializers import (
-    SubmissionSerializer,
     ChallengeSubmissionManagementSerializer,
+    SubmissionSerializer,
 )
+from jobs.utils import get_submission_model
 from participants.models import Participant, ParticipantTeam
 from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (
-    get_participant_teams_for_user,
-    has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
-    is_user_part_of_participant_team,
+    get_participant_teams_for_user,
+    has_user_participated_in_challenge,
     is_user_creator_of_participant_team,
+    is_user_part_of_participant_team,
 )
+from rest_framework import permissions, status
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from yaml.scanner import ScannerError
 
+from .aws_utils import (
+    create_ec2_instance,
+    delete_workers,
+    describe_ec2_instance,
+    get_log_group_name,
+    get_logs_from_cloudwatch,
+    restart_ec2_instance,
+    restart_workers,
+    scale_resources,
+    start_ec2_instance,
+    start_workers,
+    stop_ec2_instance,
+    stop_workers,
+    terminate_ec2_instance,
+)
 from .models import (
     Challenge,
+    ChallengeConfiguration,
     ChallengeEvaluationCluster,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengePrize,
+    ChallengeSponsor,
     ChallengeTemplate,
-    ChallengeConfiguration,
     LeaderboardData,
     PWCChallengeLeaderboard,
     StarChallenge,
     UserInvitation,
-    ChallengePrize,
-    ChallengeSponsor,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
     ChallengeConfigSerializer,
     ChallengeEvaluationClusterSerializer,
-    ChallengePhaseSerializer,
     ChallengePhaseCreateSerializer,
+    ChallengePhaseSerializer,
     ChallengePhaseSplitSerializer,
-    ChallengeTemplateSerializer,
+    ChallengePrizeSerializer,
     ChallengeSerializer,
+    ChallengeSponsorSerializer,
+    ChallengeTemplateSerializer,
     DatasetSplitSerializer,
+    LeaderboardDataSerializer,
     LeaderboardSerializer,
     PWCChallengeLeaderboardSerializer,
     StarChallengeSerializer,
     UserInvitationSerializer,
-    ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
-    LeaderboardDataSerializer,
-    ChallengePrizeSerializer,
-    ChallengeSponsorSerializer,
-)
-
-from .aws_utils import (
-    delete_workers,
-    start_workers,
-    stop_workers,
-    restart_workers,
-    start_ec2_instance,
-    stop_ec2_instance,
-    restart_ec2_instance,
-    describe_ec2_instance,
-    create_ec2_instance,
-    terminate_ec2_instance,
-    get_logs_from_cloudwatch,
-    get_log_group_name,
-    scale_resources,
+    ZipChallengeSerializer,
 )
 from .utils import (
     get_aws_credentials_for_submission,
+    get_challenge_template_data,
     get_file_content,
     get_missing_keys_from_dict,
-    get_challenge_template_data,
     send_emails,
 )
-
-from jobs.utils import get_submission_model
 
 logger = logging.getLogger(__name__)
 
@@ -263,7 +259,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
             elif "terms_and_conditions_file" in request.FILES:
-                terms_and_conditions_file = request.FILES["terms_and_conditions_file"]
+                terms_and_conditions_file = request.FILES[
+                    "terms_and_conditions_file"
+                ]
                 terms_and_conditions = terms_and_conditions_file.read()
                 request.data["terms_and_conditions"] = terms_and_conditions
                 serializer = ZipChallengeSerializer(
@@ -276,7 +274,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
             elif "submission_guidelines_file" in request.FILES:
-                submission_guidelines_file = request.FILES["submission_guidelines_file"]
+                submission_guidelines_file = request.FILES[
+                    "submission_guidelines_file"
+                ]
                 submission_guidelines = submission_guidelines_file.read()
                 request.data["submission_guidelines"] = submission_guidelines
                 serializer = ZipChallengeSerializer(
@@ -289,7 +289,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                     partial=True,
                 )
             elif "evaluation_criteria_file" in request.FILES:
-                evaluation_criteria_file = request.FILES["evaluation_criteria_file"]
+                evaluation_criteria_file = request.FILES[
+                    "evaluation_criteria_file"
+                ]
                 evaluation_criteria = evaluation_criteria_file.read()
                 request.data["evaluation_details"] = evaluation_criteria
                 serializer = ZipChallengeSerializer(
@@ -356,23 +358,34 @@ def deregister_participant_team_from_challenge(request, challenge_pk):
             request.user, challenge_pk
         )
         participant_team = get_participant_model(participant_team_pk)
-        all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-        if (all_challenge_phases.count() > 0):
+        all_challenge_phases = ChallengePhase.objects.filter(
+            challenge=challenge
+        )
+        if all_challenge_phases.count() > 0:
             for challenge_phase in all_challenge_phases:
-                submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+                submission_exist = Submission.objects.filter(
+                    participant_team=participant_team,
+                    challenge_phase=challenge_phase,
+                ).exists()
                 if submission_exist:
                     break
         else:
             submission_exist = False
         if submission_exist:
-            response_data = {"error": "Participant teams which have made submissions to a challenge cannot be deregistered."}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            response_data = {
+                "error": "Participant teams which have made submissions to a challenge cannot be deregistered."
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
         else:
             challenge.participant_teams.remove(participant_team)
             response_data = {"success": "Successfully deregistered!"}
             return Response(response_data, status=status.HTTP_200_OK)
     else:
-        response_data = {"error": "Your participant team is not registered for this challenge."}
+        response_data = {
+            "error": "Your participant team is not registered for this challenge."
+        }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
@@ -397,7 +410,9 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         )
         participant_team = get_participant_model(participant_team_pk)
         serializer = ParticipantTeamDetailSerializer(participant_team)
-        if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
+        if challenge.approved_participant_teams.filter(
+            pk=participant_team_pk
+        ).exists():
             approved = True
         elif not challenge.manual_participant_approval:
             approved = True
@@ -414,22 +429,33 @@ def participant_team_detail_for_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
-            name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
-            description="Challenge pk",
-            required=True,
-        )
-    ],
+@extend_schema(
+    methods=["GET"],
     operation_id="get_participant_teams_for_challenge",
+    parameters=[
+        OpenApiParameter(
+            name="challenge_pk",
+            location=OpenApiParameter.PATH,
+            type=int,
+            description="Challenge Primary Key (pk)",
+            required=True,
+        ),
+    ],
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_403_FORBIDDEN: openapi.Response(
-            "{'error': 'You are not authorized to make this request'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="List of participant teams for the specified challenge"
+        ),
+        status.HTTP_403_FORBIDDEN: OpenApiResponse(
+            description="Unauthorized request",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "description": "You are not authorized to make this request",
+                    },
+                },
+            },
         ),
     },
 )
@@ -456,7 +482,9 @@ def get_participant_teams_for_challenge(request, challenge_pk):
             participant_teams, many=True
         )
         for participant_team in serializer.data:
-            if (challenge.approved_participant_teams.filter(id=participant_team["id"]).exists()):
+            if challenge.approved_participant_teams.filter(
+                id=participant_team["id"]
+            ).exists():
                 participant_team["approved"] = True
             else:
                 participant_team["approved"] = False
@@ -525,7 +553,9 @@ def add_participant_team_to_challenge(
             domains = "{}{}{}".format(domains, "/", domain)
         domains = domains[1:]
         for participant_email in participant_team.get_all_participants_email():
-            if not is_user_in_allowed_email_domains(participant_email, challenge_pk):
+            if not is_user_in_allowed_email_domains(
+                participant_email, challenge_pk
+            ):
                 message = "Sorry, team consisting of users with non-{} email domain(s) are not allowed \
                     to participate in this challenge."
                 response_data = {"error": message.format(domains)}
@@ -587,7 +617,9 @@ def add_participant_team_to_challenge(
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def add_participant_team_to_approved_list(request, challenge_pk, participant_team_pk):
+def add_participant_team_to_approved_list(
+    request, challenge_pk, participant_team_pk
+):
     """
     Add participant team to approved list
     """
@@ -603,24 +635,38 @@ def add_participant_team_to_approved_list(request, challenge_pk, participant_tea
         response_data = {"error": "Participant Team does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if (challenge.approved_participant_teams.filter(pk=participant_team_pk).exists()):
+    if challenge.approved_participant_teams.filter(
+        pk=participant_team_pk
+    ).exists():
         response_data = {"error": "Participant Team already approved"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
-        if (ParticipantTeam.objects.filter(team_name__in=challenge.participant_teams.values_list('team_name', flat=True)).exists()):
+        if ParticipantTeam.objects.filter(
+            team_name__in=challenge.participant_teams.values_list(
+                "team_name", flat=True
+            )
+        ).exists():
             challenge.approved_participant_teams.add(participant_team)
-            response_data = {"success": "Participant Team added to approved list"}
+            response_data = {
+                "success": "Participant Team added to approved list"
+            }
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
-            response_data = {"error": "Participant isn't interested in challenge"}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            response_data = {
+                "error": "Participant isn't interested in challenge"
+            }
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
-def remove_participant_team_from_approved_list(request, challenge_pk, participant_team_pk):
+def remove_participant_team_from_approved_list(
+    request, challenge_pk, participant_team_pk
+):
     """
     Remove participant team from approved list
     """
@@ -638,21 +684,33 @@ def remove_participant_team_from_approved_list(request, challenge_pk, participan
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     all_challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
-    if (all_challenge_phases.count() > 0):
+    if all_challenge_phases.count() > 0:
         for challenge_phase in all_challenge_phases:
-            submission_exist = Submission.objects.filter(participant_team=participant_team, challenge_phase=challenge_phase).exists()
+            submission_exist = Submission.objects.filter(
+                participant_team=participant_team,
+                challenge_phase=challenge_phase,
+            ).exists()
             if submission_exist:
                 break
     else:
         submission_exist = False
-    if challenge.approved_participant_teams.filter(pk=participant_team_pk).exists() and not submission_exist:
+    if (
+        challenge.approved_participant_teams.filter(
+            pk=participant_team_pk
+        ).exists()
+        and not submission_exist
+    ):
         challenge.approved_participant_teams.remove(participant_team)
         return Response(status=status.HTTP_204_NO_CONTENT)
     elif submission_exist:
-        response_data = {"error": f"Participant Team {team_name} has existing submissions and cannot be unapproved"}
+        response_data = {
+            "error": f"Participant Team {team_name} has existing submissions and cannot be unapproved"
+        }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
-        response_data = {"error": f"Participant Team {team_name} was not approved"}
+        response_data = {
+            "error": f"Participant Team {team_name} was not approved"
+        }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
@@ -676,7 +734,9 @@ def disable_challenge(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
-def get_all_challenges(request, challenge_time, challenge_approved, challenge_published):
+def get_all_challenges(
+    request, challenge_time, challenge_approved, challenge_published
+):
     """
     Returns the list of all challenges
     """
@@ -695,10 +755,12 @@ def get_all_challenges(request, challenge_time, challenge_approved, challenge_pu
 
     q_params = {}
     if challenge_approved.lower() != "all":
-        q_params["approved_by_admin"] = (challenge_approved.lower() == "approved")
+        q_params["approved_by_admin"] = (
+            challenge_approved.lower() == "approved"
+        )
 
     if challenge_published.lower() != "all":
-        q_params["published"] = (challenge_published.lower() == "public")
+        q_params["published"] = challenge_published.lower() == "public"
 
     if challenge_time.lower() == "past":
         q_params["end_date__lt"] = timezone.now()
@@ -730,7 +792,9 @@ def get_all_challenges_submission_metrics(request):
     Returns the submission metrics for all challenges and their phases
     """
     if not is_user_a_staff(request.user):
-        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     challenges = Challenge.objects.all()
     submission_metrics = {}
@@ -745,7 +809,9 @@ def get_all_challenges_submission_metrics(request):
         challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
 
         for submission_status in submission_statuses:
-            count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
+            count = Submission.objects.filter(
+                challenge_phase__in=challenge_phases, status=submission_status
+            ).count()
             challenge_metrics[submission_status] = count
 
         submission_metrics[challenge_id] = challenge_metrics
@@ -760,7 +826,9 @@ def get_challenge_submission_metrics_by_pk(request, pk):
     Returns the submission metrics for a given challenge by primary key and their phases
     """
     if not is_user_a_staff(request.user):
-        response_data = {"error": "Sorry, you are not authorized to make this request"}
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     challenge = get_challenge_model(pk)
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
@@ -771,7 +839,9 @@ def get_challenge_submission_metrics_by_pk(request, pk):
     # Fetch challenge phases for the challenge
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge)
     for submission_status in submission_statuses:
-        count = Submission.objects.filter(challenge_phase__in=challenge_phases, status=submission_status).count()
+        count = Submission.objects.filter(
+            challenge_phase__in=challenge_phases, status=submission_status
+        ).count()
         submission_metrics[submission_status] = count
 
     return Response(submission_metrics, status=status.HTTP_200_OK)
@@ -999,7 +1069,9 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
             if "phase_description_file" in request.FILES:
-                phase_description_file = request.FILES["phase_description_file"]
+                phase_description_file = request.FILES[
+                    "phase_description_file"
+                ]
                 phase_description = phase_description_file.read()
                 request.data["description"] = phase_description
                 serializer = ChallengePhaseCreateSerializer(
@@ -1591,9 +1663,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             challenge_phases, challenge_phases_from_hosts
         ):
             for field in challenge_phase_fields:
-                challenge_phase_data[
-                    field
-                ] = challenge_phase_data_from_hosts.get(field)
+                challenge_phase_data[field] = (
+                    challenge_phase_data_from_hosts.get(field)
+                )
     try:
         with transaction.atomic():
             serializer = ZipChallengeSerializer(
@@ -1621,19 +1693,29 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             add_tags_to_challenge(yaml_file_data, challenge)
 
             # Add Domain
-            verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+            verify_complete = add_domain_to_challenge(
+                yaml_file_data, challenge
+            )
             if verify_complete is not None:
-                return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    verify_complete, status=status.HTTP_400_BAD_REQUEST
+                )
 
             # Add Sponsors
-            error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+            error_messages = add_sponsors_to_challenge(
+                yaml_file_data, challenge
+            )
             if error_messages is not None:
-                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    error_messages, status=status.HTTP_400_BAD_REQUEST
+                )
 
             # Add Prizes
             error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
             if error_messages is not None:
-                return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    error_messages, status=status.HTTP_400_BAD_REQUEST
+                )
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
@@ -1714,9 +1796,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     )
                 if serializer.is_valid():
                     serializer.save()
-                    challenge_phase_ids[
-                        str(data["id"])
-                    ] = serializer.instance.pk
+                    challenge_phase_ids[str(data["id"])] = (
+                        serializer.instance.pk
+                    )
                 else:
                     response_data = serializer.errors
                     raise RuntimeError()
@@ -1750,25 +1832,37 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
-                if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
-                    message = (
-                        "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                if (
+                    challenge_phase_ids.get(str(data["challenge_phase_id"]))
+                    is None
+                ):
+                    message = "Challenge phase with phase id {} doesn't exist.".format(
+                        data["challenge_phase_id"]
                     )
                     response_data = {"error": message}
-                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response(
+                        response_data, status.HTTP_406_NOT_ACCEPTABLE
+                    )
                 if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
-                    message = (
-                        "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                    message = "Leaderboard with id {} doesn't exist.".format(
+                        data["leaderboard_id"]
                     )
                     response_data = {"error": message}
-                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response(
+                        response_data, status.HTTP_406_NOT_ACCEPTABLE
+                    )
                 leaderboard = leaderboard_ids[str(data["leaderboard_id"])]
-                if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
-                    message = (
-                        "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                if (
+                    dataset_split_ids.get(str(data["dataset_split_id"]))
+                    is None
+                ):
+                    message = "Dataset split with id {} doesn't exist.".format(
+                        data["dataset_split_id"]
                     )
                     response_data = {"error": message}
-                    return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                    return Response(
+                        response_data, status.HTTP_406_NOT_ACCEPTABLE
+                    )
                 challenge_phase = challenge_phase_ids[
                     str(data["challenge_phase_id"])
                 ]
@@ -1776,8 +1870,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     str(data["dataset_split_id"])
                 ]
                 visibility = data["visibility"]
-                leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
-                is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
+                leaderboard_decimal_precision = data[
+                    "leaderboard_decimal_precision"
+                ]
+                is_leaderboard_order_descending = data[
+                    "is_leaderboard_order_descending"
+                ]
 
                 data = {
                     "challenge_phase": challenge_phase,
@@ -1785,7 +1883,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "dataset_split": dataset_split,
                     "visibility": visibility,
                     "leaderboard_decimal_precision": leaderboard_decimal_precision,
-                    "is_leaderboard_order_descending": is_leaderboard_order_descending
+                    "is_leaderboard_order_descending": is_leaderboard_order_descending,
                 }
 
                 serializer = ZipChallengePhaseSplitSerializer(data=data)
@@ -1917,148 +2015,78 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_all_submissions_for_a_challenge",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    operation_id="get_all_submissions_for_a_challenge",
     responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "count": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Count of submissions",
-                    ),
-                    "next": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of next page of results",
-                    ),
-                    "previous": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of previous page of results",
-                    ),
-                    "results": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="Array of results object",
-                        items=openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            properties={
-                                "id": openapi.Schema(
-                                    type=openapi.TYPE_INTEGER,
-                                    description="Submission ID",
-                                ),
-                                "participant_team": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Participant Team Name",
-                                ),
-                                "challenge_phase": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Challenge Phase name",
-                                ),
-                                "created_by": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Username of user who created the submission",
-                                ),
-                                "status": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Status of the submission",
-                                ),
-                                "is_public": openapi.Schema(
-                                    type=openapi.TYPE_BOOLEAN,
-                                    description="Shows if the submission is public or not",
-                                ),
-                                "is_flagged": openapi.Schema(
-                                    type=openapi.TYPE_BOOLEAN,
-                                    description="Shows if the submission is flagged or not",
-                                ),
-                                "submission_number": openapi.Schema(
-                                    type=openapi.TYPE_INTEGER,
-                                    description="Count of submissions done by a team",
-                                ),
-                                "submitted_at": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Timestamp when submission was submitted",
-                                ),
-                                "execution_time": openapi.Schema(
-                                    type=openapi.TYPE_NUMBER,
-                                    description="Execution time of the submission in seconds",
-                                ),
-                                "input_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the file submitted by user",
-                                ),
-                                "stdout_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the stdout file generated after evaluating submission",
-                                ),
-                                "stderr_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the stderr file generated after evaluating submission only available when the submission fails",
-                                ),
-                                "environment_log_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the Environment Log File generated after evaluating submission (only available for code-upload challenge submissions)"
-                                ),
-                                "submission_result_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the result file generated after successfully evaluating submission",
-                                ),
-                                "submission_metadata_file": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="URL of the metadata file generated after successfully evaluating submission",
-                                ),
-                                "participant_team_members_email_ids": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Items(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                    description="Array of the participant team members email ID's",
-                                ),
-                                "participant_team_members_affiliations": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Items(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                    description="Array of the participant team members affiliations",
-                                ),
-                                "created_at": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Timestamp when the submission was created",
-                                ),
-                                "method_name": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Name of the method used by the participant team",
-                                ),
-                                "participant_team_members": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Items(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                    description="Array of participant team members name and email",
-                                ),
+        status.HTTP_200_OK: OpenApiResponse(
+            description="List of submissions for the challenge phase",
+            response={
+                "type": "object",
+                "properties": {
+                    "count": {"type": "string"},
+                    "next": {"type": "string"},
+                    "previous": {"type": "string"},
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "participant_team": {"type": "string"},
+                                "challenge_phase": {"type": "string"},
+                                "created_by": {"type": "string"},
+                                "status": {"type": "string"},
+                                "is_public": {"type": "boolean"},
+                                "is_flagged": {"type": "boolean"},
+                                "submission_number": {"type": "integer"},
+                                "submitted_at": {"type": "string"},
+                                "execution_time": {"type": "number"},
+                                "input_file": {"type": "string"},
+                                "stdout_file": {"type": "string"},
+                                "stderr_file": {"type": "string"},
+                                "environment_log_file": {"type": "string"},
+                                "submission_result_file": {"type": "string"},
+                                "submission_metadata_file": {"type": "string"},
+                                "participant_team_members_email_ids": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "participant_team_members_affiliations": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
+                                "created_at": {"type": "string"},
+                                "method_name": {"type": "string"},
+                                "participant_team_members": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                },
                             },
-                        ),
-                    ),
+                        },
+                    },
                 },
-            ),
-        )
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Invalid request parameters"
+        ),
     },
 )
 @api_view(["GET"])
@@ -2139,75 +2167,79 @@ def get_all_submissions_of_challenge(
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="download_all_submissions",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge phase pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="file_type",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="File type",
             required=True,
         ),
     ],
-    operation_id="download_all_submissions",
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'The file type requested is not valid!'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submissions successfully downloaded"
         ),
-        status.HTTP_404_NOT_FOUND: openapi.Response(
-            "{'error': 'Challenge Phase does not exist'}"
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="The file type requested is not valid!"
+        ),
+        status.HTTP_404_NOT_FOUND: OpenApiResponse(
+            description="Challenge Phase does not exist"
         ),
     },
 )
-@swagger_auto_schema(
-    methods=["post"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["POST"],
+    operation_id="download_all_submissions",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_NUMBER,
+            location=OpenApiParameter.PATH,
+            type=int,
             description="Challenge phase pk",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="file_type",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="File type",
             required=True,
         ),
     ],
-    operation_id="download_all_submissions",
     responses={
-        status.HTTP_200_OK: openapi.Response(""),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'The file type requested is not valid!'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submissions successfully downloaded",
         ),
-        status.HTTP_401_UNAUTHORIZED: openapi.Response(
-            "{'error': 'Sorry, you do not belong to this Host Team!'}"
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="The file type requested is not valid!"
+        ),
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            description="Sorry, you do not belong to this Host Team!"
         ),
     },
 )
@@ -2258,9 +2290,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = (
+                    "attachment; filename=all_submissions.csv"
+                )
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -2357,9 +2389,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = (
+                    "attachment; filename=all_submissions.csv"
+                )
                 writer = csv.writer(response)
                 writer.writerow(
                     [
@@ -2435,9 +2467,9 @@ def download_all_submissions(
                     submissions, many=True, context={"request": request}
                 )
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = "attachment; filename=all_submissions.csv"
+                response["Content-Disposition"] = (
+                    "attachment; filename=all_submissions.csv"
+                )
                 writer = csv.writer(response)
                 fields = [fields_to_export[field] for field in request.data]
                 fields.insert(0, "id")
@@ -2531,7 +2563,7 @@ def get_or_update_leaderboard(request, leaderboard_pk):
 
     if request.method == "PATCH":
         if "schema" in request.data.keys():
-            request.data['schema'] = json.loads(request.data['schema'])
+            request.data["schema"] = json.loads(request.data["schema"])
         serializer = LeaderboardSerializer(
             leaderboard, data=request.data, partial=True
         )
@@ -2657,7 +2689,9 @@ def update_challenge_tags_and_domain(request, challenge_pk):
         new_tags = request.data.get("list_tags", [])
         domain_value = request.data.get("domain")
         # Remove tags not present in the YAML file
-        challenge.list_tags = [tag for tag in challenge.list_tags if tag in new_tags]
+        challenge.list_tags = [
+            tag for tag in challenge.list_tags if tag in new_tags
+        ]
         # Add new tags to the challenge
         for tag_name in new_tags:
             if tag_name not in challenge.list_tags:
@@ -3254,7 +3288,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         BASE_LOCATION,
         unique_folder_name,
         zip_ref,
-        challenge_queryset[0] if challenge_queryset else None
+        challenge_queryset[0] if challenge_queryset else None,
     )
 
     shutil.rmtree(BASE_LOCATION)
@@ -3326,9 +3360,7 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.data.get("worker_cpu_cores") is None:
-        response_data = {
-            "error": "vCPU config missing from request data."
-        }
+        response_data = {"error": "vCPU config missing from request data."}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.data.get("worker_memory") is None:
@@ -3339,39 +3371,42 @@ def scale_resources_by_challenge_pk(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
     if challenge.workers is None or challenge.workers == 0:
-        response_data = {
-            "error": "Scaling inactive workers not supported."
-        }
+        response_data = {"error": "Scaling inactive workers not supported."}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     worker_cpu_cores = int(request.data["worker_cpu_cores"])
     worker_memory = int(request.data["worker_memory"])
 
     if (
-        worker_cpu_cores == 256 and worker_memory in (512, 1024, 2048)
-        or worker_cpu_cores == 512 and worker_memory in (1024, 2048)
-        or worker_cpu_cores == 1024 and worker_memory == 2048
+        worker_cpu_cores == 256
+        and worker_memory in (512, 1024, 2048)
+        or worker_cpu_cores == 512
+        and worker_memory in (1024, 2048)
+        or worker_cpu_cores == 1024
+        and worker_memory == 2048
     ):
         response = scale_resources(challenge, worker_cpu_cores, worker_memory)
         if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
-            if response.get('Error', {'Message': 'No error', 'Code': 'No error'}).get('Code', 'No error code') == \
-                    'ClientException':
+            if (
+                response.get(
+                    "Error", {"Message": "No error", "Code": "No error"}
+                ).get("Code", "No error code")
+                == "ClientException"
+            ):
                 response_data = {
                     "error": "Challenge workers are inactive or do not exist."
                 }
             else:
-                response_data = {
-                    "error": "Issue with ECS."
-                }
-            return Response(response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+                response_data = {"error": "Issue with ECS."}
+            return Response(
+                response_data, status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         elif response.get("Message", "N/A") == "Worker not modified":
             response_data = {
                 "Success": "The challenge's worker cores and memory were not modified."
             }
         else:
-            response_data = {
-                "Success": "Worker scaled successfully!"
-            }
+            response_data = {"Success": "Worker scaled successfully!"}
     else:
         response_data = {
             "error": "Please specify correct config for worker vCPU and memory."
@@ -3408,9 +3443,13 @@ def manage_worker(request, challenge_pk, action):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "stop", "restart"):
+    if challenge.end_date < pytz.UTC.localize(
+        datetime.utcnow()
+    ) and action in ("start", "stop", "restart"):
         response_data = {
-            "error": "Action {} worker is not supported for an inactive challenge.".format(action)
+            "error": "Action {} worker is not supported for an inactive challenge.".format(
+                action
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -3587,10 +3626,7 @@ def create_ec2_instance_by_challenge_pk(request, challenge_pk):
         worker_image_url = challenge.worker_image_url
 
     response = create_ec2_instance(
-        challenge,
-        ec2_storage,
-        worker_instance_type,
-        worker_image_url
+        challenge, ec2_storage, worker_instance_type, worker_image_url
     )
 
     if response:
@@ -3641,9 +3677,13 @@ def manage_ec2_instance(request, challenge_pk, action):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if challenge.end_date < pytz.UTC.localize(datetime.utcnow()) and action in ("start", "restart"):
+    if challenge.end_date < pytz.UTC.localize(
+        datetime.utcnow()
+    ) and action in ("start", "restart"):
         response_data = {
-            "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(action)
+            "error": "Action {} EC2 instance is not supported for an inactive challenge.".format(
+                action
+            )
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -3915,7 +3955,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
         BASE_LOCATION,
         unique_folder_name,
         zip_ref,
-        challenge_queryset[0] if challenge_queryset else None
+        challenge_queryset[0] if challenge_queryset else None,
     )
 
     if not len(error_messages):
@@ -3948,19 +3988,31 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     add_tags_to_challenge(yaml_file_data, challenge)
 
                     # Add Domain
-                    verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+                    verify_complete = add_domain_to_challenge(
+                        yaml_file_data, challenge
+                    )
                     if verify_complete is not None:
-                        return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            verify_complete, status=status.HTTP_400_BAD_REQUEST
+                        )
 
                     # Add Sponsors
-                    error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+                    error_messages = add_sponsors_to_challenge(
+                        yaml_file_data, challenge
+                    )
                     if error_messages is not None:
-                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            error_messages, status=status.HTTP_400_BAD_REQUEST
+                        )
 
                     # Add Prizes
-                    error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+                    error_messages = add_prizes_to_challenge(
+                        yaml_file_data, challenge
+                    )
                     if error_messages is not None:
-                        return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            error_messages, status=status.HTTP_400_BAD_REQUEST
+                        )
 
                     # Create Leaderboard
                     yaml_file_data_of_leaderboard = yaml_file_data[
@@ -3976,9 +4028,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"leaderboard {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        leaderboard_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        leaderboard_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
 
                     # Create Challenge Phase
                     challenge_phase_ids = {}
@@ -4016,9 +4068,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"challenge phase {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        challenge_phase_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        challenge_phase_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
 
                     # Create Dataset Splits
                     yaml_file_data_of_dataset_split = yaml_file_data[
@@ -4034,33 +4086,54 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         else:
                             error_messages = f"dataset split {data['id']} :{str(serializer.errors)}"
                             raise RuntimeError()
-                        dataset_split_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        dataset_split_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
 
                     # Create Challenge Phase Splits
                     challenge_phase_splits_data = yaml_file_data[
                         "challenge_phase_splits"
                     ]
                     for data in challenge_phase_splits_data:
-                        if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
-                            message = (
-                                "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                        if (
+                            challenge_phase_ids.get(
+                                str(data["challenge_phase_id"])
+                            )
+                            is None
+                        ):
+                            message = "Challenge phase with phase id {} doesn't exist.".format(
+                                data["challenge_phase_id"]
                             )
                             response_data = {"error": message}
-                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                        if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                            return Response(
+                                response_data, status.HTTP_406_NOT_ACCEPTABLE
+                            )
+                        if (
+                            leaderboard_ids.get(str(data["leaderboard_id"]))
+                            is None
+                        ):
                             message = (
-                                "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                                "Leaderboard with id {} doesn't exist.".format(
+                                    data["leaderboard_id"]
+                                )
                             )
                             response_data = {"error": message}
-                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                        if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
-                            message = (
-                                "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                            return Response(
+                                response_data, status.HTTP_406_NOT_ACCEPTABLE
+                            )
+                        if (
+                            dataset_split_ids.get(
+                                str(data["dataset_split_id"])
+                            )
+                            is None
+                        ):
+                            message = "Dataset split with id {} doesn't exist.".format(
+                                data["dataset_split_id"]
                             )
                             response_data = {"error": message}
-                            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                            return Response(
+                                response_data, status.HTTP_406_NOT_ACCEPTABLE
+                            )
                         challenge_phase = challenge_phase_ids[
                             str(data["challenge_phase_id"])
                         ]
@@ -4071,8 +4144,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             str(data["dataset_split_id"])
                         ]
                         visibility = data["visibility"]
-                        leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
-                        is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
+                        leaderboard_decimal_precision = data[
+                            "leaderboard_decimal_precision"
+                        ]
+                        is_leaderboard_order_descending = data[
+                            "is_leaderboard_order_descending"
+                        ]
 
                         data = {
                             "challenge_phase": challenge_phase,
@@ -4080,7 +4157,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                             "dataset_split": dataset_split,
                             "visibility": visibility,
                             "is_leaderboard_order_descending": is_leaderboard_order_descending,
-                            "leaderboard_decimal_precision": leaderboard_decimal_precision
+                            "leaderboard_decimal_precision": leaderboard_decimal_precision,
                         }
 
                         serializer = ZipChallengePhaseSplitSerializer(
@@ -4174,9 +4251,11 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
             try:
                 error_messages = None
                 # Updating ChallengeConfiguration object
-                challenge_configuration = ChallengeConfiguration.objects.filter(
-                    challenge=challenge.pk
-                ).first()
+                challenge_configuration = (
+                    ChallengeConfiguration.objects.filter(
+                        challenge=challenge.pk
+                    ).first()
+                )
                 serializer = ChallengeConfigSerializer(
                     challenge_configuration,
                     data=request.data,
@@ -4209,30 +4288,46 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 add_tags_to_challenge(yaml_file_data, challenge)
 
                 # Add Domain
-                verify_complete = add_domain_to_challenge(yaml_file_data, challenge)
+                verify_complete = add_domain_to_challenge(
+                    yaml_file_data, challenge
+                )
                 if verify_complete is not None:
-                    return Response(verify_complete, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        verify_complete, status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 # Add/Update Sponsors
-                error_messages = add_sponsors_to_challenge(yaml_file_data, challenge)
+                error_messages = add_sponsors_to_challenge(
+                    yaml_file_data, challenge
+                )
                 if error_messages is not None:
-                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        error_messages, status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 # Add/Update Prizes
-                error_messages = add_prizes_to_challenge(yaml_file_data, challenge)
+                error_messages = add_prizes_to_challenge(
+                    yaml_file_data, challenge
+                )
                 if error_messages is not None:
-                    return Response(error_messages, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        error_messages, status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 # Updating Leaderboard object
                 leaderboard_ids = {}
                 yaml_file_data_of_leaderboard = yaml_file_data["leaderboard"]
                 for data in yaml_file_data_of_leaderboard:
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__challenge__pk=challenge.pk,
-                        leaderboard__config_id=data["config_id"],
+                    challenge_phase_split_qs = (
+                        ChallengePhaseSplit.objects.filter(
+                            challenge_phase__challenge__pk=challenge.pk,
+                            leaderboard__config_id=data["config_id"],
+                        )
                     )
                     if challenge_phase_split_qs:
-                        challenge_phase_split = challenge_phase_split_qs.first()
+                        challenge_phase_split = (
+                            challenge_phase_split_qs.first()
+                        )
                         leaderboard = challenge_phase_split.leaderboard
                         serializer = LeaderboardSerializer(
                             leaderboard,
@@ -4245,7 +4340,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        leaderboard_ids[str(data["id"])] = serializer.instance.pk
+                        leaderboard_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
                     else:
                         error_messages = f"leaderboard update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4254,16 +4351,21 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                 challenge_phase_ids = {}
                 challenge_phases_data = yaml_file_data["challenge_phases"]
                 for data, challenge_test_annotation_file in zip(
-                    challenge_phases_data, files["challenge_test_annotation_files"]
+                    challenge_phases_data,
+                    files["challenge_test_annotation_files"],
                 ):
 
                     # Override the submission_meta_attributes when they are missing
-                    submission_meta_attributes = data.get("submission_meta_attributes")
+                    submission_meta_attributes = data.get(
+                        "submission_meta_attributes"
+                    )
                     if submission_meta_attributes is None:
                         data["submission_meta_attributes"] = None
 
                     # Override the default_submission_meta_attributes when they are missing
-                    default_submission_meta_attributes = data.get("default_submission_meta_attributes")
+                    default_submission_meta_attributes = data.get(
+                        "default_submission_meta_attributes"
+                    )
                     if default_submission_meta_attributes is None:
                         data["default_submission_meta_attributes"] = None
 
@@ -4308,23 +4410,29 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        challenge_phase_ids[
-                            str(data["id"])
-                        ] = serializer.instance.pk
+                        challenge_phase_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
                     else:
                         error_messages = f"challenge phase update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
 
                 # Updating DatasetSplit objects
-                yaml_file_data_of_dataset_split = yaml_file_data["dataset_splits"]
+                yaml_file_data_of_dataset_split = yaml_file_data[
+                    "dataset_splits"
+                ]
                 dataset_split_ids = {}
                 for data in yaml_file_data_of_dataset_split:
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__challenge__pk=challenge.pk,
-                        dataset_split__config_id=data["id"],
+                    challenge_phase_split_qs = (
+                        ChallengePhaseSplit.objects.filter(
+                            challenge_phase__challenge__pk=challenge.pk,
+                            dataset_split__config_id=data["id"],
+                        )
                     )
                     if challenge_phase_split_qs:
-                        challenge_phase_split = challenge_phase_split_qs.first()
+                        challenge_phase_split = (
+                            challenge_phase_split_qs.first()
+                        )
                         dataset_split = challenge_phase_split.dataset_split
                         serializer = DatasetSplitSerializer(
                             dataset_split,
@@ -4337,7 +4445,9 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         )
                     if serializer.is_valid():
                         serializer.save()
-                        dataset_split_ids[str(data["id"])] = serializer.instance.pk
+                        dataset_split_ids[str(data["id"])] = (
+                            serializer.instance.pk
+                        )
                     else:
                         error_messages = f"dataset split update {(data['id'])} :{str(serializer.errors)}"
                         raise RuntimeError()
@@ -4347,24 +4457,45 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     "challenge_phase_splits"
                 ]
                 for data in challenge_phase_splits_data:
-                    if challenge_phase_ids.get(str(data["challenge_phase_id"])) is None:
-                        message = (
-                            "Challenge phase with phase id {} doesn't exist.".format(data["challenge_phase_id"])
+                    if (
+                        challenge_phase_ids.get(
+                            str(data["challenge_phase_id"])
+                        )
+                        is None
+                    ):
+                        message = "Challenge phase with phase id {} doesn't exist.".format(
+                            data["challenge_phase_id"]
                         )
                         response_data = {"error": message}
-                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                    if leaderboard_ids.get(str(data["leaderboard_id"])) is None:
+                        return Response(
+                            response_data, status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                    if (
+                        leaderboard_ids.get(str(data["leaderboard_id"]))
+                        is None
+                    ):
                         message = (
-                            "Leaderboard with id {} doesn't exist.".format(data["leaderboard_id"])
+                            "Leaderboard with id {} doesn't exist.".format(
+                                data["leaderboard_id"]
+                            )
                         )
                         response_data = {"error": message}
-                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-                    if dataset_split_ids.get(str(data["dataset_split_id"])) is None:
+                        return Response(
+                            response_data, status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                    if (
+                        dataset_split_ids.get(str(data["dataset_split_id"]))
+                        is None
+                    ):
                         message = (
-                            "Dataset split with id {} doesn't exist.".format(data["dataset_split_id"])
+                            "Dataset split with id {} doesn't exist.".format(
+                                data["dataset_split_id"]
+                            )
                         )
                         response_data = {"error": message}
-                        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response(
+                            response_data, status.HTTP_406_NOT_ACCEPTABLE
+                        )
                     challenge_phase = challenge_phase_ids[
                         str(data["challenge_phase_id"])
                     ]
@@ -4373,8 +4504,12 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         str(data["dataset_split_id"])
                     ]
                     visibility = data["visibility"]
-                    leaderboard_decimal_precision = data["leaderboard_decimal_precision"]
-                    is_leaderboard_order_descending = data["is_leaderboard_order_descending"]
+                    leaderboard_decimal_precision = data[
+                        "leaderboard_decimal_precision"
+                    ]
+                    is_leaderboard_order_descending = data[
+                        "is_leaderboard_order_descending"
+                    ]
 
                     data = {
                         "challenge_phase": challenge_phase,
@@ -4382,21 +4517,27 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                         "dataset_split": dataset_split,
                         "visibility": visibility,
                         "is_leaderboard_order_descending": is_leaderboard_order_descending,
-                        "leaderboard_decimal_precision": leaderboard_decimal_precision
+                        "leaderboard_decimal_precision": leaderboard_decimal_precision,
                     }
 
-                    challenge_phase_split_qs = ChallengePhaseSplit.objects.filter(
-                        challenge_phase__pk=challenge_phase,
-                        dataset_split__pk=dataset_split,
-                        leaderboard__pk=leaderboard,
+                    challenge_phase_split_qs = (
+                        ChallengePhaseSplit.objects.filter(
+                            challenge_phase__pk=challenge_phase,
+                            dataset_split__pk=dataset_split,
+                            leaderboard__pk=leaderboard,
+                        )
                     )
                     if challenge_phase_split_qs:
-                        challenge_phase_split = challenge_phase_split_qs.first()
+                        challenge_phase_split = (
+                            challenge_phase_split_qs.first()
+                        )
                         serializer = ZipChallengePhaseSplitSerializer(
                             challenge_phase_split, data=data
                         )
                     else:
-                        serializer = ZipChallengePhaseSplitSerializer(data=data)
+                        serializer = ZipChallengePhaseSplitSerializer(
+                            data=data
+                        )
                     if serializer.is_valid():
                         serializer.save()
                     else:
@@ -4460,84 +4601,87 @@ def pwc_task_dataset(request):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_allowed_email_ids",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    operation_id="update_allowed_email_ids",
     responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "allowed_email_ids": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="List of allowed email ids",
-                        items=openapi.Schema(type=openapi.TYPE_STRING),
-                    ),
+        status.HTTP_200_OK: OpenApiResponse(
+            description="List of allowed email IDs for the challenge phase",
+            response={
+                "type": "object",
+                "properties": {
+                    "allowed_email_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of allowed email IDs",
+                    }
                 },
-            ),
-        )
+            },
+        ),
     },
 )
-@swagger_auto_schema(
-    methods=["delete", "patch"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["DELETE", "PATCH"],
+    operation_id="update_allowed_email_ids",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="phase_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "allowed_email_ids": openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                description="List of allowed email ids",
-                items=openapi.Schema(type=openapi.TYPE_STRING),
-            ),
-        },
-    ),
-    operation_id="update_allowed_email_ids",
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "allowed_email_ids": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of allowed email ids",
+                }
+            },
+            "required": ["allowed_email_ids"],
+        }
+    },
     responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "allowed_email_ids": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="List of allowed email ids",
-                        items=openapi.Schema(type=openapi.TYPE_STRING),
-                    ),
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Successfully updated allowed email ids",
+            response={
+                "type": "object",
+                "properties": {
+                    "allowed_email_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of allowed email ids",
+                    }
                 },
-            ),
-        )
+            },
+        ),
     },
 )
 @api_view(["GET", "PATCH", "DELETE"])
@@ -4663,8 +4807,7 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 
     for challenge_phase in challenge_phases:
         submissions = Submission.objects.filter(
-            challenge_phase=challenge_phase,
-            status="finished"
+            challenge_phase=challenge_phase, status="finished"
         )
 
         if not submissions.exists():
@@ -4672,7 +4815,9 @@ def request_challenge_approval_by_pk(request, challenge_pk):
 
     if unfinished_phases:
         error_message = f"The following challenge phases do not have finished submissions: {', '.join(unfinished_phases)}"
-        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(
+            {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
 
     if not settings.DEBUG:
         try:
@@ -4680,12 +4825,18 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             approval_webhook_url = settings.APPROVAL_WEBHOOK_URL
 
             if not evalai_api_server:
-                raise ValueError("EVALAI_API_SERVER environment variable is missing.")
+                raise ValueError(
+                    "EVALAI_API_SERVER environment variable is missing."
+                )
             if not approval_webhook_url:
-                raise ValueError("APPROVAL_WEBHOOK_URL environment variable is missing.")
+                raise ValueError(
+                    "APPROVAL_WEBHOOK_URL environment variable is missing."
+                )
         except:  # noqa: E722
             error_message = "Sorry, there was an error fetching required data for approval requests."
-            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(
+                {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
         message = {
             "text": f"Challenge {challenge_pk} has finished submissions and has requested for approval!",
@@ -4703,22 +4854,33 @@ def request_challenge_approval_by_pk(request, challenge_pk):
             ],
         }
 
-        webhook_response = send_slack_notification(webhook=approval_webhook_url, message=message)
+        webhook_response = send_slack_notification(
+            webhook=approval_webhook_url, message=message
+        )
         if webhook_response:
-            if webhook_response.content.decode('utf-8') == "ok":
+            if webhook_response.content.decode("utf-8") == "ok":
                 response_data = {
                     "message": "Approval request sent!",
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
                 error_message = f"Sorry, there was an error sending approval request: {str(webhook_response.content.decode('utf-8'))}. Please try again."
-                return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                return Response(
+                    {"error": error_message},
+                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                )
         else:
             error_message = "Sorry, there was an error sending approval request: No response received. Please try again."
-            return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(
+                {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
     else:
-        error_message = "Please approve the challenge using admin for local deployments."
-        return Response({"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        error_message = (
+            "Please approve the challenge using admin for local deployments."
+        )
+        return Response(
+            {"error": error_message}, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
 
 
 @api_view(["GET"])
@@ -4739,14 +4901,18 @@ def get_leaderboard_data(request, challenge_phase_split_pk):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     try:
-        challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
-        leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split, is_disabled=False)
+        challenge_phase_split = get_challenge_phase_split_model(
+            challenge_phase_split_pk
+        )
+        leaderboard_data = LeaderboardData.objects.filter(
+            challenge_phase_split=challenge_phase_split, is_disabled=False
+        )
     except LeaderboardData.DoesNotExist:
-        response_data = {
-            "error": "Leaderboard data not found!"
-        }
+        response_data = {"error": "Leaderboard data not found!"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-    serializer = LeaderboardDataSerializer(leaderboard_data, context={"request": request}, many=True)
+    serializer = LeaderboardDataSerializer(
+        leaderboard_data, context={"request": request}, many=True
+    )
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -4774,30 +4940,22 @@ def update_challenge_approval(request):
     challenge_pk = request.data.get("challenge_pk")
     approved_by_admin = request.data.get("approved_by_admin")
     if not challenge_pk:
-        response_data = {
-            "error": "Challenge primary key is missing!"
-        }
+        response_data = {"error": "Challenge primary key is missing!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     if not approved_by_admin:
-        response_data = {
-            "error": "approved_by_admin is missing!"
-        }
+        response_data = {"error": "approved_by_admin is missing!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     try:
         challenge = get_challenge_model(challenge_pk)
     except Challenge.DoesNotExist:
-        response_data = {
-            "error": "Challenge not found!"
-        }
+        response_data = {"error": "Challenge not found!"}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
     challenge.approved_by_admin = approved_by_admin
     try:
         challenge.save()
     except Exception as e:  # noqa: E722
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    response_data = {
-        "message": "Challenge updated successfully!"
-    }
+    response_data = {"message": "Challenge updated successfully!"}
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -4824,9 +4982,7 @@ def update_challenge_attributes(request):
     challenge_pk = request.data.get("challenge_pk")
 
     if not challenge_pk:
-        response_data = {
-            "error": "Challenge primary key is missing!"
-        }
+        response_data = {"error": "Challenge primary key is missing!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
@@ -4885,20 +5041,22 @@ def modify_leaderboard_data(request):
         # Perform lookups and handle errors
         try:
             if leaderboard_data_pk:
-                leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+                leaderboard_data = LeaderboardData.objects.get(
+                    pk=leaderboard_data_pk
+                )
             else:
                 submission = get_submission_model(submission_pk)
-                challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+                challenge_phase_split = get_challenge_phase_split_model(
+                    challenge_phase_split_pk
+                )
                 leaderboard = get_leaderboard_model(leaderboard_pk)
                 leaderboard_data = LeaderboardData.objects.get(
                     submission=submission,
                     challenge_phase_split=challenge_phase_split,
-                    leaderboard=leaderboard
+                    leaderboard=leaderboard,
                 )
         except Exception:
-            response_data = {
-                "error": "Resource not found!"
-            }
+            response_data = {"error": "Resource not found!"}
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
         # Update the 'is_disabled' attribute
@@ -4906,7 +5064,5 @@ def modify_leaderboard_data(request):
         leaderboard_data.save()
 
         # Serialize and return the updated data
-        response_data = {
-            "message": "Leaderboard data updated successfully!"
-        }
+        response_data = {"message": "Leaderboard data updated successfully!"}
         return Response(response_data, status=status.HTTP_200_OK)
