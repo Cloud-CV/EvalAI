@@ -1,6 +1,7 @@
 # To run the file:
 # 1. Open django shell using -- python manage.py shell
-# 2. Run the script in shell -- exec(open('scripts/migration/set_unique_challenge_slug.py').read())
+# 2. Run the script in shell --
+# exec(open('scripts/migration/set_unique_challenge_slug.py').read())
 
 from challenges.models import Challenge
 
