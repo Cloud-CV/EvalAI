@@ -28,6 +28,7 @@
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
         vm.getAllResults = function(parameters, resultsArray, typ){
+            parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var data = response.data;
@@ -59,7 +60,7 @@
                         var url = data.next;
                         var slicedUrl = url.substring(url.indexOf('challenges/challenge'), url.length);
                         parameters.url = slicedUrl;
-                        vm.getAllResults(parameters, resultsArray);
+                        vm.getAllResults(parameters, resultsArray, typ);
                     } else {
                         utilities.hideLoader();
                         if (resultsArray.length === 0) {
@@ -88,19 +89,13 @@
 
         // calls for ongoing challenges
         parameters.url = 'challenges/challenge/present/approved/public';
-        parameters.method = 'GET';
-        
         vm.getAllResults(parameters, vm.currentList, "noneCurrentChallenge");
         // calls for upcoming challenges
         parameters.url = 'challenges/challenge/future/approved/public';
-        parameters.method = 'GET';
-
         vm.getAllResults(parameters, vm.upcomingList, "noneUpcomingChallenge");
 
         // calls for past challenges
         parameters.url = 'challenges/challenge/past/approved/public';
-        parameters.method = 'GET';
-
         vm.getAllResults(parameters, vm.pastList, "nonePastChallenge");
 
         vm.scrollUp = function() {
@@ -115,3 +110,4 @@
     }
 
 })();
+

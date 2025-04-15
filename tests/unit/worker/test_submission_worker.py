@@ -31,14 +31,14 @@ from scripts.workers.submission_worker import (
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
-    download_and_extract_file,
     delete_zip_file,
+    download_and_extract_file,
     download_and_extract_zip_file,
-    extract_zip_file,
     extract_submission_data,
+    extract_zip_file,
+    get_or_create_sqs_queue,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
-    get_or_create_sqs_queue,
 )
 from settings.common import SQS_RETENTION_PERIOD
 
