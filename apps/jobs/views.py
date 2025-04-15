@@ -157,7 +157,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
-        # getting participant team object for the user for a particular challenge.
+        # getting participant team object for the user for a particular
+        # challenge.
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id
         )
@@ -224,7 +225,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
 
-            # if allowed email ids list exist, check if the user exist in that list or not
+            # if allowed email ids list exist, check if the user exist in that
+            # list or not
             if challenge_phase.allowed_email_ids:
                 if request.user.email not in challenge_phase.allowed_email_ids:
                     response_data = {
@@ -342,9 +344,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     participant_team=participant_team,
                     challenge_phase=challenge_phase,
                 )
-                # Make the existing public submission private before making the new submission public
+                # Make the existing public submission private before making the
+                # new submission public
                 if submissions_already_public.count() == 1:
-                    # Case when the phase is restricted to make only one submission as public
+                    # Case when the phase is restricted to make only one
+                    # submission as public
                     submission_serializer = SubmissionSerializer(
                         submissions_already_public[0],
                         data={"is_public": False},
@@ -358,7 +362,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     if submission_serializer.is_valid():
                         submission_serializer.save()
 
-        # Override submission visibility if leaderboard_public = False for a challenge phase
+        # Override submission visibility if leaderboard_public = False for a
+        # challenge phase
         if not challenge_phase.leaderboard_public:
             request.data["is_public"] = challenge_phase.is_submission_public
 
@@ -472,13 +477,15 @@ def change_submission_data_and_visibility(
                 participant_team=participant_team,
                 challenge_phase=challenge_phase,
             )
-            # Make the existing public submission private before making the new submission public
+            # Make the existing public submission private before making the new
+            # submission public
             if (
                 challenge_phase.is_restricted_to_select_one_submission
                 and is_public
                 and submissions_already_public.count() == 1
             ):
-                # Case when the phase is restricted to make only one submission as public
+                # Case when the phase is restricted to make only one submission
+                # as public
                 submission_serializer = SubmissionSerializer(
                     submissions_already_public[0],
                     data={"is_public": False},
@@ -611,7 +618,8 @@ def leaderboard(request, challenge_phase_split_id):
         only_public_entries=True,
         order_by=order_by,
     )
-    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
+    # The response 400 will be returned if the leaderboard isn't public or
+    # `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
 
@@ -820,7 +828,8 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         only_public_entries=False,
         order_by=order_by,
     )
-    # The response 400 will be returned if the leaderboard isn't public or `default_order_by` key is missing in leaderboard.
+    # The response 400 will be returned if the leaderboard isn't public or
+    # `default_order_by` key is missing in leaderboard.
     if http_status_code == status.HTTP_400_BAD_REQUEST:
         return Response(response_data, status=http_status_code)
 
@@ -1289,7 +1298,8 @@ def update_submission(request, challenge_pk):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # Only after checking if the serializer is valid, append the public split results to results file
+                # Only after checking if the serializer is valid, append the
+                # public split results to results file
                 if show_to_participant:
                     public_results.append(accuracies)
 
@@ -1334,7 +1344,8 @@ def update_submission(request, challenge_pk):
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
         submission = get_submission_model(submission_pk)
-        # Update submission_input_file for is_static_dataset_code_upload submission evaluation
+        # Update submission_input_file for is_static_dataset_code_upload
+        # submission evaluation
         if (
             request.FILES.get("submission_input_file")
             and submission.challenge_phase.challenge.is_static_dataset_code_upload
@@ -1733,7 +1744,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # Only after checking if the serializer is valid, append the public split results to results file
+                # Only after checking if the serializer is valid, append the
+                # public split results to results file
                 if show_to_participant:
                     public_results.append(accuracies)
 
@@ -1921,7 +1933,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # Only after checking if the serializer is valid, append the public split results to results file
+                # Only after checking if the serializer is valid, append the
+                # public split results to results file
                 if show_to_participant:
                     public_results.append(accuracies)
 
@@ -2394,7 +2407,8 @@ def get_signed_url_for_submission_related_file(request):
         Response object -- Response object with appropriate response code (200/400/403/404)
     """
 
-    # Assumption: file will be stored in this format: 'team_{id}/submission_{id}/.../file.log'
+    # Assumption: file will be stored in this format:
+    # 'team_{id}/submission_{id}/.../file.log'
     bucket = request.query_params.get("bucket", None)
     key = request.query_params.get("key", None)
 
@@ -2732,7 +2746,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        # if allowed email ids list exist, check if the user exist in that list or not
+        # if allowed email ids list exist, check if the user exist in that list
+        # or not
         if challenge_phase.allowed_email_ids:
             if request.user.email not in challenge_phase.allowed_email_ids:
                 response_data = {
@@ -2786,7 +2801,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
 
     file_ext = os.path.splitext(request.data["file_name"])[-1]
     random_file_name = uuid.uuid4()
-    # This file shall be replaced with the one uploaded through the presigned url from the CLI
+    # This file shall be replaced with the one uploaded through the presigned
+    # url from the CLI
     input_file = SimpleUploadedFile(
         "{}{}".format(random_file_name, file_ext),
         b"file_content",
@@ -2801,7 +2817,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     else:
         submission_data["is_public"] = json.loads(request.data["is_public"])
 
-    # Override submission visibility if leaderboard_public = False for a challenge phase
+    # Override submission visibility if leaderboard_public = False for a
+    # challenge phase
     if not challenge_phase.leaderboard_public:
         submission_data["is_public"] = challenge_phase.is_submission_public
 
@@ -2905,7 +2922,8 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        # if allowed email ids list exist, check if the user exist in that list or not
+        # if allowed email ids list exist, check if the user exist in that list
+        # or not
         if challenge_phase.allowed_email_ids:
             if request.user.email not in challenge_phase.allowed_email_ids:
                 response_data = {
