@@ -412,7 +412,7 @@
         vm.openInvitationDialog = function(ev, hostTeamId) {
             ev.stopPropagation();
             
-            // Create a prompt dialog similar to inviteOthers
+            // Create a prompt dialog to receive the email address
             var prompt = $mdDialog.prompt()
                 .title('Generate Invitation Link')
                 .textContent('Enter the email address to generate an invite URL')
@@ -423,29 +423,38 @@
                 .cancel('Cancel');
         
             $mdDialog.show(prompt).then(function(result) {
-                // result now holds the email entered by the user.
-                var parameters = {};
-                parameters.url = 'hosts/team/invite/'; // Adjust URL if needed
-                parameters.method = 'POST';
-                parameters.data = {
-                    "email": result,
-                    "team_id": hostTeamId
-                };
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function() {
-                        $rootScope.notify("success", "Invitation link sent to " + result);
+                // Validate the received email address
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!result || !emailRegex.test(result)) {
+                    $rootScope.notify("error", "Please enter a valid email address");
+                    return;
+                }
+                
+                // Build the parameters for the API request
+                var parameters = {
+                    url: 'hosts/team/invite/', 
+                    method: 'POST',
+                    data: {
+                        "email": result,
+                        "team_id": hostTeamId
                     },
-                    onError: function(response) {
-                        var error = response.data.error;
-                        $rootScope.notify("error", error);
+                    token: userKey,
+                    callback: {
+                        onSuccess: function() {
+                            $rootScope.notify("success", "Invitation link sent to " + result);
+                        },
+                        onError: function(response) {
+                            var error = response.data.error || "An error occurred while sending the invitation.";
+                            $rootScope.notify("error", error);
+                        }
                     }
                 };
         
-                // Send the request to generate the invite.
+                // Send the API request to generate the invitation URL
                 utilities.sendRequest(parameters);
             });
         };
+        
         
     }
 

@@ -162,6 +162,17 @@
             authenticate: true
         };
 
+        var hostTeamInvitation = {
+            name: "host-team-invitation",
+            url: "/api/hosts/accept-invitation/:invitationKey",
+            controller: "ChallengeHostInvitationAcceptCtrl",
+            controllerAs: "host_invitation",
+            templateUrl: baseUrl + "/web/host-team-invite.html",
+            title: "Accept Host Team Invitation",
+            authenticate: true        
+        };
+        
+
         var challenge_create = {
             name: "web.challenge-create",
             parent: "web",
@@ -653,6 +664,8 @@
         $stateProvider.state(featured_challenge_phase_leaderboard);
 
         $stateProvider.state(host_challenge);
+        $stateProvider.state(hostTeamInvitation);
+
 
         $stateProvider.state(profile);
         $stateProvider.state(auth_token);

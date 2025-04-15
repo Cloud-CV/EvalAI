@@ -65,6 +65,13 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+  
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
 
   statsd-exporter:
     hostname: statsd

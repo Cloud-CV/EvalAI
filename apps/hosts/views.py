@@ -2,9 +2,7 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
 from django.conf import settings
 from .utils import is_user_part_of_host_team
-from .utils import is_user_a_staff_or_host
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
@@ -28,7 +26,6 @@ from .serializers import (
     ChallengeHostTeamSerializer,
     HostTeamDetailSerializer,
     InviteHostToTeamSerializer,
-    ChallengeHostTeamInvitationSerializer
 )
 
 
@@ -315,12 +312,9 @@ def invite_host_to_team(request, pk):
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated,))
-def invite_host_to_team(request):
+def invite_user_to_team(request):
     """
     Invite a user to join a host team
     """
@@ -342,7 +336,7 @@ def invite_host_to_team(request):
         )
     
     # Check if the user has permission to invite to this team
-    if not is_user_a_staff_or_host(request.user, team):
+    if not is_user_part_of_host_team(request.user, team):
         return Response(
             {"error": "You are not authorized to invite users to this team"},
             status=status.HTTP_403_FORBIDDEN
@@ -358,7 +352,7 @@ def invite_host_to_team(request):
     invited_user = User.objects.get(email=email)
     
     # Check if user is already a member
-    if team.team_members.filter(id=invited_user.id).exists():
+    if ChallengeHost.objects.filter(user=invited_user, team_name=team).exists():
         return Response(
             {"error": "User is already a member of this team"},
             status=status.HTTP_400_BAD_REQUEST
@@ -382,12 +376,12 @@ def invite_host_to_team(request):
         invitation.save()
     
     # Send invitation email
-    site_url = settings.SITE_URL
-    invitation_url = f"{site_url}/hosts/accept-invitation/{invitation.invitation_key}/"
+    site_url = settings.SITE_URL if hasattr(settings, 'SITE_URL') else request.build_absolute_uri('/').rstrip('/')
+    invitation_url = f"{site_url}/api/hosts/accept-invitation/{invitation.invitation_key}/"
     
     email_subject = f"Invitation to join {team.team_name} on EvalAI"
     email_body = render_to_string(
-        'hosts/emails/invitation_email.html',
+        'hosts/email/invitation_email.html',
         {
             'team_name': team.team_name,
             'invitation_url': invitation_url,
@@ -438,7 +432,11 @@ def accept_host_invitation(request, invitation_key):
     
     # Add user to the team
     team = invitation.team
-    team.team_members.add(request.user)
+    ChallengeHost.objects.create(
+    user=request.user,
+    team_name=team,
+    status='Accepted',
+    permissions='Admin')
     
     # Send notification email to inviter
     email_subject = f"{request.user.username} has accepted your invitation to {team.team_name}"
@@ -447,7 +445,7 @@ def accept_host_invitation(request, invitation_key):
         {
             'team_name': team.team_name,
             'user_name': request.user.username,
-            'site_url': settings.SITE_URL,
+            'site_url': 'https://evalai.example.com',
         }
     )
     
