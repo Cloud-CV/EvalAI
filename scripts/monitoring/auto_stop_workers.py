@@ -85,7 +85,8 @@ def stop_workers_for_challenges(response):
             )
         )
         if not is_docker_based:
-            # Delete workers for challenges uploaded in last 3 days that are unapproved or inactive challenges
+            # Delete workers for challenges uploaded in last 3 days that are
+            # unapproved or inactive challenges
             if (
                 workers is not None and challenge_end_date < current_date
             ) or is_unapproved_challenge(
@@ -98,7 +99,8 @@ def stop_workers_for_challenges(response):
                             challenge_id
                         )
                     )
-        # Add 2 second delay after every request to avoid throttling the backend server
+        # Add 2 second delay after every request to avoid throttling the
+        # backend server
         time.sleep(2)
 
 

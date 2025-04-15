@@ -160,7 +160,7 @@ def create_dir_as_python_package(directory):
     """
     create_dir(directory)
     init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
+    with open(init_file_path, "w") as _init_file:  # noqa
         # to create empty file
         pass
 

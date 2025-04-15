@@ -894,12 +894,14 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False,
         }
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
         self.assertTrue(
             abs(response.data["datetime_now"] - self.time)
             < timedelta(seconds=1)
         )
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data["datetime_now"]
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1003,12 +1005,14 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False,
         }
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
         self.assertTrue(
             abs(response.data["datetime_now"] - self.time)
             < timedelta(seconds=1)
         )
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data["datetime_now"]
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1023,12 +1027,14 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
         self.assertTrue(
             abs(response.data["datetime_now"] - self.time)
             < timedelta(seconds=1)
         )
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data["datetime_now"]
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
