@@ -1,39 +1,51 @@
-(function() {
-    'use strict';
+'use strict';
 
-    angular
-        .module('evalai')
-        .controller('ChallengeHostInvitationAcceptCtrl', challengeHostInvitationAcceptCtrl);
-
-    challengeHostInvitationAcceptCtrl.$inject = ['utilities', '$scope', '$state', '$stateParams', '$rootScope'];
-
-    function challengeHostInvitationAcceptCtrl(utilities, $scope, $state, $stateParams, $rootScope) {
-        var vm = this;
-        var userKey = utilities.getData('userKey');
-        vm.invitationKey = $stateParams.invitationKey;
+angular.module('evalai')
+  .controller('ChallengeHostTeamInvitationAcceptCtrl', ['$scope', '$state', '$stateParams', 'utilities', 'ApiFactory', 'loaderService',
+    function ($state, $stateParams, utilities, ApiFactory, loaderService) {
+      var vm = this;
+      
+      vm.invitationKey = $stateParams.invitation_key;
+      vm.isProcessing = false;
+      vm.error = null;
+      
+      var parameters = {};
+      parameters.url = 'hosts/accept-invitation/' + vm.invitationKey + '/';
+      parameters.method = 'GET';
+      parameters.token = utilities.getData('token');
+      
+      loaderService.startLoader('Loading invitation details...');
+      
+      ApiFactory.getApiData(parameters)
+        .then(function(response) {
+          vm.teamName = response.data.team_name;
+          vm.invitedBy = response.data.invited_by;
+          vm.email = response.data.email;
+          loaderService.stopLoader();
+        })
+        .catch(function(response) {
+          vm.error = response.data.error || 'An error occurred while loading the invitation.';
+          loaderService.stopLoader();
+        });
+      
+      vm.acceptInvitation = function() {
         vm.isProcessing = true;
         
-        // Process the invitation when the controller loads
         var parameters = {};
         parameters.url = 'hosts/accept-invitation/' + vm.invitationKey + '/';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                vm.isProcessing = false;
-                vm.message = response.data.message;
-                $rootScope.notify("success", vm.message);
-                // Redirect to teams page after a delay
-                setTimeout(function() {
-                    $state.go('web.challenge-host-teams');
-                }, 3000);
-            },
-            onError: function(response) {
-                vm.isProcessing = false;
-                vm.error = response.data.error || "There was an error processing your invitation.";
-                $rootScope.notify("error", vm.error);
-            }
-        };
-        utilities.sendRequest(parameters);
+        parameters.method = 'POST';
+        parameters.token = utilities.getData('token');
+        
+        ApiFactory.sendRequest(parameters)
+          .then(function() {
+            vm.isProcessing = false;
+            utilities.showMessage('success', 'You have successfully joined the team!');
+            $state.go('challenge-host-teams');
+          })
+          .catch(function(response) {
+            vm.isProcessing = false;
+            vm.error = response.data.error || 'An error occurred while accepting the invitation.';
+          });
+      };
     }
-})();
+  ]);

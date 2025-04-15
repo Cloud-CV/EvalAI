@@ -377,7 +377,8 @@ def invite_user_to_team(request):
     
     # Send invitation email
     site_url = settings.SITE_URL if hasattr(settings, 'SITE_URL') else request.build_absolute_uri('/').rstrip('/')
-    invitation_url = f"{site_url}/api/hosts/accept-invitation/{invitation.invitation_key}/"
+    invitation_url = f"{site_url}/api/hosts/invitation/{invitation.invitation_key}/"
+
     
     email_subject = f"Invitation to join {team.team_name} on EvalAI"
     email_body = render_to_string(
@@ -406,7 +407,7 @@ def invite_user_to_team(request):
 @permission_classes((permissions.IsAuthenticated,))
 def accept_host_invitation(request, invitation_key):
     """
-    Accept an invitation to join a host team
+    Get invitation details or accept an invitation to join a host team
     """
     try:
         invitation = ChallengeHostTeamInvitation.objects.get(
@@ -426,38 +427,67 @@ def accept_host_invitation(request, invitation_key):
             status=status.HTTP_403_FORBIDDEN
         )
     
-    # Accept the invitation
-    invitation.status = 'accepted'
-    invitation.save()
-    
-    # Add user to the team
-    team = invitation.team
-    ChallengeHost.objects.create(
-    user=request.user,
-    team_name=team,
-    status='Accepted',
-    permissions='Admin')
-    
-    # Send notification email to inviter
-    email_subject = f"{request.user.username} has accepted your invitation to {team.team_name}"
-    email_body = render_to_string(
-        'hosts/emails/invitation_accepted_email.html',
-        {
-            'team_name': team.team_name,
-            'user_name': request.user.username,
-            'site_url': 'https://evalai.example.com',
+    if request.method == 'GET':
+        # Return invitation details for the confirmation page
+        data = {
+            "invitation_key": invitation_key,
+            "team_name": invitation.team.team_name,
+            "invited_by": invitation.invited_by.username,
+            "email": invitation.email
         }
-    )
+        return Response(data, status=status.HTTP_200_OK)
     
-    send_mail(
-        email_subject,
-        email_body,
-        settings.DEFAULT_FROM_EMAIL,
-        [invitation.invited_by.email],
-        fail_silently=False,
-    )
+    elif request.method == 'POST':
+        # Accept the invitation
+        invitation.status = 'accepted'
+        invitation.save()
+        
+        # Add user to the team
+        team = invitation.team
+        ChallengeHost.objects.create(
+            user=request.user,
+            team_name=team,
+            status='Accepted',
+            permissions='Admin'
+        )
+        
+        # Send notification email to inviter
+        email_subject = f"{request.user.username} has accepted your invitation to {team.team_name}"
+        email_body = render_to_string(
+            'hosts/email/invitation_accepted_email.html',
+            {
+                'team_name': team.team_name,
+                'user_name': request.user.username,
+                'site_url': settings.SITE_URL if hasattr(settings, 'SITE_URL') else request.build_absolute_uri('/').rstrip('/'),
+            }
+        )
+        
+        send_mail(
+            email_subject,
+            email_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [invitation.invited_by.email],
+            fail_silently=False,
+        )
+        
+        return Response(
+            {"message": f"You have successfully joined {team.team_name}"},
+            status=status.HTTP_200_OK
+        )
+
+@api_view(['GET'])
+def invitation_redirect(request, invitation_key):
+    """
+    Redirect to login page if user is not authenticated
+    """
+    if not request.user.is_authenticated:
+        # Store the invitation key in the session for later retrieval
+        request.session['pending_invitation_key'] = invitation_key
+        # Return a response that frontend can use to redirect
+        return Response(
+            {"redirect": True, "login_required": True},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
     
-    return Response(
-        {"message": f"You have successfully joined {team.team_name}"},
-        status=status.HTTP_200_OK
-    )
+    # If user is authenticated, proceed with the invitation acceptance flow
+    return accept_host_invitation(request, invitation_key)

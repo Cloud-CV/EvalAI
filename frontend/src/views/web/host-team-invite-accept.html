@@ -1,0 +1,33 @@
+<div class="ev-md-container ev-challenge-invite-container">
+    <div class="ev-card-panel ev-md-container ev-challenge-invite">
+      <div class="ev-md-container ev-panel-title">
+        <h4>Team Invitation</h4>
+      </div>
+      <div class="ev-md-container ev-panel-content">
+        <div ng-if="inviteAccept.error" class="ev-md-container ev-error-container">
+          <div class="alert alert-danger">
+            {{inviteAccept.error}}
+          </div>
+        </div>
+        
+        <div ng-if="!inviteAccept.error" class="ev-md-container">
+          <p>You've been invited to join <strong>{{inviteAccept.teamDetails.team_name}}</strong> by <strong>{{inviteAccept.teamDetails.invited_by}}</strong>.</p>
+          
+          <div class="ev-md-container center">
+            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn" 
+                    ng-click="inviteAccept.acceptInvitation()" 
+                    ng-disabled="inviteAccept.isProcessing">
+              <span ng-if="!inviteAccept.isProcessing">Accept Invitation</span>
+              <span ng-if="inviteAccept.isProcessing">Processing...</span>
+            </button>
+            <button class="btn ev-btn-light waves-effect waves-dark grad-btn" 
+                    ui-sref="web.dashboard" 
+                    ng-disabled="inviteAccept.isProcessing">
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

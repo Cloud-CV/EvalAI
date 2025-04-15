@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16.8
+    image: postgres:10.4
     ports:
       - "5432:5432"
     env_file:
@@ -67,14 +67,6 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
-  
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "1025:1025"  # SMTP port
-      - "8025:8025"  # Web UI port
-
   statsd-exporter:
     hostname: statsd
     image: prom/statsd-exporter:latest
@@ -86,3 +78,9 @@ services:
       - '9102:9102'
     profiles:
       - statsd # Only built when this profile is specified
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port

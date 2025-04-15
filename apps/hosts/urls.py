@@ -39,9 +39,9 @@ urlpatterns = [
         name="invite_host_to_team",
     ),
     url(r'^team/invite/$', views.invite_user_to_team, name='invite_user_to_team'),
-    url(
-        r"^accept-invitation/(?P<invitation_key>[\w-]+)/$",views.accept_host_invitation,name="accept_host_invitation"
-    ),
+    url(r'^invitation/(?P<invitation_key>[\w-]+)/$', views.invitation_redirect, name='invitation-redirect'),
+    url(r'^accept-invitation/(?P<invitation_key>[\w-]+)/$', views.accept_host_invitation, name='accept-host-invitation'),
+
 
 ]
 

@@ -1,5 +1,3 @@
-// define services here
-
 // Basic utilities
 (function() {
 
