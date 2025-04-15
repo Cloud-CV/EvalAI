@@ -35,8 +35,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.utils import dateparse, timezone
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge, is_user_a_staff_or_host
 from participants.models import ParticipantTeam
@@ -86,45 +89,49 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 
-@swagger_auto_schema(
-    methods=["post"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["POST"],
+    parameters=[
+        OpenApiParameter(
             name="challenge_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    responses={status.HTTP_201_CREATED: openapi.Response("")},
+    responses={
+        status.HTTP_201_CREATED: OpenApiResponse(description=""),
+    },
 )
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    parameters=[
+        OpenApiParameter(
             name="challenge_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
         ),
-        openapi.Parameter(
+        OpenApiParameter(
             name="challenge_phase_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase ID",
             required=True,
         ),
     ],
-    responses={status.HTTP_201_CREATED: openapi.Response("")},
+    responses={
+        status.HTTP_201_CREATED: OpenApiResponse(description=""),
+    },
 )
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
@@ -513,74 +520,72 @@ def change_submission_data_and_visibility(
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="leaderboard",
+    parameters=[
+        OpenApiParameter(
             name="challenge_phase_split_id",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase Split ID",
             required=True,
         )
     ],
-    operation_id="leaderboard",
     responses={
-        status.HTTP_200_OK: openapi.Response(
+        status.HTTP_200_OK: OpenApiResponse(
             description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "count": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Count of values on the leaderboard",
-                    ),
-                    "next": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of next page of results",
-                    ),
-                    "previous": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of previous page of results",
-                    ),
-                    "results": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="Array of results object",
-                        items=openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            properties={
-                                "submission__participant_team__team_name": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Participant Team Name",
-                                ),
-                                "challenge_phase_split": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Challenge Phase Split ID",
-                                ),
-                                "filtering_score": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Default filtering score for results",
-                                ),
-                                "leaderboard__schema": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Leaderboard Schema of the corresponding challenge",
-                                ),
-                                "result": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    description="Leaderboard Metrics values according to leaderboard schema",
-                                    items=openapi.Schema(
-                                        type=openapi.TYPE_OBJECT
-                                    ),
-                                ),
-                                "submission__submitted_at": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Time stamp when submission was submitted at",
-                                ),
+            response={
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "string",
+                        "description": "Count of values on the leaderboard",
+                    },
+                    "next": {
+                        "type": "string",
+                        "description": "URL of next page of results",
+                    },
+                    "previous": {
+                        "type": "string",
+                        "description": "URL of previous page of results",
+                    },
+                    "results": {
+                        "type": "array",
+                        "description": "Array of results object",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "submission__participant_team__team_name": {
+                                    "type": "string",
+                                    "description": "Participant Team Name",
+                                },
+                                "challenge_phase_split": {
+                                    "type": "string",
+                                    "description": "Challenge Phase Split ID",
+                                },
+                                "filtering_score": {
+                                    "type": "string",
+                                    "description": "Default filtering score for results",
+                                },
+                                "leaderboard__schema": {
+                                    "type": "string",
+                                    "description": "Leaderboard Schema of the corresponding challenge",
+                                },
+                                "result": {
+                                    "type": "array",
+                                    "description": "Leaderboard Metrics values according to leaderboard schema",
+                                    "items": {"type": "object"},
+                                },
+                                "submission__submitted_at": {
+                                    "type": "string",
+                                    "description": "Time stamp when submission was submitted at",
+                                },
                             },
-                        ),
-                    ),
+                        },
+                    },
                 },
-            ),
+            },
         )
     },
 )
@@ -625,130 +630,126 @@ def leaderboard(request, challenge_phase_split_id):
     return paginator.get_paginated_response(response_data)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_all_entries_on_public_leaderboard",
+    parameters=[
+        OpenApiParameter(
             name="challenge_phase_split_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge Phase Split Primary Key",
             required=True,
-        )
-    ],
-    operation_id="get_all_entries_on_public_leaderboard",
-    responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "count": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Count of values on the leaderboard",
-                    ),
-                    "next": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of next page of results",
-                    ),
-                    "previous": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="URL of previous page of results",
-                    ),
-                    "results": openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description="Array of results object",
-                        items=openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            properties={
-                                "id": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Result ID",
-                                ),
-                                "submission__participant_team": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Participant Team ID",
-                                ),
-                                "submission__participant_team__team_name": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Participant Team Name",
-                                ),
-                                "submission__participant_team__team_url": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Participant Team URL",
-                                ),
-                                "submission__is_baseline": openapi.Schema(
-                                    type=openapi.TYPE_BOOLEAN,
-                                    description="Boolean to decide if submission is baseline",
-                                ),
-                                "submission__is_public": openapi.Schema(
-                                    type=openapi.TYPE_BOOLEAN,
-                                    description="Boolean to decide if submission is public",
-                                ),
-                                "challenge_phase_split": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Challenge Phase Split ID",
-                                ),
-                                "result": openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    description="Leaderboard Metrics values according to leaderboard schema",
-                                    items=openapi.Schema(
-                                        type=openapi.TYPE_STRING
-                                    ),
-                                ),
-                                "error": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Error returned for the result",
-                                ),
-                                "leaderboard__schema": openapi.Schema(
-                                    type=openapi.TYPE_OBJECT,
-                                    description="Leaderboard Schema of the corresponding challenge",
-                                    properties={
-                                        "labels": openapi.Schema(
-                                            type=openapi.TYPE_ARRAY,
-                                            description="Labels of leaderboard schema",
-                                            items=openapi.Schema(
-                                                type=openapi.TYPE_STRING
-                                            ),
-                                        ),
-                                        "default_order_by": openapi.Schema(
-                                            type=openapi.TYPE_STRING,
-                                            description="Default ordering label for the leaderboard schema",
-                                        ),
-                                    },
-                                ),
-                                "submission__submitted_at": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Time stamp when submission was submitted at",
-                                ),
-                                "submission__method_name": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Method of submission",
-                                ),
-                                "submission__id": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="ID of submission",
-                                ),
-                                "submission__submission_metadata": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Metadata and other info about submission",
-                                ),
-                                "filtering_score": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Default filtering score for results",
-                                ),
-                                "filtering_error": openapi.Schema(
-                                    type=openapi.TYPE_STRING,
-                                    description="Default filtering error for results",
-                                ),
-                            },
-                        ),
-                    ),
-                },
-            ),
         ),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+    ],
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            description="",
+            response={
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "string",
+                        "description": "Count of values on the leaderboard",
+                    },
+                    "next": {
+                        "type": "string",
+                        "description": "URL of next page of results",
+                    },
+                    "previous": {
+                        "type": "string",
+                        "description": "URL of previous page of results",
+                    },
+                    "results": {
+                        "type": "array",
+                        "description": "Array of results object",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Result ID",
+                                },
+                                "submission__participant_team": {
+                                    "type": "string",
+                                    "description": "Participant Team ID",
+                                },
+                                "submission__participant_team__team_name": {
+                                    "type": "string",
+                                    "description": "Participant Team Name",
+                                },
+                                "submission__participant_team__team_url": {
+                                    "type": "string",
+                                    "description": "Participant Team URL",
+                                },
+                                "submission__is_baseline": {
+                                    "type": "boolean",
+                                    "description": "Boolean to decide if submission is baseline",
+                                },
+                                "submission__is_public": {
+                                    "type": "boolean",
+                                    "description": "Boolean to decide if submission is public",
+                                },
+                                "challenge_phase_split": {
+                                    "type": "string",
+                                    "description": "Challenge Phase Split ID",
+                                },
+                                "result": {
+                                    "type": "array",
+                                    "description": "Leaderboard Metrics values according to leaderboard schema",
+                                    "items": {"type": "string"},
+                                },
+                                "error": {
+                                    "type": "string",
+                                    "description": "Error returned for the result",
+                                },
+                                "leaderboard__schema": {
+                                    "type": "object",
+                                    "description": "Leaderboard Schema of the corresponding challenge",
+                                    "properties": {
+                                        "labels": {
+                                            "type": "array",
+                                            "description": "Labels of leaderboard schema",
+                                            "items": {"type": "string"},
+                                        },
+                                        "default_order_by": {
+                                            "type": "string",
+                                            "description": "Default ordering label for the leaderboard schema",
+                                        },
+                                    },
+                                },
+                                "submission__submitted_at": {
+                                    "type": "string",
+                                    "description": "Time stamp when submission was submitted at",
+                                },
+                                "submission__method_name": {
+                                    "type": "string",
+                                    "description": "Method of submission",
+                                },
+                                "submission__id": {
+                                    "type": "string",
+                                    "description": "ID of submission",
+                                },
+                                "submission__submission_metadata": {
+                                    "type": "string",
+                                    "description": "Metadata and other info about submission",
+                                },
+                                "filtering_score": {
+                                    "type": "string",
+                                    "description": "Default filtering score for results",
+                                },
+                                "filtering_error": {
+                                    "type": "string",
+                                    "description": "Default filtering error for results",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error message goes here"
         ),
     },
 )
@@ -964,124 +965,162 @@ def get_submission_by_pk(request, submission_id):
     return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@swagger_auto_schema(
-    methods=["put"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["PUT"],
+    operation_id="update_submission",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
-        )
-    ],
-    operation_id="update_submission",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "challenge_phase": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Challenge Phase ID"
-            ),
-            "submission": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Submission ID"
-            ),
-            "stdout": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Submission output file content",
-            ),
-            "stderr": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Submission error file content",
-            ),
-            "submission_status": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
-            ),
-            "result": openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                description="Submission results in array format."
-                " API will throw an error if any split and/or metric is missing)",
-                items=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "split1": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="dataset split 1 codename",
-                        ),
-                        "show_to_participant": openapi.Schema(
-                            type=openapi.TYPE_BOOLEAN,
-                            description="Boolean to decide if the results are shown to participant or not",
-                        ),
-                        "accuracies": openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            description="Accuracies on different metrics",
-                            properties={
-                                "metric1": openapi.Schema(
-                                    type=openapi.TYPE_NUMBER,
-                                    description="Numeric accuracy on metric 1",
-                                ),
-                                "metric2": openapi.Schema(
-                                    type=openapi.TYPE_NUMBER,
-                                    description="Numeric accuracy on metric 2",
-                                ),
-                            },
-                        ),
-                    },
-                ),
-            ),
-            "metadata": openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                description="It contains the metadata related to submission (only visible to challenge hosts)",
-                properties={
-                    "foo": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Some data relevant to key",
-                    )
-                },
-            ),
-        },
-    ),
-    responses={
-        status.HTTP_200_OK: openapi.Response(
-            "{'success': 'Submission result has been successfully updated'}"
         ),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+    ],
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "challenge_phase": {
+                    "type": "string",
+                    "description": "Challenge Phase ID",
+                },
+                "submission": {
+                    "type": "string",
+                    "description": "Submission ID",
+                },
+                "stdout": {
+                    "type": "string",
+                    "description": "Submission output file content",
+                },
+                "stderr": {
+                    "type": "string",
+                    "description": "Submission error file content",
+                },
+                "submission_status": {
+                    "type": "string",
+                    "description": "Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
+                },
+                "result": {
+                    "type": "array",
+                    "description": "Submission results in array format. API will throw an error if any split and/or metric is missing",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "split1": {
+                                "type": "string",
+                                "description": "dataset split 1 codename",
+                            },
+                            "show_to_participant": {
+                                "type": "boolean",
+                                "description": "Boolean to decide if the results are shown to participant or not",
+                            },
+                            "accuracies": {
+                                "type": "object",
+                                "description": "Accuracies on different metrics",
+                                "properties": {
+                                    "metric1": {
+                                        "type": "number",
+                                        "description": "Numeric accuracy on metric 1",
+                                    },
+                                    "metric2": {
+                                        "type": "number",
+                                        "description": "Numeric accuracy on metric 2",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                "metadata": {
+                    "type": "object",
+                    "description": "It contains the metadata related to submission (only visible to challenge hosts)",
+                    "properties": {
+                        "foo": {
+                            "type": "string",
+                            "description": "Some data relevant to key",
+                        }
+                    },
+                },
+            },
+        },
+    },
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submission result has been successfully updated",
+            response={
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "string",
+                        "description": "Submission result has been successfully updated",
+                    }
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error message goes here",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+            },
         ),
     },
 )
-@swagger_auto_schema(
-    methods=["patch"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["PATCH"],
+    operation_id="update_submission",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
-        )
+        ),
     ],
-    operation_id="update_submission",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "submission": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Submission ID"
-            ),
-            "job_name": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Job name for the running submission",
-            ),
-            "submission_status": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Updated status of submission from submitted i.e. RUNNING",
-            ),
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "submission": {
+                    "type": "string",
+                    "description": "Submission ID",
+                },
+                "job_name": {
+                    "type": "string",
+                    "description": "Job name for the running submission",
+                },
+                "submission_status": {
+                    "type": "string",
+                    "description": "Updated status of submission from submitted i.e. RUNNING",
+                },
+            },
         },
-    ),
+    },
     responses={
-        status.HTTP_200_OK: openapi.Response("{<updated submission-data>}"),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Updated submission data",
+            response={
+                "type": "object",
+                "properties": {
+                    "updated_submission_data": {
+                        "type": "object",
+                        "description": "The updated submission data after the patch request",
+                    },
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error message goes here",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+            },
         ),
     },
 )
@@ -1358,124 +1397,170 @@ def update_submission(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    methods=["put"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["PUT"],
+    operation_id="update_submission",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
-        )
-    ],
-    operation_id="update_submission",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "challenge_phase": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Challenge Phase ID"
-            ),
-            "submission": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Submission ID"
-            ),
-            "stdout": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Submission output file content",
-            ),
-            "stderr": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Submission error file content",
-            ),
-            "submission_status": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
-            ),
-            "result": openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                description="Submission results in array format."
-                " API will throw an error if any split and/or metric is missing)",
-                items=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "split1": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="dataset split 1 codename",
-                        ),
-                        "show_to_participant": openapi.Schema(
-                            type=openapi.TYPE_BOOLEAN,
-                            description="Boolean to decide if the results are shown to participant or not",
-                        ),
-                        "accuracies": openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            description="Accuracies on different metrics",
-                            properties={
-                                "metric1": openapi.Schema(
-                                    type=openapi.TYPE_NUMBER,
-                                    description="Numeric accuracy on metric 1",
-                                ),
-                                "metric2": openapi.Schema(
-                                    type=openapi.TYPE_NUMBER,
-                                    description="Numeric accuracy on metric 2",
-                                ),
-                            },
-                        ),
-                    },
-                ),
-            ),
-            "metadata": openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                description="It contains the metadata related to submission (only visible to challenge hosts)",
-                properties={
-                    "foo": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="Some data relevant to key",
-                    )
-                },
-            ),
-        },
-    ),
-    responses={
-        status.HTTP_200_OK: openapi.Response(
-            "{'success': 'Submission result has been successfully updated'}"
         ),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+    ],
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "challenge_phase": {
+                    "type": "string",
+                    "description": "Challenge Phase ID",
+                },
+                "submission": {
+                    "type": "string",
+                    "description": "Submission ID",
+                },
+                "stdout": {
+                    "type": "string",
+                    "description": "Submission output file content",
+                },
+                "stderr": {
+                    "type": "string",
+                    "description": "Submission error file content",
+                },
+                "submission_status": {
+                    "type": "string",
+                    "description": "Final status of submission (can be: CANCELLED/FAILED/FINISHED)",
+                },
+                "result": {
+                    "type": "array",
+                    "description": "Submission results in array format. An error is thrown if any split and/or metric is missing",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "split1": {
+                                "type": "string",
+                                "description": "Dataset split 1 codename",
+                            },
+                            "show_to_participant": {
+                                "type": "boolean",
+                                "description": "Flag to decide if the results are shown to participants",
+                            },
+                            "accuracies": {
+                                "type": "object",
+                                "description": "Accuracies on different metrics",
+                                "properties": {
+                                    "metric1": {
+                                        "type": "number",
+                                        "description": "Numeric accuracy on metric 1",
+                                    },
+                                    "metric2": {
+                                        "type": "number",
+                                        "description": "Numeric accuracy on metric 2",
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                "metadata": {
+                    "type": "object",
+                    "description": "Metadata related to submission (only visible to challenge hosts)",
+                    "properties": {
+                        "foo": {
+                            "type": "string",
+                            "description": "Some data relevant to the key",
+                        }
+                    },
+                },
+            },
+        }
+    },
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submission result has been successfully updated",
+            response={
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "string",
+                        "description": "Confirmation of successful submission update",
+                    },
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error message if submission update fails",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+            },
         ),
     },
 )
-@swagger_auto_schema(
-    methods=["patch"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["PATCH"],
+    operation_id="update_submission",
+    parameters=[
+        OpenApiParameter(
             name="challenge_pk",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Challenge ID",
             required=True,
-        )
+        ),
     ],
-    operation_id="update_submission",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "submission": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Submission ID"
-            ),
-            "job_name": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Job name for the running submission",
-            ),
-            "submission_status": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Updated status of submission from submitted i.e. RUNNING",
-            ),
-        },
-    ),
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "submission": {
+                    "type": "string",
+                    "description": "Submission ID",
+                },
+                "job_name": {
+                    "type": "string",
+                    "description": "Job name for the running submission",
+                },
+                "submission_status": {
+                    "type": "string",
+                    "description": "Updated status of submission from submitted (e.g., RUNNING)",
+                },
+            },
+        }
+    },
     responses={
-        status.HTTP_200_OK: openapi.Response("{<updated submission-data>}"),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Submission data successfully updated",
+            response={
+                "type": "object",
+                "properties": {
+                    "submission": {
+                        "type": "string",
+                        "description": "Updated submission ID",
+                    },
+                    "job_name": {
+                        "type": "string",
+                        "description": "Job name associated with the running submission",
+                    },
+                    "submission_status": {
+                        "type": "string",
+                        "description": "Status of the submission after update",
+                    },
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error occurred while updating the submission",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+            },
         ),
     },
 )
@@ -2089,55 +2174,61 @@ def get_submissions_for_challenge(request, challenge_pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
-    methods=["get"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["GET"],
+    operation_id="get_submission_message_from_queue",
+    parameters=[
+        OpenApiParameter(
             name="queue_name",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Queue Name",
             required=True,
-        )
-    ],
-    operation_id="get_submission_message_from_queue",
-    responses={
-        status.HTTP_200_OK: openapi.Response(
-            description="",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "body": openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        description="SQS message queue dict object",
-                        properties={
-                            "challenge_pk": openapi.Schema(
-                                type=openapi.TYPE_INTEGER,
-                                description="Primary key for the challenge in the database",
-                            ),
-                            "phase_pk": openapi.Schema(
-                                type=openapi.TYPE_INTEGER,
-                                description="Primary key for the challenge phase in the database",
-                            ),
-                            "submission_pk": openapi.Schema(
-                                type=openapi.TYPE_INTEGER,
-                                description="Primary key for the submission in the database",
-                            ),
-                            "submitted_image_uri": openapi.Schema(
-                                type=openapi.TYPE_STRING,
-                                description="The AWS ECR URL for the pushed docker image in docker based challenges",
-                            ),
-                        },
-                    ),
-                    "receipt_handle": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="SQS message receipt handle",
-                    ),
-                },
-            ),
         ),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+    ],
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Successfully fetched the message from the queue",
+            response={
+                "type": "object",
+                "properties": {
+                    "body": {
+                        "type": "object",
+                        "description": "SQS message queue dict object",
+                        "properties": {
+                            "challenge_pk": {
+                                "type": "integer",
+                                "description": "Primary key for the challenge in the database",
+                            },
+                            "phase_pk": {
+                                "type": "integer",
+                                "description": "Primary key for the challenge phase in the database",
+                            },
+                            "submission_pk": {
+                                "type": "integer",
+                                "description": "Primary key for the submission in the database",
+                            },
+                            "submitted_image_uri": {
+                                "type": "string",
+                                "description": "The AWS ECR URL for the pushed docker image in docker-based challenges",
+                            },
+                        },
+                    },
+                    "receipt_handle": {
+                        "type": "string",
+                        "description": "SQS message receipt handle",
+                    },
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error occurred while fetching the message",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+            },
         ),
     },
 )
@@ -2199,33 +2290,50 @@ def get_submission_message_from_queue(request, queue_name):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    methods=["post"],
-    manual_parameters=[
-        openapi.Parameter(
+@extend_schema(
+    methods=["POST"],
+    operation_id="delete_submission_message_from_queue",
+    parameters=[
+        OpenApiParameter(
             name="queue_name",
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
+            location=OpenApiParameter.PATH,
+            type=str,
             description="Queue Name",
             required=True,
-        )
-    ],
-    operation_id="delete_submission_message_from_queue",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "receipt_handle": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description="Receipt handle for the message to be deleted",
-            )
-        },
-    ),
-    responses={
-        status.HTTP_200_OK: openapi.Response(
-            "{'success': 'Message deleted successfully from the queue <queue-name>'}"
         ),
-        status.HTTP_400_BAD_REQUEST: openapi.Response(
-            "{'error': 'Error message goes here'}"
+    ],
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "receipt_handle": {
+                    "type": "string",
+                    "description": "Receipt handle for the message to be deleted",
+                },
+            },
+        }
+    },
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            description="Message deleted successfully from the queue",
+            response={
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "string",
+                        "description": "Message deletion confirmation",
+                    }
+                },
+            },
+        ),
+        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+            description="Error message goes here",
+            response={
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+            },
         ),
     },
 )
