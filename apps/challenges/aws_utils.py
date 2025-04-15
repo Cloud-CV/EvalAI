@@ -290,6 +290,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     ]
                     challenge.task_def_arn = task_def_arn
                     challenge.save()
+                    set_log_retention_for_challenge(challenge)
                 return response
             except ClientError as e:
                 logger.exception(e)
@@ -1235,6 +1236,7 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
                 )
             )
         else:
+            set_log_retention_for_challenge(challenge)
             challenge_url = "{}/web/challenges/challenge-page/{}".format(
                 settings.EVALAI_API_SERVER, challenge.id
             )
@@ -1915,6 +1917,7 @@ def challenge_approval_callback(sender, instance, field_name, **kwargs):
                         )
                     )
                 else:
+                    set_log_retention_for_challenge(challenge)
                     construct_and_send_worker_start_mail(challenge)
 
         if prev and not curr:
