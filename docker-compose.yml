@@ -46,7 +46,7 @@ services:
     volumes:
       - .:/code
     profiles:
-      - worker  # Only built when this profile is specified
+      - worker  
 
   worker_py3_8:
     dns:
