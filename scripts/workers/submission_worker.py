@@ -30,8 +30,8 @@ import yaml
 django.setup()  # isort:skip noqa:E402
 # fmt: on
 
-from challenges.models import ChallengePhase  # noqa:E402; noqa:E402
-from challenges.models import Challenge, ChallengePhaseSplit, LeaderboardData
+from challenges.models import ChallengePhase  # noqa:E402
+from challenges.models import Challenge, ChallengePhaseSplit, LeaderboardData # noqa:E402
 
 # Load django app settings
 from django.conf import settings  # noqa:E402
