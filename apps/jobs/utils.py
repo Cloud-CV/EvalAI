@@ -350,8 +350,8 @@ def calculate_distinct_sorted_leaderboard_data(
         challenge_obj.creator.get_all_challenge_host_email()
     )
     is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
-     # Exclude the submissions from challenge host team to be displayed on the
-     # leaderboard of public phases
+    # Exclude the submissions from challenge host team to be displayed on the
+    # leaderboard of public phases
     challenge_hosts_emails = (
         [] if not is_challenge_phase_public else challenge_hosts_emails
     )
