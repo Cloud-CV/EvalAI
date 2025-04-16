@@ -1313,7 +1313,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         # To get the problem description
         if hasattr(exc, "problem"):
             error_description = exc.problem
-            # To capitalize the first alphabet of the problem description as default is in lowercase
+            # To capitalize the first alphabet of the problem description as
+            # default is in lowercase
             error_description = error_description[0:].capitalize()
         # To get the error line and column number
         if hasattr(exc, "problem_mark"):
@@ -1687,7 +1688,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data = serializer.errors
                 raise RuntimeError()
                 # transaction.set_rollback(True)
-                # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+                # return Response(response_data,
+                # status.HTTP_406_NOT_ACCEPTABLE)
 
             # Add Tags
             add_tags_to_challenge(yaml_file_data, challenge)
@@ -1786,7 +1788,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         },
                     )
                 else:
-                    # This is when the host wants to upload the annotation file later through CLI
+                    # This is when the host wants to upload the annotation file
+                    # later through CLI
                     serializer = ChallengePhaseCreateSerializer(
                         data=data,
                         context={
@@ -2102,7 +2105,8 @@ def get_all_submissions_of_challenge(
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    # To check for the corresponding challenge phase from the
+    # challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_pk, challenge=challenge
@@ -2115,7 +2119,8 @@ def get_all_submissions_of_challenge(
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # To check for the user as a host of the challenge from the request and challenge_pk.
+    # To check for the user as a host of the challenge from the request and
+    # challenge_pk.
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
@@ -2137,7 +2142,8 @@ def get_all_submissions_of_challenge(
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
-    # To check for the user as a participant of the challenge from the request and challenge_pk.
+    # To check for the user as a participant of the challenge from the request
+    # and challenge_pk.
     elif has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
@@ -2265,7 +2271,8 @@ def download_all_submissions(
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    # To check for the corresponding challenge phase from the
+    # challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_pk, challenge=challenge
@@ -2373,14 +2380,16 @@ def download_all_submissions(
                 user=request.user, challenge_id=challenge_pk
             ):
 
-                # get participant team object for the user for a particular challenge.
+                # get participant team object for the user for a particular
+                # challenge.
                 participant_team_pk = (
                     get_participant_team_id_of_user_for_a_challenge(
                         request.user, challenge_pk
                     )
                 )
 
-                # Filter submissions on the basis of challenge phase for a participant.
+                # Filter submissions on the basis of challenge phase for a
+                # participant.
                 submissions = Submission.objects.filter(
                     participant_team=participant_team_pk,
                     challenge_phase=challenge_phase,
@@ -3282,7 +3291,7 @@ def validate_challenge_config(request, challenge_host_team_pk):
         response_data["error"] = message
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    error_messages, yaml_file_data, files = validate_challenge_config_util(
+    error_messages, _yaml_file_data, _files = validate_challenge_config_util(
         request,
         challenge_host_team,
         BASE_LOCATION,
@@ -3320,7 +3329,8 @@ def get_worker_logs(request, challenge_pk):
     log_stream_prefix = challenge.queue
     pattern = ""  # Empty string to get all logs including container logs.
 
-    # This is to specify the time window for fetching logs: 3 days before from current time.
+    # This is to specify the time window for fetching logs: 3 days before from
+    # current time.
     timeframe = 4320
     limit = 1000
     current_time = int(round(time.time() * 1000))
@@ -3759,7 +3769,8 @@ def get_annotation_file_presigned_url(request, challenge_phase_pk):
             settings.MEDIAFILES_LOCATION, challenge_phase.test_annotation.name
         )
     else:
-        # This file shall be replaced with the one uploaded through the presigned url from the CLI
+        # This file shall be replaced with the one uploaded through the
+        # presigned url from the CLI
         test_annotation_file = SimpleUploadedFile(
             "{}{}".format(random_file_name, file_ext),
             b"Dummy file content",
@@ -4055,7 +4066,8 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                                 },
                             )
                         else:
-                            # This is when the host wants to upload the annotation file later
+                            # This is when the host wants to upload the
+                            # annotation file later
                             serializer = ChallengePhaseCreateSerializer(
                                 data=data,
                                 context={
@@ -4355,14 +4367,16 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     files["challenge_test_annotation_files"],
                 ):
 
-                    # Override the submission_meta_attributes when they are missing
+                    # Override the submission_meta_attributes when they are
+                    # missing
                     submission_meta_attributes = data.get(
                         "submission_meta_attributes"
                     )
                     if submission_meta_attributes is None:
                         data["submission_meta_attributes"] = None
 
-                    # Override the default_submission_meta_attributes when they are missing
+                    # Override the default_submission_meta_attributes when they
+                    # are missing
                     default_submission_meta_attributes = data.get(
                         "default_submission_meta_attributes"
                     )
