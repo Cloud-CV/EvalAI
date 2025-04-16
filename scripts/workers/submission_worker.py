@@ -37,7 +37,7 @@ from challenges.models import (  # noqa:E402
     LeaderboardData,
 )
 
-# Load django app setting
+# Load django app settings
 from django.conf import settings  # noqa:E402
 from django.core.files.base import ContentFile  # noqa:E402
 from django.utils import timezone  # noqa:E402
