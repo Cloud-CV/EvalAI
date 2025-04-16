@@ -35,9 +35,11 @@ def generate_aws_eks_bearer_token(cluster_name, challenge):
     )
     params = {
         "method": "GET",
-        "url": "https://sts.{}.amazonaws.com/?Action=GetCallerIdentity&Version=2011-06-15".format(
-            region
+        "url": (
+            f"https://sts.{region}.amazonaws.com/"
+            "?Action=GetCallerIdentity&Version=2011-06-15"
         ),
+
         "body": {},
         "headers": {"x-k8s-aws-id": cluster_name},
         "context": {},

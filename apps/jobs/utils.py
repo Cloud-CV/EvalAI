@@ -94,7 +94,9 @@ def get_remaining_submission_for_a_phase(
 
         if submissions_done_today_count >= max_submissions_per_day_count:
             response_data = {
-                "message": "Both daily and monthly submission limits are exhausted!",
+                 "message": (
+            "Both daily and monthly submission limits are exhausted!"
+        ),
                 "remaining_time": remaining_time,
             }
         else:
@@ -142,11 +144,13 @@ def get_remaining_submission_for_a_phase(
         )
 
         response_data = {
-            "remaining_submissions_this_month_count": remaining_submissions_this_month_count,
-            "remaining_submissions_today_count": remaining_submissions_today_count,
+            "remaining_submissions_this_month_count"
+            : remaining_submissions_this_month_count,
+            "remaining_submissions_today_count": 
+            remaining_submissions_today_count,
             "remaining_submissions_count": remaining_submission_count,
         }
-        return response_data, status.HTTP_200_OK
+        return response_data,status.HTTP_200_OK
 
 
 def is_url_valid(url):
@@ -184,7 +188,8 @@ def get_file_from_url(url):
 
 def handle_submission_rerun(submission, updated_status):
     """
-    Function to handle the submission re-running. It is handled in the following way -
+    Function to handle the submission re-running. 
+    It is handled in the following way -
     1. Invalidate the old submission
     2. Create a new submission object for the re-running submission
 
@@ -229,8 +234,8 @@ def handle_submission_rerun(submission, updated_status):
                 "submitted_image_uri"
             ]
             if (
-                submission.challenge_phase.challenge.is_static_dataset_code_upload
-            ):
+                submission.challenge_phase.challenge
+                .is_static_dataset_code_upload):
                 message["is_static_dataset_code_upload_submission"] = True
 
     return message
@@ -238,7 +243,8 @@ def handle_submission_rerun(submission, updated_status):
 
 def handle_submission_resume(submission, updated_status):
     """
-    Function to handle the submission resuming. It is handled in the following way -
+    Function to handle the submission resuming.
+     It is handled in the following way -
     1. Change the submissions status to resumed
 
     Arguments:
@@ -271,7 +277,8 @@ def handle_submission_resume(submission, updated_status):
                 "submitted_image_uri"
             ]
             if (
-                submission.challenge_phase.challenge.is_static_dataset_code_upload
+                submission.challenge_phase.challenge.
+                is_static_dataset_code_upload
             ):
                 message["is_static_dataset_code_upload_submission"] = True
 
@@ -287,8 +294,12 @@ def calculate_distinct_sorted_leaderboard_data(
     Arguments:
         user {[Class object]} -- User model object
         challenge_obj {[Class object]} -- Challenge model object
-        challenge_phase_split {[Class object]} -- Challenge phase split model object
-        only_public_entries {[Boolean]} -- Boolean value to determine if the user wants to include private entries or not
+        challenge_phase_split {[Class object]} -- 
+        Challenge phase split model object
+
+        only_public_entries {[Boolean]} --
+        Boolean value to determine if the
+        user wants to include private entries or not
 
     Returns:
         [list] -- Ranked list of participant teams to be shown on leaderboard
@@ -306,7 +317,8 @@ def calculate_distinct_sorted_leaderboard_data(
         default_order_by = leaderboard.schema["default_order_by"]
     except KeyError:
         response_data = {
-            "error": "Sorry, default_order_by key is missing in leaderboard schema!"
+            "error": "Sorry, default_order_by key\
+            is missing in leaderboard schema!"
         }
         return response_data, status.HTTP_400_BAD_REQUEST
     # Use order by field from request only if it is valid
@@ -367,7 +379,8 @@ def calculate_distinct_sorted_leaderboard_data(
 
     # Handle the case for challenges with partial submission evaluation feature
     if (
-        challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+        challenge_phase_split.challenge_phase.
+        is_partial_submission_evaluation_enabled
     ):
         all_valid_submission_status.append(Submission.PARTIALLY_EVALUATED)
 

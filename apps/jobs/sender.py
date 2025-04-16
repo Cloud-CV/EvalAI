@@ -23,10 +23,15 @@ logger = logging.getLogger(__name__)
 
 def get_or_create_sqs_queue(queue_name, challenge=None):
     """
+    Get or create an SQS queue for the given queue name and optional challenge.
+
     Args:
-        queue_name: Name of the SQS Queue
+        queue_name (str): Name of the SQS queue.
+        challenge (Challenge, optional): Challenge 
+        object used for metadata (if any).
+    
     Returns:
-        Returns the SQS Queue object
+        boto3.resources.factory.sqs.Queue: The SQS Queue object.
     """
     if settings.DEBUG or settings.TEST:
         sqs = boto3.resource(
@@ -82,34 +87,34 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
 def publish_submission_message(message):
     """
     Args:
-        message: A Dict with following keys
+        message(dict): A Dict with following keys
             - "challenge_pk": int
             - "phase_pk": int
             - "submission_pk": int
-            - "submitted_image_uri": str, (only available when the challenge is a code upload challenge)
+            - "submitted_image_uri": str,
+            (only available when the challenge is a code upload challenge)
             - "is_static_dataset_code_upload_submission": bool
 
     Returns:
-        Returns SQS response
+         dict or None: The SQS response if successful, else None.
     """
 
     try:
         challenge = Challenge.objects.get(pk=message["challenge_pk"])
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge does not exist for the given id {}".format(
+            "Challenge does not exist for the given id %s",
                 message["challenge_pk"]
             )
-        )
-        return
+        return None
     queue_name = challenge.queue
     slack_url = challenge.slack_webhook_url
     is_remote = challenge.remote_evaluation
     queue = get_or_create_sqs_queue(queue_name, challenge)
     # increase counter for submission pushed into queue
     submission_metric_tags = [
-        "queue_name:%s" % queue_name,
-        "is_remote:%d" % int(is_remote),
+        f"queue_name:{queue_name}",
+        f"is_remote:{int(is_remote)}",
     ]
     increment_statsd_counter(
         NUM_SUBMISSIONS_IN_QUEUE, submission_metric_tags, 1
@@ -122,9 +127,7 @@ def publish_submission_message(message):
         participant_team_name = submission.participant_team.team_name
         phase_name = submission.challenge_phase.name
         message = {
-            "text": "A *new submission* has been uploaded to {}".format(
-                challenge_name
-            ),
+          "text": f"A *new submission* has been uploaded to {challenge_name}",
             "fields": [
                 {
                     "title": "Challenge Phase",
