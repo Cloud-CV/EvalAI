@@ -171,18 +171,22 @@ def get_last_submission_time(
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     if submission_by == "user":
-        last_submitted_at = Submission.objects.filter(
-            created_by=request.user.pk,
-            challenge_phase=challenge_phase,
-            challenge_phase__challenge=challenge,
-        ).order_by("-submitted_at")[0].created_at
+        last_submitted_at = (
+            Submission.objects.filter(
+                created_by=request.user.pk,
+                challenge_phase=challenge_phase,
+                challenge_phase__challenge=challenge,
+            )
+            .order_by("-submitted_at")[0]
+            .created_at
+        )
         last_submitted_at = LastSubmissionDateTime(last_submitted_at)
         serializer = LastSubmissionDateTimeSerializer(last_submitted_at)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    else:
-        response_data = {"error": "Page not found!"}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    response_data = {"error": "Page not found!"}
+    return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
@@ -296,10 +300,10 @@ def download_all_participants(request, challenge_pk):
             participant_teams, many=True, context={"request": request}
         )
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            "attachment; filename=participant_teams_{0}.csv".format(
-                challenge_pk
-            )
+        response[
+            "Content-Disposition"
+        ] = "attachment; filename=participant_teams_{0}.csv".format(
+            challenge_pk
         )
         writer = csv.writer(response)
         writer.writerow(["Team Name", "Team Members", "Email Id"])
@@ -312,8 +316,8 @@ def download_all_participants(request, challenge_pk):
                 ]
             )
         return response
-    else:
-        return Response(
+
+    return Response(
         {"error": "Sorry, you are not authorized to make this request"},
         status=status.HTTP_400_BAD_REQUEST,
     )
