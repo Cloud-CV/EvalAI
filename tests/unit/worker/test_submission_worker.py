@@ -1,11 +1,12 @@
 import os
 import shutil
+import signal
 import tempfile
-from unittest.mock import Mock
 import zipfile
 from datetime import timedelta
 from io import BytesIO
 from os.path import join
+from unittest.mock import Mock
 
 import boto3
 import mock
@@ -20,17 +21,15 @@ from jobs.models import Submission
 from moto import mock_sqs
 from participants.models import ParticipantTeam
 from rest_framework.test import APITestCase
-import signal
+
 from scripts.workers.submission_worker import (
     ExecutionTimeLimitExceeded,
     GracefulKiller,
     MultiOut,
     alarm_handler,
-    delete_old_temp_directories,
-)
-from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
+    delete_old_temp_directories,
     delete_zip_file,
     download_and_extract_file,
     download_and_extract_zip_file,

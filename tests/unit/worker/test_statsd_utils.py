@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import patch
+
 from scripts.workers.statsd_utils import (
-    increment_statsd_counter,
     increment_and_push_metrics_to_statsd,
+    increment_statsd_counter,
 )
 
 

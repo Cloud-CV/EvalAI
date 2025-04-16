@@ -1,9 +1,11 @@
+import signal
+import unittest
+from unittest.mock import MagicMock, mock_open, patch
+
 import yaml
 from kubernetes import client
 from kubernetes.client.rest import ApiException
-import signal
-import unittest
-from unittest.mock import mock_open, patch, MagicMock
+
 from scripts.workers.code_upload_submission_worker import (
     EVALAI_API_SERVER,
     GracefulKiller,
@@ -28,10 +30,10 @@ from scripts.workers.code_upload_submission_worker import (
     get_volume_mount_list,
     get_volume_mount_object,
     install_gpu_drivers,
-    process_submission_callback,
-    update_failed_jobs_and_send_logs,
     main,
+    process_submission_callback,
     read_job,
+    update_failed_jobs_and_send_logs,
 )
 
 

@@ -1,24 +1,26 @@
+import io
 import logging
 import os
-import unittest
 import signal
-import io
 import sys
+import unittest
 from unittest.mock import Mock, mock_open, patch
+
 import requests
+
 from scripts.workers.remote_submission_worker import (
     CHALLENGE_DATA_BASE_DIR,
+    ExecutionTimeLimitExceeded,
     GracefulKiller,
+    alarm_handler,
     download_and_extract_zip_file,
     extract_challenge_data,
     load_challenge,
     make_request,
     process_submission_message,
     read_file_content,
-    stdout_redirect,
     stderr_redirect,
-    alarm_handler,
-    ExecutionTimeLimitExceeded,
+    stdout_redirect,
 )
 
 logger = logging.getLogger()
