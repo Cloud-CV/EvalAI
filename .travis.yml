@@ -2,12 +2,13 @@ language: python
 sudo: required
 os: linux
 dist: focal
-virt: vm
 services:
   - docker
   - xvfb
+
 python:
-  - '3.9.21'
+  - '3.9'
+
 cache:
   directories:
     - $HOME/.cache/pip
@@ -25,14 +26,15 @@ before_install:
   - mkdir -p $HOME/.config/pip
   - echo "[build_ext]" > $HOME/.config/pip/pip.conf
   - echo "parallel = 1" >> $HOME/.config/pip/pip.conf
-  - ulimit -u 16384 # Increase process/thread limit
-  - ulimit -n 4096 # Increase open file limit
+  - ulimit -u 16384  # Increase process/thread limit
+  - ulimit -n 4096   # Increase open file limit
 
 install:
   - pip install awscli==1.18.66
 
 jobs:
-  fast_finish: true
+  strategy:
+    fast_finish: true
   include:
     - stage: Build, Test & Check Code Quality
       name: Build, Test & Check Code Quality
