@@ -17,6 +17,7 @@
     "eslint-plugin-angular": "^3.3.0",
     "fs": "0.0.1-security",
     "gulp": "^4.0.0",
+    "gulp-cache-bust": "^1.4.1",
     "gulp-clean-css": "^3.9.3",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^5.0.0",
@@ -30,7 +31,6 @@
     "gulp-sass": "^4.0.1",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
-    "gulp-cache-bust": "^1.4.1",
     "lodash": "^4.16.6",
     "merge-stream": "^1.0.0",
     "node-sass": "^4.9.0"

@@ -1,12 +1,11 @@
-from django.contrib.auth.models import User
-from django.utils import timezone
-
-from rest_framework import serializers
-
 from accounts.models import Profile
 from accounts.serializers import UserProfileSerializer
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
+from django.contrib.auth.models import User
+from django.utils import timezone
+from rest_framework import serializers
+
 from .models import Participant, ParticipantTeam
 
 

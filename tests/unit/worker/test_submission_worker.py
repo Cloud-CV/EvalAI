@@ -23,14 +23,14 @@ from rest_framework.test import APITestCase
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
-    download_and_extract_file,
     delete_zip_file,
+    download_and_extract_file,
     download_and_extract_zip_file,
-    extract_zip_file,
     extract_submission_data,
+    extract_zip_file,
+    get_or_create_sqs_queue,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
-    get_or_create_sqs_queue,
 )
 from settings.common import SQS_RETENTION_PERIOD
 
@@ -301,9 +301,9 @@ class BaseAPITestClass(APITestCase):
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_host_queue(self):
         get_or_create_sqs_queue("test_host_queue_2", self.challenge2)
-        queue_url = self.sqs_client.get_queue_url(QueueName="test_host_queue_2")[
-            "QueueUrl"
-        ]
+        queue_url = self.sqs_client.get_queue_url(
+            QueueName="test_host_queue_2"
+        )["QueueUrl"]
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
 

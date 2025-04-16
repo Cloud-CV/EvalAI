@@ -1,6 +1,6 @@
+from base.utils import get_model_object
 from challenges.models import Challenge
 
-from base.utils import get_model_object
 from .models import Participant, ParticipantTeam
 
 get_participant_team_model = get_model_object(ParticipantTeam)

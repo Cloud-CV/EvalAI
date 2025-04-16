@@ -2,22 +2,39 @@
 # Disable Messages
 # C0103: Invalid %s name "%s".
 # C0111: Missing %s docstring.
-# C0330: Regarding hanging indentation.
-# C1001: Old-style class defined.
-# D100:  Missing docstring in public module.
 # E1101: %s %r has no %r member.
-# R0201: Method could be a function.
 # R0903: Too few public methods.
 # W0223: Method %r is abstract in class %r but is not overridden.
-# W0232:  Class has no __init__ method.
 # W0613: Unused argument.
 # W0702: No exception type(s) specified.
-disable=C0103,C0111,C0330,C1001,D100,E1101,R0201,R0903,W0223,W0232,W0613,W0702
+# C0413: wrong-import-position (since it conflicts with isort-ordering)
+disable=C0103,C0111,E1101,R0903,W0223,W0613,W0702,C0413
 
 [FORMAT]
-max-line-length=120
+max-line-length=79
 
 [DESIGN]
-
 # Maximum number of return / yield for function / method body
 max-returns=10
+
+[MASTER]
+# Ignore migrations directories
+ignore=migrations
+# Load plugins
+# pylint.extensions.docparams: Docstring parameter checker
+# pylint.extensions.no_self_use: Check for self usage in methods
+load-plugins=pylint.extensions.no_self_use,pylint.extensions.docparams
+init-hook='import sys, os; \
+    sys.path.append(os.path.join(os.getcwd(), "apps")); \
+    sys.path.append(os.path.join(os.getcwd(), "scripts", "monitoring")); \
+    sys.path.append(os.path.join(os.getcwd(), "scripts", "workers")); \
+    # Get the current Conda environment path \
+    conda_env_path = os.environ.get("CONDA_PREFIX", ""); \
+    # Get Python version dynamically from sys.version_info \
+    python_version = sys.version_info; \
+    sys.path.append(os.path.join(conda_env_path,
+                                "lib",
+                                f"python{python_version.major}.{python_version.minor}",
+                                "site-packages")); \
+    print(f"Added apps, monitoring, workers and conda environment \
+        (Python {python_version.major}.{python_version.minor}) to pylint path");'

@@ -1,9 +1,9 @@
 import os
+import time
+from datetime import datetime
+
 import pytz
 import requests
-import time
-
-from datetime import datetime
 from dateutil import parser
 
 utc = pytz.UTC
@@ -49,8 +49,10 @@ def delete_worker(challenge_id):
 
 
 def get_challenges():
-    all_challenge_endpoint = "{}/api/challenges/challenge/all/unapproved/all".format(
-        evalai_endpoint
+    all_challenge_endpoint = (
+        "{}/api/challenges/challenge/all/unapproved/all".format(
+            evalai_endpoint
+        )
     )
     response = requests.get(
         all_challenge_endpoint, headers=authorization_header
@@ -83,7 +85,8 @@ def stop_workers_for_challenges(response):
             )
         )
         if not is_docker_based:
-            # Delete workers for challenges uploaded in last 3 days that are unapproved or inactive challenges
+            # Delete workers for challenges uploaded in last 3 days that are
+            # unapproved or inactive challenges
             if (
                 workers is not None and challenge_end_date < current_date
             ) or is_unapproved_challenge(
@@ -96,7 +99,8 @@ def stop_workers_for_challenges(response):
                             challenge_id
                         )
                     )
-        # Add 2 second delay after every request to avoid throttling the backend server
+        # Add 2 second delay after every request to avoid throttling the
+        # backend server
         time.sleep(2)
 
 

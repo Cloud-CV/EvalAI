@@ -1,10 +1,8 @@
 import logging
+import os
 import sys
 
-import os
-
 from datadog import DogStatsd
-
 
 statsd_host = os.environ.get("STATSD_ENDPOINT", "statsd")
 statsd_port = int(os.environ.get("STATSD_PORT", "9125"))
@@ -41,7 +39,9 @@ def increment_and_push_metrics_to_statsd(queue_name, is_remote):
             "queue_name:%s" % queue_name,
             "is_remote:%d" % is_remote,
         ]
-        increment_statsd_counter(NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1)
+        increment_statsd_counter(
+            NUM_PROCESSED_SUBMISSIONS, submission_metric_tags, 1
+        )
     except Exception as e:
         logger.exception(
             "{} Exception when pushing metrics to statsd: {}".format(

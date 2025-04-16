@@ -201,7 +201,11 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
             logger.exception("Cannot get queue: {}".format(queue_name))
-        sqs_retention_period = SQS_RETENTION_PERIOD if challenge is None else str(challenge.sqs_retention_period)
+        sqs_retention_period = (
+            SQS_RETENTION_PERIOD
+            if challenge is None
+            else str(challenge.sqs_retention_period)
+        )
         queue = sqs.create_queue(
             QueueName=queue_name,
             Attributes={"MessageRetentionPeriod": sqs_retention_period},
@@ -212,9 +216,8 @@ def get_or_create_sqs_queue(queue_name, challenge=None):
 def get_slug(param):
     slug = param.replace(" ", "-").lower()
     slug = re.sub(r"\W+", "-", slug)
-    slug = slug[
-        :180
-    ]  # The max-length for slug is 200, but 180 is used here so as to append pk
+    # The max-length for slug is 200, but 180 is used here so as to append pk
+    slug = slug[:180]
     return slug
 
 

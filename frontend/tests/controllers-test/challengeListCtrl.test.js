@@ -316,6 +316,53 @@ describe('Unit tests for challenge list controller', function () {
             expect(vm.getAllResults).toHaveBeenCalledTimes(2);
         });
 
-
+        it('ensures method is set to GET inside getAllResults function', function() {
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+            successResponse = {
+                next: null,
+                results: []
+            };
+            
+            vm = createController();
+            spyOn(utilities, 'sendRequest').and.callThrough();
+            
+            const parameters = {
+                url: 'challenges/challenge/present/approved/public'
+            };
+            
+            vm.getAllResults(parameters, [], 'noneCurrentChallenge');
+            
+            expect(utilities.sendRequest).toHaveBeenCalled();
+            expect(utilities.sendRequest.calls.argsFor(0)[0].method).toEqual('GET');
+        });
+        it('tests scrollUp function binding to window scroll events', function() {
+            vm = createController();
+            
+            var mockElement = {
+                bind: jasmine.createSpy('bind')
+            };
+            
+            spyOn(angular, 'element').and.returnValue(mockElement);
+            
+            vm.scrollUp();
+            
+            expect(angular.element).toHaveBeenCalled();
+            
+            expect(mockElement.bind).toHaveBeenCalledWith('scroll', jasmine.any(Function));
+            
+            var scrollCallback = mockElement.bind.calls.mostRecent().args[1];
+            
+            spyOn(utilities, 'showButton');
+            var mockScrollContext = { pageYOffset: 100 };
+            scrollCallback.call(mockScrollContext);
+            expect(utilities.showButton).toHaveBeenCalled();
+            
+            spyOn(utilities, 'hideButton');
+            mockScrollContext.pageYOffset = 99;
+            scrollCallback.call(mockScrollContext);
+            expect(utilities.hideButton).toHaveBeenCalled();
+        });
     });
 });

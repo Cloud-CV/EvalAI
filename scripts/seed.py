@@ -5,19 +5,10 @@ import os
 import random
 import string
 import uuid
-import yaml
-
 from datetime import timedelta
 
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
-
+import yaml
 from allauth.account.models import EmailAddress
-from faker import Factory
-
 from challenges.models import (
     Challenge,
     ChallengePhase,
@@ -28,7 +19,13 @@ from challenges.models import (
     LeaderboardData,
 )
 from challenges.utils import get_file_content
-from hosts.models import ChallengeHostTeam, ChallengeHost
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
+from faker import Factory
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 

@@ -1,4 +1,4 @@
-from .prod import *  # noqa: ignore=F405
+from .prod import *  # noqa: ignore=F405  # pylint: disable=wildcard-import,unused-wildcard-import
 
 ALLOWED_HOSTS = ["staging.eval.ai", "monitoring-staging.eval.ai"]
 

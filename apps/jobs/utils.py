@@ -1,21 +1,20 @@
 import datetime
 import logging
 import os
-import requests
 import tempfile
 import urllib.request
-from django.db.models import FloatField, Q, F, fields, ExpressionWrapper
+
+import requests
+from base.utils import get_model_object, suppress_autotime
+from challenges.models import ChallengePhaseSplit, LeaderboardData
+from challenges.utils import get_challenge_model, get_challenge_phase_model
+from django.db.models import ExpressionWrapper, F, FloatField, Q, fields
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
-from rest_framework import status
-
-from challenges.models import ChallengePhaseSplit, LeaderboardData
-from participants.models import ParticipantTeam
-
-from base.utils import get_model_object, suppress_autotime
-from challenges.utils import get_challenge_model, get_challenge_phase_model
 from hosts.utils import is_user_a_staff_or_host
+from participants.models import ParticipantTeam
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
+from rest_framework import status
 
 from .constants import submission_status_to_exclude
 from .models import Submission
@@ -105,7 +104,8 @@ def get_remaining_submission_for_a_phase(
             }
         return response_data, status.HTTP_200_OK
 
-    # Checks if #today's successful submission is greater than or equal to max submission per day
+    # Checks if #today's successful submission is greater than or equal to max
+    # submission per day
     elif submissions_done_today_count >= max_submissions_per_day_count:
         date_time_now = timezone.now()
         date_time_tomorrow = date_time_now + datetime.timedelta(1)
@@ -338,7 +338,8 @@ def calculate_distinct_sorted_leaderboard_data(
         challenge_obj.creator.get_all_challenge_host_email()
     )
     is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
-    # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
+    # Exclude the submissions from challenge host team to be displayed on the
+    # leaderboard of public phases
     challenge_hosts_emails = (
         [] if not is_challenge_phase_public else challenge_hosts_emails
     )
@@ -347,7 +348,8 @@ def calculate_distinct_sorted_leaderboard_data(
 
     all_banned_email_ids = challenge_obj.banned_email_ids
 
-    # Check if challenge phase leaderboard is public for participant user or not
+    # Check if challenge phase leaderboard is public for participant user or
+    # not
     if (
         challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC
         and not challenge_host_or_staff

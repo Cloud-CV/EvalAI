@@ -13,13 +13,17 @@ warnings.filterwarnings("ignore")
 
 utc = pytz.UTC
 
-DEFAULT_AWS_EKS_KEYS = {  # NOTE: These are habitat challenge keys as most challenges are habitat
-    "AWS_ACCOUNT_ID": os.environ.get("EKS_AWS_ACCOUNT_ID"),
-    "AWS_ACCESS_KEY_ID": os.environ.get("EKS_AWS_ACCESS_KEY_ID"),
-    "AWS_SECRET_ACCESS_KEY": os.environ.get("EKS_AWS_SECRET_ACCESS_KEY"),
-    "AWS_REGION": os.environ.get("EKS_AWS_REGION"),
-    "AWS_STORAGE_BUCKET_NAME": os.environ.get("EKS_AWS_STORAGE_BUCKET_NAME"),
-}
+DEFAULT_AWS_EKS_KEYS = (
+    {  # NOTE: These are habitat challenge keys as most challenges are habitat
+        "AWS_ACCOUNT_ID": os.environ.get("EKS_AWS_ACCOUNT_ID"),
+        "AWS_ACCESS_KEY_ID": os.environ.get("EKS_AWS_ACCESS_KEY_ID"),
+        "AWS_SECRET_ACCESS_KEY": os.environ.get("EKS_AWS_SECRET_ACCESS_KEY"),
+        "AWS_REGION": os.environ.get("EKS_AWS_REGION"),
+        "AWS_STORAGE_BUCKET_NAME": os.environ.get(
+            "EKS_AWS_STORAGE_BUCKET_NAME"
+        ),
+    }
+)
 
 SCALE_UP_DESIRED_SIZE = 1
 
@@ -56,7 +60,8 @@ def get_nodegroup_name(eks_client, cluster_name):
 
 
 def get_eks_meta(challenge, evalai_interface, aws_keys):
-    # TODO: Check if eks_client should be a global thing. Clients must have an expiry/timeout.
+    # TODO: Check if eks_client should be a global thing. Clients must have an
+    # expiry/timeout.
     eks_client = get_boto3_client("eks", aws_keys)
     cluster_name = evalai_interface.get_aws_eks_cluster_details(
         challenge["id"]
@@ -73,7 +78,13 @@ def get_scaling_config(eks_client, cluster_name, nodegroup_name):
     return scaling_config
 
 
-def start_eks_worker(challenge, pending_submissions, evalai_interface, aws_keys, new_desired_size):
+def start_eks_worker(
+    challenge,
+    pending_submissions,
+    evalai_interface,
+    aws_keys,
+    new_desired_size,
+):
     eks_client, cluster_name, nodegroup_name = get_eks_meta(
         challenge, evalai_interface, aws_keys
     )
@@ -131,10 +142,21 @@ def scale_down_workers(challenge, desired_size, evalai_interface, aws_keys):
         )
 
 
-def scale_up_workers(challenge, original_desired_size, pending_submissions, evalai_interface, aws_keys, new_desired_size):
+def scale_up_workers(
+    challenge,
+    original_desired_size,
+    pending_submissions,
+    evalai_interface,
+    aws_keys,
+    new_desired_size,
+):
     if original_desired_size < new_desired_size:
         response = start_eks_worker(
-            challenge, pending_submissions, evalai_interface, aws_keys, new_desired_size
+            challenge,
+            pending_submissions,
+            evalai_interface,
+            aws_keys,
+            new_desired_size,
         )
         print("AWS API Response: {}".format(response))
         print(
@@ -150,9 +172,19 @@ def scale_up_workers(challenge, original_desired_size, pending_submissions, eval
         )
 
 
-def scale_up_or_down_workers(challenge, evalai_interface, staff_evalai_interface, aws_keys, scale_up_desired_size):
+def scale_up_or_down_workers(
+    challenge,
+    evalai_interface,
+    staff_evalai_interface,
+    aws_keys,
+    scale_up_desired_size,
+):
     try:
-        challenge_metrics = staff_evalai_interface.get_challenge_submission_metrics_by_pk(challenge["id"])
+        challenge_metrics = (
+            staff_evalai_interface.get_challenge_submission_metrics_by_pk(
+                challenge["id"]
+            )
+        )
         pending_submissions = get_pending_submission_count(challenge_metrics)
     except Exception as e:  # noqa: F841
         print(
@@ -182,13 +214,16 @@ def scale_up_or_down_workers(challenge, evalai_interface, staff_evalai_interface
         )
     )
 
-    if pending_submissions == 0 or parse(challenge["end_date"]) < pytz.UTC.localize(
-        datetime.utcnow()
-    ):
-        scale_down_workers(challenge, original_desired_size, evalai_interface, aws_keys)
+    if pending_submissions == 0 or parse(
+        challenge["end_date"]
+    ) < pytz.UTC.localize(datetime.utcnow()):
+        scale_down_workers(
+            challenge, original_desired_size, evalai_interface, aws_keys
+        )
     else:
         if pending_submissions > original_desired_size:
-            # Scale up again if needed, up to the maximum allowed scale_up_desired_size (if provided)
+            # Scale up again if needed, up to the maximum allowed
+            # scale_up_desired_size (if provided)
             new_desired_size = min(pending_submissions, scale_up_desired_size)
             scale_up_workers(
                 challenge,
@@ -215,7 +250,9 @@ def start_job():
     for challenge_id, details in INCLUDED_CHALLENGE_PKS.items():
         # Auth Token
         if "auth_token" not in details:
-            raise NotImplementedError("auth_token is needed for all challenges")
+            raise NotImplementedError(
+                "auth_token is needed for all challenges"
+            )
 
         # Desired Scale Up Size
         if "scale_up_desired_size" not in details:
@@ -233,11 +270,18 @@ def start_job():
             evalai_interface = create_evalai_interface(details["auth_token"])
             challenge = evalai_interface.get_challenge_by_pk(challenge_id)
             assert (
-                challenge["is_docker_based"] and not challenge["remote_evaluation"]
+                challenge["is_docker_based"]
+                and not challenge["remote_evaluation"]
             ), "Challenge ID: {}, Title: {} is either not docker-based or remote-evaluation. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
-            scale_up_or_down_workers(challenge, evalai_interface, staff_evalai_interface, aws_keys, scale_up_desired_size)
+            scale_up_or_down_workers(
+                challenge,
+                evalai_interface,
+                staff_evalai_interface,
+                aws_keys,
+                scale_up_desired_size,
+            )
             time.sleep(1)
         except Exception as e:
             print(e)

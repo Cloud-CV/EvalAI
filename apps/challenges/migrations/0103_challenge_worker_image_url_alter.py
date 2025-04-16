@@ -6,18 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0102_challenge_ec2_storage'),
+        ("challenges", "0102_challenge_ec2_storage"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='challenge',
-            name='domain',
-            field=models.CharField(blank=True, choices=[('CV', 'Computer Vision'), ('NLP', 'Natural Language Processing'), ('RL', 'Reinforcement Learning'), ('MM', 'Multimodal'), ('AUD', 'Audio'), ('TAB', 'Tabular')], max_length=50, null=True),
+            model_name="challenge",
+            name="domain",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("CV", "Computer Vision"),
+                    ("NLP", "Natural Language Processing"),
+                    ("RL", "Reinforcement Learning"),
+                    ("MM", "Multimodal"),
+                    ("AUD", "Audio"),
+                    ("TAB", "Tabular"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='worker_image_url',
-            field=models.CharField(blank=True, default=None, max_length=200, null=True),
+            model_name="challenge",
+            name="worker_image_url",
+            field=models.CharField(
+                blank=True, default=None, max_length=200, null=True
+            ),
         ),
     ]

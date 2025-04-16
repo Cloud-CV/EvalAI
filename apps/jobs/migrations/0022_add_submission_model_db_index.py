@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jobs', '0021_add_submission_verified_field'),
+        ("jobs", "0021_add_submission_verified_field"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='is_baseline',
+            model_name="submission",
+            name="is_baseline",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='is_flagged',
+            model_name="submission",
+            name="is_flagged",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='is_public',
+            model_name="submission",
+            name="is_public",
             field=models.BooleanField(db_index=True, default=True),
         ),
     ]

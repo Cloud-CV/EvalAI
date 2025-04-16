@@ -7,13 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jobs', '0018_add_field_to_store_input_file_url_for_large_submissions'),
+        (
+            "jobs",
+            "0018_add_field_to_store_input_file_url_for_large_submissions",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='job_name',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=True, null=True), blank=True, default=list, null=True, size=None),
+            model_name="submission",
+            name="job_name",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=True, null=True),
+                blank=True,
+                default=list,
+                null=True,
+                size=None,
+            ),
         ),
     ]

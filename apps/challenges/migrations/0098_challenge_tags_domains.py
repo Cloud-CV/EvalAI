@@ -7,18 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0097_challengephase_disable_logs'),
+        ("challenges", "0097_challengephase_disable_logs"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='domain',
-            field=models.CharField(blank=True, choices=[('CV', 'Computer Vision'), ('NLP', 'Natural Language Processing'), ('RL', 'Reinforcement Learning')], max_length=50, null=True),
+            model_name="challenge",
+            name="domain",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("CV", "Computer Vision"),
+                    ("NLP", "Natural Language Processing"),
+                    ("RL", "Reinforcement Learning"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='challenge',
-            name='list_tags',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=True, null=True), blank=True, default=list, size=None),
+            model_name="challenge",
+            name="list_tags",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=True, null=True),
+                blank=True,
+                default=list,
+                size=None,
+            ),
         ),
     ]

@@ -313,7 +313,7 @@ urlpatterns = [
         r"^challenge/modify_leaderboard_data/$",
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
-    )
+    ),
 ]
 
 app_name = "challenges"
