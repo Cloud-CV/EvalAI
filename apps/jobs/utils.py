@@ -82,7 +82,7 @@ def get_remaining_submission_for_a_phase(
         return response_data, status.HTTP_200_OK
 
     # Check for monthy submission limit
-    elif submissions_done_this_month_count >= max_submissions_per_month_count:
+    if submissions_done_this_month_count >= max_submissions_per_month_count:
         date_time_now = timezone.now()
         next_month_start_date_time = date_time_now + datetime.timedelta(
             days=+30
@@ -108,7 +108,7 @@ def get_remaining_submission_for_a_phase(
 
     # Checks if #today's successful submission is greater than or equal to max
     # submission per day
-    elif submissions_done_today_count >= max_submissions_per_day_count:
+    if submissions_done_today_count >= max_submissions_per_day_count:
         date_time_now = timezone.now()
         date_time_tomorrow = date_time_now + datetime.timedelta(1)
         # Get the midnight time of the day i.e. 12:00 AM of next day.
@@ -117,53 +117,53 @@ def get_remaining_submission_for_a_phase(
 
         response_data = {
             "message": "You have exhausted today's submission limit!",
-            "remaining_time": remaining_time,
-        }
-        return response_data, status.HTTP_200_OK
+            "remaining_time": remaining_time,}
+        return response_data, status.HTTP_200_OK    
+    # calculate the remaining submissions from total submissions.
+    remaining_submission_count = (
+        max_submissions_count - submissions_done_count
+    )
+    # Calculate the remaining submissions for current month.
+    remaining_submissions_this_month_count = (
+        max_submissions_per_month_count - submissions_done_this_month_count
+    )
+    # Calculate the remaining submissions for today.
+    remaining_submissions_today_count = (
+        max_submissions_per_day_count - submissions_done_today_count
+    )
 
-    else:
-        # calculate the remaining submissions from total submissions.
-        remaining_submission_count = (
-            max_submissions_count - submissions_done_count
-        )
-        # Calculate the remaining submissions for current month.
-        remaining_submissions_this_month_count = (
-            max_submissions_per_month_count - submissions_done_this_month_count
-        )
-        # Calculate the remaining submissions for today.
-        remaining_submissions_today_count = (
-            max_submissions_per_day_count - submissions_done_today_count
-        )
+    remaining_submissions_this_month_count = min(
+        remaining_submission_count, remaining_submissions_this_month_count
+    )
+    remaining_submissions_today_count = min(
+        remaining_submissions_this_month_count,
+        remaining_submissions_today_count,
+    )
 
-        remaining_submissions_this_month_count = min(
-            remaining_submission_count, remaining_submissions_this_month_count
-        )
-        remaining_submissions_today_count = min(
-            remaining_submissions_this_month_count,
-            remaining_submissions_today_count,
-        )
-
-        response_data = {
-            "remaining_submissions_this_month_count"
-            : remaining_submissions_this_month_count,
-            "remaining_submissions_today_count": 
-            remaining_submissions_today_count,
-            "remaining_submissions_count": remaining_submission_count,
-        }
-        return response_data,status.HTTP_200_OK
+    response_data = {
+        "remaining_submissions_this_month_count"
+        : remaining_submissions_this_month_count,
+        "remaining_submissions_today_count": 
+        remaining_submissions_today_count,
+        "remaining_submissions_count": remaining_submission_count,
+    }
+    return response_data,status.HTTP_200_OK
 
 
 def is_url_valid(url):
     """
     Checks that a given URL is reachable.
+
     :param url: A URL
-    :return type: bool
+    :type url: str
+    :return: Whether the URL is reachable
+    :rtype: bool
     """
     request = urllib.request.Request(url)
     request.get_method = lambda: "HEAD"
     try:
-        urllib.request.urlopen(request)
-        return True
+        with urllib.request.urlopen(request):
+            return True
     except urllib.request.HTTPError:
         return False
 
@@ -176,7 +176,7 @@ def get_file_from_url(url):
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
     headers = {"user-agent": "Wget/1.16 (linux-gnu)"}
-    response = requests.get(url, stream=True, headers=headers)
+    response = requests.get(url, stream=True, headers=headers, timeout=10)
     with open(file_path, "wb") as f:
         for chunk in response.iter_content(chunk_size=1024):
             if chunk:
@@ -224,10 +224,10 @@ def handle_submission_rerun(submission, updated_status):
 
     if submission.challenge_phase.challenge.is_docker_based:
         try:
-            response = requests.get(submission.input_file.url)
-        except Exception:
+            response = requests.get(submission.input_file.url, timeout=10)
+        except requests.exceptions.RequestException:
             logger.exception("Failed to get input_file")
-            return
+            return {}
 
         if response and response.status_code == 200:
             message["submitted_image_uri"] = response.json()[
@@ -267,10 +267,10 @@ def handle_submission_resume(submission, updated_status):
 
     if submission.challenge_phase.challenge.is_docker_based:
         try:
-            response = requests.get(submission.input_file.url)
-        except Exception:
+            response = requests.get(submission.input_file.url, timeout=10)
+        except requests.exceptions.RequestException:
             logger.exception("Failed to get input_file")
-            return
+            return {}
 
         if response and response.status_code == 200:
             message["submitted_image_uri"] = response.json()[
@@ -407,7 +407,7 @@ def calculate_distinct_sorted_leaderboard_data(
             ),
             filtering_error=RawSQL(
                 "error->>%s",
-                ("error_{0}".format(default_order_by),),
+                (f"error_{default_order_by}",),
                 output_field=FloatField(),
             ),
             submission__execution_time=time_diff_expression,
@@ -438,7 +438,7 @@ def calculate_distinct_sorted_leaderboard_data(
             ),
             filtering_error=RawSQL(
                 "error->>%s",
-                ("error_{0}".format(default_order_by),),
+                (f"error_{default_order_by}",),
                 output_field=FloatField(),
             ),
         ).values(
@@ -485,7 +485,7 @@ def calculate_distinct_sorted_leaderboard_data(
                 float(k["filtering_score"]),
                 float(-k["filtering_error"]),
             ),
-            reverse=True if is_leaderboard_order_descending else False,
+            reverse=bool(is_leaderboard_order_descending),
         )
     distinct_sorted_leaderboard_data = []
     team_list = []
@@ -496,7 +496,7 @@ def calculate_distinct_sorted_leaderboard_data(
             in all_banned_participant_team
         ):
             continue
-        elif data["submission__is_baseline"] is True:
+        if data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
@@ -515,7 +515,7 @@ def calculate_distinct_sorted_leaderboard_data(
 
         if item["error"] is not None:
             item["error"] = [
-                item["error"]["error_{0}".format(index)]
+                item["error"][f"error_{index}"]
                 for index in leaderboard_labels
             ]
     return distinct_sorted_leaderboard_data, status.HTTP_200_OK
