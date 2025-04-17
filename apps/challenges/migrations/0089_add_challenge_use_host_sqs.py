@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0088_increase_cpu_workers_and_memory'),
+        ("challenges", "0088_increase_cpu_workers_and_memory"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='use_host_sqs',
+            model_name="challenge",
+            name="use_host_sqs",
             field=models.BooleanField(default=False),
         ),
     ]
