@@ -2,7 +2,8 @@ import os
 import random
 import string
 import unittest
-from unittest.mock import MagicMock, patch as mockpatch
+from unittest.mock import MagicMock
+from unittest.mock import patch as mockpatch
 
 import pytest
 from base.utils import get_queue_name
@@ -20,7 +21,6 @@ from challenges.utils import (
 from django.conf import settings
 from django.contrib.auth.models import User
 from hosts.models import ChallengeHostTeam
-
 
 
 class BaseTestCase(unittest.TestCase):

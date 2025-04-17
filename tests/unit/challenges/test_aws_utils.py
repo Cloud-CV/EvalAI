@@ -1,15 +1,19 @@
-from unittest import TestCase, mock
 import unittest
-from django.core import serializers
+from http import HTTPStatus
+from unittest import TestCase, mock
+from unittest.mock import MagicMock, mock_open, patch
+
+import pytest
+from botocore.exceptions import ClientError
 from challenges.aws_utils import (
     create_ec2_instance,
     create_eks_nodegroup,
+    create_service_by_challenge_pk,
     delete_log_group,
     delete_service_by_challenge_pk,
     delete_workers,
     describe_ec2_instance,
     get_code_upload_setup_meta_for_challenge,
-    create_service_by_challenge_pk,
     get_logs_from_cloudwatch,
     restart_ec2_instance,
     restart_workers,
@@ -26,15 +30,12 @@ from challenges.aws_utils import (
     terminate_ec2_instance,
     update_service_by_challenge_pk,
     update_sqs_retention_period,
-    update_sqs_retention_period_task
+    update_sqs_retention_period_task,
 )
-import pytest
-from unittest.mock import MagicMock, mock_open, patch
-from botocore.exceptions import ClientError
-from http import HTTPStatus
-from hosts.models import ChallengeHostTeam
-from django.contrib.auth.models import User
 from challenges.models import Challenge
+from django.contrib.auth.models import User
+from django.core import serializers
+from hosts.models import ChallengeHostTeam
 
 
 class AWSUtilsTestCase(TestCase):

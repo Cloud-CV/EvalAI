@@ -1,6 +1,6 @@
-from django.test import TestCase
-from django.apps import apps
 from challenges.apps import ChallengesConfig
+from django.apps import apps
+from django.test import TestCase
 
 
 class ChallengesConfigTest(TestCase):

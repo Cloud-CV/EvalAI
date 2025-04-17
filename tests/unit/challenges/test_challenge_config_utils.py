@@ -1,15 +1,30 @@
+import io
 import unittest
 import zipfile
-import io
-from unittest.mock import Mock, patch as mockpatch
+from os.path import join
+from unittest.mock import Mock
+from unittest.mock import patch as mockpatch
+
+import pytest
 import requests
 import yaml
+from challenges.challenge_config_utils import (
+    ValidateChallengeConfigUtil,
+    download_and_write_file,
+    get_yaml_files_from_challenge_config,
+    get_yaml_read_error,
+    is_challenge_config_yaml_html_field_valid,
+    is_challenge_phase_split_mapping_valid,
+    validate_challenge_config_util,
+)
+from challenges.models import (
+    ChallengePhase,
+    ChallengePhaseSplit,
+    DatasetSplit,
+    Leaderboard,
+)
 from django.contrib.auth.models import User
-from os.path import join
-from challenges.challenge_config_utils import ValidateChallengeConfigUtil, download_and_write_file, get_yaml_files_from_challenge_config, get_yaml_read_error, is_challenge_config_yaml_html_field_valid, is_challenge_phase_split_mapping_valid, validate_challenge_config_util
-from challenges.models import ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard
 from hosts.models import ChallengeHostTeam
-import pytest
 
 
 class TestGetYamlFilesFromChallengeConfig(unittest.TestCase):

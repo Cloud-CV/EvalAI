@@ -1,7 +1,8 @@
 import os
 from datetime import timedelta
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, patch as mockpatch
+from unittest.mock import MagicMock, Mock
+from unittest.mock import patch as mockpatch
 
 import mock
 import pytest
@@ -19,7 +20,6 @@ from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam
 from rest_framework.test import APIClient, APITestCase
-
 
 
 class BaseTestCase(APITestCase):
