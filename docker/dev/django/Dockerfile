@@ -1,11 +1,15 @@
-FROM python:3.7.5
+FROM python:3.9.21
 
 ENV PYTHONUNBUFFERED 1
+ENV PIP_NO_CACHE_DIR=off
+ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 
 RUN mkdir /code
 WORKDIR /code
 
-ADD requirements/* /code/
-RUN pip install -r dev.txt
+ADD requirements/* /code/ 
+RUN pip install --no-cache-dir --no-compile --progress-bar off -r dev.txt
+
+ADD . /code/
 
 CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]

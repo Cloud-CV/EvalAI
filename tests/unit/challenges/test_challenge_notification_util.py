@@ -1,19 +1,17 @@
-from unittest.mock import MagicMock, patch as mockpatch
-import mock
-
 from datetime import timedelta
+from unittest.mock import MagicMock, patch as mockpatch
 
-from challenges.challenge_notification_util import construct_and_send_eks_cluster_creation_mail
-from moto import mock_ecs
-
+import mock
 from allauth.account.models import EmailAddress
+from challenges.challenge_notification_util import construct_and_send_eks_cluster_creation_mail
+from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-from rest_framework.test import APITestCase, APIClient
-
 from hosts.models import ChallengeHost, ChallengeHostTeam
-from challenges.models import Challenge, ChallengePhase
+from moto import mock_ecs
+from rest_framework.test import APIClient, APITestCase
+
 
 
 class BaseTestClass(APITestCase):

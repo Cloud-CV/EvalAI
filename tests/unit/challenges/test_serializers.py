@@ -1,20 +1,25 @@
 import os
-import pytest
 from datetime import timedelta
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch as mockpatch
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import User
-from django.utils import timezone
-
+import mock
+import pytest
 from allauth.account.models import EmailAddress
-from challenges.utils import add_sponsors_to_challenge
-from rest_framework.test import APITestCase, APIClient
 from challenges.models import Challenge, ChallengePhase
-from challenges.serializers import ChallengePhaseCreateSerializer, PWCChallengeLeaderboardSerializer, UserInvitationSerializer
-from participants.models import ParticipantTeam
+from challenges.serializers import (
+    ChallengePhaseCreateSerializer,
+    PWCChallengeLeaderboardSerializer,
+    UserInvitationSerializer,
+)
+from challenges.utils import add_sponsors_to_challenge
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from participants.models import ParticipantTeam
+from rest_framework.test import APIClient, APITestCase
+
 
 
 class BaseTestCase(APITestCase):

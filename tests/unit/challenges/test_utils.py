@@ -1,16 +1,26 @@
 import os
-import unittest
 import random
 import string
+import unittest
 from unittest.mock import MagicMock, patch as mockpatch
-from django.contrib.auth.models import User
-from django.conf import settings
-import pytest
-from hosts.models import ChallengeHostTeam
-from challenges.models import Challenge, ChallengePrize
-from challenges.utils import get_file_content, add_domain_to_challenge, add_prizes_to_challenge, add_sponsors_to_challenge, add_tags_to_challenge, generate_presigned_url, parse_submission_meta_attributes, send_emails
 
+import pytest
 from base.utils import get_queue_name
+from challenges.models import Challenge, ChallengePrize
+from challenges.utils import (
+    add_domain_to_challenge,
+    add_prizes_to_challenge,
+    add_sponsors_to_challenge,
+    add_tags_to_challenge,
+    generate_presigned_url,
+    get_file_content,
+    parse_submission_meta_attributes,
+    send_emails,
+)
+from django.conf import settings
+from django.contrib.auth.models import User
+from hosts.models import ChallengeHostTeam
+
 
 
 class BaseTestCase(unittest.TestCase):
