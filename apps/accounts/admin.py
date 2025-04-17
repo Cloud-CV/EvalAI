@@ -1,15 +1,15 @@
+from allauth.account.admin import EmailAddressAdmin
+from allauth.account.models import EmailAddress
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from allauth.account.models import EmailAddress
-from allauth.account.admin import EmailAddressAdmin
-
 from import_export import resources
 from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
-from .models import Profile, JwtToken
+
+from .models import JwtToken, Profile
 
 
 @admin.register(Profile)
