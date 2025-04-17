@@ -20,7 +20,9 @@ def message():
 
 @patch("jobs.sender.Challenge.objects.get")
 @patch("jobs.sender.logger")
-def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_challenge_get, message):
+def test_publish_submission_message_challenge_does_not_exist(
+    mock_logger, mock_challenge_get, message
+):
     # Simulate Challenge.DoesNotExist exception
     mock_challenge_get.side_effect = Challenge.DoesNotExist
 
@@ -28,7 +30,9 @@ def test_publish_submission_message_challenge_does_not_exist(mock_logger, mock_c
 
     # Assert logger.exception is called with the correct message
     mock_logger.exception.assert_called_once_with(
-        "Challenge does not exist for the given id {}".format(message["challenge_pk"])
+        "Challenge does not exist for the given id {}".format(
+            message["challenge_pk"]
+        )
     )
     # Assert the function returns None
     assert response is None
@@ -45,7 +49,7 @@ def test_publish_submission_message_success(
     mock_get_submission_model,
     mock_increment_statsd_counter,
     mock_get_or_create_sqs_queue,
-    message
+    message,
 ):
     # Mock Challenge object
     mock_challenge = MagicMock()
@@ -73,11 +77,21 @@ def test_publish_submission_message_success(
         "text": "A *new submission* has been uploaded to Test Challenge",
         "fields": [
             {"title": "Challenge Phase", "value": "Test Phase", "short": True},
-            {"title": "Participant Team Name", "value": "Test Team", "short": True},
-            {"title": "Submission Id", "value": message["submission_pk"], "short": True},
+            {
+                "title": "Participant Team Name",
+                "value": "Test Team",
+                "short": True,
+            },
+            {
+                "title": "Submission Id",
+                "value": message["submission_pk"],
+                "short": True,
+            },
         ],
     }
-    mock_send_slack_notification.assert_called_once_with(mock_challenge.slack_webhook_url, expected_slack_message)
+    mock_send_slack_notification.assert_called_once_with(
+        mock_challenge.slack_webhook_url, expected_slack_message
+    )
 
     # Assert the function returns the SQS response
     assert response == {"MessageId": "12345"}
@@ -85,7 +99,9 @@ def test_publish_submission_message_success(
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
-def test_get_or_create_sqs_queue_use_host_sqs(mock_settings, mock_boto3_resource):
+def test_get_or_create_sqs_queue_use_host_sqs(
+    mock_settings, mock_boto3_resource
+):
     mock_settings.DEBUG = False
     mock_settings.TEST = False
 
@@ -112,16 +128,18 @@ def test_get_or_create_sqs_queue_use_host_sqs(mock_settings, mock_boto3_resource
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
-def test_get_or_create_sqs_queue_challenge_use_host_sqs(mock_settings, mock_boto3_resource):
+def test_get_or_create_sqs_queue_challenge_use_host_sqs(
+    mock_settings, mock_boto3_resource
+):
     # Test case where challenge.use_host_sqs is True
     mock_settings.DEBUG = False
     mock_settings.TEST = False
 
     mock_challenge = MagicMock()
     mock_challenge.use_host_sqs = True
-    mock_challenge.queue_aws_region = 'us-east-1'
-    mock_challenge.aws_access_key_id = 'foobar_key'
-    mock_challenge.aws_secret_access_key = 'foobar_secret'
+    mock_challenge.queue_aws_region = "us-east-1"
+    mock_challenge.aws_access_key_id = "foobar_key"
+    mock_challenge.aws_secret_access_key = "foobar_secret"
 
     mock_sqs = MagicMock()
     mock_boto3_resource.return_value = mock_sqs
@@ -131,16 +149,18 @@ def test_get_or_create_sqs_queue_challenge_use_host_sqs(mock_settings, mock_boto
 
     mock_boto3_resource.assert_called_once_with(
         "sqs",
-        region_name='us-east-1',
-        aws_access_key_id='foobar_key',
-        aws_secret_access_key='foobar_secret',
+        region_name="us-east-1",
+        aws_access_key_id="foobar_key",
+        aws_secret_access_key="foobar_secret",
     )
     assert queue == mock_sqs.get_queue_by_name.return_value
 
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
-def test_get_or_create_sqs_queue_no_challenge(mock_settings, mock_boto3_resource):
+def test_get_or_create_sqs_queue_no_challenge(
+    mock_settings, mock_boto3_resource
+):
     # Test case where challenge is None
     mock_settings.DEBUG = False
     mock_settings.TEST = False
@@ -162,7 +182,9 @@ def test_get_or_create_sqs_queue_no_challenge(mock_settings, mock_boto3_resource
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
-def test_get_or_create_sqs_queue_non_existent_queue(mock_settings, mock_boto3_resource):
+def test_get_or_create_sqs_queue_non_existent_queue(
+    mock_settings, mock_boto3_resource
+):
     # Test case where the queue does not exist, and it gets created
     mock_settings.DEBUG = False
     mock_settings.TEST = False
@@ -175,7 +197,8 @@ def test_get_or_create_sqs_queue_non_existent_queue(mock_settings, mock_boto3_re
     mock_boto3_resource.return_value = mock_sqs
 
     mock_sqs.get_queue_by_name.side_effect = botocore.exceptions.ClientError(
-        {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}}, "GetQueueUrl"
+        {"Error": {"Code": "AWS.SimpleQueueService.NonExistentQueue"}},
+        "GetQueueUrl",
     )
 
     mock_created_queue = MagicMock()
@@ -186,14 +209,18 @@ def test_get_or_create_sqs_queue_non_existent_queue(mock_settings, mock_boto3_re
 
     mock_sqs.create_queue.assert_called_once_with(
         QueueName=queue_name,
-        Attributes={"MessageRetentionPeriod": mock_challenge.sqs_retention_period},
+        Attributes={
+            "MessageRetentionPeriod": mock_challenge.sqs_retention_period
+        },
     )
     assert queue == mock_created_queue
 
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
-def test_get_or_create_sqs_queue_debug_or_test(mock_settings, mock_boto3_resource):
+def test_get_or_create_sqs_queue_debug_or_test(
+    mock_settings, mock_boto3_resource
+):
     # Test case where settings.DEBUG or settings.TEST is True
     mock_settings.DEBUG = True
     mock_settings.TEST = False
@@ -211,13 +238,17 @@ def test_get_or_create_sqs_queue_debug_or_test(mock_settings, mock_boto3_resourc
         aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
         aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     )
-    assert queue_name != "evalai_submission_queue"  # 'queue_name' is not modified in the test, so assert the original value was passed correctly
+    assert (
+        queue_name != "evalai_submission_queue"
+    )  # 'queue_name' is not modified in the test, so assert the original value was passed correctly
     assert queue  # Ensure queue was returned
 
 
 @patch("jobs.sender.boto3.resource")
 @patch("jobs.sender.settings")
-def test_get_or_create_sqs_queue_empty_queue_name(mock_settings, mock_boto3_resource):
+def test_get_or_create_sqs_queue_empty_queue_name(
+    mock_settings, mock_boto3_resource
+):
     # Test case where queue_name is empty
     mock_settings.DEBUG = False
     mock_settings.TEST = False
@@ -228,5 +259,7 @@ def test_get_or_create_sqs_queue_empty_queue_name(mock_settings, mock_boto3_reso
     queue_name = ""
     queue = get_or_create_sqs_queue(queue_name)
 
-    mock_sqs.get_queue_by_name.assert_called_once_with(QueueName="evalai_submission_queue")
+    mock_sqs.get_queue_by_name.assert_called_once_with(
+        QueueName="evalai_submission_queue"
+    )
     assert queue  # Ensure queue was returned
