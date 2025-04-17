@@ -8,5 +8,5 @@ class ChallengesConfigTest(TestCase):
         self.assertEqual(ChallengesConfig.name, "challenges")
 
     def test_app_config(self):
-        app_config = apps.get_app_config('challenges')
+        app_config = apps.get_app_config("challenges")
         self.assertEqual(app_config.name, "challenges")

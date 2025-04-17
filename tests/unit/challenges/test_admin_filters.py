@@ -9,7 +9,9 @@ from hosts.models import ChallengeHostTeam
 class ChallengeFilterTest(TestCase):
     def setUp(self):
         # Create a user
-        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.user = User.objects.create_user(
+            username="testuser", password="12345"
+        )
 
         # Create a challenge host team
         self.challenge_host_team = ChallengeHostTeam.objects.create(
@@ -47,7 +49,9 @@ class ChallengeFilterTest(TestCase):
 
     def test_past_challenge_filter(self):
         request = None  # Mock request if needed
-        filter_instance = ChallengeFilter(request, {}, Challenge, Challenge.objects.all())
+        filter_instance = ChallengeFilter(
+            request, {}, Challenge, Challenge.objects.all()
+        )
         filter_instance.value = lambda: "past"
         queryset = filter_instance.queryset(request, Challenge.objects.all())
         self.assertIn(self.past_challenge, queryset)
@@ -56,7 +60,9 @@ class ChallengeFilterTest(TestCase):
 
     def test_present_challenge_filter(self):
         request = None  # Mock request if needed
-        filter_instance = ChallengeFilter(request, {}, Challenge, Challenge.objects.all())
+        filter_instance = ChallengeFilter(
+            request, {}, Challenge, Challenge.objects.all()
+        )
         filter_instance.value = lambda: "present"
         queryset = filter_instance.queryset(request, Challenge.objects.all())
         self.assertNotIn(self.past_challenge, queryset)
@@ -65,7 +71,9 @@ class ChallengeFilterTest(TestCase):
 
     def test_future_challenge_filter(self):
         request = None  # Mock request if needed
-        filter_instance = ChallengeFilter(request, {}, Challenge, Challenge.objects.all())
+        filter_instance = ChallengeFilter(
+            request, {}, Challenge, Challenge.objects.all()
+        )
         filter_instance.value = lambda: "future"
         queryset = filter_instance.queryset(request, Challenge.objects.all())
         self.assertNotIn(self.past_challenge, queryset)

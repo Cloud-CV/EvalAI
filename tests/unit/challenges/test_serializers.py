@@ -476,7 +476,7 @@ class ChallengeLeaderboardSerializerTests(TestCase):
         """Test case for get_leaderboard function."""
         leaderboard_schema = {
             "default_order_by": "accuracy",
-            "labels": ["accuracy", "loss", "f1_score"]
+            "labels": ["accuracy", "loss", "f1_score"],
         }
         self.obj.phase_split.leaderboard.schema = leaderboard_schema
 
@@ -489,7 +489,9 @@ class UserInvitationSerializerTests(TestCase):
     def setUp(self):
         # Set up any common objects you need
         self.user = User.objects.create(username="testuser")
-        self.challengeHostTeam = ChallengeHostTeam.objects.create(team_name="Test Team", created_by=self.user)
+        self.challengeHostTeam = ChallengeHostTeam.objects.create(
+            team_name="Test Team", created_by=self.user
+        )
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             creator=self.challengeHostTeam,
@@ -509,7 +511,9 @@ class UserInvitationSerializerTests(TestCase):
 
     def test_get_user_details(self):
         # Mock the serializer output
-        with mockpatch('challenges.serializers.UserDetailsSerializer') as mock_serializer:
+        with mockpatch(
+            "challenges.serializers.UserDetailsSerializer"
+        ) as mock_serializer:
             mock_serializer.return_value.data = {"username": "testuser"}
             result = self.serializer.get_user_details(self.obj)
             self.assertEqual(result, {"username": "testuser"})
@@ -519,28 +523,40 @@ class UserInvitationSerializerTests(TestCase):
 class AddSponsorsToChallengeTests(TestCase):
     def setUp(self):
         self.User = User.objects.create(username="testuser")
-        self.challengeHostTeam = ChallengeHostTeam.objects.create(team_name="Test Team", created_by=self.User)
-        self.challenge = Challenge.objects.create(title="Test Challenge", creator=self.challengeHostTeam)
+        self.challengeHostTeam = ChallengeHostTeam.objects.create(
+            team_name="Test Team", created_by=self.User
+        )
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge", creator=self.challengeHostTeam
+        )
         self.yaml_file_data = {
-            'sponsors': [
-                {'name': 'Test Sponsor', 'website': 'https://testsponsor.com'}
+            "sponsors": [
+                {"name": "Test Sponsor", "website": "https://testsponsor.com"}
             ]
         }
 
-    @mockpatch('challenges.utils.ChallengeSponsorSerializer')  # Mock the serializer
+    @mockpatch(
+        "challenges.utils.ChallengeSponsorSerializer"
+    )  # Mock the serializer
     def test_serializer_valid(self, MockChallengeSponsorSerializer):
         # Mocking the serializer instance and its methods
         mock_serializer = MockChallengeSponsorSerializer.return_value
-        mock_serializer.is_valid.return_value = True  # Simulate a valid serializer
+        mock_serializer.is_valid.return_value = (
+            True  # Simulate a valid serializer
+        )
 
         # Call the function with the real challenge object
         result = add_sponsors_to_challenge(self.yaml_file_data, self.challenge)
 
         # Assertions
         mock_serializer.save.assert_called_once()  # Ensure save is called on the serializer
-        self.assertTrue(self.challenge.has_sponsors)  # Ensure has_sponsors is set to True
+        self.assertTrue(
+            self.challenge.has_sponsors
+        )  # Ensure has_sponsors is set to True
         self.challenge.refresh_from_db()  # Refresh the challenge instance from the database
-        self.assertTrue(self.challenge.has_sponsors)  # Check again after refreshing
+        self.assertTrue(
+            self.challenge.has_sponsors
+        )  # Check again after refreshing
 
         # Ensure the function does not return any error response (meaning it worked correctly)
         self.assertIsNone(result)

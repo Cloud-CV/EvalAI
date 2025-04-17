@@ -31,12 +31,18 @@ class TestGetYamlFilesFromChallengeConfig(unittest.TestCase):
     def test_no_yaml_files_in_zip(self):
         # Create a zip file in memory with no YAML files
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED) as zip_file:
-            zip_file.writestr('some_other_file.txt', 'This is some other file content')
+        with zipfile.ZipFile(
+            zip_buffer, "a", zipfile.ZIP_DEFLATED
+        ) as zip_file:
+            zip_file.writestr(
+                "some_other_file.txt", "This is some other file content"
+            )
 
         zip_buffer.seek(0)
-        with zipfile.ZipFile(zip_buffer, 'r') as zip_file:
-            yaml_file_count, yaml_file_name, extracted_folder_name = get_yaml_files_from_challenge_config(zip_file)
+        with zipfile.ZipFile(zip_buffer, "r") as zip_file:
+            yaml_file_count, yaml_file_name, extracted_folder_name = (
+                get_yaml_files_from_challenge_config(zip_file)
+            )
 
         self.assertEqual(yaml_file_count, 0)
         self.assertIsNone(yaml_file_name)
@@ -57,7 +63,9 @@ class TestGetYamlReadError(unittest.TestCase):
                     self.column = column
 
         exc = MockException("mock problem", 10, 20)
-        error_description, line_number, column_number = get_yaml_read_error(exc)
+        error_description, line_number, column_number = get_yaml_read_error(
+            exc
+        )
 
         self.assertEqual(error_description, "Mock problem")
         self.assertEqual(line_number, 11)
@@ -69,7 +77,9 @@ class TestGetYamlReadError(unittest.TestCase):
             pass
 
         exc = MockException()
-        error_description, line_number, column_number = get_yaml_read_error(exc)
+        error_description, line_number, column_number = get_yaml_read_error(
+            exc
+        )
 
         self.assertIsNone(error_description)
         self.assertIsNone(line_number)
@@ -80,25 +90,35 @@ class TestIsChallengeConfigYamlHtmlFieldValid(unittest.TestCase):
     def setUp(self):
         self.base_location = "/path/to/extracted/config"
 
-    @mockpatch('challenges.challenge_config_utils.isfile', return_value=False)
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=False)
     def test_file_not_found(self, mock_isfile):
-        yaml_file_data = {'html_field': 'non_existent_file.html'}
-        key = 'html_field'
+        yaml_file_data = {"html_field": "non_existent_file.html"}
+        key = "html_field"
 
-        is_valid, message = is_challenge_config_yaml_html_field_valid(yaml_file_data, key, self.base_location)
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, key, self.base_location
+        )
 
         self.assertFalse(is_valid)
-        self.assertEqual(message, "File at path html_field not found. Please specify a valid file path")
+        self.assertEqual(
+            message,
+            "File at path html_field not found. Please specify a valid file path",
+        )
 
-    @mockpatch('challenges.challenge_config_utils.isfile', return_value=True)
+    @mockpatch("challenges.challenge_config_utils.isfile", return_value=True)
     def test_file_not_html(self, mock_isfile):
-        yaml_file_data = {'html_field': 'file.txt'}
-        key = 'html_field'
+        yaml_file_data = {"html_field": "file.txt"}
+        key = "html_field"
 
-        is_valid, message = is_challenge_config_yaml_html_field_valid(yaml_file_data, key, self.base_location)
+        is_valid, message = is_challenge_config_yaml_html_field_valid(
+            yaml_file_data, key, self.base_location
+        )
 
         self.assertFalse(is_valid)
-        self.assertEqual(message, "File html_field is not a HTML file. Please specify a valid HTML file")
+        self.assertEqual(
+            message,
+            "File html_field is not a HTML file. Please specify a valid HTML file",
+        )
 
 
 class TestIsChallengePhaseSplitMappingValid(unittest.TestCase):
@@ -109,16 +129,23 @@ class TestIsChallengePhaseSplitMappingValid(unittest.TestCase):
         phase_split = {
             "challenge_phase_id": 1,
             "leaderboard_id": 10,
-            "dataset_split_id": 400  # Invalid dataset split id
+            "dataset_split_id": 400,  # Invalid dataset split id
         }
         challenge_phase_split_index = 0
 
         is_success, error_messages = is_challenge_phase_split_mapping_valid(
-            phase_ids, leaderboard_ids, dataset_split_ids, phase_split, challenge_phase_split_index
+            phase_ids,
+            leaderboard_ids,
+            dataset_split_ids,
+            phase_split,
+            challenge_phase_split_index,
         )
 
         self.assertFalse(is_success)
-        self.assertIn("ERROR: Invalid dataset split id 400 found in challenge phase split 0.", error_messages)
+        self.assertIn(
+            "ERROR: Invalid dataset split id 400 found in challenge phase split 0.",
+            error_messages,
+        )
 
 
 class TestDownloadAndWriteFile(unittest.TestCase):
@@ -127,25 +154,37 @@ class TestDownloadAndWriteFile(unittest.TestCase):
         self.output_path = "/path/to/output/file.zip"
         self.mode = "wb"
 
-    @mockpatch('challenges.challenge_config_utils.requests.get')
-    @mockpatch('challenges.challenge_config_utils.write_file')
+    @mockpatch("challenges.challenge_config_utils.requests.get")
+    @mockpatch("challenges.challenge_config_utils.write_file")
     def test_io_error(self, mock_write_file, mock_requests_get):
-        mock_requests_get.return_value = Mock(status_code=200, content=b'file content')
+        mock_requests_get.return_value = Mock(
+            status_code=200, content=b"file content"
+        )
         mock_write_file.side_effect = IOError
 
-        is_success, message = download_and_write_file(self.url, True, self.output_path, self.mode)
+        is_success, message = download_and_write_file(
+            self.url, True, self.output_path, self.mode
+        )
 
         self.assertFalse(is_success)
-        self.assertEqual(message, "Unable to process the uploaded zip file. Please try again!")
+        self.assertEqual(
+            message,
+            "Unable to process the uploaded zip file. Please try again!",
+        )
 
-    @mockpatch('challenges.challenge_config_utils.requests.get')
+    @mockpatch("challenges.challenge_config_utils.requests.get")
     def test_request_exception(self, mock_requests_get):
         mock_requests_get.side_effect = requests.exceptions.RequestException
 
-        is_success, message = download_and_write_file(self.url, True, self.output_path, self.mode)
+        is_success, message = download_and_write_file(
+            self.url, True, self.output_path, self.mode
+        )
 
         self.assertFalse(is_success)
-        self.assertEqual(message, "A server error occured while processing zip file. Please try again!")
+        self.assertEqual(
+            message,
+            "A server error occured while processing zip file. Please try again!",
+        )
 
 
 @pytest.mark.django_db
@@ -153,7 +192,9 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
     def setUp(self):
         self.request = Mock()
         # Create a challenge host team
-        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.user = User.objects.create_user(
+            username="testuser", password="12345"
+        )
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -161,7 +202,9 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.unique_folder_name = "unique_folder"
         self.extracted_folder_name = "extracted_folder"
         self.zip_ref = Mock()
-        self.zip_ref.namelist.return_value = []  # Mock the namelist method to return an empty list
+        self.zip_ref.namelist.return_value = (
+            []
+        )  # Mock the namelist method to return an empty list
         self.current_challenge = Mock()
         self.error_message_dict = {
             "no_yaml_file": "No YAML file found in the zip.",
@@ -176,18 +219,26 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
             "missing_evaluation_script_key": "Evaluation script key is missing.",
             "missing_date": "Start date or end date is missing.",
             "start_date_greater_than_end_date": "Start date is greater than end date.",
-            "challenge_metadata_schema_errors": "Schema errors: {}"
+            "challenge_metadata_schema_errors": "Schema errors: {}",
         }
 
         self.util = ValidateChallengeConfigUtil(
-            self.request, self.challenge_host_team, self.base_location,
-            self.unique_folder_name, self.zip_ref, self.current_challenge
+            self.request,
+            self.challenge_host_team,
+            self.base_location,
+            self.unique_folder_name,
+            self.zip_ref,
+            self.current_challenge,
         )
         self.util.error_messages_dict = self.error_message_dict
         self.util.yaml_file_data = {}
         self.util.extracted_folder_name = self.extracted_folder_name
-        self.util.challenge_image_file = Mock()  # Initialize the missing attribute
-        self.util.challenge_evaluation_script_file = Mock()  # Initialize if needed
+        self.util.challenge_image_file = (
+            Mock()
+        )  # Initialize the missing attribute
+        self.util.challenge_evaluation_script_file = (
+            Mock()
+        )  # Initialize if needed
         self.util.extracted_folder_name = "extracted_folder"
         self.util.error_messages = []
         self.request.data = {"GITHUB_REPOSITORY": "some_repo"}
@@ -198,7 +249,9 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         result = self.util.read_and_validate_yaml()
 
         self.assertFalse(result)
-        self.assertIn("No YAML file found in the zip.", self.util.error_messages)
+        self.assertIn(
+            "No YAML file found in the zip.", self.util.error_messages
+        )
 
     def test_multiple_yaml_files(self):
         self.util.yaml_file_count = 2
@@ -206,9 +259,11 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         result = self.util.read_and_validate_yaml()
 
         self.assertFalse(result)
-        self.assertIn("Multiple YAML files found: 2.", self.util.error_messages)
+        self.assertIn(
+            "Multiple YAML files found: 2.", self.util.error_messages
+        )
 
-    @mockpatch('challenges.challenge_config_utils.read_yaml_file')
+    @mockpatch("challenges.challenge_config_utils.read_yaml_file")
     def test_yaml_read_error(self, mock_read_yaml_file):
         self.util.yaml_file_count = 1
         self.util.yaml_file = "config.yaml"
@@ -217,23 +272,35 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         result = self.util.read_and_validate_yaml()
 
         self.assertFalse(result)
-        self.assertIn("YAML file read error: None at line None, column None.", self.util.error_messages)
+        self.assertIn(
+            "YAML file read error: None at line None, column None.",
+            self.util.error_messages,
+        )
 
-    @mockpatch('challenges.challenge_config_utils.isfile')
-    @mockpatch('challenges.challenge_config_utils.get_file_content')
-    def test_validate_challenge_logo_valid_image(self, mock_get_file_content, mock_isfile):
+    @mockpatch("challenges.challenge_config_utils.isfile")
+    @mockpatch("challenges.challenge_config_utils.get_file_content")
+    def test_validate_challenge_logo_valid_image(
+        self, mock_get_file_content, mock_isfile
+    ):
         self.util.yaml_file_data = {"image": "logo.png"}
         mock_isfile.return_value = True
         mock_get_file_content.return_value = b"image content"
 
         self.util.validate_challenge_logo()
 
-        expected_path = join(self.base_location, self.unique_folder_name, self.extracted_folder_name, "logo.png")
+        expected_path = join(
+            self.base_location,
+            self.unique_folder_name,
+            self.extracted_folder_name,
+            "logo.png",
+        )
         self.assertEqual(self.util.challenge_image_path, expected_path)
         self.assertIsNotNone(self.util.challenge_image_file)
-        self.assertEqual(self.util.files["challenge_image_file"].name, "logo.png")
+        self.assertEqual(
+            self.util.files["challenge_image_file"].name, "logo.png"
+        )
 
-    @mockpatch('challenges.challenge_config_utils.isfile')
+    @mockpatch("challenges.challenge_config_utils.isfile")
     def test_validate_challenge_logo_invalid_image(self, mock_isfile):
         self.util.yaml_file_data = {"image": "logo.txt"}
         mock_isfile.return_value = False
@@ -252,8 +319,10 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertIsNone(self.util.files["challenge_image_file"])
 
     @pytest.mark.django_db
-    @mockpatch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
-    def test_validate_challenge_config_util_invalid_yaml(self, MockValidateChallengeConfigUtil):
+    @mockpatch("challenges.challenge_config_utils.ValidateChallengeConfigUtil")
+    def test_validate_challenge_config_util_invalid_yaml(
+        self, MockValidateChallengeConfigUtil
+    ):
         # Arrange
         mock_instance = MockValidateChallengeConfigUtil.return_value
         mock_instance.valid_yaml = False
@@ -275,19 +344,20 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
             BASE_LOCATION,
             unique_folder_name,
             zip_ref,
-            current_challenge
+            current_challenge,
         )
 
         # Assert
-        self.assertEqual(result, (
-            ["Error message"],
-            {"key": "value"},
-            {"file_key": "file_value"}
-        ))
+        self.assertEqual(
+            result,
+            (["Error message"], {"key": "value"}, {"file_key": "file_value"}),
+        )
 
     @pytest.mark.django_db
-    @mockpatch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
-    def test_validate_challenge_config_util_with_current_challenge(self, MockValidateChallengeConfigUtil):
+    @mockpatch("challenges.challenge_config_utils.ValidateChallengeConfigUtil")
+    def test_validate_challenge_config_util_with_current_challenge(
+        self, MockValidateChallengeConfigUtil
+    ):
         # Arrange
         mock_instance = MockValidateChallengeConfigUtil.return_value
         mock_instance.valid_yaml = True
@@ -308,9 +378,22 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         current_challenge_phases = [challenge_phase1, challenge_phase2]
 
         # Mock the ChallengePhaseSplit objects
-        challenge_phase_split1 = Mock(id=1, challenge_phase=challenge_phase1, leaderboard=Mock(id=1), dataset_split=Mock(id=1))
-        challenge_phase_split2 = Mock(id=2, challenge_phase=challenge_phase2, leaderboard=Mock(id=2), dataset_split=Mock(id=2))
-        current_challenge_phase_splits = [challenge_phase_split1, challenge_phase_split2]
+        challenge_phase_split1 = Mock(
+            id=1,
+            challenge_phase=challenge_phase1,
+            leaderboard=Mock(id=1),
+            dataset_split=Mock(id=1),
+        )
+        challenge_phase_split2 = Mock(
+            id=2,
+            challenge_phase=challenge_phase2,
+            leaderboard=Mock(id=2),
+            dataset_split=Mock(id=2),
+        )
+        current_challenge_phase_splits = [
+            challenge_phase_split1,
+            challenge_phase_split2,
+        ]
 
         # Mock the Leaderboard objects
         leaderboard1 = Mock(id=1, config_id=1)
@@ -323,17 +406,31 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         current_dataset_splits = [dataset_split1, dataset_split2]
 
         # Patch the model queries
-        with mockpatch.object(ChallengePhase, 'objects') as mock_challenge_phase_objects:
-            mock_challenge_phase_objects.filter.return_value = current_challenge_phases
+        with mockpatch.object(
+            ChallengePhase, "objects"
+        ) as mock_challenge_phase_objects:
+            mock_challenge_phase_objects.filter.return_value = (
+                current_challenge_phases
+            )
 
-        with mockpatch.object(ChallengePhaseSplit, 'objects') as mock_challenge_phase_split_objects:
-            mock_challenge_phase_split_objects.filter.return_value = current_challenge_phase_splits
+        with mockpatch.object(
+            ChallengePhaseSplit, "objects"
+        ) as mock_challenge_phase_split_objects:
+            mock_challenge_phase_split_objects.filter.return_value = (
+                current_challenge_phase_splits
+            )
 
-        with mockpatch.object(Leaderboard, 'objects') as mock_leaderboard_objects:
+        with mockpatch.object(
+            Leaderboard, "objects"
+        ) as mock_leaderboard_objects:
             mock_leaderboard_objects.filter.return_value = current_leaderboards
 
-        with mockpatch.object(DatasetSplit, 'objects') as mock_dataset_split_objects:
-            mock_dataset_split_objects.filter.return_value = current_dataset_splits
+        with mockpatch.object(
+            DatasetSplit, "objects"
+        ) as mock_dataset_split_objects:
+            mock_dataset_split_objects.filter.return_value = (
+                current_dataset_splits
+            )
 
         # Act
         error_messages, yaml_file_data, files = validate_challenge_config_util(
@@ -350,8 +447,10 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
         self.assertEqual(yaml_file_data, {"key": "value"})
         self.assertEqual(files, {"file_key": "file_value"})
 
-    @mockpatch('challenges.challenge_config_utils.ValidateChallengeConfigUtil')
-    def test_validate_challenge_config_util_without_current_challenge(self, MockValidateChallengeConfigUtil):
+    @mockpatch("challenges.challenge_config_utils.ValidateChallengeConfigUtil")
+    def test_validate_challenge_config_util_without_current_challenge(
+        self, MockValidateChallengeConfigUtil
+    ):
         # Arrange
         mock_instance = MockValidateChallengeConfigUtil.return_value
         mock_instance.valid_yaml = True
@@ -383,72 +482,102 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
 
     def test_validate_challenge_description_missing(self):
         self.util.validate_challenge_description()
-        self.assertIn("Challenge description is missing.", self.util.error_messages)
+        self.assertIn(
+            "Challenge description is missing.", self.util.error_messages
+        )
 
     def test_validate_evaluation_details_file_missing(self):
         self.util.validate_evaluation_details_file()
-        self.assertIn("Evaluation details are missing.", self.util.error_messages)
+        self.assertIn(
+            "Evaluation details are missing.", self.util.error_messages
+        )
 
     def test_validate_terms_and_conditions_file_missing(self):
         self.util.validate_terms_and_conditions_file()
-        self.assertIn("Terms and conditions are missing.", self.util.error_messages)
+        self.assertIn(
+            "Terms and conditions are missing.", self.util.error_messages
+        )
 
     def test_validate_submission_guidelines_file_missing(self):
         self.util.validate_submission_guidelines_file()
-        self.assertIn("Submission guidelines are missing.", self.util.error_messages)
+        self.assertIn(
+            "Submission guidelines are missing.", self.util.error_messages
+        )
 
     def test_validate_challenge_description_empty(self):
         self.util.yaml_file_data["description"] = ""
         self.util.validate_challenge_description()
-        self.assertIn("Challenge description is missing.", self.util.error_messages)
+        self.assertIn(
+            "Challenge description is missing.", self.util.error_messages
+        )
 
     def test_validate_evaluation_details_file_empty(self):
         self.util.yaml_file_data["evaluation_details"] = ""
         self.util.validate_evaluation_details_file()
-        self.assertIn("Evaluation details are missing.", self.util.error_messages)
+        self.assertIn(
+            "Evaluation details are missing.", self.util.error_messages
+        )
 
     def test_validate_terms_and_conditions_file_empty(self):
         self.util.yaml_file_data["terms_and_conditions"] = ""
         self.util.validate_terms_and_conditions_file()
-        self.assertIn("Terms and conditions are missing.", self.util.error_messages)
+        self.assertIn(
+            "Terms and conditions are missing.", self.util.error_messages
+        )
 
     def test_validate_submission_guidelines_file_empty(self):
         self.util.yaml_file_data["submission_guidelines"] = ""
         self.util.validate_submission_guidelines_file()
-        self.assertIn("Submission guidelines are missing.", self.util.error_messages)
+        self.assertIn(
+            "Submission guidelines are missing.", self.util.error_messages
+        )
 
     def test_validate_evaluation_script_file_not_zip(self):
         self.util.yaml_file_data["evaluation_script"] = "script.txt"
         self.util.validate_evaluation_script_file()
-        self.assertIn("Evaluation script is not a zip file.", self.util.error_messages)
+        self.assertIn(
+            "Evaluation script is not a zip file.", self.util.error_messages
+        )
 
     def test_validate_dates_missing_dates(self):
-        self.util.yaml_file_data = {
-            "start_date": None,
-            "end_date": None
-        }
+        self.util.yaml_file_data = {"start_date": None, "end_date": None}
         self.util.validate_dates()
-        self.assertIn("Start date or end date is missing.", self.util.error_messages)
+        self.assertIn(
+            "Start date or end date is missing.", self.util.error_messages
+        )
 
     def test_validate_dates_start_date_greater_than_end_date(self):
         self.util.yaml_file_data = {
             "start_date": "2023-12-31",
-            "end_date": "2023-01-01"
+            "end_date": "2023-01-01",
         }
         self.util.validate_dates()
-        self.assertIn("Start date is greater than end date.", self.util.error_messages)
+        self.assertIn(
+            "Start date is greater than end date.", self.util.error_messages
+        )
 
     def test_validate_dates_valid_dates(self):
         self.util.yaml_file_data = {
             "start_date": "2023-01-01",
-            "end_date": "2023-12-31"
+            "end_date": "2023-12-31",
         }
         self.util.validate_dates()
-        self.assertNotIn("Start date or end date is missing.", self.util.error_messages)
-        self.assertNotIn("Start date is greater than end date.", self.util.error_messages)
+        self.assertNotIn(
+            "Start date or end date is missing.", self.util.error_messages
+        )
+        self.assertNotIn(
+            "Start date is greater than end date.", self.util.error_messages
+        )
 
-    @mockpatch('challenges.serializers.ZipChallengeSerializer.is_valid', return_value=False)
-    @mockpatch('challenges.serializers.ZipChallengeSerializer.errors', new_callable=Mock, return_value={"field": ["error"]})
+    @mockpatch(
+        "challenges.serializers.ZipChallengeSerializer.is_valid",
+        return_value=False,
+    )
+    @mockpatch(
+        "challenges.serializers.ZipChallengeSerializer.errors",
+        new_callable=Mock,
+        return_value={"field": ["error"]},
+    )
     def test_validate_serializer_invalid(self, mock_errors, mock_is_valid):
         self.util.validate_serializer()
         self.assertEqual(len(self.util.error_messages), 1)
@@ -459,7 +588,9 @@ class TestValidateChallengeConfigUtil0(unittest.TestCase):
 class TestValidateChallengeConfigUtil(unittest.TestCase):
     def setUp(self):
         self.request = Mock()
-        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.user = User.objects.create_user(
+            username="testuser", password="12345"
+        )
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -470,8 +601,12 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         self.zip_ref.namelist.return_value = []
         self.current_challenge = Mock()
         self.util = ValidateChallengeConfigUtil(
-            self.request, self.challenge_host_team, self.base_location,
-            self.unique_folder_name, self.zip_ref, self.current_challenge
+            self.request,
+            self.challenge_host_team,
+            self.base_location,
+            self.unique_folder_name,
+            self.zip_ref,
+            self.current_challenge,
         )
         self.util.error_messages_dict = {
             "missing_leaderboard_id": "Leaderboard ID is missing.",
@@ -503,13 +638,15 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             "prize_not_found": "Prize rank or amount not found.",
             "duplicate_rank": "Duplicate rank found: {}.",
             "prize_rank_wrong": "Invalid prize rank: {}.",
-            "prize_amount_wrong": "Invalid prize amount: {}."
+            "prize_amount_wrong": "Invalid prize amount: {}.",
         }
         self.util.yaml_file_data = {}
         self.util.extracted_folder_name = self.extracted_folder_name
         self.util.error_messages = []
         self.util.challenge_phase_split = Mock()
-        self.util.challenge_config_location = "/path/to/config"  # Set a valid path here
+        self.util.challenge_config_location = (
+            "/path/to/config"  # Set a valid path here
+        )
 
     def test_missing_leaderboard_id(self):
         self.util.yaml_file_data = {"leaderboard": [{}]}
@@ -519,81 +656,158 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
     def test_missing_leaderboard_schema(self):
         self.util.yaml_file_data = {"leaderboard": [{"id": "test_id"}]}
         self.util.validate_leaderboards([])
-        self.assertIn("Leaderboard schema is missing.", self.util.error_messages)
+        self.assertIn(
+            "Leaderboard schema is missing.", self.util.error_messages
+        )
 
     def test_missing_leaderboard_labels(self):
-        self.util.yaml_file_data = {"leaderboard": [{"id": "test_id", "schema": {}}]}
+        self.util.yaml_file_data = {
+            "leaderboard": [{"id": "test_id", "schema": {}}]
+        }
         self.util.validate_leaderboards([])
-        self.assertIn("Leaderboard labels are missing.", self.util.error_messages)
+        self.assertIn(
+            "Leaderboard labels are missing.", self.util.error_messages
+        )
 
     def test_missing_leaderboard_default_order_by(self):
-        self.util.yaml_file_data = {"leaderboard": [{"id": "test_id", "schema": {"labels": []}}]}
+        self.util.yaml_file_data = {
+            "leaderboard": [{"id": "test_id", "schema": {"labels": []}}]
+        }
         self.util.validate_leaderboards([])
         self.assertIn("Default order by is missing.", self.util.error_messages)
 
     def test_incorrect_default_order_by(self):
         self.util.yaml_file_data = {
-            "leaderboard": [{"id": "test_id", "schema": {"labels": ["a", "b"], "default_order_by": "c"}}]
+            "leaderboard": [
+                {
+                    "id": "test_id",
+                    "schema": {"labels": ["a", "b"], "default_order_by": "c"},
+                }
+            ]
         }
         self.util.validate_leaderboards([])
-        self.assertIn("Default order by is incorrect.", self.util.error_messages)
+        self.assertIn(
+            "Default order by is incorrect.", self.util.error_messages
+        )
 
     def test_leaderboard_schema_error(self):
         self.util.yaml_file_data = {
-            "leaderboard": [{"id": "test_id", "schema": {"labels": ["a", "b"], "default_order_by": "a"}}]
+            "leaderboard": [
+                {
+                    "id": "test_id",
+                    "schema": {"labels": ["a", "b"], "default_order_by": "a"},
+                }
+            ]
         }
-        with mockpatch('challenges.serializers.LeaderboardSerializer.is_valid', return_value=False):
-            with mockpatch('challenges.serializers.LeaderboardSerializer.errors', new_callable=Mock, return_value="some_error"):
+        with mockpatch(
+            "challenges.serializers.LeaderboardSerializer.is_valid",
+            return_value=False,
+        ):
+            with mockpatch(
+                "challenges.serializers.LeaderboardSerializer.errors",
+                new_callable=Mock,
+                return_value="some_error",
+            ):
                 self.util.validate_leaderboards([])
-                self.assertEqual(self.util.error_messages[0], self.util.error_messages_dict["leaderboard_schema_error"].format("test_id", "some_error"))
+                self.assertEqual(
+                    self.util.error_messages[0],
+                    self.util.error_messages_dict[
+                        "leaderboard_schema_error"
+                    ].format("test_id", "some_error"),
+                )
 
     def test_leaderboard_addition_after_creation(self):
         self.util.yaml_file_data = {
-            "leaderboard": [{"id": "new_leaderboard_id", "schema": {"labels": ["a"], "default_order_by": "a"}}]
-        }
-        self.util.validate_leaderboards(["existing_leaderboard_id"])
-        self.assertIn("Leaderboard schema error for leaderboard with ID: new_leaderboard_id", self.util.error_messages[0])
-
-    def test_leaderboard_addition_after_creation_with_multiple_leaderboards(self):
-        self.util.yaml_file_data = {
             "leaderboard": [
-                {"id": "new_leaderboard_id1", "schema": {"labels": ["a"], "default_order_by": "a"}},
-                {"id": "new_leaderboard_id2", "schema": {"labels": ["b"], "default_order_by": "b"}}
+                {
+                    "id": "new_leaderboard_id",
+                    "schema": {"labels": ["a"], "default_order_by": "a"},
+                }
             ]
         }
         self.util.validate_leaderboards(["existing_leaderboard_id"])
-        self.assertIn("Leaderboard schema error for leaderboard with ID: new_leaderboard_id1", self.util.error_messages[0])
+        self.assertIn(
+            "Leaderboard schema error for leaderboard with ID: new_leaderboard_id",
+            self.util.error_messages[0],
+        )
+
+    def test_leaderboard_addition_after_creation_with_multiple_leaderboards(
+        self,
+    ):
+        self.util.yaml_file_data = {
+            "leaderboard": [
+                {
+                    "id": "new_leaderboard_id1",
+                    "schema": {"labels": ["a"], "default_order_by": "a"},
+                },
+                {
+                    "id": "new_leaderboard_id2",
+                    "schema": {"labels": ["b"], "default_order_by": "b"},
+                },
+            ]
+        }
+        self.util.validate_leaderboards(["existing_leaderboard_id"])
+        self.assertIn(
+            "Leaderboard schema error for leaderboard with ID: new_leaderboard_id1",
+            self.util.error_messages[0],
+        )
 
     def test_leaderboard_deletion_after_creation(self):
         self.util.yaml_file_data = {
-            "leaderboard": [{"id": "test_id", "schema": {"labels": ["a"], "default_order_by": "a"}}]
+            "leaderboard": [
+                {
+                    "id": "test_id",
+                    "schema": {"labels": ["a"], "default_order_by": "a"},
+                }
+            ]
         }
         self.util.validate_leaderboards(["test_id", "deleted_leaderboard_id"])
-        self.assertIn("Leaderboard schema error for leaderboard with ID: test_id", self.util.error_messages[0])
+        self.assertIn(
+            "Leaderboard schema error for leaderboard with ID: test_id",
+            self.util.error_messages[0],
+        )
 
     def test_missing_leaderboard_key(self):
         self.util.yaml_file_data = {}
         self.util.validate_leaderboards([])
-        self.assertEqual(self.util.error_messages[0], self.util.error_messages_dict["missing_leaderboard_key"])
+        self.assertEqual(
+            self.util.error_messages[0],
+            self.util.error_messages_dict["missing_leaderboard_key"],
+        )
 
     def test_missing_challenge_phases(self):
         self.util.yaml_file_data = {}
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Missing challenge phases.")
+        self.assertEqual(
+            self.util.error_messages[0], "Missing challenge phases."
+        )
 
     def test_no_codename_for_challenge_phase(self):
         self.util.yaml_file_data = {
             "challenge_phases": [{"name": "Phase 1", "id": 1}]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Codename is missing for challenge phase.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Codename is missing for challenge phase.",
+        )
 
     def test_no_test_annotation_file_found(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "test_annotation_file": "non_existent_file", "id": 1}]
+            "challenge_phases": [
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "test_annotation_file": "non_existent_file",
+                    "id": 1,
+                }
+            ]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "No test annotation file found for phase 'Phase 1'.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "No test annotation file found for phase 'Phase 1'.",
+        )
 
     def test_is_submission_public_restricted(self):
         self.util.yaml_file_data = {
@@ -604,46 +818,100 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                     "is_submission_public": True,
                     "is_restricted_to_select_one_submission": True,
                     "id": 1,
-                    "description": "Description 1"
+                    "description": "Description 1",
                 }
             ]
         }
         self.util.validate_challenge_phases([])
         self.assertEqual(
             self.util.error_messages[0],
-            "Submission is public but restricted to select one submission for phase 'Phase 1'."
+            "Submission is public but restricted to select one submission for phase 'Phase 1'.",
         )
 
     def test_duplicate_codename_for_phase(self):
         self.util.yaml_file_data = {
             "challenge_phases": [
-                {"codename": "phase1", "name": "Phase 1", "id": 1, "start_date": "2023-10-10T00:00:00", "end_date": "2023-10-11T00:00:00", "max_submissions_per_month": 10, "description": "Description 1"},
-                {"codename": "phase1", "name": "Phase 2", "id": 2, "start_date": "2023-10-12T00:00:00", "end_date": "2023-10-13T00:00:00", "max_submissions_per_month": 10, "description": "Description 2"}
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "id": 1,
+                    "start_date": "2023-10-10T00:00:00",
+                    "end_date": "2023-10-11T00:00:00",
+                    "max_submissions_per_month": 10,
+                    "description": "Description 1",
+                },
+                {
+                    "codename": "phase1",
+                    "name": "Phase 2",
+                    "id": 2,
+                    "start_date": "2023-10-12T00:00:00",
+                    "end_date": "2023-10-13T00:00:00",
+                    "max_submissions_per_month": 10,
+                    "description": "Description 2",
+                },
             ]
         }
         self.util.validate_challenge_phases([])
-        self.assertIn("Duplicate codename 'phase1' for phase 'Phase 2'.", self.util.error_messages)
+        self.assertIn(
+            "Duplicate codename 'phase1' for phase 'Phase 2'.",
+            self.util.error_messages,
+        )
 
     def test_missing_dates_challenge_phase(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "id": 1, "description": "Description 1"}]
+            "challenge_phases": [
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "id": 1,
+                    "description": "Description 1",
+                }
+            ]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Missing start or end date for phase '1'.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Missing start or end date for phase '1'.",
+        )
 
     def test_start_date_greater_than_end_date_challenge_phase(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "start_date": "2023-10-10", "end_date": "2023-10-09", "id": 1, "description": "Description 1"}]
+            "challenge_phases": [
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "start_date": "2023-10-10",
+                    "end_date": "2023-10-09",
+                    "id": 1,
+                    "description": "Description 1",
+                }
+            ]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Start date is greater than end date for phase '1'.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Start date is greater than end date for phase '1'.",
+        )
 
     def test_missing_option_in_submission_meta_attribute(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "id": 1, "description": "Description 1", "submission_meta_attributes": [{"name": "attr1", "type": "radio"}]}]
+            "challenge_phases": [
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "id": 1,
+                    "description": "Description 1",
+                    "submission_meta_attributes": [
+                        {"name": "attr1", "type": "radio"}
+                    ],
+                }
+            ]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Missing start or end date for phase '1'.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Missing start or end date for phase '1'.",
+        )
 
     def test_invalid_submission_meta_attribute_types(self):
         self.util.yaml_file_data = {
@@ -656,16 +924,16 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                     "start_date": "2023-10-10T00:00:00",
                     "end_date": "2023-10-11T00:00:00",
                     "submission_meta_attributes": [
-                        {
-                            "name": "attr1",
-                            "type": "invalid_type"
-                        }
-                    ]
+                        {"name": "attr1", "type": "invalid_type"}
+                    ],
                 }
             ]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Missing fields '1' in submission meta attribute for phase 'description'.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Missing fields '1' in submission meta attribute for phase 'description'.",
+        )
 
     def test_missing_fields_in_submission_meta_attribute(self):
         self.util.yaml_file_data = {
@@ -677,23 +945,34 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                     "description": "Description 1",
                     "start_date": "2023-10-10T00:00:00",
                     "end_date": "2023-10-11T00:00:00",
-                    "submission_meta_attributes": [
-                        {
-                            "type": "text"
-                        }
-                    ]
+                    "submission_meta_attributes": [{"type": "text"}],
                 }
             ]
         }
         self.util.validate_challenge_phases([])
-        self.assertEqual(self.util.error_messages[0], "Missing fields '1' in submission meta attribute for phase 'name, description'.")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Missing fields '1' in submission meta attribute for phase 'name, description'.",
+        )
 
     def test_challenge_phase_schema_errors(self):
         self.util.yaml_file_data = {
-            "challenge_phases": [{"codename": "phase1", "name": "Phase 1", "id": 1, "description": "Description 1", "start_date": "2023-10-10T00:00:00", "end_date": "2023-10-11T00:00:00", "invalid_field": "invalid_value"}]
+            "challenge_phases": [
+                {
+                    "codename": "phase1",
+                    "name": "Phase 1",
+                    "id": 1,
+                    "description": "Description 1",
+                    "start_date": "2023-10-10T00:00:00",
+                    "end_date": "2023-10-11T00:00:00",
+                    "invalid_field": "invalid_value",
+                }
+            ]
         }
         self.util.validate_challenge_phases([])
-        self.assertIn("Challenge phase schema errors: 1 - ", self.util.error_messages[0])
+        self.assertIn(
+            "Challenge phase schema errors: 1 - ", self.util.error_messages[0]
+        )
 
     def test_challenge_phase_addition(self):
         self.util.yaml_file_data = {
@@ -710,14 +989,17 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                         {
                             "name": "attr1",
                             "description": "Description 1",
-                            "type": "text"
+                            "type": "text",
                         }
                     ],
                 }
             ]
         }
         self.util.validate_challenge_phases([2])
-        self.assertEqual(self.util.error_messages[0], "Challenge phase schema errors: 9 - {'description': [ErrorDetail(string='This field may not be null.', code='null')]}")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Challenge phase schema errors: 9 - {'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
+        )
 
     def test_challenge_phase_not_found(self):
         self.util.yaml_file_data = {
@@ -734,7 +1016,7 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
                         {
                             "name": "attr1",
                             "description": "Description 1",
-                            "type": "text"
+                            "type": "text",
                         }
                     ],
                     "max_submissions_per_month": 10,
@@ -742,42 +1024,75 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
             ]
         }
         self.util.validate_challenge_phases([2])
-        self.assertEqual(self.util.error_messages[0], "Challenge phase schema errors: 3 - {'description': [ErrorDetail(string='This field may not be null.', code='null')]}")
+        self.assertEqual(
+            self.util.error_messages[0],
+            "Challenge phase schema errors: 3 - {'description': [ErrorDetail(string='This field may not be null.', code='null')]}",
+        )
 
     def test_check_tags(self):
         # Test case for more than 4 tags
-        self.util.yaml_file_data = {"tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]}
+        self.util.yaml_file_data = {
+            "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+        }
         self.util.check_tags()
-        self.assertEqual(self.util.error_messages[0], "Too many tags provided.")
+        self.assertEqual(
+            self.util.error_messages[0], "Too many tags provided."
+        )
 
     def test_check_domain(self):
         # Test case for invalid domain
         self.util.yaml_file_data = {"domain": "invalid_domain"}
         self.util.check_domain()
-        self.assertEqual(self.util.error_messages[0], "Invalid domain provided.")
+        self.assertEqual(
+            self.util.error_messages[0], "Invalid domain provided."
+        )
 
     def test_check_sponsor(self):
         # Test case for missing sponsor name or website
-        self.util.yaml_file_data = {"sponsors": [{"name": "Sponsor1"}, {"website": "http://sponsor2.com"}]}
+        self.util.yaml_file_data = {
+            "sponsors": [
+                {"name": "Sponsor1"},
+                {"website": "http://sponsor2.com"},
+            ]
+        }
         self.util.check_sponsor()
-        self.assertEqual(self.util.error_messages[0], "Sponsor name or website not found.")
+        self.assertEqual(
+            self.util.error_messages[0], "Sponsor name or website not found."
+        )
 
     def test_check_prizes(self):
         # Test case for valid prizes
-        self.util.yaml_file_data = {"prizes": [{"rank": 1, "amount": "100USD"}, {"rank": 2, "amount": "200USD"}]}
+        self.util.yaml_file_data = {
+            "prizes": [
+                {"rank": 1, "amount": "100USD"},
+                {"rank": 2, "amount": "200USD"},
+            ]
+        }
         self.util.error_messages = []  # Clear the error messages list
         self.util.check_prizes()
         self.assertEqual(len(self.util.error_messages), 0)
 
         # Test case for duplicate rank
-        self.util.yaml_file_data = {"prizes": [{"rank": 1, "amount": "100USD"}, {"rank": 1, "amount": "200USD"}]}
+        self.util.yaml_file_data = {
+            "prizes": [
+                {"rank": 1, "amount": "100USD"},
+                {"rank": 1, "amount": "200USD"},
+            ]
+        }
         self.util.error_messages = []  # Clear the error messages list
         self.util.check_prizes()
         self.assertEqual(len(self.util.error_messages), 1)
-        self.assertEqual(self.util.error_messages[0], "Duplicate rank found: 1.")
+        self.assertEqual(
+            self.util.error_messages[0], "Duplicate rank found: 1."
+        )
 
         # Test case for invalid rank
-        self.util.yaml_file_data = {"prizes": [{"rank": 0, "amount": "100USD"}, {"rank": 0, "amount": "200USD"}]}
+        self.util.yaml_file_data = {
+            "prizes": [
+                {"rank": 0, "amount": "100USD"},
+                {"rank": 0, "amount": "200USD"},
+            ]
+        }
         self.util.error_messages = []  # Clear the error messages list
         self.util.check_prizes()
         self.assertEqual(len(self.util.error_messages), 3)
@@ -786,10 +1101,16 @@ class TestValidateChallengeConfigUtil(unittest.TestCase):
         # Test case for invalid amount
         self.util.yaml_file_data = {"prizes": [{"rank": 1, "amount": "100"}]}
         self.util.check_prizes()
-        self.assertEqual(self.util.error_messages[3], "Invalid prize amount: 100.")
+        self.assertEqual(
+            self.util.error_messages[3], "Invalid prize amount: 100."
+        )
 
         # Test case for missing rank
-        self.util.yaml_file_data = {"prizes": [{"rank": 1, "amount": "100USD"}]}
+        self.util.yaml_file_data = {
+            "prizes": [{"rank": 1, "amount": "100USD"}]
+        }
         self.util.error_messages = []  # Clear the error messages list
         self.util.check_prizes()
-        self.assertEqual(len(self.util.error_messages), 0)  # No error messages expected
+        self.assertEqual(
+            len(self.util.error_messages), 0
+        )  # No error messages expected
