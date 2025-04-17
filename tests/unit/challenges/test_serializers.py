@@ -4,7 +4,6 @@ from unittest import TestCase
 from unittest.mock import MagicMock, Mock
 from unittest.mock import patch as mockpatch
 
-import mock
 import pytest
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
