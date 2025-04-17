@@ -1,8 +1,9 @@
 import base64
-import unittest
-from unittest.mock import patch, MagicMock
-from jobs.aws_utils import generate_aws_eks_bearer_token
 import re
+import unittest
+from unittest.mock import MagicMock, patch
+
+from jobs.aws_utils import generate_aws_eks_bearer_token
 
 
 class TestGenerateAWSEksBearerToken(unittest.TestCase):

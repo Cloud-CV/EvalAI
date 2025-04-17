@@ -1,10 +1,11 @@
 import os
-from challenges.models import Challenge
-import pytest
-from unittest.mock import patch, MagicMock
-from jobs.sender import publish_submission_message
+
 import botocore
-from jobs.sender import get_or_create_sqs_queue
+import pytest
+from unittest.mock import MagicMock, patch
+
+from challenges.models import Challenge
+from jobs.sender import get_or_create_sqs_queue, publish_submission_message
 
 
 @pytest.fixture

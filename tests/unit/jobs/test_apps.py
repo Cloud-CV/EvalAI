@@ -1,6 +1,8 @@
 import unittest
+
 from django.apps import apps
 from jobs.apps import JobsConfig
+
 
 
 class JobsConfigTest(unittest.TestCase):

@@ -1,8 +1,9 @@
 import pytest
 from unittest.mock import MagicMock
+
 from jobs.serializers import (
-    LeaderboardDataSerializer,
     ChallengeSubmissionManagementSerializer,
+    LeaderboardDataSerializer,
 )
 
 

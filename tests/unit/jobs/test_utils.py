@@ -1,16 +1,17 @@
+import os
 import unittest
 from unittest import TestCase, mock
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 from urllib.error import HTTPError
+
 from jobs.utils import (
-    get_leaderboard_data_model,
-    is_url_valid,
-    get_file_from_url,
-    handle_submission_rerun,
-    handle_submission_resume,
     calculate_distinct_sorted_leaderboard_data,
+    get_file_from_url,
+    get_leaderboard_data_model,
+    handle_submission_resume,
+    handle_submission_rerun,
+    is_url_valid,
 )
-import os
 
 
 class TestUtils(unittest.TestCase):
