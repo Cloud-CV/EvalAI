@@ -4,7 +4,6 @@ from django.apps import apps
 from jobs.apps import JobsConfig
 
 
-
 class JobsConfigTest(unittest.TestCase):
     def test_apps_config(self):
         self.assertEqual(JobsConfig.name, "jobs")

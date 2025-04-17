@@ -3,18 +3,16 @@ import shutil
 from datetime import timedelta
 
 from allauth.account.models import EmailAddress
+from challenges.models import Challenge, ChallengePhase
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-
 from hosts.models import ChallengeHostTeam
 from jobs.admin import SubmissionAdmin
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 from rest_framework.test import APIClient, APITestCase
-from challenges.models import Challenge, ChallengePhase
-
 
 
 class BaseAPITestClass(APITestCase):

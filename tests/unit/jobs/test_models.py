@@ -4,13 +4,11 @@ from datetime import timedelta
 
 import pytest
 import rest_framework
-
 from challenges.models import Challenge, ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils import timezone
-
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam

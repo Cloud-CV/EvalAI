@@ -8,8 +8,8 @@ from jobs.utils import (
     calculate_distinct_sorted_leaderboard_data,
     get_file_from_url,
     get_leaderboard_data_model,
-    handle_submission_resume,
     handle_submission_rerun,
+    handle_submission_resume,
     is_url_valid,
 )
 
