@@ -162,15 +162,16 @@
             authenticate: true
         };
 
-        var host_team_invitation = {
-            name: "host-team-invitation",
-            url: "/api/hosts/accept-invitation/:invitationKey",
-            controller: "ChallengeHostInvitationAcceptCtrl",
-            controllerAs: "host_invitation",
-            templateUrl: baseUrl + "/web/host-team-invite.html",
+        var accept_host_invitation = {
+            name: 'accept-invitation',
+            url: '/accept-invitation/:invitation_key', 
+            templateUrl: baseUrl + "/web/host-team-invite-accept.html", 
+            controller: 'ChallengeHostTeamInvitationAcceptCtrl',
+            controllerAs: 'inviteAccept',
             title: "Accept Host Team Invitation",
-            authenticate: true        
+            authenticate: false
         };
+        
         
 
         var challenge_create = {
@@ -465,15 +466,6 @@
             authenticate: true
         };
 
-        var accept_host_invitation = {
-            name: 'accept-host-invitation',
-            url: '/hosts/accept-invitation/:invitation_key',
-            templateUrl: 'dist/views/web/host-team-invite-accept.html',
-            controller: 'ChallengeHostTeamInvitationAcceptCtrl',
-            controllerAs: 'inviteAccept',
-            authenticate: true
-        };
-
 
         var permission_denied = {
             name: "web.permission-denied",
@@ -676,7 +668,6 @@
         $stateProvider.state(featured_challenge_phase_leaderboard);
 
         $stateProvider.state(host_challenge);
-        $stateProvider.state(host_team_invitation);
         $stateProvider.state(accept_host_invitation);
 
         $stateProvider.state(profile);

@@ -2,10 +2,12 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
 from django.conf import settings
 from .utils import is_user_part_of_host_team
+from django.urls import reverse
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -458,8 +460,8 @@ def accept_host_invitation(request, invitation_key):
             {
                 'team_name': team.team_name,
                 'user_name': request.user.username,
-                'site_url': settings.SITE_URL if hasattr(settings, 'SITE_URL') else request.build_absolute_uri('/').rstrip('/'),
-            }
+                'site_url': request.build_absolute_uri('/').rstrip('/')            
+                }
         )
         
         send_mail(
@@ -476,18 +478,16 @@ def accept_host_invitation(request, invitation_key):
         )
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def invitation_redirect(request, invitation_key):
     """
     Redirect to login page if user is not authenticated
     """
     if not request.user.is_authenticated:
-        # Store the invitation key in the session for later retrieval
         request.session['pending_invitation_key'] = invitation_key
-        # Return a response that frontend can use to redirect
         return Response(
             {"redirect": True, "login_required": True},
             status=status.HTTP_401_UNAUTHORIZED
         )
-    
-    # If user is authenticated, proceed with the invitation acceptance flow
+
     return accept_host_invitation(request, invitation_key)
