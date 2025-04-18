@@ -50,6 +50,11 @@ urlpatterns = [
         name="get_all_challenges_submission_metrics",
     ),
     url(
+        r"^challenge/get_submission_metrics_by_pk/(?P<pk>[0-9]+)/$",
+        views.get_challenge_submission_metrics_by_pk,
+        name="get_challenge_submission_metrics_by_pk",
+    ),
+    url(
         r"^challenges/participated/(?P<challenge_time>[A-Za-z]+)/$",
         views.get_all_participated_challenges,
         name="get_all_participated_challenges",
@@ -308,7 +313,7 @@ urlpatterns = [
         r"^challenge/modify_leaderboard_data/$",
         views.modify_leaderboard_data,
         name="modify_leaderboard_data",
-    )
+    ),
 ]
 
 app_name = "challenges"

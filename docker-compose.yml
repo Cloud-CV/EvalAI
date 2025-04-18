@@ -1,9 +1,10 @@
-version: "3"
 services:
   db:
-    image: postgres:10.4
+    image: postgres:16.8
     ports:
       - "5432:5432"
+    env_file:
+      - docker/dev/docker.env
 
   sqs:
     image: softwaremill/elasticmq
@@ -23,7 +24,6 @@ services:
     depends_on:
       - db
       - sqs
-      - statsd-exporter
     volumes:
       - .:/code
 
@@ -37,6 +37,8 @@ services:
       - django
     volumes:
       - .:/code
+    profiles:
+      - worker # Only built when this profile is specified
 
   worker_py3_8:
     env_file:
@@ -48,6 +50,8 @@ services:
       - django
     volumes:
       - .:/code
+    profiles:
+      - worker # Only built when this profile is specified
 
   nodejs:
     hostname: nodejs
@@ -73,3 +77,5 @@ services:
     ports:
       - '9125:9125'
       - '9102:9102'
+    profiles:
+      - statsd # Only built when this profile is specified

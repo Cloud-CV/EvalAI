@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0093_manual_participant_approval'),
+        ("challenges", "0093_manual_participant_approval"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='allow_participants_resubmissions',
+            model_name="challenge",
+            name="allow_participants_resubmissions",
             field=models.BooleanField(default=False),
         ),
     ]

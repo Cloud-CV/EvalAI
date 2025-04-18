@@ -10,8 +10,9 @@ from kubernetes import client
 
 # TODO: Add exception in all the commands
 from kubernetes.client.rest import ApiException
-from statsd_utils import increment_and_push_metrics_to_statsd
-from worker_utils import EvalAI_Interface
+
+from .statsd_utils import increment_and_push_metrics_to_statsd
+from .worker_utils import EvalAI_Interface
 
 
 class GracefulKiller:
@@ -252,9 +253,7 @@ def create_job_object(message, environment_image, challenge):
             MESSAGE_BODY_ENV,
             SUBMISSION_TIME_LIMIT_ENV,
         ],
-        resources=client.V1ResourceRequirements(
-            limits=job_constraints
-        ),
+        resources=client.V1ResourceRequirements(limits=job_constraints),
         volume_mounts=volume_mount_list,
     )
     volume_list = get_volume_list()
@@ -349,9 +348,7 @@ def create_static_code_upload_submission_job_object(message, challenge):
             CHALLENGE_PK_ENV,
             PHASE_PK_ENV,
         ],
-        resources=client.V1ResourceRequirements(
-            limits=job_constraints
-        ),
+        resources=client.V1ResourceRequirements(limits=job_constraints),
         volume_mounts=volume_mount_list,
     )
     # Configure Pod sidecar container
@@ -382,7 +379,7 @@ def create_static_code_upload_submission_job_object(message, challenge):
             init_containers=[init_container],
             containers=[sidecar_container, submission_container],
             restart_policy="Never",
-            termination_grace_period_seconds=360,
+            termination_grace_period_seconds=600,
             volumes=volume_list,
         ),
     )
@@ -428,7 +425,9 @@ def delete_job(api_instance, job_name):
     logger.info("Job deleted with status='%s'" % str(api_response.status))
 
 
-def process_submission_callback(api_instance, body, challenge_phase, challenge, evalai):
+def process_submission_callback(
+    api_instance, body, challenge_phase, challenge, evalai
+):
     """Function to process submission message from SQS Queue
 
     Arguments:
@@ -438,7 +437,9 @@ def process_submission_callback(api_instance, body, challenge_phase, challenge, 
     try:
         logger.info("[x] Received submission message %s" % body)
         if body.get("is_static_dataset_code_upload_submission"):
-            job = create_static_code_upload_submission_job_object(body, challenge)
+            job = create_static_code_upload_submission_job_object(
+                body, challenge
+            )
         else:
             environment_image = challenge_phase.get("environment_image")
             job = create_job_object(body, environment_image, challenge)
@@ -592,28 +593,37 @@ def update_failed_jobs_and_send_logs(
     message,
     queue_name,
     is_remote,
-    disable_logs
+    disable_logs,
 ):
     clean_submission = False
     code_upload_environment_error = "Submission Job Failed."
     submission_error = "Submission Job Failed."
     try:
-        pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
+        pods_list = get_pods_from_job(
+            api_instance, core_v1_api_instance, job_name
+        )
         if pods_list:
             if disable_logs:
                 code_upload_environment_error = None
                 submission_error = None
             else:
-                # Prevents monitoring when Job created with pending pods state (not assigned to node)
+                # Prevents monitoring when Job created with pending pods state
+                # (not assigned to node)
                 if pods_list.items[0].status.container_statuses:
                     container_state_map = {}
-                    for container in pods_list.items[0].status.container_statuses:
+                    for container in pods_list.items[
+                        0
+                    ].status.container_statuses:
                         container_state_map[container.name] = container.state
                     for (
                         container_name,
                         container_state,
                     ) in container_state_map.items():
-                        if container_name in ["agent", "submission", "environment"]:
+                        if container_name in [
+                            "agent",
+                            "submission",
+                            "environment",
+                        ]:
                             if container_state.terminated is not None:
                                 pod_name = pods_list.items[0].metadata.name
                                 try:
@@ -677,7 +687,8 @@ def install_gpu_drivers(api_instance):
         api_instance {[AWS EKS API object]} -- API object for creating deamonset
     """
     logging.info("Installing Nvidia-GPU Drivers ...")
-    # Original manifest source: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+    # Original manifest source:
+    # https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
     manifest_path = "/code/scripts/workers/code_upload_worker_utils/nvidia-device-plugin.yml"
     logging.info("Using daemonset file: %s", manifest_path)
     nvidia_manifest = open(manifest_path).read()
@@ -754,7 +765,9 @@ def main():
             submission_pk = message_body.get("submission_pk")
             challenge_pk = message_body.get("challenge_pk")
             phase_pk = message_body.get("phase_pk")
-            challenge_phase = evalai.get_challenge_phase_by_pk(challenge_pk, phase_pk)
+            challenge_phase = evalai.get_challenge_phase_by_pk(
+                challenge_pk, phase_pk
+            )
             disable_logs = challenge_phase.get("disable_logs")
             submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
@@ -764,7 +777,8 @@ def main():
                     or submission.get("status") == "cancelled"
                 ):
                     try:
-                        # Fetch the last job name from the list as it is the latest running job
+                        # Fetch the last job name from the list as it is the
+                        # latest running job
                         job_name = submission.get("job_name")
                         message_receipt_handle = message.get("receipt_handle")
                         if job_name:
@@ -773,7 +787,9 @@ def main():
                         else:
                             logger.info(
                                 "No job name found corresponding to submission: {} with status: {}."
-                                "Deleting it from queue.".format(submission_pk, submission.get("status"))
+                                "Deleting it from queue.".format(
+                                    submission_pk, submission.get("status")
+                                )
                             )
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
@@ -785,7 +801,8 @@ def main():
                         logger.exception(
                             "Failed to delete submission job: {}".format(e)
                         )
-                        # Delete message from sqs queue to avoid re-triggering job delete
+                        # Delete message from sqs queue to avoid re-triggering
+                        # job delete
                         evalai.delete_message_from_sqs_queue(
                             message_receipt_handle
                         )
@@ -794,15 +811,22 @@ def main():
                         )
                 elif submission.get("status") == "queued":
                     job_name = submission.get("job_name")[-1]
-                    pods_list = get_pods_from_job(api_instance, core_v1_api_instance, job_name)
-                    if pods_list and pods_list.items[0].status.container_statuses:
+                    pods_list = get_pods_from_job(
+                        api_instance, core_v1_api_instance, job_name
+                    )
+                    if (
+                        pods_list
+                        and pods_list.items[0].status.container_statuses
+                    ):
                         # Update submission to running
                         submission_data = {
                             "submission_status": "running",
                             "submission": submission_pk,
                             "job_name": job_name,
                         }
-                        evalai.update_submission_status(submission_data, challenge_pk)
+                        evalai.update_submission_status(
+                            submission_data, challenge_pk
+                        )
                 elif submission.get("status") == "running":
                     job_name = submission.get("job_name")[-1]
                     update_failed_jobs_and_send_logs(
@@ -826,7 +850,11 @@ def main():
                         challenge_pk, phase_pk
                     )
                     process_submission_callback(
-                        api_instance, message_body, challenge_phase, challenge, evalai
+                        api_instance,
+                        message_body,
+                        challenge_phase,
+                        challenge,
+                        evalai,
                     )
 
         if killer.kill_now:

@@ -1,8 +1,9 @@
 import os
-import pytz
 import warnings
-import boto3
 from datetime import datetime
+
+import boto3
+import pytz
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 
@@ -35,10 +36,14 @@ def get_pending_submission_count(challenge_metrics):
 
 
 def stop_instance(challenge, evalai_interface):
-    instance_details = evalai_interface.get_ec2_instance_details(challenge["id"])
+    instance_details = evalai_interface.get_ec2_instance_details(
+        challenge["id"]
+    )
     instance = instance_details["message"]
     if instance["State"]["Name"] == "running":
-        response = evalai_interface.stop_challenge_ec2_instance(challenge["id"])
+        response = evalai_interface.stop_challenge_ec2_instance(
+            challenge["id"]
+        )
         print("AWS API Response: {}".format(response))
         print(
             "Stopped EC2 instance for Challenge ID: {}, Title: {}".format(
@@ -54,10 +59,14 @@ def stop_instance(challenge, evalai_interface):
 
 
 def start_instance(challenge, evalai_interface):
-    instance_details = evalai_interface.get_ec2_instance_details(challenge["id"])
+    instance_details = evalai_interface.get_ec2_instance_details(
+        challenge["id"]
+    )
     instance = instance_details["message"]
     if instance["State"]["Name"] == "stopped":
-        response = evalai_interface.start_challenge_ec2_instance(challenge["id"])
+        response = evalai_interface.start_challenge_ec2_instance(
+            challenge["id"]
+        )
         print("AWS API Response: {}".format(response))
         print(
             "Started EC2 instance for Challenge ID: {}, Title: {}.".format(
@@ -72,18 +81,28 @@ def start_instance(challenge, evalai_interface):
         )
 
 
-def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
+def start_or_stop_workers(challenge, evalai_interface):
     try:
+        challenge_metrics = (
+            evalai_interface.get_challenge_submission_metrics_by_pk(
+                challenge["id"]
+            )
+        )
         pending_submissions = get_pending_submission_count(challenge_metrics)
-    except Exception:  # noqa: F841
+    except Exception as e:  # noqa: F841
         print(
             "Unable to get the pending submissions for challenge ID: {}, Title: {}. Skipping.".format(
                 challenge["id"], challenge["title"]
             )
         )
+        print(e)
         return
 
-    print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(pending_submissions, challenge["id"], challenge["title"]))
+    print(
+        "Pending Submissions: {}, Challenge PK: {}, Title: {}".format(
+            pending_submissions, challenge["id"], challenge["title"]
+        )
+    )
 
     if pending_submissions == 0 or parse(
         challenge["end_date"]
@@ -94,11 +113,11 @@ def start_or_stop_workers(challenge, challenge_metrics, evalai_interface):
 
 
 # TODO: Factor in limits for the APIs
-def start_or_stop_workers_for_challenges(response, metrics, evalai_interface):
+def start_or_stop_workers_for_challenges(response, evalai_interface):
     for challenge in response["results"]:
         if challenge["uses_ec2_worker"]:
             try:
-                start_or_stop_workers(challenge, metrics[str(challenge["id"])], evalai_interface)
+                start_or_stop_workers(challenge, evalai_interface)
             except Exception as e:
                 print(e)
 
@@ -112,12 +131,11 @@ def create_evalai_interface(auth_token, evalai_endpoint):
 def start_job():
     evalai_interface = create_evalai_interface(auth_token, evalai_endpoint)
     response = evalai_interface.get_challenges()
-    metrics = evalai_interface.get_challenges_submission_metrics()
-    start_or_stop_workers_for_challenges(response, metrics, evalai_interface)
+    start_or_stop_workers_for_challenges(response, evalai_interface)
     next_page = response["next"]
     while next_page is not None:
         response = evalai_interface.make_request(next_page, "GET")
-        start_or_stop_workers_for_challenges(response, metrics, evalai_interface)
+        start_or_stop_workers_for_challenges(response, evalai_interface)
         next_page = response["next"]
 
 
