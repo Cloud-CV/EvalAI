@@ -1,7 +1,12 @@
 from datetime import timedelta
+from unittest.mock import MagicMock
+from unittest.mock import patch as mockpatch
 
 import mock
 from allauth.account.models import EmailAddress
+from challenges.challenge_notification_util import (
+    construct_and_send_eks_cluster_creation_mail,
+)
 from challenges.models import Challenge, ChallengePhase
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -120,3 +125,36 @@ class TestChallengeStartNotifier(BaseTestClass):
 
         mock_start_workers.assert_called_with([self.challenge])
         self.assertEqual(mock_send_email.call_args_list, calls)
+
+
+class TestUnittestChallengeNotification(BaseTestClass):
+    @mockpatch("challenges.challenge_notification_util.send_email")
+    @mockpatch("challenges.challenge_notification_util.settings")
+    def test_construct_and_send_eks_cluster_creation_mail(
+        self, mock_settings, mock_send_email
+    ):
+        # Mock challenge object
+        mock_challenge = MagicMock()
+        mock_challenge.title = "Test Challenge"
+        mock_challenge.image = None
+
+        # Set settings.DEBUG to False
+        mock_settings.DEBUG = False
+
+        # Call the function
+        mock_settings.configure_mock(
+            ADMIN_EMAIL="admin@cloudcv.org",
+            CLOUDCV_TEAM_EMAIL="team@cloudcv.org",
+            SENDGRID_SETTINGS={
+                "TEMPLATES": {"CLUSTER_CREATION_TEMPLATE": "template-id"}
+            },
+        )
+        construct_and_send_eks_cluster_creation_mail(mock_challenge)
+
+        # Assert send_email was called with correct arguments
+        mock_send_email.assert_called_once_with(
+            sender="team@cloudcv.org",
+            recipient="admin@cloudcv.org",
+            template_id="template-id",
+            template_data={"CHALLENGE_NAME": "Test Challenge"},
+        )
