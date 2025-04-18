@@ -48,7 +48,7 @@ from settings.common import SQS_RETENTION_PERIOD  # noqa:E402
 
 from .statsd_utils import increment_and_push_metrics_to_statsd  # noqa:E402
 
-# all challenge and submissions will be stored in temp directory
+# all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp(prefix="tmp")
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
