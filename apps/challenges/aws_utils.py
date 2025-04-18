@@ -14,6 +14,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.files.temp import NamedTemporaryFile
 from django.utils import timezone
+
 from evalai.celery import app
 
 from .challenge_notification_util import (
