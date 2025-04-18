@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 
-class ChallengePhaseSubmissionAnalytics(object):
+class ChallengePhaseSubmissionAnalytics:
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         total_submissions,
@@ -25,7 +26,7 @@ class ChallengePhaseSubmissionAnalyticsSerializer(serializers.Serializer):
     challenge_phase = serializers.IntegerField()
 
 
-class ChallengePhaseSubmissionCount(object):
+class ChallengePhaseSubmissionCount:
     def __init__(self, participant_team_submission_count, challenge_phase_pk):
         self.participant_team_submission_count = (
             participant_team_submission_count
@@ -38,7 +39,7 @@ class ChallengePhaseSubmissionCountSerializer(serializers.Serializer):
     challenge_phase = serializers.IntegerField()
 
 
-class LastSubmissionTimestamp(object):
+class LastSubmissionTimestamp:
     def __init__(
         self,
         last_submission_timestamp_in_challenge,
