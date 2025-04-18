@@ -1,7 +1,7 @@
-from django.test import TestCase
-from allauth.account.models import EmailAddress
 from accounts.models import User
 from accounts.permissions import HasVerifiedEmail
+from allauth.account.models import EmailAddress
+from django.test import TestCase
 
 
 class TestHasVerifiedEmailPermission(TestCase):

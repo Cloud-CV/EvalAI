@@ -1,6 +1,7 @@
 import unittest
-from django.apps import AppConfig
+
 from accounts.apps import AccountsConfig
+from django.apps import AppConfig
 
 
 class TestAccountsConfig(unittest.TestCase):

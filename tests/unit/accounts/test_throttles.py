@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
-from django.test import TestCase
+
 from accounts.throttles import ResendEmailThrottle
+from django.test import TestCase
 
 
 class TestResendEmailThrottle(TestCase):
