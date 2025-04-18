@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0111_alter_challenge_ephemeral_storage_default'),
+        ("challenges", "0111_alter_challenge_ephemeral_storage_default"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='sqs_retention_period',
-            field=models.PositiveIntegerField(default=345600, verbose_name='SQS Retention Period'),
+            model_name="challenge",
+            name="sqs_retention_period",
+            field=models.PositiveIntegerField(
+                default=345600, verbose_name="SQS Retention Period"
+            ),
         ),
     ]
