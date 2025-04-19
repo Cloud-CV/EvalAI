@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import ChallengeHost, ChallengeHostTeam
+from .models import ChallengeHost, ChallengeHostTeam, ChallengeHostTeamInvitation
 
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
@@ -91,3 +91,20 @@ class HostTeamDetailSerializer(serializers.ModelSerializer):
         hosts = ChallengeHost.objects.filter(team_name_id=obj.id)
         serializer = ChallengeHostSerializer(hosts, many=True)
         return serializer.data
+
+class ChallengeHostTeamInvitationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for team invitation model
+    """
+    
+    class Meta:
+        model = ChallengeHostTeamInvitation
+        fields = ('id', 'email', 'invitation_key', 'status', 'team', 'invited_by',
+                  'created_at')
+        read_only_fields = ('invitation_key', 'invited_by', 'status')
+    
+    def get_challenge_host_team_name(self, obj):
+        return obj.challenge_host_team.team_name
+    
+    def get_invited_by_username(self, obj):
+        return obj.invited_by.username

@@ -1,6 +1,8 @@
 from django.conf.urls import url
 
 from . import views
+from django.views.generic import TemplateView
+
 
 urlpatterns = [
     url(
@@ -38,6 +40,8 @@ urlpatterns = [
         views.invite_host_to_team,
         name="invite_host_to_team",
     ),
-]
+    url(r'^team/invite/$', views.invite_user_to_team, name='invite_user_to_team'),
+    url(r'^team-invitation/(?P<invitation_key>[\w-]+)/$', views.accept_host_invitation, name='accept_host_invitation'),
 
+]
 app_name = "hosts"

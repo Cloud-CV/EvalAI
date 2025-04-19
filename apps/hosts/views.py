@@ -1,7 +1,14 @@
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
+from django.conf import settings
+from .utils import is_user_part_of_host_team
+from django.shortcuts import redirect
+from django.core.mail import send_mail
+from urllib.parse import urlencode
+from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -16,14 +23,15 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .filters import HostTeamsFilter
-from .models import ChallengeHost, ChallengeHostTeam
+from .models import ChallengeHost, ChallengeHostTeam, ChallengeHostTeamInvitation
 from .serializers import (
     ChallengeHostSerializer,
     ChallengeHostTeamSerializer,
     HostTeamDetailSerializer,
     InviteHostToTeamSerializer,
+    ChallengeHostTeamInvitationSerializer
 )
-from .utils import is_user_part_of_host_team
+
 
 get_challenge_host_model = get_model_object(ChallengeHost)
 
@@ -307,3 +315,180 @@ def invite_host_to_team(request, pk):
         }
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated,))
+def invite_user_to_team(request):
+    """
+    Invite a user to join a host team
+    """
+    email = request.data.get('email')
+    team_id = request.data.get('team_id')
+    
+    if not email or not team_id:
+        return Response(
+            {"error": "Email and team_id are required fields"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        team = ChallengeHostTeam.objects.get(pk=team_id)
+    except ChallengeHostTeam.DoesNotExist:
+        return Response(
+            {"error": "Host team does not exist"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Check if the user has permission to invite to this team
+    if not is_user_part_of_host_team(request.user, team):
+        return Response(
+            {"error": "You are not authorized to invite users to this team"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Check if the invited user exists on EvalAI
+    if not User.objects.filter(email=email).exists():
+        return Response(
+            {"error": "User with this email is not registered on EvalAI"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    invited_user = User.objects.get(email=email)
+    
+    # Check if user is already a member
+    if ChallengeHost.objects.filter(user=invited_user, team_name=team).exists():
+        return Response(
+            {"error": "User is already a member of this team"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if there's already a pending invitation
+    existing_invitation = ChallengeHostTeamInvitation.objects.filter(
+        email=email, team=team, status='pending'
+    ).first()
+    
+    if existing_invitation:
+        # Resend the invitation email
+        invitation = existing_invitation
+    else:
+        # Create a new invitation using serializer
+        serializer = ChallengeHostTeamInvitationSerializer(data={
+            'email': email,
+            'team': team.id
+        })
+        if serializer.is_valid():
+            invitation = serializer.save(invited_by=request.user)
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    if hasattr(request, '_request'):
+        # Access the underlying HttpRequest
+        http_request = request._request
+    else:
+        # Already an HttpRequest
+        http_request = request
+   
+    invitation_url = f"{settings.FRONTEND_URL}/web/team-invitation/{invitation.invitation_key}"
+
+    email_subject = f"Invitation to join {team.team_name} on EvalAI"
+    email_body = render_to_string(
+        'hosts/email/invitation_email.html',
+        {
+            'team_name': team.team_name,
+            'invitation_url': invitation_url,
+            'inviter_name': request.user.username,
+        }
+    )
+    
+    send_mail(
+        email_subject,
+        email_body,
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        fail_silently=False,
+    )
+    
+    # Return serialized invitation data
+    serializer = ChallengeHostTeamInvitationSerializer(invitation)
+    return Response(
+        {
+            "message": f"Invitation sent to {email}",
+            "invitation": serializer.data
+        },
+        status=status.HTTP_201_CREATED
+    )
+
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.IsAuthenticated,JWTAuthentication))
+def accept_host_invitation(request, invitation_key):
+    """
+    Get invitation details or accept an invitation to join a host team
+    """
+    try:
+        invitation = ChallengeHostTeamInvitation.objects.get(
+            invitation_key=invitation_key,
+            status='pending'
+        )
+    except ChallengeHostTeamInvitation.DoesNotExist:
+        return Response(
+            {"error": "Invalid or expired invitation"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Verify the authenticated user is the same as the invited email
+    if request.user.email != invitation.email:
+        return Response(
+            {"error": "This invitation was sent to a different email address"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if request.method == 'GET':
+        # Return serialized invitation details
+        serializer = ChallengeHostTeamInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        # Accept the invitation
+        invitation.status = 'accepted'
+        invitation.save()
+        
+        # Add user to the team
+        team = invitation.team
+        ChallengeHost.objects.create(
+            user=request.user,
+            team_name=team,
+            status='Accepted',
+            permissions='Admin'
+        )
+        
+        # Send notification email to inviter
+        email_subject = f"{request.user.username} has accepted your invitation to {team.team_name}"
+        email_body = render_to_string(
+            'hosts/email/invitation_accepted_email.html',
+            {
+                'team_name': team.team_name,
+                'user_name': request.user.username,
+                'site_url': request.build_absolute_uri('/').rstrip('/')            
+                }
+        )
+        
+        send_mail(
+            email_subject,
+            email_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [invitation.invited_by.email],
+            fail_silently=False,
+        )
+        
+        # Return serialized invitation data
+        serializer = ChallengeHostTeamInvitationSerializer(invitation)
+        return Response(
+            {
+                "message": f"You have successfully joined {team.team_name}",
+                "invitation": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )

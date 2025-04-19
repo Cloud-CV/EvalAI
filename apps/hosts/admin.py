@@ -1,7 +1,7 @@
 from base.admin import ImportExportTimeStampedAdmin
 from django.contrib import admin
 
-from .models import ChallengeHost, ChallengeHostTeam
+from .models import ChallengeHost, ChallengeHostTeam, ChallengeHostTeamInvitation
 
 
 @admin.register(ChallengeHostTeam)
