@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 # submission.pk is not available when saving input_file
 # OutCome: `input_file` was saved for submission in folder named `submission_None`
 # why is the hack not done for `stdout_file` and `stderr_file`
-# Because they will be saved only after a submission instance is saved(pk will be available)
+# Because they will be saved only after a submission instance is saved(pk
+# will be available)
 
 
 @receiver(pre_save, sender="jobs.Submission")
@@ -95,7 +96,8 @@ class Submission(TimeStampedModel):
         null=True,
         blank=True,
     )
-    # Model to store large submission file (> 400 MB's) URLs submitted by the user
+    # Model to store large submission file (> 400 MB's) URLs submitted by the
+    # user
     input_file_url = models.URLField(max_length=1000, null=True, blank=True)
     stdout_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"),
