@@ -2,8 +2,9 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
 from django.conf import settings
 from .utils import is_user_part_of_host_team
-from django.urls import reverse
+from django.shortcuts import redirect
 from django.core.mail import send_mail
+from urllib.parse import urlencode
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from rest_framework import permissions, status
@@ -28,6 +29,7 @@ from .serializers import (
     ChallengeHostTeamSerializer,
     HostTeamDetailSerializer,
     InviteHostToTeamSerializer,
+    ChallengeHostTeamInvitationSerializer
 )
 
 
@@ -369,19 +371,28 @@ def invite_user_to_team(request):
         # Resend the invitation email
         invitation = existing_invitation
     else:
-        # Create a new invitation
-        invitation = ChallengeHostTeamInvitation(
-            email=email,
-            team=team,
-            invited_by=request.user
-        )
-        invitation.save()
+        # Create a new invitation using serializer
+        serializer = ChallengeHostTeamInvitationSerializer(data={
+            'email': email,
+            'team': team.id
+        })
+        if serializer.is_valid():
+            invitation = serializer.save(invited_by=request.user)
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
-    # Send invitation email
-    site_url = settings.SITE_URL if hasattr(settings, 'SITE_URL') else request.build_absolute_uri('/').rstrip('/')
-    invitation_url = f"{site_url}/api/hosts/invitation/{invitation.invitation_key}/"
+    if hasattr(request, '_request'):
+        # Access the underlying HttpRequest
+        http_request = request._request
+    else:
+        # Already an HttpRequest
+        http_request = request
+   
+    invitation_url = f"{settings.FRONTEND_URL}/web/team-invitation/{invitation.invitation_key}"
 
-    
     email_subject = f"Invitation to join {team.team_name} on EvalAI"
     email_body = render_to_string(
         'hosts/email/invitation_email.html',
@@ -400,13 +411,18 @@ def invite_user_to_team(request):
         fail_silently=False,
     )
     
+    # Return serialized invitation data
+    serializer = ChallengeHostTeamInvitationSerializer(invitation)
     return Response(
-        {"message": f"Invitation sent to {email}"},
+        {
+            "message": f"Invitation sent to {email}",
+            "invitation": serializer.data
+        },
         status=status.HTTP_201_CREATED
     )
 
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated,JWTAuthentication))
 def accept_host_invitation(request, invitation_key):
     """
     Get invitation details or accept an invitation to join a host team
@@ -430,14 +446,9 @@ def accept_host_invitation(request, invitation_key):
         )
     
     if request.method == 'GET':
-        # Return invitation details for the confirmation page
-        data = {
-            "invitation_key": invitation_key,
-            "team_name": invitation.team.team_name,
-            "invited_by": invitation.invited_by.username,
-            "email": invitation.email
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        # Return serialized invitation details
+        serializer = ChallengeHostTeamInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'POST':
         # Accept the invitation
@@ -472,22 +483,12 @@ def accept_host_invitation(request, invitation_key):
             fail_silently=False,
         )
         
+        # Return serialized invitation data
+        serializer = ChallengeHostTeamInvitationSerializer(invitation)
         return Response(
-            {"message": f"You have successfully joined {team.team_name}"},
+            {
+                "message": f"You have successfully joined {team.team_name}",
+                "invitation": serializer.data
+            },
             status=status.HTTP_200_OK
         )
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def invitation_redirect(request, invitation_key):
-    """
-    Redirect to login page if user is not authenticated
-    """
-    if not request.user.is_authenticated:
-        request.session['pending_invitation_key'] = invitation_key
-        return Response(
-            {"redirect": True, "login_required": True},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-
-    return accept_host_invitation(request, invitation_key)

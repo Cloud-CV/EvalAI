@@ -163,15 +163,17 @@
         };
 
         var accept_host_invitation = {
-            name: 'accept-invitation',
-            url: '/accept-invitation/:invitation_key', 
-            templateUrl: baseUrl + "/web/host-team-invite-accept.html", 
-            controller: 'ChallengeHostTeamInvitationAcceptCtrl',
+            name: 'web.challenge-host-team-invitation-accept',
+            parent: "web",
+            url: '/team-invitation/:invitation_key',
+            templateUrl: baseUrl + '/web/host-team-invite-accept.html',
+            title: 'Accept Host Team Invitation',
+            controller: 'challengeHostTeamInvitationAcceptCtrl',
             controllerAs: 'inviteAccept',
-            title: "Accept Host Team Invitation",
-            authenticate: false
+            authenticate: true
         };
-        
+                
+
         
 
         var challenge_create = {

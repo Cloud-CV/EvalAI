@@ -93,17 +93,18 @@ class HostTeamDetailSerializer(serializers.ModelSerializer):
         return serializer.data
 
 class ChallengeHostTeamInvitationSerializer(serializers.ModelSerializer):
-    invited_by_username = serializers.SerializerMethodField()
-    team_name = serializers.SerializerMethodField()
+    """
+    Serializer for team invitation model
+    """
     
     class Meta:
         model = ChallengeHostTeamInvitation
-        fields = ('id', 'email', 'team', 'team_name', 'invited_by', 
-                  'invited_by_username', 'status', 'created_at')
-        read_only_fields = ('invitation_key',)
+        fields = ('id', 'email', 'invitation_key', 'status', 'team', 'invited_by',
+                  'created_at')
+        read_only_fields = ('invitation_key', 'invited_by', 'status')
+    
+    def get_challenge_host_team_name(self, obj):
+        return obj.challenge_host_team.team_name
     
     def get_invited_by_username(self, obj):
         return obj.invited_by.username
-    
-    def get_team_name(self, obj):
-        return obj.team.team_name

@@ -17,6 +17,8 @@ Including another URLconf
 from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls import include, url
+from django.urls import re_path
+
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.views.generic.base import TemplateView
@@ -90,6 +92,8 @@ urlpatterns = [
         schema_view.with_ui("redoc", cache_timeout=0),
         name="schema-redoc",
     ),
+    url(r'^(?!api/|admin/).*$', TemplateView.as_view(template_name="base.html"), name="frontend")
+
 ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.

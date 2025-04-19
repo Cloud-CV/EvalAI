@@ -221,67 +221,51 @@
         // Function to login
         vm.userLogin = function(loginFormValid) {
             if (loginFormValid) {
-              vm.startLoader("Taking you to EvalAI!");
-          
-              var parameters = {
-                url:    'auth/login/',
-                method: 'POST',
-                data: {
-                  username: vm.getUser.name,
-                  password: vm.getUser.password
-                },
-                callback: {
-                  onSuccess: function(response) {
-                    if (response.status === 200) {
-                      // 1) store the token
-                      utilities.storeData('userKey', response.data.token);
-                      vm.setRefreshJWT();
-          
-                      // 2) see if we were here from an invitation
-                      var pendingInvitationKey = sessionStorage.getItem('pendingInvitationKey');
-                      if (pendingInvitationKey) {
-                        // clear it so we don’t use it again
-                        sessionStorage.removeItem('pendingInvitationKey');
-                        // jump right back into the invite‑accept flow
-                        $state.go('accept-invitation', {
-                          invitation_key: pendingInvitationKey
-                        });
+                vm.startLoader("Taking you to EvalAI!");
+                // call utility service
+                var parameters = {};
+                parameters.url = 'auth/login/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "username": vm.getUser.name,
+                    "password": vm.getUser.password,
+                };
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        if (response.status == 200) {
+                            utilities.storeData('userKey', response.data.token);
+                            vm.setRefreshJWT();
+                            if ($rootScope.previousState) {
+                                $state.go($rootScope.previousState);
+                                vm.stopLoader();
+                            } else {
+                                $state.go('web.dashboard');
+                            }
+                        } else {
+                            alert("Something went wrong");
+                        }
+                    },
+                    onError: function(response) {
+                        if (response.status == 400) {
+                            vm.isFormError = true;
+                            var non_field_errors;
+                            try {
+                                non_field_errors = typeof(response.data.non_field_errors) !== 'undefined' ? true : false;
+                                if (non_field_errors) {
+                                    vm.FormError = response.data.non_field_errors[0];
+                                }
+                            } catch (error) {
+                                $rootScope.notify("error", error);
+                            }
+                        }
                         vm.stopLoader();
-                        return;  // short‑circuit the normal post-login flow
-                      }
-          
-                      // 3) no invite pending → normal redirect
-                      if ($rootScope.previousState) {
-                        $state.go($rootScope.previousState);
-                      } else {
-                        $state.go('web.dashboard');
-                      }
-                      vm.stopLoader();
-          
-                    } else {
-                      alert("Something went wrong");
-                      vm.stopLoader();
                     }
-                  },
-                  onError: function(response) {
-                    if (response.status === 400) {
-                      vm.isFormError = true;
-                      var non_field_errors = response.data.non_field_errors;
-                      if (non_field_errors) {
-                        vm.FormError = non_field_errors[0];
-                      }
-                    }
-                    vm.stopLoader();
-                  }
-                }
-              };
-          
-              utilities.sendRequest(parameters, "no-header");
+                };
+                utilities.sendRequest(parameters, "no-header");
             } else {
-              vm.stopLoader();
+                vm.stopLoader();
             }
-          };
-          
+        };
 
 
         // function to check password strength

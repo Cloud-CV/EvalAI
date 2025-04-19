@@ -409,7 +409,7 @@
             $state.go('web.challenge-create');
         };
 
-        vm.openInvitationDialog = function(ev, hostTeamId) {
+        vm.openInvitationDialog = function(ev,hostTeamId) {
             ev.stopPropagation();
             
             // Create a prompt dialog to receive the email address
@@ -436,7 +436,7 @@
                     method: 'POST',
                     data: {
                         "email": result,
-                        "team_id": hostTeamId
+                        "team_id":hostTeamId
                     },
                     token: userKey,
                     callback: {
@@ -449,8 +449,6 @@
                         }
                     }
                 };
-        
-                // Send the API request to generate the invitation URL
                 utilities.sendRequest(parameters);
             });
         };
