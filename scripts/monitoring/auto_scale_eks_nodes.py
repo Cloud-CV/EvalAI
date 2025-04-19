@@ -60,7 +60,8 @@ def get_nodegroup_name(eks_client, cluster_name):
 
 
 def get_eks_meta(challenge, evalai_interface, aws_keys):
-    # TODO: Check if eks_client should be a global thing. Clients must have an expiry/timeout.
+    # TODO: Check if eks_client should be a global thing. Clients must have an
+    # expiry/timeout.
     eks_client = get_boto3_client("eks", aws_keys)
     cluster_name = evalai_interface.get_aws_eks_cluster_details(
         challenge["id"]
@@ -221,7 +222,8 @@ def scale_up_or_down_workers(
         )
     else:
         if pending_submissions > original_desired_size:
-            # Scale up again if needed, up to the maximum allowed scale_up_desired_size (if provided)
+            # Scale up again if needed, up to the maximum allowed
+            # scale_up_desired_size (if provided)
             new_desired_size = min(pending_submissions, scale_up_desired_size)
             scale_up_workers(
                 challenge,
