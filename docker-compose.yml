@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   db:
     image: postgres:16.8
@@ -10,10 +12,13 @@ services:
     image: softwaremill/elasticmq
     hostname: sqs
     ports:
-      - 9324:9324
+      - "9324:9324"
 
   django:
     hostname: django
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - docker/dev/docker.env
     build:
@@ -28,6 +33,9 @@ services:
       - .:/code
 
   worker:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - docker/dev/docker.env
     build:
@@ -38,9 +46,12 @@ services:
     volumes:
       - .:/code
     profiles:
-      - worker # Only built when this profile is specified
+      - worker  # Only built when this profile is specified
 
   worker_py3_8:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - docker/dev/docker.env
     build:
@@ -51,10 +62,13 @@ services:
     volumes:
       - .:/code
     profiles:
-      - worker # Only built when this profile is specified
+      - worker  # Only built when this profile is specified
 
   nodejs:
     hostname: nodejs
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     build:
       context: ./
       dockerfile: docker/dev/nodejs/Dockerfile
@@ -70,12 +84,15 @@ services:
 
   statsd-exporter:
     hostname: statsd
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     image: prom/statsd-exporter:latest
     command:
       - '--log.level=info'
       - '--web.telemetry-path=/statsd/metrics'
     ports:
-      - '9125:9125'
-      - '9102:9102'
+      - "9125:9125"
+      - "9102:9102"
     profiles:
-      - statsd # Only built when this profile is specified
+      - statsd  # Only built when this profile is specified
