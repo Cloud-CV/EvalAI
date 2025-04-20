@@ -142,3 +142,54 @@ class TestSubmissionModel:
                     hour=0, minute=0, second=0, microsecond=0
                 ),
             )
+
+    def test_max_submissions_limit_reached(self):
+        
+        for _ in range(self.challenge_phase.max_submissions):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+            )
+        
+        with pytest.raises(
+            rest_framework.exceptions.PermissionDenied,
+            match=r"{'error': ErrorDetail\(string='The maximum number of submission has been reached', code='permission_denied'\)}",
+        ):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+            )
+    
+    def test_max_submissions_per_month_reached(self):
+        for _ in range(self.challenge_phase.max_submissions_per_month):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now().replace(day=1),
+            )
+        
+        with pytest.raises(
+            rest_framework.exceptions.PermissionDenied,
+            match=r"{'error': ErrorDetail\(string='The maximum number of submission for this month has been reached', code='permission_denied'\)}",
+        ):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now().replace(day=1),
+            )
