@@ -150,7 +150,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
-        # getting participant team object for the user for a particular challenge.
+        # getting participant team object for the user for a
+        #  particular challenge.
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id
         )
@@ -188,7 +189,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
-    elif request.method == "POST":
+    if request.method == "POST":
 
         # check if the challenge is active or not
         if not challenge.is_active:
@@ -200,7 +201,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         # check if challenge phase is active
         if not challenge_phase.is_active:
             response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not active"
+                "error": "Sorry, cannot accept submissions since challenge"
+                " phase is not active"
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -211,17 +213,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             # check if challenge phase is public and accepting solutions
             if not challenge_phase.is_public:
                 response_data = {
-                    "error": "Sorry, cannot accept submissions since challenge phase is not public"
+                    "error": "Sorry, cannot accept submissions since"
+                    " challenge phase is not public"
                 }
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
                 )
 
-            # if allowed email ids list exist, check if the user exist in that list or not
+        # if allowed email ids list exist,check if the user
+        #  exist in that list or not
             if challenge_phase.allowed_email_ids:
                 if request.user.email not in challenge_phase.allowed_email_ids:
                     response_data = {
-                        "error": "Sorry, you are not allowed to participate in this challenge phase"
+                        "error": "Sorry, you are not allowed to participate"
+                        " in this challenge phase"
                     }
                     return Response(
                         response_data, status=status.HTTP_403_FORBIDDEN
@@ -255,9 +260,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         all_participants_email = participant_team.get_all_participants_email()
         for participant_email in all_participants_email:
             if participant_email in challenge.banned_email_ids:
-                message = "You're a part of {} team and it has been banned from this challenge. \
-                Please contact the challenge host.".format(
-                    participant_team.team_name
+                message = (
+                f"You're a part of {participant_team.team_name} team and it has been banned from this challenge. "
+                "Please contact the challenge host."
                 )
                 response_data = {"error": message}
                 return Response(
@@ -3033,7 +3038,7 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             )
         except Submission.DoesNotExist:
             response_data = {
-                "error": "Submission {} does not exist".format(submission_pk)
+             "error": f"Submission {submission_pk} does not exist"
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -3048,7 +3053,7 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
