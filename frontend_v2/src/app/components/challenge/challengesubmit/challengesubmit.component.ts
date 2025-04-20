@@ -298,45 +298,60 @@ export class ChallengesubmitComponent implements OnInit {
    * @param SELF current context
    * @param eachPhase particular phase of a challenge
    */
-  countDownTimer(SELF, eachPhase) {
-    if (!SELF.isClockStarted) {
-      SELF.remainingTime = parseInt(eachPhase.limits.remaining_time, 10);
-    }
-    SELF.days = Math.floor(SELF.remainingTime / 24 / 60 / 60);
-    const hoursLeft = Math.floor(SELF.remainingTime - SELF.days * 86400);
-    SELF.hours = Math.floor(hoursLeft / 3600);
-    const minutesLeft = Math.floor(hoursLeft - SELF.hours * 3600);
-    SELF.minutes = Math.floor(minutesLeft / 60);
-    SELF.seconds = Math.floor(SELF.remainingTime % 60);
-
-    if (SELF.days < 10) {
-      SELF.days = '0' + SELF.days;
-    }
-    if (SELF.hours < 10) {
-      SELF.hours = '0' + SELF.hours;
-    }
-    if (SELF.minutes < 10) {
-      SELF.minutes = '0' + SELF.minutes;
-    }
-    if (SELF.seconds < 10) {
-      SELF.seconds = '0' + SELF.seconds;
-    }
-
-    // Used when the challenge is docker based
-    SELF.phaseRemainingSubmissionsCountdown[eachPhase.id] = {
-      days: SELF.days,
-      hours: SELF.hours,
-      minutes: SELF.minutes,
-      seconds: SELF.seconds,
-    };
-    if (SELF.remainingTime === 0) {
-      SELF.selectedPhaseSubmissions.showSubmissionDetails = true;
-      SELF.phaseRemainingSubmissionsFlags[eachPhase.id] = 'showSubmissionDetails';
-    } else {
-      SELF.remainingTime--;
-    }
-    SELF.isClockStarted = true;
+countDownTimer(SELF, eachPhase) {
+  if (!SELF.isClockStarted) {
+    SELF.remainingTime = parseInt(eachPhase.limits.remaining_time, 10);
   }
+  
+  if (SELF.remainingTime <= 0) {
+    SELF.remainingTime = 0;
+    SELF.days = '00';
+    SELF.hours = '00';
+    SELF.minutes = '00';
+    SELF.seconds = '00';
+    SELF.selectedPhaseSubmissions.showSubmissionDetails = true;
+    SELF.phaseRemainingSubmissionsFlags[eachPhase.id] = 'showSubmissionDetails';
+    SELF.isClockStarted = true;
+    return; 
+  }
+
+  SELF.days = Math.floor(SELF.remainingTime / 24 / 60 / 60);
+  const hoursLeft = Math.floor(SELF.remainingTime - SELF.days * 86400);
+  SELF.hours = Math.floor(hoursLeft / 3600);
+  const minutesLeft = Math.floor(hoursLeft - SELF.hours * 3600);
+  SELF.minutes = Math.floor(minutesLeft / 60);
+  SELF.seconds = Math.floor(SELF.remainingTime % 60);
+
+  if (SELF.days < 10) {
+    SELF.days = '0' + SELF.days;
+  }
+  if (SELF.hours < 10) {
+    SELF.hours = '0' + SELF.hours;
+  }
+  if (SELF.minutes < 10) {
+    SELF.minutes = '0' + SELF.minutes;
+  }
+  if (SELF.seconds < 10) {
+    SELF.seconds = '0' + SELF.seconds;
+  }
+
+  // Used when the challenge is docker based
+  SELF.phaseRemainingSubmissionsCountdown[eachPhase.id] = {
+    days: SELF.days,
+    hours: SELF.hours,
+    minutes: SELF.minutes,
+    seconds: SELF.seconds,
+  };
+
+  SELF.remainingTime--;
+
+  if (SELF.remainingTime === 0) {
+    SELF.selectedPhaseSubmissions.showSubmissionDetails = true;
+    SELF.phaseRemainingSubmissionsFlags[eachPhase.id] = 'showSubmissionDetails';
+  }
+
+  SELF.isClockStarted = true;
+}
 
   /**
    * @param challenge challenge id
