@@ -2073,19 +2073,28 @@
                             vm.disableSubmit = true;
                             vm.countDownTimer = function() {
                                 vm.remainingTime = vm.message.remaining_time;
+                                
+                                if (vm.remainingTime <= 0) {
+                                    vm.remainingTime = 0;
+                                    vm.days = 0;
+                                    vm.hours = 0;
+                                    vm.minutes = 0;
+                                    vm.remainingSeconds = "00";
+                                    vm.showSubmissionNumbers = true;
+                                    return;
+                                }
+                                
+                                vm.remainingTime--;
+                                
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
                                 vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
                                 vm.hours = Math.floor(vm.hoursLeft / 3600);
                                 vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
                                 vm.minutes = Math.floor(vm.minutesLeft / 60);
                                 vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
+                                
                                 if (vm.remainingSeconds < 10) {
                                     vm.remainingSeconds = "0" + vm.remainingSeconds;
-                                }
-                                if (vm.remainingTime === 0) {
-                                    vm.showSubmissionNumbers = true;
-                                } else {
-                                    vm.remainingSeconds--;
                                 }
                             };
                             setInterval(function() {
