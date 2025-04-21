@@ -107,8 +107,8 @@ class TestSubmissionModel:
             name="Test Phase",
             challenge=self.challenge,
             max_submissions=5,
-            max_submissions_per_day=2,
-            max_submissions_per_month=10,
+            max_submissions_per_day=100,
+            max_submissions_per_month=100,
         )
         self.participant_team = ParticipantTeam.objects.create(
             team_name="Test Participant Team", created_by=self.user
