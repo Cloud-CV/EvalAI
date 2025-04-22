@@ -152,7 +152,9 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now(),
+                submitted_at=timezone.now().replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                ),
             )
         
         with pytest.raises(
@@ -166,9 +168,11 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now(),
+                submitted_at=timezone.now().replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                ),
             )
-            
+
     def test_max_submissions_per_month_reached(self):
         now = timezone.now()
         for _ in range(self.challenge_phase.max_submissions_per_month):
@@ -179,7 +183,9 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=now,
+                submitted_at=timezone.now().replace(
+                    day=1, hour=0, minute=0, second=0, microsecond=0
+                ),
             )
         
         with pytest.raises(
@@ -193,5 +199,7 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=now,
+                submitted_at=timezone.now().replace(
+                    day=1, hour=0, minute=0, second=0, microsecond=0
+                ),
             )
