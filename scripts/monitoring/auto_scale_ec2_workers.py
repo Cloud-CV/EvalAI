@@ -1,8 +1,9 @@
 import os
-import pytz
 import warnings
-import boto3
 from datetime import datetime
+
+import boto3
+import pytz
 from dateutil.parser import parse
 from evalai_interface import EvalAI_Interface
 
@@ -35,10 +36,14 @@ def get_pending_submission_count(challenge_metrics):
 
 
 def stop_instance(challenge, evalai_interface):
-    instance_details = evalai_interface.get_ec2_instance_details(challenge["id"])
+    instance_details = evalai_interface.get_ec2_instance_details(
+        challenge["id"]
+    )
     instance = instance_details["message"]
     if instance["State"]["Name"] == "running":
-        response = evalai_interface.stop_challenge_ec2_instance(challenge["id"])
+        response = evalai_interface.stop_challenge_ec2_instance(
+            challenge["id"]
+        )
         print("AWS API Response: {}".format(response))
         print(
             "Stopped EC2 instance for Challenge ID: {}, Title: {}".format(
@@ -54,10 +59,14 @@ def stop_instance(challenge, evalai_interface):
 
 
 def start_instance(challenge, evalai_interface):
-    instance_details = evalai_interface.get_ec2_instance_details(challenge["id"])
+    instance_details = evalai_interface.get_ec2_instance_details(
+        challenge["id"]
+    )
     instance = instance_details["message"]
     if instance["State"]["Name"] == "stopped":
-        response = evalai_interface.start_challenge_ec2_instance(challenge["id"])
+        response = evalai_interface.start_challenge_ec2_instance(
+            challenge["id"]
+        )
         print("AWS API Response: {}".format(response))
         print(
             "Started EC2 instance for Challenge ID: {}, Title: {}.".format(
@@ -74,7 +83,11 @@ def start_instance(challenge, evalai_interface):
 
 def start_or_stop_workers(challenge, evalai_interface):
     try:
-        challenge_metrics = evalai_interface.get_challenge_submission_metrics_by_pk(challenge["id"])
+        challenge_metrics = (
+            evalai_interface.get_challenge_submission_metrics_by_pk(
+                challenge["id"]
+            )
+        )
         pending_submissions = get_pending_submission_count(challenge_metrics)
     except Exception as e:  # noqa: F841
         print(
@@ -85,7 +98,11 @@ def start_or_stop_workers(challenge, evalai_interface):
         print(e)
         return
 
-    print("Pending Submissions: {}, Challenge PK: {}, Title: {}".format(pending_submissions, challenge["id"], challenge["title"]))
+    print(
+        "Pending Submissions: {}, Challenge PK: {}, Title: {}".format(
+            pending_submissions, challenge["id"], challenge["title"]
+        )
+    )
 
     if pending_submissions == 0 or parse(
         challenge["end_date"]
