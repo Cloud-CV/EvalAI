@@ -144,6 +144,7 @@ class TestSubmissionModel:
 
     def test_max_submissions_limit_reached(self):
         Submission.objects.all().delete()
+        assert Submission.objects.count() == 0, "Submissions were not properly deleted"
         for _ in range(self.challenge_phase.max_submissions):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -175,6 +176,7 @@ class TestSubmissionModel:
 
     def test_max_submissions_per_month_reached(self):
         Submission.objects.all().delete()
+        assert Submission.objects.count() == 0, "Submissions were not properly deleted"
         for _ in range(self.challenge_phase.max_submissions_per_month):
             Submission.objects.create(
                 participant_team=self.participant_team,
