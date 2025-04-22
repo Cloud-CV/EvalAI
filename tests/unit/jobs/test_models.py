@@ -99,8 +99,7 @@ class TestSubmissionModel:
             creator=self.challenge_host_team,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            published=False,
-            enable_forum=True,
+            published=False,            enable_forum=True,
             anonymous_leaderboard=False,
         )
         self.challenge_phase = ChallengePhase.objects.create(
@@ -144,6 +143,7 @@ class TestSubmissionModel:
             )
 
     def test_max_submissions_limit_reached(self):
+        Submission.objects.all().delete()
         for _ in range(self.challenge_phase.max_submissions):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -174,7 +174,7 @@ class TestSubmissionModel:
             )
 
     def test_max_submissions_per_month_reached(self):
-        now = timezone.now()
+        Submission.objects.all().delete()
         for _ in range(self.challenge_phase.max_submissions_per_month):
             Submission.objects.create(
                 participant_team=self.participant_team,
