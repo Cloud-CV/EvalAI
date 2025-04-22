@@ -371,7 +371,6 @@
 
         vm.inviteOthers = function(ev, hostTeamId) {
             ev.stopPropagation();
-            // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Add other members to your team')
                 .textContent('Enter the email address of the person')
@@ -430,7 +429,6 @@
                     return;
                 }
                 
-                // Build the parameters for the API request
                 var parameters = {
                     url: 'hosts/team/invite/', 
                     method: 'POST',
