@@ -1,11 +1,9 @@
 import time
 import traceback
 
+from datadog import api, initialize, statsd
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
-
-from datadog import initialize
-from datadog import statsd, api
 
 options = {
     "api_key": settings.DATADOG_API_KEY,
