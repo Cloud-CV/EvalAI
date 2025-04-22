@@ -107,8 +107,8 @@ class TestSubmissionModel:
             name="Test Phase",
             challenge=self.challenge,
             max_submissions=5,
-            max_submissions_per_day=100,
-            max_submissions_per_month=100,
+            max_submissions_per_day=2,
+            max_submissions_per_month=10,
         )
         self.participant_team = ParticipantTeam.objects.create(
             team_name="Test Participant Team", created_by=self.user
@@ -144,7 +144,6 @@ class TestSubmissionModel:
             )
 
     def test_max_submissions_limit_reached(self):
-        
         for _ in range(self.challenge_phase.max_submissions):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -153,6 +152,7 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
+                submitted_at=timezone.now(),
             )
         
         with pytest.raises(
@@ -166,9 +166,11 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
+                submitted_at=timezone.now(),
             )
-    
+            
     def test_max_submissions_per_month_reached(self):
+        now = timezone.now()
         for _ in range(self.challenge_phase.max_submissions_per_month):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -177,7 +179,7 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now().replace(day=1),
+                submitted_at=now,
             )
         
         with pytest.raises(
@@ -191,5 +193,5 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now().replace(day=1),
+                submitted_at=now,
             )
