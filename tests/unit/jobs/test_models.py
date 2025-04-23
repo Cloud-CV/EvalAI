@@ -130,7 +130,7 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now(),  # same day
+                submitted_at=timezone.now(),
             )
 
         with pytest.raises(
@@ -193,26 +193,16 @@ class TestSubmissionModel:
         self.challenge_phase.max_submissions_per_month = 2
         self.challenge_phase.save()
 
-        # Spread across days within the same month
-        Submission.objects.create(
-            participant_team=self.participant_team,
-            challenge_phase=self.challenge_phase,
-            created_by=self.user,
-            status=Submission.SUBMITTED,
-            input_file=None,
-            is_public=True,
-            submitted_at=timezone.now().replace(day=1),
-        )
-
-        Submission.objects.create(
-            participant_team=self.participant_team,
-            challenge_phase=self.challenge_phase,
-            created_by=self.user,
-            status=Submission.SUBMITTED,
-            input_file=None,
-            is_public=True,
-            submitted_at=timezone.now().replace(day=2),
-        )
+        for day in [1, 2]:
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now().replace(day=day),
+            )
 
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
