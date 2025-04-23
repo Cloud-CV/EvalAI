@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0087_add_cpu_only_code_upload_job_configs'),
+        ("challenges", "0087_add_cpu_only_code_upload_job_configs"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='challenge',
-            name='worker_cpu_cores',
+            model_name="challenge",
+            name="worker_cpu_cores",
             field=models.IntegerField(blank=True, default=512, null=True),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='worker_memory',
+            model_name="challenge",
+            name="worker_memory",
             field=models.IntegerField(blank=True, default=1024, null=True),
         ),
     ]

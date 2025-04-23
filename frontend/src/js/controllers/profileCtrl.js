@@ -183,10 +183,11 @@
         };
 
         vm.isURLValid = function(url) {
-            if (url === undefined || url === null) {
-                return true;
+            if (!url) {
+                return true; // Allow empty URLs
             }
-            return (url.length <= 200);
+            var urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+            return url.length <= 200 && urlPattern.test(url);
         };
         
         vm.showTokenExpiredDialog = function() {

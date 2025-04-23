@@ -349,7 +349,7 @@ describe('Unit tests for profile controller', function () {
             expect(result).toBeFalsy();
         });
     });
-
+  
     describe('Unit tests for showTokenExpiredDialog function', function () {
         beforeEach(function () {
             spyOn($mdDialog, 'show').and.callFake(function (options) {
@@ -393,5 +393,4 @@ describe('Unit tests for profile controller', function () {
             expect(vm.refreshToken).toHaveBeenCalled();
         });
     });
-    
 });
