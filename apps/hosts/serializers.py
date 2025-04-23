@@ -92,11 +92,19 @@ class HostTeamDetailSerializer(serializers.ModelSerializer):
         return serializer.data
 
 class ChallengeHostTeamInvitationSerializer(serializers.ModelSerializer):
-    team = ChallengeHostTeamSerializer(read_only=True)
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=ChallengeHostTeam.objects.all(),
+        write_only=True
+    )
+    team_detail = ChallengeHostTeamSerializer(
+        source='team',
+        read_only=True
+    )
     invited_by = serializers.SlugRelatedField(
         slug_field="username",
         read_only=True
     )
+
     class Meta:
         model = ChallengeHostTeamInvitation
         fields = (
@@ -105,7 +113,13 @@ class ChallengeHostTeamInvitationSerializer(serializers.ModelSerializer):
             'invitation_key',
             'status',
             'team',
+            'team_detail',
             'invited_by',
             'created_at',
         )
-        read_only_fields = ('invitation_key', 'invited_by', 'status')
+        read_only_fields = (
+            'invitation_key',
+            'invited_by',
+            'status',
+            'team_detail',
+        )
