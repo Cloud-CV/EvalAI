@@ -135,7 +135,7 @@ class TestSubmissionModel:
 
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
-            match=r"The maximum number of submission for today has been reached",
+            match=r"The maximum number of submissions for today has been reached",
         ):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -170,7 +170,7 @@ class TestSubmissionModel:
 
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
-            match=r"The maximum number of submission has been reached",
+            match=r"The maximum number of submissions has been reached",
         ):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -213,7 +213,7 @@ class TestSubmissionModel:
 
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
-            match=r"The maximum number of submission for this month has been reached",
+            match=r"The maximum number of submissions for this month has been reached",
         ):
             Submission.objects.create(
                 participant_team=self.participant_team,
