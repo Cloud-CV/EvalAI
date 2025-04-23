@@ -114,42 +114,15 @@ class TestSubmissionModel:
             team_name="Test Participant Team", created_by=self.user
         )
 
-    # def test_max_submissions_per_day_reached(self):
-    #     for _ in range(self.challenge_phase.max_submissions_per_day):
-    #         Submission.objects.create(
-    #             participant_team=self.participant_team,
-    #             challenge_phase=self.challenge_phase,
-    #             created_by=self.user,
-    #             status=Submission.SUBMITTED,
-    #             input_file=None,
-    #             is_public=True,
-    #             submitted_at=timezone.now().replace(
-    #                 hour=0, minute=0, second=0, microsecond=0
-    #             ),
-    #         )
-    #     with pytest.raises(
-    #         rest_framework.exceptions.PermissionDenied,
-    #         match=r"{'error': ErrorDetail\(string='The maximum number of submission for today has been reached', code='permission_denied'\)}",
-    #     ):
-    #         Submission.objects.create(
-    #             participant_team=self.participant_team,
-    #             challenge_phase=self.challenge_phase,
-    #             created_by=self.user,
-    #             status=Submission.SUBMITTED,
-    #             input_file=None,
-    #             is_public=True,
-    #             submitted_at=timezone.now().replace(
-    #                 hour=0, minute=0, second=0, microsecond=0
-    #             ),
-    #         )
-
-    def test_max_submissions_limit_reached(self):
-        print("Before delete:", Submission.objects.count())
+    def test_max_submissions_per_day_reached(self):
         Submission.objects.all().delete()
-        print("After delete:", Submission.objects.count())
-        assert Submission.objects.count() == 0
 
-        for _ in range(self.challenge_phase.max_submissions - 1):
+        self.challenge_phase.max_submissions = 100
+        self.challenge_phase.max_submissions_per_day = 2
+        self.challenge_phase.max_submissions_per_month = 100
+        self.challenge_phase.save()
+
+        for _ in range(2):
             Submission.objects.create(
                 participant_team=self.participant_team,
                 challenge_phase=self.challenge_phase,
@@ -157,14 +130,12 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now().replace(
-                    hour=0, minute=0, second=0, microsecond=0
-                ),
+                submitted_at=timezone.now(),  # same day
             )
 
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
-            match=r"{'error': ErrorDetail\(string='The maximum number of submission has been reached', code='permission_denied'\)}",
+            match=r"The maximum number of submission for today has been reached",
         ):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -173,35 +144,76 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now().replace(
-                    hour=0, minute=0, second=0, microsecond=0
-                ),
+                submitted_at=timezone.now(),
+            )
+
+
+    def test_max_submissions_limit_reached(self):
+        Submission.objects.all().delete()
+
+        # Override total submission limit only
+        self.challenge_phase.max_submissions = 2
+        self.challenge_phase.max_submissions_per_day = 100  # high to avoid conflict
+        self.challenge_phase.max_submissions_per_month = 100  # high to avoid conflict
+        self.challenge_phase.save()
+
+        for _ in range(2):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now() - timedelta(days=1),  # spread out
+            )
+
+        with pytest.raises(
+            rest_framework.exceptions.PermissionDenied,
+            match=r"The maximum number of submission has been reached",
+        ):
+            Submission.objects.create(
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+                created_by=self.user,
+                status=Submission.SUBMITTED,
+                input_file=None,
+                is_public=True,
+                submitted_at=timezone.now(),
             )
 
     def test_max_submissions_per_month_reached(self):
-        print("Before delete:", Submission.objects.count())
         Submission.objects.all().delete()
-        print("After delete:", Submission.objects.count())
-        assert Submission.objects.count() == 0
-        assert (
-            Submission.objects.count() == 0
-        ), "Submissions were not properly deleted"
-        for _ in range(self.challenge_phase.max_submissions_per_month - 1):
-            Submission.objects.create(
-                participant_team=self.participant_team,
-                challenge_phase=self.challenge_phase,
-                created_by=self.user,
-                status=Submission.SUBMITTED,
-                input_file=None,
-                is_public=True,
-                submitted_at=timezone.now().replace(
-                    day=1, hour=0, minute=0, second=0, microsecond=0
-                ),
-            )
+
+        self.challenge_phase.max_submissions = 100
+        self.challenge_phase.max_submissions_per_day = 100
+        self.challenge_phase.max_submissions_per_month = 2
+        self.challenge_phase.save()
+
+        # Spread across days within the same month
+        Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status=Submission.SUBMITTED,
+            input_file=None,
+            is_public=True,
+            submitted_at=timezone.now().replace(day=1),
+        )
+
+        Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user,
+            status=Submission.SUBMITTED,
+            input_file=None,
+            is_public=True,
+            submitted_at=timezone.now().replace(day=2),
+        )
 
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
-            match=r"{'error': ErrorDetail\(string='The maximum number of submission for this month has been reached', code='permission_denied'\)}",
+            match=r"The maximum number of submission for this month has been reached",
         ):
             Submission.objects.create(
                 participant_team=self.participant_team,
@@ -210,7 +222,5 @@ class TestSubmissionModel:
                 status=Submission.SUBMITTED,
                 input_file=None,
                 is_public=True,
-                submitted_at=timezone.now().replace(
-                    day=1, hour=0, minute=0, second=0, microsecond=0
-                ),
+                submitted_at=timezone.now().replace(day=3),
             )
