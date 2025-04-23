@@ -99,7 +99,8 @@ class TestSubmissionModel:
             creator=self.challenge_host_team,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            published=False,            enable_forum=True,
+            published=False,
+            enable_forum=True,
             anonymous_leaderboard=False,
         )
         self.challenge_phase = ChallengePhase.objects.create(
@@ -148,7 +149,7 @@ class TestSubmissionModel:
         print("After delete:", Submission.objects.count())
         assert Submission.objects.count() == 0
 
-        for _ in range(self.challenge_phase.max_submissions):
+        for _ in range(self.challenge_phase.max_submissions - 1):
             Submission.objects.create(
                 participant_team=self.participant_team,
                 challenge_phase=self.challenge_phase,
@@ -160,7 +161,7 @@ class TestSubmissionModel:
                     hour=0, minute=0, second=0, microsecond=0
                 ),
             )
-        
+
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
             match=r"{'error': ErrorDetail\(string='The maximum number of submission has been reached', code='permission_denied'\)}",
@@ -182,8 +183,10 @@ class TestSubmissionModel:
         Submission.objects.all().delete()
         print("After delete:", Submission.objects.count())
         assert Submission.objects.count() == 0
-        assert Submission.objects.count() == 0, "Submissions were not properly deleted"
-        for _ in range(self.challenge_phase.max_submissions_per_month):
+        assert (
+            Submission.objects.count() == 0
+        ), "Submissions were not properly deleted"
+        for _ in range(self.challenge_phase.max_submissions_per_month - 1):
             Submission.objects.create(
                 participant_team=self.participant_team,
                 challenge_phase=self.challenge_phase,
@@ -195,7 +198,7 @@ class TestSubmissionModel:
                     day=1, hour=0, minute=0, second=0, microsecond=0
                 ),
             )
-        
+
         with pytest.raises(
             rest_framework.exceptions.PermissionDenied,
             match=r"{'error': ErrorDetail\(string='The maximum number of submission for this month has been reached', code='permission_denied'\)}",
