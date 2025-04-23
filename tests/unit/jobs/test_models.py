@@ -147,7 +147,6 @@ class TestSubmissionModel:
                 submitted_at=timezone.now(),
             )
 
-
     def test_max_submissions_limit_reached(self):
         self.challenge_phase.max_submissions = 2
         self.challenge_phase.max_submissions_per_day = 100
