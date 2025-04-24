@@ -323,8 +323,6 @@ def invite_user_to_team(request):
     Invite a user to join a host team
     """
 
-    print("DEBUG Statement : We're inside the invite_user_to_team func!")
-
     email = request.data.get('email')
     team_id = request.data.get('team_id')
     
@@ -421,9 +419,6 @@ def accept_host_invitation(request, invitation_key):
     """
     Get invitation details or accept an invitation to join a host team
     """
-    print("DEBUG Statement : We're inside the accept_host_invitation func!")
-
-    print("▶︎ invitation_key:", repr(invitation_key))
     try:
         invitation = ChallengeHostTeamInvitation.objects.get(
             invitation_key=invitation_key
@@ -480,11 +475,6 @@ def accept_host_invitation(request, invitation_key):
                 'permissions': ChallengeHost.ADMIN
             }
         )
-        if created:
-            print(f"DEBUG: created ChallengeHost for user {request.user} in team {team}")
-        else:
-            print(f"DEBUG: user {request.user} was already a host of team {team}")
-        
         # 3) notify the inviter
         email_subject = f"{request.user.username} has accepted your invitation to {team.team_name}"
         email_body    = render_to_string(

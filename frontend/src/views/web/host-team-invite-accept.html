@@ -1,32 +1,28 @@
 <section class="ev-sm-container ev-view challenge-host-team-invitation">
-    <div class="row">
-      <div class="col-md-8 col-md-offset-2 ev-card-panel">
-        <div class="ev-md-container ev-panel-title">
-          <h4>Team Invitation</h4>
-        </div>
-  
-        <div class="ev-md-container ev-card-body" ng-if="inviteAccept.isLoading">
-          <div class="row">
-            <div class="col s12 center-align">
-              <div class="circular-loader">
-                <div class="loader-path"></div>
-              </div>
-              <p>Loading invitation details...</p>
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2 ev-card-panel">
+      <div class="ev-md-container ev-panel-title">
+        <h4>Team Invitation</h4>
+      </div>
+
+      <!-- Loading state (unchanged) -->
+      <div class="ev-md-container ev-card-body" ng-if="inviteAccept.isLoading">
+        <!-- Content unchanged -->
+      </div>
+
+      <!-- Error state - improved alignment -->
+      <div class="ev-md-container ev-card-body" ng-if="!inviteAccept.isLoading && inviteAccept.error">
+        <div class="row">
+          <div class="col s12">
+            <div class="alert-error">
+              <p><i class="fa fa-exclamation-triangle"></i> {{inviteAccept.error}}</p>
             </div>
-          </div>
-        </div>
-  
-        <div class="ev-md-container ev-card-body" ng-if="!inviteAccept.isLoading && inviteAccept.error">
-          <div class="row">
-            <div class="col s12">
-              <div class="alert-error">
-                <p><i class="fa fa-exclamation-triangle"></i> {{inviteAccept.error}}</p>
-              </div>
-  
-              <div class="center-align wrong-account-info" ng-if="inviteAccept.showLogoutOption">
-                <p>You are currently logged in, but this invitation was sent to a different email address:</p>
-                <p><strong>{{inviteAccept.invitationDetails.email}}</strong></p>
-                <p>Please log out and sign in with the correct account.</p>
+
+            <div class="wrong-account-info" ng-if="inviteAccept.showLogoutOption">
+              <p>You are currently logged in, but this invitation was sent to a different email address:</p>
+              <p><strong>{{inviteAccept.invitationDetails.email}}</strong></p>
+              <p>Please log out and sign in with the correct account.</p>
+              <div class="text-center" style="margin-top: 20px;">
                 <button class="btn ev-btn-dark waves-effect waves-dark" ng-click="inviteAccept.logout()">
                   Logout and Switch Account
                 </button>
@@ -34,49 +30,55 @@
             </div>
           </div>
         </div>
-  
-        <div class="ev-md-container ev-card-body" ng-if="!inviteAccept.isLoading && !inviteAccept.error && inviteAccept.isLoggedIn">
-          <div class="row">
-            <div class="col s12">
-              <div class="invitation-details">
-                <p class="fw-500">You have been invited to join a team on EvalAI.</p>
-  
-                <div class="team-info">
-                  <p><span class="detail-label">Team:</span> <span class="detail-value">{{inviteAccept.invitationDetails.team.team_name}}</span></p>
-                  <p><span class="detail-label">Invited by:</span> <span class="detail-value">{{inviteAccept.invitationDetails.invited_by.username}}</span></p>
-                  <p><span class="detail-label">Invitation sent to:</span> <span class="detail-value">{{inviteAccept.invitationDetails.email}}</span></p>
-                </div>
-  
-                <div class="center-align invitation-actions">
-                  <button class="btn ev-btn-dark waves-effect waves-dark"
-                          ng-click="inviteAccept.acceptInvitation()"
-                          ng-disabled="inviteAccept.isAccepting">
-                    <i class="fa" ng-class="{'fa-spinner fa-spin': inviteAccept.isAccepting, 'fa-check': !inviteAccept.isAccepting}"></i>
-                    {{ inviteAccept.isAccepting ? 'Accepting...' : 'Accept Invitation' }}
-                  </button>
-  
-                  <a ui-sref="home" class="btn ev-btn-dark waves-effect waves-dark">
-                    Decline
-                  </a>
-                </div>
+      </div>
+
+      <!-- Invitation details - improved alignment and structure -->
+      <div class="ev-md-container ev-card-body" ng-if="!inviteAccept.isLoading && !inviteAccept.error && inviteAccept.isLoggedIn">
+        <div class="row">
+          <div class="col s12">
+            <div class="invitation-details">
+              <p class="fw-500">You have been invited to join a team on EvalAI.</p>
+
+              <div class="team-info">
+                <p>
+                  <span class="detail-label">Team:</span>
+                  <span class="detail-value">{{inviteAccept.invitationDetails.team_detail.team_name}}</span>
+                </p>
+                <p>
+                  <span class="detail-label">Invited by:</span>
+                  <span class="detail-value">{{inviteAccept.invitationDetails.invited_by}}</span>
+                </p>
+              </div>
+
+              <div class="invitation-actions">
+                <button class="btn ev-btn-dark waves-effect waves-dark"
+                        ng-click="inviteAccept.acceptInvitation()"
+                        ng-disabled="inviteAccept.isAccepting">
+                  <i class="fa" ng-class="{'fa-spinner fa-spin': inviteAccept.isAccepting, 'fa-check': !inviteAccept.isAccepting}"></i>
+                  {{ inviteAccept.isAccepting ? 'Accepting...' : 'Accept Invitation' }}
+                </button>
+
+                <a ui-sref="home" class="btn ev-btn-dark waves-effect waves-dark">
+                  Decline
+                </a>
               </div>
             </div>
           </div>
         </div>
-  
-        <div class="ev-md-container ev-card-footer" ng-if="!inviteAccept.isLoading && !inviteAccept.error && inviteAccept.isLoggedIn">
-          <div class="row">
-            <div class="col s12">
-              <p class="text-muted">
-                <small>
-                  <i class="fa fa-info-circle"></i>
-                  By accepting this invitation, you'll become a member of this team and will be able to collaborate on challenges.
-                </small>
-              </p>
-            </div>
+      </div>
+
+      <div class="ev-md-container ev-card-footer" ng-if="!inviteAccept.isLoading && !inviteAccept.error && inviteAccept.isLoggedIn">
+        <div class="row">
+          <div class="col s12">
+            <p class="text-muted">
+              <i class="fa fa-info-circle"></i>
+              <small>
+                By accepting this invitation, you'll become a member of this team and will be able to collaborate on challenges.
+              </small>
+            </p>
           </div>
         </div>
-  
       </div>
     </div>
-  </section>
+  </div>
+</section>

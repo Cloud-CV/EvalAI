@@ -170,7 +170,7 @@
             title: 'Accept Host Team Invitation',
             controller: 'challengeHostTeamInvitationAcceptCtrl',
             controllerAs: 'inviteAccept',
-            authenticate: true
+            authenticate: false
         };
                 
 

@@ -78,9 +78,3 @@ services:
       - '9102:9102'
     profiles:
       - statsd # Only built when this profile is specified
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "1025:1025"  # SMTP port
-      - "8025:8025"  # Web UI port

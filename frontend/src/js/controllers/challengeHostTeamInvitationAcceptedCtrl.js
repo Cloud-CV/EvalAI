@@ -20,17 +20,15 @@
     function challengeHostTeamInvitationAcceptCtrl($state, $stateParams, utilities, toaster, loaderService, $location, $rootScope, $window, $timeout) {
         var vm = this;
         var userKey = utilities.getData('userKey');
-        
-        // Controller properties
         vm.invitationKey = $stateParams.invitation_key;
+        $window.sessionStorage.setItem('pendingInvitationKey',vm.invitationKey);
         vm.invitationDetails = {};
         vm.isLoading = true;
         vm.isAccepting = false;
         vm.isLoggedIn = !!userKey;
         vm.error = null;
         vm.showLogoutOption = false;
-        
-        // Exposed functions
+    
         vm.fetchInvitationDetails = fetchInvitationDetails;
         vm.acceptInvitation = acceptInvitation;
         vm.redirectToLogin = redirectToLogin;
@@ -39,23 +37,38 @@
         // Initialize controller
         activate();
         function activate() {
+            if (!vm.isLoggedIn) {
+              vm.isLoading = false;
+              return redirectToLogin();
+            }
+            var redirectAfterLogin = $window.sessionStorage.getItem('redirectAfterLogin');
+            if (vm.isLoggedIn && redirectAfterLogin === 'web.challenge-host-team-invitation-accept') {
+              return handleLoginSuccess();
+            }
+          
             var storedInvitationKey = $window.sessionStorage.getItem('pendingInvitationKey');
-            
-            if (storedInvitationKey && !vm.invitationKey) {
-                console.debug('Redirecting to invitation page with stored key');
-                $state.go('web.challenge-host-team-invitation-accept', {invitation_key: storedInvitationKey});
-                return;
+            if (!vm.invitationKey && storedInvitationKey) {
+              console.log('Restored invitation key from storage:', storedInvitationKey);
+              vm.invitationKey = storedInvitationKey;
+              return $state.go(
+                'web.challenge-host-team-invitation-accept',
+                { invitation_key: storedInvitationKey },
+                { location: 'replace', notify: false }
+              );
             }
-            
-            if (vm.isLoggedIn) {
-                console.debug('User is logged in, fetching invitation details');
-                fetchInvitationDetails();
-            } else {
-                console.debug('User is not logged in, redirecting to login');
-                vm.isLoading = false;
-                redirectToLogin();
+          
+            if (vm.invitationKey) {
+              return fetchInvitationDetails();
             }
-        }
+          
+            handleError({
+              message: 'Please click on invitation link sent to your mail again!',
+              title: 'Click on Invitation',
+              status: 'error'
+            });
+            vm.isLoading = false;
+          }
+          
         
         function fetchInvitationDetails() {
             if (!vm.invitationKey) {
@@ -85,17 +98,10 @@
         }
         
         function handleFetchSuccess(response) {
-            console.debug('Successfully fetched invitation details');
             vm.invitationDetails = response.data;
             vm.isLoading = false;
-            
-            if ($window.sessionStorage.getItem('pendingInvitationKey') === vm.invitationKey) {
-                console.debug('Removing stored invitation key after successful fetch');
-                $window.sessionStorage.removeItem('pendingInvitationKey');
-            }
         }
         
-
         function handleFetchError(response) {
             vm.isLoading = false;
             console.error('Error fetching invitation details:', response);
@@ -106,7 +112,7 @@
                     title: 'Authentication Required',
                     message: 'You need to log in to view this invitation.',
                     status: 'warning',
-                    timeout: 7000,
+                    timeout: 3000,
                     dismissButton: true,
                     action: () => {
                         vm.isLoggedIn = false;
@@ -118,7 +124,7 @@
                     title: 'Wrong Account',
                     message: 'This invitation was sent to a different email address. Please log in with the correct account.',
                     status: 'error',
-                    timeout: 10000,
+                    timeout: 3000,
                     dismissButton: true,
                     action: () => {
                         vm.showLogoutOption = true;
@@ -129,7 +135,7 @@
                     title: 'Invalid Invitation',
                     message: 'This invitation is invalid or has expired.',
                     status: 'error',
-                    timeout: 5000,
+                    timeout: 3000,
                     dismissButton: true,
                     action: () => {
                         $timeout(() => $state.go('home'), 3000);
@@ -140,7 +146,7 @@
                     title: 'Error',
                     message: response.data.error || 'An error occurred while fetching the invitation details.',
                     status: 'error',
-                    timeout: 8000,
+                    timeout: 3000,
                     dismissButton: true
                 }
             };
@@ -231,20 +237,20 @@
             vm.isAccepting = false;
             loaderService.stopLoader();
             
+            // Only remove the pending invitation key after successful acceptance
+            $window.sessionStorage.removeItem('pendingInvitationKey');
+            
             handleNotification({
                 message: response.data.message || 'You have successfully joined the team!',
                 title: 'Success',
                 status: 'success',
                 action: function() {
-                    $window.sessionStorage.removeItem('pendingInvitationKey');
                     $state.go('web.challenge-host-teams');
                 }
             });
         }
         
-        /**
-         * Handle errors when accepting invitation
-         */
+        //Handle errors when accepting invitation
         function handleAcceptError(response) {
             vm.isAccepting = false;
             loaderService.stopLoader();
@@ -269,33 +275,53 @@
         }
         
         function redirectToLogin() {
-            if (vm.invitationKey) {
-                console.debug('Storing invitation key before redirecting to login:', vm.invitationKey);
-                $window.sessionStorage.setItem('pendingInvitationKey', vm.invitationKey);
+          if (vm.invitationKey) {
+              // Store both the invitation key and the desired redirect state
+              $window.sessionStorage.setItem('pendingInvitationKey', vm.invitationKey);
+              $window.sessionStorage.setItem('redirectAfterLogin', 'web.challenge-host-team-invitation-accept');
+              console.log('Stored invitation key for post-login redirect:', vm.invitationKey);
+              
+              // Pass invitation_key in URL params to keep it visible
+              return $state.go('auth.login', {
+                  invitation_key: vm.invitationKey,
+                  redirect: 'invitation-accept'
+              });
+          }
+      }
+      
+
+        function handleLoginSuccess() {
+            var pendingInvitationKey = $window.sessionStorage.getItem('pendingInvitationKey');
+            var redirectAfterLogin = $window.sessionStorage.getItem('redirectAfterLogin');
+            
+            if (pendingInvitationKey && redirectAfterLogin === 'web.challenge-host-team-invitation-accept') {
+              // Don't remove pendingInvitationKey yet, the accept page needs it
+              $window.sessionStorage.removeItem('redirectAfterLogin');
+              return $state.go('web.challenge-host-team-invitation-accept', {
+                invitation_key: pendingInvitationKey
+              });
             }
             
-            $rootScope.previousState = 'web.challenge-host-team-invitation-accept';
-            $rootScope.previousStateParams = { invitation_key: vm.invitationKey };
-            
-            // Redirect to login page
-            $state.go('auth.login');
-        }
+            // Default redirect if no pending invitation
+            return $state.go('home');
+          }
+
         
-        function logout() {
+          function logout() {
             if (vm.invitationKey) {
-                console.debug('Storing invitation key before logout:', vm.invitationKey);
-                $window.sessionStorage.setItem('pendingInvitationKey', vm.invitationKey);
+              $window.sessionStorage.setItem('pendingInvitationKey', vm.invitationKey);
+              $window.sessionStorage.setItem('redirectAfterLogin', 'web.challenge-host-team-invitation-accept');
+              console.log('Stored invitation key before account switch:', vm.invitationKey);
             }
             
             utilities.deleteData('userKey');
             utilities.deleteData('refreshJWT');
             
-            // Update logged in status
-            vm.isLoggedIn = false;
-            
-            // Redirect to login
-            $state.go('auth.login');
-        }
+            $state.go('auth.login', {
+              invitation_key: vm.invitationKey,
+              redirect: 'invitation-accept'
+            });
+          };
         
         function handleError(options) {
             console.error(options.title || 'Error', options.message);
@@ -316,38 +342,6 @@
             if (typeof options.action === 'function') {
                 options.action();
             }
-        }
-        
-        function showToaster(type, title, message, timeout) {
-            const icons = {
-                success: 'check_circle_outline',
-                warning: 'warning_amber',
-                error:   'error_outline',
-                info:    'info_outline'
-            };
-            const iconName = icons[type] || icons.info;
-    
-            toaster.pop({
-                type: type,
-                title: '',
-                body: `
-                  <div class="custom-toast ${type}-toast" style="display: flex; align-items: flex-start; padding: 10px;">
-                    <div style="flex:1;">
-                      <strong style="display:block; margin-bottom:4px; font-size:16px;">
-                        ${title}
-                      </strong>
-                      <p style="margin:0; font-size:14px;">
-                        ${message}
-                      </p>
-                    </div>
-                  </div>
-                `,
-                bodyOutputType: 'trustedHtml',
-                timeout: timeout || 5000,
-                dismissButton: true,
-                dismissible: true,
-                positionClass: 'toast-top-right'
-            });
         }
     }
 })();
