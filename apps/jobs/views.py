@@ -208,7 +208,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         # check if challenge phase is active
         if not challenge_phase.is_active:
             response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not active"
+                "error": "Sorry, cannot accept submissions "
+                "since challenge phase is not active"
             }
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -219,7 +220,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             # check if challenge phase is public and accepting solutions
             if not challenge_phase.is_public:
                 response_data = {
-                    "error": "Sorry, cannot accept submissions since challenge phase is not public"
+                    "error": "Sorry, cannot accept submissions"
+                    " since challenge phase is not public"
                 }
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
@@ -230,7 +232,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             if challenge_phase.allowed_email_ids:
                 if request.user.email not in challenge_phase.allowed_email_ids:
                     response_data = {
-                        "error": "Sorry, you are not allowed to participate in this challenge phase"
+                        "error": "Sorry, you are not allowed to "
+                        "participate in this challenge phase"
                     }
                     return Response(
                         response_data, status=status.HTTP_403_FORBIDDEN
@@ -264,9 +267,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         all_participants_email = participant_team.get_all_participants_email()
         for participant_email in all_participants_email:
             if participant_email in challenge.banned_email_ids:
-                message = "You're a part of {} team and it has been banned from this challenge. \
-                Please contact the challenge host.".format(
-                    participant_team.team_name
+                message = (
+                    f"You're a part of {participant_team.team_name} team\
+                    and it has been "
+                    "banned from this challenge. Please "
+                    "contact the challenge host."
                 )
                 response_data = {"error": message}
                 return Response(
@@ -390,9 +395,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     message["is_static_dataset_code_upload_submission"] = True
             except Exception as ex:
                 response_data = {
-                    "error": "Error {} in submitted_image_uri from submission file".format(
-                        ex
-                    )
+                    "error": f"Error {ex} in submitted_image_uri\
+                    from submission file"
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -437,7 +441,8 @@ def change_submission_data_and_visibility(
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         if not challenge_phase.is_public:
             response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+                 "error": "Sorry, cannot accept submissions "
+                 "since challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
         elif request.data.get("is_baseline"):
@@ -566,20 +571,25 @@ def change_submission_data_and_visibility(
                                 },
                                 "filtering_score": {
                                     "type": "string",
-                                    "description": "Default filtering score for results",
+                                    "description": "Default filtering "
+                                    "score for results",
                                 },
                                 "leaderboard__schema": {
                                     "type": "string",
-                                    "description": "Leaderboard Schema of the corresponding challenge",
+                                    "description": "Leaderboard Schema of "
+                                    "the corresponding challenge",
                                 },
                                 "result": {
                                     "type": "array",
-                                    "description": "Leaderboard Metrics values according to leaderboard schema",
+                                    "description": "Leaderboard"
+                                    " Metrics values "
+                                    "according to leaderboard schema",
                                     "items": {"type": "object"},
                                 },
                                 "submission__submitted_at": {
                                     "type": "string",
-                                    "description": "Time stamp when submission was submitted at",
+                                    "description": "Time stamp when "
+                                    "submission was submitted at",
                                 },
                             },
                         },
@@ -596,7 +606,8 @@ def leaderboard(request, challenge_phase_split_id):
     Returns leaderboard for a corresponding Challenge Phase Split
 
     - Arguments:
-        ``challenge_phase_split_id``: Primary key for the challenge phase split for which leaderboard is to be fetched
+        ``challenge_phase_split_id``: Primary key for the challenge 
+        phase split for which leaderboard is to be fetched
 
     - Returns:
         Leaderboard entry objects in a list
@@ -684,43 +695,53 @@ def leaderboard(request, challenge_phase_split_id):
                                 },
                                 "submission__is_baseline": {
                                     "type": "boolean",
-                                    "description": "Boolean to decide if submission is baseline",
+                                    "description": "Boolean to"
+                                    " decide if submission is baseline",
                                 },
                                 "submission__is_public": {
                                     "type": "boolean",
-                                    "description": "Boolean to decide if submission is public",
+                                    "description": "Boolean to "
+                                    "decide if submission is public",
                                 },
                                 "challenge_phase_split": {
                                     "type": "string",
                                     "description": "Challenge Phase Split ID",
                                 },
                                 "result": {
-                                    "type": "array",
-                                    "description": "Leaderboard Metrics values according to leaderboard schema",
-                                    "items": {"type": "string"},
+                                "type": "array",
+                                "description": (
+                                "Leaderboard Metrics values according "
+                                "to leaderboard schema"
+                                ),
+                                "items": {"type": "string"},
                                 },
                                 "error": {
                                     "type": "string",
-                                    "description": "Error returned for the result",
+                                    "description": "Error returned"
+                                    " for the result",
                                 },
                                 "leaderboard__schema": {
                                     "type": "object",
-                                    "description": "Leaderboard Schema of the corresponding challenge",
+                                    "description": "Leaderboard Schema of"
+                                    " the corresponding challenge",
                                     "properties": {
                                         "labels": {
                                             "type": "array",
-                                            "description": "Labels of leaderboard schema",
+                                            "description": "Labels "
+                                            "of leaderboard schema",
                                             "items": {"type": "string"},
                                         },
                                         "default_order_by": {
                                             "type": "string",
-                                            "description": "Default ordering label for the leaderboard schema",
+                                            "description": "Default ordering "
+                                            "label for the leaderboard schema",
                                         },
                                     },
                                 },
                                 "submission__submitted_at": {
                                     "type": "string",
-                                    "description": "Time stamp when submission was submitted at",
+                                    "description": "Time stamp when "
+                                    "submission was submitted at",
                                 },
                                 "submission__method_name": {
                                     "type": "string",
@@ -732,15 +753,18 @@ def leaderboard(request, challenge_phase_split_id):
                                 },
                                 "submission__submission_metadata": {
                                     "type": "string",
-                                    "description": "Metadata and other info about submission",
+                                    "description": "Metadata and "
+                                    "other info about submission",
                                 },
                                 "filtering_score": {
                                     "type": "string",
-                                    "description": "Default filtering score for results",
+                                    "description": "Default "
+                                    "filtering score for results",
                                 },
                                 "filtering_error": {
                                     "type": "string",
-                                    "description": "Default filtering error for results",
+                                    "description": "Default "
+                                    "filtering error for results",
                                 },
                             },
                         },
@@ -759,10 +783,12 @@ def leaderboard(request, challenge_phase_split_id):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
     """
-    Returns public/private leaderboard entries to corresponding challenge phase split for a challenge host
+    Returns public/private leaderboard entries to 
+    corresponding challenge phase split for a challenge host
 
     - Arguments:
-        ``challenge_phase_split_pk``: Primary key for the challenge phase split for which leaderboard is to be fetched
+        ``challenge_phase_split_pk``: Primary key 
+        for the challenge phase split for which leaderboard is to be fetched
 
     - Returns:
         All Leaderboard entry objects in a list
@@ -778,7 +804,8 @@ def get_all_entries_on_public_leaderboard(request, challenge_phase_split_pk):
         {
             "id": 1,
             "submission__participant_team": 2,
-            "submission__participant_team__team_name": "Sanchezview Participant Team",
+            "submission__participant_team__team_name":
+              "Sanchezview Participant Team",
             "submission__participant_team__team_url": "",
             "submission__is_baseline": true,
             "submission__is_public": true,
@@ -872,8 +899,10 @@ def get_remaining_submissions(request, challenge_pk):
                 "start_date": "2018-10-28T14:22:53Z",
                 "end_date": "2020-06-19T14:22:53Z",
                 "limits": {
-                    "message": "You have exhausted this month's submission limit!",
-                    "remaining_time": "1481076.929224"  // remaining_time is in seconds
+                    "message": "You have exhausted this 
+                    month's submission limit!",
+                    "remaining_time": "1481076.929224" 
+                      // remaining_time is in seconds
                 }
             }
         ]
@@ -999,11 +1028,15 @@ def get_submission_by_pk(request, submission_id):
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED",
+                    "description": "Final status of submission "
+                    "(can take one of these values):"
+                    " CANCELLED/FAILED/FINISHED",
                 },
                 "result": {
                     "type": "array",
-                    "description": "Submission results in array format. API will throw an error if any split and/or metric is missing",
+                    "description": "Submission results"
+                    " in array format. API will "
+                    "throw an error if any split and/or metric is missing",
                     "items": {
                         "type": "object",
                         "properties": {
@@ -1013,19 +1046,23 @@ def get_submission_by_pk(request, submission_id):
                             },
                             "show_to_participant": {
                                 "type": "boolean",
-                                "description": "Boolean to decide if the results are shown to participant or not",
+                                "description": "Boolean to decide if the "
+                                "results are shown to participant or not",
                             },
                             "accuracies": {
                                 "type": "object",
-                                "description": "Accuracies on different metrics",
+                                "description": "Accuracies on"
+                                " different metrics",
                                 "properties": {
                                     "metric1": {
                                         "type": "number",
-                                        "description": "Numeric accuracy on metric 1",
+                                        "description": "Numeric "
+                                        "accuracy on metric 1",
                                     },
                                     "metric2": {
                                         "type": "number",
-                                        "description": "Numeric accuracy on metric 2",
+                                        "description": "Numeric accuracy"
+                                        " on metric 2",
                                     },
                                 },
                             },
@@ -1034,7 +1071,8 @@ def get_submission_by_pk(request, submission_id):
                 },
                 "metadata": {
                     "type": "object",
-                    "description": "It contains the metadata related to submission (only visible to challenge hosts)",
+                    "description": "It contains the metadata"
+                    " related to submission (only visible to challenge hosts)",
                     "properties": {
                         "foo": {
                             "type": "string",
@@ -1053,7 +1091,8 @@ def get_submission_by_pk(request, submission_id):
                 "properties": {
                     "success": {
                         "type": "string",
-                        "description": "Submission result has been successfully updated",
+                        "description": "Submission result "
+                        "has been successfully updated",
                     }
                 },
             },
@@ -1095,7 +1134,8 @@ def get_submission_by_pk(request, submission_id):
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Updated status of submission from submitted i.e. RUNNING",
+                    "description": "Updated status of submission"
+                    " from submitted i.e. RUNNING",
                 },
             },
         },
@@ -1108,7 +1148,8 @@ def get_submission_by_pk(request, submission_id):
                 "properties": {
                     "updated_submission_data": {
                         "type": "object",
-                        "description": "The updated submission data after the patch request",
+                        "description": "The updated submission data "
+                        "after the patch request",
                     },
                 },
             },
@@ -1136,11 +1177,16 @@ def update_submission(request, challenge_pk):
 
      - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
      - ``submission``: submission id, e.g. 123 (**required**)
-     - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
-     - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
-     - ``environment_log``: Environment error after evaluation, e.g. "Failed due to attempted action being invalid" (**code upload challenge only**)
+     - ``stdout``: Stdout after evaluation, e.g. "Evaluation
+       completed in 2 minutes" (**required**)
+     - ``stderr``: Stderr after evaluation, e.g. 
+     "Failed due to incorrect file format" (**required**)
+     - ``environment_log``: Environment error after evaluation, e.g.
+        "Failed due to attempted action being invalid"
+         (**code upload challenge only**)
      - ``submission_status``: Status of submission after evaluation
-        (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
+        (can take one of the following values:
+        `FINISHED`/`CANCELLED`/`FAILED`),e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
             [
                 {
@@ -1159,7 +1205,8 @@ def update_submission(request, challenge_pk):
                     }
                 }
             ]
-     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+     - ``metadata``: Contains the metadata related to submission 
+     (only visible to challenge hosts) e.g:
             {
                 "average-evaluation-time": "5 sec",
                 "foo": "bar"
@@ -1203,8 +1250,11 @@ def update_submission(request, challenge_pk):
                 results = json.loads(submission_result)
             except (ValueError, TypeError) as exc:
                 response_data = {
-                    "error": "`result` key contains invalid data with error {}."
-                    "Please try again with correct format.".format(str(exc))
+                    "error": (
+                    f"`result` key contains invalid\
+                    data with error {str(exc)}. "
+                    "Please try again with correct format."
+                    )
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1224,8 +1274,11 @@ def update_submission(request, challenge_pk):
                     )
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {
-                        "error": "Challenge Phase Split does not exist with phase_id: {} and"
-                        "split codename: {}".format(challenge_phase_pk, split)
+                        "error": (
+                        f"Challenge Phase Split does not exist\
+                        with phase_id: {challenge_phase_pk} and "
+                        f"split codename: {split}"
+                        )
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1309,14 +1362,12 @@ def update_submission(request, challenge_pk):
                         serializer.save()
             except IntegrityError:
                 logger.exception(
-                    "Failed to update submission_id {} related metadata".format(
-                        submission_pk
-                    )
+                    "Failed to update submission_id %s related " \
+                    "metadata", submission_pk
                 )
                 response_data = {
-                    "error": "Failed to update submission_id {} related metadata".format(
-                        submission_pk
-                    )
+                    "error": f"Failed to update submission_id\
+                    {submission_pk} related metadata"
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1348,7 +1399,8 @@ def update_submission(request, challenge_pk):
         # submission evaluation
         if (
             request.FILES.get("submission_input_file")
-            and submission.challenge_phase.challenge.is_static_dataset_code_upload
+            and submission.challenge_phase.challenge.
+            is_static_dataset_code_upload
         ):
             serializer = SubmissionSerializer(
                 submission,
@@ -1431,11 +1483,14 @@ def update_submission(request, challenge_pk):
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Final status of submission (can be: CANCELLED/FAILED/FINISHED)",
+                    "description": "Final status of submission "
+                    "(can be: CANCELLED/FAILED/FINISHED)",
                 },
                 "result": {
                     "type": "array",
-                    "description": "Submission results in array format. An error is thrown if any split and/or metric is missing",
+                    "description": "Submission results in array "
+                    "format. An error is thrown if any "
+                    "split and/or metric is missing",
                     "items": {
                         "type": "object",
                         "properties": {
@@ -1445,19 +1500,23 @@ def update_submission(request, challenge_pk):
                             },
                             "show_to_participant": {
                                 "type": "boolean",
-                                "description": "Flag to decide if the results are shown to participants",
+                                "description": "Flag to decide if the"
+                                " results are shown to participants",
                             },
                             "accuracies": {
                                 "type": "object",
-                                "description": "Accuracies on different metrics",
+                                "description": "Accuracies on "
+                                "different metrics",
                                 "properties": {
                                     "metric1": {
                                         "type": "number",
-                                        "description": "Numeric accuracy on metric 1",
+                                        "description": "Numeric "
+                                        "accuracy on metric 1",
                                     },
                                     "metric2": {
                                         "type": "number",
-                                        "description": "Numeric accuracy on metric 2",
+                                        "description": "Numeric"
+                                        " accuracy on metric 2",
                                     },
                                 },
                             },
@@ -1466,7 +1525,8 @@ def update_submission(request, challenge_pk):
                 },
                 "metadata": {
                     "type": "object",
-                    "description": "Metadata related to submission (only visible to challenge hosts)",
+                    "description": "Metadata related to submission (only"
+                    " visible to challenge hosts)",
                     "properties": {
                         "foo": {
                             "type": "string",
@@ -1485,7 +1545,8 @@ def update_submission(request, challenge_pk):
                 "properties": {
                     "success": {
                         "type": "string",
-                        "description": "Confirmation of successful submission update",
+                        "description": "Confirmation of "
+                        "successful submission update",
                     },
                 },
             },
@@ -1527,7 +1588,8 @@ def update_submission(request, challenge_pk):
                 },
                 "submission_status": {
                     "type": "string",
-                    "description": "Updated status of submission from submitted (e.g., RUNNING)",
+                    "description": "Updated status of submission"
+                    " from submitted (e.g., RUNNING)",
                 },
             },
         }
@@ -1544,7 +1606,8 @@ def update_submission(request, challenge_pk):
                     },
                     "job_name": {
                         "type": "string",
-                        "description": "Job name associated with the running submission",
+                        "description": "Job name associated with"
+                        " the running submission",
                     },
                     "submission_status": {
                         "type": "string",
@@ -1576,10 +1639,13 @@ def update_partially_evaluated_submission(request, challenge_pk):
 
      - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
      - ``submission``: submission id, e.g. 123 (**required**)
-     - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
-     - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``stdout``: Stdout after evaluation, e.g. "Evaluation
+       completed in 2 minutes" (**required**)
+     - ``stderr``: Stderr after evaluation, e.g. "Failed
+       due to incorrect file format" (**required**)
      - ``submission_status``: Status of submission after evaluation
-        (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`/`PARTIALLY_EVALUATED`),
+        (can take one of the following values: 
+        `FINISHED`/`CANCELLED`/`FAILED`/`PARTIALLY_EVALUATED`),
         e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
             [
@@ -1599,7 +1665,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     }
                 }
             ]
-     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+     - ``metadata``: Contains the metadata related to submission
+       (only visible to challenge hosts) e.g:
             {
                 "average-evaluation-time": "5 sec",
                 "foo": "bar"
@@ -1644,8 +1711,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 results = json.loads(submission_result)
             except (ValueError, TypeError) as exc:
                 response_data = {
-                    "error": "`result` key contains invalid data with error {}."
-                    "Please try again with correct format.".format(str(exc))
+                    "error": (
+                    f"`result` key contains invalid\
+                    data with error {str(exc)}. "
+                    "Please try again with correct format."
+                    )
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1665,8 +1735,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {
-                        "error": "Challenge Phase Split does not exist with phase_id: {} and"
-                        "split codename: {}".format(challenge_phase_pk, split)
+                        "error": (
+                        f"Challenge Phase Split does not exist\
+                        with phase_id: {challenge_phase_pk} and "
+                        f"split codename: {split}"
+                        )
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1687,7 +1760,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         malformed_metrics.append((metric, type(value)))
 
                 is_partial_evaluation_phase = (
-                    challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                    challenge_phase_split.challenge_phase.
+                    is_partial_submission_evaluation_enabled
                 )
                 if len(missing_metrics) and not is_partial_evaluation_phase:
                     response_data = {
@@ -1755,14 +1829,12 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         serializer.save()
             except IntegrityError:
                 logger.exception(
-                    "Failed to update submission_id {} related metadata".format(
-                        submission_pk
-                    )
+                    "Failed to update submission_id %s " \
+                    "related metadata", submission_pk
                 )
                 response_data = {
-                    "error": "Failed to update submission_id {} related metadata".format(
-                        submission_pk
-                    )
+                    "error": f"Failed to update submission_id\
+                    {submission_pk} related metadata"
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1832,8 +1904,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                 results = json.loads(submission_result)
             except (ValueError, TypeError) as exc:
                 response_data = {
-                    "error": "`result` key contains invalid data with error {}."
-                    "Please try again with correct format.".format(str(exc))
+                    "error": (
+                    f"`result` key contains invalid data with\
+                    error {str(exc)}. "
+                    "Please try again with correct format."
+                    )
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1854,8 +1929,11 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {
-                        "error": "Challenge Phase Split does not exist with phase_id: {} and"
-                        "split codename: {}".format(challenge_phase_pk, split)
+                        "error": (
+                        f"Challenge Phase Split does not exist with \
+                        phase_id: {challenge_phase_pk} and "
+                        f"split codename: {split}"
+                        )
                     }
                     return Response(
                         response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1867,9 +1945,10 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     )
                 except LeaderboardData.DoesNotExist:
                     response_data = {
-                        "error": "Leaderboard Data does not exist with phase_id: {} and"
-                        "submission id: {}".format(
-                            challenge_phase_pk, submission_pk
+                        "error": (
+                        f"Leaderboard Data does not exist \
+                        with phase_id: {challenge_phase_pk} and "
+                        f"submission id: {submission_pk}"
                         )
                     }
                     return Response(
@@ -1893,7 +1972,8 @@ def update_partially_evaluated_submission(request, challenge_pk):
                     updated_result[metric] = value
 
                 is_partial_evaluation_phase = (
-                    challenge_phase_split.challenge_phase.is_partial_submission_evaluation_enabled
+                    challenge_phase_split.challenge_phase
+                    .is_partial_submission_evaluation_enabled
                 )
                 if len(missing_metrics) and not is_partial_evaluation_phase:
                     response_data = {
@@ -1944,14 +2024,12 @@ def update_partially_evaluated_submission(request, challenge_pk):
                         serializer.save()
             except IntegrityError:
                 logger.exception(
-                    "Failed to update submission_id {} related metadata".format(
-                        submission_pk
-                    )
+                    f"Failed to update submission_id \
+                    {submission_pk} related metadata"
                 )
                 response_data = {
-                    "error": "Failed to update submission_id {} related metadata".format(
-                        submission_pk
-                    )
+                    "error": f"Failed to update submission_id\
+                    {submission_pk} related metadata"
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1991,7 +2069,7 @@ def re_run_submission(request, submission_pk):
         submission = Submission.objects.get(pk=submission_pk)
     except Submission.DoesNotExist:
         response_data = {
-            "error": "Submission {} does not exist".format(submission_pk)
+            "error": f"Submission {submission_pk} does not exist"
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -2008,13 +2086,14 @@ def re_run_submission(request, submission_pk):
         and not is_user_a_staff_or_host(request.user, challenge.pk)
     ):
         response_data = {
-            "error": "Only challenge hosts or admins are allowed to re-run a submission"
+            "error": "Only challenge hosts or admins are allowed"
+            " to re-run a submission"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     if not challenge.is_active:
         response_data = {
-            "error": "Challenge {} is not active".format(challenge.title)
+            "error": f"Challenge {challenge.title} is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2032,14 +2111,15 @@ def re_run_submission(request, submission_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def resume_submission(request, submission_pk):
     """
-    API endpoint to resume a submission from failed or partially evaluated state.
+    API endpoint to resume a submission from failed or
+    partially evaluated state.
     Only challenge host has access to this endpoint.
     """
     try:
         submission = Submission.objects.get(pk=submission_pk)
     except Submission.DoesNotExist:
         response_data = {
-            "error": "Submission {} does not exist".format(submission_pk)
+            "error": f"Submission {submission_pk} does not exist"
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -2070,23 +2150,21 @@ def resume_submission(request, submission_pk):
 
     if not challenge.is_active:
         response_data = {
-            "error": "Challenge {} is not active".format(challenge.title)
+            "error": f"Challenge {challenge.title} is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if not challenge.remote_evaluation:
         response_data = {
-            "error": "Challenge {} is not remote. Resuming is only supported for remote challenges.".format(
-                challenge.title
-            )
+            "error": f"Challenge {challenge.title}\
+            is not remote. Resuming is only supported for remote challenges."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if not challenge.allow_resuming_submissions:
         response_data = {
-            "error": "Challenge {} does not allow resuming submissions.".format(
-                challenge.title
-            )
+            "error": f"Challenge {challenge.title} \
+            does not allow resuming submissions."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2128,7 +2206,7 @@ def get_submissions_for_challenge(request, challenge_pk):
     ]
     if submission_status and submission_status not in valid_submission_status:
         response_data = {
-            "error": "Invalid submission status {}".format(submission_status)
+            "error": f"Invalid submission status {submission_status}"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2198,19 +2276,24 @@ def get_submissions_for_challenge(request, challenge_pk):
                         "properties": {
                             "challenge_pk": {
                                 "type": "integer",
-                                "description": "Primary key for the challenge in the database",
+                                "description": "Primary key for the challenge"
+                                " in the database",
                             },
                             "phase_pk": {
                                 "type": "integer",
-                                "description": "Primary key for the challenge phase in the database",
+                                "description": "Primary key for the challenge"
+                                " phase in the database",
                             },
                             "submission_pk": {
                                 "type": "integer",
-                                "description": "Primary key for the submission in the database",
+                                "description": "Primary key for the submission"
+                                " in the database",
                             },
                             "submitted_image_uri": {
                                 "type": "string",
-                                "description": "The AWS ECR URL for the pushed docker image in docker-based challenges",
+                                "description": "The AWS ECR URL for"
+                                " the pushed docker "
+                                "image in docker-based challenges",
                             },
                         },
                     },
@@ -2251,9 +2334,7 @@ def get_submission_message_from_queue(request, queue_name):
         challenge = Challenge.objects.get(queue=queue_name)  # noqa
     except Challenge.DoesNotExist:
         response_data = {
-            "error": "Challenge with queue name {} does not exist".format(
-                queue_name
-            )
+            "error": f"Challenge with queue name {queue_name} does not exist"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2270,9 +2351,8 @@ def get_submission_message_from_queue(request, queue_name):
             message_receipt_handle = messages[0].receipt_handle
             message_body = json.loads(messages[0].body)
             logger.info(
-                "A submission is received with pk {}".format(
-                    message_body.get("submission_pk")
-                )
+                "A submission is received with pk %s", 
+                message_body.get("submission_pk")
             )
         else:
             logger.info("No submission received")
@@ -2286,7 +2366,7 @@ def get_submission_message_from_queue(request, queue_name):
         return Response(response_data, status=status.HTTP_200_OK)
     except botocore.exceptions.ClientError as ex:
         response_data = {"error": ex}
-        logger.exception("Exception raised: {}".format(ex))
+        logger.exception("Exception raised: %s", ex)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -2308,7 +2388,8 @@ def get_submission_message_from_queue(request, queue_name):
             "properties": {
                 "receipt_handle": {
                     "type": "string",
-                    "description": "Receipt handle for the message to be deleted",
+                    "description": "Receipt handle for the"
+                    " message to be deleted",
                 },
             },
         }
@@ -2346,7 +2427,8 @@ def delete_submission_message_from_queue(request, queue_name):
     API to delete submission message from AWS SQS queue
 
     - Arguments:
-        ``queue_name``  -- The unique authentication token provided by challenge hosts
+        ``queue_name``  -- The unique authentication token
+        provided by challenge hosts
 
     - Request Body:
         ``receipt_handle`` -- The receipt handle of the message to be deleted
@@ -2355,9 +2437,7 @@ def delete_submission_message_from_queue(request, queue_name):
         challenge = Challenge.objects.get(queue=queue_name)
     except Challenge.DoesNotExist:
         response_data = {
-            "error": "Challenge with queue name {} does not exists".format(
-                queue_name
-            )
+            "error": f"Challenge with queue name {queue_name} does not exist"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2380,15 +2460,14 @@ def delete_submission_message_from_queue(request, queue_name):
         message = queue.Message(receipt_handle)
         message.delete()
         response_data = {
-            "success": "Message deleted successfully from the queue: {}".format(
-                queue_name
-            )
+            "success": f"Message deleted successfully from \
+            the queue: {queue_name}"
         }
         return Response(response_data, status=status.HTTP_200_OK)
     except botocore.exceptions.ClientError as ex:
         response_data = {"error": ex}
         logger.exception(
-            "SQS message is not deleted due to {}".format(response_data)
+            "SQS message is not deleted due to %s", response_data
         )
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2404,7 +2483,8 @@ def get_signed_url_for_submission_related_file(request):
         request {object} -- Request object
 
     Returns:
-        Response object -- Response object with appropriate response code (200/400/403/404)
+        Response object -- Response object with appropriate response 
+        code (200/400/403/404)
     """
 
     # Assumption: file will be stored in this format:
@@ -2422,9 +2502,10 @@ def get_signed_url_for_submission_related_file(request):
             splits[0].replace("team_", ""),
             splits[1].replace("submission_", ""),
         )
-    except Exception:
+    except (IndexError, AttributeError, ValueError):
         response_data = {
-            "error": "Invalid file path format. Please try again with correct file path format."
+            "error": "Invalid file path format. Please try again"
+            " with correct file path format."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2448,11 +2529,10 @@ def get_signed_url_for_submission_related_file(request):
         )
         response_data = {"signed_url": url}
         return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        response_data = {
-            "error": "You are not authorized to access this file."
+    response_data = {
+        "error": "You are not authorized to access this file."
         }
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(["PATCH"])
@@ -2494,8 +2574,9 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         data = json.loads(data)
     except (ValueError, TypeError) as exc:
         response_data = {
-            "error": "`leaderboard_data` key contains invalid data with error {}."
-            "Please try again with correct format.".format(str(exc))
+            "error": f"`leaderboard_data` key contains \
+            invalid data with error {str(exc)}. "
+            "Please try again with the correct format."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     leaderboard_metrics = leaderboard_data.leaderboard.schema.get("labels")
@@ -2510,34 +2591,37 @@ def update_leaderboard_data(request, leaderboard_data_pk):
         if metric not in leaderboard_metrics:
             extra_metrics.append(metric)
 
-        if not (isinstance(value, float) or isinstance(value, int)):
+        if not isinstance(value, (float, int)):  # Merged isinstance calls
             malformed_metrics.append((metric, type(value)))
 
-    if len(missing_metrics) and len(extra_metrics):
+    if missing_metrics and extra_metrics:
         response_data = {
-            "error": "Following metrics {0} are missing and following metrics are invalid {1} in the "
-            "leaderboard data".format(missing_metrics, extra_metrics)
+        "error": (
+            f"Following metrics {missing_metrics} are \
+            missing and following metrics are invalid "
+            f"{extra_metrics} in the leaderboard data"
+        )
+    }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if missing_metrics:
+        response_data = {
+        "error": f"Following metrics are missing in \
+        the leaderboard data: {missing_metrics}"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(missing_metrics):
+    if extra_metrics:
         response_data = {
-            "error": "Following metrics are missing in the "
-            "leaderboard data: {}".format(missing_metrics)
+        "error": f"Following metrics are invalid in \
+        the leaderboard data: {extra_metrics}"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if len(extra_metrics):
+    if malformed_metrics:
         response_data = {
-            "error": "Following metrics are invalid in the "
-            "leaderboard data: {}".format(extra_metrics)
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    if len(malformed_metrics):
-        response_data = {
-            "error": "Values for following metrics are not of"
-            "float/int: {}".format(malformed_metrics)
+        "error": f"Values for following metrics are \
+        not of float/int: {malformed_metrics}"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     result = {"result": data}
@@ -2562,10 +2646,12 @@ def get_bearer_token(request, challenge_pk):
 
     Arguments:
         request {HttpRequest} -- The request object
-        challenge_pk {int} -- The challenge pk for which bearer token is to be generated
+        challenge_pk {int} -- The challenge pk for
+        which bearer token is to be generated
 
     Returns:
-        Response object -- Response object with appropriate response code (200/400/404)
+        Response object -- Response object with
+        appropriate response code (200/400/404)
     """
     challenge = get_challenge_model(challenge_pk)
 
@@ -2577,7 +2663,9 @@ def get_bearer_token(request, challenge_pk):
 
     if not challenge.is_docker_based:
         response_data = {
-            "error": "The challenge doesn't require uploading Docker images, hence there isn't a need for bearer token."
+            "error": "The challenge doesn't require"
+            " uploading Docker images, hence there isn't"
+            " a need for bearer token."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2587,9 +2675,8 @@ def get_bearer_token(request, challenge_pk):
         )
     except ChallengeEvaluationCluster.DoesNotExist:
         response_data = {
-            "error": "Challenge evaluation cluster for the challenge with pk {} does not exist".format(
-                challenge.pk
-            )
+        "error": f"Challenge evaluation cluster for \
+        the challenge with pk {challenge.pk} does not exist"
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -2616,10 +2703,12 @@ def get_github_badge_data(
     Arguments:
         request {HttpRequest} -- The request object
         phase_pk {[int]} -- Challenge phase primary key
-        participant_team_pk {[int]} -- Participant team primary key
+        participant_team_pk {[int]} -- Participan
+        t team primary key
 
     Returns:
-        {dict} -- A dict which contains keys schemaVersion, label, message and color of badge
+        {dict} -- A dict which contains keys schemaVersion, 
+        label, message and color of badge
     """
     challenge_phase_split = get_challenge_phase_split_model(
         challenge_phase_split_pk
@@ -2644,12 +2733,9 @@ def get_github_badge_data(
         if team_data["submission__participant_team"] == int(
             participant_team_pk
         ):
-            data["message"] = "{} Rank #{}".format(
-                challenge_obj.title, idx + 1
-            )
+            data["message"] = f"{challenge_obj.title} Rank #{idx + 1}"
             break
-        else:
-            data["message"] = challenge_obj.title
+        data["message"] = challenge_obj.title
     return Response(data, status=http_status_code)
 
 
@@ -2666,7 +2752,8 @@ def challenge_phase_submission_count_by_status(request, challenge_phase_pk):
         challenge_phase_pk {int} -- challenge phase pk
 
     Returns:
-        Response object -- Response object with appropriate response code (200/400/404)
+        Response object -- Response object with appropriate
+        response code (200/400/404)
     """
     # check if the challenge phase exists or not
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -2701,11 +2788,14 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         request {HttpRequest} -- The request object
         challenge_phase_pk {int} -- Challenge phase primary key
     Returns:
-         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+        Response Object -- An object containing
+        the presignd url and submission id, or an
+        error message if some failure occurs
     """
     if settings.DEBUG:
         response_data = {
-            "error": "Sorry, this feature is not available in development or test environment."
+            "error": "Sorry, this feature is not available in"
+            " development or test environment."
         }
         return Response(response_data)
 
@@ -2725,7 +2815,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     # Check if challenge phase is active
     if not challenge_phase.is_active:
         response_data = {
-            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+            "error": "Sorry, cannot accept submissions since"
+            " challenge phase is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2734,7 +2825,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         # Check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+                "error": "Sorry, cannot accept submissions since"
+                " challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -2751,7 +2843,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         if challenge_phase.allowed_email_ids:
             if request.user.email not in challenge_phase.allowed_email_ids:
                 response_data = {
-                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                    "error": "Sorry, you are not allowed to participate "
+                    "in this challenge phase"
                 }
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
@@ -2769,10 +2862,11 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     all_participants_email = participant_team.get_all_participants_email()
     for participant_email in all_participants_email:
         if participant_email in challenge.banned_email_ids:
-            message = "You're a part of {} team and it has been banned from this challenge. \
-            Please contact the challenge host.".format(
-                participant_team.team_name
-            )
+            message = (
+            f"You're a part of {participant_team.team_name} \
+              team and it has been banned from this challenge. "
+            "Please contact the challenge host."
+        )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -2804,16 +2898,15 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
     # This file shall be replaced with the one uploaded through the presigned
     # url from the CLI
     input_file = SimpleUploadedFile(
-        "{}{}".format(random_file_name, file_ext),
-        b"file_content",
-        content_type="text/plain",
-    )
+    f"{random_file_name}{file_ext}",
+    b"file_content",
+    content_type="text/plain",
+)
     submission_data = request.data.copy()
 
     if submission_data.get("is_public") is None:
-        submission_data["is_public"] = (
-            True if challenge_phase.is_submission_public else False
-        )
+        submission_data["is_public"] = bool(
+            challenge_phase.is_submission_public)
     else:
         submission_data["is_public"] = json.loads(request.data["is_public"])
 
@@ -2841,9 +2934,8 @@ def get_submission_file_presigned_url(request, challenge_phase_pk):
         serializer.save()
         submission = serializer.instance
 
-        file_key_on_s3 = "{}/{}".format(
-            settings.MEDIAFILES_LOCATION, submission.input_file.name
-        )
+        file_key_on_s3 = f"{settings.MEDIAFILES_LOCATION}/{
+            submission.input_file.name}"
         response = generate_presigned_url_for_multipart_upload(
             file_key_on_s3, challenge.pk, num_file_chunks
         )
@@ -2877,11 +2969,13 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         challenge_phase_pk {int} -- Challenge phase primary key
         submission_pk {int} -- Submission primary key
     Returns:
-         Response Object -- An object containing the presignd url and submission id, or an error message if some failure occurs
+        Response Object -- An object containing the presignd url
+        and submission id, or an error message if some failure occurs
     """
     if settings.DEBUG:
         response_data = {
-            "error": "Sorry, this feature is not available in development or test environment."
+            "error": "Sorry, this feature is not available "
+            "in development or test environment."
         }
         return Response(response_data)
 
@@ -2901,7 +2995,8 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     # Check if challenge phase is active
     if not challenge_phase.is_active:
         response_data = {
-            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+            "error": "Sorry, cannot accept submissions "
+            "since challenge phase is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -2910,7 +3005,8 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         # Check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+                "error": "Sorry, cannot accept submissions since"
+                " challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -2927,7 +3023,8 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
         if challenge_phase.allowed_email_ids:
             if request.user.email not in challenge_phase.allowed_email_ids:
                 response_data = {
-                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                    "error": "Sorry, you are not allowed to participate"
+                    " in this challenge phase"
                 }
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
@@ -2945,9 +3042,10 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     all_participants_email = participant_team.get_all_participants_email()
     for participant_email in all_participants_email:
         if participant_email in challenge.banned_email_ids:
-            message = "You're a part of {} team and it has been banned from this challenge. \
-            Please contact the challenge host.".format(
-                participant_team.team_name
+            message = (
+            f"You're a part of {participant_team.team_name}\
+            team and it has been banned from this challenge. "
+            "Please contact the challenge host."
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
@@ -2965,9 +3063,8 @@ def finish_submission_file_upload(request, challenge_phase_pk, submission_pk):
     response = {}
     try:
         submission = get_submission_model(submission_pk)
-        file_key_on_s3 = "{}/{}".format(
-            settings.MEDIAFILES_LOCATION, submission.input_file.name
-        )
+        file_key_on_s3 = f"{settings.MEDIAFILES_LOCATION
+        }/{submission.input_file.name}"
         data = complete_s3_multipart_file_upload(
             file_parts, upload_id, file_key_on_s3, challenge.pk
         )
@@ -3001,7 +3098,8 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
         challenge_phase_pk {int} -- Challenge phase primary key
         submission_pk {int} -- Submission primary key
     Returns:
-         Response Object -- An object containing an empty dict and having a HTTP_200_0k status
+        Response Object -- An object containing an empty
+        dict and having a HTTP_200_0k status
     """
     try:
         challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -3021,14 +3119,16 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
 
     if not challenge_phase.is_active:
         response_data = {
-            "error": "Sorry, cannot accept submissions since challenge phase is not active"
+            "error": "Sorry, cannot accept submissions since"
+            " challenge phase is not active"
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         if not challenge_phase.is_public:
             response_data = {
-                "error": "Sorry, cannot accept submissions since challenge phase is not public"
+                "error": "Sorry, cannot accept submissions since"
+                " challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
@@ -3043,7 +3143,8 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
         if challenge_phase.allowed_email_ids:
             if request.user.email not in challenge_phase.allowed_email_ids:
                 response_data = {
-                    "error": "Sorry, you are not allowed to participate in this challenge phase"
+                    "error": "Sorry, you are not allowed to participate"
+                    " in this challenge phase"
                 }
                 return Response(
                     response_data, status=status.HTTP_403_FORBIDDEN
@@ -3061,9 +3162,10 @@ def send_submission_message(request, challenge_phase_pk, submission_pk):
     all_participants_email = participant_team.get_all_participants_email()
     for participant_email in all_participants_email:
         if participant_email in challenge.banned_email_ids:
-            message = "You're a part of {} team and it has been banned from this challenge. \
-            Please contact the challenge host.".format(
-                participant_team.team_name
+            message = (
+            f"You're a part of {participant_team.team_name} team \
+            and it has been banned from this challenge. "
+            "Please contact the challenge host."
             )
             response_data = {"error": message}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
@@ -3112,8 +3214,8 @@ def update_submission_started_at(request, submission_pk):
         serializer.save()
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["PATCH"])
@@ -3122,7 +3224,8 @@ def update_submission_started_at(request, submission_pk):
 @authentication_classes((JWTAuthentication, ExpiringTokenAuthentication))
 def update_submission_meta(request, challenge_pk, submission_pk):
     """
-    Common API Endpoint for updating the submission meta data for hosts and participants.
+    Common API Endpoint for updating the submission meta data for
+    hosts and participants.
     """
 
     if is_user_a_host_of_challenge(request.user, challenge_pk):
@@ -3141,40 +3244,40 @@ def update_submission_meta(request, challenge_pk, submission_pk):
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
-    else:
-        participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-            request.user, challenge_pk
+
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
 
-        participant_team = get_participant_model(participant_team_pk)
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk
+    )
 
-        try:
-            submission = Submission.objects.get(
-                id=submission_pk,
-                participant_team=participant_team,
-            )
-        except Submission.DoesNotExist:
-            response_data = {
-                "error": "Submission {} does not exist".format(submission_pk)
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    participant_team = get_participant_model(participant_team_pk)
 
-        serializer = SubmissionSerializer(
-            submission,
-            data=request.data,
-            context={"request": request},
-            partial=True,
+    try:
+        submission = Submission.objects.get(
+            id=submission_pk,
+            participant_team=participant_team,
         )
+    except Submission.DoesNotExist:
+        response_data = {
+            "error": f"Submission {submission_pk} does not exist"
+        }
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+    serializer = SubmissionSerializer(
+        submission,
+        data=request.data,
+        context={"request": request},
+        partial=True,
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    return Response(
+        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+    )
