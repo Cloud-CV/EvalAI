@@ -48,7 +48,6 @@
           
             var storedInvitationKey = $window.sessionStorage.getItem('pendingInvitationKey');
             if (!vm.invitationKey && storedInvitationKey) {
-              console.log('Restored invitation key from storage:', storedInvitationKey);
               vm.invitationKey = storedInvitationKey;
               return $state.go(
                 'web.challenge-host-team-invitation-accept',
@@ -104,7 +103,6 @@
         
         function handleFetchError(response) {
             vm.isLoading = false;
-            console.error('Error fetching invitation details:', response);
             
             const errorConfig = {
                 401: {
@@ -279,7 +277,6 @@
               // Store both the invitation key and the desired redirect state
               $window.sessionStorage.setItem('pendingInvitationKey', vm.invitationKey);
               $window.sessionStorage.setItem('redirectAfterLogin', 'web.challenge-host-team-invitation-accept');
-              console.log('Stored invitation key for post-login redirect:', vm.invitationKey);
               
               // Pass invitation_key in URL params to keep it visible
               return $state.go('auth.login', {
@@ -311,7 +308,6 @@
             if (vm.invitationKey) {
               $window.sessionStorage.setItem('pendingInvitationKey', vm.invitationKey);
               $window.sessionStorage.setItem('redirectAfterLogin', 'web.challenge-host-team-invitation-accept');
-              console.log('Stored invitation key before account switch:', vm.invitationKey);
             }
             
             utilities.deleteData('userKey');
@@ -321,13 +317,11 @@
               invitation_key: vm.invitationKey,
               redirect: 'invitation-accept'
             });
-          };
+          }
         
         function handleError(options) {
-            console.error(options.title || 'Error', options.message);
             
             vm.error = options.message;
-            
             showToaster(options.status || 'error', options.title || 'Error', options.message);
             
             if (typeof options.action === 'function') {
