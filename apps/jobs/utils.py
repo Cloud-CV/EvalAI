@@ -108,7 +108,7 @@ def get_remaining_submission_for_a_phase(
 
     # Checks if #today's successful submission is greater than or equal to max
     # submission per day
-    if submissions_done_today_count >= max_submissions_per_day_count:
+    elif submissions_done_today_count >= max_submissions_per_day_count:
         date_time_now = timezone.now()
         date_time_tomorrow = date_time_now + datetime.timedelta(1)
         # Get the midnight time of the day i.e. 12:00 AM of next day.
