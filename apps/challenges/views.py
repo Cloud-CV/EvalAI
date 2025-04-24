@@ -3964,7 +3964,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
             error_messages = None
             try:
                 with transaction.atomic():
-                    worker_image_url = request.data.get("worker_image_url", None)
+                    worker_image_url = yaml_file_data.get("worker_image_url", None)
                     serializer = ZipChallengeSerializer(
                         data=yaml_file_data,
                         context={
@@ -4269,7 +4269,7 @@ def create_or_update_github_challenge(request, challenge_host_team_pk):
                     serializer.save()
 
                 # Updating Challenge object
-                worker_image_url = request.data.get("worker_image_url", None)
+                worker_image_url = yaml_file_data.get("worker_image_url", None)
                 serializer = ZipChallengeSerializer(
                     challenge,
                     data=yaml_file_data,
