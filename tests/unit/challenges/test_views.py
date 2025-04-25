@@ -5898,7 +5898,6 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
         self.assertEqual(Leaderboard.objects.count(), 1)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
 
-
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
     ):
