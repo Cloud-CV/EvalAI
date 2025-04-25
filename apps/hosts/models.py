@@ -1,13 +1,13 @@
 from __future__ import unicode_literals
+
 import uuid
-from django.conf import settings
+from datetime import timedelta
+
 from base.models import TimeStampedModel
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from datetime import timedelta
 from django.utils import timezone
-from django.conf import settings
-
 
 # from challenges.models import (Challenge, )
 

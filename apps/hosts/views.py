@@ -1,20 +1,20 @@
+from urllib.parse import urlencode
+
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
 from django.conf import settings
-from .utils import is_user_part_of_host_team
-from django.shortcuts import redirect
-from django.core.mail import send_mail
-from urllib.parse import urlencode
-from django.template.loader import render_to_string
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from rest_framework import permissions, status
-from rest_framework.permissions import AllowAny
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
     permission_classes,
     throttle_classes,
 )
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
@@ -30,12 +30,12 @@ from .models import (
 )
 from .serializers import (
     ChallengeHostSerializer,
+    ChallengeHostTeamInvitationSerializer,
     ChallengeHostTeamSerializer,
     HostTeamDetailSerializer,
     InviteHostToTeamSerializer,
-    ChallengeHostTeamInvitationSerializer,
 )
-
+from .utils import is_user_part_of_host_team
 
 get_challenge_host_model = get_model_object(ChallengeHost)
 
