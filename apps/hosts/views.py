@@ -1,11 +1,8 @@
-from urllib.parse import urlencode
-
 from accounts.permissions import HasVerifiedEmail
 from base.utils import get_model_object, team_paginated_queryset
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
-from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -14,7 +11,6 @@ from rest_framework.decorators import (
     permission_classes,
     throttle_classes,
 )
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
