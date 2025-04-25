@@ -59,27 +59,10 @@
             if (vm.invitationKey) {
               return fetchInvitationDetails();
             }
-          
-            handleError({
-              message: 'Please click on invitation link sent to your mail again!',
-              title: 'Click on Invitation',
-              status: 'error'
-            });
-            vm.isLoading = false;
           }
           
         
         function fetchInvitationDetails() {
-            if (!vm.invitationKey) {
-                handleError({
-                    message: 'Please click on invitation link sent to your mail again!',
-                    title: 'Click on Invitation',
-                    status: 'error'
-                });
-                vm.isLoading = false;
-                return;
-            }
-            
             vm.isLoading = true;
             vm.error = null;
             
