@@ -26,19 +26,20 @@ def is_user_part_of_host_team(user, host_team):
     ).exists()
 
 
-def is_user_a_staff_or_host(user, obj):
-    """Check if user is staff or host for a challenge or team"""
-    if is_user_a_staff(user):
-        return True
-    
-    if isinstance(obj, Challenge):
-        return is_user_a_host_of_challenge(user, obj.pk)
-    elif isinstance(obj, ChallengeHostTeam):
-        return is_user_part_of_host_team(user, obj)
-    elif isinstance(obj, int):
-        return is_user_a_host_of_challenge(user, obj)
-    
-    return False
+def is_user_a_staff_or_host(user, challenge_pk):
+    """
+    Function to check if a user is staff or host
+
+    Args:
+        user ([User Class Object]): User model class object
+        challenge_pk ([int]): Challenge primary key
+
+    Return:
+        {bool} : True/False if the user is staff or host
+    """
+    return is_user_a_staff(user) or is_user_a_host_of_challenge(
+        user, challenge_pk
+    )
 
 
 
