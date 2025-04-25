@@ -10,107 +10,125 @@ from django.db.migrations.operations.special import SeparateDatabaseAndState
 class Migration(migrations.Migration):
 
     replaces = [
-        ('hosts', '0001_challengehostteaminvitation'),
-        ('hosts', '0002_auto_20250417_2229'),
-        ('hosts', '0003_auto_20250417_2245'),
-        ('hosts', '0004_auto_20250422_2255'),
+        ("hosts", "0001_challengehostteaminvitation"),
+        ("hosts", "0002_auto_20250417_2229"),
+        ("hosts", "0003_auto_20250417_2245"),
+        ("hosts", "0004_auto_20250422_2255"),
     ]
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('hosts', 'Add_blank_in_host_team_URL'),
+        ("hosts", "Add_blank_in_host_team_URL"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ChallengeHostTeamInvitation',
+            name="ChallengeHostTeamInvitation",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('email', models.EmailField(max_length=254)),
-                ('invitation_key', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('declined', 'Declined')], default='pending', max_length=30)),
-                ('invited_by', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name='sent_invitations',
-                    to=settings.AUTH_USER_MODEL,
-                )),
-                ('challenge_host_team', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name='invitations',
-                    to='hosts.ChallengeHostTeam',
-                )),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("email", models.EmailField(max_length=254)),
+                (
+                    "invitation_key",
+                    models.UUIDField(
+                        default=uuid.uuid4, editable=False, unique=True
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("accepted", "Accepted"),
+                            ("declined", "Declined"),
+                        ],
+                        default="pending",
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "invited_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="sent_invitations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "challenge_host_team",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="invitations",
+                        to="hosts.ChallengeHostTeam",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'challenge_host_team_invitations',
-                'unique_together': {('email', 'challenge_host_team')},
+                "db_table": "challenge_host_team_invitations",
+                "unique_together": {("email", "challenge_host_team")},
             },
         ),
-
-        # rename the table once (matches your 0002)
         migrations.AlterModelTable(
-            name='challengehostteaminvitation',
-            table='challenge_host_team_invitation',
+            name="challengehostteaminvitation",
+            table="challenge_host_team_invitation",
         ),
-
-        # undo the field rename (0003)
         migrations.RenameField(
-            model_name='challengehostteaminvitation',
-            old_name='challenge_host_team',
-            new_name='team',
+            model_name="challengehostteaminvitation",
+            old_name="challenge_host_team",
+            new_name="team",
         ),
-
-        # revert email, key, invited_by (0003)
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='email',
+            model_name="challengehostteaminvitation",
+            name="email",
             field=models.EmailField(max_length=200),
         ),
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='invitation_key',
+            model_name="challengehostteaminvitation",
+            name="invitation_key",
             field=models.CharField(max_length=64, unique=True),
         ),
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='invited_by',
+            model_name="challengehostteaminvitation",
+            name="invited_by",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='sent_host_invitations',
+                related_name="sent_host_invitations",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
-
-        # no-op removal of the unique_together so we don’t try to DROP the missing constraint
         SeparateDatabaseAndState(
-            database_operations=[
-                # empty: don’t run any SQL
-            ],
+            database_operations=[],
             state_operations=[
                 migrations.AlterUniqueTogether(
-                    name='challengehostteaminvitation',
+                    name="challengehostteaminvitation",
                     unique_together=set(),
                 ),
             ],
         ),
-
-        # rename table back to final (0003)
         migrations.AlterModelTable(
-            name='challengehostteaminvitation',
-            table='challenge_host_team_invitations',
+            name="challengehostteaminvitation",
+            table="challenge_host_team_invitations",
         ),
-
-        # add “expired” choice (0004)
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='status',
+            model_name="challengehostteaminvitation",
+            name="status",
             field=models.CharField(
-                choices=[('pending', 'Pending'),
-                         ('accepted', 'Accepted'),
-                         ('declined', 'Declined'),
-                         ('expired', 'Expired')],
-                default='pending',
+                choices=[
+                    ("pending", "Pending"),
+                    ("accepted", "Accepted"),
+                    ("declined", "Declined"),
+                    ("expired", "Expired"),
+                ],
+                default="pending",
                 max_length=30,
             ),
         ),
