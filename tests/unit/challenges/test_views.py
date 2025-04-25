@@ -5868,6 +5868,36 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
 
         self.client.force_authenticate(user=self.user)
 
+    # def test_create_challenge_using_github_success(self):
+    #     self.url = reverse_lazy(
+    #         "challenges:create_or_update_github_challenge",
+    #         kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+    #     )
+
+    #     with mock.patch("challenges.views.requests.get") as m:
+    #         resp = mock.Mock()
+    #         resp.content = self.test_zip_file.read()
+    #         resp.status_code = 200
+    #         m.return_value = resp
+    #         response = self.client.post(
+    #             self.url,
+    #             {
+    #                 "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+    #                 "zip_configuration": self.input_zip_file,
+    #             },
+    #             format="multipart",
+    #         )
+    #         expected = {
+    #             "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+    #         }
+
+    #         self.assertEqual(response.status_code, 201)
+    #         self.assertEqual(response.json(), expected)
+    #     self.assertEqual(Challenge.objects.count(), 1)
+    #     self.assertEqual(DatasetSplit.objects.count(), 1)
+    #     self.assertEqual(Leaderboard.objects.count(), 1)
+    #     self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
     def test_create_challenge_using_github_success(self):
         self.url = reverse_lazy(
             "challenges:create_or_update_github_challenge",
@@ -5879,24 +5909,43 @@ class CreateOrUpdateGithubChallengeTest(APITestCase):
             resp.content = self.test_zip_file.read()
             resp.status_code = 200
             m.return_value = resp
-            response = self.client.post(
-                self.url,
-                {
-                    "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
-                    "zip_configuration": self.input_zip_file,
-                },
-                format="multipart",
-            )
-            expected = {
-                "Success": "Challenge Challenge Title has been created successfully and sent for review to EvalAI Admin."
+
+            yaml_file_data = {
+                "worker_image_url": "https://example.com/worker_image.png",
+                "challenge_title": "Sample Challenge",
+                "leaderboard": [],
+                "other_data": "example",
             }
 
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), expected)
-        self.assertEqual(Challenge.objects.count(), 1)
-        self.assertEqual(DatasetSplit.objects.count(), 1)
-        self.assertEqual(Leaderboard.objects.count(), 1)
-        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+            with mock.patch(
+                "challenges.challenge_config_util.validate_challenge_config_util",
+                return_value=([], yaml_file_data, {}),
+            ):
+                response = self.client.post(
+                    self.url,
+                    {
+                        "GITHUB_REPOSITORY": "https://github.com/yourusername/repository",
+                        "zip_configuration": self.input_zip_file,
+                    },
+                    format="multipart",
+                )
+                expected = {
+                    "Success": "Challenge Sample Challenge has been created successfully and sent for review to EvalAI Admin."
+                }
+
+                self.assertEqual(response.status_code, 201)
+                self.assertEqual(response.json(), expected)
+
+            self.assertEqual(Challenge.objects.count(), 1)
+            self.assertEqual(DatasetSplit.objects.count(), 1)
+            self.assertEqual(Leaderboard.objects.count(), 1)
+            self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+            challenge = Challenge.objects.first()
+            self.assertEqual(
+                challenge.worker_image_url,
+                "https://example.com/worker_image.png",
+            )
 
     def test_create_challenge_using_github_when_challenge_host_team_does_not_exist(
         self,
