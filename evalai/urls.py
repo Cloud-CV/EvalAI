@@ -81,7 +81,11 @@ urlpatterns = [
     url(r"^api/schema/", schema_view, name="schema"),
     url(r"^api/swagger/", swagger_view, name="swagger-ui"),
     url(r"^api/docs/", redoc_view, name="redoc"),
-    url(r'^(?!api/|admin/).*$', TemplateView.as_view(template_name="base.html"), name="frontend")
+    url(
+        r"^(?!api/|admin/).*$",
+        TemplateView.as_view(template_name="base.html"),
+        name="frontend",
+    ),
 ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
