@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:10.4
+    image: postgres:16.8
     ports:
       - "5432:5432"
     env_file:
@@ -67,6 +67,7 @@ services:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+
   statsd-exporter:
     hostname: statsd
     image: prom/statsd-exporter:latest

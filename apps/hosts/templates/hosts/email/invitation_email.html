@@ -1,9 +1,90 @@
-
-    Hello,
-    You have been invited by {{ inviter_name }} to join the team "{{ team_name }}" on EvalAI.
-    To accept this invitation, please click on the following link:
-    Click here to view and accept this invitation : {{ invitation_url }}
-
-
-    Thank you
-ß
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Team Invitation</title>
+  <style>
+    /* Global reset & background */
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #eef2f7;
+      margin: 0;
+      padding: 20px;
+      font-size: 1rem; /* 16px base */
+      color: #555555;
+    }
+  
+    /* White “card” container with soft shadow */
+    .container {
+      max-width: 580px;
+      margin: auto;
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+  
+    /* Header styling */
+    .header {
+      font-size: 25px;
+      font-weight: 600;
+      color: #333333;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eeeeee;
+      padding-bottom: 12px;
+    }
+  
+    /* Body copy */
+    .content {
+      line-height: 1.4;
+    }
+  
+    /* Accent button */
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 22px;
+      background-color:rgb(54, 150, 57);
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 1rem;  /* 16px */
+      font-weight: 500;
+      border-radius: 6px;
+    }
+    .button:hover {
+      background-color: #1565c0;
+    }
+  
+    /* Footer text */
+    .footer {
+      margin-top: 30px;
+      font-size: 15px;
+      color: #999999;
+      line-height: 1.4;
+    }
+  </style>
+  
+  
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      ✉️ You’ve Been Invited!
+    </div>
+    <div class="content">
+      Hello,<br><br>
+      <strong>{{ inviter_name }}</strong> has invited you to join the team "<strong>{{ team_name }}</strong>" on EvalAI.<br><br>
+      To accept this invitation, please click the button below:
+      <br><br>
+      <a href="{{ invitation_url }}" class="button">Accept Invitation</a>
+      <br><br>
+      If the button doesn't work, you can also copy and paste this link into your browser:<br>
+      <a href="{{ invitation_url }}">{{ invitation_url }}</a>
+    </div>
+    <div class="footer">
+      Thank you,<br>
+      <strong>The EvalAI Team</strong>
+    </div>
+  </div>
+</body>
+</html>

@@ -462,8 +462,6 @@ def accept_host_invitation(request, invitation_key):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
-        print("DEBUG: accepting invitation…")
-
         # 1) mark the invitation accepted
         invitation.status = "accepted"
         invitation.save(update_fields=["status"])
