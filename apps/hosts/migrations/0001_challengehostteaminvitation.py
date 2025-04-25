@@ -9,24 +9,60 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('hosts', 'Add_blank_in_host_team_URL'),
+        ("hosts", "Add_blank_in_host_team_URL"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ChallengeHostTeamInvitation',
+            name="ChallengeHostTeamInvitation",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('email', models.EmailField(max_length=200)),
-                ('invitation_key', models.CharField(max_length=64, unique=True)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('declined', 'Declined')], default='pending', max_length=30)),
-                ('invited_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sent_host_invitations', to=settings.AUTH_USER_MODEL)),
-                ('team', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='invitations', to='hosts.ChallengeHostTeam')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("email", models.EmailField(max_length=200)),
+                (
+                    "invitation_key",
+                    models.CharField(max_length=64, unique=True),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("accepted", "Accepted"),
+                            ("declined", "Declined"),
+                        ],
+                        default="pending",
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "invited_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="sent_host_invitations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "team",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="invitations",
+                        to="hosts.ChallengeHostTeam",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'challenge_host_team_invitations',
+                "db_table": "challenge_host_team_invitations",
             },
         ),
     ]

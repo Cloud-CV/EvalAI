@@ -8,36 +8,40 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hosts', '0002_auto_20250417_2229'),
+        ("hosts", "0002_auto_20250417_2229"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='challengehostteaminvitation',
-            old_name='challenge_host_team',
-            new_name='team',
+            model_name="challengehostteaminvitation",
+            old_name="challenge_host_team",
+            new_name="team",
         ),
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='email',
+            model_name="challengehostteaminvitation",
+            name="email",
             field=models.EmailField(max_length=200),
         ),
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='invitation_key',
+            model_name="challengehostteaminvitation",
+            name="invitation_key",
             field=models.CharField(max_length=64, unique=True),
         ),
         migrations.AlterField(
-            model_name='challengehostteaminvitation',
-            name='invited_by',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sent_host_invitations', to=settings.AUTH_USER_MODEL),
+            model_name="challengehostteaminvitation",
+            name="invited_by",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="sent_host_invitations",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='challengehostteaminvitation',
+            name="challengehostteaminvitation",
             unique_together=set(),
         ),
         migrations.AlterModelTable(
-            name='challengehostteaminvitation',
-            table='challenge_host_team_invitations',
+            name="challengehostteaminvitation",
+            table="challenge_host_team_invitations",
         ),
     ]

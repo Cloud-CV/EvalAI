@@ -6,7 +6,9 @@ from .models import ChallengeHost, ChallengeHostTeam
 
 def get_challenge_host_teams_for_user(user):
     """Returns challenge host team ids for a particular user"""
-    return ChallengeHost.objects.filter(user=user).values_list("team_name__pk", flat=True)
+    return ChallengeHost.objects.filter(user=user).values_list(
+        "team_name__pk", flat=True
+    )
 
 
 def is_user_a_host_of_challenge(user, challenge_pk):
@@ -40,7 +42,6 @@ def is_user_a_staff_or_host(user, challenge_pk):
     return is_user_a_staff(user) or is_user_a_host_of_challenge(
         user, challenge_pk
     )
-
 
 
 get_challenge_host_team_model = get_model_object(ChallengeHostTeam)

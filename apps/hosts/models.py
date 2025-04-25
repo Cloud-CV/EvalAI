@@ -85,83 +85,87 @@ class ChallengeHost(TimeStampedModel):
         app_label = "hosts"
         db_table = "challenge_host"
 
+
 class ChallengeHostTeamInvitation(TimeStampedModel):
     """
     Model to store invitations to a challenge host team
     """
+
     email = models.EmailField(max_length=200)
     invitation_key = models.CharField(max_length=64, unique=True)
     status = models.CharField(
         max_length=30,
         choices=(
-            ('pending', 'Pending'),
-            ('accepted', 'Accepted'),
-            ('declined', 'Declined'),
-            ('expired', 'Expired'),  # Added expired status
+            ("pending", "Pending"),
+            ("accepted", "Accepted"),
+            ("declined", "Declined"),
+            ("expired", "Expired"),  # Added expired status
         ),
-        default='pending'
+        default="pending",
     )
     team = models.ForeignKey(
-        'ChallengeHostTeam',
-        related_name='invitations',
-        on_delete=models.CASCADE
+        "ChallengeHostTeam",
+        related_name="invitations",
+        on_delete=models.CASCADE,
     )
     invited_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='sent_host_invitations',
-        on_delete=models.CASCADE
+        related_name="sent_host_invitations",
+        on_delete=models.CASCADE,
     )
-    
-    INVITATION_EXPIRY_DAYS = getattr(settings, 'INVITATION_EXPIRY_DAYS', 7)
-    
+
+    INVITATION_EXPIRY_DAYS = getattr(settings, "INVITATION_EXPIRY_DAYS", 7)
+
     def generate_invitation_key(self):
         """Generate a unique invitation key"""
         return uuid.uuid4().hex
-    
+
     def save(self, *args, **kwargs):
         if not self.invitation_key:
             self.invitation_key = self.generate_invitation_key()
         super(ChallengeHostTeamInvitation, self).save(*args, **kwargs)
-    
+
     def is_expired(self):
         """
         Determine whether this invitation has expired.
-        
+
         Returns True if the invitation creation date plus the expiration
         period is less than or equal to the current date/time.
         """
-        expiration_date = self.created_at + timedelta(days=self.INVITATION_EXPIRY_DAYS)
+        expiration_date = self.created_at + timedelta(
+            days=self.INVITATION_EXPIRY_DAYS
+        )
         return timezone.now() > expiration_date
-    
+
     def is_usable(self):
         """
         Return whether this invitation is still valid for accepting.
-        
+
         An invitation is usable if it's in 'pending' status and hasn't expired.
         """
-        return self.status == 'pending' and not self.is_expired()
-    
+        return self.status == "pending" and not self.is_expired()
+
     def mark_as_expired(self):
         """Mark the invitation as expired if it's currently pending"""
-        if self.status == 'pending' and self.is_expired():
-            self.status = 'expired'
-            self.save(update_fields=['status'])
-    
+        if self.status == "pending" and self.is_expired():
+            self.status = "expired"
+            self.save(update_fields=["status"])
+
     @classmethod
     def expire_old_invitations(cls):
         """
         Class method to expire all pending invitations that have passed their expiration date.
         This can be called by a scheduled task (e.g., Celery).
         """
-        pending_invitations= cls.objects.filter(status='pending')
+        pending_invitations = cls.objects.filter(status="pending")
         for invitation in pending_invitations:
             if invitation.is_expired():
-                invitation.status = 'expired'
-                invitation.save(update_fields=['status'])
-    
+                invitation.status = "expired"
+                invitation.save(update_fields=["status"])
+
     def __str__(self):
-        return f'{self.email} invitation to {self.team.team_name}'
-    
+        return f"{self.email} invitation to {self.team.team_name}"
+
     class Meta:
         app_label = "hosts"
         db_table = "challenge_host_team_invitations"
