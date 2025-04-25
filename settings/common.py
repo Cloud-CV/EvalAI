@@ -93,13 +93,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "evalai.urls"
-BACKEND_URL = 'http://127.0.0.1:8000'
-FRONTEND_URL = 'http://127.0.0.1:8888'  
+BACKEND_URL = "http://127.0.0.1:8000"
+FRONTEND_URL = "http://127.0.0.1:8888"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR,"frontend")],
+        "DIRS": [os.path.join(BASE_DIR, "frontend")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
